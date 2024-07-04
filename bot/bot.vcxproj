@@ -159,21 +159,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\format.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="..\core\time.cpp" />
-    <ClCompile Include="lib\bot.container.cpp" />
-    <ClCompile Include="lib\bot.cpp" />
-    <ClCompile Include="lib\bot.game.cpp" />
-    <ClCompile Include="lib\bot.gateway.cpp" />
-    <ClCompile Include="lib\bot.login.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

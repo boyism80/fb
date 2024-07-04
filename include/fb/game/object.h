@@ -76,7 +76,7 @@ public:
 
     const fb::model::object&            based() const;
     template <typename T>
-    const typename T&                   based() const { return static_cast<const T&>(this->_model); }
+    const T&                            based() const { return static_cast<const T&>(this->_model); }
     bool                                is(OBJECT_TYPE type) const;
 
     virtual const std::string&          name() const;

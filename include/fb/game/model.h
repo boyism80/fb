@@ -1494,32 +1494,32 @@ struct is_default
 
 class dsl;
 
-template <typename T> static typename std::enable_if<fb::model::is_default<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_vector<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_map<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_optional<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_unique<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json);
-template <typename T> static typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json);
-template <> static int8_t build<int8_t>(const Json::Value& json);
-template <> static uint8_t build<uint8_t>(const Json::Value& json);
-template <> static int16_t build<int16_t>(const Json::Value& json);
-template <> static uint16_t build<uint16_t>(const Json::Value& json);
-template <> static int build<int>(const Json::Value& json);
-template <> static uint32_t build<uint32_t>(const Json::Value& json);
-template <> static int64_t build<int64_t>(const Json::Value& json);
-template <> static uint64_t build<uint64_t>(const Json::Value& json);
-template <> static std::string build<std::string>(const Json::Value& json);
-template <> static float build<float>(const Json::Value& json);
-template <> static double build<double>(const Json::Value& json);
-template <> static bool build<bool>(const Json::Value& json);
-template <> static boost::posix_time::ptime build<boost::posix_time::ptime>(const Json::Value& json);
-template <> static std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json);
-template <> static fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
-template <> static fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_default<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_vector<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_map<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_optional<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_unique<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json);
+template <typename T> inline static typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json);
+template <> int8_t build<int8_t>(const Json::Value& json);
+template <> uint8_t build<uint8_t>(const Json::Value& json);
+template <> int16_t build<int16_t>(const Json::Value& json);
+template <> uint16_t build<uint16_t>(const Json::Value& json);
+template <> int build<int>(const Json::Value& json);
+template <> uint32_t build<uint32_t>(const Json::Value& json);
+template <> int64_t build<int64_t>(const Json::Value& json);
+template <> uint64_t build<uint64_t>(const Json::Value& json);
+template <> std::string build<std::string>(const Json::Value& json);
+template <> float build<float>(const Json::Value& json);
+template <> double build<double>(const Json::Value& json);
+template <> bool build<bool>(const Json::Value& json);
+template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json::Value& json);
+template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json);
+template <> fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
+template <> fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
 
 #pragma region dsl
 class dsl

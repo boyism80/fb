@@ -309,7 +309,7 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
     auto& model = this->based<fb::model::mob>();
-    auto difference = std::abs<uint32_t>(model.damage.max - model.damage.min);
+    auto difference = model.damage.max - model.damage.min;
     return model.damage.min + (std::rand() % difference);
 }
 

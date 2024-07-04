@@ -52,7 +52,7 @@ private:
 
 public:
     fb::model::model         model;
-    maps                     maps;
+    fb::game::maps           maps;
 
 public:
     context(boost::asio::io_context& context, uint16_t port);
@@ -93,20 +93,11 @@ public:
             if(this->_ptrs.contains(&obj) == false)
                 return false;
             
-            this->_ptrs.erase(&obj);
-            return true;
-        });
-    }
+            if constexpr (std::is_same_v<T, fb::game::object>)
+            {
+                obj.map(nullptr);
+            }
 
-    template <>
-    bool                    destroy<fb::game::object>(fb::game::object& obj)
-    {
-        return this->_mutex.sync<bool>(PTR_CONTAINER_KEY, [this, &obj] (auto&) mutable
-        {
-            if(this->_ptrs.contains(&obj) == false)
-                return false;
-            
-            obj.map(nullptr);
             this->_ptrs.erase(&obj);
             return true;
         });
@@ -337,5 +328,12 @@ public:
 };
 
 } }
+
+template <typename T, typename... Args>
+T* fb::model::object::make(fb::game::context& context, Args&& ... args) const
+{
+    auto& model = static_cast<const typename T::model_type&>(*this);
+    return context.template make<T>(model, std::forward<Args>(args)...);
+}
 
 #endif // !__FB_GAME_H__

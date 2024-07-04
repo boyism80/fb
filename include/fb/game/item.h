@@ -1,10 +1,7 @@
 #ifndef __ITEM_H__
 #define __ITEM_H__
 
-#include <string>
-#include <sstream>
 #include <iomanip>
-#include <optional>
 #include <fb/game/object.h>
 
 #ifdef small

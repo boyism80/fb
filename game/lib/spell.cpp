@@ -127,6 +127,7 @@ fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32
     if (this->push_back(*created) == false)
     {
         context.destroy(*created);
+        return nullptr;
     }
     else
     {

@@ -205,7 +205,7 @@ private:
             mutex = this->_pool[key].get();
         }
 
-        return this->handle_locked(awaiter, fn, key, *mutex);
+        return this->handle_locked(fn, key, *mutex);
     }
 
 public:

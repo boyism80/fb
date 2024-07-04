@@ -1,20 +1,19 @@
 #ifndef __MMO_H__
 #define __MMO_H__
 
-#include <stdint.h>
-#include <string>
-#include <algorithm>
-#include <optional>
-#include <sstream>
-#include <iostream>
-#include <fb/core/socket.h>
-#include <fb/core/string.h>
 #include <fb/game/item.h>
 #include <fb/game/spell.h>
 #include <fb/game/trade.h>
 #include <fb/game/mob.h>
 #include <fb/game/dialog.h>
 #include <fb/game/npc.h>
+#include <fb/core/socket.h>
+#include <fb/core/string.h>
+#include <stdint.h>
+#include <algorithm>
+#include <optional>
+#include <sstream>
+#include <iostream>
 
 namespace fb { namespace game {
 
