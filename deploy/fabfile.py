@@ -8,7 +8,6 @@ import jinja2
 import os
 import shutil
 import zipfile
-import optimizer
 import time
 import copy
 
@@ -32,24 +31,13 @@ def environment(e):
 @task
 @runs_once
 def optimize():
-    with lcd('resources/maps'):
-        local('rm -f *.map')
-        local('rm -f *.block')
-        local('unzip -qq maps.zip')
-
     # for internal
-    hosts = optimizer.hosts()
+    with open('game/json/map.json', 'r', encoding='utf8') as f:
+        maps = json.load(f)
+        hosts = {x['id']:x['host'] for x in maps.values()}
+    
     with open('host.json', 'w', encoding='utf8') as f:
         f.write(json.dumps(hosts, ensure_ascii=False, sort_keys=True))
-
-    # for game
-    local('rm -rf temp && mkdir -p temp')
-    optimizer.convert(os.path.join('resources', 'table'), 'temp')
-    optimizer.compress(maps=os.path.join('resources', 'maps'),
-                       tables='temp',
-                       scripts=os.path.join('game', 'scripts'),
-                       dst='resources.zip')
-    local('rm -rf temp')
 
 @task
 @parallel
@@ -64,15 +52,20 @@ def setup():
     if 'game' in configs['deploy']:
         sudo('rm -rf game', quiet=True)
         sudo('mkdir -p game', quiet=True)
-        with cd('game'):
-            put('resources.zip', '.', use_sudo=True)
-            sudo('unzip -qq resources.zip', quiet=True)
-            sudo('rm -f resources.zip', quiet=True)
+
+        with lcd('resources/maps'):
+            with cd('resources/maps'):
+                put('maps.zip', '.', use_sudo=True)
+                sudo('unzip -qq maps.zip', quiet=True)
+
+        with lcd('game'):
+            with cd('game'):
+                put('scripts', '.', use_sudo=True)
+                put('json', '.', use_sudo=True)
 
 @task
 def clean():
     local('rm -f host.json')
-    local('rm -f resources.zip')
 
 @task
 def build(service):
