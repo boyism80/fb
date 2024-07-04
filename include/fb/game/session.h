@@ -120,7 +120,7 @@ private:
     using object::based;
 
 public:
-    session(fb::socket<fb::game::session>& socket, fb::game::context& context);
+    session(fb::game::context& context, fb::socket<fb::game::session>& socket);
     ~session();
 
 protected:

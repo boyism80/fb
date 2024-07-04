@@ -673,7 +673,7 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
 
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
-    return new fb::game::session(socket, *this);
+    return this->make<fb::game::session>(socket);
 }
 
 void fb::game::context::send(object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self, bool encrypt)

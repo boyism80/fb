@@ -1,3 +1,4 @@
+#if ENABLE_MYSQL
 #include <fb/core/db.h>
 
 using namespace fb::db;
@@ -289,3 +290,4 @@ fb::db::awaiter fb::db::base_context::co_exec_f(uint32_t id, const std::string& 
     
     return this->co_exec(id, sql);
 }
+#endif

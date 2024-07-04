@@ -4,7 +4,7 @@
 
 using namespace fb::game;
 
-session::session(fb::socket<fb::game::session>& socket, fb::game::context& context) : 
+session::session(fb::game::context& context, fb::socket<fb::game::session>& socket) :
     life(context, context.model.life[0], fb::game::life::config{{.id = (uint32_t)socket.fd()}}),
     _socket(socket)
 {
@@ -468,9 +468,6 @@ bool fb::game::session::level_up()
     if(this->max_level())
         return false;
 
-    if(this->_class == CLASS::NONE && this->_level >= 5)
-        return false;
-
     auto& ability = this->context.model.ability[this->_class][this->_level];
     this->strength_up(ability.strength);
     this->intelligence_up(ability.intelligence);
@@ -482,20 +479,18 @@ bool fb::game::session::level_up()
     this->mp(this->base_mp());
 
     this->level(this->_level + 1);
+    this->message(message::level::UP);
 
     auto listener = this->get_listener<fb::game::session>();
     if(listener != nullptr)
-    {
         listener->on_level_up(*this);
-        listener->on_notify(*this, message::level::UP);
-    }
 
     return true;
 }
 
 bool fb::game::session::max_level() const
 {
-    return this->_level >= 99;
+    return this->context.model.ability[this->_class].contains(this->_level + 1) == false;
 }
 
 SEX fb::game::session::sex() const
@@ -643,35 +638,35 @@ uint32_t fb::game::session::experience_add(uint32_t value, bool notify)
             {
                 std::stringstream       sstream;
                 sstream << "경험치가 " << value << '(' << int(this->experience_percent()) << "%) 올랐습니다.";
-                if(listener != nullptr)
-                    listener->on_notify(*this, sstream.str());
+                this->message(sstream.str());
             }
         }
+
+        if (this->context.model.ability.contains(this->_class) == false)
+            throw std::runtime_error("what?");
 
         while(true)
         {
             if(this->max_level())
                 break;
 
-            auto require = this->context.model.ability[this->_class][this->_level].exp;
-            if(require == 0)
+            auto& next = this->context.model.ability[this->_class][this->_level + 1];
+            if(next.exp == 0)
                 break;
 
-            if(this->_experience < require)
+            if(this->_experience < next.exp)
                 break;
 
             if(this->level_up() == false)
                 break;
         }
 
-        if(this->_class == CLASS::NONE && this->_level >= 5)
+        if(this->_class == CLASS::NONE && this->max_level())
             throw require_class_exception();
     }
     catch(std::exception& e)
     {
-        if(notify)
-            if(listener != nullptr)
-                listener->on_notify(*this, e.what());
+        this->message(e.what());
     }
 
     return lack;

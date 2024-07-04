@@ -292,7 +292,11 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
 
 const fb::model::warp* fb::game::map::warpable(const point16_t& position) const
 {
-    for (auto& warp : this->context.model.warp[this->model.id])
+    auto& warps = this->context.model.warp;
+    if (warps.contains(this->model.id) == false)
+        return nullptr;
+
+    for (auto& warp : warps[this->model.id])
     {
         if (warp.before == position)
             return &warp;

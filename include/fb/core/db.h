@@ -1,3 +1,7 @@
+#ifndef ENABLE_MYSQL
+#error You have to define 'ENABLE_MYSQL'
+#else
+
 #ifndef __DB_H__
 #define __DB_H__
 
@@ -220,3 +224,5 @@ public:
 } }
 
 #endif // !__DB_H__
+
+#endif

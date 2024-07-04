@@ -8,116 +8,74 @@
 namespace fb {
 
 template <typename K, typename V>
-class kv_container : private std::unordered_map<K, std::unique_ptr<V>>
+class kv_container
 {
 public:
-    class iterator;
-    class const_iterator;
+    using iterator          = std::unordered_map<K,V&>::iterator;
+    using const_iterator    = std::unordered_map<K,V&>::const_iterator;
+
+private:
+    std::vector<std::unique_ptr<V>>     _ptrs;
+    std::unordered_map<K,V&>            _pairs;
 
 public:
-    using std::unordered_map<K,std::unique_ptr<V>>::size;
-
-protected:
     kv_container() = default;
+    ~kv_container() = default;
 
 public:
-    void push(K key, V* value)
+    bool contains(const K& k) const
     {
-        std::unordered_map<K, std::unique_ptr<V>>::insert({ key, std::unique_ptr<V>(value) });
+        return this->_pairs.find(k) != this->_pairs.cend();
     }
 
-    bool contains(K key) const
+    V* find(const K& k) const
     {
-        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(key);
-        return (i != std::unordered_map<K, std::unique_ptr<V>>::cend());
-    }
-
-	V* find(const K& key) const
-    {
-        auto i = std::unordered_map<K, std::unique_ptr<V>>::find(key);
-        if(i == std::unordered_map<K, std::unique_ptr<V>>::cend())
+        auto i = this->_pairs.find(k);
+        if (i == this->_pairs.cend())
             return nullptr;
 
-        return i->second.get();
+        return &i->second;
     }
 
-    V& operator [] (const K& key) const 
+    void push(K key, V* value)
     {
-        auto found = this->find(key);
+        this->_ptrs.push_back(std::unique_ptr<V>(value));
+        this->_pairs.insert({key, *value});
+    }
+
+    uint32_t size() const
+    {
+        return static_cast<uint32_t>(this->_pairs.size());
+    }
+
+    V& operator [] (const K& k)
+    {
+        auto found = this->find(k);
         if(found == nullptr)
             throw std::runtime_error("does not exists");
 
         return *found;
     }
 
-public:
-    iterator begin();
-    iterator end();
-    const const_iterator begin() const;
-    const const_iterator end() const;
-};
-
-template <typename K, typename V>
-class kv_container<K,V>::iterator : public std::unordered_map<K, std::unique_ptr<V>>::iterator
-{
-private:
-    std::optional<std::pair<K, V&>> _pair;
-
-public:
-    iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::iterator(i),
-        _pair(i != container->end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
-    { }
-    ~iterator() = default;
-
-public:
-    std::pair<K,V&>& operator * ()
+    iterator begin()
     {
-        return this->_pair.value();
+        return this->_pairs.begin();
+    }
+
+    iterator end()
+    {
+        return this->_pairs.end();
+    }
+
+    const const_iterator begin() const
+    {
+        return this->_pairs.begin();
+    }
+    const const_iterator end() const
+    {
+        return this->_pairs.end();
     }
 };
-
-template <typename K, typename V>
-class kv_container<K,V>::const_iterator : public std::unordered_map<K, std::unique_ptr<V>>::const_iterator
-{
-private:
-    const std::optional<std::pair<K, V&>> _pair;
-
-public:
-    const_iterator(const typename std::unordered_map<K, std::unique_ptr<V>>::const_iterator& i, const std::unordered_map<K, std::unique_ptr<V>>* container) : std::unordered_map<K, std::unique_ptr<V>>::const_iterator(i),
-        _pair(i != container->end() ? std::make_optional<std::pair<K, V&>>(i->first, *i->second) : std::nullopt)
-    { }
-    ~const_iterator() = default;
-
-public:
-    const std::pair<K,V&>& operator * () const
-    {
-        return this->_pair.value();
-    }
-};
-
-template <typename K, typename V>
-kv_container<K,V>::iterator kv_container<K,V>::begin()
-{
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
-}
-
-template <typename K, typename V>
-kv_container<K,V>::iterator kv_container<K,V>::end()
-{
-    return kv_container<K,V>::iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
-}
-
-template <typename K, typename V>
-const typename kv_container<K,V>::const_iterator kv_container<K,V>::begin() const
-{
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::begin(), this);
-}
-
-template <typename K, typename V>
-const typename kv_container<K,V>::const_iterator kv_container<K,V>::end() const
-{
-    return kv_container<K,V>::const_iterator(std::unordered_map<K, std::unique_ptr<V>>::end(), this);
-}
 
 template <typename T>
 class array_container : private std::vector<std::unique_ptr<T>>
