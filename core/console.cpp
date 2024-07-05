@@ -85,7 +85,7 @@ fb::console& fb::console::put(const char* fmt, ...)
     DWORD                   written;
     x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
 #else
-    mvprintw(y, x, combined.c_str());
+    mvaddstr(y, x, combined.c_str());
     refresh();
 #endif
 
@@ -110,7 +110,7 @@ fb::console& fb::console::puts(const char* fmt, ...)
     DWORD                   written;
     x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
 #else
-    mvprintw(y, x, combined.c_str());
+    mvaddstr(y, x, combined.c_str());
     refresh();
 #endif
 
@@ -137,7 +137,7 @@ fb::console& fb::console::comment(const char* fmt, ...)
     DWORD                   written;
     x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
 #else
-    mvprintw(y, x, combined.c_str());
+    mvaddstr(y, x, combined.c_str());
     refresh();
 #endif
 
