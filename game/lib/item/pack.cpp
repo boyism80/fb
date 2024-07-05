@@ -29,23 +29,14 @@ void fb::game::pack::durability(uint32_t value)
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
-std::string fb::game::pack::vname(NAME_OPTION option) const
+std::string fb::game::pack::detailed_name() const
 {
-    auto sstream = std::stringstream();
     auto& model = this->based<fb::model::pack>();
-    sstream << model.name;
-
-    switch(option)
-    {
-        case NAME_OPTION::DURABILITY:
-        case NAME_OPTION::TRADE:
-        {
-            sstream << " [" 
-                    << this->_durability 
-                    << " 잔]";
-        }
-        break;
-    }
+    auto sstream = std::stringstream();
+    sstream << model.name
+            << " [" 
+            << this->_durability 
+            << " 잔]";
 
     return sstream.str();
 }

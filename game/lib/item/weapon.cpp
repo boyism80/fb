@@ -22,24 +22,17 @@ std::string fb::game::weapon::mid_message() const
     return sstream.str();
 }
 
-std::string fb::game::weapon::vname(NAME_OPTION option) const
+std::string fb::game::weapon::detailed_name() const
 {
     auto                    sstream = std::stringstream();
     auto&                   model = this->based<fb::model::equipment>();
-    sstream << this->_custom_name.value_or(model.name);
+    float                   percentage = this->_durability / float(model.durability) * 100;
 
-    switch(option)
-    {
-        case NAME_OPTION::TRADE:
-        {
-            auto percent = this->_durability / float(model.durability) * 100;;
-            sstream << '(' 
-                    << std::fixed << std::setprecision(1) << percent 
-                    << "%)";
-        }
-        break;
-    }
-    
+    sstream << this->_custom_name.value_or(model.name) 
+        << '(' 
+        << std::fixed << std::setprecision(1) << percentage 
+        << "%)";
+
     return sstream.str();
 }
 

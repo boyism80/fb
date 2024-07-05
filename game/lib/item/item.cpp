@@ -7,7 +7,7 @@ fb::game::item::item(fb::game::context& context, const fb::model::item& model, c
 { }
 
 fb::game::item::item(const fb::game::item& right) : 
-    fb::game::object(right.context, right.model, fb::game::item::config { .count = right._count })
+    fb::game::object(right.context, right._model, fb::game::item::config { .count = right._count })
 { }
 
 fb::game::item::~item()
@@ -35,7 +35,7 @@ std::string fb::game::item::tip_message() const
     return sstream.str();
 }
 
-std::string fb::game::item::vname(NAME_OPTION option) const
+std::string fb::game::item::detailed_name() const
 {
     auto& model = this->based<fb::model::item>();
 

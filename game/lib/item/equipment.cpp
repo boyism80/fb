@@ -16,23 +16,16 @@ fb::game::equipment::~equipment()
 { }
 
 
-std::string fb::game::equipment::vname(NAME_OPTION option) const
+std::string fb::game::equipment::detailed_name() const
 {
-    auto                    sstream = std::stringstream();
+    std::stringstream       sstream;
     auto&                   model = this->based<fb::model::equipment>();
+    float                   percentage = this->_durability / float(model.durability) * 100;
+    sstream << model.name 
+        << '(' 
+        << std::fixed << std::setprecision(1) << percentage 
+        << "%)";
 
-    sstream << model.name;
-    switch(option)
-    {
-        case NAME_OPTION::TRADE:
-        {
-            auto percent = this->_durability / float(model.durability) * 100;
-            sstream << '(' 
-                    << std::fixed << std::setprecision(1) << percent 
-                    << "%)";
-        }
-        break;
-    }
     return sstream.str();
 }
 
@@ -128,7 +121,7 @@ std::string fb::game::equipment::tip_message() const
     std::stringstream           sstream;
     auto&                       model = this->based<fb::model::equipment>();
 
-    sstream << this->vname() << std::endl;
+    sstream << this->name() << std::endl;
     sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)model.durability) * 100 << '%' << std::endl;
     sstream << this->mid_message();
     sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit) << " Dam:  " << std::to_string(model.damage);

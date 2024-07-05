@@ -446,7 +446,7 @@ fb::game::item* fb::game::items::find(const std::string& name) const
         if(item == nullptr)
             continue;
 
-        if(item->model.name == name)
+        if(item->name() == name)
             return item;
     }
 

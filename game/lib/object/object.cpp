@@ -11,7 +11,7 @@ fb::game::object::object(fb::game::context& context, const fb::model::object& mo
     context(context),
     _listener(&context),
     _sequence(c.id),
-    model(model),
+    _model(model),
     _position(c.position),
     _direction(c.direction),
     _map(c.map),
@@ -22,7 +22,7 @@ fb::game::object::object(fb::game::context& context, const fb::model::object& mo
 }
 
 fb::game::object::object(const object& right) :
-    object(right.context, right.model, 
+    object(right.context, right._model, 
         fb::game::object::config 
         {
             .id = right._sequence,
@@ -41,7 +41,7 @@ fb::game::object::~object()
 
 const fb::model::object& fb::game::object::based() const
 {
-    return this->model;
+    return this->_model;
 }
 
 bool fb::game::object::is(OBJECT_TYPE type) const
@@ -50,24 +50,24 @@ bool fb::game::object::is(OBJECT_TYPE type) const
     return (type & mine) == mine;
 }
 
-std::string fb::game::object::vname(NAME_OPTION option) const
+const std::string& fb::game::object::name() const
 {
-    return this->model.name;
+    return this->_model.name;
 }
 
 uint16_t fb::game::object::look() const
 {
-    return this->model.look;
+    return this->_model.look;
 }
 
 uint8_t fb::game::object::color() const
 {
-    return this->model.color;
+    return this->_model.color;
 }
 
 OBJECT_TYPE fb::game::object::what() const
 {
-    return this->model.what();
+    return this->_model.what();
 }
 
 void fb::game::object::destroy()
@@ -794,7 +794,7 @@ int fb::game::object::builtin_tostring(lua_State* lua)
     if(me == nullptr || context->exists(*me) == false)
         return 0;
     
-    thread->pushstring(me->vname());
+    thread->pushstring(me->name());
     return 1;
 }
 
@@ -809,7 +809,7 @@ int fb::game::object::builtin_name(lua_State* lua)
     if(object == nullptr || context->exists(*object) == false)
         return 0;
     
-    thread->pushstring(object->vname());
+    thread->pushstring(object->name());
     return 1;
 }
 
@@ -947,9 +947,9 @@ int fb::game::object::builtin_chat(lua_State* lua)
     if(decorate)
     {
         if(type == CHAT_TYPE::SHOUT)
-            sstream << object->vname() << "! " << message;
+            sstream << object->name() << "! " << message;
         else
-            sstream << object->vname() << ": " << message;
+            sstream << object->name() << ": " << message;
     }
     else
     {

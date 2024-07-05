@@ -24,7 +24,7 @@ public:
         const auto& cname = model.promotion[me.cls()][me.promotion()].name;
 
         std::stringstream sstream;
-        sstream << this->me.name << '(' << cname.c_str() << ')';
+        sstream << this->me.name() << '(' << cname.c_str() << ')';
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x00)
@@ -57,7 +57,7 @@ public:
             .write_u8(this->index) // trade slot index
             .write_u16(item->look())
             .write_u8(item->color())
-            .write(item->vname(NAME_OPTION::TRADE))
+            .write(item->detailed_name())
             .write_u8(0x00);
     }
 };

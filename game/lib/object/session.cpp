@@ -4,10 +4,9 @@
 
 using namespace fb::game;
 
-session::session(fb::game::context& context, fb::socket<fb::game::session>& socket, const std::string& name) :
+session::session(fb::game::context& context, fb::socket<fb::game::session>& socket) :
     life(context, context.model.life[0], fb::game::life::config{{.id = (uint32_t)socket.fd()}}),
-    _socket(socket),
-    name(name)
+    _socket(socket)
 {
     inline_interaction_funcs.push_back(std::bind(&session::inline_sell,                    this, std::placeholders::_1, std::placeholders::_2));
     inline_interaction_funcs.push_back(std::bind(&session::inline_buy,                     this, std::placeholders::_1, std::placeholders::_2));
@@ -281,9 +280,14 @@ void fb::game::session::action(ACTION action, DURATION duration, uint8_t sound)
     }
 }
 
-std::string fb::game::session::vname(NAME_OPTION option) const
+const std::string& fb::game::session::name() const
 {
-    return this->name;
+    return this->_name;
+}
+
+void fb::game::session::name(const std::string& value)
+{
+    this->_name = value;
 }
 
 uint16_t fb::game::session::look() const
@@ -1565,7 +1569,7 @@ fb::game::session* fb::game::session::container::find(const std::string& name)
         this->begin(), this->end(), 
         [&name] (auto x) 
         { 
-            return x->name == name; 
+            return x->name() == name; 
         }
     );
     return i != this->end() ? *i : nullptr;

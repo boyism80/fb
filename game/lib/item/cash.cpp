@@ -33,21 +33,14 @@ const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, u
     return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
 }
 
-std::string fb::game::cash::vname(NAME_OPTION option) const
+std::string fb::game::cash::detailed_name() const
 {
-    auto sstream = std::stringstream();
     auto& model = this->based<fb::model::cash>();
-
-    switch(option)
-    {
-        case NAME_OPTION::DURABILITY:
-        {
-            sstream << ' ' 
-                    << this->value 
-                    << "전";
-        }
-        break;
-    }
+    auto sstream = std::stringstream();
+    sstream << model.name 
+            << ' ' 
+            << this->value 
+            << "전";
 
     return sstream.str();
 }

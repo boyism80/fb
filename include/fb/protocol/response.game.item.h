@@ -52,7 +52,7 @@ public:
         out_stream.write_u8(this->index + 1)
                   .write_u16(item->look())
                   .write_u8(item->color())
-                  .write(item->vname(NAME_OPTION::DURABILITY), false)
+                  .write(item->detailed_name(), false)
                   .write_u32(item->count())
                   .write_u8(0x00)
                   .write_u8(0x00);
@@ -119,7 +119,7 @@ public:
         base::header::serialize(out_stream);
         out_stream.write_u16(item->look())
                   .write_u8(item->color())
-                  .write(item->vname(), false);
+                  .write(item->name(), false);
     }
 };
 
