@@ -433,10 +433,10 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     auto session = socket.data();
     session->init(false);
 
-    fb::logger::info("%s님이 접속을 종료했습니다.", session->name().c_str());
+    fb::logger::info("%s님이 접속을 종료했습니다.", session->name.c_str());
 
     this->save(*session);
-    this->_internal->send(fb::protocol::internal::request::logout(session->name()));
+    this->_internal->send(fb::protocol::internal::request::logout(session->name));
     session->destroy();
     socket.data(nullptr);
     return true;
@@ -510,7 +510,7 @@ fb::game::session* fb::game::context::find(const std::string& name)
 {
     auto socket = this->sockets.find([&name] (auto& socket)
     {
-        return socket.data()->name() == name;
+        return socket.data()->name == name;
     });
 
     if(socket == nullptr)
@@ -673,7 +673,7 @@ void fb::game::context::fetch_spell(daotk::mysql::result& db_result, fb::game::s
 
 fb::game::session* fb::game::context::handle_accepted(fb::socket<fb::game::session>& socket)
 {
-    return this->make<fb::game::session>(socket);
+    return nullptr;
 }
 
 void fb::game::context::send(object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self, bool encrypt)
@@ -902,7 +902,7 @@ const fb::thread* fb::game::context::current_thread() const
 // TODO : 클릭도 인터페이스로
 void fb::game::context::handle_click_mob(fb::game::session& session, fb::game::mob& mob)
 {
-    this->send(session, fb::protocol::game::response::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    this->send(session, fb::protocol::game::response::session::message(mob.model.name, MESSAGE_TYPE::STATE), scope::SELF);
 }
 
 void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::npc& npc)
@@ -947,18 +947,13 @@ fb::task<bool> fb::game::context::handle_in_shutdown(fb::internal::socket<>& soc
 
 fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::login& request)
 {
-    auto session = socket.data();
-    if(session->inited())
-        co_return false;
-
     // Set crypt data
     socket.crt(request.enc_type, request.enc_key);
-    session->init(true);
 
     // Where login from?
     auto from = request.from;
-
-    session->name(request.name);
+    auto session = this->make<fb::game::session>(socket, request.name);
+    session->init(true);
     fb::logger::info("%s님이 접속했습니다.", request.name.c_str());
     
 
@@ -1224,11 +1219,7 @@ fb::task<bool> fb::game::context::handle_front_info(fb::socket<fb::game::session
     for(auto i = forwards.begin(); i != forwards.end(); i++)
     {
         auto object = *i;
-        auto message = object->is(OBJECT_TYPE::ITEM) ? 
-            static_cast<fb::game::item*>(*i)->detailed_name() : 
-            (*i)->name();
-        
-        session->message(message, MESSAGE_TYPE::STATE);
+        session->message(object->vname(NAME_OPTION::DURABILITY), MESSAGE_TYPE::STATE);
     }
     
     co_return true;
@@ -1511,7 +1502,7 @@ fb::task<bool> fb::game::context::handle_group(fb::socket<fb::game::session>& so
             mine = fb::game::group::create(*me);
             mine->enter(*you);
 
-            sstream << me->name() << fb::game::message::group::JOINED;
+            sstream << me->name << fb::game::message::group::JOINED;
             this->send(*me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
 
             sstream.str("");
@@ -1927,7 +1918,7 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
         co_return true;
 
     auto fd = session->fd();
-    auto& from = session->name();
+    auto& from = session->name;
     try
     {
         auto response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, request.name, request.message));

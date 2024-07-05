@@ -91,12 +91,10 @@ public:
         this->sockets.each([this, &out_stream] (auto& socket)
         {
             auto user = socket.data();
-            auto& name = user->name();
-
             out_stream.write_u8(0x10 * static_cast<int>(user->nation()))
                       .write_u8(0x10 * static_cast<int>(user->promotion()))
                       .write_u8((&this->me == user) ? 0x88 : 0x0F)
-                      .write(name, false);
+                      .write(user->name, false);
         });
     }
 };

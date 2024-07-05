@@ -21,6 +21,13 @@ class items;
 class sector;
 class sectors;
 
+enum class NAME_OPTION
+{
+    NONE,
+    DURABILITY,
+    TRADE
+};
+
 class object : public lua::luable
 {
 public:
@@ -42,7 +49,6 @@ private:
 
 protected:
     uint32_t                            _sequence   = 0;
-    const fb::model::object&            _model;
     bool                                _map_lock   = false;
 
     point16_t                           _position   = point16_t(0, 0);
@@ -51,6 +57,7 @@ protected:
 
 public:
     fb::game::context&                  context;
+    const fb::model::object&            model;
     fb::game::buffs                     buffs;
 
 protected:
@@ -76,10 +83,10 @@ public:
 
     const fb::model::object&            based() const;
     template <typename T>
-    const T&                            based() const { return static_cast<const T&>(this->_model); }
+    const T&                            based() const { return static_cast<const T&>(this->model); }
     bool                                is(OBJECT_TYPE type) const;
 
-    virtual const std::string&          name() const;
+    virtual std::string                 vname(NAME_OPTION option = NAME_OPTION::NONE) const;
     virtual uint16_t                    look() const;
     virtual uint8_t                     color() const;
     virtual OBJECT_TYPE                 what() const;

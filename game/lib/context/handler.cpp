@@ -14,11 +14,11 @@ void fb::game::context::on_chat(fb::game::object& me, const std::string& message
     auto sstream = std::stringstream();
     if (shout)
     {
-        sstream << me.name() << "! " << message;
+        sstream << me.vname() << "! " << message;
     }
     else
     {
-        sstream << me.name() << ": " << message;
+        sstream << me.vname() << ": " << message;
     }
 
     this->send(me, fb::protocol::game::response::chat(me, sstream.str(), shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL), shout ? scope::MAP : scope::PIVOT);
@@ -216,7 +216,7 @@ void fb::game::context::on_equipment_on(session& me, item& item, EQUIPMENT_PARTS
         break;
     }
 
-    sstream << item.name();
+    sstream << item.vname();
     this->send(me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::SELF);
 
     sstream.str(std::string());
@@ -365,7 +365,7 @@ void fb::game::context::on_option(session& me, CUSTOM_SETTING option, bool enabl
             {
                 auto leader = group->leave(me);
                 std::stringstream sstream;
-                sstream << me.name() << "님 그룹 탈퇴";
+                sstream << me.name << "님 그룹 탈퇴";
                 this->send(*leader, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
             }
         }
@@ -447,11 +447,11 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
 fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
 {
     fb::ostream         parameter;
-    parameter.write(me.name());
+    parameter.write(me.name);
 
     auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
     auto  fd       = static_cast<uint32_t>(socket.native_handle());
-    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.model.id, position.x, position.y, fd);
+    auto  request  = fb::protocol::internal::request::transfer(me.name, fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.model.id, position.x, position.y, fd);
     
     try
     {

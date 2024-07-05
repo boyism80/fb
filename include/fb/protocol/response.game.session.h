@@ -151,7 +151,7 @@ public:
         }
 
         out_stream.write_u8(0x04) // head mark
-                  .write(this->session.name(), false); // name
+                  .write(this->session.name, false); // name
     }
 };
 
@@ -428,7 +428,7 @@ public:
             sstream << "그룹원" 
                 << std::endl 
                 << "  * "
-                << group->leader().name()
+                << group->leader().name
                 << std::endl;
 
             for(auto member : group->members())
@@ -437,7 +437,7 @@ public:
                     continue;
 
                 sstream << "    "
-                    << member->name()
+                    << member->name
                     << std::endl;
             }
             out_stream.write(sstream.str());
@@ -507,7 +507,7 @@ public:
         // 클래스 이름
         const auto&              class_name = model.promotion[this->session.cls()][this->session.promotion()].name;
         out_stream.write(class_name)  // 직업
-                  .write(this->session.name());    // 이름
+                  .write(this->session.name);    // 이름
 
         auto                    disguised = (this->session.state() == STATE::DISGUISE);
         out_stream.write_u8(disguised)
@@ -561,14 +561,14 @@ public:
 
 
         // 장비정보 텍스트
-        sstream << " w:무기  :" << (weapon != nullptr ? weapon->name() : "없음") << std::endl;
-        sstream << " a:갑옷  :" << (armor  != nullptr ? armor->name()  : "없음") << std::endl;
-        sstream << " s:방패  :" << (shield != nullptr ? shield->name() : "없음") << std::endl;
-        sstream << " h:머리  :" << (helmet != nullptr ? helmet->name() : "없음") << std::endl;
-        sstream << " l:왼손  :" << (ring_l != nullptr ? ring_l->name() : "없음") << std::endl;
-        sstream << " r:오른손:" << (ring_r != nullptr ? ring_r->name() : "없음") << std::endl;
-        sstream << " [:보조1 :" << (aux_l  != nullptr ? aux_l->name()  : "없음") << std::endl;
-        sstream << " ]:보조2 :" << (aux_r  != nullptr ? aux_r->name()  : "없음") << std::endl;
+        sstream << " w:무기  :" << (weapon != nullptr ? weapon->vname() : "없음") << std::endl;
+        sstream << " a:갑옷  :" << (armor  != nullptr ? armor->vname()  : "없음") << std::endl;
+        sstream << " s:방패  :" << (shield != nullptr ? shield->vname() : "없음") << std::endl;
+        sstream << " h:머리  :" << (helmet != nullptr ? helmet->vname() : "없음") << std::endl;
+        sstream << " l:왼손  :" << (ring_l != nullptr ? ring_l->vname() : "없음") << std::endl;
+        sstream << " r:오른손:" << (ring_r != nullptr ? ring_r->vname() : "없음") << std::endl;
+        sstream << " [:보조1 :" << (aux_l  != nullptr ? aux_l->vname()  : "없음") << std::endl;
+        sstream << " ]:보조2 :" << (aux_r  != nullptr ? aux_r->vname()  : "없음") << std::endl;
         out_stream.write(sstream.str());
 
 

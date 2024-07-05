@@ -45,7 +45,7 @@ bool fb::game::trade::begin(session& you)
         {
             // 상대방이 교환 거부중
             std::stringstream sstream;
-            sstream << you.name() << message::trade::REFUSED_BY_PARTNER;
+            sstream << you.name << message::trade::REFUSED_BY_PARTNER;
             throw std::runtime_error(sstream.str());
         }
 
@@ -58,7 +58,7 @@ bool fb::game::trade::begin(session& you)
         {
             // 상대방이 이미 교환중
             std::stringstream sstream;
-            sstream << you.name() << message::trade::PARTNER_ALREADY_TRADING;
+            sstream << you.name << message::trade::PARTNER_ALREADY_TRADING;
             throw std::runtime_error(sstream.str());
         }
 
@@ -72,7 +72,7 @@ bool fb::game::trade::begin(session& you)
         {
             // 상대방과의 거리가 너무 멈
             std::stringstream sstream;
-            sstream << you.name() << message::trade::PARTNER_TOO_FAR;
+            sstream << you.name << message::trade::PARTNER_TOO_FAR;
             
             throw std::runtime_error(sstream.str());
         }

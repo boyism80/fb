@@ -63,7 +63,7 @@ public:
 
 
 public:
-    virtual std::string                     detailed_name() const;
+    virtual std::string                     vname(NAME_OPTION option = NAME_OPTION::NONE) const override;
     uint16_t                                fill(uint16_t count);
     uint16_t                                free_space() const;
     uint16_t                                count() const;
@@ -115,7 +115,7 @@ public:
     uint32_t                            reduce(uint32_t value);
 
     bool                                empty() const;
-    std::string                         detailed_name() const override;
+    std::string                         vname(NAME_OPTION option = NAME_OPTION::NONE) const final;
 };
 
 
@@ -144,7 +144,7 @@ public:
 public:
     std::optional<uint32_t>             durability() const;
     void                                durability(uint32_t value);
-    std::string                         detailed_name() const override;
+    std::string                         vname(NAME_OPTION option = NAME_OPTION::NONE) const final;
 
 public:
     bool                                active() final;
@@ -181,7 +181,7 @@ protected:
 
 public:
     virtual std::string                 tip_message() const;
-    virtual std::string                 detailed_name() const override;
+    virtual std::string                 vname(NAME_OPTION option = NAME_OPTION::NONE) const override;
 
 public:
     static const std::string            column(EQUIPMENT_PARTS parts);
@@ -212,7 +212,7 @@ protected:
     std::string                         mid_message() const final;
 
 public:
-    std::string                         detailed_name() const override;
+    std::string                         vname(NAME_OPTION option = NAME_OPTION::NONE) const final;
     const std::optional<std::string>&   custom_name() const;
     void                                custom_name(const std::string& name);
     void                                reset_custom_name();

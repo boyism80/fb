@@ -111,6 +111,7 @@ private:
     std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
 
 public:
+    const std::string           name;
     fb::game::trade             trade            = fb::game::trade(*this);
     fb::game::items             items            = fb::game::items(*this);
     fb::game::dialog            dialog           = fb::game::dialog(*this);
@@ -120,7 +121,7 @@ private:
     using object::based;
 
 public:
-    session(fb::game::context& context, fb::socket<fb::game::session>& socket);
+    session(fb::game::context& context, fb::socket<fb::game::session>& socket, const std::string& name);
     ~session();
 
 protected:
@@ -160,8 +161,7 @@ public:
     void                        attack();
     void                        action(ACTION action, DURATION duration, uint8_t sound = 0x00);
 
-    const std::string&          name() const final;
-    void                        name(const std::string& value);
+    std::string                 vname(NAME_OPTION option) const final;
 
     uint16_t                    look() const final;
     void                        look(uint16_t value);

@@ -136,27 +136,27 @@ void fb::game::life::mp(uint32_t value)
 
 uint32_t fb::game::life::base_hp() const
 {
-    return static_cast<const fb::model::life&>(this->_model).hp;
+    return static_cast<const fb::model::life&>(this->model).hp;
 }
 
 uint32_t fb::game::life::base_mp() const
 {
-    return static_cast<const fb::model::life&>(this->_model).mp;
+    return static_cast<const fb::model::life&>(this->model).mp;
 }
 
 uint32_t fb::game::life::experience() const
 {
-    return static_cast<const fb::model::life&>(this->_model).exp;
+    return static_cast<const fb::model::life&>(this->model).exp;
 }
 
 uint32_t fb::game::life::defensive_physical() const
 {
-    return static_cast<const fb::model::life&>(this->_model).defensive_physical;
+    return static_cast<const fb::model::life&>(this->model).defensive_physical;
 }
 
 uint32_t fb::game::life::defensive_magical() const
 {
-    return static_cast<const fb::model::life&>(this->_model).defensive_magical;
+    return static_cast<const fb::model::life&>(this->model).defensive_magical;
 }
 
 CONDITION fb::game::life::condition() const
