@@ -14,11 +14,13 @@ template <typename T>
 class inventory
 {
 public:
-    using unique_set = std::array<T*, CONTAINER_CAPACITY>;
+    using array_type = std::array<T*, CONTAINER_CAPACITY>;
+    using iterator = array_type::iterator;
+    using const_iterator = array_type::const_iterator;
 
 private:
     life&                   _owner;
-    unique_set              _elements = { nullptr, };
+    array_type              _elements = { nullptr, };
 
 protected:
     inventory(life& owner);
@@ -39,6 +41,12 @@ public:
 
     bool                    free() const;
     uint8_t                 free_size() const;
+
+public:
+    iterator                begin();
+    iterator                end();
+    const_iterator          cbegin() const;
+    const_iterator          cend() const;
 
 public:
     T*                      operator [] (int index);

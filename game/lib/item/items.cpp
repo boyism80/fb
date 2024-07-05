@@ -4,11 +4,19 @@
 
 fb::game::items::items(session& owner) :
     inventory(owner),
-    _owner(static_cast<fb::game::session&>(owner))
+    _owner(owner)
 { }
 
 fb::game::items::~items()
-{ }
+{
+    for (auto item : *this)
+    {
+        if (item == nullptr)
+            continue;
+
+        item->destroy();
+    }
+}
 
 uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
@@ -87,8 +95,7 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
+        this->_owner.message(e.what());
         return 0xFF;
     }
 }
@@ -191,8 +198,7 @@ fb::game::item* fb::game::items::active(uint8_t index)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
+        this->_owner.message(e.what());
         return nullptr;
     }
 }
@@ -481,12 +487,11 @@ fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
 
 fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 {
-    auto&                       owner = static_cast<fb::game::session&>(this->owner());
     auto                        listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {
-        owner.assert_state({STATE::RIDING, STATE::GHOST});
+        this->_owner.assert_state({STATE::RIDING, STATE::GHOST});
         auto                    item = this->at(index);
         if (item == nullptr)
             return nullptr;
@@ -498,32 +503,30 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         auto                    dropped = this->remove(*item, count, ITEM_DELETE_TYPE::DROP);
         if(dropped != nullptr)
         {
-            dropped->map(owner.map(), owner.position());
-            owner.action(ACTION::PICKUP, DURATION::PICKUP);
+            dropped->map(this->_owner.map(), this->_owner.position());
+            this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
         }
 
         return dropped;
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(owner, e.what());
+        this->_owner.message(e.what());
         return nullptr;
     }
 }
 
 void fb::game::items::pickup(bool boost)
 {
-    auto&                   owner = static_cast<fb::game::session&>(this->owner());
     auto                    listener = this->_owner.get_listener<fb::game::session>();
 
     try
     {
-        auto                map = owner.map();
+        auto                map = this->_owner.map();
         if(map == nullptr)
             return;
 
-        owner.action(ACTION::PICKUP, DURATION::PICKUP);
+        this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
 
         std::string         message;
@@ -538,22 +541,21 @@ void fb::game::items::pickup(bool boost)
             if(model.attr(ITEM_ATTRIBUTE::CASH))
             {
                 auto        cash = static_cast<fb::game::cash*>(below);
-                auto        remain = owner.money_add(cash->value);
+                auto        remain = this->_owner.money_add(cash->value);
                 if (remain > 0)
                     cash = cash->replace(remain); // 먹고 남은 돈으로 설정
                 else
                     cash->destroy();
 
+                if(remain != 0)
+                    this->_owner.message(message::money::FULL);
+
                 if(listener != nullptr)
-                {
-                    if(remain != 0)
-                        listener->on_notify(this->_owner, message::money::FULL);
-                    listener->on_updated(owner, STATE_LEVEL::LEVEL_MIN);
-                }
+                    listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MIN);
             }
             else
             {
-                auto        index = owner.items.add(below);
+                auto        index = this->_owner.items.add(below);
                 if(index == -1)
                     break;
             }
@@ -568,13 +570,12 @@ void fb::game::items::pickup(bool boost)
 
         thread->from("scripts/common/pickup.lua")
             .func("on_pickup")
-            .pushobject(owner)
+            .pushobject(this->_owner)
             .resume(1);
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(owner, e.what());
+        this->_owner.message(e.what());
     }
 }
 
@@ -616,15 +617,13 @@ bool fb::game::items::throws(uint8_t index)
     }
     catch(std::exception& e)
     {
-        if(listener != nullptr)
-            listener->on_notify(this->_owner, e.what());
+        this->_owner.message(e.what());
         return false;
     }
 }
 
 fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELETE_TYPE attr)
 {
-    auto&                   owner = static_cast<fb::game::session&>(this->owner());
     auto                    item = this->at(index);
     if(item == nullptr)
         return nullptr;

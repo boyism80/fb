@@ -120,6 +120,30 @@ inline uint8_t fb::game::inventory<T>::free_size() const
     return count;
 }
 
+template <typename T>
+fb::game::inventory<T>::iterator fb::game::inventory<T>::begin()
+{
+    return this->_elements.begin();
+}
+
+template <typename T>
+fb::game::inventory<T>::iterator fb::game::inventory<T>::end()
+{
+    return this->_elements.end();
+}
+
+template <typename T>
+fb::game::inventory<T>::const_iterator fb::game::inventory<T>::cbegin() const
+{
+    return this->_elements.cbegin();
+}
+
+template <typename T>
+fb::game::inventory<T>::const_iterator fb::game::inventory<T>::cend() const
+{
+    return this->_elements.cend();
+}
+
 template<typename T>
 inline T* fb::game::inventory<T>::operator[](int index)
 {
