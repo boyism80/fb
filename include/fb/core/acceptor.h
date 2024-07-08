@@ -119,6 +119,7 @@ private:
 
 protected:
     virtual bool                decrypt_policy(uint8_t cmd) const;
+    virtual void                handle_start();
     bool                        handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback);
 
 public:
@@ -138,7 +139,7 @@ private:
 protected:
     virtual void                handle_internal_disconnected(fb::base::socket<>& socket);
     virtual void                handle_internal_connected();
-    virtual void                handle_internal_denied(std::exception& e);
+    virtual void                handle_internal_denied(const std::string& error);
 };
 
 }

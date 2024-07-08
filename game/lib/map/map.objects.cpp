@@ -90,7 +90,7 @@ fb::game::object* objects::try_pop(uint32_t seq)
     auto& ptr = this->_ptrs.at(seq);
     auto raw = ptr.get();
 
-    ptr.reset();
+    ptr.release();
     this->_ptrs.erase(seq);
     this->_refs.erase(seq);
     return raw;

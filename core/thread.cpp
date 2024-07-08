@@ -94,6 +94,9 @@ void fb::thread::settimer(fb::timer_callback fn, const std::chrono::steady_clock
     (
         [this, fn, duration]
         {
+            if (this->_exit)
+                return;
+
             fn(fb::thread::now(), this->_thread.get_id());
             this->settimer(fn, duration);
         }, 

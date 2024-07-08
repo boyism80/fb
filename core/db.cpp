@@ -235,7 +235,7 @@ fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sq
             awaiter.handler.resume();
         }, [&awaiter] (auto& e)
         {
-            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
+            awaiter.error = std::make_exception_ptr(e);
             awaiter.handler.resume();
         }});
     };

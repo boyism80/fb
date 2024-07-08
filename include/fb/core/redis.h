@@ -115,7 +115,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
+            awaiter.error = std::make_exception_ptr(e);
         }
 
         conn->del({ key }, [this, subs, key](auto& reply) mutable
@@ -142,7 +142,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
+            awaiter.error = std::make_exception_ptr(e);
         }
 
         conn->del({ key });
@@ -165,7 +165,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
+            awaiter.error = std::make_exception_ptr(e);
             awaiter.handler.resume();
             return false;
         }

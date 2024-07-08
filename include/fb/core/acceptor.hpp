@@ -336,14 +336,12 @@ void fb::base::acceptor<S, T>::exit()
     if (this->_running == false)
         return;
 
+    this->_running = false;
     this->handle_exit();
     this->cancel();
     if (this->_internal != nullptr)
-    {
         this->_internal->close();
-    }
     this->_threads.exit();
-    this->_running = false;
 }
 
 template <template<class> class S, class T>
@@ -359,7 +357,7 @@ template <typename T>
 fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads) : 
     fb::base::acceptor<fb::socket, T>(context, port, num_threads)
 {
-    this->connect_internal();
+    
 }
 
 template <typename T>
@@ -440,7 +438,7 @@ void fb::acceptor<T>::handle_internal_connected()
 }
 
 template <typename T>
-void fb::acceptor<T>::handle_internal_denied(std::exception& e)
+void fb::acceptor<T>::handle_internal_denied(const std::string& error)
 {
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -455,7 +453,9 @@ void fb::acceptor<T>::on_internal_disconnected(fb::base::socket<>& socket)
 {
     this->_internal->close();
     this->handle_internal_disconnected(socket);
-    this->connect_internal();
+    
+    if (this->running())
+        this->connect_internal();
 }
 
 template <typename T>
@@ -485,14 +485,10 @@ fb::awaiter<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, ui
             endpoint,
             [this, &awaiter] (const auto& error)
             {
-                if(error)
-                {
-                    awaiter.error = std::make_exception_ptr(std::runtime_error(error.message()));
-                }
+                if (error)
+                    awaiter.error = std::make_exception_ptr(boost::system::error_code(error));
                 else
-                {
                     this->_internal->recv();
-                }
 
                 awaiter.handler.resume();
             }
@@ -522,9 +518,19 @@ fb::task<void> fb::acceptor<T>::connect_internal()
             this->on_internal_connected();
             break;
         }
+        catch (boost::system::error_code& e)
+        {
+            this->handle_internal_denied(e.message());
+            std::this_thread::sleep_for(1000ms);
+        }
         catch(std::exception& e)
         {
-            this->handle_internal_denied(e);
+            this->handle_internal_denied(e.what());
+            std::this_thread::sleep_for(1000ms);
+        }
+        catch (...)
+        {
+            this->handle_internal_denied("unhandled exception");
             std::this_thread::sleep_for(1000ms);
         }
     }
@@ -534,6 +540,12 @@ template <typename T>
 bool fb::acceptor<T>::decrypt_policy(uint8_t cmd) const
 {
     return true;
+}
+
+template <typename T>
+void fb::acceptor<T>::handle_start()
+{
+    this->connect_internal();
 }
 
 template <typename T>

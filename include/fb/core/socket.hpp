@@ -1,4 +1,5 @@
 #include "socket.h"
+#include <fb/core/logger.h>
 
 template<typename T>
 fb::base::socket<T>::socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) : 
@@ -59,7 +60,7 @@ void fb::base::socket<T>::recv()
             try
             {
                 if(ec)
-                    throw ec;
+                    throw boost::system::error_code(ec);
                 
                 auto gd = std::lock_guard<std::mutex>(this->stream_mutex);
 
@@ -70,6 +71,15 @@ void fb::base::socket<T>::recv()
                     throw std::runtime_error("disconnected");
 
                 this->recv();
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+                this->_handle_closed(*this);
+            }
+            catch (boost::system::error_code& e)
+            {
+                this->_handle_closed(*this);
             }
             catch(...)
             {

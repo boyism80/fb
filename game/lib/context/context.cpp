@@ -399,6 +399,8 @@ fb::game::context::~context()
 
 void fb::game::context::handle_start()
 {
+    fb::acceptor<fb::game::session>::handle_start();
+
     // prepare lua context
     auto& threads = this->threads();
     for(int i = 0; i < threads.count(); i++)
