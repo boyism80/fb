@@ -739,7 +739,7 @@ int fb::game::object::builtin_model(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto& model = object->based();
@@ -755,7 +755,7 @@ int fb::game::object::builtin_id(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     thread->pushinteger(object->sequence());
@@ -771,14 +771,13 @@ int fb::game::object::builtin_eq(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto me = thread->touserdata<fb::game::object>(1);
-    if(me == nullptr || context->exists(*me) == false)
+    if(me == nullptr)
         return 0;
     
     auto you = thread->touserdata<fb::game::object>(2);
-    if(you == nullptr || context->exists(*you) == false)
+    if(you == nullptr)
         return 0;
 
-    
     thread->pushboolean(me->sequence() == you->sequence());
     return 1;
 }
@@ -791,7 +790,7 @@ int fb::game::object::builtin_tostring(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto me = thread->touserdata<fb::game::object>(1);
-    if(me == nullptr || context->exists(*me) == false)
+    if(me == nullptr)
         return 0;
     
     thread->pushstring(me->name());
@@ -806,7 +805,7 @@ int fb::game::object::builtin_name(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     thread->pushstring(object->name());
@@ -821,7 +820,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto sound = thread->tointeger(2);
@@ -840,7 +839,7 @@ int fb::game::object::builtin_position(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
 
@@ -907,7 +906,7 @@ int fb::game::object::builtin_direction(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
 
@@ -936,7 +935,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto message = thread->tostring(2);
@@ -969,7 +968,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto message = thread->tostring(2);
@@ -989,7 +988,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto spell = thread->touserdata<fb::model::spell>(2);
@@ -1014,7 +1013,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
 
@@ -1051,7 +1050,7 @@ int fb::game::object::builtin_isbuff(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     if(thread->is_str(2))
@@ -1086,7 +1085,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto effect = (uint8_t)thread->tointeger(2);
@@ -1107,7 +1106,7 @@ int fb::game::object::builtin_map(lua_State* lua)
     {
         auto argc = thread->argc();
         auto object = thread->touserdata<fb::game::object>(1);
-        if(object == nullptr || context->exists(*object) == false)
+        if(object == nullptr)
             return 0;
         
 
@@ -1179,7 +1178,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto name = thread->tostring(2);
@@ -1211,7 +1210,7 @@ int fb::game::object::builtin_showings(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
@@ -1237,7 +1236,7 @@ int fb::game::object::builtin_showns(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
@@ -1263,7 +1262,7 @@ int fb::game::object::builtin_front(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
@@ -1285,7 +1284,7 @@ int fb::game::object::builtin_is(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto object = thread->touserdata<fb::game::object>(1);
-    if(object == nullptr || context->exists(*object) == false)
+    if(object == nullptr)
         return 0;
     
     auto type = thread->tointeger(2);

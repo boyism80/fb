@@ -406,7 +406,7 @@ int fb::game::map::builtin_door(lua_State* lua)
         return 0;
     
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
 
@@ -439,6 +439,33 @@ int fb::game::map::builtin_doors(lua_State* lua)
         lua_rawseti(lua, -2, i+1);
     }
     
+    return 1;
+}
+
+int fb::game::map::builtin_contains(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto map = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto you = thread->touserdata<fb::game::object>(1);
+    if (you == nullptr)
+        return 0;
+    
+    for (auto& [fd, obj] : map->objects)
+    {
+        if (obj == *you)
+        {
+            thread->pushboolean(true);
+            return 1;
+        }
+    }
+    
+    thread->pushboolean(false);
     return 1;
 }
 

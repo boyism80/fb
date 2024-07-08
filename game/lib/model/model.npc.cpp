@@ -14,7 +14,7 @@ int fb::model::npc::builtin_input(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -49,7 +49,7 @@ int fb::model::npc::builtin_menu(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -80,7 +80,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -144,7 +144,7 @@ int fb::model::npc::builtin_slot(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -174,7 +174,7 @@ int fb::model::npc::builtin_sell(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     auto& dialog = session->dialog.from("scripts/common/npc.lua")
@@ -229,7 +229,7 @@ int fb::model::npc::builtin_buy(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     auto& dialog = session->dialog.from("scripts/common/npc.lua")
@@ -262,7 +262,7 @@ int fb::model::npc::builtin_repair(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")
@@ -285,7 +285,7 @@ int fb::model::npc::builtin_repair_all(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")
@@ -308,7 +308,7 @@ int fb::model::npc::builtin_hold_money(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")
@@ -331,7 +331,7 @@ int fb::model::npc::builtin_hold_item(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")
@@ -354,7 +354,7 @@ int fb::model::npc::builtin_return_money(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")
@@ -377,7 +377,7 @@ int fb::model::npc::builtin_return_item(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")
@@ -400,7 +400,7 @@ int fb::model::npc::builtin_rename_weapon(lua_State* lua)
         return 0;
 
     auto session = thread->touserdata<fb::game::session>(2);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     session->dialog.from("scripts/common/npc.lua")

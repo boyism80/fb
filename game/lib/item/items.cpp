@@ -11,10 +11,14 @@ fb::game::items::~items()
 {
     for (auto item : *this)
     {
-        if (item == nullptr)
-            continue;
+        if (item != nullptr)
+            delete item;
+    }
 
-        item->destroy();
+    for(auto& [parts, equipment] : this->equipments())
+    {
+        if(equipment != nullptr)
+            delete equipment;
     }
 }
 

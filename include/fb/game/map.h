@@ -53,14 +53,16 @@ public:
     uint32_t                        size() const;
     object&                         at(uint32_t i);
     void                            push(object& obj);
-    object&                         pop(uint32_t seq);
+    object&                         pop(uint32_t fd);
     object&                         pop(object& obj);
-    object*                         try_pop(uint32_t seq);
+    object*                         try_pop(uint32_t fd);
     object*                         try_pop(object& obj);
     void                            foreach(OBJECT_TYPE type, const filter_func& fn);
+    bool                            contains(const object& obj) const;
+    bool                            contains(uint32_t fd) const;
 
 public:
-    object*                         operator [] (uint32_t seq);
+    object*                         operator [] (uint32_t fd);
 };
 
 class map : public lua::luable
@@ -136,6 +138,7 @@ public:
     static int                      builtin_movable(lua_State* lua);
     static int                      builtin_door(lua_State* lua);
     static int                      builtin_doors(lua_State* lua);
+    static int                      builtin_contains(lua_State* lua);
 };
 
 

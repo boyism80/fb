@@ -42,11 +42,9 @@ public:
     using commands          = std::map<std::string, command>;
     using object_set        = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param    = fb::protocol::game::request::login::transfer_param;
-    using ptrs              = std::unordered_map<const void*, std::any>;
 
 private:
     commands                 _commands;
-    ptrs                     _ptrs;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
 
@@ -73,34 +71,19 @@ private:
     fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter);
 
 public:
-    bool                    exists(const fb::game::object& object) const;
-
     template <typename T, typename... Args>
     T*                      make(Args&&... args)
     {
-        auto ptr = new T(*this, std::forward<Args>(args)...);
-        return this->_mutex.sync<T*>(PTR_CONTAINER_KEY, [this, ptr] (auto&)
-        {
-            this->_ptrs.insert({ptr, std::shared_ptr<T>(ptr)});
-            return ptr;
-        });
+        return new T(*this, std::forward<Args>(args)...);
     }
     template <typename T>
-    bool                    destroy(T& obj)
+    void                    destroy(T& obj)
     {
-        return this->_mutex.sync<bool>(PTR_CONTAINER_KEY, [this, &obj] (auto&) mutable
+        if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            if(this->_ptrs.contains(&obj) == false)
-                return false;
-            
-            if constexpr (std::is_same_v<T, fb::game::object>)
-            {
-                obj.map(nullptr);
-            }
-
-            this->_ptrs.erase(&obj);
-            return true;
-        });
+            obj.map(nullptr);
+        }
+        delete &obj;
     }
 
 public:

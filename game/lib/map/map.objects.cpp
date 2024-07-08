@@ -121,3 +121,25 @@ void objects::foreach(OBJECT_TYPE type, const objects::filter_func& fn)
             break;
     }
 }
+
+bool objects::contains(const fb::game::object& x) const
+{
+    for(auto& [seq, obj] : *this)
+    {
+        if(obj == x)
+            return true;
+    }
+
+    return false;
+}
+
+bool objects::contains(uint32_t fd) const
+{
+    for(auto& [seq, obj] : *this)
+    {
+        if(obj.sequence() == fd)
+            return true;
+    }
+
+    return false;
+}

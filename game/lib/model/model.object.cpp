@@ -94,7 +94,7 @@ int fb::model::object::builtin_dialog(lua_State* lua)
             return 0;
 
         auto session = thread->touserdata<fb::game::session>(2);
-        if(session == nullptr || context->exists(*session) == false)
+        if(session == nullptr)
             return 0;
 
         auto message = thread->tostring(3);

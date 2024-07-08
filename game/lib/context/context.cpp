@@ -23,6 +23,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"movable",             fb::game::map::builtin_movable},
 {"door",                fb::game::map::builtin_door},
 {"doors",               fb::game::map::builtin_doors},
+{"contains",            fb::game::map::builtin_contains},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
@@ -517,17 +518,6 @@ fb::game::session* fb::game::context::find(const std::string& name)
         return nullptr;
 
     return socket->data();
-}
-
-bool fb::game::context::exists(const fb::game::object& obj) const
-{
-    if(this->_ptrs.contains(static_cast<const void*>(&obj)) == false)
-        return false;
-
-    if(this->threads().valid(this->thread(obj)) == false)
-        return false;
-
-    return true;
 }
 
 void fb::game::context::bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration)
@@ -1994,7 +1984,7 @@ void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration no
                 continue;
 
             auto target = mob->target();
-            if(target == nullptr || this->exists(*target) == false || target->alive() == false)
+            if(target == nullptr || map.objects.contains(*target) == false || target->alive() == false)
                 mob->target(nullptr);
 
             if(mob->action())
