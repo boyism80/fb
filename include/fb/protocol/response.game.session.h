@@ -201,7 +201,7 @@ class state : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    STATE_LEVEL       STATE_LEVEL;
+    STATE_LEVEL                 STATE_LEVEL;
     uint8_t                     nation       = 0;
     uint8_t                     creature     = 0;
     uint8_t                     level        = 0;
@@ -285,7 +285,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->STATE_LEVEL = (STATE_LEVEL)in_stream.read_u8();
+        this->STATE_LEVEL = static_cast<fb::model::enum_value::STATE_LEVEL>(in_stream.read_u8());
         if(enum_in(this->STATE_LEVEL, STATE_LEVEL::BASED))
         {
             this->nation = in_stream.read_u8();
