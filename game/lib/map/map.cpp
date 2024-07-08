@@ -1,101 +1,6 @@
 #include <fb/game/map.h>
 #include <fb/game/context.h>
 
-fb::game::objects::objects(fb::game::map* owner) : 
-    _owner(owner)
-{ }
-
-fb::game::objects::~objects()
-{ }
-
-uint16_t fb::game::objects::empty_seq()
-{
-    for(int i = this->_sequence; i < 0xFFFF; i++)
-    {
-        if(this->contains(i))
-            continue;
-
-        this->_sequence = i + 1;
-        return i;
-    }
-
-    for(int i = 1; i < this->_sequence; i++)
-    {
-        if(this->contains(i))
-            continue;
-
-        this->_sequence = i + 1;
-        return i;
-    }
-
-    return 0xFFFF;
-}
-
-std::vector<fb::game::object*> fb::game::objects::filter(OBJECT_TYPE type) const
-{
-    auto result = std::vector<fb::game::object*>();
-    for(auto& [key, value] : *this)
-    {
-        if(value->is(OBJECT_TYPE::SESSION))
-            result.push_back(value);
-    }
-
-    return std::move(result);
-}
-
-uint16_t fb::game::objects::add(fb::game::object& object)
-{
-    return add(object, point16_t());
-}
-
-uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& position)
-{
-    auto                    seq = this->empty_seq();
-    if(this->contains(seq))
-        this->erase(seq);
-
-    object.sequence(seq);
-    this->insert(std::make_pair(seq, &object));
-    return object.sequence();
-}
-
-bool fb::game::objects::remove(fb::game::object& object)
-{
-    if(this->contains(object.sequence()) == false)
-        return false;
-
-    this->erase(object.sequence());
-    return true;
-}
-
-fb::game::object* fb::game::objects::exists(point16_t position) const
-{
-    auto found = std::find_if
-    (
-        this->cbegin(), this->cend(),
-        [&position] (const auto& pair)
-        {
-            return pair.second->position() == position;
-        }
-    );
-
-    if(found == this->cend())
-        return nullptr;
-    else
-        return found->second;
-}
-
-fb::game::object* fb::game::objects::operator[](uint32_t seq) const
-{
-    const auto& found = this->find(seq);
-    if(found != this->cend())
-        return found->second;
-
-    return nullptr;
-}
-
-
-
 fb::game::map::map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size) :
     context(context),
     model(model),
@@ -243,13 +148,13 @@ bool fb::game::map::movable(const point16_t position) const
 
     for(const auto& [key, value] : this->objects)
     {
-        if(value->visible() == false)
+        if(value.visible() == false)
             continue;
 
-        if(value->is(OBJECT_TYPE::ITEM))
+        if(value.is(OBJECT_TYPE::ITEM))
             continue;
 
-        if(value->position() == position)
+        if(value.position() == position)
             return false;
     }
 

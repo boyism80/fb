@@ -21,42 +21,46 @@ class mob;
 class session;
 class context;
 
-class objects : private std::map<uint32_t, fb::game::object*>
+class objects
 {
-    friend fb::game::object;
+public:
+    using ptrs                      = std::unordered_map<uint32_t, std::unique_ptr<object>>;
+    using refs                      = std::unordered_map<uint32_t, object&>;
+    using iterator                  = refs::iterator;
+    using const_iterator            = refs::const_iterator;
+    using filter_func               = std::function<bool(object&)>;
 
 private:
-    fb::game::map*                  _owner    = nullptr;
-    uint16_t                        _sequence = 1;
+    ptrs                            _ptrs;
+    refs                            _refs;
+    uint32_t                        _sequence = 1;
 
 public:
-    using std::map<uint32_t, fb::game::object*>::begin;
-    using std::map<uint32_t, fb::game::object*>::end;
-    using std::map<uint32_t, fb::game::object*>::cbegin;
-    using std::map<uint32_t, fb::game::object*>::cend;
-    using std::map<uint32_t, fb::game::object*>::rbegin;
-    using std::map<uint32_t, fb::game::object*>::rend;
-    using std::map<uint32_t, fb::game::object*>::crbegin;
-    using std::map<uint32_t, fb::game::object*>::crend;
-    using std::map<uint32_t, fb::game::object*>::size;
-    using std::map<uint32_t, fb::game::object*>::at;
+    fb::game::map&                  owner;
 
 public:
-    objects(fb::game::map* owner);
-    ~objects();
+    objects(fb::game::map& map);
+    ~objects() = default;
 
 private:
-    uint16_t                        empty_seq();
-    uint16_t                        add(fb::game::object& object);
-    uint16_t                        add(fb::game::object& object, const point16_t& position);
-    bool                            remove(fb::game::object& object);
+    uint32_t                        empty_seq();
 
 public:
-    std::vector<object*>            filter(OBJECT_TYPE type) const;
-    fb::game::object*               exists(point16_t position) const;
+    iterator                        begin();
+    iterator                        end();
+    const_iterator                  begin() const;
+    const_iterator                  end() const;
+    uint32_t                        size() const;
+    object&                         at(uint32_t i);
+    void                            push(object& obj);
+    object&                         pop(uint32_t seq);
+    object&                         pop(object& obj);
+    object*                         try_pop(uint32_t seq);
+    object*                         try_pop(object& obj);
+    void                            foreach(OBJECT_TYPE type, const filter_func& fn);
 
 public:
-    fb::game::object*               operator [] (uint32_t seq) const;
+    object*                         operator [] (uint32_t seq);
 };
 
 class map : public lua::luable
@@ -85,7 +89,7 @@ private:
 public:
     const fb::game::context&        context;
     const fb::model::map&           model;
-    fb::game::objects               objects = fb::game::objects(this);
+    fb::game::objects               objects = fb::game::objects(*this);
     fb::game::doors                 doors;
     const bool                      active;
 

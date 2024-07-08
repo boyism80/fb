@@ -714,12 +714,12 @@ void fb::game::context::send(object& object, const fb::protocol::base::header& h
         if (map == nullptr)
             return;
 
-        for(const auto& [key, value] : object.map()->objects)
+        for(const auto& [seq, obj] : object.map()->objects)
         {
-            if(exclude_self && value == &object)
+            if(exclude_self && obj == object)
                 continue;
 
-            value->send(header, encrypt);
+            obj.send(header, encrypt);
         }
     } break;
 
@@ -765,12 +765,12 @@ void fb::game::context::send(fb::game::object& object, const std::function<std::
 
     case context::scope::MAP:
     {
-        for(const auto& [key, value] : object.map()->objects)
+        for(const auto& [seq, obj] : object.map()->objects)
         {
-            if(exclude_self && value == &object)
+            if(exclude_self && obj == object)
                 continue;
 
-            value->send(*fn(*value).get(), encrypt);
+            obj.send(*fn(obj).get(), encrypt);
         }
     } break;
 
@@ -1584,8 +1584,8 @@ fb::task<bool> fb::game::context::handle_chat(fb::socket<fb::game::session>& soc
     {
         for (auto& [fd, obj] : session->map()->objects)
         {
-            if (obj->is(OBJECT_TYPE::NPC))
-                npcs.push_back(static_cast<fb::game::npc*>(obj));
+            if (obj.is(OBJECT_TYPE::NPC))
+                npcs.push_back(static_cast<fb::game::npc*>(&obj));
         }
     }
     else
@@ -2018,12 +2018,12 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
         if(thread != nullptr && thread->id() != id)
             continue;
 
-        for(auto& [key, value] : map.objects)
+        for(auto& [fd, obj] : map.objects)
         {
-            if(value->is(OBJECT_TYPE::MOB) == false)
+            if(obj.is(OBJECT_TYPE::MOB) == false)
                 continue;
 
-            auto mob = static_cast<fb::game::mob*>(value);
+            auto mob = static_cast<fb::game::mob*>(&obj);
             if(mob == nullptr)
                 continue;
 
@@ -2052,13 +2052,13 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
         if(map.objects.size() == 0)
             continue;
 
-        for(auto& [key, value] : map.objects)
+        for(auto& [fd, obj] : map.objects)
         {
-            if(value->buffs.size() == 0)
+            if(obj.buffs.size() == 0)
                 continue;
 
             auto ended_buffs = std::vector<fb::game::buff*>();
-            for (auto& [id, buff] : value->buffs)
+            for (auto& [id, buff] : obj.buffs)
             {
                 buff->time_dec(1);
                 if (buff->time() <= 0ms)
@@ -2066,7 +2066,7 @@ void fb::game::context::handle_buff_timer(std::chrono::steady_clock::duration no
             }
 
             for (auto& buff : ended_buffs)
-                value->buffs.remove(buff->model);
+                obj.buffs.remove(buff->model);
         }
     }
 }
@@ -2087,12 +2087,12 @@ void fb::game::context::handle_save_timer(std::chrono::steady_clock::duration no
         if(map.objects.size() == 0)
             continue;
 
-        for(auto& [_, value] : map.objects)
+        for(auto& [fd, obj] : map.objects)
         {
-            if(value->is(OBJECT_TYPE::SESSION) == false)
+            if(obj.is(OBJECT_TYPE::SESSION) == false)
                 continue;
 
-            auto session = static_cast<fb::game::session*>(value);
+            auto session = static_cast<fb::game::session*>(&obj);
             this->save(*session);
         }
     }

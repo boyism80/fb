@@ -396,7 +396,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         {
             if(this->_map != nullptr)
             {
-                this->_map->objects.remove(*this);
+                this->_map->objects.pop(*this);
                 if(this->_listener != nullptr)
                 {
                     for (auto x : this->_map->nears(this->_position))
@@ -457,7 +457,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         this->_map = map;
         this->_position = position;
         this->_map->update(*this);
-        this->_map->objects.add(*this);
+        this->_map->objects.push(*this);
         if(this->_listener != nullptr)
             this->_listener->on_map_changed(*this, before, map);
 
