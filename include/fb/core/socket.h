@@ -26,15 +26,16 @@ private:
     handler_event           _handle_received;
     handler_event           _handle_closed;
     uint32_t                _fd = 0xFFFFFFFF;
+    istream                 _instream;
+    std::recursive_mutex    _instream_mutex;
 
 protected:
     std::array<char, 256>   _buffer;
-    istream                 _instream;
     T*                      _data;
-    std::mutex              _boost_mutex;
-
-public:
-    std::mutex              stream_mutex;
+    std::recursive_mutex    _boost_mutex;
+//
+//public:
+//    std::mutex              stream_mutex;
 
 protected:
     socket(boost::asio::io_context& context, const handler_event& handle_receive, const handler_event& handle_closed);
@@ -51,11 +52,24 @@ public:
     void                    send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback);
 
     void                    recv();
-    fb::istream&            in_stream();
     void                    data(T* value);
     T*                      data() const;
     std::string             IP() const;
     uint32_t                fd();
+    
+    template<typename R = void>
+    R in_stream(const std::function<R(fb::istream& in_stream)>& func)
+    {
+        auto _ = std::lock_guard(this->_instream_mutex);
+        return func(this->_instream);
+    }
+
+    template<>
+    void in_stream(const std::function<void(fb::istream& in_stream)>& func)
+    {
+        auto _ = std::lock_guard(this->_instream_mutex);
+        func(this->_instream);
+    }
 };
 
 template <template<class> class S, class T>

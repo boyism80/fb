@@ -55,13 +55,15 @@ public:
     void                            bind(const std::function<fb::task<bool>(fb::internal::socket<fb::internal::session>&, R&)>& fn)
     {
         auto id = R().__id;
-        _handler.insert({id, [this, fn] (fb::internal::socket<fb::internal::session>& socket)
+        _handler.insert({ id, [this, fn](fb::internal::socket<fb::internal::session>& socket)
         {
-            auto&   in_stream = socket.in_stream();
-            R       header;
-            header.deserialize(in_stream);
-            
-            return fn(socket, header);
+            return socket.in_stream<fb::task<bool>>([this, &fn, &socket](auto& in_stream)
+            {
+                R       header;
+                header.deserialize(in_stream);
+
+                return fn(socket, header);
+            });
         }});
     }
 

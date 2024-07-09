@@ -35,45 +35,47 @@ fb::internal::context::service* fb::internal::context::get(fb::protocol::interna
 bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback)
 {
     static constexpr uint8_t base_size = sizeof(uint16_t);
-    auto& in_stream = socket.in_stream();
 
-    while(true)
+    return socket.in_stream<bool>([this, &socket](auto& in_stream) -> bool
     {
-        try
+        while(true)
         {
-            if(in_stream.readable_size() < base_size)
-                throw std::exception();
+            try
+            {
+                if(in_stream.readable_size() < base_size)
+                    throw std::exception();
 
-            auto size = in_stream.read_u16();
-            if(size > in_stream.capacity())
-                throw std::exception();
+                auto size = in_stream.read_u16();
+                if(size > in_stream.capacity())
+                    throw std::exception();
 
-            if(in_stream.readable_size() < size)
-                throw std::exception();
+                if(in_stream.readable_size() < size)
+                    throw std::exception();
 
-            auto cmd = in_stream.read_8();
-            auto found = this->_handler.find(cmd);
-            if(found == this->_handler.end())
-                throw std::exception();
+                auto cmd = in_stream.read_8();
+                auto found = this->_handler.find(cmd);
+                if(found == this->_handler.end())
+                    throw std::exception();
 
-            found->second(socket);
+                found->second(socket);
 
-            in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
+                in_stream.reset();
+                in_stream.shift(base_size + size);
+                in_stream.flush();
+            }
+            catch(std::exception& e)
+            {
+                break;
+            }
+            catch(...)
+            {
+                break;
+            }
         }
-        catch(std::exception& e)
-        {
-            break;
-        }
-        catch(...)
-        {
-            break;
-        }
-    }
 
-    in_stream.reset();
-    return false;
+        in_stream.reset();
+        return false;
+    });
 }
 
 fb::internal::session* fb::internal::context::handle_accepted(fb::internal::socket<fb::internal::session>& socket)

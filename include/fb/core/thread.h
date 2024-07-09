@@ -26,8 +26,8 @@ private:
     std::thread                                     _thread;
 
 private:
-    std::vector<std::shared_ptr<timer>>             _timers;
-    std::mutex                                      _mutex_timer;
+    std::vector<std::unique_ptr<timer>>             _timers;
+    std::recursive_mutex                            _mutex_timer;
 
 private:
     fb::queue<fb::queue_callback>                   _queue;
@@ -54,7 +54,7 @@ public:
 
 public:
     void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
-    void                                            settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration);
+    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
     void                                            dispatch(fb::queue_callback&& fn, int priority = 0);
     fb::awaiter<void>                               dispatch(uint32_t priority = 0);
     fb::awaiter<void>                               sleep(const std::chrono::steady_clock::duration& duration);
@@ -99,7 +99,7 @@ public:
 
 public:
     void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration, bool main = false);
-    void                                            settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration);
+    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
     void                                            exit();
 
 public:

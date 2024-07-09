@@ -387,42 +387,43 @@ template <typename T>
 bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t base_size = sizeof(uint16_t);
-    auto& in_stream = socket.in_stream();
-
-    while(true)
+    return socket.in_stream<bool>([this, &socket](auto& in_stream)
     {
-        try
+        while(true)
         {
-            if(in_stream.readable_size() < base_size)
-                throw std::exception();
+            try
+            {
+                if(in_stream.readable_size() < base_size)
+                    throw std::exception();
 
-            auto size = in_stream.read_u16();
-            if(size > in_stream.capacity())
-                throw std::exception();
+                auto size = in_stream.read_u16();
+                if(size > in_stream.capacity())
+                    throw std::exception();
 
-            if(in_stream.readable_size() < size)
-                throw std::exception();
+                if(in_stream.readable_size() < size)
+                    throw std::exception();
 
-            auto cmd = in_stream.read_8();
-            if(this->_internal_handler.contains(cmd))
-                this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket));
+                auto cmd = in_stream.read_8();
+                if(this->_internal_handler.contains(cmd))
+                    this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket));
 
-            in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
+                in_stream.reset();
+                in_stream.shift(base_size + size);
+                in_stream.flush();
+            }
+            catch(std::exception& /*e*/)
+            {
+                break;
+            }
+            catch(...)
+            {
+                break;
+            }
         }
-        catch(std::exception& /*e*/)
-        {
-            break;
-        }
-        catch(...)
-        {
-            break;
-        }
-    }
 
-    in_stream.reset();
-    return false;
+        in_stream.reset();
+        return false;
+    });
 }
 
 template <typename T>
@@ -557,66 +558,68 @@ template <typename T>
 bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& fn)
 {
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
-    auto&                       in_stream     = socket.in_stream();
-    auto&                       crt           = socket.crt();
 
-    while(true)
+    return socket.in_stream<bool>([this, &socket, &fn](auto& in_stream) -> bool
     {
-        try
+        auto& crt = socket.crt();
+        while(true)
         {
-            if(in_stream.readable_size() < base_size)
+            try
+            {
+                if(in_stream.readable_size() < base_size)
+                    break;
+
+                // Read base head and check it is 0xAA
+                auto                head = in_stream.read_u8();
+                if(head != 0xAA)
+                    throw std::exception();
+
+
+                // Read data size and check it is greater than buffer size
+                auto                size = in_stream.read_u16(buffer::endian::BIG);
+                if(size > in_stream.capacity())
+                    throw std::exception();
+
+
+                // If data size is not enough to parse, do not anymore
+                if(in_stream.readable_size() < size)
+                    break;
+
+
+                auto                cmd = in_stream.read_u8();
+                if (this->decrypt_policy(cmd))
+                    size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
+
+                // Call function that matched by command byte
+                auto                task = this->call(socket, cmd);
+                if(task.done() && task.value() == false)
+                    throw std::exception();
+
+                // Set data pointer to process next packet bytes
+                in_stream.reset();
+                in_stream.shift(base_size + size);
+                in_stream.flush();
+
+                // 콜백 조건이 만족하지 못하는 경우 즉시 종료
+                if(fn(socket) == false)
+                    return true;
+            }
+            catch(std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+                in_stream.clear();
                 break;
-
-            // Read base head and check it is 0xAA
-            auto                head = in_stream.read_u8();
-            if(head != 0xAA)
-                throw std::exception();
-
-
-            // Read data size and check it is greater than buffer size
-            auto                size = in_stream.read_u16(buffer::endian::BIG);
-            if(size > in_stream.capacity())
-                throw std::exception();
-
-
-            // If data size is not enough to parse, do not anymore
-            if(in_stream.readable_size() < size)
+            }
+            catch(...)
+            {
+                in_stream.clear();
                 break;
-
-
-            auto                cmd = in_stream.read_u8();
-            if (this->decrypt_policy(cmd))
-                size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
-
-            // Call function that matched by command byte
-            auto                task = this->call(socket, cmd);
-            if(task.done() && task.value() == false)
-                throw std::exception();
-
-            // Set data pointer to process next packet bytes
-            in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
-
-            // 콜백 조건이 만족하지 못하는 경우 즉시 종료
-            if(fn(socket) == false)
-                return true;
+            }
         }
-        catch(std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-            in_stream.clear();
-            break;
-        }
-        catch(...)
-        {
-            in_stream.clear();
-            break;
-        }
-    }
 
-    in_stream.reset();
-    return false;
+        in_stream.reset();
+        return false;
+    });
 }
 
 template <typename T>
@@ -625,10 +628,12 @@ void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socke
 {
     this->_external_handler.insert({cmd, [this, fn](fb::socket<T>& socket)
     {
-        auto& in_stream = socket.in_stream();
-        R     header;
-        header.deserialize(in_stream);
-        return fn(socket, header);
+        return socket.in_stream<fb::task<bool>>([this, &fn, &socket] (auto& in_stream)
+        {
+            R     header;
+            header.deserialize(in_stream);
+            return fn(socket, header);
+        });
     }});
 }
 
@@ -647,11 +652,13 @@ void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::internal::sock
     auto id = R().__id;
     this->_internal_handler.insert({id, [this, fn](fb::internal::socket<>& socket)
     {
-        auto& in_stream = socket.in_stream();
-        R     header;
-        header.deserialize(in_stream);
-        socket.invoke_awaiter(header.trans, header);
-        return fn(socket, header);
+        return socket.in_stream<fb::task<bool>>([this, &fn, &socket](auto& in_stream)
+        {
+            R     header;
+            header.deserialize(in_stream);
+            socket.invoke_awaiter(header.trans, header);
+            return fn(socket, header);
+        });
     }});
 }
 

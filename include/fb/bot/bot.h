@@ -57,11 +57,13 @@ public:
     {
         this->_handler.insert({ cmd, [this, fn]
         {
-            auto& in_stream = this->in_stream();
-            T     header;
-            header.deserialize(in_stream);
-            this->invoke_awaiter(header.__id, header);
-            fn(header);
+            this->in_stream<void>([this, &fn] (auto& in_stream)
+            {
+                T     header;
+                header.deserialize(in_stream);
+                this->invoke_awaiter(header.__id, header);
+                fn(header);
+            });
         }});
     }
 

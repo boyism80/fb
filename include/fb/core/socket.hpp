@@ -11,7 +11,8 @@ fb::base::socket<T>::socket(boost::asio::io_context& context, const handler_even
 template<typename T>
 fb::base::socket<T>::~socket()
 {
-    auto _ = std::lock_guard(this->_boost_mutex);
+    auto _1 = std::lock_guard(this->_boost_mutex);
+    auto _2 = std::lock_guard(this->_instream_mutex);
 }
 
 template<typename T>
@@ -68,9 +69,12 @@ void fb::base::socket<T>::recv()
                 if(ec)
                     throw boost::system::error_code(ec);
                 
-                auto gd = std::lock_guard<std::mutex>(this->stream_mutex);
+                // auto gd = std::lock_guard<std::mutex>(this->stream_mutex);
 
-                this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
+                this->in_stream<void>([this, bytes_transferred](auto& in_stream)
+                {
+                    this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
+                });
                 this->_handle_received(*this);
 
                 if (this->is_open() == false)
@@ -110,12 +114,6 @@ void fb::base::socket<T>::recv()
             }
         }
     );
-}
-
-template <typename T>
-fb::istream& fb::base::socket<T>::in_stream()
-{
-    return this->_instream;
 }
 
 template <typename T>

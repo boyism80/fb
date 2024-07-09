@@ -43,26 +43,25 @@ void fb::thread::handle_thread(uint8_t index)
 
 void fb::thread::handle_idle()
 {
-    auto copies = std::vector<std::shared_ptr<fb::timer>>(this->_timers);
-    auto expired = std::vector<std::shared_ptr<fb::timer>>();
-    for(auto& timer : copies)
+    auto _ = std::lock_guard(this->_mutex_timer);
+
+    auto indices = std::vector<uint32_t>();
+    for (auto i = 0; i < this->_timers.size(); i++)
     {
+        auto& timer = this->_timers[i];
         auto elapsed = std::chrono::steady_clock::now() - timer->begin;
-        if(timer->duration > elapsed)
+        if (timer->duration > elapsed)
             continue;
 
         timer->fn(fb::thread::now(), this->_thread.get_id());
-        expired.push_back(timer);
+        if (timer->disposable)
+            indices.push_back(i);
     }
 
-this->_mutex_timer.lock();
-    for(auto& x : expired)
+    for (int i = indices.size() - 1; i >= 0; i--)
     {
-        auto found = std::find(this->_timers.begin(), this->_timers.end(), x);
-        if(found != this->_timers.end())
-            this->_timers.erase(found);
+        this->_timers.erase(this->_timers.begin() + indices[i]);
     }
-this->_mutex_timer.unlock();
 }
 
 void fb::thread::exit()
@@ -80,28 +79,25 @@ this->_mutex_timer.unlock();
 }
 
 void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration)
-{   MUTEX_GUARD(this->_mutex_timer)
+{
+    auto _ = std::lock_guard(this->_mutex_timer);
 
-    // private 생성자때문에 make_shared 사용 X
-    auto timer = new fb::timer([fn] (std::chrono::steady_clock::duration, std::thread::id) { fn(); }, duration);
-    auto ptr   = std::shared_ptr<fb::timer>(timer);
-    this->_timers.push_back(std::move(ptr));
+    auto timer = new fb::timer([fn] (std::chrono::steady_clock::duration, std::thread::id) 
+    {
+        fn();
+    }, duration, true);
+    this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
 }
 
-void fb::thread::settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration)
+void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration)
 {
-    this->dispatch
-    (
-        [this, fn, duration]
-        {
-            if (this->_exit)
-                return;
+    auto _ = std::lock_guard(this->_mutex_timer);
 
-            fn(fb::thread::now(), this->_thread.get_id());
-            this->settimer(fn, duration);
-        }, 
-        duration
-    );
+    auto timer = new fb::timer([this, fn](std::chrono::steady_clock::duration, std::thread::id)
+    {
+        fn(fb::thread::now(), this->_thread.get_id());
+    }, duration, false);
+    this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
 }
 
 void fb::thread::dispatch(fb::queue_callback&& fn, int priority)
@@ -258,19 +254,11 @@ void fb::threads::dispatch(const std::function<void()>& fn, const std::chrono::s
     }
 }
 
-void fb::threads::settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration)
+void fb::threads::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration)
 {
     if(this->_threads.empty())
     {
-        this->dispatch
-        (
-            [this, fn, duration]
-            {
-                fn(fb::thread::now(), std::this_thread::get_id());
-                this->settimer(fn, duration);
-            },
-            duration
-        );
+        throw std::runtime_error("cannot set timer. logic thread does not exists");
     }
     else
     {
