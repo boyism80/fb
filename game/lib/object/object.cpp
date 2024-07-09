@@ -36,7 +36,6 @@ fb::game::object::~object()
 {
     if(this->_listener != nullptr)
         this->_listener->on_destroy(*this);
-    this->map(nullptr);
 }
 
 const fb::model::object& fb::game::object::based() const

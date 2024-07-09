@@ -12,7 +12,7 @@
 #include <fb/core/timer.h>
 #include <fb/core/pqueue.h>
 
-#define MUTEX_GUARD(x) auto __gd = std::lock_guard<std::mutex>(x);
+#define MUTEX_GUARD(x) auto _ = std::lock_guard(x);
 
 namespace fb {
 

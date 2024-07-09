@@ -441,7 +441,7 @@
 //             for (const auto& block : blocks)
 //                 map->block(block["x"].asInt(), block["y"].asInt(), true);
 
-//             {   auto _ = std::lock_guard<std::mutex>(*mutex);
+//             {   auto _ = std::lock_guard(*mutex);
 
                 
 //                 this->insert({id, std::unique_ptr<fb::game::map>(map)});

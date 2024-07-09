@@ -28,7 +28,7 @@ int main(int argc, const char** argv)
 
     try
     {
-        //_CrtSetBreakAlloc(12722647);
+        //_CrtSetBreakAlloc(110122);
 
 #ifdef _WIN32
         fb::model::option::encoding(cp949);

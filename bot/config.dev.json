@@ -1,0 +1,3 @@
+{
+	"log": ["debug", "info", "warn", "fatal"]
+}

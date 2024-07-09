@@ -279,9 +279,12 @@ fb::task<bool> fb::internal::context::handle_shutdown(fb::internal::socket<fb::i
     if (this->_login != nullptr)
         this->send(*this->_login, fb::protocol::internal::response::shutdown(request.trans));
 
-    for (auto& x : this->_games)
-        this->send(*x.second, fb::protocol::internal::response::shutdown(request.trans));
+    for (auto& [id, game] : this->_games)
+    {
+        if(game != nullptr)
+            this->send(*game, fb::protocol::internal::response::shutdown(request.trans));
+    }
 
-    this->exit();
+    //this->exit();
     co_return true;
 }

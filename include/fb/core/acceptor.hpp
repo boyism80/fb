@@ -38,7 +38,6 @@ void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
 
     if(id != 0xFF)
     {
-        auto gd = std::lock_guard<std::mutex>(socket->stream_mutex);
         switched = this->handle_parse(*socket, fn);
     }
     else
@@ -221,6 +220,9 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
     try
     {
         auto response = co_await this->_internal->request<R>(header, encrypt, wrap);
+        if (this->_running == false)
+            co_return;
+
         if(thread != nullptr)
             co_await thread->dispatch();
 
@@ -331,17 +333,20 @@ fb::awaiter<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_cloc
 template <template<class> class S, class T>
 void fb::base::acceptor<S, T>::exit()
 {
-    std::lock_guard __gd(this->_mutex_exit);
+    auto _ = std::lock_guard(this->_mutex_exit);
 
     if (this->_running == false)
         return;
 
-    this->_running = false;
+    this->_threads.exit();
+
     this->handle_exit();
     this->cancel();
-    if (this->_internal != nullptr)
-        this->_internal->close();
-    this->_threads.exit();
+    this->sockets.close();
+    this->_running = false;
+    // if (this->_internal != nullptr)
+    //     this->_internal->close();
+    // this->_threads.exit();
 }
 
 template <template<class> class S, class T>

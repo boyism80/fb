@@ -21,5 +21,22 @@
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
   </ItemGroup>
 </Project>

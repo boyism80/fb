@@ -40,10 +40,10 @@
     },
     "log": ["debug", "info", "warn", "fatal"],
     "init": {
-        "map": 14,
+        "map": 1,
         "position": {
-            "x": 13,
-            "y": 5
+            "x": 0,
+            "y": 0
         },
         "hp": {
             "base": 50,

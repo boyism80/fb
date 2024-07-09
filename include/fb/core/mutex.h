@@ -116,7 +116,7 @@ private:
     {
         std::mutex* mutex = nullptr;
         {
-            auto _ = std::lock_guard<std::mutex>(this->_mutex);
+            auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key) == false)
                 this->_pool.insert({key, std::make_unique<std::mutex>()});
 
@@ -155,7 +155,7 @@ private:
     {
         std::mutex* mutex = nullptr;
         {
-            auto _ = std::lock_guard<std::mutex>(this->_mutex);
+            auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key) == false)
                 this->_pool.insert({key, std::make_unique<std::mutex>()});
 
@@ -180,7 +180,7 @@ private:
     {
         std::mutex* mutex = nullptr;
         {
-            auto _ = std::lock_guard<std::mutex>(this->_mutex);
+            auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key) == false)
                 this->_pool.insert({key, std::make_unique<std::mutex>()});
 
@@ -198,7 +198,7 @@ private:
     {
         std::mutex* mutex = nullptr;
         {
-            auto _ = std::lock_guard<std::mutex>(this->_mutex);
+            auto _ = std::lock_guard(this->_mutex);
             if (this->_pool.contains(key) == false)
                 this->_pool.insert({key, std::make_unique<std::mutex>()});
 

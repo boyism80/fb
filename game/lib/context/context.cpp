@@ -395,7 +395,7 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
 }
 
 fb::game::context::~context()
-{ }
+{}
 
 void fb::game::context::handle_start()
 {

@@ -38,7 +38,7 @@ public:
 
 protected:
     socket(boost::asio::io_context& context, const handler_event& handle_receive, const handler_event& handle_closed);
-    ~socket() = default;
+    ~socket();
 
 protected:
     virtual bool            on_encrypt(fb::ostream& out) { return true; }
@@ -84,12 +84,12 @@ private:
     void                    erase(S<T>& session);
     void                    erase(uint32_t fd);
     bool                    empty();
-    void                    close();
 
 public:
     bool                    contains(uint32_t fd);
     void                    each(const std::function<void(S<T>&)> fn);
     S<T>*                   find(const std::function<bool(S<T>&)> fn);
+    void                    close();
 
 public:
     S<T>*                   operator [] (uint32_t fd);

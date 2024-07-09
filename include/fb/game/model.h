@@ -3269,8 +3269,9 @@ private:
             throw std::runtime_error(sstream.str());
         }
 
-        ifstream.close();
         this->load(json);
+        ifstream.close();
+        json.clear();
     }
     void load(const Json::Value& json)
     {

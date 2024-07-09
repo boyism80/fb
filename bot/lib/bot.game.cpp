@@ -21,13 +21,13 @@ game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
     this->bind<fb::protocol::game::response::map::config>       (std::bind(&game_bot::handle_map,           this, std::placeholders::_1));
     this->bind<fb::protocol::response::transfer>                (std::bind(&game_bot::handle_transfer,      this, std::placeholders::_1));
 
-    //this->pattern(std::bind(&game_bot::pattern_chat,        this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_chat,        this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_attack,      this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_direction,   this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_move,        this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_pickup,      this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_emotion,     this), 1000ms, 2000ms);
-    this->pattern(std::bind(&game_bot::pattern_board_sections, this), 1000ms, 2000ms);
+    //this->pattern(std::bind(&game_bot::pattern_board_sections, this), 1000ms, 2000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : game_bot(owner, id)
@@ -162,7 +162,7 @@ fb::task<void> game_bot::pattern_chat()
 {
     static std::random_device device;
     static std::mt19937 gen(device());
-    static std::vector<std::string> messages{ "/랜덤이동", "일반채팅" };
+    static std::vector<std::string> messages{ "/랜덤이동", "/서버종료" };
     static std::uniform_int_distribution<> dist(0, messages.size() - 1);
     
     auto& message = messages.at(dist(gen));
