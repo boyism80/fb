@@ -150,21 +150,21 @@ public:
                 /* callback */
                 [this, thread, &awaiter](auto& results)
                 {
-                    auto data = std::make_shared<std::vector<daotk::mysql::result>>();
-                    for(auto& x : results)
-                        data->push_back(std::move(x));
-
                     if(thread != nullptr)
                     {
-                        thread->dispatch([&awaiter, data](uint8_t) mutable
+                        auto ptr = std::make_shared<std::vector<daotk::mysql::result>>();
+                        for (auto& result : results)
+                            ptr->push_back(std::move(result));
+
+                        thread->dispatch([&awaiter, ptr](uint8_t) mutable
                         {
-                            awaiter.result = data.get();
+                            awaiter.result = std::ref(*ptr.get());
                             awaiter.handler.resume();
                         });
                     }
                     else
                     {
-                        awaiter.result = data.get();
+                        awaiter.result = std::ref(results);
                         awaiter.handler.resume();
                     }
                 },

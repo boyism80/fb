@@ -219,14 +219,14 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
     auto thread = this->current_thread();
     try
     {
-        auto response = co_await this->_internal->request<R>(header, encrypt, wrap);
+        auto& response = co_await this->_internal->request<R>(header, encrypt, wrap);
         if (this->_running == false)
             co_return;
 
         if(thread != nullptr)
             co_await thread->dispatch();
 
-        awaiter.result = &response;
+        awaiter.result = std::ref(response);
         awaiter.handler.resume();
     }
     catch(const boost::system::error_code& ec)
@@ -516,26 +516,35 @@ fb::task<void> fb::acceptor<T>::connect_internal()
     auto&           config = fb::config::get();
     auto            ip     = config["internal"]["ip"].asString();
     auto            port   = (uint16_t)config["internal"]["port"].asInt();
-    while(true)
+    while(this->running())
     {
         try
         {
             co_await this->co_connect_internal(ip, port);
             this->on_internal_connected();
-            break;
+            co_return;
         }
         catch (boost::system::error_code& e)
         {
+            if (!this->running())
+                co_return;
+
             this->handle_internal_denied(e.message());
             std::this_thread::sleep_for(1000ms);
         }
         catch(std::exception& e)
         {
+            if (!this->running())
+                co_return;
+
             this->handle_internal_denied(e.what());
             std::this_thread::sleep_for(1000ms);
         }
         catch (...)
         {
+            if (!this->running())
+                co_return;
+
             this->handle_internal_denied("unhandled exception");
             std::this_thread::sleep_for(1000ms);
         }
@@ -551,7 +560,11 @@ bool fb::acceptor<T>::decrypt_policy(uint8_t cmd) const
 template <typename T>
 void fb::acceptor<T>::handle_start()
 {
-    this->connect_internal();
+    auto task = this->connect_internal();
+    while (!task.done())
+    {
+        std::this_thread::sleep_for(100ms);
+    }
 }
 
 template <typename T>
@@ -624,7 +637,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn)
+void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn)
 {
     this->_external_handler.insert({cmd, [this, fn](fb::socket<T>& socket)
     {
@@ -639,7 +652,7 @@ void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socke
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn)
+void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn)
 {
     auto id = R().__id;
     this->bind(id, fn);
@@ -647,7 +660,7 @@ void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::socket<T>&, R&
 
 template <typename T>
 template <typename R>
-void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::internal::socket<>&, R&)>& fn)
+void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::internal::socket<>&, const R&)>& fn)
 {
     auto id = R().__id;
     this->_internal_handler.insert({id, [this, fn](fb::internal::socket<>& socket)
@@ -666,7 +679,7 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind()
 {
-    this->bind<R>([this] (fb::internal::socket<>&, R&) -> fb::task<bool>
+    this->bind<R>([this] (fb::internal::socket<>&, const R&) -> fb::task<bool>
     {
         co_return true;
     });

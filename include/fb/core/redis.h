@@ -7,7 +7,6 @@
 #include <fb/core/abstract.h>
 #include <fb/core/coroutine.h>
 #include <fb/core/concurrent.h>
-#include <boost/thread.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
@@ -109,8 +108,8 @@ private:
     {
         try
         {
-            auto result = co_await fn(current);
-            awaiter.result = &result;
+            auto& result = co_await fn(current);
+            awaiter.result = std::ref(result);
             concurrent::add(current);
         }
         catch (std::exception& e)
@@ -137,8 +136,8 @@ private:
     {
         try
         {
-            auto result = co_await fn();
-            awaiter.result = &result;
+            auto& result = co_await fn();
+            awaiter.result = std::ref(result);
         }
         catch (std::exception& e)
         {

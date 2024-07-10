@@ -13,6 +13,7 @@
 #include <stdarg.h>
 #include <string>
 #include <cstring>
+#include <vector>
 
 enum class PLATFORM
 {

@@ -263,7 +263,7 @@ void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
         this->_coroutines.erase(cmd);
     }
 
-    awaiter->result = &response;
+    awaiter->result = std::ref(response);
     awaiter->handler.resume();
 }
 

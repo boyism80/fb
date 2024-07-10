@@ -1,6 +1,6 @@
 #include "resource.h"
 #include <fb/game/context.h>
-#include <fb/core/leak.h>
+// #include <fb/core/leak.h>
 #include <fb/core/mst.h>
 #include <fb/game/worker.h>
 #include <fb/game/mst.recipe.h>
@@ -28,7 +28,7 @@ int main(int argc, const char** argv)
 
     try
     {
-        _CrtSetBreakAlloc(7997394);
+        //_CrtSetBreakAlloc(7997394);
 
 #ifdef _WIN32
         fb::model::option::encoding(cp949);

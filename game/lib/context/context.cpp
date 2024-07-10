@@ -970,7 +970,7 @@ fb::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& so
             co_return false;
 
         auto sql = "CALL USP_CHARACTER_GET('%s');";
-        auto results = co_await this->_db.co_exec_f(id, sql, name.c_str());
+        auto& results = co_await this->_db.co_exec_f(id, sql, name.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -1616,7 +1616,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
 
             auto section = &this->model.board[request.section];
             auto offset = request.offset;
-            auto results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET_LIST(%d, %d)", section->id, offset);
+            auto& results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET_LIST(%d, %d)", section->id, offset);
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1648,7 +1648,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
 
             auto section = &this->model.board[request.section]; // 코루틴땜시 포인터로
             auto article = request.article;
-            auto results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET(%d, %d)", section->id, article);
+            auto& results = co_await this->_db.co_exec_f("CALL USP_BOARD_GET(%d, %d)", section->id, article);
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1724,7 +1724,7 @@ fb::task<bool> fb::game::context::handle_board(fb::socket<fb::game::session>& so
             if (session->condition(section->condition) == false)
                 throw std::runtime_error(fb::game::message::board::NOT_AUTH);
 
-            auto delete_result = co_await this->_db.co_exec_f("CALL USP_BOARD_DELETE(%d, %d)", request.article, session->id());
+            auto& delete_result = co_await this->_db.co_exec_f("CALL USP_BOARD_DELETE(%d, %d)", request.article, session->id());
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1922,7 +1922,7 @@ fb::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session>& 
     auto& from = session->name();
     try
     {
-        auto response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, request.name, request.message));
+        auto& response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, request.name, request.message));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -2000,7 +2000,6 @@ void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration no
 void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id)
 {
     // 리젠된 전체 몹을 저장
-    std::vector<object*> spawned_mobs;
     for(auto& [_, map] : this->maps)
     {
         if(map.active == false)
@@ -2025,7 +2024,6 @@ void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration n
             mob->visible(true);
             mob->hp(mob->base_hp());
             mob->mp(mob->base_mp());
-            spawned_mobs.push_back(mob);
         }
     }
 }
@@ -2139,5 +2137,6 @@ fb::task<bool> fb::game::context::handle_command(fb::game::session& session, con
             parameters.append(*i);
     }
 
-    co_return co_await found->second.fn(session, parameters);
+    auto result = co_await found->second.fn(session, parameters);
+    co_return result;
 }

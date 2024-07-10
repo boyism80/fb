@@ -412,7 +412,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             auto result = true;
             if(awaiter != nullptr)
             {
-                awaiter->result = &result;
+                awaiter->result = std::ref(result);
                 awaiter->handler.resume();
             }
             co_return result;
@@ -424,7 +424,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             auto result = true;
             if(awaiter != nullptr)
             {
-                awaiter->result = &result;
+                awaiter->result = std::ref(result);
                 awaiter->handler.resume();
             }
             co_return result;
@@ -435,7 +435,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             auto result = false;
             if(awaiter != nullptr)
             {
-                awaiter->result = &result;
+                awaiter->result = std::ref(result);
                 awaiter->handler.resume();
             }
             co_return result;
@@ -475,7 +475,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         auto result = true;
         if(awaiter != nullptr)
         {
-            awaiter->result = &result;
+            awaiter->result = std::ref(result);
             awaiter->handler.resume();
         }
         this->_map_lock = false;

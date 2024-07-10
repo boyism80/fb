@@ -4,7 +4,7 @@
 #include "resource.h"
 #include <fb/core/socket.h>
 #include <fb/gateway/context.h>
-#include <fb/core/leak.h>
+// #include <fb/core/leak.h>
 #include <fb/core/console.h>
 #include <fb/core/config.h>
 #include <fb/protocol/internal.h>

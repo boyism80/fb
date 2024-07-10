@@ -456,13 +456,13 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
     try
     {
         auto result = false;
-        auto response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
+        auto& response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
         auto socket = this->sockets[response.fd];
         if(socket == nullptr)
         {
             if(awaiter != nullptr)
             {
-                awaiter->result = &result;
+                awaiter->result = std::ref(result);
                 awaiter->handler.resume();
             }
             co_return;
@@ -487,7 +487,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         result = true;
         if(awaiter != nullptr)
         {
-            awaiter->result = &result;
+            awaiter->result = std::ref(result);
             awaiter->handler.resume();
         }
     }
@@ -499,7 +499,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         {
             if(awaiter != nullptr)
             {
-                awaiter->result = &result;
+                awaiter->result = std::ref(result);
                 awaiter->handler.resume();
             }
             co_return;
@@ -512,7 +512,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
 
         if(awaiter != nullptr)
         {
-            awaiter->result = &result;
+            awaiter->result = std::ref(result);
             awaiter->handler.resume();
         }
     }
@@ -524,7 +524,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         {
             if(awaiter != nullptr)
             {
-                awaiter->result = &result;
+                awaiter->result = std::ref(result);
                 awaiter->handler.resume();
             }
             co_return;
@@ -537,7 +537,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
 
         if(awaiter != nullptr)
         {
-            awaiter->result = &result;
+            awaiter->result = std::ref(result);
             awaiter->handler.resume();
         }
     }

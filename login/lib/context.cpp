@@ -147,7 +147,7 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
 
         this->assert_account(id, pw);
 
-        auto nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", id.c_str());
+        auto& nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", id.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -165,7 +165,7 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
         auto position_y = config["init"]["position"]["y"].asInt();
         auto admin = config["admin mode"].asBool() ? 0 : 1;
 
-        auto init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
+        auto& init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -231,11 +231,11 @@ fb::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& 
     auto fd = socket.fd();
     try
     {
-        auto name = request.id;
-        auto pw = request.pw;
+        auto name = std::string(request.id);
+        auto pw = std::string(request.pw);
         this->assert_account(name, pw);
 
-        auto  name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
+        auto& name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -243,8 +243,8 @@ fb::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& 
         if(name_row.count() == 0)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        auto  id = name_row.get_value<uint32_t>(0);
-        auto  auth_result = co_await this->_db.co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", name.c_str(), this->sha256(pw).c_str());
+        auto id = name_row.get_value<uint32_t>(0);
+        auto& auth_result = co_await this->_db.co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", name.c_str(), this->sha256(pw).c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -256,7 +256,7 @@ fb::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& 
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
         auto map = auth_row.get_value<uint32_t>(1);
-        auto response = co_await this->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(name, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
+        auto& response = co_await this->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(name, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -337,7 +337,7 @@ fb::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::
         if(pw == new_pw)
             throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
 
-        auto  name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
+        auto& name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -347,7 +347,7 @@ fb::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::
 
         auto id = name_row.get_value<uint32_t>(0);
 
-        auto  pw_result = co_await this->_db.co_exec_f(id, "CALL USP_CHANGE_PW(%d, '%s', '%s', %d)", id, this->sha256(pw).c_str(), this->sha256(new_pw).c_str(), birthday);
+        auto& pw_result = co_await this->_db.co_exec_f(id, "CALL USP_CHANGE_PW(%d, '%s', '%s', %d)", id, this->sha256(pw).c_str(), this->sha256(new_pw).c_str(), birthday);
         if (this->sockets.contains(fd) == false)
             co_return false;
 

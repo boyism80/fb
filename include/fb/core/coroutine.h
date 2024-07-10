@@ -13,7 +13,7 @@ namespace fb {
 class awaitable
 {
 public:
-    std::exception_ptr      error;
+    std::exception_ptr      error = nullptr;
     std::coroutine_handle<> handler;
 
 public:
@@ -69,23 +69,44 @@ public:
 };
 #pragma endregion
 
+template <typename T, typename T2 = void> struct awaiter_result; // Use this one instead.
+
+template <typename T>
+struct awaiter_result<T, typename std::enable_if<std::is_class<T>::value>::type>
+{
+    typedef std::optional<std::reference_wrapper<T>> type;
+};
+
+template <typename T>
+struct awaiter_result<T, typename std::enable_if<!std::is_class<T>::value>::type>
+{
+    typedef T type;
+};
+
 template <typename T = void>
 class awaiter : public base_awaiter<T>
 {
 public:
-    T* result;
+    typename awaiter_result<T>::type result;
 
 public:
-    awaiter(const awaiter_handler<T>& callback) : base_awaiter<T>(callback), result(nullptr)
+    awaiter(const awaiter_handler<T>& callback) : base_awaiter<T>(callback)
     { }
     virtual ~awaiter()
     { }
 
 public:
-    T await_resume()
+    T& await_resume()
     {
         base_awaiter<T>::await_resume();
-        return std::move(*this->result);
+        if constexpr (std::is_class_v<T>)
+        {
+            return this->result.value().get();
+        }
+        else
+        {
+            return result;
+        }
     }
 };
 
@@ -100,6 +121,21 @@ public:
 };
 
 
+template <typename T, typename T2 = void> struct task_result; // Use this one instead.
+
+template <typename T>
+struct task_result<T, typename std::enable_if<std::is_class<T>::value>::type>
+{
+    typedef std::optional<std::reference_wrapper<T>> type;
+};
+
+template <typename T>
+struct task_result<T, typename std::enable_if<!std::is_class<T>::value>::type>
+{
+    typedef std::optional<T> type;
+};
+
+
 template <typename T = void>
 class task : public awaitable
 {
@@ -110,8 +146,8 @@ public:
     class promise_type
     {
     public:
-        std::optional<T> _value;
-        std::exception_ptr error;
+        task_result<T>::type _value;
+        std::exception_ptr error = nullptr;
         awaitable* _awaitable = nullptr;
 
         auto get_return_object() { return task(handle_type::from_promise(*this)); }
@@ -136,7 +172,11 @@ public:
     handle_type _handler;
 
     task(handle_type handler) : _handler(handler) { }
-    ~task() { }
+    ~task()
+    {
+        if(this->_handler)
+            this->_handler.destroy();
+    }
 
     void await_suspend(std::coroutine_handle<> h)
     {
@@ -153,7 +193,7 @@ public:
         }
     }
 
-    T await_resume()
+    T& await_resume()
     {
         awaitable::await_resume();
         return this->value();
@@ -180,7 +220,7 @@ public:
             std::rethrow_exception(promise.error);
     }
 
-    T value()
+    T& value()
     {
         auto& promise = this->_handler.promise();
         if (promise.error)
@@ -189,7 +229,14 @@ public:
         if (promise._value.has_value() == false)
             throw std::runtime_error("value is empty");
 
-        return *promise._value;
+        if constexpr (std::is_class_v<T>)
+        {
+            return promise._value.value().get();
+        }
+        else
+        {
+            return promise._value.value();
+        }
     }
 };
 
@@ -203,7 +250,7 @@ public:
     class promise_type
     {
     public:
-        std::exception_ptr error;
+        std::exception_ptr error = nullptr;
         awaitable* _awaitable = nullptr;
 
         auto get_return_object() { return task(handle_type::from_promise(*this)); }
@@ -211,11 +258,11 @@ public:
         auto final_suspend() noexcept { return std::suspend_always{}; }
         void unhandled_exception() 
         {
-            this->error = std::current_exception(); 
+            this->error = std::current_exception();
             if (_awaitable != nullptr)
                 _awaitable->handler.resume();
         }
-        void return_void() 
+        void return_void()
         {
             if (_awaitable != nullptr)
                 _awaitable->handler.resume();
@@ -225,7 +272,11 @@ public:
     handle_type _handler;
 
     task(handle_type handler) : _handler(handler) { }
-    ~task() { }
+    ~task()
+    {
+        if(this->_handler)
+            this->_handler.destroy();
+    }
 
     void await_suspend(std::coroutine_handle<> h)
     {

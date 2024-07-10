@@ -44,7 +44,7 @@ fb::task<void> login_bot::handle_agreement(const fb::protocol::login::response::
     
     try
     {
-        auto response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(id, pw));
+        auto& response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(id, pw));
         if (response1.text.empty() == false)
             throw std::exception("request error");
 

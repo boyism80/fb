@@ -124,11 +124,11 @@ protected:
 
 public:
     template <typename R>
-    void                        bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn);
+    void                        bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn);
     template <typename R>
-    void                        bind(const std::function<fb::task<bool>(fb::socket<T>&, R&)>& fn);
+    void                        bind(const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn);
     template <typename R>
-    void                        bind(const std::function<fb::task<bool>(fb::internal::socket<>&, R&)>& fn);
+    void                        bind(const std::function<fb::task<bool>(fb::internal::socket<>&, const R&)>& fn);
     template <typename R>
     void                        bind();
 
