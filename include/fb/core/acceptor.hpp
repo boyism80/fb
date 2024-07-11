@@ -254,7 +254,7 @@ fb::awaiter<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::h
     auto await_callback = [=, this, &header](auto& awaiter)
     {
         // 여기 task 저장
-        this->co_internal_request(awaiter, header, encrypt, wrap);
+        this->_internal_conn_task = this->co_internal_request(awaiter, header, encrypt, wrap);
     };
 
     return fb::awaiter<R>(await_callback);

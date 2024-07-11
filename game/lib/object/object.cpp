@@ -386,6 +386,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter)
 {
+    // 이 태스크도 저장이 되어야함
     try
     {
         if(this->_map_lock)

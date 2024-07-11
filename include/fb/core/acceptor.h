@@ -26,6 +26,7 @@ private:
     fb::threads                                 _threads;
     bool                                        _running = false;
     std::mutex                                  _mutex_exit;
+    std::optional< fb::task<void>>              _internal_conn_task;
 
 protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
