@@ -27,6 +27,7 @@ protected:
     bot_container&                              _owner;
     fb::cryptor                                 _cryptor;
     std::map<uint8_t, std::function<void()>>    _handler;
+    std::vector<fb::task<void>>                 _unfinished_tasks;
 
 public:
     const uint32_t                              id;
@@ -62,7 +63,10 @@ public:
                 T     header;
                 header.deserialize(in_stream);
                 this->invoke_awaiter(header.__id, header);
-                fn(header);
+                
+                auto task = fn(header);
+                if (!task.done())
+                    _unfinished_tasks.push_back(std::move(task));
             });
         }});
     }

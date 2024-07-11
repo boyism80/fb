@@ -18,6 +18,12 @@ public:
 
 public:
     awaitable() = default;
+    awaitable(const awaitable&) = delete;
+    awaitable(awaitable&& r) noexcept : handler(r.handler), error(r.error)
+    {
+        r.handler = nullptr;
+        r.error = nullptr;
+    }
     ~awaitable() = default;
 
 public:
@@ -35,6 +41,16 @@ public:
     {
         if (this->error)
             std::rethrow_exception(this->error);
+    }
+
+    void operator = (const awaitable&) = delete;
+    void operator = (awaitable&& r) noexcept
+    {
+        this->handler = r.handler;
+        r.handler = nullptr;
+        
+        this->error = r.error;
+        r.error = nullptr;
     }
 };
 
@@ -172,6 +188,11 @@ public:
     handle_type _handler;
 
     task(handle_type handler) : _handler(handler) { }
+    task(const task&) = delete;
+    task(task&& r) : awaitable(static_cast<awaitable&&>(r)), _handler(r._handler)
+    {
+        r._handler = nullptr;
+    }
     ~task()
     {
         if(this->_handler)
@@ -218,6 +239,14 @@ public:
 
         if (promise.error)
             std::rethrow_exception(promise.error);
+    }
+
+    void operator = (const task&) = delete;
+    void operator=  (task&& r) noexcept
+    {
+        awaitable::operator = (static_cast<awaitable&&>(r));
+        this->_handler = r._handler;
+        r._handler = nullptr;
     }
 
     T& value()
@@ -272,6 +301,11 @@ public:
     handle_type _handler;
 
     task(handle_type handler) : _handler(handler) { }
+    task(const task&) = delete;
+    task(task&& r) noexcept : awaitable(static_cast<awaitable&&>(r)), _handler(r._handler)
+    {
+        r._handler = nullptr;
+    }
     ~task()
     {
         if(this->_handler)
@@ -312,6 +346,14 @@ public:
 
         if (promise.error)
             std::rethrow_exception(promise.error);
+    }
+
+    void operator = (const task&) = delete;
+    void operator=  (task&& r) noexcept
+    {
+        awaitable::operator = (static_cast<awaitable&&>(r));
+        this->_handler = r._handler;
+        r._handler = nullptr;
     }
 };
 

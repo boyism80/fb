@@ -32,7 +32,8 @@ private:
 protected:
     std::array<char, 256>   _buffer;
     T*                      _data;
-    std::recursive_mutex    _boost_mutex;
+    std::recursive_mutex    _boost_mutex, _task_mutex;
+    std::vector<fb::task<bool>>   _unfinished_tasks;
 //
 //public:
 //    std::mutex              stream_mutex;
@@ -56,6 +57,8 @@ public:
     T*                      data() const;
     std::string             IP() const;
     uint32_t                fd();
+    void                    push_task(fb::task<bool>&& task);
+    bool                    flush_task();
     
     template<typename R = void>
     R in_stream(const std::function<R(fb::istream& in_stream)>& func)

@@ -146,6 +146,35 @@ uint32_t fb::base::socket<T>::fd()
     return this->_fd;
 }
 
+template <typename T>
+void fb::base::socket<T>::push_task(fb::task<bool>&& task)
+{
+    auto _ = std::lock_guard(this->_task_mutex);
+    this->_unfinished_tasks.push_back(std::move(task));
+}
+
+template <typename T>
+bool fb::base::socket<T>::flush_task()
+{
+    auto _ = std::lock_guard(this->_task_mutex);
+    auto size = this->_unfinished_tasks.size();
+    if(size == 0)
+        return true;
+
+    auto result = false;
+    for(int i = size - 1; i >= 0; i--)
+    {
+        auto& task = this->_unfinished_tasks[i];
+        if(!task.done())
+            continue;
+
+        result |= task.value();
+        this->_unfinished_tasks.erase(this->_unfinished_tasks.begin() + i);
+    }
+
+    return result;
+}
+
 
 
 

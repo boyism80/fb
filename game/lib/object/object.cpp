@@ -508,7 +508,7 @@ bool fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     auto task = this->__map(map, position);
     if (task.done())
-        return task.value();
+       return task.value();
 
     return true;
 }

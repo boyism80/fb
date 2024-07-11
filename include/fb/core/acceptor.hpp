@@ -253,6 +253,7 @@ fb::awaiter<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::h
 {
     auto await_callback = [=, this, &header](auto& awaiter)
     {
+        // 여기 task 저장
         this->co_internal_request(awaiter, header, encrypt, wrap);
     };
 
@@ -393,6 +394,8 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
         {
             try
             {
+                socket.flush_task();
+
                 if(in_stream.readable_size() < base_size)
                     throw std::exception();
 
@@ -404,8 +407,12 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
                     throw std::exception();
 
                 auto cmd = in_stream.read_8();
-                if(this->_internal_handler.contains(cmd))
-                    this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket));
+                if (this->_internal_handler.contains(cmd))
+                {
+                    auto task = this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket));
+                    if (!task.done())
+                        socket.push_task(std::move(task));
+                }
 
                 in_stream.reset();
                 in_stream.shift(base_size + size);
@@ -579,6 +586,8 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
         {
             try
             {
+                socket.flush_task();
+
                 if(in_stream.readable_size() < base_size)
                     break;
 
@@ -605,7 +614,9 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
 
                 // Call function that matched by command byte
                 auto                task = this->call(socket, cmd);
-                if(task.done() && task.value() == false)
+                if(!task.done())
+                    socket.push_task(std::move(task));
+                else if(!task.value())
                     throw std::exception();
 
                 // Set data pointer to process next packet bytes
