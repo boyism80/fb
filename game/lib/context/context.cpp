@@ -406,7 +406,7 @@ void fb::game::context::handle_start()
     for(int i = 0; i < threads.count(); i++)
     {
         auto thread = threads.at(i);
-        thread->dispatch([] (uint8_t) 
+        thread->dispatch([] () 
         {
             auto& ist = fb::game::lua::container::ist();
             auto& main = ist.get();

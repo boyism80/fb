@@ -156,7 +156,7 @@ public:
                         for (auto& result : results)
                             ptr->push_back(std::move(result));
 
-                        thread->dispatch([&awaiter, ptr](uint8_t) mutable
+                        thread->dispatch([&awaiter, ptr]() mutable
                         {
                             awaiter.result = std::ref(*ptr.get());
                             awaiter.handler.resume();

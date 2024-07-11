@@ -44,7 +44,7 @@ public:
     virtual ~acceptor();
 
 private:
-    virtual void                                handle_work(S<T>* socket, uint8_t id);
+    virtual fb::task<void>                      handle_work(S<T>* socket);
 
 protected:
     void                                        accept();
@@ -56,7 +56,7 @@ protected:
 
 protected:
     virtual void                                handle_start() {}
-    virtual bool                                handle_parse(S<T>& session, const std::function<bool(S<T>&)>& fn) = 0;
+    virtual fb::task<bool>                      handle_parse(S<T>& session) = 0;
     virtual T*                                  handle_accepted(S<T>& socket) = 0;
     virtual bool                                handle_connected(S<T>& session) { return true; }
     virtual bool                                handle_disconnected(S<T>& session) { return true; }
@@ -81,7 +81,8 @@ public:
     template <typename R>
     fb::awaiter<R>                              request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
-    bool                                        dispatch(S<T>*, fb::queue_callback&& fn, uint32_t priority = 0);
+    bool                                        dispatch(S<T>*, fb::task<void>&& task, uint32_t priority = 0);
+    bool                                        dispatch(S<T>*, const std::function<void(void)>& fn, uint32_t priority = 0);
     fb::awaiter<void>                           dispatch(S<T>*, uint32_t priority = 0);
     void                                        run(int thread_size);
     bool                                        running() const;
@@ -121,7 +122,7 @@ private:
 protected:
     virtual bool                decrypt_policy(uint8_t cmd) const;
     virtual void                handle_start();
-    bool                        handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& callback);
+    fb::task<bool>              handle_parse(fb::socket<T>& socket);
 
 public:
     template <typename R>

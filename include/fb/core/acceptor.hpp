@@ -18,37 +18,16 @@ fb::base::acceptor<S, T>::~acceptor()
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::handle_work(S<T>* socket, uint8_t id)
+fb::task<void> fb::base::acceptor<S, T>::handle_work(S<T>* socket)
 {
     if (this->_running == false)
-        return;
+        co_return;
 
-    if(this->handle_thread_index(*socket) != id)
-        return;
+    auto switched = co_await this->handle_parse(*socket);
+    if (switched == false)
+        co_return;
 
-    // 소켓 담당 스레드가 변경되는지를 감시하는 람다함수
-    //  id                      현재 스레드의 id
-    //  handle_thread_index     소켓이 처리되어야 할 스레드 id
-    auto fn = [this, id] (S<T>& socket) 
-    {
-        return this->handle_thread_index(socket) == id; 
-    };
-
-    auto switched = false;
-
-    if(id != 0xFF)
-    {
-        switched = this->handle_parse(*socket, fn);
-    }
-    else
-    {
-        switched = this->handle_parse(*socket, fn);
-    }
-
-    if(switched == false)
-        return;
-
-    this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket, std::placeholders::_1));
+    this->dispatch(socket, this->handle_work(socket));
 }
 
 template <template<class> class S, class T>
@@ -233,7 +212,7 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
     {
         if(thread != nullptr)
         {
-            thread->dispatch([&awaiter, &ec] (uint8_t)
+            thread->dispatch([&awaiter, &ec] ()
             {
                 awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
                 awaiter.handler.resume();
@@ -267,16 +246,26 @@ fb::thread* fb::base::acceptor<S, T>::current_thread()
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::queue_callback&& fn, uint32_t priority)
+bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::task<void>&& task, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
     
     if(thread == nullptr)
-        fn(id);
+        task.wait();
     else
-        this->_threads[id]->dispatch(std::move(fn), priority);
+        this->_threads[id]->dispatch(std::move(task), priority);
     return true;
+}
+
+template <template<class> class S, class T>
+bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<void(void)>& fn, uint32_t priority)
+{
+    return this->dispatch(socket, [&fn]() -> fb::task<void>
+    {
+        fn();
+        co_return;
+    });
 }
 
 template <template<class> class S, class T>
@@ -575,11 +564,11 @@ void fb::acceptor<T>::handle_start()
 }
 
 template <typename T>
-bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bool(fb::socket<T>&)>& fn)
+fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 {
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
 
-    return socket.in_stream<bool>([this, &socket, &fn](auto& in_stream) -> bool
+    return socket.in_stream<fb::task<bool>>([this, &socket, &fn](auto& in_stream) -> fb::task<bool>
     {
         auto& crt = socket.crt();
         while(true)
@@ -613,11 +602,9 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
                     size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
 
                 // Call function that matched by command byte
-                auto                task = this->call(socket, cmd);
-                if(!task.done())
-                    socket.push_task(std::move(task));
-                else if(!task.value())
-                    throw std::exception();
+                auto before = this->handle_thread_index(socket);
+                co_await this->call(socket, cmd);
+                auto after = this->handle_thread_index(socket);
 
                 // Set data pointer to process next packet bytes
                 in_stream.reset();
@@ -625,8 +612,8 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
                 in_stream.flush();
 
                 // 콜백 조건이 만족하지 못하는 경우 즉시 종료
-                if(fn(socket) == false)
-                    return true;
+                if (before != after)
+                    co_return true;
             }
             catch(std::exception& e)
             {
@@ -642,7 +629,7 @@ bool fb::acceptor<T>::handle_parse(fb::socket<T>& socket, const std::function<bo
         }
 
         in_stream.reset();
-        return false;
+        co_return false;
     });
 }
 

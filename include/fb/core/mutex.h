@@ -137,7 +137,7 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, &awaiter, &fn, &current, key, mutex](uint8_t) mutable 
+            thread->dispatch([this, &awaiter, &fn, &current, key, mutex]() mutable 
             {
                 this->handle_locked(awaiter, fn, current, key, *mutex);
             });
@@ -164,7 +164,7 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, &awaiter, &fn, key, mutex](uint8_t) mutable 
+            thread->dispatch([this, &awaiter, &fn, key, mutex]() mutable 
             {
                 this->handle_locked(awaiter, fn, key, *mutex);
             });

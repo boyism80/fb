@@ -18,26 +18,28 @@ void fb::thread::handle_thread(uint8_t index)
 
     while(!this->_exit)
     {
-        auto fn = fb::queue_callback();
-        auto awaiter = (fb::awaiter<void>*)nullptr;
+        auto completed = false;
+        completed = this->_queue.dequeue([this](auto task)
+        {
+            if (!task.done())
+                this->_queue.enqueue(std::move(task));
+        });
+        if(completed)
+            continue;
 
-        if(this->_queue.dequeue(fn))
+        completed = this->_dispatch_awaiter_queue.dequeue([](auto awaiter)
         {
-            fn(index);
-        }
-        else if(this->_dispatch_awaiter_queue.dequeue(awaiter))
-        {
-            awaiter->handler.resume();
-        }
-        else
-        {
-            auto begin = now();
-            this->handle_idle();
-            auto elapsed = now() - begin;
+            awaiter.handler.resume();
+        });
+        if(completed)
+            continue;
 
-            if(elapsed < term)
-                std::this_thread::sleep_for(term - elapsed);
-        }
+        auto begin = now();
+        this->handle_idle();
+        auto elapsed = now() - begin;
+
+        if (elapsed < term)
+            std::this_thread::sleep_for(term - elapsed);
     }
 }
 
@@ -100,9 +102,18 @@ void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::stead
     this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
 }
 
-void fb::thread::dispatch(fb::queue_callback&& fn, int priority)
+void fb::thread::dispatch(fb::task<void>&& task, int priority)
 {
-    this->_queue.enqueue(std::move(fn), priority);
+    this->_queue.enqueue(std::move(task), priority);
+}
+
+void fb::thread::dispatch(const std::function<void()>& fn, int priority)
+{
+    return this->dispatch([&fn]()
+    {
+        fn();
+        co_return;
+    }, priority)
 }
 
 fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& duration)
@@ -111,7 +122,7 @@ fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& d
     {
         this->dispatch([this, &awaiter]
         {
-            this->_dispatch_awaiter_queue.enqueue(&awaiter);
+            this->_dispatch_awaiter_queue.enqueue(std::move(awaiter));
         }, duration);
     };
     return fb::awaiter<void>(await_callback);
@@ -121,7 +132,7 @@ fb::awaiter<void> fb::thread::dispatch(uint32_t priority)
 {
     auto await_callback = [this, priority](auto& awaiter)
     {
-        this->_dispatch_awaiter_queue.enqueue(&awaiter, priority);
+        this->_dispatch_awaiter_queue.enqueue(std::move(awaiter), priority);
     };
 
     return fb::awaiter<void>(await_callback);

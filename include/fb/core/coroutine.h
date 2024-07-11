@@ -6,6 +6,9 @@
 #include <optional>
 #include <coroutine>
 #include <functional>
+#include <chrono>
+
+using namespace std::chrono_literals;
 
 namespace fb {
 
@@ -71,6 +74,11 @@ private:
 protected:
     base_awaiter(const awaiter_handler<T>& callback) : _callback(callback)
     {}
+    base_awaiter(const base_awaiter&) = delete;
+    base_awaiter(base_awaiter&& r) : awaitable(static_cast<base_awaiter&&>(r)), _callback(r._callback)
+    {
+        
+    }
 
 public:
     virtual ~base_awaiter()
@@ -81,6 +89,12 @@ public:
     {
         awaitable::await_suspend(h);
         this->_callback(static_cast<awaiter<T>&>(*this));
+    }
+
+    void operator = (const base_awaiter&) = delete;
+    void operator = (base_awaiter&& r)
+    {
+        awaitable::operator = (static_cast<awaitable&&>(r));
     }
 };
 #pragma endregion
@@ -132,8 +146,18 @@ class awaiter<void> : public base_awaiter<void>
 public:
     awaiter(const awaiter_handler<void>& callback) : base_awaiter<void>(callback)
     { }
+    awaiter(const awaiter&) = delete;
+    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r))
+    { }
     virtual ~awaiter()
     { }
+
+public:
+    void operator = (const awaiter&) = delete;
+    void operator = (awaiter&& r)
+    {
+        base_awaiter<void>::operator=(static_cast<base_awaiter<void>&&>(r));
+    }
 };
 
 
@@ -267,6 +291,15 @@ public:
             return promise._value.value();
         }
     }
+
+    void wait()
+    {
+        constexpr auto term = 100ms;
+        while(!this->done())
+        {
+            std::this_thread::sleep_for(term);
+        }
+    }
 };
 
 template <>
@@ -349,11 +382,20 @@ public:
     }
 
     void operator = (const task&) = delete;
-    void operator=  (task&& r) noexcept
+    void operator = (task&& r) noexcept
     {
         awaitable::operator = (static_cast<awaitable&&>(r));
         this->_handler = r._handler;
         r._handler = nullptr;
+    }
+
+    void wait()
+    {
+        constexpr auto term = 100ms;
+        while(!this->done())
+        {
+            std::this_thread::sleep_for(term);
+        }
     }
 };
 
