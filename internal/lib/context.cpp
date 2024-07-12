@@ -32,30 +32,30 @@ fb::internal::context::service* fb::internal::context::get(fb::protocol::interna
     }
 }
 
-bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::session>& socket, const std::function<bool(fb::internal::socket<fb::internal::session>&)>& callback)
+fb::task<bool> fb::internal::context::handle_parse(fb::internal::socket<fb::internal::session>& socket)
 {
     static constexpr uint8_t base_size = sizeof(uint16_t);
 
-    return socket.in_stream<bool>([this, &socket](auto& in_stream) -> bool
+    return socket.in_stream<fb::task<bool>>([this, &socket](auto& in_stream) -> fb::task<bool>
     {
         while(true)
         {
             try
             {
-                if(in_stream.readable_size() < base_size)
-                    throw std::exception();
+                if (in_stream.readable_size() < base_size)
+                    co_return false;
 
                 auto size = in_stream.read_u16();
                 if(size > in_stream.capacity())
-                    throw std::exception();
+                    co_return false;
 
                 if(in_stream.readable_size() < size)
-                    throw std::exception();
+                    co_return false;
 
                 auto cmd = in_stream.read_8();
                 auto found = this->_handler.find(cmd);
                 if(found == this->_handler.end())
-                    throw std::exception();
+                    co_return false;
 
                 found->second(socket);
 
@@ -74,7 +74,7 @@ bool fb::internal::context::handle_parse(fb::internal::socket<fb::internal::sess
         }
 
         in_stream.reset();
-        return false;
+        co_return true;
     });
 }
 

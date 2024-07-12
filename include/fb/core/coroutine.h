@@ -15,9 +15,11 @@ namespace fb {
 #pragma region abstract
 class awaitable
 {
+private:
+    std::coroutine_handle<> handler;
+
 public:
     std::exception_ptr      error = nullptr;
-    std::coroutine_handle<> handler;
 
 public:
     awaitable() = default;
@@ -55,6 +57,19 @@ public:
         this->error = r.error;
         r.error = nullptr;
     }
+
+    void resume()
+    {
+        this->handler.resume();
+    }
+
+    bool done() const
+    {
+        if (!this->handler)
+            throw std::runtime_error("handler cannot be empty");
+
+        return this->handler.done();
+    }
 };
 
 template <typename T>
@@ -75,7 +90,7 @@ protected:
     base_awaiter(const awaiter_handler<T>& callback) : _callback(callback)
     {}
     base_awaiter(const base_awaiter&) = delete;
-    base_awaiter(base_awaiter&& r) : awaitable(static_cast<base_awaiter&&>(r)), _callback(r._callback)
+    base_awaiter(base_awaiter&& r) noexcept : awaitable(static_cast<base_awaiter&&>(r)), _callback(r._callback)
     {
         
     }
@@ -92,7 +107,7 @@ public:
     }
 
     void operator = (const base_awaiter&) = delete;
-    void operator = (base_awaiter&& r)
+    void operator = (base_awaiter&& r) noexcept
     {
         awaitable::operator = (static_cast<awaitable&&>(r));
     }
@@ -147,14 +162,14 @@ public:
     awaiter(const awaiter_handler<void>& callback) : base_awaiter<void>(callback)
     { }
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r))
+    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r))
     { }
     virtual ~awaiter()
     { }
 
 public:
     void operator = (const awaiter&) = delete;
-    void operator = (awaiter&& r)
+    void operator = (awaiter&& r) noexcept
     {
         base_awaiter<void>::operator=(static_cast<base_awaiter<void>&&>(r));
     }
@@ -197,7 +212,7 @@ public:
         {
             this->error = std::current_exception();
             if (this->_awaitable != nullptr)
-                this->_awaitable->handler.resume();
+                this->_awaitable->resume();
         }
 
         template<std::convertible_to<T> From>
@@ -205,36 +220,40 @@ public:
         {
             this->_value = std::forward<From>(from);
             if (this->_awaitable != nullptr)
-                this->_awaitable->handler.resume();
+                this->_awaitable->resume();
         }
     };
 
-    handle_type _handler;
+    handle_type handler;
 
-    task(handle_type handler) : _handler(handler) { }
+    task(handle_type handler) : handler(handler) { }
     task(const task&) = delete;
-    task(task&& r) : awaitable(static_cast<awaitable&&>(r)), _handler(r._handler)
+    task(task&& r) noexcept : awaitable(static_cast<awaitable&&>(r)), handler(r.handler)
     {
-        r._handler = nullptr;
+        r.handler = nullptr;
     }
     ~task()
     {
-        if(this->_handler)
-            this->_handler.destroy();
+        if (this->handler)
+        {
+            if (!this->done())
+                throw std::runtime_error("cannot destroy handler before job does not finish");
+            this->handler.destroy();
+        }
     }
 
     void await_suspend(std::coroutine_handle<> h)
     {
         awaitable::await_suspend(h);
 
-        auto& promise = this->_handler.promise();
+        auto& promise = this->handler.promise();
         promise._awaitable = this;
         if (promise.error)
-            std::rethrow_exception(this->_handler.promise().error);
+            std::rethrow_exception(this->handler.promise().error);
 
         if (promise._value.has_value())
         {
-            awaitable::handler.resume();
+            awaitable::resume();
         }
     }
 
@@ -246,19 +265,22 @@ public:
 
     bool done()
     {
-        return this->_handler.done();
+        if (!this->handler)
+            throw std::runtime_error("destroyed task");
+
+        this->handler.done();
     }
 
     void operator()()
     {
-        auto& promise = this->_handler.promise();
+        auto& promise = this->handler.promise();
         if (promise._awaitable != nullptr)
         {
-            promise._awaitable->_handler.resume();
+            promise._awaitable->handler.resume();
         }
         else
         {
-            this->_handler.resume();
+            this->handler.resume();
         }
 
         if (promise.error)
@@ -269,13 +291,13 @@ public:
     void operator=  (task&& r) noexcept
     {
         awaitable::operator = (static_cast<awaitable&&>(r));
-        this->_handler = r._handler;
-        r._handler = nullptr;
+        this->handler = r.handler;
+        r.handler = nullptr;
     }
 
     T& value()
     {
-        auto& promise = this->_handler.promise();
+        auto& promise = this->handler.promise();
         if (promise.error)
             std::rethrow_exception(promise.error);
 
@@ -322,37 +344,42 @@ public:
         {
             this->error = std::current_exception();
             if (_awaitable != nullptr)
-                _awaitable->handler.resume();
+                _awaitable->resume();
         }
         void return_void()
         {
             if (_awaitable != nullptr)
-                _awaitable->handler.resume();
+                _awaitable->resume();
         }
     };
 
-    handle_type _handler;
+    handle_type handler;
 
-    task(handle_type handler) : _handler(handler) { }
+    task(handle_type handler) : handler(handler) { }
     task(const task&) = delete;
-    task(task&& r) noexcept : awaitable(static_cast<awaitable&&>(r)), _handler(r._handler)
+    task(task&& r) noexcept : awaitable(static_cast<awaitable&&>(r)), handler(r.handler)
     {
-        r._handler = nullptr;
+        r.handler = nullptr;
     }
     ~task()
     {
-        if(this->_handler)
-            this->_handler.destroy();
+        if (this->handler)
+        {
+            if (!this->done())
+                throw std::runtime_error("cannot destroy handler before job does not finish");
+
+            this->handler.destroy();
+        }
     }
 
     void await_suspend(std::coroutine_handle<> h)
     {
         awaitable::await_suspend(h);
 
-        auto& promise = this->_handler.promise();
+        auto& promise = this->handler.promise();
         promise._awaitable = this;
         if (promise.error)
-            std::rethrow_exception(this->_handler.promise().error);
+            std::rethrow_exception(this->handler.promise().error);
     }
 
     void await_resume()
@@ -362,19 +389,22 @@ public:
 
     bool done()
     {
-        return this->_handler.done();
+        if (!this->handler)
+            throw std::runtime_error("destroyed task");
+
+        this->handler.done();
     }
 
     void operator()()
     {
-        auto& promise = this->_handler.promise();
+        auto& promise = this->handler.promise();
         if (promise._awaitable != nullptr)
         {
-            promise._awaitable->handler.resume();
+            promise._awaitable->resume();
         }
         else
         {
-            this->_handler.resume();
+            this->handler.resume();
         }
 
         if (promise.error)
@@ -385,8 +415,8 @@ public:
     void operator = (task&& r) noexcept
     {
         awaitable::operator = (static_cast<awaitable&&>(r));
-        this->_handler = r._handler;
-        r._handler = nullptr;
+        this->handler = r.handler;
+        r.handler = nullptr;
     }
 
     void wait()

@@ -293,7 +293,7 @@ void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
     }
 
     awaiter->result = std::ref(response);
-    awaiter->handler.resume();
+    awaiter->resume();
 }
 
 template <typename T, typename C>
@@ -310,7 +310,7 @@ fb::awaitable_socket<T, C>::awaiter<R> fb::awaitable_socket<T, C>::request(const
                     return;
 
                 awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-                awaiter.handler.resume();
+                awaiter.resume();
             };
             this->send(header, encrypt, wrap, callback);
         });
@@ -329,7 +329,7 @@ fb::awaitable_socket<T, C>::awaiter<R> fb::awaitable_socket<T, C>::request(const
                     return;
 
                 awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-                awaiter.handler.resume();
+                awaiter.resume();
             };
             this->send(header, encrypt, wrap, callback);
         });

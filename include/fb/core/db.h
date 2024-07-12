@@ -159,20 +159,20 @@ public:
                         thread->dispatch([&awaiter, ptr]() mutable
                         {
                             awaiter.result = std::ref(*ptr.get());
-                            awaiter.handler.resume();
+                            awaiter.resume();
                         });
                     }
                     else
                     {
                         awaiter.result = std::ref(results);
-                        awaiter.handler.resume();
+                        awaiter.resume();
                     }
                 },
                 /* error */
                 [&awaiter](auto& e)
                 {
                     awaiter.error = std::make_exception_ptr(e);
-                    awaiter.handler.resume();
+                    awaiter.resume();
                 }
             };
             this->enqueue(id, task);

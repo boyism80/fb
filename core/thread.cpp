@@ -29,7 +29,7 @@ void fb::thread::handle_thread(uint8_t index)
 
         completed = this->_dispatch_awaiter_queue.dequeue([](auto awaiter)
         {
-            awaiter.handler.resume();
+            awaiter.resume();
         });
         if(completed)
             continue;
@@ -109,11 +109,11 @@ void fb::thread::dispatch(fb::task<void>&& task, int priority)
 
 void fb::thread::dispatch(const std::function<void()>& fn, int priority)
 {
-    return this->dispatch([&fn]()
-    {
-        fn();
-        co_return;
-    }, priority)
+    return this->dispatch([&fn]() -> fb::task<void>
+        {
+            fn();
+            co_return;
+        }(), priority);
 }
 
 fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& duration)

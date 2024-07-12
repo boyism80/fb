@@ -218,7 +218,7 @@ public:
     }
     void remove(base_bot& bot);
     void handle_timer(std::chrono::steady_clock::duration now, std::thread::id id);
-    void dispatch(uint32_t id, std::function<void(uint32_t)>&& fn);
+    void dispatch(uint32_t id, std::function<void()>&& fn);
 };
 
 } }

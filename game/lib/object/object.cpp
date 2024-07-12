@@ -414,7 +414,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             if(awaiter != nullptr)
             {
                 awaiter->result = std::ref(result);
-                awaiter->handler.resume();
+                awaiter->resume();
             }
             co_return result;
         }
@@ -426,7 +426,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             if(awaiter != nullptr)
             {
                 awaiter->result = std::ref(result);
-                awaiter->handler.resume();
+                awaiter->resume();
             }
             co_return result;
         }
@@ -437,7 +437,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
             if(awaiter != nullptr)
             {
                 awaiter->result = std::ref(result);
-                awaiter->handler.resume();
+                awaiter->resume();
             }
             co_return result;
         }
@@ -477,7 +477,7 @@ fb::task<bool> fb::game::object::__map(fb::game::map* map, const point16_t posit
         if(awaiter != nullptr)
         {
             awaiter->result = std::ref(result);
-            awaiter->handler.resume();
+            awaiter->resume();
         }
         this->_map_lock = false;
         co_return result;

@@ -50,7 +50,7 @@ private:
                 awaiter.error = std::make_exception_ptr(e);
             }
         }
-        awaiter.handler.resume();
+        awaiter.resume();
     }
 
     template <typename T>
@@ -75,7 +75,7 @@ private:
             awaiter.error = std::make_exception_ptr(fb::lock_error());
         }
         
-        awaiter.handler.resume();
+        awaiter.resume();
     }
 
     template <typename T>
@@ -131,7 +131,7 @@ private:
         catch(std::exception& e)
         {
             awaiter.error = std::make_exception_ptr(e);
-            awaiter.handler.resume();
+            awaiter.resume();
             return false;
         }
 

@@ -843,7 +843,7 @@ fb::awaiter<void> fb::game::context::co_save(fb::game::session& session)
     {
         this->save(session, [this, &awaiter] (auto& session)
         {
-            awaiter.handler.resume();
+            awaiter.resume();
         });
     };
 

@@ -92,11 +92,11 @@ void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 
     if(id == 0xFF)
     {
-        this->handle_work(casted, id);
+        this->handle_work(casted).wait();
     }
     else
     {
-        this->dispatch(casted, std::bind(&fb::base::acceptor<S,T>::handle_work, this, casted, std::placeholders::_1));
+        this->dispatch(casted, std::bind(&fb::base::acceptor<S,T>::handle_work, this, casted));
     }
 }
 
@@ -108,7 +108,7 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 
     auto                        casted = static_cast<S<T>*>(&socket);
     auto                        id     = this->handle_thread_index(*casted);
-    auto                        fn     = [this, casted] (uint8_t id)
+    auto                        fn     = [this, casted] ()
     {
         this->handle_disconnected(*casted);
         this->sockets.erase(*casted);
@@ -116,11 +116,11 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 
     if(id == 0xFF)
     {
-        fn(id);
+        fn();
     }
     else
     {
-        this->_threads[id]->dispatch(fn, true);
+        this->_threads[id]->dispatch(fn);
     }
 }
 
@@ -206,7 +206,7 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
             co_await thread->dispatch();
 
         awaiter.result = std::ref(response);
-        awaiter.handler.resume();
+        awaiter.resume();
     }
     catch(const boost::system::error_code& ec)
     {
@@ -215,13 +215,13 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
             thread->dispatch([&awaiter, &ec] ()
             {
                 awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-                awaiter.handler.resume();
+                awaiter.resume();
             });
         }
         else
         {
             awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-            awaiter.handler.resume();
+            awaiter.resume();
         }
     }
 }
@@ -313,7 +313,7 @@ fb::awaiter<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_cloc
     {
         return fb::awaiter<void>([this](auto& awaiter)
         {
-            awaiter.handler.resume();
+            awaiter.resume();
         });
     }
 
@@ -492,7 +492,7 @@ fb::awaiter<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, ui
                 else
                     this->_internal->recv();
 
-                awaiter.handler.resume();
+                awaiter.resume();
             }
         );
     };
@@ -568,7 +568,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 {
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
 
-    return socket.in_stream<fb::task<bool>>([this, &socket, &fn](auto& in_stream) -> fb::task<bool>
+    return socket.in_stream<fb::task<bool>>([this, &socket](auto& in_stream) -> fb::task<bool>
     {
         auto& crt = socket.crt();
         while(true)
@@ -603,7 +603,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 
                 // Call function that matched by command byte
                 auto before = this->handle_thread_index(socket);
-                co_await this->call(socket, cmd);
+                auto result = co_await this->call(socket, cmd);
                 auto after = this->handle_thread_index(socket);
 
                 // Set data pointer to process next packet bytes
@@ -612,8 +612,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
                 in_stream.flush();
 
                 // 콜백 조건이 만족하지 못하는 경우 즉시 종료
-                if (before != after)
-                    co_return true;
+                co_return before != after;
             }
             catch(std::exception& e)
             {

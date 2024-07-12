@@ -463,7 +463,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
             if(awaiter != nullptr)
             {
                 awaiter->result = std::ref(result);
-                awaiter->handler.resume();
+                awaiter->resume();
             }
             co_return;
         }
@@ -488,7 +488,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         if(awaiter != nullptr)
         {
             awaiter->result = std::ref(result);
-            awaiter->handler.resume();
+            awaiter->resume();
         }
     }
     catch(std::exception& e)
@@ -500,7 +500,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
             if(awaiter != nullptr)
             {
                 awaiter->result = std::ref(result);
-                awaiter->handler.resume();
+                awaiter->resume();
             }
             co_return;
         }
@@ -513,7 +513,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         if(awaiter != nullptr)
         {
             awaiter->result = std::ref(result);
-            awaiter->handler.resume();
+            awaiter->resume();
         }
     }
     catch(boost::system::error_code& /*e*/)
@@ -525,7 +525,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
             if(awaiter != nullptr)
             {
                 awaiter->result = std::ref(result);
-                awaiter->handler.resume();
+                awaiter->resume();
             }
             co_return;
         }
@@ -538,7 +538,7 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         if(awaiter != nullptr)
         {
             awaiter->result = std::ref(result);
-            awaiter->handler.resume();
+            awaiter->resume();
         }
     }
 }

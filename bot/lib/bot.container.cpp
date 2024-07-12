@@ -21,7 +21,7 @@ void bot_container::remove(base_bot& bot)
 {
     auto id = bot.id % this->_threads.size();
     auto thread = this->_threads[id];
-    auto fn = [this, &bot] (auto _)
+    auto fn = [this, &bot] ()
     {/*   MUTEX_GUARD(this->_bots_lock)*/
 
         auto i = this->_bots.find(bot.id);
@@ -44,7 +44,7 @@ void bot_container::handle_timer(std::chrono::steady_clock::duration now, std::t
     }
 }
 
-void bot_container::dispatch(uint32_t id, std::function<void(uint32_t)>&& fn)
+void bot_container::dispatch(uint32_t id, std::function<void()>&& fn)
 {
     auto index = id % this->_threads.size();
     auto thread = this->_threads[index];

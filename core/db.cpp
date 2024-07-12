@@ -232,11 +232,11 @@ fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sq
         this->enqueue(id, task {sql, [&awaiter] (auto& results) 
         {
             awaiter.result = std::ref(results);
-            awaiter.handler.resume();
+            awaiter.resume();
         }, [&awaiter] (auto& e)
         {
             awaiter.error = std::make_exception_ptr(e);
-            awaiter.handler.resume();
+            awaiter.resume();
         }});
     };
 
