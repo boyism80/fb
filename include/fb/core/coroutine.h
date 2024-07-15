@@ -259,21 +259,43 @@ public:
         return this->value();
     }
 
-    void resume(typename task_resume_type<T>::type value)
+    template <typename Q = T>
+    typename std::enable_if<std::is_class<Q>::value>::type resume(T&& value)
+    {
+        this->result(value);
+        base_task<T>::resume();
+    }
+
+    template <typename Q = T>
+    typename std::enable_if<std::is_class<Q>::value>::type resume(T& value)
+    {
+        this->result(value);
+        base_task<T>::resume();
+    }
+
+    template <typename Q = T>
+    typename std::enable_if<std::is_class<Q>::value>::type result(T&& value)
     {
         auto& promise = static_cast<promise_type&>(this->handler.promise());
         promise.value = value;
-        base_task<T>::resume();
     }
 
-    void resume(const T& value)
+    template <typename Q = T>
+    typename std::enable_if<std::is_class<Q>::value>::type result(T& value)
     {
         auto& promise = static_cast<promise_type&>(this->handler.promise());
         promise.value = std::ref(value);
+    }
+
+    template <typename Q = T>
+    typename std::enable_if<!std::is_class<Q>::value>::type resume(T value)
+    {
+        this->result(value);
         base_task<T>::resume();
     }
 
-    void result(typename task_resume_type<T>::type value)
+    template <typename Q = T>
+    typename std::enable_if<!std::is_class<Q>::value>::type result(T value)
     {
         auto& promise = static_cast<promise_type&>(this->handler.promise());
         promise.value = value;
