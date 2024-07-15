@@ -269,7 +269,7 @@ void fb::awaitable_socket<T,C>::register_awaiter(C cmd, awaiter<R>* awaiter)
     if(i != this->_coroutines.end())
     {
         auto awaiter = static_cast<awaitable_socket<T,C>::awaiter<R>*>(i->second);
-        awaiter->error = std::make_exception_ptr(boost::system::error_code());
+        awaiter->resume(boost::system::error_code());
         this->_coroutines.erase(cmd);
     }
     
@@ -292,8 +292,7 @@ void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
         this->_coroutines.erase(cmd);
     }
 
-    awaiter->result = std::ref(response);
-    awaiter->resume();
+    awaiter->resume(std::ref(response));
 }
 
 template <typename T, typename C>
@@ -309,8 +308,7 @@ fb::awaitable_socket<T, C>::awaiter<R> fb::awaitable_socket<T, C>::request(const
                 if (!ec)
                     return;
 
-                awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-                awaiter.resume();
+                awaiter.resume(boost::system::error_code(ec));
             };
             this->send(header, encrypt, wrap, callback);
         });
@@ -328,8 +326,7 @@ fb::awaitable_socket<T, C>::awaiter<R> fb::awaitable_socket<T, C>::request(const
                 if (!ec)
                     return;
 
-                awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-                awaiter.resume();
+                awaiter.resume(boost::system::error_code(ec));
             };
             this->send(header, encrypt, wrap, callback);
         });

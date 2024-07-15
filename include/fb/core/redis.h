@@ -108,13 +108,12 @@ private:
     {
         try
         {
-            auto& result = co_await fn(current);
-            awaiter.result = std::ref(result);
+            awaiter.result(std::ref(co_await fn(current)));
             concurrent::add(current);
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(e);
+            awaiter.error(e);
         }
 
         conn->del({ key }, [this, subs, key](auto& reply) mutable
@@ -126,7 +125,7 @@ private:
         conn->publish(key, uuid, [this, key, conn, &awaiter](auto& reply) mutable
         {
             this->conn.release(conn);
-            awaiter.handler.resume();
+            awaiter.resume();
         });
         conn->commit();
     }
@@ -136,19 +135,18 @@ private:
     {
         try
         {
-            auto& result = co_await fn();
-            awaiter.result = std::ref(result);
+            awaiter.result(std::ref(co_await fn()));
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(e);
+            awaiter.error(e);
         }
 
         conn->del({ key });
         conn->publish(key, uuid, [this, key, conn, &awaiter](auto& reply) mutable
         {
             this->conn.release(conn);
-            awaiter.handler.resume();
+            awaiter.resume();
         });
         conn->commit();
     }
@@ -164,8 +162,7 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(e);
-            awaiter.handler.resume();
+            awaiter.resume(e);
             return false;
         }
 
@@ -199,8 +196,7 @@ private:
             auto success = v.as_integer() == 1;
             if (success == false)
             {
-                awaiter.error = std::make_exception_ptr(fb::lock_error());
-                awaiter.handler.resume();
+                awaiter.resume(fb::lock_error());
             }
             else if (thread != nullptr)
             {

@@ -41,13 +41,13 @@ private:
             try
             {
                 auto& result = co_await fn(current);
-                awaiter.result = std::ref(result);
+                awaiter.result(std::ref(result));
 
                 concurrent::add(current);
             }
             catch(std::exception& e)
             {
-                awaiter.error = std::make_exception_ptr(e);
+                awaiter.error(e);
             }
         }
         awaiter.resume();
@@ -61,18 +61,18 @@ private:
             try
             {
                 auto& result = co_await fn();
-                awaiter.result = std::ref(result);
+                awaiter.result(std::ref(result));
             }
             catch(std::exception& e)
             {
-                awaiter.error = std::make_exception_ptr(e);
+                awaiter.error(e);
             }
 
             mutex.unlock();
         }
         else
         {
-            awaiter.error = std::make_exception_ptr(fb::lock_error());
+            awaiter.error(fb::lock_error());
         }
         
         awaiter.resume();
@@ -130,8 +130,7 @@ private:
         }
         catch(std::exception& e)
         {
-            awaiter.error = std::make_exception_ptr(e);
-            awaiter.resume();
+            awaiter.resume(e);
             return false;
         }
 

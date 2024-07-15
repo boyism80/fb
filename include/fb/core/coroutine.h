@@ -12,170 +12,6 @@ using namespace std::chrono_literals;
 
 namespace fb {
 
-#pragma region abstract
-class awaitable
-{
-private:
-    std::coroutine_handle<> handler;
-
-public:
-    std::exception_ptr      error = nullptr;
-
-public:
-    awaitable() = default;
-    awaitable(const awaitable&) = delete;
-    awaitable(awaitable&& r) noexcept : handler(r.handler), error(r.error)
-    {
-        r.handler = nullptr;
-        r.error = nullptr;
-    }
-    ~awaitable() = default;
-
-public:
-    virtual bool await_ready()
-    {
-        return false;
-    }
-
-    virtual void await_suspend(std::coroutine_handle<> h)
-    {
-        this->handler = h;
-    }
-
-    void await_resume()
-    {
-        if (this->error)
-            std::rethrow_exception(this->error);
-    }
-
-    void operator = (const awaitable&) = delete;
-    void operator = (awaitable&& r) noexcept
-    {
-        this->handler = r.handler;
-        r.handler = nullptr;
-        
-        this->error = r.error;
-        r.error = nullptr;
-    }
-
-    void resume()
-    {
-        this->handler.resume();
-    }
-
-    bool done() const
-    {
-        if (!this->handler)
-            throw std::runtime_error("handler cannot be empty");
-
-        return this->handler.done();
-    }
-};
-
-template <typename T>
-class awaiter;
-
-template <typename T>
-using awaiter_handler = std::function<void(awaiter<T>&)>;
-
-
-
-template <typename T>
-class base_awaiter : public awaitable
-{
-private:
-    const awaiter_handler<T> _callback;
-
-protected:
-    base_awaiter(const awaiter_handler<T>& callback) : _callback(callback)
-    {}
-    base_awaiter(const base_awaiter&) = delete;
-    base_awaiter(base_awaiter&& r) noexcept : awaitable(static_cast<base_awaiter&&>(r)), _callback(r._callback)
-    {
-        
-    }
-
-public:
-    virtual ~base_awaiter()
-    {}
-
-public:
-    virtual void await_suspend(std::coroutine_handle<> h)
-    {
-        awaitable::await_suspend(h);
-        this->_callback(static_cast<awaiter<T>&>(*this));
-    }
-
-    void operator = (const base_awaiter&) = delete;
-    void operator = (base_awaiter&& r) noexcept
-    {
-        awaitable::operator = (static_cast<awaitable&&>(r));
-    }
-};
-#pragma endregion
-
-template <typename T, typename T2 = void> struct awaiter_result; // Use this one instead.
-
-template <typename T>
-struct awaiter_result<T, typename std::enable_if<std::is_class<T>::value>::type>
-{
-    typedef std::optional<std::reference_wrapper<T>> type;
-};
-
-template <typename T>
-struct awaiter_result<T, typename std::enable_if<!std::is_class<T>::value>::type>
-{
-    typedef T type;
-};
-
-template <typename T = void>
-class awaiter : public base_awaiter<T>
-{
-public:
-    typename awaiter_result<T>::type result;
-
-public:
-    awaiter(const awaiter_handler<T>& callback) : base_awaiter<T>(callback)
-    { }
-    virtual ~awaiter()
-    { }
-
-public:
-    T& await_resume()
-    {
-        base_awaiter<T>::await_resume();
-        if constexpr (std::is_class_v<T>)
-        {
-            return this->result.value().get();
-        }
-        else
-        {
-            return result;
-        }
-    }
-};
-
-template <>
-class awaiter<void> : public base_awaiter<void>
-{
-public:
-    awaiter(const awaiter_handler<void>& callback) : base_awaiter<void>(callback)
-    { }
-    awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r))
-    { }
-    virtual ~awaiter()
-    { }
-
-public:
-    void operator = (const awaiter&) = delete;
-    void operator = (awaiter&& r) noexcept
-    {
-        base_awaiter<void>::operator=(static_cast<base_awaiter<void>&&>(r));
-    }
-};
-
-
 template <typename T, typename T2 = void> struct task_result; // Use this one instead.
 
 template <typename T>
@@ -190,49 +26,56 @@ struct task_result<T, typename std::enable_if<!std::is_class<T>::value>::type>
     typedef std::optional<T> type;
 };
 
+template <typename T1, typename T2 = void> struct task_resume_type;
 
-template <typename T = void>
-class task : public awaitable
+template <typename T>
+struct task_resume_type<T, typename std::enable_if_t<std::is_void_v<T>>>
+{
+    typedef void type;
+};
+
+template <typename T>
+struct task_resume_type<T, typename std::enable_if_t<!std::is_void_v<T>>>
+{
+    typedef T& type;
+};
+
+class base_promise;
+using handle_type = std::coroutine_handle<base_promise>;
+
+class base_promise
 {
 public:
-    class promise_type;
-    using handle_type = std::coroutine_handle<promise_type>;
+    std::exception_ptr error = nullptr;
+    handle_type parent, child;
 
-    class promise_type
-    {
-    public:
-        task_result<T>::type _value;
-        std::exception_ptr error = nullptr;
-        awaitable* _awaitable = nullptr;
+    auto initial_suspend() { return std::suspend_never{}; }
+    auto final_suspend() noexcept { return std::suspend_always{}; }
+    void unhandled_exception() { this->error = std::current_exception(); }
+};
 
-        auto get_return_object() { return task(handle_type::from_promise(*this)); }
-        auto initial_suspend() { return std::suspend_never{}; }
-        auto final_suspend() noexcept { return std::suspend_always{}; }
-        void unhandled_exception()
-        {
-            this->error = std::current_exception();
-            if (this->_awaitable != nullptr)
-                this->_awaitable->resume();
-        }
+template <typename T> class task;
+template <typename T> using awaiter_handler = std::function<void(task<T>&)>;
 
-        template<std::convertible_to<T> From>
-        void return_value(From&& from)
-        {
-            this->_value = std::forward<From>(from);
-            if (this->_awaitable != nullptr)
-                this->_awaitable->resume();
-        }
-    };
+template <typename T>
+class base_task
+{
+private:
+    awaiter_handler<T> callback;
 
+public:
     handle_type handler;
 
-    task(handle_type handler) : handler(handler) { }
-    task(const task&) = delete;
-    task(task&& r) noexcept : awaitable(static_cast<awaitable&&>(r)), handler(r.handler)
+public:
+    base_task(handle_type handler) : handler(handler) { }
+    base_task(const awaiter_handler<T>& callback) : callback(callback)
+    { }
+    base_task(const base_task&) = delete;
+    base_task(base_task&& r) noexcept : handler(r.handler)
     {
         r.handler = nullptr;
     }
-    ~task()
+    ~base_task()
     {
         if (this->handler)
         {
@@ -242,25 +85,105 @@ public:
         }
     }
 
-    void await_suspend(std::coroutine_handle<> h)
+    bool await_ready()
     {
-        awaitable::await_suspend(h);
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<> raw)
+    {
+        auto h = std::coroutine_handle<base_promise>::from_address(raw.address());
 
         auto& promise = this->handler.promise();
-        promise._awaitable = this;
         if (promise.error)
             std::rethrow_exception(this->handler.promise().error);
 
-        if (promise._value.has_value())
+        this->handler.promise().parent = h;
+        h.promise().child = this->handler;
+
+        if(this->callback)
+            this->callback(static_cast<task<T>&>(*this));
+        else
+            this->resume();
+    }
+
+    void resume()
+    {
+        if (this->done())
         {
-            awaitable::resume();
+            auto& parent = this->handler.promise().parent;
+            if (parent)
+                parent.resume();
+        }
+        else
+        {
+            this->handler.resume();
         }
     }
 
-    T& await_resume()
+    void error(std::exception_ptr&& e)
     {
-        awaitable::await_resume();
-        return this->value();
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = e;
+    }
+
+    void error(const std::exception& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+    }
+
+    void error(std::exception&& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+    }
+
+    void resume(std::exception_ptr&& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = e;
+        this->resume();
+    }
+
+    void resume(const std::exception& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+        this->resume();
+    }
+
+    void resume(std::exception&& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+        this->resume();
+    }
+
+    void error(const boost::system::error_code& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+    }
+
+    void error(boost::system::error_code&& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+    }
+
+    void resume(const boost::system::error_code& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+        this->resume();
+    }
+
+    void resume(boost::system::error_code&& e)
+    {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        promise.error = std::make_exception_ptr(e);
+        this->resume();
     }
 
     bool done()
@@ -268,50 +191,14 @@ public:
         if (!this->handler)
             throw std::runtime_error("destroyed task");
 
-        this->handler.done();
+        return this->handler.done();
     }
 
-    void operator()()
+    void operator = (const base_task&) = delete;
+    void operator = (base_task&& r) noexcept
     {
-        auto& promise = this->handler.promise();
-        if (promise._awaitable != nullptr)
-        {
-            promise._awaitable->handler.resume();
-        }
-        else
-        {
-            this->handler.resume();
-        }
-
-        if (promise.error)
-            std::rethrow_exception(promise.error);
-    }
-
-    void operator = (const task&) = delete;
-    void operator=  (task&& r) noexcept
-    {
-        awaitable::operator = (static_cast<awaitable&&>(r));
         this->handler = r.handler;
         r.handler = nullptr;
-    }
-
-    T& value()
-    {
-        auto& promise = this->handler.promise();
-        if (promise.error)
-            std::rethrow_exception(promise.error);
-
-        if (promise._value.has_value() == false)
-            throw std::runtime_error("value is empty");
-
-        if constexpr (std::is_class_v<T>)
-        {
-            return promise._value.value().get();
-        }
-        else
-        {
-            return promise._value.value();
-        }
     }
 
     void wait()
@@ -324,109 +211,133 @@ public:
     }
 };
 
-template <>
-class task<void> : public awaitable
+template <typename T = void>
+class task : public base_task<T>
 {
 public:
     class promise_type;
-    using handle_type = std::coroutine_handle<promise_type>;
 
-    class promise_type
-    {
-    public:
-        std::exception_ptr error = nullptr;
-        awaitable* _awaitable = nullptr;
-
-        auto get_return_object() { return task(handle_type::from_promise(*this)); }
-        auto initial_suspend() { return std::suspend_never{}; }
-        auto final_suspend() noexcept { return std::suspend_always{}; }
-        void unhandled_exception() 
-        {
-            this->error = std::current_exception();
-            if (_awaitable != nullptr)
-                _awaitable->resume();
-        }
-        void return_void()
-        {
-            if (_awaitable != nullptr)
-                _awaitable->resume();
-        }
-    };
-
-    handle_type handler;
-
-    task(handle_type handler) : handler(handler) { }
+public:
+    task(handle_type handler) : base_task<T>(handler)
+    {}
+    task(awaiter_handler<T> callback) : base_task<T>(callback)
+    {}
     task(const task&) = delete;
-    task(task&& r) noexcept : awaitable(static_cast<awaitable&&>(r)), handler(r.handler)
-    {
-        r.handler = nullptr;
-    }
-    ~task()
-    {
-        if (this->handler)
-        {
-            if (!this->done())
-                throw std::runtime_error("cannot destroy handler before job does not finish");
+    task(task&& r) : base_task<T>(static_cast<base_task<T>&&>(r))
+    {}
 
-            this->handler.destroy();
-        }
-    }
+public:
+    using base_task<T>::resume;
 
-    void await_suspend(std::coroutine_handle<> h)
+public:
+    T& value()
     {
-        awaitable::await_suspend(h);
-
-        auto& promise = this->handler.promise();
-        promise._awaitable = this;
+        auto& promise = static_cast<promise_type&>(this->handler.promise());
         if (promise.error)
-            std::rethrow_exception(this->handler.promise().error);
-    }
+            std::rethrow_exception(promise.error);
 
-    void await_resume()
-    {
-        awaitable::await_resume();
-    }
+        if (promise.value.has_value() == false)
+            throw std::runtime_error("value is empty");
 
-    bool done()
-    {
-        if (!this->handler)
-            throw std::runtime_error("destroyed task");
-
-        this->handler.done();
-    }
-
-    void operator()()
-    {
-        auto& promise = this->handler.promise();
-        if (promise._awaitable != nullptr)
+        if constexpr (std::is_class_v<T>)
         {
-            promise._awaitable->resume();
+            return promise.value.value().get();
         }
         else
         {
-            this->handler.resume();
+            return promise.value.value();
         }
+    }
 
-        if (promise.error)
-            std::rethrow_exception(promise.error);
+    T& await_resume()
+    {
+        auto& promise = this->handler.promise();
+        if (promise.parent)
+            promise.parent.promise().child = nullptr;
+
+        return this->value();
+    }
+
+    void resume(T&& value)
+    {
+        auto& promise = static_cast<promise_type&>(this->handler.promise());
+        promise.value = value;
+        base_task<T>::resume();
+    }
+
+    void resume(T& value)
+    {
+        auto& promise = static_cast<promise_type&>(this->handler.promise());
+        promise.value = std::ref(value);
+        base_task<T>::resume();
+    }
+
+    void result(T&& value)
+    {
+        auto& promise = static_cast<promise_type&>(this->handler.promise());
+        promise.value = value;
     }
 
     void operator = (const task&) = delete;
-    void operator = (task&& r) noexcept
+    void operator = (task&& r)
     {
-        awaitable::operator = (static_cast<awaitable&&>(r));
-        this->handler = r.handler;
-        r.handler = nullptr;
+        base_task<T>::operator = (static_cast<base_task<T>&&>(r));
+    }
+};
+
+template <>
+class task<void> : public base_task<void>
+{
+public:
+    class promise_type;
+
+public:
+    using base_task<void>::resume;
+
+public:
+    task(handle_type handler) : base_task<void>(handler)
+    {}
+    task(awaiter_handler<void> callback) : base_task<void>(callback)
+    {}
+    task(const task&) = delete;
+    task(task&& r) noexcept : base_task<void>(static_cast<base_task<void>&&>(r))
+    {}
+
+public:
+    void await_resume()
+    {
+        auto& promise = this->handler.promise();
+        if (promise.parent)
+            promise.parent.promise().child = nullptr;
     }
 
-    void wait()
+    void operator = (const task&) = delete;
+    void operator = (task&& r)
     {
-        constexpr auto term = 100ms;
-        while(!this->done())
-        {
-            std::this_thread::sleep_for(term);
-        }
+        base_task<void>::operator = (static_cast<base_task<void>&&>(r));
     }
+};
+
+template <typename T>
+class task<T>::promise_type : public base_promise
+{
+public:
+    task_result<T>::type value;
+
+    auto get_return_object() { return task<T>(handle_type::from_promise(*this)); }
+
+    template<std::convertible_to<T> From>
+    void return_value(From&& from)
+    {
+        this->value = std::forward<From>(from);
+    }
+};
+
+class task<void>::promise_type : public base_promise
+{
+public:
+    auto get_return_object() { return task<void>(handle_type::from_promise(*this)); }
+    void return_void() { }
 };
 
 template <typename OUTPUT, typename INPUT = void>
@@ -472,21 +383,21 @@ struct generator
     bool next() { return coro ? (coro.resume(), !coro.done()) : false; }
     OUTPUT value()
     {
-        auto& promise = coro.promise();
-        if (promise.has_value() == false)
+        auto& base_promise = coro.base_promise();
+        if (base_promise.has_value() == false)
             throw std::runtime_error("has no value");
 
-        return promise.current_value.value();
+        return base_promise.current_value.value();
     }
 
     void send(const INPUT& input)
     {
-        coro.promise().input_value = input;
+        coro.base_promise().input_value = input;
     }
 
     void send(INPUT&& input)
     {
-        coro.promise().input_value = std::move(input);
+        coro.base_promise().input_value = std::move(input);
     }
 
     generator(generator const& rhs) = delete;
@@ -530,11 +441,11 @@ struct generator<OUTPUT, void>
     bool next() { return coro ? (coro.resume(), !coro.done()) : false; }
     OUTPUT value()
     {
-        auto& promise = coro.promise();
-        if (promise.current_value.has_value() == false)
+        auto& base_promise = coro.base_promise();
+        if (base_promise.current_value.has_value() == false)
             throw std::runtime_error("has no value");
 
-        return promise.current_value.value();
+        return base_promise.current_value.value();
     }
 
     generator(generator const& rhs) = delete;
@@ -551,6 +462,9 @@ private:
     generator(coro_handle h) : coro(h) {}
     coro_handle coro;
 };
+
+template <typename T>
+using awaiter = task<T>;
 
 }
 

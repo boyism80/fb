@@ -205,8 +205,7 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
         if(thread != nullptr)
             co_await thread->dispatch();
 
-        awaiter.result = std::ref(response);
-        awaiter.resume();
+        awaiter.resume(std::ref(response));
     }
     catch(const boost::system::error_code& ec)
     {
@@ -214,14 +213,12 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
         {
             thread->dispatch([&awaiter, &ec] ()
             {
-                awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-                awaiter.resume();
+                awaiter.resume(boost::system::error_code(ec));
             });
         }
         else
         {
-            awaiter.error = std::make_exception_ptr(boost::system::error_code(ec));
-            awaiter.resume();
+            awaiter.resume(boost::system::error_code(ec));
         }
     }
 }
@@ -232,8 +229,7 @@ fb::awaiter<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::h
 {
     auto await_callback = [=, this, &header](auto& awaiter)
     {
-        // 여기 task 저장
-        this->_internal_conn_task = this->co_internal_request(awaiter, header, encrypt, wrap);
+        this->co_internal_request(awaiter, header, encrypt, wrap).wait();
     };
 
     return fb::awaiter<R>(await_callback);
@@ -488,7 +484,7 @@ fb::awaiter<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, ui
             [this, &awaiter] (const auto& error)
             {
                 if (error)
-                    awaiter.error = std::make_exception_ptr(boost::system::error_code(error));
+                    awaiter.error(boost::system::error_code(error));
                 else
                     this->_internal->recv();
 
