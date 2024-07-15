@@ -292,7 +292,7 @@ void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
         this->_coroutines.erase(cmd);
     }
 
-    awaiter->resume(std::ref(response));
+    awaiter->resume(response);
 }
 
 template <typename T, typename C>

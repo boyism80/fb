@@ -231,7 +231,7 @@ fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sq
     {
         this->enqueue(id, task {sql, [&awaiter] (auto& results) 
         {
-            awaiter.resume(std::ref(results));
+            awaiter.resume(results);
         }, [&awaiter] (auto& e)
         {
             awaiter.resume(e);

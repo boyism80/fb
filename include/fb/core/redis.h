@@ -108,7 +108,7 @@ private:
     {
         try
         {
-            awaiter.result(std::ref(co_await fn(current)));
+            awaiter.result(co_await fn(current));
             concurrent::add(current);
         }
         catch (std::exception& e)
@@ -135,7 +135,7 @@ private:
     {
         try
         {
-            awaiter.result(std::ref(co_await fn()));
+            awaiter.result(co_await fn());
         }
         catch (std::exception& e)
         {

@@ -7,6 +7,7 @@
 #include <coroutine>
 #include <functional>
 #include <chrono>
+#include <boost/system/error_code.hpp>
 
 using namespace std::chrono_literals;
 
@@ -29,15 +30,15 @@ struct task_result<T, typename std::enable_if<!std::is_class<T>::value>::type>
 template <typename T1, typename T2 = void> struct task_resume_type;
 
 template <typename T>
-struct task_resume_type<T, typename std::enable_if_t<std::is_void_v<T>>>
+struct task_resume_type<T, typename std::enable_if_t<std::is_class_v<T>>>
 {
-    typedef void type;
+    typedef T&& type;
 };
 
 template <typename T>
-struct task_resume_type<T, typename std::enable_if_t<!std::is_void_v<T>>>
+struct task_resume_type<T, typename std::enable_if_t<!std::is_class_v<T>>>
 {
-    typedef T& type;
+    typedef T type;
 };
 
 class base_promise;
@@ -258,21 +259,21 @@ public:
         return this->value();
     }
 
-    void resume(T&& value)
+    void resume(typename task_resume_type<T>::type value)
     {
         auto& promise = static_cast<promise_type&>(this->handler.promise());
         promise.value = value;
         base_task<T>::resume();
     }
 
-    void resume(T& value)
+    void resume(const T& value)
     {
         auto& promise = static_cast<promise_type&>(this->handler.promise());
         promise.value = std::ref(value);
         base_task<T>::resume();
     }
 
-    void result(T&& value)
+    void result(typename task_resume_type<T>::type value)
     {
         auto& promise = static_cast<promise_type&>(this->handler.promise());
         promise.value = value;
@@ -383,21 +384,21 @@ struct generator
     bool next() { return coro ? (coro.resume(), !coro.done()) : false; }
     OUTPUT value()
     {
-        auto& base_promise = coro.base_promise();
-        if (base_promise.has_value() == false)
+        auto& promise = coro.promise();
+        if (promise.has_value() == false)
             throw std::runtime_error("has no value");
 
-        return base_promise.current_value.value();
+        return promise.current_value.value();
     }
 
     void send(const INPUT& input)
     {
-        coro.base_promise().input_value = input;
+        coro.promise().input_value = input;
     }
 
     void send(INPUT&& input)
     {
-        coro.base_promise().input_value = std::move(input);
+        coro.promise().input_value = std::move(input);
     }
 
     generator(generator const& rhs) = delete;
@@ -441,11 +442,11 @@ struct generator<OUTPUT, void>
     bool next() { return coro ? (coro.resume(), !coro.done()) : false; }
     OUTPUT value()
     {
-        auto& base_promise = coro.base_promise();
-        if (base_promise.current_value.has_value() == false)
+        auto& promise = coro.promise();
+        if (promise.current_value.has_value() == false)
             throw std::runtime_error("has no value");
 
-        return base_promise.current_value.value();
+        return promise.current_value.value();
     }
 
     generator(generator const& rhs) = delete;

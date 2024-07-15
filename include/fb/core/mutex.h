@@ -40,8 +40,7 @@ private:
             auto _ = std::lock_guard(mutex);
             try
             {
-                auto& result = co_await fn(current);
-                awaiter.result(std::ref(result));
+                awaiter.result(co_await fn(current));
 
                 concurrent::add(current);
             }
@@ -61,7 +60,7 @@ private:
             try
             {
                 auto& result = co_await fn();
-                awaiter.result(std::ref(result));
+                awaiter.result(result);
             }
             catch(std::exception& e)
             {

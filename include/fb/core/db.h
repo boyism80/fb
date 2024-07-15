@@ -158,12 +158,12 @@ public:
 
                         thread->dispatch([&awaiter, ptr]() mutable
                         {
-                            awaiter.resume(std::ref(*ptr.get()));
+                            awaiter.resume(*ptr.get());
                         });
                     }
                     else
                     {
-                        awaiter.resume(std::ref(results));
+                        awaiter.resume(results);
                     }
                 },
                 /* error */

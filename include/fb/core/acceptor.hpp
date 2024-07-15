@@ -205,7 +205,7 @@ fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awa
         if(thread != nullptr)
             co_await thread->dispatch();
 
-        awaiter.resume(std::ref(response));
+        awaiter.resume(response);
     }
     catch(const boost::system::error_code& ec)
     {
