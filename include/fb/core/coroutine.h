@@ -64,7 +64,7 @@ public:
     handle_type handler;
 
 public:
-    base_task(handle_type handler) : handler(handler) { }
+    base_task(handle_type handler) : handler(handler) {}
     base_task(const base_task&) = delete;
     base_task(base_task&& r) noexcept : handler(r.handler)
     {
@@ -104,10 +104,6 @@ public:
             auto& parent = this->handler.promise().parent;
             if (parent)
                 parent.resume();
-        }
-        else
-        {
-            this->handler.resume();
         }
     }
 
@@ -208,11 +204,9 @@ public:
     class promise_type;
 
 public:
-    task(handle_type handler) : base_task<T>(handler)
-    {}
+    task(handle_type handler) : base_task<T>(handler) {}
     task(const task&) = delete;
-    task(task&& r) : base_task<T>(static_cast<base_task<T>&&>(r))
-    {}
+    task(task&& r) : base_task<T>(static_cast<base_task<T>&&>(r)) {}
 
 public:
     using base_task<T>::resume;
@@ -301,15 +295,12 @@ public:
     using base_task<void>::resume;
 
 public:
-    task(handle_type handler) : base_task<void>(handler)
-    {}
+    task(handle_type handler) : base_task<void>(handler) {}
     task(const task&) = delete;
-    task(task&& r) noexcept : base_task<void>(static_cast<base_task<void>&&>(r))
-    {}
+    task(task&& r) noexcept : base_task<void>(static_cast<base_task<void>&&>(r)) {}
 
 public:
-    void await_resume()
-    { }
+    void await_resume() {}
 
     void operator = (const task&) = delete;
     void operator = (task&& r) noexcept
@@ -337,7 +328,7 @@ class task<void>::promise_type : public base_promise
 {
 public:
     auto get_return_object() { return task<void>(handle_type::from_promise(*this)); }
-    void return_void() { }
+    void return_void() {}
 };
 
 class base_awaiter
@@ -349,8 +340,7 @@ private:
 protected:
     base_awaiter() = default;
     base_awaiter(const base_awaiter&) = delete;
-    base_awaiter(base_awaiter&& r) : _error(r._error), _parent(r._parent)
-    { }
+    base_awaiter(base_awaiter&& r) : _error(r._error), _parent(r._parent) {}
 
 public:
     virtual ~base_awaiter() = default;
@@ -439,17 +429,10 @@ private:
     handler                 _handler;
 
 public:
-    awaiter(const handler& handler) : _handler(handler)
-    {}
+    awaiter(const handler& handler) : _handler(handler) {}
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _value(r._value), _handler(r._handler)
-    {
-
-    }
-    ~awaiter()
-    {
-
-    }
+    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _value(r._value), _handler(r._handler) {}
+    ~awaiter() {}
 
 public:
     using base_awaiter::resume;
@@ -527,11 +510,9 @@ private:
     handler _handler;
 
 public:
-    awaiter(const handler& handler) : _handler(handler)
-    {}
+    awaiter(const handler& handler) : _handler(handler) {}
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _handler(r._handler)
-    { }
+    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _handler(r._handler) {}
     ~awaiter() = default;
 
 public:
@@ -540,8 +521,7 @@ public:
         base_awaiter::await_suspend(h);
         _handler(*this);
     }
-    void await_resume()
-    { }
+    void await_resume() {}
 
     void operator = (const awaiter&) = delete;
     void operator = (awaiter&& r) noexcept
