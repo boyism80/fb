@@ -55,9 +55,9 @@ public:
     template <typename T>
     void bind(int cmd, const std::function<fb::task<void>(T&)>& fn)
     {
-        this->_handler.insert({ cmd, [this, &fn]() -> fb::task<void>
+        this->_handler.insert({ cmd, [this, fn]() -> fb::task<void>
         {
-            co_await this->in_stream<fb::task<void>>([this, &fn](auto& in_stream) -> fb::task<void>
+            co_await this->in_stream<fb::task<void>>([this, fn](auto& in_stream) -> fb::task<void>
             {
                 T     header;
                 header.deserialize(in_stream);
