@@ -57,7 +57,7 @@ fb::task<bool> fb::internal::context::handle_parse(fb::internal::socket<fb::inte
                 if(found == this->_handler.end())
                     co_return false;
 
-                found->second(socket);
+                co_await found->second(socket);
 
                 in_stream.reset();
                 in_stream.shift(base_size + size);

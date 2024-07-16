@@ -453,7 +453,7 @@ void fb::acceptor<T>::on_internal_disconnected(fb::base::socket<>& socket)
     this->handle_internal_disconnected(socket);
     
     if (this->running())
-        this->connect_internal();
+        this->connect_internal().wait();
 }
 
 template <typename T>
@@ -552,11 +552,7 @@ bool fb::acceptor<T>::decrypt_policy(uint8_t cmd) const
 template <typename T>
 void fb::acceptor<T>::handle_start()
 {
-    auto task = this->connect_internal();
-    while (!task.done())
-    {
-        std::this_thread::sleep_for(100ms);
-    }
+    this->connect_internal().wait();
 }
 
 template <typename T>

@@ -51,7 +51,10 @@ public:
     handle_type parent;
 
     auto initial_suspend() { return std::suspend_never{}; }
-    auto final_suspend() noexcept { return std::suspend_always{}; }
+    auto final_suspend() noexcept
+    {
+        return std::suspend_always{};
+    }
     void unhandled_exception() { this->error = std::current_exception(); }
 };
 
@@ -91,17 +94,21 @@ public:
 
         auto& promise = this->handler.promise();
         if (promise.error)
-            std::rethrow_exception(this->handler.promise().error);
+            std::rethrow_exception(promise.error);
 
-        this->handler.promise().parent = h;
+        promise.parent = h;
         this->resume();
     }
 
     void resume()
     {
+        auto& promise = static_cast<base_promise&>(this->handler.promise());
+        if(promise.error)
+            std::rethrow_exception(promise.error);
+
         if (this->done())
         {
-            auto& parent = this->handler.promise().parent;
+            auto& parent = promise.parent;
             if (parent)
                 parent.resume();
         }
@@ -302,7 +309,10 @@ public:
     task(task&& r) noexcept : base_task<void>(static_cast<base_task<void>&&>(r)) {}
 
 public:
-    void await_resume() {}
+    void await_resume()
+    {
+    
+    }
 
     void wait()
     {
@@ -332,6 +342,8 @@ public:
     void return_value(From&& from)
     {
         this->value = std::forward<From>(from);
+        if (this->parent)
+            this->parent.resume();
     }
 };
 
@@ -339,7 +351,11 @@ class task<void>::promise_type : public base_promise
 {
 public:
     auto get_return_object() { return task<void>(handle_type::from_promise(*this)); }
-    void return_void() {}
+    void return_void()
+    {
+        if (this->parent)
+            this->parent.resume();
+    }
 };
 
 class base_awaiter
@@ -351,7 +367,7 @@ private:
 protected:
     base_awaiter() = default;
     base_awaiter(const base_awaiter&) = delete;
-    base_awaiter(base_awaiter&& r) : _error(r._error), _parent(r._parent) {}
+    base_awaiter(base_awaiter&& r) noexcept : _error(r._error), _parent(r._parent) {}
 
 public:
     virtual ~base_awaiter() = default;
@@ -361,6 +377,12 @@ public:
     void await_suspend(std::coroutine_handle<> h)
     {
         _parent = h;
+    }
+
+    void await_resume()
+    {
+        if (this->_error)
+            std::rethrow_exception(this->_error);
     }
 
     void resume()
@@ -458,6 +480,8 @@ public:
 
     T& await_resume()
     {
+        base_awaiter::await_resume();
+
         if (!this->_value.has_value())
             throw std::runtime_error("value is empty");
 
@@ -523,7 +547,7 @@ private:
 public:
     awaiter(const handler& handler) : _handler(handler) {}
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _handler(r._handler) {}
+    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r)), _handler(r._handler) {}
     ~awaiter() = default;
 
 public:
@@ -532,7 +556,10 @@ public:
         base_awaiter::await_suspend(h);
         _handler(*this);
     }
-    void await_resume() {}
+    void await_resume()
+    {
+        base_awaiter::await_resume();
+    }
 
     void operator = (const awaiter&) = delete;
     void operator = (awaiter&& r) noexcept

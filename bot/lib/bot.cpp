@@ -14,7 +14,7 @@ void base_bot::on_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t    base_size = sizeof(uint8_t) + sizeof(uint16_t);
 
-    socket.in_stream<void>([this, &socket] (auto& in_stream)
+    auto task = socket.in_stream<fb::task<void>>([this, &socket] (auto& in_stream) -> fb::task<void>
     {
         while (true)
         {
@@ -42,7 +42,7 @@ void base_bot::on_receive(fb::base::socket<>& socket)
 
                 if (this->_handler.contains(cmd))
                 {
-                    this->_handler[cmd]();
+                    co_await this->_handler[cmd]();
                 }
 
                 in_stream.reset();
@@ -63,6 +63,8 @@ void base_bot::on_receive(fb::base::socket<>& socket)
 
         in_stream.reset();
     });
+
+    task.wait();
 }
 
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)

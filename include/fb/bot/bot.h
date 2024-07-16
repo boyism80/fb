@@ -24,10 +24,9 @@ class bot_container;
 class base_bot : public fb::awaitable_socket<void*>
 {
 protected:
-    bot_container&                              _owner;
-    fb::cryptor                                 _cryptor;
-    std::map<uint8_t, std::function<void()>>    _handler;
-    std::vector<fb::task<void>>                 _unfinished_tasks;
+    bot_container&                                      _owner;
+    fb::cryptor                                         _cryptor;
+    std::map<uint8_t, std::function<fb::task<void>()>>  _handler;
 
 public:
     const uint32_t                              id;
@@ -54,21 +53,19 @@ public:
     virtual void on_timer(std::chrono::steady_clock::duration now) {}
 
     template <typename T>
-    void bind(int cmd, const std::function<fb::task<void>(T&)> fn)
+    void bind(int cmd, const std::function<fb::task<void>(T&)>& fn)
     {
-        this->_handler.insert({ cmd, [this, fn]
+        this->_handler.insert({ cmd, [this, &fn]() -> fb::task<void>
         {
-            this->in_stream<void>([this, &fn] (auto& in_stream)
+            co_await this->in_stream<fb::task<void>>([this, &fn](auto& in_stream) -> fb::task<void>
             {
                 T     header;
                 header.deserialize(in_stream);
                 this->invoke_awaiter(header.__id, header);
-                
-                auto task = fn(header);
-                if (!task.done())
-                    _unfinished_tasks.push_back(std::move(task));
+
+                co_await fn(header);
             });
-        }});
+        } });
     }
 
     template <typename T>
