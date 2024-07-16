@@ -48,7 +48,8 @@ class base_promise
 {
 public:
     std::exception_ptr error = nullptr;
-    handle_type parent;
+    std::coroutine_handle<> parent;
+    bool finished = false;
 
     auto initial_suspend() { return std::suspend_never{}; }
     auto final_suspend() noexcept
@@ -78,7 +79,14 @@ public:
         if (this->handler)
         {
             if (!this->done())
-                throw std::runtime_error("cannot destroy handler before job does not finish");
+            {
+                auto sstream = std::stringstream();
+                auto address = this->handler.address();
+                sstream
+                    << "cannot destroy handler before job does not finish : "
+                    << address;
+                throw std::runtime_error(sstream.str());
+            }
             this->handler.destroy();
         }
     }
@@ -90,13 +98,11 @@ public:
 
     void await_suspend(std::coroutine_handle<> raw)
     {
-        auto h = std::coroutine_handle<base_promise>::from_address(raw.address());
-
         auto& promise = this->handler.promise();
         if (promise.error)
             std::rethrow_exception(promise.error);
 
-        promise.parent = h;
+        promise.parent = raw;
         this->resume();
     }
 
@@ -184,7 +190,11 @@ public:
         if (!this->handler)
             throw std::runtime_error("destroyed task");
 
-        return this->handler.done();
+        if (this->handler.done())
+            return true;
+
+        auto& promise = this->handler.promise();
+        return promise.finished;
     }
 
     void operator = (const base_task&) = delete;
@@ -342,6 +352,7 @@ public:
     void return_value(From&& from)
     {
         this->value = std::forward<From>(from);
+        this->finished = true;
         if (this->parent)
             this->parent.resume();
     }
@@ -353,6 +364,7 @@ public:
     auto get_return_object() { return task<void>(handle_type::from_promise(*this)); }
     void return_void()
     {
+        this->finished = true;
         if (this->parent)
             this->parent.resume();
     }
@@ -444,7 +456,7 @@ public:
     }
 
     void operator = (const base_awaiter&) = delete;
-    void operator = (base_awaiter&& r)
+    void operator = (base_awaiter&& r) noexcept
     {
         this->_error = r._error;
         this->_parent = r._parent;

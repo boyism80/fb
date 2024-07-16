@@ -78,7 +78,12 @@ const fb::threads& fb::base::acceptor<S, T>::threads() const
 template <template<class> class S, class T>
 uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
 {
-    return 0xFF;
+    auto count = this->_threads.count();
+    if(count == 0)
+        return 0xFF;
+
+    auto fd = uint32_t(socket.fd());
+    return uint8_t(fd % count);
 }
 
 template <template<class> class S, class T>
@@ -96,7 +101,7 @@ void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
     }
     else
     {
-        this->dispatch(casted, std::bind(&fb::base::acceptor<S,T>::handle_work, this, casted));
+        this->dispatch(casted, this->handle_work(casted));
     }
 }
 
@@ -108,10 +113,11 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 
     auto                        casted = static_cast<S<T>*>(&socket);
     auto                        id     = this->handle_thread_index(*casted);
-    auto                        fn     = [this, casted] ()
+    auto                        fn     = [this, casted] () -> fb::task<void>
     {
         this->handle_disconnected(*casted);
         this->sockets.erase(*casted);
+        co_return;
     };
 
     if(id == 0xFF)
@@ -193,46 +199,30 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
 
 template <template<class> class S, class T>
 template <typename R>
-fb::task<void> fb::base::acceptor<S, T>::co_internal_request(fb::awaiter<R>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+fb::task<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
 {
     auto thread = this->current_thread();
+    auto error = boost::system::error_code();
     try
     {
         auto& response = co_await this->_internal->request<R>(header, encrypt, wrap);
         if (this->_running == false)
-            co_return;
+            throw std::runtime_error("server exited");
 
-        if(thread != nullptr)
+        if (thread != nullptr)
             co_await thread->dispatch();
 
-        awaiter.resume(response);
+        co_return response;
     }
-    catch(const boost::system::error_code& ec)
+    catch (const boost::system::error_code& ec)
     {
-        if(thread != nullptr)
-        {
-            thread->dispatch([&awaiter, &ec] ()
-            {
-                awaiter.resume(boost::system::error_code(ec));
-            });
-        }
-        else
-        {
-            awaiter.resume(boost::system::error_code(ec));
-        }
+        error = ec;
     }
-}
 
-template <template<class> class S, class T>
-template <typename R>
-fb::awaiter<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
-{
-    auto await_callback = [=, this, &header](auto& awaiter)
-    {
-        this->co_internal_request(awaiter, header, encrypt, wrap).wait();
-    };
-
-    return fb::awaiter<R>(await_callback);
+    if (thread != nullptr)
+        co_await thread->dispatch();
+    
+    throw boost::system::error_code(error);
 }
 
 template <template<class> class S, class T>
@@ -242,30 +232,25 @@ fb::thread* fb::base::acceptor<S, T>::current_thread()
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::task<void>&& task, uint32_t priority)
+fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::task<void>&& task, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
     
     if(thread == nullptr)
-        task.wait();
-    else
-        this->_threads[id]->dispatch(std::move(task), priority);
-    return true;
+        throw std::runtime_error("thread does not exists");
+
+    return this->_threads[id]->dispatch(std::move(task), 0s, priority);
 }
 
 template <template<class> class S, class T>
-bool fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<void(void)>& fn, uint32_t priority)
+fb::task<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<fb::task<void>(void)>& fn, uint32_t priority)
 {
-    return this->dispatch(socket, [&fn]() -> fb::task<void>
-    {
-        fn();
-        co_return;
-    });
+    co_await this->dispatch(socket, fn(), priority);
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
+fb::task<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -273,7 +258,7 @@ fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t prio
     if(thread == nullptr)
         throw std::runtime_error("dispatch thread cannot be nullptr");
 
-    return this->_threads[id]->dispatch(priority);
+    co_await this->_threads[id]->dispatch(priority);
 }
 
 template <template<class> class S, class T>
@@ -302,18 +287,13 @@ bool fb::base::acceptor<S, T>::running() const
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_clock::duration& duration)
+fb::task<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_clock::duration& duration)
 {
     auto thread = this->_threads.current();
-    if(thread == nullptr)
-    {
-        return fb::awaiter<void>([this](auto& awaiter)
-        {
-            awaiter.resume();
-        });
-    }
+    if (thread == nullptr)
+        throw std::runtime_error("thread not exists");
 
-    return thread->sleep(duration);
+    co_await thread->sleep(duration);
 }
 
 template <template<class> class S, class T>

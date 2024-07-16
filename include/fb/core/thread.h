@@ -21,6 +21,24 @@ using queue_callback  = std::function<void(uint8_t)>;
 class thread
 {
 public:
+    class task
+    {
+    public:
+        fb::task<void>     t;
+        fb::awaiter<void>& awaiter;
+
+    public:
+        task(fb::task<void>&& t, fb::awaiter<void>& awaiter);
+        task(const task&) = delete;
+        task(task&&);
+        ~task();
+
+    public:
+        void operator = (const task&) = delete;
+        void operator = (task&& r);
+    };
+
+public:
     using func_type = std::function<fb::task<void>()>;
 
 private:
@@ -32,13 +50,8 @@ private:
     std::vector<std::unique_ptr<timer>>             _timers;
     std::recursive_mutex                            _mutex_timer;
 
-// private:
-//     fb::queue<fb::queue_callback>                   _queue;
-//     fb::queue<fb::awaiter<void>*>                   _dispatch_awaiter_queue;
-
 private:
-    fb::queue<fb::task<void>>                       _queue;
-    fb::queue<fb::awaiter<void>>                    _dispatch_awaiter_queue;
+    fb::queue<fb::thread::task>                     _queue;
 
 public:
     thread(uint8_t index);
@@ -60,11 +73,10 @@ public:
     void                                            exit();
 
 public:
-    void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
-    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
-    void                                            dispatch(fb::task<void>&& task, int priority = 0);
-    void                                            dispatch(const std::function<void(void)>& fn, int priority = 0);
+    fb::awaiter<void>                               dispatch(fb::task<void>&& task, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    fb::awaiter<void>                               dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
     fb::awaiter<void>                               dispatch(uint32_t priority = 0);
+    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
     fb::awaiter<void>                               sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
@@ -106,7 +118,7 @@ public:
     size_t                                          size() const;
 
 public:
-    void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration, bool main = false);
+    fb::task<void>                                  dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
     void                                            exit();
 

@@ -135,9 +135,10 @@ private:
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, &awaiter, &fn, &current, key, mutex]() mutable 
+            thread->dispatch([this, &awaiter, &fn, &current, key, mutex]() mutable -> fb::task<void>
             {
                 this->handle_locked(awaiter, fn, current, key, *mutex);
+                co_return;
             });
         }
         else

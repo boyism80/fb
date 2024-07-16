@@ -51,9 +51,6 @@ protected:
     fb::threads&                                threads();
     const fb::threads&                          threads() const;
 
-    template <typename R>
-    fb::task<void>                              co_internal_request(fb::awaiter<R>& awaiter, const fb::protocol::internal::header& header, bool encrypt, bool wrap);
-
 protected:
     virtual void                                handle_start() {}
     virtual fb::task<bool>                      handle_parse(S<T>& session) = 0;
@@ -79,14 +76,14 @@ public:
 
 public:
     template <typename R>
-    fb::awaiter<R>                              request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    fb::task<R>                                 request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
-    bool                                        dispatch(S<T>*, fb::task<void>&& task, uint32_t priority = 0);
-    bool                                        dispatch(S<T>*, const std::function<void(void)>& fn, uint32_t priority = 0);
-    fb::awaiter<void>                           dispatch(S<T>*, uint32_t priority = 0);
+    fb::awaiter<void>                           dispatch(S<T>*, fb::task<void>&& task, uint32_t priority = 0);
+    fb::task<void>                              dispatch(S<T>*, const std::function<fb::task<void>(void)>& fn, uint32_t priority = 0);
+    fb::task<void>                              dispatch(S<T>*, uint32_t priority = 0);
     void                                        run(int thread_size);
     bool                                        running() const;
-    fb::awaiter<void>                           sleep(const std::chrono::steady_clock::duration& duration);
+    fb::task<void>                              sleep(const std::chrono::steady_clock::duration& duration);
     void                                        exit();
 
 public:

@@ -1,7 +1,7 @@
 #include <fb/login/context.h>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<fb::login::session>(context, port),
+    fb::acceptor<fb::login::session>(context, port, std::thread::hardware_concurrency()),
     _db(*this, 4)
 {
     const auto& config = fb::config::get();
