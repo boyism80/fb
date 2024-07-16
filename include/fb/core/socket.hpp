@@ -231,7 +231,7 @@ fb::socket<T>::operator fb::cryptor& ()
 
 template <typename T, typename C>
 template <typename R>
-fb::awaitable_socket<T,C>::awaiter<R>::awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R>& on_suspend) : fb::awaiter<R>(on_suspend), _owner(owner), _cmd(cmd)
+fb::awaitable_socket<T,C>::awaiter<R>::awaiter(awaitable_socket<T,C>& owner, C cmd, const typename fb::awaiter<R>::handler& on_suspend) : fb::awaiter<R>(on_suspend), _owner(owner), _cmd(cmd)
 { }
 
 template <typename T, typename C>

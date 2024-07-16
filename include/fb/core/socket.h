@@ -152,7 +152,7 @@ public:
         C                           _cmd;
 
     public:
-        awaiter(awaitable_socket<T,C>& owner, C cmd, const awaiter_handler<R>& on_suspend);
+        awaiter(awaitable_socket<T,C>& owner, C cmd, const typename fb::awaiter<R>::handler& on_suspend);
         ~awaiter();
 
         void                        await_suspend(std::coroutine_handle<> h);
