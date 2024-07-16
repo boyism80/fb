@@ -8,22 +8,22 @@ fb::game::spells::spells(life& owner) : inventory(owner)
 fb::game::spells::~spells()
 { }
 
-uint8_t fb::game::spells::add(const fb::model::spell& element)
+fb::task<uint8_t> fb::game::spells::add(const fb::model::spell& element)
 {
-    auto index = fb::game::inventory<const fb::model::spell>::add(element);
+    auto index = co_await fb::game::inventory<const fb::model::spell>::add(element);
     auto listener = this->owner().get_listener<fb::game::spells>();
 
     if(index != 0xFF && listener != nullptr)
         listener->on_spell_update(this->owner(), index);
 
-    return index;
+    co_return index;
 }
 
-uint8_t fb::game::spells::add(const fb::model::spell& element, uint8_t index)
+fb::task<uint8_t> fb::game::spells::add(const fb::model::spell& element, uint8_t index)
 {
     auto listener = this->owner().get_listener<fb::game::spells>();
 
-    if(fb::game::inventory<const fb::model::spell>::add(element, index) != 0xFF)
+    if(co_await fb::game::inventory<const fb::model::spell>::add(element, index) != 0xFF)
     {
         if(listener != nullptr)
         {
@@ -31,7 +31,7 @@ uint8_t fb::game::spells::add(const fb::model::spell& element, uint8_t index)
         }
     }
 
-    return index;
+    co_return index;
 }
 
 bool fb::game::spells::remove(uint8_t index)
@@ -117,21 +117,21 @@ bool fb::game::buffs::push_back(buff& buff)
     return true;
 }
 
-fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
+fb::task<fb::game::buff*> fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
 {
     if(this->contains(model.id))
-        return nullptr;
+        co_return nullptr;
 
     auto& context = this->_owner.context;
     auto created = context.make<fb::game::buff>(model, seconds);
     if (this->push_back(*created) == false)
     {
-        context.destroy(*created);
-        return nullptr;
+        co_await context.destroy(*created);
+        co_return nullptr;
     }
     else
     {
-        return created;
+        co_return created;
     }
 }
 

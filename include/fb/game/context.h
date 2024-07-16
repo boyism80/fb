@@ -67,9 +67,6 @@ private:
     void                    fetch_item(daotk::mysql::result& db_result, fb::game::session& session);
     void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
 
-private:
-    fb::task<void>          co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter);
-
 public:
     template <typename T, typename... Args>
     T*                      make(Args&&... args)
@@ -77,13 +74,14 @@ public:
         return new T(*this, std::forward<Args>(args)...);
     }
     template <typename T>
-    void                    destroy(T& obj)
+    fb::task<void>          destroy(T& obj)
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            obj.map(nullptr);
+            co_await obj.map(nullptr);
         }
         delete &obj;
+        co_return;
     }
 
 public:
@@ -239,7 +237,7 @@ public:
     void                    on_notify(session& me, const std::string& message, MESSAGE_TYPE type) final;
     void                    on_option(session& me, CUSTOM_SETTING option, bool enabled) final;
     void                    on_level_up(session& me) final;
-    void                    on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) final;
+    fb::task<bool>          on_transfer(session& me, fb::game::map& map, const point16_t& position) final;
     void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) final;

@@ -440,7 +440,7 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
 
     this->save(*session);
     this->_internal->send(fb::protocol::internal::request::logout(session->name()));
-    session->destroy();
+    session->destroy().wait();
     socket.data(nullptr);
     return true;
 }
@@ -1062,7 +1062,7 @@ fb::task<bool> fb::game::context::handle_move(fb::socket<fb::game::session>& soc
         {
             auto params = dsl::map(warp->dest.params);
             auto& map = this->maps[params.id];
-            co_await session->co_map(&map, point16_t(params.x, params.y));
+            co_await session->map(&map, point16_t(params.x, params.y));
         }
         break;
 
@@ -1250,9 +1250,9 @@ fb::task<bool> fb::game::context::handle_option_changed(fb::socket<fb::game::ses
     if(option == CUSTOM_SETTING::RIDE)
     {
         if(session->state() == STATE::RIDING)
-            session->unride();
+            co_await session->unride();
         else
-            session->ride();
+            co_await session->ride();
     }
     else
     {
@@ -1364,7 +1364,7 @@ fb::task<bool> fb::game::context::handle_itemmix(fb::socket<fb::game::session>& 
             auto count = item->count();
             auto deleted = session->items.remove(*item, count);
             if (deleted != nullptr)
-                deleted->destroy();
+                co_await deleted->destroy();
 
             deleted_count += count;
         }
@@ -1960,7 +1960,7 @@ fb::task<bool> fb::game::context::handle_world(fb::socket<fb::game::session>& so
     }
     else
     {
-        co_await session->co_map(&this->maps[after.map], after.position);
+        co_await session->map(&this->maps[after.map], after.position);
         this->save(*session);
     }
     co_return true;

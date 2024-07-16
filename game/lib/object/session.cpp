@@ -49,54 +49,29 @@ OBJECT_TYPE fb::game::session::what() const
     return OBJECT_TYPE::SESSION;
 }
 
-fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map, const point16_t& position)
-{
-    if (this->_map_lock)
-        return fb::awaiter<bool>([this, map, position](auto& awaiter) { return false; });
-    
-    auto switch_process = (map != nullptr && map->active == false);
-    if(switch_process)
-    {
-        return fb::awaiter<bool>([this, map, position](auto& awaiter)
-        {
-            auto listener = this->get_listener<fb::game::session>();
-            if(listener != nullptr)
-                listener->on_transfer(*this, *map, position, &awaiter);
-        });
-    }
-    else
-    {
-        return fb::game::object::co_map(map, position);
-    }
-}
-
-fb::awaiter<bool> fb::game::session::co_map(fb::game::map* map)
-{
-    return this->co_map(map, point16_t(0, 0));
-}
-
-bool fb::game::session::map(fb::game::map* map, const point16_t& position)
+fb::task<bool> fb::game::session::map(fb::game::map* map, const point16_t& position)
 {
     if(this->_map_lock)
-        return false;
+        co_return false;
 
     auto switch_process = (map != nullptr && map->active == false);
     if(switch_process)
     {
         auto listener = this->get_listener<fb::game::session>();
         if(listener != nullptr)
-            listener->on_transfer(*this, *map, position);
-        return true;
+            co_return co_await listener->on_transfer(*this, *map, position);
+        else
+            co_return false;
     }
     else
     {
-        return fb::game::object::map(map, position);
+        co_return co_await fb::game::object::map(map, position);
     }
 }
 
-bool fb::game::session::map(fb::game::map* map)
+fb::task<bool> fb::game::session::map(fb::game::map* map)
 {
-    return this->map(map, point16_t(0, 0));
+    co_return co_await this->map(map, point16_t(0, 0));
 }
 
 void fb::game::session::on_hold()
@@ -759,14 +734,14 @@ uint32_t fb::game::session::money_reduce(uint32_t value)
     return lack;
 }
 
-uint32_t fb::game::session::money_drop(uint32_t value)
+fb::task<uint32_t> fb::game::session::money_drop(uint32_t value)
 {
     auto listener = this->get_listener<fb::game::session>();
 
     try
     {
         if(value == 0)
-            return 0;
+            co_return 0;
 
         this->assert_state({STATE::RIDING, STATE::GHOST});
 
@@ -774,17 +749,17 @@ uint32_t fb::game::session::money_drop(uint32_t value)
         auto lack = this->money_reduce(value);
 
         auto cash = new fb::game::cash(this->context, value);
-        cash->map(this->_map, this->_position);
+        co_await cash->map(this->_map, this->_position);
 
         this->action(ACTION::PICKUP, DURATION::PICKUP);
         this->message(message::money::DROP);
 
-        return lack;
+        co_return lack;
     }
     catch(std::exception& e)
     {
         this->message(e.what());
-        return 0;
+        co_return 0;
     }
 }
 
@@ -911,40 +886,40 @@ const std::vector<fb::game::item*>& fb::game::session::deposited_items() const
     return this->_deposited_items;
 }
 
-fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
+fb::task<fb::game::item*> fb::game::session::withdraw_item(uint8_t index, uint16_t count)
 {
     if (index > this->_deposited_items.size() - 1)
-        return nullptr;
+        co_return nullptr;
 
     if (this->items.free() == false)
-        return nullptr;
+        co_return nullptr;
 
     auto deposited_item = this->_deposited_items.at(index);
     auto deposited_count = deposited_item->count();
     if (deposited_count < count)
-        return nullptr;
+        co_return nullptr;
 
     auto& model = deposited_item->based<fb::model::item>();
     auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->items.find(model) : nullptr;
     if(exists != nullptr)
     {
         if(exists->count() + count > model.capacity)
-            return nullptr;
+            co_return nullptr;
 
         deposited_item->count(deposited_count - count);
-        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
+        auto added_slot = co_await this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
         if (deposited_item->empty())
         {
             auto i = this->_deposited_items.begin() + index;
             this->_deposited_items.erase(i);
         }
 
-        return this->items.at(added_slot);
+        co_return this->items.at(added_slot);
     }
     else
     {
         if (this->items.free() == false)
-            return nullptr;
+            co_return nullptr;
 
         deposited_item->count(deposited_count - count);
         if (deposited_item->empty())
@@ -953,13 +928,13 @@ fb::game::item* fb::game::session::withdraw_item(uint8_t index, uint16_t count)
             this->_deposited_items.erase(i);
         }
 
-        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
+        auto added_slot = co_await this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
 
-        return this->items.at(added_slot);
+        co_return this->items.at(added_slot);
     }
 }
 
-fb::game::item* fb::game::session::withdraw_item(const std::string& name, uint16_t count)
+fb::task<fb::game::item*> fb::game::session::withdraw_item(const std::string& name, uint16_t count)
 {
     auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](fb::game::item* deposited_item)
     {
@@ -968,13 +943,13 @@ fb::game::item* fb::game::session::withdraw_item(const std::string& name, uint16
     });
 
     if (found == this->_deposited_items.end())
-        return nullptr;
+        co_return nullptr;
 
     auto index = std::distance(this->_deposited_items.begin(), found);
-    return this->withdraw_item((uint8_t)index, count);
+    co_return co_await this->withdraw_item((uint8_t)index, count);
 }
 
-fb::game::item* fb::game::session::withdraw_item(const fb::model::item& item, uint16_t count)
+fb::task<fb::game::item*> fb::game::session::withdraw_item(const fb::model::item& item, uint16_t count)
 {
     auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
     {
@@ -983,10 +958,10 @@ fb::game::item* fb::game::session::withdraw_item(const fb::model::item& item, ui
     });
 
     if (found == this->_deposited_items.end())
-        return nullptr;
+        co_return nullptr;
 
     auto index = std::distance(this->_deposited_items.begin(), found);
-    return this->withdraw_item((uint8_t)index, count);
+    co_return co_await this->withdraw_item((uint8_t)index, count);
 }
 
 uint32_t fb::game::session::damage() const
@@ -1120,7 +1095,7 @@ bool fb::game::session::move(DIRECTION direction, const point16_t& before)
     }
 }
 
-void fb::game::session::ride(fb::game::mob& horse)
+fb::task<void> fb::game::session::ride(fb::game::mob& horse)
 {
     auto listener = this->get_listener<fb::game::session>();
 
@@ -1137,7 +1112,7 @@ void fb::game::session::ride(fb::game::mob& horse)
         if(horse.map() != this->_map)
             throw std::runtime_error(message::error::UNKNOWN);
 
-        horse.map(nullptr);
+        co_await horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
         horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
@@ -1149,7 +1124,7 @@ void fb::game::session::ride(fb::game::mob& horse)
     }
 }
 
-void fb::game::session::ride()
+fb::task<void> fb::game::session::ride()
 {
     auto listener = this->get_listener<fb::game::session>();
 
@@ -1161,7 +1136,7 @@ void fb::game::session::ride()
         if(front == nullptr)
             throw session::no_conveyance_exception();
 
-        this->ride(static_cast<fb::game::mob&>(*front));
+        co_await this->ride(static_cast<fb::game::mob&>(*front));
     }
     catch(std::exception& e)
     {
@@ -1169,7 +1144,7 @@ void fb::game::session::ride()
     }
 }
 
-void fb::game::session::unride()
+fb::task<void> fb::game::session::unride()
 {
     auto listener = this->get_listener<fb::game::session>();
 
@@ -1181,7 +1156,7 @@ void fb::game::session::unride()
 
         auto& model = this->context.model.mob[const_value::mob::horse];
         auto horse = this->context.make<fb::game::mob>(model, fb::game::mob::config { .alive = true });
-        horse->map(this->_map, this->position_forward());
+        co_await horse->map(this->_map, this->position_forward());
         
         this->state(STATE::NORMAL);
         this->message(message::ride::OFF);
@@ -1292,12 +1267,12 @@ void fb::game::session::message(const std::string& message, MESSAGE_TYPE type)
         listener->on_notify(*this, message, type);
 }
 
-bool fb::game::session::inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto count = std::optional<uint16_t>();
     auto name = std::string();
     if (fb::model::const_value::regex::match_sell_message(message, name, count) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     auto bought = false;
@@ -1307,15 +1282,15 @@ bool fb::game::session::inline_sell(const std::string& message, const std::vecto
             bought = true;
     }
 
-    return bought;
+    co_return bought;
 }
 
-bool fb::game::session::inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     auto count = uint16_t(0);
     if (fb::model::const_value::regex::match_buy_message(message, name, count) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     auto sold = false;
@@ -1325,14 +1300,14 @@ bool fb::game::session::inline_buy(const std::string& message, const std::vector
             sold = true;
     }
 
-    return sold;
+    co_return sold;
 }
 
-bool fb::game::session::inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     if (fb::model::const_value::regex::match_repair_message(message, name) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     auto done = false;
@@ -1342,104 +1317,104 @@ bool fb::game::session::inline_repair(const std::string& message, const std::vec
             done = true;
     }
 
-    return done;
+    co_return done;
 }
 
-bool fb::game::session::inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto money = std::optional<uint32_t>();
     if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
-        return false;
+        co_return false;
 
     for (auto npc : npcs)
     {
         if (npc->hold_money(*this, money))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto money = std::optional<uint32_t>();
     if (fb::model::const_value::regex::match_withdraw_money_message(message, money) == false)
-        return false;
+        co_return false;
 
     for (auto npc : npcs)
     {
         if (npc->return_money(*this, money))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     auto count = std::optional<uint16_t>(0);
     if (fb::model::const_value::regex::match_deposit_item_message(message, name, count) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         if (npc->hold_item(*this, model, count))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     auto count = std::optional<uint16_t>(0);
     if (fb::model::const_value::regex::match_withdraw_item_message(message, name, count) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
-        if (npc->return_item(*this, model, count))
-            return true;
+        if (co_await npc->return_item(*this, model, count))
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     if (fb::model::const_value::regex::match_sell_list(message) == false)
-        return false;
+        co_return false;
 
     for (auto npc : npcs)
     {
         npc->sell_list();
     }
 
-    return true;
+    co_return true;
 }
 
-bool fb::game::session::inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     if (fb::model::const_value::regex::match_buy_list(message) == false)
-        return false;
+        co_return false;
 
     for (auto npc : npcs)
     {
         npc->buy_list();
     }
 
-    return true;
+    co_return true;
 }
 
-bool fb::game::session::inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     if (fb::model::const_value::regex::match_sell_price(message, name) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
@@ -1447,14 +1422,14 @@ bool fb::game::session::inline_sell_price(const std::string& message, const std:
         npc->sell_price(model);
     }
 
-    return true;
+    co_return true;
 }
 
-bool fb::game::session::inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     if (fb::model::const_value::regex::match_buy_price(message, name) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
@@ -1462,81 +1437,81 @@ bool fb::game::session::inline_buy_price(const std::string& message, const std::
         npc->buy_price(model);
     }
 
-    return true;
+    co_return true;
 }
 
-bool fb::game::session::inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     if (fb::model::const_value::regex::match_deposited_money(message) == false)
-        return false;
+        co_return false;
 
     for (auto npc : npcs)
     {
         if(npc->deposited_money(*this))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     std::string model_name, custom_name;
     if (fb::model::const_value::regex::match_rename_weapon(message, model_name, custom_name) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(model_name);
     for (auto npc : npcs)
     {
         if(npc->rename_weapon(*this, model, custom_name))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     if (fb::model::const_value::regex::match_hold_item_list(message) == false)
-        return false;
+        co_return false;
 
     for (auto npc : npcs)
     {
         if(npc->hold_item_list(*this))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     auto name = std::string();
     if (fb::model::const_value::regex::match_hold_item_count(message, name) == false)
-        return false;
+        co_return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         if(npc->hold_item_count(*this, model))
-            return true;
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
-bool fb::game::session::inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs)
+fb::task<bool> fb::game::session::inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     if (npcs.size() == 0)
-        return false;
+        co_return false;
 
     for(auto & fn : this->inline_interaction_funcs)
     {
-        if (fn(message, npcs))
-            return true;
+        if (co_await fn(message, npcs))
+            co_return true;
     }
 
-    return false;
+    co_return false;
 }
 
 fb::game::session::container::container()

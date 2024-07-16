@@ -22,7 +22,7 @@ fb::game::items::~items()
     }
 }
 
-uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
+fb::task<uint8_t> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 
@@ -87,7 +87,7 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
             throw std::runtime_error("뭐지 병신 ㅋ");
         }
 
-        auto index = this->add(item);
+        auto index = co_await this->add(item);
         if(listener != nullptr)
         {
             listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MAX);
@@ -95,30 +95,30 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
             listener->on_equipment_off(this->_owner, parts, index);
         }
         
-        return index;
+        co_return index;
     }
     catch(std::exception& e)
     {
         this->_owner.message(e.what());
-        return 0xFF;
+        co_return 0xFF;
     }
 }
 
-uint8_t fb::game::items::add(fb::game::item& item)
+fb::task<uint8_t> fb::game::items::add(fb::game::item& item)
 {
-    return this->add(&item);
+    co_return co_await this->add(&item);
 }
 
-uint8_t fb::game::items::add(fb::game::item* item)
+fb::task<uint8_t> fb::game::items::add(fb::game::item* item)
 {
-    auto result = this->add(std::vector<fb::game::item*> { item });
+    auto& result = co_await this->add(std::vector<fb::game::item*> { item });
     if(result.empty())
-        return 0xFF;
+        co_return 0xFF;
     else
-        return result[0];
+        co_return result[0];
 }
 
-std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& items)
+fb::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::item*>& items)
 {
     auto indices = std::vector<uint8_t>();
     auto updates = std::map<uint8_t, fb::game::item*>();
@@ -136,7 +136,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         {
             exists->merge(*item);
             if(item->empty() || item->map() == nullptr)
-                item->destroy();
+                co_await item->destroy();
 
             auto index = this->index(*exists);
             updates.insert({ index, exists });
@@ -151,7 +151,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             this->add(*item, index);
 
             if(item->_map != nullptr)
-                item->map(nullptr);
+                co_await item->map(nullptr);
 
             updates.insert({ index, item });
             indices.push_back(index);
@@ -160,13 +160,13 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
 
     if(listener != nullptr)
         listener->on_item_changed(this->_owner, updates);
-    return std::move(indices);
+    co_return std::ref(indices);
 }
 
-uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
+fb::task<uint8_t> fb::game::items::add(fb::game::item& item, uint8_t index)
 {
-    if(fb::game::inventory<fb::game::item>::add(item, index) == 0xFF)
-        return 0xFF;
+    if(co_await fb::game::inventory<fb::game::item>::add(item, index) == 0xFF)
+        co_return 0xFF;
 
     item.owner(&this->_owner);
 
@@ -174,10 +174,10 @@ uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
     if(item.empty() == false && listener != nullptr)
         listener->on_item_update(static_cast<session&>(this->owner()), index);
 
-    return index;
+    co_return index;
 }
 
-fb::game::item* fb::game::items::active(uint8_t index)
+fb::task< fb::game::item*> fb::game::items::active(uint8_t index)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 
@@ -187,29 +187,29 @@ fb::game::item* fb::game::items::active(uint8_t index)
 
         auto                    item = this->at(index);
         if(item == nullptr)
-            return nullptr;
+            co_return nullptr;
 
         item->active();
         if(item->empty())
         {
-            item->destroy();
-            return nullptr;
+            co_await item->destroy();
+            co_return nullptr;
         }
         else
         {
-            return item;
+            co_return item;
         }
     }
     catch(std::exception& e)
     {
         this->_owner.message(e.what());
-        return nullptr;
+        co_return nullptr;
     }
 }
 
-uint8_t fb::game::items::inactive(EQUIPMENT_PARTS parts)
+fb::task<uint8_t> fb::game::items::inactive(EQUIPMENT_PARTS parts)
 {
-    return this->equipment_off(parts);
+    co_return co_await this->equipment_off(parts);
 }
 
 uint8_t fb::game::items::index(const fb::model::item& item) const
@@ -489,7 +489,7 @@ fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
     return this->find(model);
 }
 
-fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
+fb::task< fb::game::item*> fb::game::items::drop(uint8_t index, uint8_t count)
 {
     auto                        listener = this->_owner.get_listener<fb::game::session>();
 
@@ -498,7 +498,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         this->_owner.assert_state({STATE::RIDING, STATE::GHOST});
         auto                    item = this->at(index);
         if (item == nullptr)
-            return nullptr;
+            co_return nullptr;
 
         auto&                   model = item->based<fb::model::item>();
         if (model.trade == false)
@@ -507,20 +507,20 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         auto                    dropped = this->remove(*item, count, ITEM_DELETE_TYPE::DROP);
         if(dropped != nullptr)
         {
-            dropped->map(this->_owner.map(), this->_owner.position());
+            co_await dropped->map(this->_owner.map(), this->_owner.position());
             this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
         }
 
-        return dropped;
+        co_return dropped;
     }
     catch(std::exception& e)
     {
         this->_owner.message(e.what());
-        return nullptr;
+        co_return nullptr;
     }
 }
 
-void fb::game::items::pickup(bool boost)
+fb::task<void> fb::game::items::pickup(bool boost)
 {
     auto                    listener = this->_owner.get_listener<fb::game::session>();
 
@@ -528,7 +528,7 @@ void fb::game::items::pickup(bool boost)
     {
         auto                map = this->_owner.map();
         if(map == nullptr)
-            return;
+            co_return;
 
         this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
@@ -547,9 +547,9 @@ void fb::game::items::pickup(bool boost)
                 auto        cash = static_cast<fb::game::cash*>(below);
                 auto        remain = this->_owner.money_add(cash->value);
                 if (remain > 0)
-                    cash = cash->replace(remain); // 먹고 남은 돈으로 설정
+                    cash = co_await cash->replace(remain); // 먹고 남은 돈으로 설정
                 else
-                    cash->destroy();
+                    co_await cash->destroy();
 
                 if(remain != 0)
                     this->_owner.message(message::money::FULL);
@@ -559,7 +559,7 @@ void fb::game::items::pickup(bool boost)
             }
             else
             {
-                auto        index = this->_owner.items.add(below);
+                auto        index = co_await this->_owner.items.add(below);
                 if(index == -1)
                     break;
             }
@@ -570,7 +570,7 @@ void fb::game::items::pickup(bool boost)
 
         auto thread = lua::get();
         if(thread == nullptr)
-            return;
+            co_return;
 
         thread->from("scripts/common/pickup.lua")
             .func("on_pickup")
@@ -583,7 +583,7 @@ void fb::game::items::pickup(bool boost)
     }
 }
 
-bool fb::game::items::throws(uint8_t index)
+fb::task<bool> fb::game::items::throws(uint8_t index)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 
@@ -591,7 +591,7 @@ bool fb::game::items::throws(uint8_t index)
     {
         auto                    item = this->_owner.items.at(index);
         if(item == nullptr)
-            return false;
+            co_return false;
 
         auto&                   model = item->based<fb::model::item>();
         if(model.trade == false)
@@ -616,13 +616,13 @@ bool fb::game::items::throws(uint8_t index)
 
         if(listener != nullptr)
             listener->on_item_throws(this->_owner, *dropped, position);
-        dropped->map(map, position);
-        return true;
+        co_await dropped->map(map, position);
+        co_return true;
     }
     catch(std::exception& e)
     {
         this->_owner.message(e.what());
-        return false;
+        co_return false;
     }
 }
 

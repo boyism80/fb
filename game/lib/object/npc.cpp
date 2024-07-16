@@ -383,16 +383,16 @@ bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item*
     }
 }
 
-bool fb::game::npc::return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
+fb::task<bool> fb::game::npc::return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
         auto& model = this->based<fb::model::npc>();
         if (model.hold_item == false)
-            return false;
+            co_return false;
 
         if (item == nullptr)
-            return true;
+            co_return true;
 
         auto deposited_item = session.deposited_item(*item);
         if (deposited_item == nullptr)
@@ -402,7 +402,7 @@ bool fb::game::npc::return_item(fb::game::session& session, const fb::model::ite
             count = deposited_item->count();
 
         if (count.value() == 0)
-            return true;
+            co_return true;
 
         if (count.value() > deposited_item->count())
             throw std::runtime_error("그만큼 가지고 있지 않습니다.");
@@ -419,7 +419,7 @@ bool fb::game::npc::return_item(fb::game::session& session, const fb::model::ite
                 throw std::runtime_error("더 이상 가질 수 없습니다.");
         }
 
-        if (session.withdraw_item(*item, count.value()) == nullptr)
+        if (co_await session.withdraw_item(*item, count.value()) == nullptr)
             throw std::runtime_error("알 수 없는 에러");
 
         if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
@@ -427,12 +427,12 @@ bool fb::game::npc::return_item(fb::game::session& session, const fb::model::ite
         else
             this->chat(fb::format("%s 돌려드렸습니다.", name_with(item->name).c_str()));
 
-        return true;
+        co_return true;
     }
     catch (std::runtime_error& e)
     {
         this->chat(e.what());
-        return false;
+        co_return false;
     }
 }
 

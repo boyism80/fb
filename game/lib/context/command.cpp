@@ -27,7 +27,7 @@ fb::task<bool> fb::game::context::handle_command_map(fb::game::session& session,
     }
 
     auto& map = this->maps[model->id];
-    co_await session.co_map(&map, point16_t(x, y));
+    co_await session.map(&map, point16_t(x, y));
     co_return true;
 }
 
@@ -150,7 +150,7 @@ fb::task<bool> fb::game::context::handle_command_mob(fb::game::session& session,
 
     auto mob = model->make<fb::game::mob>(*this, fb::game::mob::config{ .alive = true });
     auto map = session.map();
-    co_await mob->co_map(map, session.position());
+    co_await mob->map(map, session.position());
     co_return true;
 }
 
@@ -202,7 +202,7 @@ fb::task<bool> fb::game::context::handle_command_spell(fb::game::session& sessio
     if(model == nullptr)
         co_return false;
 
-    auto slot = session.spells.add(*model);
+    auto slot = co_await session.spells.add(*model);
     if(slot == 0xFF)
         co_return false;
 
@@ -226,7 +226,7 @@ fb::task<bool> fb::game::context::handle_command_item(fb::game::session& session
         parameters[1].asInt() : 1;
 
     auto item = model->make(*this, count);
-    co_await item->co_map(session.map(), session.position());
+    co_await item->map(session.map(), session.position());
     co_return true;
 }
 
@@ -382,7 +382,7 @@ fb::task<bool> fb::game::context::handle_command_randmap(fb::game::session& sess
     auto x = map->width() > 0 ? std::rand() % map->width() : 0;
     auto y = map->height() > 0 ? std::rand() % map->height() : 0;
 
-    co_await session.co_map(map, point16_t(x, y));
+    co_await session.map(map, point16_t(x, y));
     co_return true;
 }
 
@@ -402,7 +402,7 @@ fb::task<bool> fb::game::context::handle_command_npc(fb::game::session& session,
 
     auto npc = model->make<fb::game::npc>(*this);
     npc->direction(session.direction());
-    npc->map(session.map(), session.position());
+    co_await npc->map(session.map(), session.position());
     co_return true;
 }
 

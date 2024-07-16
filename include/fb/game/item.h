@@ -111,7 +111,7 @@ private:
     static const fb::model::cash&       match_model(fb::game::context& context, uint32_t value);
 
 public:
-    fb::game::cash*                     replace(uint32_t value);
+    fb::task<fb::game::cash*>           replace(uint32_t value);
     uint32_t                            reduce(uint32_t value);
 
     bool                                empty() const;
@@ -290,15 +290,15 @@ public:
     ~items();
 
 private:
-    uint8_t                             equipment_off(EQUIPMENT_PARTS parts);
+    fb::task< uint8_t>                  equipment_off(EQUIPMENT_PARTS parts);
 
 public:
-    uint8_t                             add(fb::game::item& item);
-    uint8_t                             add(fb::game::item* item);
-    std::vector<uint8_t>                add(const std::vector<fb::game::item*>& items);
-    uint8_t                             add(fb::game::item& item, uint8_t index);
-    fb::game::item*                     active(uint8_t index);
-    uint8_t                             inactive(EQUIPMENT_PARTS parts);
+    fb::task<uint8_t>                   add(fb::game::item& item);
+    fb::task<uint8_t>                   add(fb::game::item* item);
+    fb::task<std::vector<uint8_t>>      add(const std::vector<fb::game::item*>& items);
+    fb::task<uint8_t>                   add(fb::game::item& item, uint8_t index);
+    fb::task<fb::game::item*>           active(uint8_t index);
+    fb::task<uint8_t>                   inactive(EQUIPMENT_PARTS parts);
     uint8_t                             index(const fb::model::item& item) const;
     uint8_t                             index(const fb::game::item& item) const;
     std::vector<uint8_t>                index_all(const fb::model::item& item) const;
@@ -328,9 +328,9 @@ public:
     fb::game::item*                     find(const std::string& name) const;
     fb::game::item*                     find(const fb::model::item& model) const;
     fb::game::item*                     find_bundle(const fb::model::item& model) const;
-    fb::game::item*                     drop(uint8_t index, uint8_t count);
-    void                                pickup(bool boost);
-    bool                                throws(uint8_t index);
+    fb::task<fb::game::item*>           drop(uint8_t index, uint8_t count);
+    fb::task<void>                      pickup(bool boost);
+    fb::task<bool>                      throws(uint8_t index);
 
     fb::game::item*                     remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
     fb::game::item*                     remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);

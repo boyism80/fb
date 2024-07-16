@@ -37,7 +37,7 @@ int fb::model::item::builtin_make(lua_State* lua)
     auto object = model->make(*context);
 
     auto map = thread->touserdata<fb::game::map>(2);
-    object->map(map);
+    object->map(map).wait();
 
     if(lua_istable(lua, 3))
     {

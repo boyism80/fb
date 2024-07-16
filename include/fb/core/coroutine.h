@@ -186,15 +186,6 @@ public:
         this->handler = r.handler;
         r.handler = nullptr;
     }
-
-    void wait()
-    {
-        constexpr auto term = 100ms;
-        while(!this->done())
-        {
-            std::this_thread::sleep_for(term);
-        }
-    }
 };
 
 template <typename T = void>
@@ -278,6 +269,17 @@ public:
         promise.value = value;
     }
 
+    T& wait()
+    {
+        constexpr auto term = 100ms;
+        while(!this->done())
+        {
+            std::this_thread::sleep_for(term);
+        }
+
+        return this->value();
+    }
+
     void operator = (const task&) = delete;
     void operator = (task&& r)
     {
@@ -301,6 +303,15 @@ public:
 
 public:
     void await_resume() {}
+
+    void wait()
+    {
+        constexpr auto term = 100ms;
+        while(!this->done())
+        {
+            std::this_thread::sleep_for(term);
+        }
+    }
 
     void operator = (const task&) = delete;
     void operator = (task&& r) noexcept

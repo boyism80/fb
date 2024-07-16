@@ -60,14 +60,13 @@ public:
     virtual ~object();
 
 private:
-    fb::task<bool>                      __map(fb::game::map* map, const point16_t position, fb::awaiter<bool>* awaiter = nullptr);
     void                                leave();
     static bool                         sight(const point16_t me, const point16_t you, const fb::game::map* map);
 
 public:
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
-    virtual void                        destroy();
+    virtual fb::task<void>              destroy();
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }
 
@@ -102,10 +101,8 @@ public:
     DIRECTION                           direction() const;
     bool                                direction(DIRECTION value);
 
-    virtual fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position);
-    virtual fb::awaiter<bool>           co_map(fb::game::map* map);
-    virtual bool                        map(fb::game::map* map, const point16_t& position);
-    virtual bool                        map(fb::game::map* map);
+    virtual fb::task<bool>              map(fb::game::map* map, const point16_t& position);
+    virtual fb::task<bool>              map(fb::game::map* map);
     fb::game::map*                      map() const;
 
     bool                                sector(fb::game::sector* sector);

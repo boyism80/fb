@@ -21,7 +21,7 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     auto& model = value.get();
     auto& map = this->_context.maps[model.parent];
     auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[model.npc]);
-    npc->map(&map, model.position);
+    npc->map(&map, model.position).wait();
     npc->direction(model.direction);
 }
 

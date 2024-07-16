@@ -23,8 +23,8 @@ public:
 
     // override
 public:
-    uint8_t                     add(const fb::model::spell& element);
-    uint8_t                     add(const fb::model::spell& element, uint8_t index);
+    fb::task<uint8_t>           add(const fb::model::spell& element);
+    fb::task<uint8_t>           add(const fb::model::spell& element, uint8_t index);
     bool                        remove(uint8_t index);
     bool                        swap(uint8_t src, uint8_t dst);
 };
@@ -82,7 +82,7 @@ private:
 
 public:
     bool                        contains(const fb::model::spell& model) const;
-    buff*                       push_back(const fb::model::spell& spell, uint32_t seconds);
+    fb::task<buff*>             push_back(const fb::model::spell& spell, uint32_t seconds);
     bool                        remove(uint32_t id);
     bool                        remove(const fb::model::spell& spell);
 
