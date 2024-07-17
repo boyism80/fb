@@ -399,10 +399,8 @@ public:
 
     void resume()
     {
-        if (!this->_parent)
-            throw std::runtime_error("parent handler is empty");
-
-        this->_parent.resume();
+        if (this->_parent)
+            this->_parent.resume();
     }
 
     void error(const std::exception& e)
@@ -471,12 +469,15 @@ public:
 
 private:
     task_result<T>::type    _value;
-    handler                 _handler;
+    //handler                 _handler;
 
 public:
-    awaiter(const handler& handler) : _handler(handler) {}
+    awaiter(const handler& handler)/* : _handler(handler)*/
+    {
+        handler(*this);
+    }
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _value(r._value), _handler(r._handler) {}
+    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _value(r._value)/*, _handler(r._handler)*/ {}
     ~awaiter() {}
 
 public:
@@ -487,7 +488,7 @@ public:
     void await_suspend(std::coroutine_handle<> h)
     {
         base_awaiter::await_suspend(h);
-        _handler(*this);
+        //_handler(*this);
     }
 
     T& await_resume()
@@ -543,7 +544,7 @@ public:
     void operator = (awaiter&& r) noexcept
     {
         base_awaiter::operator = (static_cast<base_awaiter&&>(r));
-        this->_handler = r._handler;
+        //this->_handler = r._handler;
     }
 };
 
@@ -554,19 +555,22 @@ public:
     using handler = std::function<void(awaiter&)>;
 
 private:
-    handler _handler;
+    //handler _handler;
 
 public:
-    awaiter(const handler& handler) : _handler(handler) {}
+    awaiter(const handler& handler)/* : _handler(handler)*/
+    {
+        handler(*this);
+    }
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r)), _handler(r._handler) {}
+    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r))/*, _handler(r._handler)*/ {}
     ~awaiter() = default;
 
 public:
     void await_suspend(std::coroutine_handle<> h)
     {
         base_awaiter::await_suspend(h);
-        _handler(*this);
+        //_handler(*this);
     }
     void await_resume()
     {
@@ -577,7 +581,7 @@ public:
     void operator = (awaiter&& r) noexcept
     {
         base_awaiter::operator = (static_cast<base_awaiter&&>(r));
-        this->_handler = r._handler;
+        //this->_handler = r._handler;
     }
 };
 

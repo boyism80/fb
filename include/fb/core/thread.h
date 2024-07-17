@@ -73,7 +73,6 @@ public:
     void                                            exit();
 
 public:
-    fb::awaiter<void>                               dispatch(fb::task<void>&& task, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
     fb::awaiter<void>                               dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
     fb::awaiter<void>                               dispatch(uint32_t priority = 0);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);

@@ -27,7 +27,7 @@ fb::task<void> fb::base::acceptor<S, T>::handle_work(S<T>* socket)
     if (switched == false)
         co_return;
 
-    this->dispatch(socket, this->handle_work(socket));
+    this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket));
 }
 
 template <template<class> class S, class T>
@@ -101,7 +101,7 @@ void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
     }
     else
     {
-        this->dispatch(casted, this->handle_work(casted));
+        this->dispatch(casted, std::bind(&fb::base::acceptor<S, T>::handle_work, this, casted));
     }
 }
 
@@ -232,7 +232,7 @@ fb::thread* fb::base::acceptor<S, T>::current_thread()
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::task<void>&& task, uint32_t priority)
+fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<fb::task<void>(void)>& fn, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -240,17 +240,11 @@ fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, fb::task<void
     if(thread == nullptr)
         throw std::runtime_error("thread does not exists");
 
-    return this->_threads[id]->dispatch(std::move(task), 0s, priority);
+    return this->_threads[id]->dispatch(fn, 0s, priority);
 }
 
 template <template<class> class S, class T>
-fb::task<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<fb::task<void>(void)>& fn, uint32_t priority)
-{
-    co_await this->dispatch(socket, fn(), priority);
-}
-
-template <template<class> class S, class T>
-fb::task<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
+fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -258,7 +252,7 @@ fb::task<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priorit
     if(thread == nullptr)
         throw std::runtime_error("dispatch thread cannot be nullptr");
 
-    co_await this->_threads[id]->dispatch(priority);
+    return this->_threads[id]->dispatch(priority);
 }
 
 template <template<class> class S, class T>

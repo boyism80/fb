@@ -75,28 +75,22 @@ this->_mutex_timer.lock();
 this->_mutex_timer.unlock();
 }
 
-fb::awaiter<void> fb::thread::dispatch(fb::task<void>&& task, const std::chrono::steady_clock::duration& delay, int priority)
+fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
-    // task가 소멸되어버린다. 함수로 전달하는게 낫겠다.
-    return fb::awaiter<void>([this, delay, priority, &task](auto& awaiter)
+    return fb::awaiter<void>([this, delay, priority, fn](auto& awaiter)
     {
         if(delay > 0s)
         {
-            this->settimer([this, priority, &awaiter, &task](auto time, auto id)
+            this->settimer([this, priority, &awaiter, fn](auto time, auto id)
             {
-                this->_queue.enqueue(fb::thread::task(std::move(task), awaiter), priority);
+                this->_queue.enqueue(fb::thread::task(fn(), awaiter), priority);
             }, delay, true);
         }
         else
         {
-            this->_queue.enqueue(fb::thread::task(std::move(task), awaiter), priority);
+            this->_queue.enqueue(fb::thread::task(fn(), awaiter), priority);
         }
     });
-}
-
-fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
-{
-    return this->dispatch(fn(), delay, priority);
 }
 
 fb::awaiter<void> fb::thread::dispatch(uint32_t priority)
@@ -106,7 +100,7 @@ fb::awaiter<void> fb::thread::dispatch(uint32_t priority)
         co_return;
     };
 
-    return this->dispatch(generator(), 0s, priority);
+    return this->dispatch(generator, 0s, priority);
 }
 
 void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable)
@@ -127,7 +121,7 @@ fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& d
         co_return;
     };
 
-    return this->dispatch(generator(), delay);
+    return this->dispatch(generator, delay);
 }
 
 std::chrono::steady_clock::duration fb::thread::now()
@@ -257,7 +251,7 @@ fb::task<void> fb::threads::dispatch(const std::function<fb::task<void>()>& fn, 
     if (current == nullptr)
         throw std::runtime_error("therad not exists");
 
-    co_await current->dispatch(fn(), delay);
+    co_await current->dispatch(fn, delay);
 }
 
 void fb::threads::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration)
