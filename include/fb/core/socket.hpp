@@ -75,7 +75,7 @@ void fb::base::socket<T>::recv()
                 {
                     this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 });
-                this->_handle_received(*this);
+                this->_handle_received(*this).wait();
 
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");

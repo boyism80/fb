@@ -38,8 +38,8 @@ public:
     virtual ~base_bot();
 
 private:
-    void                                        on_receive(fb::base::socket<>& socket);
-    void                                        on_closed(fb::base::socket<>& socket);
+    fb::task<void>                              on_receive(fb::base::socket<>& socket);
+    fb::task<void>                              on_closed(fb::base::socket<>& socket);
 
 protected:
     virtual void                                on_connected();

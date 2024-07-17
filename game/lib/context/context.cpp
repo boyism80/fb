@@ -397,16 +397,16 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
 fb::game::context::~context()
 {}
 
-void fb::game::context::handle_start()
+fb::task<void> fb::game::context::handle_start()
 {
-    fb::acceptor<fb::game::session>::handle_start();
+    co_await fb::acceptor<fb::game::session>::handle_start();
 
     // prepare lua context
     auto& threads = this->threads();
     for(int i = 0; i < threads.count(); i++)
     {
         auto thread = threads.at(i);
-        thread->dispatch([] () -> fb::task<void>
+        co_await thread->dispatch([] () -> fb::task<void>
         {
             auto& ist = fb::game::lua::container::ist();
             auto& main = ist.get();
@@ -446,9 +446,9 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     return true;
 }
 
-void fb::game::context::handle_internal_connected()
+fb::task<void> fb::game::context::handle_internal_connected()
 {
-    fb::acceptor<fb::game::session>::handle_internal_connected();
+    co_await fb::acceptor<fb::game::session>::handle_internal_connected();
 
     auto& config = fb::config::get();
     this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GAME, (uint8_t)config["group"].asUInt()));

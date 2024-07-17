@@ -81,14 +81,14 @@ fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn
     {
         if(delay > 0s)
         {
-            this->settimer([this, priority, &awaiter, fn](auto time, auto id)
+            this->settimer([this, priority, ptr = std::make_shared<fb::awaiter<void>>(std::move(awaiter)), fn](auto time, auto id) mutable
             {
-                this->_queue.enqueue(fb::thread::task(fn(), awaiter), priority);
+                this->_queue.enqueue(fb::thread::task(fn(), std::move(*ptr.get())), priority);
             }, delay, true);
         }
         else
         {
-            this->_queue.enqueue(fb::thread::task(fn(), awaiter), priority);
+            this->_queue.enqueue(fb::thread::task(fn(), std::move(awaiter)), priority);
         }
     });
 }
@@ -129,10 +129,10 @@ std::chrono::steady_clock::duration fb::thread::now()
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 }
 
-fb::thread::task::task(fb::task<void>&& t, fb::awaiter<void>& awaiter) : t(std::move(t)), awaiter(awaiter)
+fb::thread::task::task(fb::task<void>&& t, fb::awaiter<void>&& awaiter) : t(std::move(t)), awaiter(std::move(awaiter))
 {}
 
-fb::thread::task::task(fb::thread::task&& r) : t(std::move(r.t)), awaiter(r.awaiter)
+fb::thread::task::task(fb::thread::task&& r) : t(std::move(r.t)), awaiter(std::move(r.awaiter))
 {}
 
 fb::thread::task::~task()

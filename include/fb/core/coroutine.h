@@ -76,6 +76,7 @@ public:
     }
     ~base_task()
     {
+        printf("destroy task : 0x%X\n", this);
         if (this->handler)
         {
             if (!this->done())

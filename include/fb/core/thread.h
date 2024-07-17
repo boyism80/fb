@@ -25,10 +25,10 @@ public:
     {
     public:
         fb::task<void>     t;
-        fb::awaiter<void>& awaiter;
+        fb::awaiter<void> awaiter;
 
     public:
-        task(fb::task<void>&& t, fb::awaiter<void>& awaiter);
+        task(fb::task<void>&& t, fb::awaiter<void>&& awaiter);
         task(const task&) = delete;
         task(task&&);
         ~task();

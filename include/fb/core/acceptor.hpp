@@ -27,7 +27,7 @@ fb::task<void> fb::base::acceptor<S, T>::handle_work(S<T>* socket)
     if (switched == false)
         co_return;
 
-    this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket));
+    co_await this->dispatch(socket, std::bind(&fb::base::acceptor<S, T>::handle_work, this, socket));
 }
 
 template <template<class> class S, class T>
@@ -87,7 +87,7 @@ uint8_t fb::base::acceptor<S, T>::handle_thread_index(S<T>& socket) const
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
+fb::task<void> fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 {
     if (this->_running == false)
         throw std::runtime_error("acceptor closed");
@@ -97,19 +97,19 @@ void fb::base::acceptor<S, T>::handle_receive(fb::base::socket<T>& socket)
 
     if(id == 0xFF)
     {
-        this->handle_work(casted).wait();
+        co_await this->handle_work(casted);
     }
     else
     {
-        this->dispatch(casted, std::bind(&fb::base::acceptor<S, T>::handle_work, this, casted));
+        co_await this->dispatch(casted, std::bind(&fb::base::acceptor<S, T>::handle_work, this, casted));
     }
 }
 
 template <template<class> class S, class T>
-void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
+fb::task<void> fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 {
     if(socket.data() == nullptr)
-        return;
+        co_return;
 
     auto                        casted = static_cast<S<T>*>(&socket);
     auto                        id     = this->handle_thread_index(*casted);
@@ -122,11 +122,11 @@ void fb::base::acceptor<S, T>::handle_closed(fb::base::socket<T>& socket)
 
     if(id == 0xFF)
     {
-        fn();
+        co_await fn();
     }
     else
     {
-        this->_threads[id]->dispatch(fn);
+        co_await this->_threads[id]->dispatch(fn);
     }
 }
 
@@ -271,7 +271,7 @@ void fb::base::acceptor<S, T>::run(int thread_size)
         });
     }
 
-    this->handle_start();
+    this->handle_start().wait();
 }
 
 template <template<class> class S, class T>
@@ -344,10 +344,10 @@ fb::task<bool> fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
 }
 
 template <typename T>
-bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
+fb::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t base_size = sizeof(uint16_t);
-    return socket.in_stream<bool>([this, &socket](auto& in_stream)
+    co_return co_await socket.in_stream<fb::task<void>>([this, &socket](auto& in_stream) -> fb::task<void>
     {
         while(true)
         {
@@ -388,18 +388,18 @@ bool fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
         }
 
         in_stream.reset();
-        return false;
+        co_return;
     });
 }
 
 template <typename T>
-void fb::acceptor<T>::on_internal_connected()
+fb::task<void> fb::acceptor<T>::on_internal_connected()
 {
-    this->handle_internal_connected();
+    co_await this->handle_internal_connected();
 }
 
 template <typename T>
-void fb::acceptor<T>::handle_internal_connected()
+fb::task<void> fb::acceptor<T>::handle_internal_connected()
 {
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -407,10 +407,11 @@ void fb::acceptor<T>::handle_internal_connected()
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     fb::logger::info("Success connect to internal server. (%s)", sstream.str().c_str());
+    co_return;
 }
 
 template <typename T>
-void fb::acceptor<T>::handle_internal_denied(const std::string& error)
+fb::task<void> fb::acceptor<T>::handle_internal_denied(const std::string& error)
 {
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -418,20 +419,21 @@ void fb::acceptor<T>::handle_internal_denied(const std::string& error)
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     fb::logger::warn("Failed connect to internal server. (%s)", sstream.str().c_str());
+    co_return;
 }
 
 template <typename T>
-void fb::acceptor<T>::on_internal_disconnected(fb::base::socket<>& socket)
+fb::task<void> fb::acceptor<T>::on_internal_disconnected(fb::base::socket<>& socket)
 {
     this->_internal->close();
-    this->handle_internal_disconnected(socket);
+    co_await this->handle_internal_disconnected(socket);
     
     if (this->running())
-        this->connect_internal().wait();
+        co_await this->connect_internal();
 }
 
 template <typename T>
-void fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
+fb::task<void> fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
 {
     auto t = std::time(nullptr);
     auto tm = *std::localtime(&t);
@@ -439,6 +441,7 @@ void fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>& socket)
     std::ostringstream sstream;
     sstream << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
     fb::logger::warn("Disconnected from internal server. (%s)", sstream.str().c_str());
+    co_return;
 }
 
 template <typename T>
@@ -482,12 +485,14 @@ fb::task<void> fb::acceptor<T>::connect_internal()
     auto&           config = fb::config::get();
     auto            ip     = config["internal"]["ip"].asString();
     auto            port   = (uint16_t)config["internal"]["port"].asInt();
+    auto            error  = std::string();
     while(this->running())
     {
         try
         {
             co_await this->co_connect_internal(ip, port);
-            this->on_internal_connected();
+            //co_await this->on_internal_connected();
+            puts("internal conn success");
             co_return;
         }
         catch (boost::system::error_code& e)
@@ -495,25 +500,25 @@ fb::task<void> fb::acceptor<T>::connect_internal()
             if (!this->running())
                 co_return;
 
-            this->handle_internal_denied(e.message());
-            std::this_thread::sleep_for(1000ms);
+            error = e.message();
         }
         catch(std::exception& e)
         {
             if (!this->running())
                 co_return;
 
-            this->handle_internal_denied(e.what());
-            std::this_thread::sleep_for(1000ms);
+            error = e.what();
         }
         catch (...)
         {
             if (!this->running())
                 co_return;
 
-            this->handle_internal_denied("unhandled exception");
-            std::this_thread::sleep_for(1000ms);
+            error = "unhandled exception";
         }
+
+        co_await this->handle_internal_denied(error);
+        std::this_thread::sleep_for(1000ms);
     }
 }
 
@@ -524,9 +529,9 @@ bool fb::acceptor<T>::decrypt_policy(uint8_t cmd) const
 }
 
 template <typename T>
-void fb::acceptor<T>::handle_start()
+fb::task<void> fb::acceptor<T>::handle_start()
 {
-    this->connect_internal().wait();
+    co_await this->connect_internal();
 }
 
 template <typename T>
@@ -534,7 +539,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 {
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
 
-    return socket.in_stream<fb::task<bool>>([this, &socket](auto& in_stream) -> fb::task<bool>
+    co_return co_await socket.in_stream<fb::task<bool>>([this, &socket](auto& in_stream) -> fb::task<bool>
     {
         auto& crt = socket.crt();
         while(true)

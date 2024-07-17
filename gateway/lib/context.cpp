@@ -95,9 +95,9 @@ bool fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>&
     return false;
 }
 
-void fb::gateway::context::handle_internal_connected()
+fb::task<void> fb::gateway::context::handle_internal_connected()
 {
-    fb::acceptor<fb::gateway::session>::handle_internal_connected();
+    co_await fb::acceptor<fb::gateway::session>::handle_internal_connected();
 
     auto& config = fb::config::get();
     this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GATEWAY, 0xFF));

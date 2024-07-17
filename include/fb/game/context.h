@@ -104,11 +104,11 @@ public:
 
 protected:
     bool                    decrypt_policy(uint8_t cmd) const final;
-    void                    handle_start() final;
+    fb::task<void>          handle_start() final;
     bool                    handle_connected(fb::socket<fb::game::session>& session) final;
     bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
-    void                    handle_internal_connected() final;
+    fb::task<void>          handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
 
 public:

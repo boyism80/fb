@@ -52,7 +52,7 @@ protected:
     const fb::threads&                          threads() const;
 
 protected:
-    virtual void                                handle_start() {}
+    virtual fb::task<void>                      handle_start() { co_return;  }
     virtual fb::task<bool>                      handle_parse(S<T>& session) = 0;
     virtual T*                                  handle_accepted(S<T>& socket) = 0;
     virtual bool                                handle_connected(S<T>& session) { return true; }
@@ -61,8 +61,8 @@ protected:
     virtual void                                handle_exit() { }
 
 public:
-    void                                        handle_receive(fb::base::socket<T>& socket);
-    void                                        handle_closed(fb::base::socket<T>& socket);
+    fb::task<void>                              handle_receive(fb::base::socket<T>& socket);
+    fb::task<void>                              handle_closed(fb::base::socket<T>& socket);
 
 protected:
     void                                        transfer(S<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from);
@@ -113,11 +113,11 @@ private:
     fb::task<void>              connect_internal();
     fb::task<bool>              call(fb::socket<T>& socket, uint8_t cmd);
     fb::awaiter<void>           co_connect_internal(const std::string& ip, uint16_t port);
-    bool                        handle_internal_receive(fb::base::socket<>& socket);
+    fb::task<void>              handle_internal_receive(fb::base::socket<>& socket);
 
 protected:
     virtual bool                decrypt_policy(uint8_t cmd) const;
-    virtual void                handle_start();
+    virtual fb::task<void>      handle_start();
     fb::task<bool>              handle_parse(fb::socket<T>& socket);
 
 public:
@@ -131,13 +131,13 @@ public:
     void                        bind();
 
 private:
-    void                        on_internal_connected();
-    void                        on_internal_disconnected(fb::base::socket<>& socket);
+    fb::task<void>              on_internal_connected();
+    fb::task<void>              on_internal_disconnected(fb::base::socket<>& socket);
 
 protected:
-    virtual void                handle_internal_disconnected(fb::base::socket<>& socket);
-    virtual void                handle_internal_connected();
-    virtual void                handle_internal_denied(const std::string& error);
+    virtual fb::task<void>      handle_internal_disconnected(fb::base::socket<>& socket);
+    virtual fb::task<void>      handle_internal_connected();
+    virtual fb::task<void>      handle_internal_denied(const std::string& error);
 };
 
 }

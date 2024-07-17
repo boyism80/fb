@@ -86,7 +86,7 @@ protected:
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
-    void                        handle_internal_connected() final;
+    fb::task<void>              handle_internal_connected() final;
 
 public:
     fb::task<bool>              handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);

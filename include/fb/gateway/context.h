@@ -43,7 +43,7 @@ protected:
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
-    void                        handle_internal_connected() final;
+    fb::task<void>              handle_internal_connected() final;
 
 public:
     fb::task<bool>              handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);

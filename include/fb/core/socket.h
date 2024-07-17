@@ -20,7 +20,7 @@ template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket
 {
 public:
-    using handler_event = std::function<void(fb::base::socket<T>&)>;
+    using handler_event = std::function<fb::task<void>(fb::base::socket<T>&)>;
 
 private:
     handler_event           _handle_received;

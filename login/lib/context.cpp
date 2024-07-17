@@ -105,9 +105,9 @@ bool fb::login::context::handle_disconnected(fb::socket<fb::login::session>& soc
     return false;
 }
 
-void fb::login::context::handle_internal_connected()
+fb::task<void> fb::login::context::handle_internal_connected()
 {
-    fb::acceptor<fb::login::session>::handle_internal_connected();
+    co_await fb::acceptor<fb::login::session>::handle_internal_connected();
 
     auto& config = fb::config::get();
     this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::LOGIN, 0xFF));

@@ -58,7 +58,9 @@ public:
         if (empty)
             return false;
 
-        fn(std::move(const_cast<T&>(this->top().second)));
+        auto& top = const_cast<T&>(this->top().second);
+        auto x = std::move(top);
+        fn(std::move(x));
         this->pop();
         return true;
     }
