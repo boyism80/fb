@@ -143,9 +143,12 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
 
     try
     {
-        this->assert_account(request.id, request.pw);
+        auto id = request.id;
+        auto pw = request.pw;
 
-        auto& nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", request.id.c_str()); // 여기서 task suspend, DB스레드에서 awaiter resume
+        this->assert_account(id, pw);
+
+        auto& nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", id.c_str()); // 여기서 task suspend, DB스레드에서 awaiter resume
 
         // 여기부터 awaiter handler
         if (this->sockets.contains(fd) == false)
@@ -166,7 +169,7 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
         auto admin = config["admin mode"].asBool() ? 0 : 1;
 
         // 여기서 awaiter suspend
-        auto& init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, request.id.c_str(), this->sha256(request.pw).c_str(), hp, mp, map, position_x, position_y, admin);
+        auto& init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
 
         // 여기서 새로운 awaiter handler
         if (this->sockets.contains(fd) == false)
@@ -179,7 +182,7 @@ fb::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::s
         this->send(socket, fb::protocol::login::response::message("", 0x00));
         auto session = socket.data();
         session->pk = pk;
-        session->name = request.id;
+        session->name = id;
     }
     catch(login_exception& e)
     {
