@@ -24,22 +24,27 @@ public:
     class task
     {
     public:
-        fb::task<void>     t;
-        fb::awaiter<void> awaiter;
+        using init_func_type = std::function<fb::task<void>()>;
+        using task_ptr = std::unique_ptr<fb::task<void>>;
 
     public:
-        task(fb::task<void>&& t, fb::awaiter<void>&& awaiter);
+        init_func_type          initializer;
+        task_ptr                t;
+        fb::awaiter<void>       awaiter;
+
+    public:
+        task(const init_func_type& initializer, fb::awaiter<void>&& awaiter);
         task(const task&) = delete;
-        task(task&&);
+        task(task&&) noexcept;
         ~task();
 
     public:
-        void operator = (const task&) = delete;
-        void operator = (task&& r);
-    };
+        void init();
 
-public:
-    using func_type = std::function<fb::task<void>()>;
+    public:
+        void operator = (const task&) = delete;
+        void operator = (task&& r) noexcept;
+    };
 
 private:
     uint8_t                                         _index = 0;

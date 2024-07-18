@@ -21,7 +21,9 @@ void fb::thread::handle_thread(uint8_t index)
         auto completed = false;
         completed = this->_queue.dequeue([this](auto&& x)
         {
-            if(!x.t.done())
+            x.init();
+
+            if(!x.t->done())
                 this->_queue.enqueue(std::move(x));
             else
                 x.awaiter.resume();
@@ -84,12 +86,12 @@ fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn
         {
             this->settimer([this, priority, ptr = std::make_shared<fb::awaiter<void>>(std::move(awaiter)), fn](auto time, auto id) mutable
             {
-                this->_queue.enqueue(fb::thread::task(fn(), std::move(*ptr.get())), priority);
+                this->_queue.enqueue(fb::thread::task(fn, std::move(*ptr.get())), priority);
             }, delay, true);
         }
         else
         {
-            this->_queue.enqueue(fb::thread::task(fn(), std::move(awaiter)), priority);
+            this->_queue.enqueue(fb::thread::task(fn, std::move(awaiter)), priority);
         }
     });
 }
@@ -130,17 +132,30 @@ std::chrono::steady_clock::duration fb::thread::now()
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 }
 
-fb::thread::task::task(fb::task<void>&& t, fb::awaiter<void>&& awaiter) : t(std::move(t)), awaiter(std::move(awaiter))
+fb::thread::task::task(const fb::thread::task::init_func_type& initializer, fb::awaiter<void>&& awaiter) : initializer(initializer), awaiter(std::move(awaiter))
 {}
 
-fb::thread::task::task(fb::thread::task&& r) : t(std::move(r.t)), awaiter(std::move(r.awaiter))
-{}
+fb::thread::task::task(fb::thread::task&& r) noexcept : initializer(std::move(r.initializer)), t(std::move(r.t)), awaiter(std::move(r.awaiter))
+{
+    r.t = nullptr;
+}
 
 fb::thread::task::~task()
-{}
-
-void fb::thread::task::operator = (fb::thread::task&& r)
 {
+}
+
+void fb::thread::task::init()
+{
+    if (this->t == nullptr)
+    {
+        auto task = this->initializer();
+        this->t = std::make_unique<fb::task<void>>(std::move(task));
+    }
+}
+
+void fb::thread::task::operator = (fb::thread::task&& r) noexcept
+{
+    this->initializer = std::move(r.initializer);
     this->t = std::move(r.t);
     this->awaiter = std::move(r.awaiter);
 }
