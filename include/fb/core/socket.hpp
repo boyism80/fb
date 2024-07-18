@@ -61,6 +61,15 @@ template <typename T>
 void fb::base::socket<T>::recv()
 {
     auto _ = std::lock_guard(this->_boost_mutex);
+    {
+        auto _ = std::lock_guard(this->_tasks_mutex);
+        for(int i = this->_tasks.size() - 1; i >= 0; i--)
+        {
+            auto& task = this->_tasks[i];
+            if(task.done())
+                this->_tasks.erase(this->_tasks.begin() + i);
+        }
+    }
 
     this->async_read_some
     (
@@ -78,7 +87,11 @@ void fb::base::socket<T>::recv()
                 {
                     this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                 });
-                this->_handle_received(*this).wait();
+
+                {
+                    auto _ = std::lock_guard(this->_tasks_mutex);
+                    this->_tasks.push_back(this->_handle_received(*this));
+                }
 
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");

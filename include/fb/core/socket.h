@@ -23,17 +23,19 @@ public:
     using handler_event = std::function<fb::task<void>(fb::base::socket<T>&)>;
 
 private:
-    handler_event           _handle_received;
-    handler_event           _handle_closed;
-    uint32_t                _fd = 0xFFFFFFFF;
-    istream                 _instream;
-    std::recursive_mutex    _instream_mutex;
+    handler_event                   _handle_received;
+    handler_event                   _handle_closed;
+    uint32_t                        _fd = 0xFFFFFFFF;
+    istream                         _instream;
+    std::recursive_mutex            _instream_mutex;
+    std::vector<fb::task<void>>     _tasks;
+    std::recursive_mutex            _tasks_mutex;
 
 protected:
-    std::array<char, 256>   _buffer;
-    T*                      _data;
-    std::recursive_mutex    _boost_mutex, _task_mutex;
-    std::vector<fb::task<bool>>   _unfinished_tasks;
+    std::array<char, 256>           _buffer;
+    T*                              _data;
+    std::recursive_mutex            _boost_mutex, _task_mutex;
+    std::vector<fb::task<bool>>     _unfinished_tasks;
 //
 //public:
 //    std::mutex              stream_mutex;

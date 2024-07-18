@@ -77,6 +77,7 @@ this->_mutex_timer.unlock();
 
 fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
+    // fn 함수가 호출되는 시점은 여기가 아니라 queue에 넣고 실행되는 시점임
     return fb::awaiter<void>([this, delay, priority, fn](auto& awaiter)
     {
         if(delay > 0s)
