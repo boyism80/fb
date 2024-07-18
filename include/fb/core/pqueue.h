@@ -27,7 +27,7 @@ template <typename T>
 class queue : private pqueue<T>
 {
 private:
-    std::mutex                                      _mutex;
+    std::recursive_mutex                            _mutex;
 
 public:
     queue() = default;

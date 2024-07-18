@@ -7,7 +7,9 @@
 #include <coroutine>
 #include <functional>
 #include <chrono>
+#ifdef KINGDOM_OF_THE_WIND
 #include <boost/system/error_code.hpp>
+#endif
 
 using namespace std::chrono_literals;
 
@@ -76,7 +78,6 @@ public:
     }
     ~base_task()
     {
-        printf("destroy task : 0x%X\n", this);
         if (this->handler)
         {
             if (!this->done())
@@ -103,88 +104,92 @@ public:
         if (promise.error)
             std::rethrow_exception(promise.error);
 
-        promise.parent = raw;
-        this->resume();
-    }
-
-    void resume()
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        if(promise.error)
-            std::rethrow_exception(promise.error);
-
+        //promise.parent = raw;
+        //this->resume();
         if (this->done())
-        {
-            auto& parent = promise.parent;
-            if (parent)
-                parent.resume();
-        }
+            raw.resume();
     }
 
-    void error(std::exception_ptr&& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = e;
-    }
+    // void resume()
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     if(promise.error)
+    //         std::rethrow_exception(promise.error);
 
-    void error(const std::exception& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-    }
+    //     if (this->done())
+    //     {
+    //         auto& parent = promise.parent;
+    //         if (parent)
+    //             parent.resume();
+    //     }
+    // }
 
-    void error(std::exception&& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-    }
+    // void error(std::exception_ptr&& e)
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     promise.error = e;
+    // }
 
-    void resume(std::exception_ptr&& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = e;
-        this->resume();
-    }
+    // void error(const std::exception& e)
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     promise.error = std::make_exception_ptr(e);
+    // }
 
-    void resume(const std::exception& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-        this->resume();
-    }
+    // void error(std::exception&& e)
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     promise.error = std::make_exception_ptr(e);
+    // }
 
-    void resume(std::exception&& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-        this->resume();
-    }
+    // void resume(std::exception_ptr&& e)
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     promise.error = e;
+    //     this->resume();
+    // }
 
-    void error(const boost::system::error_code& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-    }
+    // void resume(const std::exception& e)
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     promise.error = std::make_exception_ptr(e);
+    //     this->resume();
+    // }
 
-    void error(boost::system::error_code&& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-    }
+    // void resume(std::exception&& e)
+    // {
+    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
+    //     promise.error = std::make_exception_ptr(e);
+    //     this->resume();
+    // }
 
-    void resume(const boost::system::error_code& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-        this->resume();
-    }
+// #ifdef KINGDOM_OF_THE_WIND
+//     void error(const boost::system::error_code& e)
+//     {
+//         auto& promise = static_cast<base_promise&>(this->handler.promise());
+//         promise.error = std::make_exception_ptr(e);
+//     }
 
-    void resume(boost::system::error_code&& e)
-    {
-        auto& promise = static_cast<base_promise&>(this->handler.promise());
-        promise.error = std::make_exception_ptr(e);
-        this->resume();
-    }
+//     void error(boost::system::error_code&& e)
+//     {
+//         auto& promise = static_cast<base_promise&>(this->handler.promise());
+//         promise.error = std::make_exception_ptr(e);
+//     }
+
+//     void resume(const boost::system::error_code& e)
+//     {
+//         auto& promise = static_cast<base_promise&>(this->handler.promise());
+//         promise.error = std::make_exception_ptr(e);
+//         this->resume();
+//     }
+
+//     void resume(boost::system::error_code&& e)
+//     {
+//         auto& promise = static_cast<base_promise&>(this->handler.promise());
+//         promise.error = std::make_exception_ptr(e);
+//         this->resume();
+//     }
+// #endif
 
     bool done()
     {
@@ -217,8 +222,8 @@ public:
     task(const task&) = delete;
     task(task&& r) : base_task<T>(static_cast<base_task<T>&&>(r)) {}
 
-public:
-    using base_task<T>::resume;
+//public:
+//    using base_task<T>::resume;
 
 public:
     T& value()
@@ -245,47 +250,47 @@ public:
         return this->value();
     }
 
-    template <typename Q = T>
-    typename std::enable_if<std::is_class<Q>::value>::type resume(T&& value)
-    {
-        this->result(value);
-        base_task<T>::resume();
-    }
+    // template <typename Q = T>
+    // typename std::enable_if<std::is_class<Q>::value>::type resume(T&& value)
+    // {
+    //     this->result(value);
+    //     base_task<T>::resume();
+    // }
 
-    template <typename Q = T>
-    typename std::enable_if<std::is_class<Q>::value>::type resume(T& value)
-    {
-        this->result(value);
-        base_task<T>::resume();
-    }
+    // template <typename Q = T>
+    // typename std::enable_if<std::is_class<Q>::value>::type resume(T& value)
+    // {
+    //     this->result(value);
+    //     base_task<T>::resume();
+    // }
 
-    template <typename Q = T>
-    typename std::enable_if<std::is_class<Q>::value>::type result(T&& value)
-    {
-        auto& promise = static_cast<promise_type&>(this->handler.promise());
-        promise.value = value;
-    }
+    // template <typename Q = T>
+    // typename std::enable_if<std::is_class<Q>::value>::type result(T&& value)
+    // {
+    //     auto& promise = static_cast<promise_type&>(this->handler.promise());
+    //     promise.value = value;
+    // }
 
-    template <typename Q = T>
-    typename std::enable_if<std::is_class<Q>::value>::type result(T& value)
-    {
-        auto& promise = static_cast<promise_type&>(this->handler.promise());
-        promise.value = std::ref(value);
-    }
+    // template <typename Q = T>
+    // typename std::enable_if<std::is_class<Q>::value>::type result(T& value)
+    // {
+    //     auto& promise = static_cast<promise_type&>(this->handler.promise());
+    //     promise.value = std::ref(value);
+    // }
 
-    template <typename Q = T>
-    typename std::enable_if<!std::is_class<Q>::value>::type resume(T value)
-    {
-        this->result(value);
-        base_task<T>::resume();
-    }
+    // template <typename Q = T>
+    // typename std::enable_if<!std::is_class<Q>::value>::type resume(T value)
+    // {
+    //     this->result(value);
+    //     base_task<T>::resume();
+    // }
 
-    template <typename Q = T>
-    typename std::enable_if<!std::is_class<Q>::value>::type result(T value)
-    {
-        auto& promise = static_cast<promise_type&>(this->handler.promise());
-        promise.value = value;
-    }
+    // template <typename Q = T>
+    // typename std::enable_if<!std::is_class<Q>::value>::type result(T value)
+    // {
+    //     auto& promise = static_cast<promise_type&>(this->handler.promise());
+    //     promise.value = value;
+    // }
 
     T& wait()
     {
@@ -311,8 +316,8 @@ class task<void> : public base_task<void>
 public:
     class promise_type;
 
-public:
-    using base_task<void>::resume;
+//public:
+//    using base_task<void>::resume;
 
 public:
     task(handle_type handler) : base_task<void>(handler) {}
@@ -383,7 +388,9 @@ protected:
     base_awaiter(base_awaiter&& r) noexcept : _error(r._error), _parent(r._parent) {}
 
 public:
-    virtual ~base_awaiter() = default;
+    virtual ~base_awaiter()
+    {
+    }
 
 public:
     bool await_ready() { return false; }
@@ -432,6 +439,7 @@ public:
         this->resume();
     }
 
+#ifdef KINGDOM_OF_THE_WIND
     void error(const boost::system::error_code& e)
     {
         this->_error = std::make_exception_ptr(e);
@@ -453,6 +461,7 @@ public:
         this->_error = std::make_exception_ptr(e);
         this->resume();
     }
+#endif
 
     void operator = (const base_awaiter&) = delete;
     void operator = (base_awaiter&& r) noexcept
@@ -470,15 +479,13 @@ public:
 
 private:
     task_result<T>::type    _value;
-    //handler                 _handler;
+    handler                 _handler;
 
 public:
-    awaiter(const handler& handler)/* : _handler(handler)*/
-    {
-        handler(*this);
-    }
+    awaiter(const handler& handler) : _handler(handler)
+    {}
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _value(r._value)/*, _handler(r._handler)*/ {}
+    awaiter(awaiter&& r) : base_awaiter(static_cast<base_awaiter&&>(r)), _value(r._value), _handler(r._handler) {}
     ~awaiter() {}
 
 public:
@@ -489,7 +496,7 @@ public:
     void await_suspend(std::coroutine_handle<> h)
     {
         base_awaiter::await_suspend(h);
-        //_handler(*this);
+        _handler(*this);
     }
 
     T& await_resume()
@@ -545,7 +552,7 @@ public:
     void operator = (awaiter&& r) noexcept
     {
         base_awaiter::operator = (static_cast<base_awaiter&&>(r));
-        //this->_handler = r._handler;
+        this->_handler = r._handler;
     }
 };
 
@@ -556,22 +563,20 @@ public:
     using handler = std::function<void(awaiter&)>;
 
 private:
-    //handler _handler;
+    handler _handler;
 
 public:
-    awaiter(const handler& handler)/* : _handler(handler)*/
-    {
-        handler(*this);
-    }
+    awaiter(const handler& handler) : _handler(handler)
+    { }
     awaiter(const awaiter&) = delete;
-    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r))/*, _handler(r._handler)*/ {}
+    awaiter(awaiter&& r) noexcept : base_awaiter(static_cast<base_awaiter&&>(r)), _handler(r._handler) {}
     ~awaiter() = default;
 
 public:
     void await_suspend(std::coroutine_handle<> h)
     {
         base_awaiter::await_suspend(h);
-        //_handler(*this);
+        _handler(*this);
     }
     void await_resume()
     {
@@ -582,7 +587,7 @@ public:
     void operator = (awaiter&& r) noexcept
     {
         base_awaiter::operator = (static_cast<base_awaiter&&>(r));
-        //this->_handler = r._handler;
+        this->_handler = r._handler;
     }
 };
 

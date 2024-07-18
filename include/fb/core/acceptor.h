@@ -131,7 +131,6 @@ public:
     void                        bind();
 
 private:
-    fb::task<void>              on_internal_connected();
     fb::task<void>              on_internal_disconnected(fb::base::socket<>& socket);
 
 protected:

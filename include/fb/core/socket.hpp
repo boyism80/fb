@@ -35,7 +35,10 @@ inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, b
 template<typename T>
 inline void fb::base::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap)
 {
-    static auto empty_fn = [](const boost::system::error_code, size_t) {};
+    static auto empty_fn = [](const boost::system::error_code ec, size_t size)
+    {
+
+    };
     this->send(stream, encrypt, wrap, empty_fn);
 }
 

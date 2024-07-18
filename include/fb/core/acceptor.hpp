@@ -393,12 +393,6 @@ fb::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& sock
 }
 
 template <typename T>
-fb::task<void> fb::acceptor<T>::on_internal_connected()
-{
-    co_await this->handle_internal_connected();
-}
-
-template <typename T>
 fb::task<void> fb::acceptor<T>::handle_internal_connected()
 {
     auto t = std::time(nullptr);
@@ -491,8 +485,7 @@ fb::task<void> fb::acceptor<T>::connect_internal()
         try
         {
             co_await this->co_connect_internal(ip, port);
-            //co_await this->on_internal_connected();
-            puts("internal conn success");
+            co_await this->handle_internal_connected();
             co_return;
         }
         catch (boost::system::error_code& e)
