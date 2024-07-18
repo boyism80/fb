@@ -23,10 +23,14 @@ void fb::thread::handle_thread(uint8_t index)
         {
             x.init();
 
-            if(!x.t->done())
+            if (!x.t->done())
+            {
                 this->_queue.enqueue(std::move(x));
+            }
             else
-                x.awaiter.resume();
+            {
+                if(x.awaiter.has_value()) x.awaiter.value().resume();
+            }
         });
         if(completed)
             continue;
@@ -79,21 +83,35 @@ this->_mutex_timer.unlock();
 
 fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
-    // fn 함수가 호출되는 시점은 여기가 아니라 queue에 넣고 실행되는 시점임
     return fb::awaiter<void>([this, delay, priority, fn](auto& awaiter)
-    {
-        if(delay > 0s)
         {
-            this->settimer([this, priority, ptr = std::make_shared<fb::awaiter<void>>(std::move(awaiter)), fn](auto time, auto id) mutable
+            if (delay > 0s)
             {
-                this->_queue.enqueue(fb::thread::task(fn, std::move(*ptr.get())), priority);
+                this->settimer([this, priority, ptr = std::make_shared<fb::awaiter<void>>(std::move(awaiter)), fn](auto time, auto id) mutable
+                    {
+                        this->_queue.enqueue(fb::thread::task(fn, std::move(*ptr.get())), priority);
+                    }, delay, true);
+            }
+            else
+            {
+                this->_queue.enqueue(fb::thread::task(fn, std::move(awaiter)), priority);
+            }
+        });
+}
+
+void fb::thread::post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
+{
+    if (delay > 0s)
+    {
+        this->settimer([this, priority, fn](auto time, auto id) mutable
+            {
+                this->_queue.enqueue(fb::thread::task(fn), priority);
             }, delay, true);
-        }
-        else
-        {
-            this->_queue.enqueue(fb::thread::task(fn, std::move(awaiter)), priority);
-        }
-    });
+    }
+    else
+    {
+        this->_queue.enqueue(fb::thread::task(fn), priority);
+    }
 }
 
 fb::awaiter<void> fb::thread::dispatch(uint32_t priority)
@@ -132,12 +150,16 @@ std::chrono::steady_clock::duration fb::thread::now()
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 }
 
+fb::thread::task::task(const fb::thread::task::init_func_type& initializer)
+{}
+
 fb::thread::task::task(const fb::thread::task::init_func_type& initializer, fb::awaiter<void>&& awaiter) : initializer(initializer), awaiter(std::move(awaiter))
 {}
 
 fb::thread::task::task(fb::thread::task&& r) noexcept : initializer(std::move(r.initializer)), t(std::move(r.t)), awaiter(std::move(r.awaiter))
 {
     r.t = nullptr;
+    r.awaiter.reset();
 }
 
 fb::thread::task::~task()
@@ -158,6 +180,8 @@ void fb::thread::task::operator = (fb::thread::task&& r) noexcept
     this->initializer = std::move(r.initializer);
     this->t = std::move(r.t);
     this->awaiter = std::move(r.awaiter);
+
+    r.awaiter.reset();
 }
 
 std::thread::id fb::thread::id() const

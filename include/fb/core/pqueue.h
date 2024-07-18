@@ -60,8 +60,8 @@ public:
 
         auto& top = const_cast<T&>(this->top().second);
         auto x = std::move(top);
-        fn(std::move(x));
         this->pop();
+        fn(std::move(x));
         return true;
     }
 };

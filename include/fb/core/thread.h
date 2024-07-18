@@ -26,13 +26,15 @@ public:
     public:
         using init_func_type = std::function<fb::task<void>()>;
         using task_ptr = std::unique_ptr<fb::task<void>>;
+        using optional_awaiter = std::optional< fb::awaiter<void>>;
 
     public:
         init_func_type          initializer;
         task_ptr                t;
-        fb::awaiter<void>       awaiter;
+        optional_awaiter        awaiter;
 
     public:
+        task(const init_func_type& initializer);
         task(const init_func_type& initializer, fb::awaiter<void>&& awaiter);
         task(const task&) = delete;
         task(task&&) noexcept;
@@ -79,6 +81,7 @@ public:
 
 public:
     fb::awaiter<void>                               dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    void                                            post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
     fb::awaiter<void>                               dispatch(uint32_t priority = 0);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
     fb::awaiter<void>                               sleep(const std::chrono::steady_clock::duration& duration);

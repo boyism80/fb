@@ -156,7 +156,7 @@ public:
                         for (auto& result : results)
                             ptr->push_back(std::move(result));
 
-                        thread->dispatch([&awaiter, ptr]() mutable -> fb::task<void>
+                        thread->post([&awaiter, ptr]() mutable -> fb::task<void>
                         {
                             awaiter.resume(*ptr.get());
                             co_return;
