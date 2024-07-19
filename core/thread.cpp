@@ -18,19 +18,21 @@ void fb::thread::handle_thread(uint8_t index)
 
     while(!this->_exit)
     {
-        auto completed = false;
-        completed = this->_queue.dequeue([this](auto&& x)
+        for(int i = this->_tasks.size() - 1; i >= 0; i--)
         {
-            x.init();
+            auto& task = this->_tasks[i];
+            if(task.done())
+                this->_tasks.erase(this->_tasks.begin() + i);
+        }
 
-            if (!x.t->done())
-            {
-                this->_queue.enqueue(std::move(x));
-            }
-            else
-            {
-                if(x.awaiter.has_value()) x.awaiter.value().resume();
-            }
+        auto completed = false;
+        completed = this->_queue.dequeue([this](auto&& x) mutable
+        {
+            fb::task<void> task = x.func();
+            if(x.awaiter.has_value())
+                task.set_awaiter(std::move(x.awaiter.value()));
+
+            this->_tasks.push_back(std::move(task));
         });
         if(completed)
             continue;
@@ -49,7 +51,7 @@ void fb::thread::handle_idle()
     auto _ = std::lock_guard(this->_mutex_timer);
 
     auto indices = std::vector<uint32_t>();
-    for (auto i = 0; i < this->_timers.size(); i++)
+    for(int i = this->_timers.size() - 1; i >= 0; i--)
     {
         auto& timer = this->_timers[i];
         auto elapsed = std::chrono::steady_clock::now() - timer->begin;
@@ -58,12 +60,7 @@ void fb::thread::handle_idle()
 
         timer->fn(fb::thread::now(), this->_thread.get_id());
         if (timer->disposable)
-            indices.push_back(i);
-    }
-
-    for (int i = indices.size() - 1; i >= 0; i--)
-    {
-        this->_timers.erase(this->_timers.begin() + indices[i]);
+            this->_timers.erase(this->_timers.begin() + i);
     }
 }
 
@@ -84,19 +81,19 @@ this->_mutex_timer.unlock();
 fb::awaiter<void> fb::thread::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
     return fb::awaiter<void>([this, delay, priority, fn](auto& awaiter)
+    {
+        if (delay > 0s)
         {
-            if (delay > 0s)
-            {
-                this->settimer([this, priority, ptr = std::make_shared<fb::awaiter<void>>(std::move(awaiter)), fn](auto time, auto id) mutable
-                    {
-                        this->_queue.enqueue(fb::thread::task(fn, std::move(*ptr.get())), priority);
-                    }, delay, true);
-            }
-            else
-            {
-                this->_queue.enqueue(fb::thread::task(fn, std::move(awaiter)), priority);
-            }
-        });
+            this->settimer([this, priority, ptr = std::make_shared<fb::awaiter<void>>(std::move(awaiter)), fn](auto time, auto id) mutable
+                {
+                    this->_queue.enqueue(fb::thread::task(fn, std::move(*ptr.get())), priority);
+                }, delay, true);
+        }
+        else
+        {
+            this->_queue.enqueue(fb::thread::task(fn, std::move(awaiter)), priority);
+        }
+    });
 }
 
 void fb::thread::post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
@@ -150,15 +147,14 @@ std::chrono::steady_clock::duration fb::thread::now()
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
 }
 
-fb::thread::task::task(const fb::thread::task::init_func_type& initializer)
+fb::thread::task::task(const fb::thread::task::func_type& func) : func(func)
 {}
 
-fb::thread::task::task(const fb::thread::task::init_func_type& initializer, fb::awaiter<void>&& awaiter) : initializer(initializer), awaiter(std::move(awaiter))
+fb::thread::task::task(const fb::thread::task::func_type& func, fb::awaiter<void>&& awaiter) : func(func), awaiter(std::move(awaiter))
 {}
 
-fb::thread::task::task(fb::thread::task&& r) noexcept : initializer(std::move(r.initializer)), t(std::move(r.t)), awaiter(std::move(r.awaiter))
+fb::thread::task::task(fb::thread::task&& r) noexcept : func(std::move(r.func)), awaiter(std::move(r.awaiter))
 {
-    r.t = nullptr;
     r.awaiter.reset();
 }
 
@@ -166,19 +162,9 @@ fb::thread::task::~task()
 {
 }
 
-void fb::thread::task::init()
-{
-    if (this->t == nullptr)
-    {
-        auto task = this->initializer();
-        this->t = std::make_unique<fb::task<void>>(std::move(task));
-    }
-}
-
 void fb::thread::task::operator = (fb::thread::task&& r) noexcept
 {
-    this->initializer = std::move(r.initializer);
-    this->t = std::move(r.t);
+    this->func = std::move(r.func);
     this->awaiter = std::move(r.awaiter);
 
     r.awaiter.reset();

@@ -85,13 +85,10 @@ void fb::base::socket<T>::recv()
 
                 this->in_stream<void>([this, bytes_transferred](auto& in_stream)
                 {
-                    this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
-                });
-
-                {
                     auto _ = std::lock_guard(this->_tasks_mutex);
+                    this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
                     this->_tasks.push_back(this->_handle_received(*this));
-                }
+                });
 
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");

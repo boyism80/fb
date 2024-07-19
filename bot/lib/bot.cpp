@@ -25,11 +25,11 @@ fb::task<void> base_bot::on_receive(fb::base::socket<>& socket)
 
                 auto                head = in_stream.read_u8();
                 if (head != 0xAA)
-                    throw std::exception();
+                    throw std::runtime_error("header mismatch");
 
                 auto                size = in_stream.read_u16(buffer::endian::BIG);
                 if (size > in_stream.capacity())
-                    throw std::exception();
+                    throw std::runtime_error("limit packet size");
 
                 if (in_stream.readable_size() < size)
                     break;

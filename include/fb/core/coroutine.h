@@ -43,338 +43,6 @@ struct task_resume_type<T, typename std::enable_if_t<!std::is_class_v<T>>>
     typedef T type;
 };
 
-class base_promise;
-using handle_type = std::coroutine_handle<base_promise>;
-
-class base_promise
-{
-public:
-    std::exception_ptr error = nullptr;
-    std::coroutine_handle<> parent;
-    bool finished = false;
-
-    auto initial_suspend() { return std::suspend_never{}; }
-    auto final_suspend() noexcept
-    {
-        return std::suspend_always{};
-    }
-    void unhandled_exception() { this->error = std::current_exception(); }
-};
-
-template <typename T> class task;
-
-template <typename T>
-class base_task
-{
-public:
-    handle_type handler;
-
-public:
-    base_task(handle_type handler) : handler(handler) {}
-    base_task(const base_task&) = delete;
-    base_task(base_task&& r) noexcept : handler(r.handler)
-    {
-        r.handler = nullptr;
-    }
-    ~base_task()
-    {
-        if (this->handler)
-        {
-            if (!this->done())
-            {
-                auto sstream = std::stringstream();
-                auto address = this->handler.address();
-                sstream
-                    << "cannot destroy handler before job does not finish : "
-                    << address;
-                throw std::runtime_error(sstream.str());
-            }
-            this->handler.destroy();
-        }
-    }
-
-    bool await_ready()
-    {
-        return false;
-    }
-
-    void await_suspend(std::coroutine_handle<> raw)
-    {
-        auto& promise = this->handler.promise();
-        if (promise.error)
-            std::rethrow_exception(promise.error);
-
-        //promise.parent = raw;
-        //this->resume();
-        if (this->done())
-            raw.resume();
-    }
-
-    // void resume()
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     if(promise.error)
-    //         std::rethrow_exception(promise.error);
-
-    //     if (this->done())
-    //     {
-    //         auto& parent = promise.parent;
-    //         if (parent)
-    //             parent.resume();
-    //     }
-    // }
-
-    // void error(std::exception_ptr&& e)
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     promise.error = e;
-    // }
-
-    // void error(const std::exception& e)
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     promise.error = std::make_exception_ptr(e);
-    // }
-
-    // void error(std::exception&& e)
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     promise.error = std::make_exception_ptr(e);
-    // }
-
-    // void resume(std::exception_ptr&& e)
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     promise.error = e;
-    //     this->resume();
-    // }
-
-    // void resume(const std::exception& e)
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     promise.error = std::make_exception_ptr(e);
-    //     this->resume();
-    // }
-
-    // void resume(std::exception&& e)
-    // {
-    //     auto& promise = static_cast<base_promise&>(this->handler.promise());
-    //     promise.error = std::make_exception_ptr(e);
-    //     this->resume();
-    // }
-
-// #ifdef KINGDOM_OF_THE_WIND
-//     void error(const boost::system::error_code& e)
-//     {
-//         auto& promise = static_cast<base_promise&>(this->handler.promise());
-//         promise.error = std::make_exception_ptr(e);
-//     }
-
-//     void error(boost::system::error_code&& e)
-//     {
-//         auto& promise = static_cast<base_promise&>(this->handler.promise());
-//         promise.error = std::make_exception_ptr(e);
-//     }
-
-//     void resume(const boost::system::error_code& e)
-//     {
-//         auto& promise = static_cast<base_promise&>(this->handler.promise());
-//         promise.error = std::make_exception_ptr(e);
-//         this->resume();
-//     }
-
-//     void resume(boost::system::error_code&& e)
-//     {
-//         auto& promise = static_cast<base_promise&>(this->handler.promise());
-//         promise.error = std::make_exception_ptr(e);
-//         this->resume();
-//     }
-// #endif
-
-    bool done()
-    {
-        if (!this->handler)
-            throw std::runtime_error("destroyed task");
-
-        if (this->handler.done())
-            return true;
-
-        auto& promise = this->handler.promise();
-        return promise.finished;
-    }
-
-    void operator = (const base_task&) = delete;
-    void operator = (base_task&& r) noexcept
-    {
-        this->handler = r.handler;
-        r.handler = nullptr;
-    }
-};
-
-template <typename T = void>
-class task : public base_task<T>
-{
-public:
-    class promise_type;
-
-public:
-    task(handle_type handler) : base_task<T>(handler) {}
-    task(const task&) = delete;
-    task(task&& r) : base_task<T>(static_cast<base_task<T>&&>(r)) {}
-
-//public:
-//    using base_task<T>::resume;
-
-public:
-    T& value()
-    {
-        auto& promise = static_cast<promise_type&>(this->handler.promise());
-        if (promise.error)
-            std::rethrow_exception(promise.error);
-
-        if (promise.value.has_value() == false)
-            throw std::runtime_error("value is empty");
-
-        if constexpr (std::is_class_v<T>)
-        {
-            return promise.value.value().get();
-        }
-        else
-        {
-            return promise.value.value();
-        }
-    }
-
-    T& await_resume()
-    {
-        return this->value();
-    }
-
-    // template <typename Q = T>
-    // typename std::enable_if<std::is_class<Q>::value>::type resume(T&& value)
-    // {
-    //     this->result(value);
-    //     base_task<T>::resume();
-    // }
-
-    // template <typename Q = T>
-    // typename std::enable_if<std::is_class<Q>::value>::type resume(T& value)
-    // {
-    //     this->result(value);
-    //     base_task<T>::resume();
-    // }
-
-    // template <typename Q = T>
-    // typename std::enable_if<std::is_class<Q>::value>::type result(T&& value)
-    // {
-    //     auto& promise = static_cast<promise_type&>(this->handler.promise());
-    //     promise.value = value;
-    // }
-
-    // template <typename Q = T>
-    // typename std::enable_if<std::is_class<Q>::value>::type result(T& value)
-    // {
-    //     auto& promise = static_cast<promise_type&>(this->handler.promise());
-    //     promise.value = std::ref(value);
-    // }
-
-    // template <typename Q = T>
-    // typename std::enable_if<!std::is_class<Q>::value>::type resume(T value)
-    // {
-    //     this->result(value);
-    //     base_task<T>::resume();
-    // }
-
-    // template <typename Q = T>
-    // typename std::enable_if<!std::is_class<Q>::value>::type result(T value)
-    // {
-    //     auto& promise = static_cast<promise_type&>(this->handler.promise());
-    //     promise.value = value;
-    // }
-
-    T& wait()
-    {
-        constexpr auto term = 100ms;
-        while(!this->done())
-        {
-            std::this_thread::sleep_for(term);
-        }
-
-        return this->value();
-    }
-
-    void operator = (const task&) = delete;
-    void operator = (task&& r)
-    {
-        base_task<T>::operator = (static_cast<base_task<T>&&>(r));
-    }
-};
-
-template <>
-class task<void> : public base_task<void>
-{
-public:
-    class promise_type;
-
-//public:
-//    using base_task<void>::resume;
-
-public:
-    task(handle_type handler) : base_task<void>(handler) {}
-    task(const task&) = delete;
-    task(task&& r) noexcept : base_task<void>(static_cast<base_task<void>&&>(r)) {}
-
-public:
-    void await_resume()
-    {
-    
-    }
-
-    void wait()
-    {
-        constexpr auto term = 100ms;
-        while(!this->done())
-        {
-            std::this_thread::sleep_for(term);
-        }
-    }
-
-    void operator = (const task&) = delete;
-    void operator = (task&& r) noexcept
-    {
-        base_task<void>::operator = (static_cast<base_task<void>&&>(r));
-    }
-};
-
-template <typename T>
-class task<T>::promise_type : public base_promise
-{
-public:
-    task_result<T>::type value;
-
-    auto get_return_object() { return task<T>(handle_type::from_promise(*this)); }
-
-    template<std::convertible_to<T> From>
-    void return_value(From&& from)
-    {
-        this->value = std::forward<From>(from);
-        this->finished = true;
-        if (this->parent)
-            this->parent.resume();
-    }
-};
-
-class task<void>::promise_type : public base_promise
-{
-public:
-    auto get_return_object() { return task<void>(handle_type::from_promise(*this)); }
-    void return_void()
-    {
-        this->finished = true;
-        if (this->parent)
-            this->parent.resume();
-    }
-};
 
 class base_awaiter
 {
@@ -588,6 +256,252 @@ public:
     {
         base_awaiter::operator = (static_cast<base_awaiter&&>(r));
         this->_handler = r._handler;
+    }
+};
+
+
+class base_promise;
+using handle_type = std::coroutine_handle<base_promise>;
+
+class base_promise
+{
+public:
+    std::exception_ptr          error = nullptr;
+    std::coroutine_handle<>     parent;
+    bool                        finished = false;
+
+    auto initial_suspend() { return std::suspend_never{}; }
+    auto final_suspend() noexcept
+    {
+        return std::suspend_always{};
+    }
+    void unhandled_exception() { this->error = std::current_exception(); }
+};
+
+template <typename T> class task;
+
+template <typename T>
+class base_task
+{
+public:
+    handle_type handler;
+
+public:
+    base_task(handle_type handler) : handler(handler) {}
+    base_task(const base_task&) = delete;
+    base_task(base_task&& r) noexcept : handler(r.handler)
+    {
+        r.handler = nullptr;
+    }
+    ~base_task()
+    {
+        if (this->handler)
+        {
+            if (!this->done())
+            {
+                auto sstream = std::stringstream();
+                auto address = this->handler.address();
+                sstream
+                    << "cannot destroy handler before job does not finish : "
+                    << address;
+                throw std::runtime_error(sstream.str());
+            }
+            this->handler.destroy();
+        }
+    }
+
+    bool await_ready()
+    {
+        return false;
+    }
+
+    void await_suspend(std::coroutine_handle<> raw)
+    {
+        auto& promise = this->handler.promise();
+        if (promise.error)
+            std::rethrow_exception(promise.error);
+
+        //promise.parent = raw;
+        //this->resume();
+        if (this->done())
+            raw.resume();
+    }
+
+    bool done()
+    {
+        if (!this->handler)
+            throw std::runtime_error("destroyed task");
+
+        if (this->handler.done())
+            return true;
+
+        auto& promise = this->handler.promise();
+        return promise.finished;
+    }
+
+    void operator = (const base_task&) = delete;
+    void operator = (base_task&& r) noexcept
+    {
+        this->handler = r.handler;
+        r.handler = nullptr;
+    }
+};
+
+template <typename T = void>
+class task : public base_task<T>
+{
+public:
+    class promise_type;
+
+private:
+    std::optional<fb::awaiter<T>> _awaiter;
+
+public:
+    task(handle_type handler) : base_task<T>(handler) {}
+    task(const task&) = delete;
+    task(task&& r) : base_task<T>(static_cast<base_task<T>&&>(r)) {}
+
+//public:
+//    using base_task<T>::resume;
+
+public:
+    T& value()
+    {
+        auto& promise = static_cast<promise_type&>(this->handler.promise());
+        if (promise.error)
+            std::rethrow_exception(promise.error);
+
+        if (promise.value.has_value() == false)
+            throw std::runtime_error("value is empty");
+
+        if constexpr (std::is_class_v<T>)
+        {
+            return promise.value.value().get();
+        }
+        else
+        {
+            return promise.value.value();
+        }
+    }
+
+    T& await_resume()
+    {
+        if(this->_awaiter.has_value())
+        {
+            this->_awaiter.value().resume(this->value());
+            this->_awaiter.reset();
+        }
+        return this->value();
+    }
+
+    T& wait()
+    {
+        constexpr auto term = 100ms;
+        while(!this->done())
+        {
+            std::this_thread::sleep_for(term);
+        }
+
+        return this->value();
+    }
+
+    void set_awaiter(fb::awaiter<T>&& awaiter)
+    {
+        this->_awaiter = std::move(awaiter);
+        if(this->done())
+        {
+            this->_awaiter.value().resume(this->value());
+            this->_awaiter.reset();
+        }
+    }
+
+    void operator = (const task&) = delete;
+    void operator = (task&& r)
+    {
+        base_task<T>::operator = (static_cast<base_task<T>&&>(r));
+    }
+};
+
+template <>
+class task<void> : public base_task<void>
+{
+public:
+    class promise_type;
+
+private:
+    std::optional<fb::awaiter<void>> _awaiter;
+
+//public:
+//    using base_task<void>::resume;
+
+public:
+    task(handle_type handler) : base_task<void>(handler) {}
+    task(const task&) = delete;
+    task(task&& r) noexcept : base_task<void>(static_cast<base_task<void>&&>(r)) {}
+
+public:
+    void await_resume()
+    {
+        if(this->_awaiter.has_value())
+        {
+            this->_awaiter.value().resume();
+            this->_awaiter.reset();
+        }
+    }
+
+    void wait()
+    {
+        constexpr auto term = 100ms;
+        while(!this->done())
+        {
+            std::this_thread::sleep_for(term);
+        }
+    }
+
+    void set_awaiter(fb::awaiter<void>&& awaiter)
+    {
+        this->_awaiter = std::move(awaiter);
+        if(this->done())
+        {
+            this->_awaiter.value().resume();
+            this->_awaiter.reset();
+        }
+    }
+
+    void operator = (const task&) = delete;
+    void operator = (task&& r) noexcept
+    {
+        base_task<void>::operator = (static_cast<base_task<void>&&>(r));
+    }
+};
+
+template <typename T>
+class task<T>::promise_type : public base_promise
+{
+public:
+    task_result<T>::type value;
+
+    auto get_return_object() { return task<T>(handle_type::from_promise(*this)); }
+
+    template<std::convertible_to<T> From>
+    void return_value(From&& from)
+    {
+        this->value = std::forward<From>(from);
+        this->finished = true;
+        if (this->parent)
+            this->parent.resume();
+    }
+};
+
+class task<void>::promise_type : public base_promise
+{
+public:
+    auto get_return_object() { return task<void>(handle_type::from_promise(*this)); }
+    void return_void()
+    {
+        this->finished = true;
+        if (this->parent)
+            this->parent.resume();
     }
 };
 
