@@ -42,12 +42,13 @@ fb::task<void> base_bot::on_receive(fb::base::socket<>& socket)
 
                 if (this->_handler.contains(cmd))
                 {
-                    co_await this->_handler[cmd]();
+                    co_await this->_handler[cmd]([&in_stream, size]
+                    {
+                        in_stream.reset();
+                        in_stream.shift(base_size + size);
+                        in_stream.flush();
+                    });
                 }
-
-                in_stream.reset();
-                in_stream.shift(base_size + size);
-                in_stream.flush();
             }
             catch (std::exception&)
             {

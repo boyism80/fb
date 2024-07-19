@@ -97,8 +97,8 @@ template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {
 private:
-    using external_func                 = std::function<fb::task<bool>(fb::socket<T>&)>;
-    using internal_func                 = std::function<fb::task<bool>(fb::internal::socket<>&)>;
+    using external_func                 = std::function<fb::task<bool>(fb::socket<T>&, const std::function<void()>&)>;
+    using internal_func                 = std::function<fb::task<bool>(fb::internal::socket<>&, const std::function<void()>&)>;
 
 private:
     std::map<uint8_t, external_func>    _external_handler;
@@ -111,7 +111,6 @@ public:
 private:
     fb::task<bool>              default_handler();
     fb::task<void>              connect_internal();
-    fb::task<bool>              call(fb::socket<T>& socket, uint8_t cmd);
     fb::awaiter<void>           co_connect_internal(const std::string& ip, uint16_t port);
     fb::task<void>              handle_internal_receive(fb::base::socket<>& socket);
 

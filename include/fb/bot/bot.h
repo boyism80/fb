@@ -23,10 +23,12 @@ class bot_container;
 
 class base_bot : public fb::awaitable_socket<void*>
 {
+private:
+    using handle_func_type = std::function<fb::task<void>(const std::function<void()>&)>;
 protected:
-    bot_container&                                      _owner;
-    fb::cryptor                                         _cryptor;
-    std::map<uint8_t, std::function<fb::task<void>()>>  _handler;
+    bot_container&                              _owner;
+    fb::cryptor                                 _cryptor;
+    std::map<uint8_t, handle_func_type>         _handler;
 
 public:
     const uint32_t                              id;
@@ -55,12 +57,13 @@ public:
     template <typename T>
     void bind(int cmd, const std::function<fb::task<void>(T&)>& fn)
     {
-        this->_handler.insert({ cmd, [this, fn]() -> fb::task<void>
+        this->_handler.insert({ cmd, [this, fn](const std::function<void()>& callback) -> fb::task<void>
         {
-            co_await this->in_stream<fb::task<void>>([this, fn](auto& in_stream) -> fb::task<void>
+            co_await this->in_stream<fb::task<void>>([this, fn, &callback](auto& in_stream) -> fb::task<void>
             {
                 T     header;
                 header.deserialize(in_stream);
+                callback();
                 this->invoke_awaiter(header.__id, header);
 
                 co_await fn(header);

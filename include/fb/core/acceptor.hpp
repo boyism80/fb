@@ -330,20 +330,6 @@ fb::acceptor<T>::~acceptor()
 { }
 
 template <typename T>
-fb::task<bool> fb::acceptor<T>::call(fb::socket<T>& socket, uint8_t cmd)
-{
-    auto i = this->_external_handler.find(cmd);
-    if(i == this->_external_handler.end())
-    {
-        auto& c = fb::console::get();
-        fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
-        return this->default_handler();
-    }
-
-    return i->second(socket);
-}
-
-template <typename T>
 fb::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t base_size = sizeof(uint16_t);
@@ -368,14 +354,15 @@ fb::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& sock
                 auto cmd = in_stream.read_8();
                 if (this->_internal_handler.contains(cmd))
                 {
-                    auto task = this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket));
+                    auto task = this->_internal_handler[cmd](static_cast<fb::internal::socket<>&>(socket), [&in_stream, size]
+                    {
+                        in_stream.reset();
+                        in_stream.shift(base_size + size);
+                        in_stream.flush();
+                    });
                     if (!task.done())
                         socket.push_task(std::move(task));
                 }
-
-                in_stream.reset();
-                in_stream.shift(base_size + size);
-                in_stream.flush();
             }
             catch(std::exception& /*e*/)
             {
@@ -566,14 +553,20 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
                     size = crt.decrypt(in_stream, in_stream.offset() - 1, size);
 
                 // Call function that matched by command byte
-                auto before = this->handle_thread_index(socket);
-                auto result = co_await this->call(socket, cmd);
-                auto after = this->handle_thread_index(socket);
+                if(this->_external_handler.contains(cmd) == false)
+                {
+                    fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
+                    co_return true;
+                }
 
-                // Set data pointer to process next packet bytes
-                in_stream.reset();
-                in_stream.shift(base_size + size);
-                in_stream.flush();
+                auto before = this->handle_thread_index(socket);
+                auto result = co_await this->_external_handler[cmd](socket, [&in_stream, size]
+                {
+                    in_stream.reset();
+                    in_stream.shift(base_size + size);
+                    in_stream.flush();
+                });
+                auto after = this->handle_thread_index(socket);
 
                 // 콜백 조건이 만족하지 못하는 경우 즉시 종료
                 co_return before != after;
@@ -600,12 +593,13 @@ template <typename T>
 template <typename R>
 void fb::acceptor<T>::bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn)
 {
-    this->_external_handler.insert({cmd, [this, fn](fb::socket<T>& socket)
+    this->_external_handler.insert({cmd, [this, fn](fb::socket<T>& socket, const std::function<void()>& callback)
     {
-        return socket.in_stream<fb::task<bool>>([this, &fn, &socket] (auto& in_stream)
+        return socket.in_stream<fb::task<bool>>([this, &fn, &socket, &callback] (auto& in_stream)
         {
             R     header;
             header.deserialize(in_stream);
+            callback();
             return fn(socket, header);
         });
     }});
@@ -624,12 +618,13 @@ template <typename R>
 void fb::acceptor<T>::bind(const std::function<fb::task<bool>(fb::internal::socket<>&, const R&)>& fn)
 {
     auto id = R().__id;
-    this->_internal_handler.insert({id, [this, fn](fb::internal::socket<>& socket)
+    this->_internal_handler.insert({id, [this, fn](fb::internal::socket<>& socket, const std::function<void()>& callback)
     {
-        return socket.in_stream<fb::task<bool>>([this, &fn, &socket](auto& in_stream)
+        return socket.in_stream<fb::task<bool>>([this, &fn, &socket, &callback](auto& in_stream)
         {
             R     header;
             header.deserialize(in_stream);
+            callback();
             socket.invoke_awaiter(header.trans, header);
             return fn(socket, header);
         });
