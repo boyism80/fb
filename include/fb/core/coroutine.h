@@ -51,13 +51,20 @@ private:
     std::coroutine_handle<> _parent;
 
 protected:
-    base_awaiter() = default;
+    base_awaiter()
+    {
+        printf("create base awaiter 0x%X\n", this);
+    };
     base_awaiter(const base_awaiter&) = delete;
-    base_awaiter(base_awaiter&& r) noexcept : _error(r._error), _parent(r._parent) {}
+    base_awaiter(base_awaiter&& r) noexcept : _error(r._error), _parent(r._parent)
+    {
+        printf("create base awaiter(move) 0x%X\n", this);
+    }
 
 public:
     virtual ~base_awaiter()
     {
+        printf("destroy base awaiter 0x%X\n", this);
     }
 
 public:
@@ -273,6 +280,7 @@ public:
     auto initial_suspend() { return std::suspend_never{}; }
     auto final_suspend() noexcept
     {
+        printf("final suspend from task (promise : 0x%X)\n", this);
         return std::suspend_always{};
     }
     void unhandled_exception() { this->error = std::current_exception(); }
@@ -287,14 +295,19 @@ public:
     handle_type handler;
 
 public:
-    base_task(handle_type handler) : handler(handler) {}
+    base_task(handle_type handler) : handler(handler)
+    {
+        printf("create base task 0x%X\n", this);
+    }
     base_task(const base_task&) = delete;
     base_task(base_task&& r) noexcept : handler(r.handler)
     {
+        printf("create base task(move) 0x%X\n", this);
         r.handler = nullptr;
     }
     ~base_task()
     {
+        printf("destroy base task 0x%X\n", this);
         if (this->handler)
         {
             if (!this->done())
@@ -325,6 +338,8 @@ public:
         //this->resume();
         if (this->done())
             raw.resume();
+        else
+            promise.parent = raw;
     }
 
     bool done()
