@@ -520,6 +520,109 @@ public:
     }
 };
 
+template <typename T>
+class base_awaiter
+{
+protected:
+    std::exception_ptr                      error;
+
+public:
+    fb::task<T, std::suspend_always>        task;
+
+protected:
+    base_awaiter(fb::task<T, std::suspend_always>&& task) : task(std::move(task))
+    {}
+    base_awaiter(const base_awaiter&) = delete;
+    base_awaiter(base_awaiter&& r) : error(r.error), task(std::move(r.task))
+    {
+        r.error = nullptr;
+    }
+    ~base_awaiter() = default;
+
+public:
+    void set_error(const std::exception& e)
+    {
+        this->error = std::make_exception_ptr(e);
+    }
+};
+
+template <typename T>
+class awaiter : public base_awaiter<T>
+{
+private:
+    fb::task_result<T>::type                result;
+
+public:
+    awaiter() : base_awaiter<T>(handler())
+    {}
+    awaiter(const awaiter&) = delete;
+    awaiter(awaiter&& r) : base_awaiter<T>(static_cast<base_awaiter<T>&&>(r)), result(std::move(r.result))
+    {}
+    ~awaiter() = default;
+
+private:
+    fb::task<T, std::suspend_always> handler()
+    {
+        if (this->error != nullptr)
+            std::rethrow_exception(this->error);
+
+        if (this->result.has_value() == false)
+            throw std::runtime_error("has no value");
+
+        co_return result.value();
+    }
+
+public:
+    template <typename Q = T>
+    typename std::enable_if<std::is_class<Q>::value>::type set_result(T&& value)
+    {
+        this->result = value;
+        this->task.handler.resume();
+    }
+
+    template <typename Q = T>
+    typename std::enable_if<std::is_class<Q>::value>::type set_result(T& value)
+    {
+        this->result = value;
+        this->task.handler.resume();
+    }
+
+    template <typename Q = T>
+    typename std::enable_if<!std::is_class<Q>::value>::type set_result(T value)
+    {
+        this->result = value;
+        this->task.handler.resume();
+    }
+};
+
+
+template <>
+class awaiter<void> : public base_awaiter<void>
+{
+public:
+    awaiter() : base_awaiter<void>(handler())
+    {}
+    awaiter(const awaiter&) = delete;
+    awaiter(awaiter&& r) : base_awaiter<void>(static_cast<base_awaiter<void>&&>(r))
+    {}
+    ~awaiter() = default;
+
+private:
+    fb::task<void, std::suspend_always> handler()
+    {
+        if (this->error != nullptr)
+            std::rethrow_exception(this->error);
+
+        co_return;
+    }
+
+public:
+    void resume()
+    {
+        this->task.handler.resume();
+    }
+};
+
 template <typename OUTPUT, typename INPUT = void>
 struct generator
 {

@@ -22,16 +22,17 @@ void fb::thread::handle_thread(uint8_t index)
         {
             auto& task = this->_tasks[i];
             if(task.done())
+            {
+                if(task.callback != nullptr)
+                    task.callback();
                 this->_tasks.erase(this->_tasks.begin() + i);
+            }
         }
 
         auto completed = false;
         completed = this->_queue.dequeue([this](auto&& x) mutable
         {
             fb::task<void> task = x.func();
-            if(x.awaiter.has_value())
-                task.set_awaiter(std::move(x.awaiter.value()));
-
             this->_tasks.push_back(std::move(task));
         });
         if(completed)
@@ -150,12 +151,12 @@ std::chrono::steady_clock::duration fb::thread::now()
 fb::thread::task::task(const fb::thread::task::func_type& func) : func(func)
 {}
 
-fb::thread::task::task(const fb::thread::task::func_type& func, fb::awaiter<void>&& awaiter) : func(func), awaiter(std::move(awaiter))
+fb::thread::task::task(const fb::thread::task::func_type& func, const fb::thread::task::callback_type& callback) : func(func), callback(callback)
 {}
 
-fb::thread::task::task(fb::thread::task&& r) noexcept : func(std::move(r.func)), awaiter(std::move(r.awaiter))
+fb::thread::task::task(fb::thread::task&& r) noexcept : func(std::move(r.func)), callback(std::move(r.callback))
 {
-    r.awaiter.reset();
+    
 }
 
 fb::thread::task::~task()
@@ -165,9 +166,7 @@ fb::thread::task::~task()
 void fb::thread::task::operator = (fb::thread::task&& r) noexcept
 {
     this->func = std::move(r.func);
-    this->awaiter = std::move(r.awaiter);
-
-    r.awaiter.reset();
+    this->callback = std::move(r.callback);
 }
 
 std::thread::id fb::thread::id() const

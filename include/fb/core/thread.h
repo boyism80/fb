@@ -25,15 +25,15 @@ public:
     {
     public:
         using func_type = std::function<fb::task<void>()>;
-        using optional_awaiter = std::optional<fb::awaiter<void>>;
+        using callback_type = std::function<void()>;
 
     public:
         func_type               func;
-        optional_awaiter        awaiter;
+        callback_type           callback;
 
     public:
         task(const func_type& func);
-        task(const func_type& func, fb::awaiter<void>&& awaiter);
+        task(const func_type& func, const callback_type& callback);
         task(const task&) = delete;
         task(task&&) noexcept;
         ~task();
