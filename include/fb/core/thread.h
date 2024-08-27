@@ -43,6 +43,12 @@ public:
         void operator = (task&& r) noexcept;
     };
 
+    struct task_completor
+    {
+        fb::task<void>          task;
+        task::callback_type     callback;
+    };
+
 private:
     uint8_t                                         _index = 0;
     std::atomic<bool>                               _exit  = false;
@@ -54,7 +60,7 @@ private:
 
 private:
     fb::queue<fb::thread::task>                     _queue;
-    std::vector<fb::task<void>>                     _tasks;
+    std::vector<task_completor>                     _completors;
 
 public:
     thread(uint8_t index);
@@ -76,11 +82,11 @@ public:
     void                                            exit();
 
 public:
-    fb::awaiter<void>                               dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    fb::task<void, std::suspend_always>&            dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
     void                                            post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
-    fb::awaiter<void>                               dispatch(uint32_t priority = 0);
+    fb::task<void, std::suspend_always>&            dispatch(uint32_t priority = 0);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
-    fb::awaiter<void>                               sleep(const std::chrono::steady_clock::duration& duration);
+    fb::task<void, std::suspend_always>&            sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
     static std::chrono::steady_clock::duration      now();

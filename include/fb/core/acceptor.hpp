@@ -232,7 +232,7 @@ fb::thread* fb::base::acceptor<S, T>::current_thread()
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<fb::task<void>(void)>& fn, uint32_t priority)
+fb::task<void, std::suspend_always>& fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::function<fb::task<void>(void)>& fn, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -244,7 +244,7 @@ fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, const std::fu
 }
 
 template <template<class> class S, class T>
-fb::awaiter<void> fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
+fb::task<void, std::suspend_always>& fb::base::acceptor<S, T>::dispatch(S<T>* socket, uint32_t priority)
 {
     auto id = this->handle_thread_index(*socket);
     auto thread = this->_threads[id];
@@ -426,32 +426,33 @@ fb::task<void> fb::acceptor<T>::handle_internal_disconnected(fb::base::socket<>&
 }
 
 template <typename T>
-fb::awaiter<void> fb::acceptor<T>::co_connect_internal(const std::string& ip, uint16_t port)
+fb::task<void, std::suspend_always>& fb::acceptor<T>::co_connect_internal(const std::string& ip, uint16_t port)
 {
-    auto await_callback = [this, ip, port](auto& awaiter)
-    {
-        auto handle_receive = std::bind(&fb::acceptor<T>::handle_internal_receive, this, std::placeholders::_1);
-        auto handle_disconnected = std::bind(&fb::acceptor<T>::on_internal_disconnected, this, std::placeholders::_1);
-        auto socket = new fb::internal::socket<>(this->_context, handle_receive, handle_disconnected);
-        this->_internal.reset(socket);
+    auto awaiter = std::make_shared<fb::awaiter<void>>();
+    auto handle_receive = std::bind(&fb::acceptor<T>::handle_internal_receive, this, std::placeholders::_1);
+    auto handle_disconnected = std::bind(&fb::acceptor<T>::on_internal_disconnected, this, std::placeholders::_1);
+    auto socket = new fb::internal::socket<>(this->_context, handle_receive, handle_disconnected);
+    this->_internal.reset(socket);
 
-        auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), port);
-        this->_internal->async_connect
-        (
-            endpoint,
-            [this, &awaiter] (const auto& error)
+    auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(ip), port);
+    this->_internal->async_connect
+    (
+        endpoint,
+        [this, awaiter] (const boost::system::error_code& error)
+        {
+            if (error)
             {
-                if (error)
-                    awaiter.error(boost::system::error_code(error));
-                else
-                    this->_internal->recv();
-
-                awaiter.resume();
+                awaiter->set_error(std::runtime_error("boost socket error"));
             }
-        );
-    };
+            else
+            {
+                this->_internal->recv();
+                awaiter->resume();
+            }
+        }
+    );
 
-    return fb::awaiter<void>(await_callback);
+    return awaiter->task;
 }
 
 template <typename T>
@@ -464,13 +465,13 @@ template <typename T>
 fb::task<void> fb::acceptor<T>::connect_internal()
 {
     auto&           config = fb::config::get();
-    auto            ip     = config["internal"]["ip"].asString();
-    auto            port   = (uint16_t)config["internal"]["port"].asInt();
-    auto            error  = std::string();
+    const char*     error = nullptr;
     while(this->running())
     {
         try
         {
+            auto    ip = config["internal"]["ip"].asCString();
+            auto    port = (uint16_t)config["internal"]["port"].asInt();
             co_await this->co_connect_internal(ip, port);
             co_await this->handle_internal_connected();
             co_return;
@@ -480,7 +481,7 @@ fb::task<void> fb::acceptor<T>::connect_internal()
             if (!this->running())
                 co_return;
 
-            error = e.message();
+            error = e.message().c_str();
         }
         catch(std::exception& e)
         {

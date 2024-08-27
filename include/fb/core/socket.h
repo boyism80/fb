@@ -50,9 +50,9 @@ protected:
 
 public:
     void                    send(const ostream& stream, bool encrypt = true, bool wrap = true);
-    void                    send(const ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback);
+    void                    send(const ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
-    void                    send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code, size_t)> callback);
+    void                    send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
 
     void                    recv();
     void                    data(T* value);
@@ -145,24 +145,9 @@ public:
 template <typename T, typename C = uint8_t>
 class awaitable_socket : public fb::base::socket<T>
 {
-public:
-    template <typename R>
-    class awaiter : public fb::awaiter<R>
-    {
-    private:
-        awaitable_socket<T,C>&      _owner;
-        C                           _cmd;
-
-    public:
-        awaiter(awaitable_socket<T,C>& owner, C cmd, const typename fb::awaiter<R>::handler& on_suspend);
-        ~awaiter();
-
-        void                        await_suspend(std::coroutine_handle<> h);
-    };
-
 private:
     std::mutex                      _awaiter_mutex;
-    std::map<C, void*>              _coroutines;
+    std::map<C, std::any>           _coroutines;
 
 protected:
     awaitable_socket(boost::asio::io_context& context, const fb::base::socket<T>::handler_event& handle_receive, const fb::base::socket<T>::handler_event& handle_closed);
@@ -171,7 +156,7 @@ public:
 
 private:
     template <typename R>
-    void                            register_awaiter(C cmd, awaiter<R>* awaiter);
+    void                            register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>>& awaiter);
 
 public:
     template <typename R>
@@ -179,10 +164,10 @@ public:
 
 public:
     template <typename R>
-    awaiter<R>                    request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    fb::task<R, std::suspend_always>&   request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 
     template <typename R>
-    awaiter<R>                    request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    fb::task<R, std::suspend_always>&   request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
 };
 
 }

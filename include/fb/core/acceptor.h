@@ -78,8 +78,8 @@ public:
     template <typename R>
     fb::task<R>                                 request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
-    fb::awaiter<void>                           dispatch(S<T>*, const std::function<fb::task<void>(void)>& fn, uint32_t priority = 0);
-    fb::awaiter<void>                           dispatch(S<T>*, uint32_t priority = 0);
+    fb::task<void, std::suspend_always>&        dispatch(S<T>*, const std::function<fb::task<void>(void)>& fn, uint32_t priority = 0);
+    fb::task<void, std::suspend_always>&        dispatch(S<T>*, uint32_t priority = 0);
     void                                        run(int thread_size);
     bool                                        running() const;
     fb::task<void>                              sleep(const std::chrono::steady_clock::duration& duration);
@@ -111,7 +111,7 @@ public:
 private:
     fb::task<bool>              default_handler();
     fb::task<void>              connect_internal();
-    fb::awaiter<void>           co_connect_internal(const std::string& ip, uint16_t port);
+    fb::task<void, std::suspend_always>& co_connect_internal(const std::string& ip, uint16_t port);
     fb::task<void>              handle_internal_receive(fb::base::socket<>& socket);
 
 protected:

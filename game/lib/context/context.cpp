@@ -838,17 +838,15 @@ void fb::game::context::save(const std::function<void(fb::game::session&)>& fn)
     });
 }
 
-fb::awaiter<void> fb::game::context::co_save(fb::game::session& session)
+fb::task<void, std::suspend_always>& fb::game::context::co_save(fb::game::session& session)
 {
-    auto await_callback = [this, &session](auto& awaiter)
+    auto awaiter = std::make_shared<fb::awaiter<void>>();
+    this->save(session, [this, awaiter] (auto& session)
     {
-        this->save(session, [this, &awaiter] (auto& session)
-        {
-            awaiter.resume();
-        });
-    };
+        awaiter->resume();
+    });
 
-    return fb::awaiter<void>(await_callback);
+    return awaiter->task;
 }
 
 uint8_t fb::game::context::handle_thread_index(fb::socket<fb::game::session>& socket) const

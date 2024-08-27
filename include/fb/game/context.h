@@ -93,7 +93,7 @@ public:
     fb::task<void>          save(fb::game::session& session, std::function<void(fb::game::session&)> fn);
     void                    save();
     void                    save(const std::function<void(fb::game::session&)>& fn);
-    fb::awaiter<void>       co_save(fb::game::session& session);
+    fb::task<void, std::suspend_always>& co_save(fb::game::session& session);
 
 public:
     fb::thread*             thread(const fb::game::map* map) const;

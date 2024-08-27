@@ -30,7 +30,7 @@ using task_result        = std::vector<daotk::mysql::result>&;
 using task_callback_func = std::function<void(std::vector<daotk::mysql::result>&)>;
 using task_error_func    = std::function<void(std::exception&)>;
 using workers            = std::vector<std::unique_ptr<worker>>;
-using awaiter            = fb::awaiter<std::vector<daotk::mysql::result>>;
+using awaiter            = fb::task<std::vector<daotk::mysql::result>, std::suspend_always>&;
 
 class connections
 {
@@ -141,42 +141,39 @@ public:
 public:
     fb::db::awaiter     co_exec(uint32_t id, const std::string& sql)
     {
-        auto await_callback = [this, sql, id](auto& awaiter)
+        auto awaiter = std::make_shared<fb::awaiter<std::vector<daotk::mysql::result>>>();
+        auto thread = this->_owner.current_thread();
+        auto task = fb::db::task
         {
-            auto thread = this->_owner.current_thread();
-            auto task = fb::db::task
+            /* sql */ sql,
+            /* callback */
+            [this, thread, awaiter](auto& results)
             {
-                /* sql */ sql,
-                /* callback */
-                [this, thread, &awaiter](auto& results)
+                if (thread != nullptr)
                 {
-                    if(thread != nullptr)
-                    {
-                        auto ptr = std::make_shared<std::vector<daotk::mysql::result>>();
-                        for (auto& result : results)
-                            ptr->push_back(std::move(result));
+                    auto ptr = std::make_shared<std::vector<daotk::mysql::result>>();
+                    for (auto& result : results)
+                        ptr->push_back(std::move(result));
 
-                        thread->post([&awaiter, ptr]() mutable -> fb::task<void>
-                        {
-                            awaiter.resume(*ptr.get());
-                            co_return;
-                        });
-                    }
-                    else
+                    thread->post([awaiter, ptr]() mutable -> fb::task<void>
                     {
-                        awaiter.resume(results);
-                    }
-                },
-                /* error */
-                [&awaiter](auto& e)
-                {
-                    awaiter.resume(e);
+                        awaiter->set_result(*ptr.get());
+                        co_return;
+                    });
                 }
-            };
-            this->enqueue(id, task);
+                else
+                {
+                    awaiter->set_result(results);
+                }
+            },
+            /* error */
+            [awaiter](auto& e)
+            {
+                awaiter->set_error(e);
+            }
         };
-
-        return fb::awaiter<std::vector<daotk::mysql::result>>(await_callback);
+        this->enqueue(id, task);
+        return awaiter->task;
     }
     fb::db::awaiter     co_exec(const std::string& sql)
     {
