@@ -232,13 +232,13 @@ fb::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::login:
 fb::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::login& request)
 {
     auto delay = fb::config::get()["transfer delay"].asInt();
+    auto name = std::string(request.id);
+    auto pw = std::string(request.pw);
     co_await this->sleep(std::chrono::seconds(delay));
 
     auto fd = socket.fd();
     try
     {
-        auto name = std::string(request.id);
-        auto pw = std::string(request.pw);
         this->assert_account(name, pw);
 
         auto& name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());

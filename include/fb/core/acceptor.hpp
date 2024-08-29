@@ -557,7 +557,10 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
                 if(this->_external_handler.contains(cmd) == false)
                 {
                     fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
-                    co_return true;
+                    in_stream.reset();
+                    in_stream.shift(base_size + size);
+                    in_stream.flush();
+                    continue;
                 }
 
                 auto before = this->handle_thread_index(socket);
@@ -570,7 +573,8 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
                 auto after = this->handle_thread_index(socket);
 
                 // 콜백 조건이 만족하지 못하는 경우 즉시 종료
-                co_return before != after;
+                if (before != after)
+                    co_return false;
             }
             catch(std::exception& e)
             {
@@ -586,7 +590,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
         }
 
         in_stream.reset();
-        co_return false;
+        co_return true;
     });
 }
 

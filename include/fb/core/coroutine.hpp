@@ -19,16 +19,6 @@ fb::base_task<T, SUSPEND_TYPE>::~base_task()
 {
     if (this->handler)
     {
-        printf("destroy handler : 0x%X(0x%X)\n", this->handler.address(), this);
-        //if (!this->done())
-        //{
-        //    auto sstream = std::stringstream();
-        //    auto address = this->handler.address();
-        //    sstream
-        //        << "cannot destroy handler before job does not finish : "
-        //        << address;
-        //    throw std::runtime_error(sstream.str());
-        //}
         this->handler.destroy();
         this->handler = nullptr;
     }
