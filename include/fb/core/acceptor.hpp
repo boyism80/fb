@@ -288,7 +288,6 @@ fb::task<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_clock::
         throw std::runtime_error("thread not exists");
 
     co_await thread->sleep(duration);
-    puts("sleep done");
 }
 
 template <template<class> class S, class T>
@@ -576,7 +575,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 
                 // 콜백 조건이 만족하지 못하는 경우 즉시 종료
                 if (before != after)
-                    co_return false;
+                    co_return true;
             }
             catch(std::exception& e)
             {
@@ -592,7 +591,7 @@ fb::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
         }
 
         in_stream.reset();
-        co_return true;
+        co_return false;
     });
 }
 

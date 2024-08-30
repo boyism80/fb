@@ -141,14 +141,14 @@ void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::stead
     this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
 }
 
-fb::task<void, std::suspend_always>& fb::thread::sleep(const std::chrono::steady_clock::duration& delay)
+fb::task<void> fb::thread::sleep(const std::chrono::steady_clock::duration& delay)
 {
     static auto generator = [] () -> fb::task<void>
     {
         co_return;
     };
 
-    return this->dispatch(generator, delay);
+    co_await this->dispatch(generator, delay);
 }
 
 std::chrono::steady_clock::duration fb::thread::now()

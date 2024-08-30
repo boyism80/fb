@@ -18,13 +18,7 @@ template <typename T, typename SUSPEND_TYPE>
 fb::base_task<T, SUSPEND_TYPE>::~base_task()
 {
     if (this->handler)
-    {
-        auto& promise = this->handler.promise();
-        if (promise.parent != nullptr)
-            promise.parent.resume();
-
         this->handler.destroy();
-    }
 }
 
 template <typename T, typename SUSPEND_TYPE>

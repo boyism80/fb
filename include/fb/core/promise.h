@@ -12,6 +12,12 @@ public:
     std::exception_ptr          error = nullptr;
     std::coroutine_handle<>     parent;
 
+public:
+    ~base_promise()
+    {
+        if(this->parent != nullptr)
+            this->parent.resume();
+    }
     auto initial_suspend() { return SUSPEND_TYPE{}; }
     auto final_suspend() noexcept
     {

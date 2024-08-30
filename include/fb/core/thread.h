@@ -86,7 +86,7 @@ public:
     void                                            post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
     fb::task<void, std::suspend_always>&            dispatch(uint32_t priority = 0);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
-    fb::task<void, std::suspend_always>&            sleep(const std::chrono::steady_clock::duration& duration);
+    fb::task<void>                                  sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
     static std::chrono::steady_clock::duration      now();
