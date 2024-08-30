@@ -161,6 +161,8 @@ namespace fb {
         void                                    resume()
         {
             this->task.handler.resume();
+            this->task.handler.destroy();
+            this->task.handler = nullptr;
         }
     };
 

@@ -179,6 +179,8 @@ void fb::base_awaiter<T>::set_error(const std::exception& e)
 {
     this->error = std::make_exception_ptr(e);
     this->task.handler.resume();
+    this->task.handler.destroy();
+    this->task.handler = nullptr;
 }
 
 
@@ -208,6 +210,8 @@ typename std::enable_if<std::is_class<Q>::value>::type fb::awaiter<T>::set_resul
 {
     this->result = value;
     this->task.handler.resume();
+    this->task.handler.destroy();
+    this->task.handler = nullptr;
 }
 
 template <typename T>
@@ -216,6 +220,8 @@ typename std::enable_if<std::is_class<Q>::value>::type fb::awaiter<T>::set_resul
 {
     this->result = value;
     this->task.handler.resume();
+    this->task.handler.destroy();
+    this->task.handler = nullptr;
 }
 
 template <typename T>
@@ -224,6 +230,8 @@ typename std::enable_if<!std::is_class<Q>::value>::type fb::awaiter<T>::set_resu
 {
     this->result = value;
     this->task.handler.resume();
+    this->task.handler.destroy();
+    this->task.handler = nullptr;
 }
 
 #endif
