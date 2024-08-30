@@ -156,7 +156,7 @@ public:
 
 private:
     template <typename R>
-    void                            register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>>& awaiter);
+    void                            register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>> awaiter);
 
 public:
     template <typename R>

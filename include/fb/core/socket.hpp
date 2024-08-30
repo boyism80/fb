@@ -256,14 +256,16 @@ fb::awaitable_socket<T,C>::~awaitable_socket()
 
 template <typename T, typename C>
 template <typename R>
-void fb::awaitable_socket<T,C>::register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>>& awaiter)
+void fb::awaitable_socket<T,C>::register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>> awaiter)
 {
     auto _ = std::lock_guard(this->_awaiter_mutex);
     auto i = this->_coroutines.find(cmd);
     if(i != this->_coroutines.end())
     {
-        auto& exists = any_cast<std::shared_ptr<R>>(i->second);
-        exists->set_error(boost::system::error_code());
+        auto& exists = any_cast<std::shared_ptr<fb::awaiter<R>>&>(i->second);
+        auto sstream = std::stringstream();
+        sstream << "cannot register awaiter (id : " << cmd << ")";
+        exists->set_error(std::runtime_error(sstream.str()));
         this->_coroutines.erase(cmd);
     }
     
@@ -280,7 +282,7 @@ void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
         if (this->_coroutines.contains(cmd) == false)
             return;
 
-        auto& exists = any_cast<std::shared_ptr<fb::awaiter<R>>&>(this->_coroutines[cmd]);
+        auto exists = any_cast<std::shared_ptr<fb::awaiter<R>>>(this->_coroutines[cmd]);
         this->_coroutines.erase(cmd);
         exists->set_result(response);
     }
@@ -292,14 +294,16 @@ fb::task<R, std::suspend_always>& fb::awaitable_socket<T, C>::request(const fb::
 {
     auto cmd = R().__id;
     auto awaiter = std::make_shared<fb::awaiter<R>>();
-    this->send(header, encrypt, wrap, [this, awaiter] (const boost::system::error_code& ec, auto transfer_size)
-    {
-        if(!ec)
-            return;
+    this->register_awaiter(cmd, awaiter);
 
-        auto sstream = std::stringstream();
-        sstream << "boost socket error(" << ec.value() << ")";
-        awaiter->set_error(std::runtime_error(sstream.str()));
+    this->send(header, encrypt, wrap, [this, awaiter, cmd] (const boost::system::error_code& ec, auto transfer_size)
+    {
+        if(ec)
+        {
+            auto sstream = std::stringstream();
+            sstream << "boost socket error(" << ec.value() << ")";
+            awaiter->set_error(std::runtime_error(sstream.str()));
+        }
     });
 
     return awaiter->task;
@@ -311,14 +315,16 @@ fb::task<R, std::suspend_always>& fb::awaitable_socket<T, C>::request(const fb::
 {
     auto cmd = R().__id;
     auto awaiter = std::make_shared<fb::awaiter<R>>();
+    this->register_awaiter(header.trans, awaiter);
+
     this->send(header, encrypt, wrap, [this, awaiter] (const boost::system::error_code& ec, auto transfer_size)
     {
-        if(!ec)
-            return;
-
-        auto sstream = std::stringstream();
-        sstream << "boost socket error (" << ec.value() << ")";
-        awaiter->set_error(std::runtime_error(sstream.str()));
+        if(ec)
+        {
+            auto sstream = std::stringstream();
+            sstream << "boost socket error (" << ec.value() << ")";
+            awaiter->set_error(std::runtime_error(sstream.str()));
+        }
     });
 
     return awaiter->task;

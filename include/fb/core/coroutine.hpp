@@ -19,8 +19,11 @@ fb::base_task<T, SUSPEND_TYPE>::~base_task()
 {
     if (this->handler)
     {
+        auto& promise = this->handler.promise();
+        if (promise.parent != nullptr)
+            promise.parent.resume();
+
         this->handler.destroy();
-        this->handler = nullptr;
     }
 }
 
@@ -124,11 +127,7 @@ template <typename T, typename SUSPEND_TYPE>
 template<std::convertible_to<T> From>
 void fb::task<T, SUSPEND_TYPE>::promise_type::return_value(From&& from)
 {
-    // 값이 설정되는 순간 호출되는 메소드
-    // await_suspend보다 호출이 빨리될수도, 늦게될수도 있다.
     this->value = std::forward<From>(from);
-    if (this->parent)
-        this->parent.resume();
 }
 
 template <typename SUSPEND_TYPE>
@@ -169,10 +168,7 @@ fb::task<void, SUSPEND_TYPE> fb::task<void, SUSPEND_TYPE>::promise_type::get_ret
 
 template <typename SUSPEND_TYPE>
 void fb::task<void, SUSPEND_TYPE>::promise_type::return_void()
-{
-    if (this->parent)
-        this->parent.resume();
-}
+{ }
 
 template <typename T>
 fb::base_awaiter<T>::base_awaiter(fb::task<T, std::suspend_always>&& task) : task(std::move(task))

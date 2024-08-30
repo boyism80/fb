@@ -288,6 +288,7 @@ fb::task<void> fb::base::acceptor<S, T>::sleep(const std::chrono::steady_clock::
         throw std::runtime_error("thread not exists");
 
     co_await thread->sleep(duration);
+    puts("sleep done");
 }
 
 template <template<class> class S, class T>
@@ -341,15 +342,15 @@ fb::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& sock
             {
                 socket.flush_task();
 
-                if(in_stream.readable_size() < base_size)
-                    throw std::exception();
+                if (in_stream.readable_size() < base_size)
+                    break;
 
                 auto size = in_stream.read_u16();
-                if(size > in_stream.capacity())
-                    throw std::exception();
+                if (size > in_stream.capacity())
+                    break;
 
-                if(in_stream.readable_size() < size)
-                    throw std::exception();
+                if (in_stream.readable_size() < size)
+                    break;
 
                 auto cmd = in_stream.read_8();
                 if (this->_internal_handler.contains(cmd))
@@ -364,8 +365,9 @@ fb::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& sock
                         socket.push_task(std::move(task));
                 }
             }
-            catch(std::exception& /*e*/)
+            catch(std::exception& e)
             {
+                fb::logger::warn(e.what());
                 break;
             }
             catch(...)
