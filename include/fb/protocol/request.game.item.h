@@ -3,6 +3,9 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/item.h>
+#include <fb/game/model.h>
+
+using namespace fb::model::enum_value;
 
 using namespace fb::game;
 
@@ -28,7 +31,7 @@ public:
 class inactive : public fb::protocol::base::header
 {
 public:
-    equipment::parts        parts;
+    EQUIPMENT_PARTS         parts;
 
 public:
     inactive() : fb::protocol::base::header(0x1F)
@@ -37,7 +40,7 @@ public:
 public:
     void deserialize(fb::istream& in_stream)
     {
-        this->parts = equipment::parts(in_stream.read_u8());
+        this->parts = EQUIPMENT_PARTS(in_stream.read_u8());
     }
 };
 

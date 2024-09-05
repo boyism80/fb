@@ -2,10 +2,6 @@
 
 void fb::game::context::on_create(fb::game::object& me)
 {
-    auto gd = std::lock_guard(this->_hash_mutex);
-
-    if(this->_objects.contains(&me) == false)
-        this->_objects.insert(std::make_pair(&me, std::unique_ptr<fb::game::object>(&me)));
 }
 
 void fb::game::context::on_destroy(fb::game::object& me)
@@ -35,7 +31,7 @@ void fb::game::context::on_direction(fb::game::object& me)
 
 void fb::game::context::on_show(fb::game::object& me, bool light)
 {
-    if(me.is(fb::game::object::types::SESSION))
+    if(me.is(OBJECT_TYPE::SESSION))
     {
         this->send
         (
@@ -55,7 +51,7 @@ void fb::game::context::on_show(fb::game::object& me, bool light)
 
 void fb::game::context::on_show(fb::game::object& me, fb::game::object& you, bool light)
 {
-    if(you.is(fb::game::object::types::SESSION))
+    if(you.is(OBJECT_TYPE::SESSION))
         this->send(me, fb::protocol::game::response::session::show(static_cast<fb::game::session&>(you), me, light), scope::SELF);
     else
         this->send(me, fb::protocol::game::response::object::show(you), scope::SELF);
@@ -78,16 +74,16 @@ void fb::game::context::on_move(fb::game::object& me, const point16_t& before)
 
 void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 {
-    if(buff.spell.uncast.empty())
+    if(buff.model.uncast.empty())
         return;
 
      auto thread = lua::get();
      if(thread == nullptr)
          return;
-     thread->from(buff.spell.uncast.c_str())
+     thread->from(buff.model.uncast.c_str())
          .func("on_uncast")
          .pushobject(me)
-         .pushobject(buff.spell)
+         .pushobject(buff.model)
          .resume(2);
     this->send(me, fb::protocol::game::response::spell::unbuff(buff), scope::SELF);
 }
@@ -121,12 +117,12 @@ void fb::game::context::on_hp(life& me, uint32_t before, uint32_t current)
 void fb::game::context::on_mp(life& me, uint32_t before, uint32_t current)
 { }
 
-void fb::game::context::on_action(session& me, ACTION_TYPE action, DURATION duration, uint8_t sound)
+void fb::game::context::on_action(session& me, ACTION action, DURATION duration, uint8_t sound)
 {
     this->send(me, fb::protocol::game::response::session::action(me, action, duration), scope::PIVOT);
 }
 
-void fb::game::context::on_updated(session& me, fb::game::STATE_LEVEL level)
+void fb::game::context::on_updated(session& me, STATE_LEVEL level)
 {
     this->send(me, fb::protocol::game::response::session::state(me, level), scope::SELF);
 }
@@ -136,12 +132,12 @@ void fb::game::context::on_money_changed(session& me, uint32_t value)
 
 void fb::game::context::on_attack(session& me, object* you)
 {
-    this->send(me, fb::protocol::game::response::session::action(me, ACTION_TYPE::ATTACK, DURATION::ATTACK), scope::PIVOT);
+    this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
     {
-        auto            sound = weapon->based<fb::game::weapon>()->sound;
-        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? fb::game::SOUND_TYPE(sound) : fb::game::SOUND_TYPE
+        auto            sound = weapon->based<fb::model::weapon>().sound;
+        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? SOUND(sound) : SOUND
 ::SWING), scope::PIVOT);
     }
 }
@@ -149,13 +145,13 @@ void fb::game::context::on_attack(session& me, object* you)
 void fb::game::context::on_hit(session& me, life& you, uint32_t damage, bool critical)
 {
 #ifndef PK
-    if(you.is(object::types::SESSION))
+    if(you.is(OBJECT_TYPE::SESSION))
         return;
 #endif
 
     auto* weapon = me.items.weapon();
     if (weapon != nullptr)
-        this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::DAMAGE), scope::PIVOT);
+        this->send(me, fb::protocol::game::response::object::sound(me, SOUND::DAMAGE), scope::PIVOT);
 
     you.hp_down(damage, &me, critical);
 }
@@ -174,48 +170,48 @@ void fb::game::context::on_hold(session& me)
 void fb::game::context::on_die(session& me, object* you)
 { }
 
-void fb::game::context::on_notify(session& me, const std::string& message, fb::game::MESSAGE_TYPE type)
+void fb::game::context::on_notify(session& me, const std::string& message, MESSAGE_TYPE type)
 {
     this->send(me, fb::protocol::game::response::message(message, type), scope::SELF);
 }
 
-void fb::game::context::on_equipment_on(session& me, item& item, equipment::parts parts)
+void fb::game::context::on_equipment_on(session& me, item& item, EQUIPMENT_PARTS parts)
 {
     this->send(me, fb::protocol::game::response::item::update_slot(me, parts), scope::SELF);
-    this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_ON), scope::PIVOT);
+    this->send(me, fb::protocol::game::response::object::sound(me, SOUND::EQUIPMENT_ON), scope::PIVOT);
 
     std::stringstream sstream;
     switch(parts)
     {
-    case fb::game::equipment::parts::WEAPON:
+    case EQUIPMENT_PARTS::WEAPON:
         sstream << "w:무기  :";
         break;
 
-    case fb::game::equipment::parts::ARMOR:
+    case EQUIPMENT_PARTS::ARMOR:
         sstream << "a:갑옷  :";
         break;
 
-    case fb::game::equipment::parts::SHIELD:
+    case EQUIPMENT_PARTS::SHIELD:
         sstream << "s:방패  :";
         break;
 
-    case fb::game::equipment::parts::HELMET:
+    case EQUIPMENT_PARTS::HELMET:
         sstream << "h:머리  :";
         break;
 
-    case fb::game::equipment::parts::LEFT_HAND:
+    case EQUIPMENT_PARTS::LEFT_HAND:
         sstream << "l:왼손  :";
         break;
 
-    case fb::game::equipment::parts::RIGHT_HAND:
+    case EQUIPMENT_PARTS::RIGHT_HAND:
         sstream << "r:오른손  :";
         break;
 
-    case fb::game::equipment::parts::LEFT_AUX:
+    case EQUIPMENT_PARTS::LEFT_AUX:
         sstream << "[:보조1  :";
         break;
 
-    case fb::game::equipment::parts::RIGHT_AUX:
+    case EQUIPMENT_PARTS::RIGHT_AUX:
         sstream << "]:보조2  :";
         break;
     }
@@ -228,9 +224,9 @@ void fb::game::context::on_equipment_on(session& me, item& item, equipment::part
     this->send(me, fb::protocol::game::response::message(sstream.str(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
-void fb::game::context::on_equipment_off(session& me, equipment::parts parts, uint8_t index)
+void fb::game::context::on_equipment_off(session& me, EQUIPMENT_PARTS parts, uint8_t index)
 {
-    this->send(me, fb::protocol::game::response::object::sound(me, SOUND_TYPE::EQUIPMENT_OFF), scope::PIVOT);
+    this->send(me, fb::protocol::game::response::object::sound(me, SOUND::EQUIPMENT_OFF), scope::PIVOT);
 }
 
 void fb::game::context::on_item_active(session& me, item& item)
@@ -239,7 +235,7 @@ void fb::game::context::on_item_active(session& me, item& item)
     if(thread == nullptr)
         return;
 
-    thread->from(item.based<fb::game::item>()->active_script.c_str())
+    thread->from(item.based<fb::model::item>().script_active.c_str())
         .func("on_active")
         .pushobject(me)
         .pushobject(item)
@@ -251,7 +247,7 @@ void fb::game::context::on_item_throws(session& me, item& item, const point16_t&
     if(me.position() != to)
         this->send(me, fb::protocol::game::response::session::throws(me, item, to), scope::PIVOT);
     else
-        this->send(me, fb::protocol::game::response::session::action(me, fb::game::ACTION_TYPE::ATTACK, fb::game::DURATION::THROW), scope::PIVOT);
+        this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
 }
 
 void fb::game::context::on_spell_update(life& me, uint8_t index)
@@ -266,7 +262,7 @@ void fb::game::context::on_spell_remove(life& me, uint8_t index)
 
 void fb::game::context::on_trade_begin(session& me, session& you)
 {
-    this->send(me, fb::protocol::game::response::trade::dialog(you), scope::SELF);
+    this->send(me, fb::protocol::game::response::trade::dialog(you, this->model), scope::SELF);
 }
 
 void fb::game::context::on_trade_bundle(session& me)
@@ -308,32 +304,33 @@ void fb::game::context::on_trade_success(session& me)
     this->send(me, fb::protocol::game::response::trade::close(fb::game::message::trade::SUCCESS), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
+// new dialog
+void fb::game::context::on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::menu(npc, menus, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::item(npc, pairs, message, pursuit, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message,  fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message,  fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::input(npc, message, interaction), scope::SELF);
 }
 
-void fb::game::context::on_dialog(session& me, const fb::game::npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+void fb::game::context::on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
 {
     this->send(me, fb::protocol::game::response::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
@@ -344,17 +341,17 @@ void fb::game::context::on_trade_item(session& me, session& from, uint8_t index)
     this->send(me, fb::protocol::game::response::trade::upload(from, index, mine), scope::SELF);
 }
 
-void fb::game::context::on_option(session& me, fb::game::OPTION option, bool enabled)
+void fb::game::context::on_option(session& me, CUSTOM_SETTING option, bool enabled)
 {
     std::stringstream sstream;
 
     switch(option)
     {
-    case OPTION::WHISPER:
+    case CUSTOM_SETTING::WHISPER:
         sstream << "귓속말듣기  ";
         break;
 
-    case OPTION::GROUP:
+    case CUSTOM_SETTING::GROUP:
     {
         auto group = me.group();
         if(group != nullptr)
@@ -377,39 +374,39 @@ void fb::game::context::on_option(session& me, fb::game::OPTION option, bool ena
         break;
     }
 
-    case OPTION::ROAR:
+    case CUSTOM_SETTING::ROAR:
         sstream << "외치기듣기  ";
         break;
 
-    case OPTION::ROAR_WORLDS:
+    case CUSTOM_SETTING::ROAR_WORLDS:
         sstream << "세계후      ";
         break;
 
-    case OPTION::MAGIC_EFFECT:
+    case CUSTOM_SETTING::MAGIC_EFFECT:
         sstream << "마법이펙트  ";
         break;
 
-    case OPTION::WEATHER_EFFECT:
+    case CUSTOM_SETTING::WEATHER_EFFECT:
         sstream << "날씨변화    ";
         break;
 
-    case OPTION::FIXED_MOVE:
+    case CUSTOM_SETTING::FIXED_MOVE:
         sstream << "고정이동    ";
         break;
 
-    case OPTION::TRADE:
+    case CUSTOM_SETTING::TRADE:
         sstream << "교환가능    ";
         break;
 
-    case OPTION::FAST_MOVE:
+    case CUSTOM_SETTING::FAST_MOVE:
         sstream << "빠른이동    ";
         break;
 
-    case OPTION::EFFECT_SOUND:
+    case CUSTOM_SETTING::EFFECT_SOUND:
         sstream << "소리듣기    ";
         break;
 
-    case OPTION::PK:
+    case CUSTOM_SETTING::PK:
         sstream << "PK보호      ";
         break;
 
@@ -432,7 +429,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
     if(after == nullptr)
         return;
 
-    if(me.is(fb::game::object::types::SESSION) == false)
+    if(me.is(OBJECT_TYPE::SESSION) == false)
         return;
 
     auto& session = static_cast<fb::game::session&>(me);
@@ -447,35 +444,27 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
-fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
+async::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
 
     auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
-    auto  fd       = socket.native_handle();
-    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.id(), position.x, position.y, fd);
+    auto  fd       = static_cast<uint32_t>(socket.native_handle());
+    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.model.id, position.x, position.y, fd);
     
     try
     {
         auto result = false;
-        auto response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
+        auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
         auto socket = this->sockets[response.fd];
-        if(socket == nullptr)
-        {
-            if(awaiter != nullptr)
-            {
-                awaiter->result = &result;
-                awaiter->handler.resume();
-            }
-            co_return;
-        }
+        co_return false;
 
         if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
         auto session = socket->data();
-        co_await session->co_map(nullptr);
+        co_await session->map(nullptr);
         
         co_await this->co_save(*session);
         fb::ostream         parameter;
@@ -487,68 +476,33 @@ fb::task<void> fb::game::context::co_transfer(fb::game::session& me, fb::game::m
         parameter.write_u16(response.y);
         this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
         
-        result = true;
-        if(awaiter != nullptr)
-        {
-            awaiter->result = &result;
-            awaiter->handler.resume();
-        }
+        co_return true;
     }
     catch(std::exception& e)
     {
-        auto result = false;
         auto client = this->sockets[fd];
-        if(client == nullptr)
+        if(client != nullptr)
         {
-            if(awaiter != nullptr)
-            {
-                awaiter->result = &result;
-                awaiter->handler.resume();
-            }
-            co_return;
+            auto message = e.what();
+            auto session = client->data();
+            session->refresh_map();
+            this->on_notify(*session, message, MESSAGE_TYPE::STATE);
         }
-
-        auto message = e.what();
-        auto session = client->data();
-        session->refresh_map();
-        this->on_notify(*session, message, fb::game::MESSAGE_TYPE::STATE);
-
-        if(awaiter != nullptr)
-        {
-            awaiter->result = &result;
-            awaiter->handler.resume();
-        }
+        co_return false;
     }
-    catch(boost::system::error_code& e)
+    catch(boost::system::error_code& /*e*/)
     {
-        auto result = false;
         auto client = this->sockets[fd];
-        if(client == nullptr)
+        if(client != nullptr)
         {
-            if(awaiter != nullptr)
-            {
-                awaiter->result = &result;
-                awaiter->handler.resume();
-            }
-            co_return;
+            auto message = "비바람이 휘몰아치고 있습니다.";
+            auto session = client->data();
+            session->refresh_map();
+            this->on_notify(*session, message, MESSAGE_TYPE::STATE);
         }
 
-        auto message = "비바람이 휘몰아치고 있습니다.";
-        auto session = client->data();
-        session->refresh_map();
-        this->on_notify(*session, message, fb::game::MESSAGE_TYPE::STATE);
-
-        if(awaiter != nullptr)
-        {
-            awaiter->result = &result;
-            awaiter->handler.resume();
-        }
+        co_return false;
     }
-}
-
-void fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter)
-{
-    this->co_transfer(me, map, position, awaiter);
 }
 
 void fb::game::context::on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items)
@@ -562,7 +516,7 @@ void fb::game::context::on_item_lost(session& me, const std::vector<uint8_t>& sl
 
 void fb::game::context::on_attack(mob& me, object* you)
 {
-    this->send(me, fb::protocol::game::response::life::action(me, ACTION_TYPE::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
+    this->send(me, fb::protocol::game::response::life::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
 }
 
 void fb::game::context::on_hit(mob& me, life& you, uint32_t damage, bool critical)
@@ -581,7 +535,7 @@ void fb::game::context::on_die(mob& me, object* you)
     this->send(me, fb::protocol::game::response::life::die(me), scope::PIVOT, true);
 }
 
-void fb::game::context::on_item_remove(session& me, uint8_t index, fb::game::item::DELETE_TYPE attr)
+void fb::game::context::on_item_remove(session& me, uint8_t index, ITEM_DELETE_TYPE attr)
 {
     this->send(me, fb::protocol::game::response::item::remove(attr, index, 0), scope::SELF);
 }

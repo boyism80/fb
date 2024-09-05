@@ -46,10 +46,10 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class update : public fb::protocol::base::header
 {
 public:
-    const fb::game::map&    map;
-    const point16_t         position;
-    const size8_t           size;
-    const uint16_t          crc;
+    const fb::game::map&            map;
+    const point16_t                 position;
+    const size8_t                   size;
+    const uint16_t                  crc;
 
 public:
     update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) : fb::protocol::base::header(0x06),
@@ -61,10 +61,10 @@ public:
     {
         base::header::serialize(out_stream);
 
-        if(this->map.effect() == fb::game::map::EFFECT::NONE)
+        if(this->map.model.effect == MAP_EFFECT_TYPE::NONE)
             out_stream.write_u8(0x00);
         else
-            out_stream.write_u8(0x04).write_u8(this->map.effect());
+            out_stream.write_u8(0x04).write_u8(this->map.model.effect);
 
         out_stream.write_u16(this->position.x)
             .write_u16(this->position.y)
@@ -103,7 +103,7 @@ public:
     const uint8_t                   volume;
 
 public:
-    bgm(const fb::game::map& map, uint16_t volume = 100) : fb::protocol::base::header(0x19),
+    bgm(const fb::game::map& map, uint8_t volume = 100) : fb::protocol::base::header(0x19),
         map(map), volume(volume)
     { }
 
@@ -114,8 +114,8 @@ public:
 
         out_stream.write_u8(0x01)
                   .write_u8(0x05)
-                  .write_u16(this->map.id())
-                  .write_u16(this->map.id())
+                  .write_u16(this->map.model.id)
+                  .write_u16(this->map.model.id)
                   .write_u8(volume) // volume
                   .write_u16(512)
                   .write_u16(512)
@@ -153,11 +153,11 @@ public:
     {
         base::header::serialize(out_stream);
 
-        out_stream.write_u16(this->map.id()) // id
+        out_stream.write_u16(this->map.model.id) // id
                   .write_u16(this->map.width()) // width
                   .write_u16(this->map.height()) // height
-                  .write_u8(enum_in(this->map.option(), fb::game::map::OPTION::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
-                  .write(this->map.name(), true);
+                  .write_u8(enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05) // this.building ? 0x04 : 0x05
+                  .write(this->map.model.name, true);
     }
 #else
     void deserialize(fb::istream& in_stream)
@@ -175,97 +175,51 @@ public:
 class worlds : public fb::protocol::base::header
 {
 public:
-    const fb::game::wm::offset*     offset;
+    const fb::model::model& model;
+    const uint32_t id;
+    const uint16_t index;
 
 public:
-    worlds(const fb::game::wm::offset& offset) : fb::protocol::base::header(0x2E),
-        offset(&offset)
-    { }
-    worlds(const std::string& id) : fb::protocol::base::header(0x2E)
+    worlds(const fb::model::model& model, uint32_t id, uint16_t index) : fb::protocol::base::header(0x2E), model(model), id(id), index(index)
     {
-        try
-        {
-            auto  windex = fb::game::model::worlds.find(id);
-            if(windex == -1)
-                throw nullptr;
-
-            auto  world = fb::game::model::worlds[windex];
-            auto& offsets = world->offsets();
-            auto  found = std::find_if
-            (
-                offsets.cbegin(), offsets.cend(),
-                [&] (auto offset)
-                {
-                    return offset->id == id;
-                }
-            );
-
-            if(found == offsets.cend())
-                throw nullptr;
-
-            this->offset = *found;
-        }
-        catch(...)
-        {
-            this->offset = nullptr;
-        }
     }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
+        // TODO: 코드 분석 후 다시 구현
         base::header::serialize(out_stream);
 
-        if(this->offset == nullptr)
-            return;
-
-        auto windex = fb::game::model::worlds.find(this->offset->id);
-        if(windex == -1)
-            return;
-
-        auto world = fb::game::model::worlds[windex];
-        if(world == nullptr)
-            return;
-
-        auto& offsets = world->offsets();
-        auto current = -1;
-        for(int i = 0; i < offsets.size(); i++)
+        auto& attr = this->model.world_attribute[this->id];
+        auto& points = this->model.world[this->id];
+        auto g = std::unordered_map<uint32_t, std::vector<uint16_t>>();
+        for (auto& [id, point] : points)
         {
-            if(this->offset == offsets[i])
-            {
-                current = i;
-                break;
-            }
+            if (g.contains(point.group))
+                g[point.group].push_back(id);
+            else
+                g.insert({ point.group, std::vector<uint16_t> { id } });
         }
-        if(current == -1)
-            return;
 
-        out_stream.writestr_u8(world->name)
-                  .write_u8(offsets.size())
-                  .write_u8(current);
+        out_stream.writestr_u8(attr.key)
+                  .write_u8(this->model.world[this->id].size())
+                  .write_u8(this->index);
 
-        auto offset_id = 0;
-        for(int gropu_id = 0; gropu_id < world->size(); gropu_id++)
+        for (int i = 0; i < points.size(); i++)
         {
-            auto& group = (*world)[gropu_id];
-            for(auto& offset : *group)
+            auto& point = this->model.world[this->id][i];
+            out_stream.write_u16(point.offset.x)
+                .write_u16(point.offset.y)
+                .writestr_u8(point.name)
+                .write_u16(0x0000)
+                .write_u16(this->id)
+                .write_u16(this->index)
+                .write_u16(i)
+                .write_u16(g[point.group].size());
+
+            for (auto x : g[point.group])
             {
-                out_stream.write_u16(offset->position.x)
-                          .write_u16(offset->position.y)
-                          .writestr_u8(offset->name)
-                          .write_u16(0x0000)
-                          .write_u16(windex)
-                          .write_u16(current)
-                          .write_u16(offset_id++)
-                          .write_u16(group->size());
-
-                for(int i = 0; i < offsets.size(); i++)
-                {
-                    if(group->contains(*offsets[i]) == false)
-                        continue;
-
-                    out_stream.write_u16(i);
-                }
+                out_stream.write_u16(x);
             }
         }
     }

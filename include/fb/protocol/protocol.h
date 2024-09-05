@@ -4,7 +4,6 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <fb/core/type.h>
 #include <fb/core/stream.h>
 
 #define BIND_ID(n) static constexpr uint8_t id = (n);

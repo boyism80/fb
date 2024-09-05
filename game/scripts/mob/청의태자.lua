@@ -1,8 +1,4 @@
 function on_attack(me, you)
-    if you == nil then
-        return false
-    end
-
     math.randomseed(seed())
     if math.random() < 0.01 then
         me:chat('여의주의 힘을 받은 용이여..')
@@ -17,9 +13,11 @@ function on_attack(me, you)
         me:chat('네 포효를 적에게 발산하라!!')
         sleep(2000);
 
-        me:cast(you, '청룡마령참')
+        local map = me:map()
+        if map ~= nil and map:contains(you) then
+            me:cast(you, '청룡마령참')
+        end
         me:chat('청룡마령참!!', 0x03)
-        
         sleep(2000);
 
         return true

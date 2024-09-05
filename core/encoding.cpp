@@ -7,19 +7,16 @@ std::string cp949(const std::string& utf8)
 
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), nullptr, 0) + 1;
-    auto wide = new wchar_t[wide_size];
-    memset(wide, 0, wide_size * sizeof(wchar_t));
-    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), wide, wide_size);
+    auto wide = std::vector<wchar_t>(wide_size);
+    memset(wide.data(), 0, wide_size * sizeof(wchar_t));
+    MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), wide.data(), wide_size);
 
-    auto mbs_size = WideCharToMultiByte(CP_ACP, 0, wide, -1, nullptr, 0, nullptr, nullptr);
-    auto mbs = new char[mbs_size];
-    memset(mbs, 0, mbs_size);
-    WideCharToMultiByte(CP_ACP, 0, wide, -1, mbs, mbs_size, nullptr, nullptr); 
+    auto mbs_size = WideCharToMultiByte(CP_ACP, 0, wide.data(), -1, nullptr, 0, nullptr, nullptr);
+    auto mbs = std::vector<char>(mbs_size);
+    memset(mbs.data(), 0, mbs_size);
+    WideCharToMultiByte(CP_ACP, 0, wide.data(), -1, mbs.data(), mbs_size, nullptr, nullptr);
 
-    auto cp949 = std::string(mbs);
-    delete[] mbs;
-    delete[] wide;
-    return std::move(cp949);
+    return std::string(mbs.data());
 #else
     size_t src_size = utf8.length();
     char* src = const_cast<char*>(utf8.data());
@@ -46,19 +43,16 @@ std::string utf8(const std::string& cp949)
 
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), nullptr, 0) + 1;
-    auto wide = new wchar_t[wide_size];
-    memset(wide, 0, wide_size * sizeof(wchar_t));
-    MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), wide, wide_size);
+    auto wide = std::vector<wchar_t>(wide_size);
+    memset(wide.data(), 0, wide_size * sizeof(wchar_t));
+    MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), wide.data(), wide_size);
 
-    auto mbs_size = WideCharToMultiByte(CP_UTF8, 0, wide, -1, nullptr, 0, nullptr, nullptr);
-    auto mbs = new char[mbs_size];
-    memset(mbs, 0, mbs_size);
-    WideCharToMultiByte(CP_UTF8, 0, wide, -1, mbs, mbs_size, nullptr, nullptr); 
+    auto mbs_size = WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, nullptr, 0, nullptr, nullptr);
+    auto mbs = std::vector<char>(mbs_size);
+    memset(mbs.data(), 0, mbs_size);
+    WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, mbs.data(), mbs_size, nullptr, nullptr); 
 
-    auto utf8 = std::string(mbs);
-    delete[] mbs;
-    delete[] wide;
-    return std::move(utf8);
+    return std::string(mbs.data());
 #else
     size_t src_size = cp949.length();
     char* src = const_cast<char*>(cp949.data());
@@ -134,13 +128,11 @@ std::wstring W(const std::string& m)
 {
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), nullptr, 0) + 1;
-    auto wide = new wchar_t[wide_size];
-    memset(wide, 0, wide_size * sizeof(wchar_t));
-    MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), wide, wide_size);
+    auto wide = std::vector<wchar_t>(wide_size);
+    memset(wide.data(), 0, wide_size * sizeof(wchar_t));
+    MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), wide.data(), wide_size);
 
-    auto dst = std::wstring(wide);
-    delete[] wide;
-    return dst;
+    return std::wstring(wide.data());
 #else
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
     return conv.from_bytes(m);
@@ -151,13 +143,11 @@ std::string M(const std::wstring& w)
 {
 #ifdef _WIN32
     auto mbs_size = WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    auto mbs = new char[mbs_size];
-    memset(mbs, 0, mbs_size);
-    WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, mbs, mbs_size, nullptr, nullptr);
+    auto mbs = std::vector<char>(mbs_size);
+    memset(mbs.data(), 0, mbs_size);
+    WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, mbs.data(), mbs_size, nullptr, nullptr);
     
-    auto dst = std::string(mbs);
-    delete[] mbs;
-    return dst;
+    return std::string(mbs.data());
 #else
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
     return conv.to_bytes(w);

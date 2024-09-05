@@ -21,13 +21,13 @@ game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
     this->bind<fb::protocol::game::response::map::config>       (std::bind(&game_bot::handle_map,           this, std::placeholders::_1));
     this->bind<fb::protocol::response::transfer>                (std::bind(&game_bot::handle_transfer,      this, std::placeholders::_1));
 
-    //this->pattern(std::bind(&game_bot::pattern_chat,        this), 1000ms, 2000ms);
+    this->pattern(std::bind(&game_bot::pattern_chat,        this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_attack,      this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_direction,   this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_move,        this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_pickup,      this), 1000ms, 2000ms);
     //this->pattern(std::bind(&game_bot::pattern_emotion,     this), 1000ms, 2000ms);
-    this->pattern(std::bind(&game_bot::pattern_board_sections, this), 1000ms, 2000ms);
+    //this->pattern(std::bind(&game_bot::pattern_board_sections, this), 1000ms, 2000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) : game_bot(owner, id)
@@ -75,66 +75,66 @@ void game_bot::on_timer(std::chrono::steady_clock::duration now)
     this->_next_action_time = now + std::chrono::steady_clock::duration(rand_term);
 }
 
-fb::task<void> game_bot::handle_sequence(const fb::protocol::game::response::session::id& response)
+async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::session::id& response)
 {
     this->_sequence = response.sequence;
     std::cout << "sequence : " << this->_sequence << std::endl;
     co_return;
 }
 
-fb::task<void> game_bot::handle_spell_update(const fb::protocol::game::response::spell::update& response)
+async::task<void> game_bot::handle_spell_update(const fb::protocol::game::response::spell::update& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_init(const fb::protocol::game::response::init& response)
+async::task<void> game_bot::handle_init(const fb::protocol::game::response::init& response)
 {
     this->_inited = true;
     co_return;
 }
 
-fb::task<void> game_bot::handle_time(const fb::protocol::game::response::time& response)
+async::task<void> game_bot::handle_time(const fb::protocol::game::response::time& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_state(const fb::protocol::game::response::session::state& response)
+async::task<void> game_bot::handle_state(const fb::protocol::game::response::session::state& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_option(const fb::protocol::game::response::session::option& response)
+async::task<void> game_bot::handle_option(const fb::protocol::game::response::session::option& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_message(const fb::protocol::game::response::message& response)
+async::task<void> game_bot::handle_message(const fb::protocol::game::response::message& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_chat(const fb::protocol::game::response::chat& response)
+async::task<void> game_bot::handle_chat(const fb::protocol::game::response::chat& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_action(const fb::protocol::game::response::life::action& response)
+async::task<void> game_bot::handle_action(const fb::protocol::game::response::life::action& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_direction(const fb::protocol::game::response::object::direction& response)
+async::task<void> game_bot::handle_direction(const fb::protocol::game::response::object::direction& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_position(const fb::protocol::game::response::session::position& response)
+async::task<void> game_bot::handle_position(const fb::protocol::game::response::session::position& response)
 {
     this->_position = response.abs;
     co_return;
 }
 
-fb::task<void> game_bot::handle_move(const fb::protocol::game::response::object::move& response)
+async::task<void> game_bot::handle_move(const fb::protocol::game::response::object::move& response)
 {
     if (this->_sequence != response.id)
         co_return;
@@ -142,12 +142,12 @@ fb::task<void> game_bot::handle_move(const fb::protocol::game::response::object:
     this->_position = response.position;
 }
 
-fb::task<void> game_bot::handle_map(const fb::protocol::game::response::map::config& response)
+async::task<void> game_bot::handle_map(const fb::protocol::game::response::map::config& response)
 {
     co_return;
 }
 
-fb::task<void> game_bot::handle_transfer(const fb::protocol::response::transfer& response)
+async::task<void> game_bot::handle_transfer(const fb::protocol::response::transfer& response)
 {
     this->close();
 
@@ -158,11 +158,11 @@ fb::task<void> game_bot::handle_transfer(const fb::protocol::response::transfer&
     co_return;
 }
 
-fb::task<void> game_bot::pattern_chat()
+async::task<void> game_bot::pattern_chat()
 {
     static std::random_device device;
     static std::mt19937 gen(device());
-    static std::vector<std::string> messages{ "/랜덤이동", "일반채팅" };
+    static std::vector<std::string> messages{ "/서버종료" };
     static std::uniform_int_distribution<> dist(0, messages.size() - 1);
     
     auto& message = messages.at(dist(gen));
@@ -170,15 +170,15 @@ fb::task<void> game_bot::pattern_chat()
     co_return;
 }
 
-fb::task<void> game_bot::pattern_attack()
+async::task<void> game_bot::pattern_attack()
 {
     this->send(fb::protocol::game::request::attack());
     co_return;
 }
 
-fb::task<void> game_bot::pattern_direction()
+async::task<void> game_bot::pattern_direction()
 {
-    static std::vector<fb::game::DIRECTION_TYPE> directions{ fb::game::DIRECTION_TYPE::LEFT, fb::game::DIRECTION_TYPE::TOP, fb::game::DIRECTION_TYPE::RIGHT, fb::game::DIRECTION_TYPE::BOTTOM };
+    static std::vector<DIRECTION> directions{ DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM };
     static std::random_device device;
     static std::mt19937 gen(device());
     static std::uniform_int_distribution<> dist(0, directions.size() - 1);
@@ -188,9 +188,9 @@ fb::task<void> game_bot::pattern_direction()
     co_return;
 }
 
-fb::task<void> game_bot::pattern_move()
+async::task<void> game_bot::pattern_move()
 {
-    static std::vector<fb::game::DIRECTION_TYPE> directions{ fb::game::DIRECTION_TYPE::LEFT, fb::game::DIRECTION_TYPE::TOP, fb::game::DIRECTION_TYPE::RIGHT, fb::game::DIRECTION_TYPE::BOTTOM };
+    static std::vector<DIRECTION> directions{ DIRECTION::LEFT, DIRECTION::TOP, DIRECTION::RIGHT, DIRECTION::BOTTOM };
     static std::random_device device;
     static std::mt19937 gen(device());
     static std::uniform_int_distribution<> dist(0, directions.size() - 1);
@@ -200,32 +200,32 @@ fb::task<void> game_bot::pattern_move()
 
     switch (direction)
     {
-    case fb::game::DIRECTION_TYPE::LEFT:
+    case DIRECTION::LEFT:
         this->_position.x--;
         break;
 
-    case fb::game::DIRECTION_TYPE::TOP:
+    case DIRECTION::TOP:
         this->_position.y--;
         break;
 
-    case fb::game::DIRECTION_TYPE::RIGHT:
+    case DIRECTION::RIGHT:
         this->_position.x++;
         break;
 
-    case fb::game::DIRECTION_TYPE::BOTTOM:
+    case DIRECTION::BOTTOM:
         this->_position.y++;
         break;
     }
     co_return;
 }
 
-fb::task<void> game_bot::pattern_pickup()
+async::task<void> game_bot::pattern_pickup()
 {
     this->send(fb::protocol::game::request::pick_up{ false });
     co_return;
 }
 
-fb::task<void> game_bot::pattern_emotion()
+async::task<void> game_bot::pattern_emotion()
 {
     static std::random_device device;
     static std::mt19937 gen(device());
@@ -235,18 +235,18 @@ fb::task<void> game_bot::pattern_emotion()
     co_return;
 }
 
-fb::task<void> game_bot::pattern_board_sections()
+async::task<void> game_bot::pattern_board_sections()
 {
     std::random_device device;
     std::mt19937 gen(device());
     std::uniform_int_distribution<> dist(0, 1);
 
-    this->send(fb::protocol::game::request::board::board(board::action::SECTIONS));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::SECTIONS));
 
     auto section = (uint32_t)dist(gen);
-    this->send(fb::protocol::game::request::board::board(board::action::ARTICLES, section));
-    this->send(fb::protocol::game::request::board::board(board::action::ARTICLE, section, 0));
-    this->send(fb::protocol::game::request::board::board(board::action::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(fb::protocol::game::request::board::board(board::action::DELETE, section, 0));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::ARTICLES, section));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::ARTICLE, section, 0));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::DELETE, section, 0));
     co_return;
 }

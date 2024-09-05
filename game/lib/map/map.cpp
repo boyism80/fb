@@ -1,110 +1,11 @@
 #include <fb/game/map.h>
 #include <fb/game/context.h>
 
-fb::game::objects::objects(fb::game::map* owner) : 
-    _owner(owner)
-{ }
-
-fb::game::objects::~objects()
-{ }
-
-uint16_t fb::game::objects::empty_seq()
-{
-    for(int i = this->_sequence; i < 0xFFFF; i++)
-    {
-        if(this->contains(i))
-            continue;
-
-        this->_sequence = i + 1;
-        return i;
-    }
-
-    for(int i = 1; i < this->_sequence; i++)
-    {
-        if(this->contains(i))
-            continue;
-
-        this->_sequence = i + 1;
-        return i;
-    }
-
-    return 0xFFFF;
-}
-
-std::vector<fb::game::object*> fb::game::objects::filter(fb::game::object::types type) const
-{
-    auto result = std::vector<fb::game::object*>();
-    for(auto& [key, value] : *this)
-    {
-        if(value->is(object::types::SESSION))
-            result.push_back(value);
-    }
-
-    return std::move(result);
-}
-
-uint16_t fb::game::objects::add(fb::game::object& object)
-{
-    return add(object, point16_t());
-}
-
-uint16_t fb::game::objects::add(fb::game::object& object, const point16_t& position)
-{
-    auto                    seq = this->empty_seq();
-    if(this->contains(seq))
-        this->erase(seq);
-
-    object.sequence(seq);
-    this->insert(std::make_pair(seq, &object));
-    return object.sequence();
-}
-
-bool fb::game::objects::remove(fb::game::object& object)
-{
-    if(this->contains(object.sequence()) == false)
-        return false;
-
-    this->erase(object.sequence());
-    return true;
-}
-
-fb::game::object* fb::game::objects::exists(point16_t position) const
-{
-    auto found = std::find_if
-    (
-        this->cbegin(), this->cend(),
-        [&position] (const auto& pair)
-        {
-            return pair.second->position() == position;
-        }
-    );
-
-    if(found == this->cend())
-        return nullptr;
-    else
-        return found->second;
-}
-
-fb::game::object* fb::game::objects::operator[](uint32_t seq) const
-{
-    const auto& found = this->find(seq);
-    if(found != this->cend())
-        return found->second;
-
-    return nullptr;
-}
-
-
-
-fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string& name, fb::game::map::OPTION option, fb::game::map::EFFECT effect, uint32_t group, const void* data, size_t size) :
-    _id(id),
-    _parent(parent),
-    _bgm(bgm),
-    _name(name),
-    _option(option),
-    _effect(effect),
-    group(group),
-    active(fb::config::get()["group"].asUInt() == group)
+fb::game::map::map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size) :
+    context(context),
+    model(model),
+    active(active),
+    doors(*this)
 {
     if (this->active == false)
         return;
@@ -134,20 +35,20 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 
     // compare linear doors
     point16_t position;
-    for(const auto& door : fb::game::model::doors)
+    for(auto& [id, door] : context.model.door)
     {
         position.x = position.y = 0;
-        while(door->find(*this, position, true))
+        while (door.find(*this, position, true))
         {
-            this->doors.add(this, *door, position, true);
-            position.x += (uint16_t)door->size();
+            this->doors.add(position, door, true);
+            position.x += (uint16_t)door.width;
         }
 
         position.x = position.y = 0;
-        while(door->find(*this, position, false))
+        while (door.find(*this, position, false))
         {
-            this->doors.add(this, *door, position, false);
-            position.x += (uint16_t)door->size();
+            this->doors.add(position, door, true);
+            position.x += (uint16_t)door.width;
         }
     }
 
@@ -158,19 +59,17 @@ fb::game::map::map(uint16_t id, uint16_t parent, uint8_t bgm, const std::string&
 fb::game::map::~map()
 { }
 
-uint16_t fb::game::map::id() const
+uint64_t fb::game::map::index(const point16_t& p) const
 {
-    return this->_id;
+    return (uint64_t)p.y * (uint64_t)this->_size.width + (uint64_t)p.x;
 }
 
-uint16_t fb::game::map::parent() const
+point16_t fb::game::map::point(uint64_t i) const
 {
-    return this->_parent;
-}
+    auto y = uint16_t(i / this->_size.width);
+    auto x = uint16_t(i % this->_size.width);
 
-const std::string& fb::game::map::name() const
-{
-    return this->_name;
+    return point16_t(x, y);
 }
 
 bool fb::game::map::blocked(uint16_t x, uint16_t y) const
@@ -199,15 +98,15 @@ bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
     return true;
 }
 
-fb::game::map::EFFECT fb::game::map::effect() const
-{
-    return this->_effect;
-}
+// fb::game::map::EFFECT fb::game::map::effect() const
+// {
+//     return this->_effect;
+// }
 
-fb::game::map::OPTION fb::game::map::option() const
-{
-    return this->_option;
-}
+// MAP_OPTION fb::game::map::option() const
+// {
+//     return this->_option;
+// }
 
 uint16_t fb::game::map::width() const
 {
@@ -219,15 +118,15 @@ uint16_t fb::game::map::height() const
     return this->_size.height;
 }
 
-fb::game::size16_t fb::game::map::size() const
+size16_t fb::game::map::size() const
 {
     return this->_size;
 }
 
-uint8_t fb::game::map::bgm() const
-{
-    return this->_bgm;
-}
+// uint8_t fb::game::map::bgm() const
+// {
+//     return this->_bgm;
+// }
 
 bool fb::game::map::loaded() const
 {
@@ -249,38 +148,38 @@ bool fb::game::map::movable(const point16_t position) const
 
     for(const auto& [key, value] : this->objects)
     {
-        if(value->visible() == false)
+        if(value.visible() == false)
             continue;
 
-        if(value->type() == fb::game::object::types::ITEM)
+        if(value.is(OBJECT_TYPE::ITEM))
             continue;
 
-        if(value->position() == position)
+        if(value.position() == position)
             return false;
     }
 
     return true;
 }
 
-bool fb::game::map::movable(const fb::game::object& object, fb::game::DIRECTION_TYPE direction) const
+bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction) const
 {
     point16_t               position = object.position();
 
     switch(direction)
     {
-    case fb::game::DIRECTION_TYPE::BOTTOM:
+    case DIRECTION::BOTTOM:
         position.y++;
         break;
 
-    case fb::game::DIRECTION_TYPE::TOP:
+    case DIRECTION::TOP:
         position.y--;
         break;
 
-    case fb::game::DIRECTION_TYPE::LEFT:
+    case DIRECTION::LEFT:
         position.x--;
         break;
 
-    case fb::game::DIRECTION_TYPE::RIGHT:
+    case DIRECTION::RIGHT:
         position.x++;
         break;
     }
@@ -296,24 +195,16 @@ bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t ste
     return this->movable(object, object.direction());
 }
 
-void fb::game::map::push_warp(fb::game::map* map, const point16_t& before, const point16_t& after, const range8_t& condition)
+const fb::model::warp* fb::game::map::warpable(const point16_t& position) const
 {
-    this->_warps.push_back(std::make_unique<warp>(map, before, after, condition));
-}
+    auto& warps = this->context.model.warp;
+    if (warps.contains(this->model.id) == false)
+        return nullptr;
 
-void fb::game::map::push_warp(fb::game::wm::offset* offset, const point16_t& before)
-{
-    this->_warps.push_back(std::make_unique<warp>(offset, before));
-}
-
-const fb::game::map::warp* fb::game::map::warpable(const point16_t& position) const
-{
-    for(const auto& warp : this->_warps)
+    for (auto& warp : warps[this->model.id])
     {
-        if(warp->before != position)
-            continue;
-
-        return warp.get();
+        if (warp.before == position)
+            return &warp;
     }
 
     return nullptr;
@@ -339,7 +230,7 @@ bool fb::game::map::activated() const
     return this->_sectors->activated();
 }
 
-std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, OBJECT_TYPE type) const
 {
     if(this->_sectors == nullptr)
         return std::vector<fb::game::object*> { };
@@ -347,7 +238,7 @@ std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, fb::
         return this->_sectors->objects(pivot, type);
 }
 
-std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb::game::object::types type) const
+std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, OBJECT_TYPE type) const
 {
     auto objects = std::vector<fb::game::object*>();
     try
@@ -362,7 +253,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
             [type, &pivot] (auto x)
             {
                 return 
-                    (type == fb::game::object::types::UNKNOWN || x->is(type)) && 
+                    (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && 
                     x->position() == pivot;
             }
         );
@@ -373,7 +264,7 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, fb:
     return std::move(objects);
 }
 
-std::vector<fb::game::object*> fb::game::map::activateds(fb::game::object::types type)
+std::vector<fb::game::object*> fb::game::map::activateds(OBJECT_TYPE type)
 {
     if(this->_sectors == nullptr)
         return std::vector<fb::game::object*> { };
@@ -394,44 +285,8 @@ fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
     if(y > this->_size.height)
         return nullptr;
 
-    return &this->_tiles[y * this->_size.width + x];
-}
-
-int fb::game::map::builtin_name(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-
-    thread->pushstring(map->name());
-    return 1;
-}
-
-int fb::game::map::builtin_objects(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-    
-
-    thread->new_table();
-    const auto& objects = map->objects;
-
-    for(int i = 0; i < objects.size(); i++)
-    {
-        thread->pushobject(map->objects[i]);
-        lua_rawseti(lua, -2, i+1);
-    }
-
-    return 1;
+    auto i = this->index(fb::model:: point16_t(x, y));
+    return &this->_tiles[i];
 }
 
 int fb::game::map::builtin_width(lua_State* lua)
@@ -444,7 +299,6 @@ int fb::game::map::builtin_width(lua_State* lua)
     if(map == nullptr)
         return 0;
     
-
     thread->pushinteger(map->width());
     return 1;
 }
@@ -478,6 +332,29 @@ int fb::game::map::builtin_area(lua_State* lua)
     thread->pushinteger(map->width());
     thread->pushinteger(map->height());
     return 2;
+}
+
+int fb::game::map::builtin_objects(lua_State* lua)
+{
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto map = thread->touserdata<fb::game::map>(1);
+    if(map == nullptr)
+        return 0;
+    
+
+    thread->new_table();
+    const auto& objects = map->objects;
+
+    for(int i = 0; i < objects.size(); i++)
+    {
+        thread->pushobject(map->objects[i]);
+        lua_rawseti(lua, -2, i+1);
+    }
+
+    return 1;
 }
 
 int fb::game::map::builtin_movable(lua_State* lua)
@@ -529,7 +406,7 @@ int fb::game::map::builtin_door(lua_State* lua)
         return 0;
     
     auto session = thread->touserdata<fb::game::session>(2);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
 
@@ -558,98 +435,107 @@ int fb::game::map::builtin_doors(lua_State* lua)
     auto i = 0;
     for(const auto& door : map->doors)
     {
-        thread->pushobject(*door);
+        thread->pushobject(door.second);
         lua_rawseti(lua, -2, i+1);
     }
     
     return 1;
 }
 
-
-
-
-// world
-void fb::game::wm::group::push(offset* offset)
+int fb::game::map::builtin_contains(lua_State* lua)
 {
-    this->push_back(std::unique_ptr<fb::game::wm::offset>(offset));
-}
+    auto thread = fb::game::lua::get(lua);
+    if(thread == nullptr)
+        return 0;
+    
+    auto map = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
 
-bool fb::game::wm::group::contains(const offset& offset) const
-{
-    return std::find_if
-    (
-        this->cbegin(), this->cend(),
-        [&] (const auto& x)
+    auto you = thread->touserdata<fb::game::object>(1);
+    if (you == nullptr)
+        return 0;
+    
+    for (auto& [fd, obj] : map->objects)
+    {
+        if (obj == *you)
         {
-            return x.get() == &offset;
+            thread->pushboolean(true);
+            return 1;
         }
-    ) != this->cend();
+    }
+    
+    thread->pushboolean(false);
+    return 1;
 }
 
-fb::game::wm::world::world(const std::string& name) : 
-    name(name)
+fb::game::maps::maps(const fb::game::context& context, uint32_t host) : context(context), host(host)
 { }
 
-void fb::game::wm::world::push(group* group)
+fb::game::maps::~maps()
+{ }
+
+bool fb::game::maps::load_data(uint32_t id, std::vector<char>& buffer)
 {
-    this->push_back(std::unique_ptr<fb::game::wm::group>(group));
-    for(auto& x : *group)
-        this->_offsets.push_back(x.get());
+    auto                    fname = fb::format("maps/%06d.map", id);
+    auto                    file = std::ifstream(fname, std::ios::binary);
+    if(file.is_open() == false)
+        return false;
+
+    buffer = std::vector<char>(std::istreambuf_iterator<char>(file), { });
+    file.close();
+
+    return true;
 }
 
-const std::vector<fb::game::wm::offset*>& fb::game::wm::world::offsets() const
+bool fb::game::maps::load_block(uint32_t id, Json::Value& buffer)
 {
-    return this->_offsets;
+    auto                    fname = fb::format("maps/%06d.block", id);
+    std::ifstream           file(fname);
+    if(file.is_open() == false)
+        return false;
+
+    Json::Reader reader;
+    if(reader.parse(file, buffer) == false)
+        return false;
+
+    file.close();
+    return true;
 }
 
-const fb::game::wm::group* fb::game::wm::world::find(const std::string& id) const
+void fb::game::maps::load(const fb::model::map& model)
 {
-    auto found = std::find_if
-    (
-        this->cbegin(), this->cend(), 
-        [&] (const auto& group)
-        {
-            auto x = std::find_if
-            (
-                group->cbegin(), group->cend(),
-                [&] (const auto& offset)
-                {
-                    return offset->id == id;
-                }
-            );
+    auto                active = (model.host == this->host);
+    auto                binary = std::vector<char>();
+    auto                blocks = Json::Value();
+    if(active)
+    {
+        if(load_data(model.id, binary) == false)
+            throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA);
 
-            return x != group->cend();
-        }
-    );
+        if(load_block(model.id, blocks) == false)
+            throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK);
+    }
 
-    if(found == this->cend())
-        return nullptr;
+    auto map = new fb::game::map(this->context, model, active, binary.data(), binary.size());
+    for (const auto& block : blocks)
+    {
+        map->block(block["x"].asInt(), block["y"].asInt(), true);
+    }
 
-    return (*found).get();
+    {
+        auto _ = std::lock_guard(this->_mutex);
+        this->push(model.id, map);
+    }
 }
 
-const fb::game::wm::group* fb::game::wm::world::find(const fb::game::map& map) const
+fb::game::map* fb::game::maps::name2map(const std::string& name) const
 {
-    auto found = std::find_if
-    (
-        this->cbegin(), this->cend(), 
-        [&] (const auto& group)
-        {
-            auto x = std::find_if
-            (
-                group->cbegin(), group->cend(),
-                [&] (const auto& offset)
-                {
-                    return offset->dst.map == &map;
-                }
-            );
+    for(const auto& [id, map] : *this)
+    {
+       if (map.model.name == name)
+           return &map;
+    }
 
-            return x != group->cend();
-        }
-    );
-
-    if(found == this->cend())
-        return nullptr;
-
-    return (*found).get();
+    return nullptr;
 }

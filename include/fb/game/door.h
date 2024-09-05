@@ -4,6 +4,9 @@
 #include <vector>
 #include <fb/game/mmo.h>
 #include <fb/game/lua.h>
+#include <fb/game/model.h>
+
+using namespace fb::model;
 
 namespace fb { namespace game {
 
@@ -16,31 +19,29 @@ public:
     LUA_PROTOTYPE
 
 public:
-    struct element;
-
-public:
     class model;
 
 private:
-    model&                      _model;
-    fb::game::map*              _owner  = nullptr;
     bool                        _opened = false;
     bool                        _locked = false;
 
 public:
+    const fb::game::map&        map;
+    const fb::model::door&      model;
     const point16_t             position;
+    const uint16_t              width;
 
 public:
-    door(fb::game::map* owner, door::model& model, const point16_t position, bool opened);
+    door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened);
+    door(const door&) = delete;
     ~door();
 
 public:
-    const door::model&          based() const;
+    //const door::model&          based() const;
     bool                        toggle();
     bool                        opened() const;
     bool                        locked() const;
     void                        lock(bool value);
-    const fb::game::map&        map() const;
 
 public:
     static int                  builtin_toggle(lua_State* lua);
@@ -50,56 +51,64 @@ public:
     static int                  builtin_update(lua_State* lua);
 };
 
-class doors : private std::vector<std::unique_ptr<door>>
+class doors : private std::unordered_map<uint64_t, std::unique_ptr<door>>
 {
 public:
-    using std::vector<std::unique_ptr<door>>::begin;
-    using std::vector<std::unique_ptr<door>>::end;
-    using std::vector<std::unique_ptr<door>>::cbegin;
-    using std::vector<std::unique_ptr<door>>::cend;
-    using std::vector<std::unique_ptr<door>>::rbegin;
-    using std::vector<std::unique_ptr<door>>::rend;
-    using std::vector<std::unique_ptr<door>>::size;
+    class iterator;
+    class const_iterator;
+
+    friend class iterator;
+    friend class const_iterator;
 
 public:
-    doors();
+    const fb::game::map&        map;
+
+public:
+    using unordered_map<uint64_t, std::unique_ptr<door>>::begin;
+    using unordered_map<uint64_t, std::unique_ptr<door>>::end;
+    using unordered_map<uint64_t, std::unique_ptr<door>>::cbegin;
+    using unordered_map<uint64_t, std::unique_ptr<door>>::cend;
+    using unordered_map<uint64_t, std::unique_ptr<door>>::size;
+
+public:
+    doors(const fb::game::map& map);
+    doors(const doors&) = delete;
     ~doors();
 
 public:
-    void                        add(map* map, fb::game::door::model& model, const point16_t position, bool opened);
-    door*                       find(const point16_t position);
-    door*                       find(const session& session);
+    iterator                    begin();
+    iterator                    end();
+    const_iterator              begin() const;
+    const_iterator              end() const;
+    void                        add(const point16_t& position, const fb::model::door& model, bool opened);
+    door*                       find(const point16_t position) const;
+    door*                       find(const session& session) const;
 };
 
-struct door::element
+class doors::iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator
 {
-    uint16_t                    open;
-    uint16_t                    close;
+public:
+    std::optional<std::pair<point16_t, door&>> pair;
 
-    element(uint16_t open, uint16_t close) : open(open), close(close) { }
-    ~element() { }
+public:
+    iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator& i, const doors& container);
+    ~iterator() = default;
+
+public:
+    std::pair<point16_t, door&> operator * ();
 };
 
-class door::model : private std::vector<door::element>
+class doors::const_iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator
 {
 public:
-    using std::vector<door::element>::begin;
-    using std::vector<door::element>::end;
-    using std::vector<door::element>::cbegin;
-    using std::vector<door::element>::cend;
-    using std::vector<door::element>::rbegin;
-    using std::vector<door::element>::rend;
-    using std::vector<door::element>::crbegin;
-    using std::vector<door::element>::crend;
-    using std::vector<door::element>::size;
-    using std::vector<door::element>::push_back;
-    using std::vector<door::element>::operator[];
-
-private:
-    bool                    matched(const fb::game::map& map, const point16_t& position, bool open) const;
+    const std::optional<std::pair<point16_t, door&>> pair;
 
 public:
-    bool                    find(const fb::game::map& map, point16_t& position, bool open) const;
+    const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i, const doors& container);
+    ~const_iterator() = default;
+
+public:
+    const std::pair<point16_t, door&> operator * () const;
 };
 
 } }

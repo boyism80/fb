@@ -1,0 +1,117 @@
+{
+  "NONE": {
+    "0": {
+      "step": 0,
+      "name": "평민",
+      "parent": "NONE"
+    }
+  },
+  "WARRIOR": {
+    "0": {
+      "step": 0,
+      "name": "전사",
+      "parent": "WARRIOR"
+    },
+    "1": {
+      "step": 1,
+      "name": "검객",
+      "parent": "WARRIOR"
+    },
+    "2": {
+      "step": 2,
+      "name": "검제",
+      "parent": "WARRIOR"
+    },
+    "3": {
+      "step": 3,
+      "name": "검황",
+      "parent": "WARRIOR"
+    },
+    "4": {
+      "step": 4,
+      "name": "검성",
+      "parent": "WARRIOR"
+    }
+  },
+  "THIEF": {
+    "0": {
+      "step": 0,
+      "name": "도적",
+      "parent": "THIEF"
+    },
+    "1": {
+      "step": 1,
+      "name": "자객",
+      "parent": "THIEF"
+    },
+    "2": {
+      "step": 2,
+      "name": "진검",
+      "parent": "THIEF"
+    },
+    "3": {
+      "step": 3,
+      "name": "귀객",
+      "parent": "THIEF"
+    },
+    "4": {
+      "step": 4,
+      "name": "태성",
+      "parent": "THIEF"
+    }
+  },
+  "MAGICION": {
+    "0": {
+      "step": 0,
+      "name": "주술사",
+      "parent": "MAGICION"
+    },
+    "1": {
+      "step": 1,
+      "name": "술사",
+      "parent": "MAGICION"
+    },
+    "2": {
+      "step": 2,
+      "name": "현사",
+      "parent": "MAGICION"
+    },
+    "3": {
+      "step": 3,
+      "name": "현인",
+      "parent": "MAGICION"
+    },
+    "4": {
+      "step": 4,
+      "name": "현자",
+      "parent": "MAGICION"
+    }
+  },
+  "ASCETIC": {
+    "0": {
+      "step": 0,
+      "name": "도사",
+      "parent": "ASCETIC"
+    },
+    "1": {
+      "step": 1,
+      "name": "도인",
+      "parent": "ASCETIC"
+    },
+    "2": {
+      "step": 2,
+      "name": "명인",
+      "parent": "ASCETIC"
+    },
+    "3": {
+      "step": 3,
+      "name": "진인",
+      "parent": "ASCETIC"
+    },
+    "4": {
+      "step": 4,
+      "name": "진선",
+      "parent": "ASCETIC"
+    }
+  }
+}

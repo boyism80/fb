@@ -6,6 +6,7 @@
 #include <stack>
 #include <fb/game/npc.h>
 #include <fb/game/item.h>
+#include <fb/game/model.h>
 
 namespace fb { namespace game {
 
@@ -17,7 +18,7 @@ public:
     class inactive_error;
 
 public:
-    using item_pair = std::pair<item::model*, uint32_t>;
+    using item_pair = std::pair<fb::model::item&, uint32_t>;
     using item_pairs = std::vector<item_pair>;
 
 public:
@@ -34,12 +35,12 @@ public:
 public:
     interface listener
     {
-        virtual void        on_dialog(session& me, const object::model& object, const std::string& message, bool button_prev, bool button_next, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::NORMAL) = 0;
     };
 
 public:
@@ -78,18 +79,12 @@ public:
     dialog&                 pushobject(const lua::luable& object);
 
 public:
-    void                    show(const object::model& object, const std::string& message, bool button_prev = false, bool button_next = true, interaction interaction = interaction::NORMAL);
-    void                    show(const object& object, const std::string& message, bool button_prev = false, bool button_next = true, interaction interaction = interaction::NORMAL);
-    void                    show(const npc::model& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::MENU);
-    void                    show(const npc& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::MENU);
-    void                    show(const npc::model& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::SLOT);
-    void                    show(const npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::SLOT);
-    void                    show(const npc::model& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
-    void                    show(const npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
-    void                    input(const npc::model& npc, const std::string& message, interaction interaction = interaction::INPUT);
-    void                    input(const npc& npc, const std::string& message, interaction interaction = interaction::INPUT);
-    void                    input(const npc::model& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::INPUT_EX);
-    void                    input(const npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::INPUT_EX);
+    void                    show(const fb::model::object& object, const std::string& message, bool button_prev = false, bool button_next = true, interaction interaction = interaction::NORMAL);
+    void                    show(const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::MENU);
+    void                    show(const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::SLOT);
+    void                    show(const fb::model::npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::ITEM);
+    void                    input(const fb::model::npc& npc, const std::string& message, interaction interaction = interaction::INPUT);
+    void                    input(const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::INPUT_EX);
 };
 
 

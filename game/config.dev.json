@@ -1,6 +1,6 @@
 {
     "id": "game1",
-    "group": 1,
+    "group": 0,
     "delay": 5,
     "ip": "127.0.0.1",
     "port": 2004,
@@ -40,24 +40,5 @@
             "db": 0
         }
     },
-    "log": ["debug", "info", "warn", "fatal"],
-    "table": {
-        "class": "table.dev/class.json",
-        "door": "table.dev/door.json",
-        "item": "table.dev/item.json",
-        "item drop": "table.dev/item.drop.json",
-        "item mix": "table.dev/item.mix.json",
-        "map": "table.dev/map.json",
-        "world": "table.dev/world.json",
-        "mob": "table.dev/mob.json",
-        "mob spawn": "table.dev/mob.spawn.json",
-        "npc": "table.dev/npc.json",
-        "npc spawn": "table.dev/npc.spawn.json",
-        "spell": "table.dev/spell.json",
-        "warp": "table.dev/warp.json",
-        "board": "table.dev/board.json",
-        "sell": "table.dev/sell.json",
-        "buy": "table.dev/buy.json",
-        "regex": "table.dev/regex.json"
-    }
+    "log": ["debug", "info", "warn", "fatal"]
 }

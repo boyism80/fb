@@ -1,6 +1,5 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
-#include <fb/game/model.h>
 
 int fb::game::session::builtin_look(lua_State* lua)
 {
@@ -11,7 +10,7 @@ int fb::game::session::builtin_look(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -36,7 +35,7 @@ int fb::game::session::builtin_color(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -61,7 +60,7 @@ int fb::game::session::builtin_money(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -86,7 +85,7 @@ int fb::game::session::builtin_exp(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -111,7 +110,7 @@ int fb::game::session::builtin_base_hp(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -136,7 +135,7 @@ int fb::game::session::builtin_base_mp(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -161,7 +160,7 @@ int fb::game::session::builtin_strength(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -186,7 +185,7 @@ int fb::game::session::builtin_dexterity(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -211,7 +210,7 @@ int fb::game::session::builtin_intelligence(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -235,7 +234,7 @@ int fb::game::session::builtin_item(lua_State* lua)
     
     auto context = thread->env<fb::game::context>("context");
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
     auto item = (fb::game::item*)nullptr;
     if(lua_isnumber(lua, 2))
@@ -265,7 +264,7 @@ int fb::game::session::builtin_items(lua_State* lua)
     
     auto context = thread->env<fb::game::context>("context");
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     thread->new_table();
@@ -290,12 +289,12 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
     
     auto context = thread->env<fb::game::context>("context");
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
     auto index = (uint8_t)thread->tointeger(2);
     auto drop_all = thread->toboolean(3);
 
-    auto dropped = session->items.drop(index - 1, drop_all ? 1 : -1);
+    auto dropped = async::awaitable_get(session->items.drop(index - 1, drop_all ? 1 : -1));
     if(dropped != nullptr)
         thread->pushobject(dropped);
     else
@@ -313,7 +312,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
     auto name = thread->tostring(2);
     auto count = argc < 3 ? 1 : thread->tointeger(3);
@@ -322,7 +321,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     if(store == false)
         return object::builtin_mkitem(lua);
 
-    auto model = fb::game::model::items.name2item(name);
+    auto model = context->model.item.name2item(name);
     if(model == nullptr)
     {
         thread->pushnil();
@@ -331,7 +330,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     {
         auto context = thread->env<fb::game::context>("context");
         auto item = model->make(*context, count);
-        auto slot = session->items.add(item);
+        auto slot = async::awaitable_get(session->items.add(item));
         if(slot == 0xFF)
         {
             thread->pushnil();
@@ -355,11 +354,11 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
     {
         auto argc = thread->argc();
         auto session = thread->touserdata<fb::game::session>(1);
-        if(session == nullptr || context->exists(*session) == false)
+        if(session == nullptr)
             return 0;
         auto index = uint8_t(0);
         auto count = argc < 3 ? 1 : (int)thread->tointeger(3);
-        auto delete_attr = argc < 4 ? fb::game::item::DELETE_TYPE::REMOVED : (fb::game::item::DELETE_TYPE)thread->tointeger(4);
+        auto delete_attr = argc < 4 ? ITEM_DELETE_TYPE::REMOVED : (ITEM_DELETE_TYPE)thread->tointeger(4);
 
         if(lua_isuserdata(lua, 2))
         {
@@ -369,7 +368,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(item == nullptr)
                 throw std::exception();
 
-            index = session->items.index(item->based<fb::game::item>());
+            index = session->items.index(item->based<fb::model::item>());
         }
         else if(lua_isnumber(lua, 2))
         {
@@ -381,11 +380,11 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
             if(name.empty())
                 throw std::exception();
 
-            auto model = fb::game::model::items.name2item(name);
+            auto model = context->model.item.name2item(name);
             if(model == nullptr)
                 throw std::exception();
 
-            index = session->items.index(model);
+            index = session->items.index(*model);
         }
         else
         {
@@ -395,7 +394,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
         auto dropped = session->items.remove(index, count, delete_attr);
         if(dropped != nullptr)
-            dropped->destroy();
+            async::awaitable_get(dropped->destroy());
     }
     catch(...)
     { }
@@ -412,7 +411,7 @@ int fb::game::session::builtin_state(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
     if(argc == 1)
     {
@@ -421,7 +420,7 @@ int fb::game::session::builtin_state(lua_State* lua)
     }
     else
     {
-        auto value = fb::game::STATE_TYPE(thread->tointeger(2));
+        auto value = STATE(thread->tointeger(2));
         session->state(value);
         return 0;
     }
@@ -436,7 +435,7 @@ int fb::game::session::builtin_disguise(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -465,7 +464,7 @@ int fb::game::session::builtin_class(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -473,21 +472,22 @@ int fb::game::session::builtin_class(lua_State* lua)
         auto cls = session->_class;
         auto promotion = session->_promotion;
 
-        auto cls_name = fb::game::model::classes.class2name(cls, promotion);
-        if(cls_name == nullptr)
+        auto promo_model = context->model.promotion(cls, promotion);
+        if(promo_model == nullptr)
         {
             thread->pushnil();
         }
         else
         {
-            thread->pushstring(*cls_name);
+            thread->pushstring(promo_model->name);
         }
     }
     else
     {
         auto cls_name = thread->tostring(2);
-        uint8_t cls, promotion;
-        if(fb::game::model::classes.name2class(cls_name, &cls, &promotion) == false)
+        auto cls = CLASS::NONE;
+        auto promotion = uint8_t(0);
+        if(context->model.promotion.name2class(cls_name, cls, promotion) == false)
         {
             thread->pushboolean(false);
         }
@@ -512,7 +512,7 @@ int fb::game::session::builtin_level(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -540,7 +540,7 @@ int fb::game::session::builtin_group(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     auto group = session->group();
@@ -561,11 +561,11 @@ int fb::game::session::builtin_assert(lua_State* lua)
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
     auto size = thread->rawlen(2);
-    std::vector<fb::game::STATE_TYPE> values;
+    std::vector<STATE> values;
     for(int i = 0; i < size; i++)
     {
         thread->rawgeti(2, i+1);
-        values.push_back((fb::game::STATE_TYPE)thread->tointeger(-1));
+        values.push_back((STATE)thread->tointeger(-1));
     }
 
     try
@@ -589,7 +589,7 @@ int fb::game::session::builtin_admin(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -613,7 +613,7 @@ int fb::game::session::builtin_deposited_money(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     if(argc == 1)
@@ -637,7 +637,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     const auto& deposited_items = session->deposited_items();
@@ -669,7 +669,7 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
                 auto name = thread->tostring(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [&name](fb::game::item* deposited_item)
                 {
-                    return deposited_item->based<fb::game::item>()->name == name;
+                    return deposited_item->based<fb::model::item>().name == name;
                 });
 
                 if (found == deposited_items.cend())
@@ -679,10 +679,10 @@ int fb::game::session::builtin_deposited_item(lua_State* lua)
             }
             else if (thread->is_obj(2))
             {
-                auto model = thread->touserdata<fb::game::item::model>(2);
+                auto model = thread->touserdata<fb::model::item>(2);
                 auto found = std::find_if(deposited_items.cbegin(), deposited_items.cend(), [model](fb::game::item* deposited_item) 
                 {
-                    return deposited_item->based<fb::game::item>() == model;
+                    return deposited_item->based<fb::model::item>() == *model;
                 });
 
                 if (found == deposited_items.cend())
@@ -717,7 +717,7 @@ int fb::game::session::builtin_deposit_item(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if(session == nullptr || context->exists(*session) == false)
+    if(session == nullptr)
         return 0;
 
     auto item = thread->touserdata<fb::game::item>(2);
@@ -744,7 +744,7 @@ int fb::game::session::builtin_withdraw_item(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto argc = thread->argc();
     auto session = thread->touserdata<fb::game::session>(1);
-    if (session == nullptr || context->exists(*session) == false)
+    if (session == nullptr)
         return 0;
 
     auto item = thread->touserdata<fb::game::item>(2);
@@ -758,7 +758,7 @@ int fb::game::session::builtin_withdraw_item(lua_State* lua)
     else
     {
         auto index = std::distance(deposited_items.cbegin(), found);
-        auto returned = session->withdraw_item(index, count);
+        auto returned = async::awaitable_get(session->withdraw_item(index, count));
         thread->pushobject(returned);
     }
     

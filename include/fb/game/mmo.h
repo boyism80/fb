@@ -7,7 +7,6 @@
 #include <type_traits>
 #include <fb/core/socket.h>
 #include <fb/core/stream.h>
-#include <fb/core/type.h>
 
 #ifndef interface
 #define interface struct
@@ -66,90 +65,6 @@ bool enum_in(T src, T value)
 
 
 namespace fb { namespace game {
-
-enum class TIMER_TYPE : uint8_t
-{
-    INCREASE            = 0x01,
-    DECREASE            = 0x02,
-};
-
-enum class WEATHER_TYPE : uint8_t
-{
-    NORMAL              = 0x00,
-    RAIN                = 0x01,
-    SNOW                = 0x02,
-    BIRD                = 0x03,
-};
-
-enum class CHAT_TYPE : uint8_t
-{
-    NORMAL              = 0x00,
-    SHOUT               = 0x01,
-    BLUE                = 0x02,
-    LIGHT_BLUE          = 0x03,
-};
-
-enum class SWAP_TYPE : uint8_t
-{
-    ITEM                = 0x00,
-    SPELL               = 0x01,
-};
-
-enum class MESSAGE_TYPE : uint8_t
-{
-    NOTIFY              = 0x00,
-    BLUE                = 0x01,
-    STATE               = 0x03,
-    SHOUT               = 0x04,
-    WORLD               = 0x05,
-    POPUP               = 0x08,
-    YELLOW              = 0x0B,
-    BROWN               = 0x0C,
-};
-
-enum class OPTION : uint8_t
-{
-    RIDE                    = 0x00,
-    WHISPER                 = 0x01,
-    GROUP                   = 0x02,
-    ROAR                    = 0x03,
-    ROAR_WORLDS             = 0x04,
-    MAGIC_EFFECT            = 0x05,
-    WEATHER_EFFECT          = 0x06,
-    FIXED_MOVE              = 0x07,
-    TRADE                   = 0x08,
-    FAST_MOVE               = 0x09,
-    EFFECT_SOUND            = 0x0A,
-    PK                      = 0x0B,
-};
-
-enum class SOUND_TYPE : uint16_t
-{
-    SWING               = 0x014B,
-    EAT                 = 0x0006,
-    EQUIPMENT_OFF       = 0x019A,
-    EQUIPMENT_ON        = 0x019B,
-    DAMAGE              = 0x015D,
-};
-
-enum class DURATION : uint8_t
-{
-    FAST           = 0x0F,
-    EAT            = 0x27,
-    ATTACK         = 0x14,
-    PICKUP         = 0x32,
-    EMOTION        = 0x4E,
-    SPELL          = 0x20,
-    THROW          = 0x28,
-};
-
-enum class STATE_LEVEL : uint8_t
-{
-    BASED = 0x40, HP_MP = 0x20, EXP_MONEY = 0x10, CONDITION = 0x08,
-    LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CONDITION,
-    LEVEL_MIDDLE = HP_MP | EXP_MONEY | CONDITION,
-    LEVEL_MIN = EXP_MONEY | CONDITION,
-};
 
 struct legend
 {

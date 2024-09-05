@@ -3,6 +3,9 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/item.h>
+#include <fb/game/model.h>
+
+using namespace fb::model::enum_value;
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace item {
 
@@ -49,7 +52,7 @@ public:
         out_stream.write_u8(this->index + 1)
                   .write_u16(item->look())
                   .write_u8(item->color())
-                  .write(item->name_styled(), false)
+                  .write(item->inven_name(), false)
                   .write_u32(item->count())
                   .write_u8(0x00)
                   .write_u8(0x00);
@@ -60,10 +63,10 @@ class update_slot : public fb::protocol::base::header
 {
 public:
     const fb::game::session&            me;
-    const fb::game::equipment::parts    parts;
+    const EQUIPMENT_PARTS               parts;
 
 public:
-    update_slot(const fb::game::session& me, fb::game::equipment::parts parts) : fb::protocol::base::header(0x37),
+    update_slot(const fb::game::session& me, EQUIPMENT_PARTS parts) : fb::protocol::base::header(0x37),
         me(me), parts(parts)
     { }
 
@@ -74,36 +77,36 @@ public:
 
         switch(parts)
         {
-        case equipment::parts::WEAPON:
+        case EQUIPMENT_PARTS::WEAPON:
             item = this->me.items.weapon();
             break;
 
-        case equipment::parts::ARMOR:
+        case EQUIPMENT_PARTS::ARMOR:
             item = this->me.items.armor();
             break;
 
-        case equipment::parts::SHIELD:
+        case EQUIPMENT_PARTS::SHIELD:
             item = this->me.items.shield();
             break;
 
-        case equipment::parts::HELMET:
+        case EQUIPMENT_PARTS::HELMET:
             item = this->me.items.helmet();
             break;
 
-        case equipment::parts::LEFT_HAND:
-            item = this->me.items.ring(equipment::position::LEFT);
+        case EQUIPMENT_PARTS::LEFT_HAND:
+            item = this->me.items.ring(EQUIPMENT_POSITION::LEFT);
             break;
 
-        case equipment::parts::RIGHT_HAND:
-            item = this->me.items.ring(equipment::position::RIGHT);
+        case EQUIPMENT_PARTS::RIGHT_HAND:
+            item = this->me.items.ring(EQUIPMENT_POSITION::RIGHT);
             break;
 
-        case equipment::parts::LEFT_AUX:
-            item = this->me.items.auxiliary(equipment::position::LEFT);
+        case EQUIPMENT_PARTS::LEFT_AUX:
+            item = this->me.items.auxiliary(EQUIPMENT_POSITION::LEFT);
             break;
 
-        case equipment::parts::RIGHT_AUX:
-            item = this->me.items.auxiliary(equipment::position::RIGHT);
+        case EQUIPMENT_PARTS::RIGHT_AUX:
+            item = this->me.items.auxiliary(EQUIPMENT_POSITION::RIGHT);
             break;
 
         default:
@@ -123,19 +126,19 @@ public:
 class remove : public fb::protocol::base::header
 {
 public:
-    const fb::game::item::DELETE_TYPE   types;
+    const ITEM_DELETE_TYPE              type;
     const uint32_t                      index;
     const uint16_t                      count;
 public:
-    remove(fb::game::item::DELETE_TYPE types, uint32_t index, uint16_t count = 0) : fb::protocol::base::header(0x10),
-        types(types), index(index), count(count)
+    remove(ITEM_DELETE_TYPE type, uint32_t index, uint16_t count = 0) : fb::protocol::base::header(0x10),
+        type(type), index(index), count(count)
     { }
 public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(this->index + 1)
-                  .write_u8(this->types)
+                  .write_u8(this->type)
                   .write_u16(this->count);
     }
 };
@@ -144,10 +147,10 @@ public:
 class unequip : public fb::protocol::base::header
 {
 public:
-    const equipment::parts  parts;
+    const EQUIPMENT_PARTS               parts;
 
 public:
-    unequip(equipment::parts parts) : fb::protocol::base::header(0x38),
+    unequip(EQUIPMENT_PARTS parts) : fb::protocol::base::header(0x38),
         parts(parts)
     { }
 

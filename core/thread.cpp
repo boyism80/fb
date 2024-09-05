@@ -18,51 +18,43 @@ void fb::thread::handle_thread(uint8_t index)
 
     while(!this->_exit)
     {
-        auto fn = fb::queue_callback();
-        auto awaiter = (fb::awaiter<void>*)nullptr;
+        auto completed = false;
+        completed = this->_queue.dequeue([this](auto&& x) mutable
+        {
+            async::awaitable_then(x.func(), [callback = x.callback](async::awaitable_result<void> result) 
+            {
+                if (callback != nullptr)
+                    callback();
+            });
+        });
+        if(completed)
+            continue;
 
-        if(this->_queue.dequeue(fn))
-        {
-            fn(index);
-        }
-        else if(this->_dispatch_awaiter_queue.dequeue(awaiter))
-        {
-            awaiter->handler.resume();
-        }
-        else
-        {
-            auto begin = now();
-            this->handle_idle();
-            auto elapsed = now() - begin;
+        auto begin = now();
+        this->handle_idle();
+        auto elapsed = now() - begin;
 
-            if(elapsed < term)
-                std::this_thread::sleep_for(term - elapsed);
-        }
+        if (elapsed < term)
+            std::this_thread::sleep_for(term - elapsed);
     }
 }
 
 void fb::thread::handle_idle()
 {
-    auto copies = std::vector<std::shared_ptr<fb::timer>>(this->_timers);
-    auto expired = std::vector<std::shared_ptr<fb::timer>>();
-    for(auto& timer : copies)
+    auto _ = std::lock_guard(this->_mutex_timer);
+
+    auto indices = std::vector<uint32_t>();
+    for(int i = this->_timers.size() - 1; i >= 0; i--)
     {
+        auto& timer = this->_timers[i];
         auto elapsed = std::chrono::steady_clock::now() - timer->begin;
-        if(timer->duration > elapsed)
+        if (timer->duration > elapsed)
             continue;
 
         timer->fn(fb::thread::now(), this->_thread.get_id());
-        expired.push_back(timer);
+        if (timer->disposable)
+            this->_timers.erase(this->_timers.begin() + i);
     }
-
-this->_mutex_timer.lock();
-    for(auto& x : expired)
-    {
-        auto found = std::find(this->_timers.begin(), this->_timers.end(), x);
-        if(found != this->_timers.end())
-            this->_timers.erase(found);
-    }
-this->_mutex_timer.unlock();
 }
 
 void fb::thread::exit()
@@ -79,58 +71,96 @@ this->_mutex_timer.lock();
 this->_mutex_timer.unlock();
 }
 
-void fb::thread::dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration)
-{   MUTEX_GUARD(this->_mutex_timer)
-
-    // private 생성자때문에 make_shared 사용 X
-    auto timer = new fb::timer([fn] (std::chrono::steady_clock::duration, std::thread::id) { fn(); }, duration);
-    auto ptr   = std::shared_ptr<fb::timer>(timer);
-    this->_timers.push_back(std::move(ptr));
-}
-
-void fb::thread::settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration)
+async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
-    this->dispatch
-    (
-        [this, fn, duration]
-        {
-            fn(fb::thread::now(), this->_thread.get_id());
-            this->settimer(fn, duration);
-        }, 
-        duration
-    );
-}
-
-void fb::thread::dispatch(fb::queue_callback&& fn, int priority)
-{
-    this->_queue.enqueue(std::move(fn), priority);
-}
-
-fb::awaiter<void> fb::thread::sleep(const std::chrono::steady_clock::duration& duration)
-{
-    auto await_callback = [this, duration](auto& awaiter)
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    if (delay > 0s)
     {
-        this->dispatch([this, &awaiter]
+        this->settimer([this, priority, promise, fn](auto time, auto id) mutable
         {
-            this->_dispatch_awaiter_queue.enqueue(&awaiter);
-        }, duration);
-    };
-    return fb::awaiter<void>(await_callback);
+            this->_queue.enqueue(fb::thread::task(fn, [promise]() 
+            {
+                promise->set_value();
+            }), priority);
+        }, delay, true);
+    }
+    else
+    {
+        this->_queue.enqueue(fb::thread::task(fn, [promise]() 
+        {
+            promise->set_value();
+        }), priority);
+    }
+
+    return promise->task();
 }
 
-fb::awaiter<void> fb::thread::dispatch(uint32_t priority)
+void fb::thread::post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
-    auto await_callback = [this, priority](auto& awaiter)
+    if (delay > 0s)
     {
-        this->_dispatch_awaiter_queue.enqueue(&awaiter, priority);
-    };
+        this->settimer([this, priority, fn](auto time, auto id) mutable
+        {
+            this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
+        }, delay, true);
+    }
+    else
+    {
+        this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
+    }
+}
 
-    return fb::awaiter<void>(await_callback);
+async::task<void> fb::thread::dispatch(uint32_t priority)
+{
+    co_await this->dispatch([] () -> async::task<void>
+    {
+        co_return;
+    }, 0s, priority);
+}
+
+void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable)
+{
+    auto _ = std::lock_guard(this->_mutex_timer);
+
+    auto timer = new fb::timer([this, fn](std::chrono::steady_clock::duration, std::thread::id)
+    {
+        fn(fb::thread::now(), this->_thread.get_id());
+    }, duration, disposable);
+    this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
+}
+
+async::task<void> fb::thread::sleep(const std::chrono::steady_clock::duration& delay)
+{
+    co_await this->dispatch([] () -> async::task<void>
+    {
+        co_return;
+    }, delay);
 }
 
 std::chrono::steady_clock::duration fb::thread::now()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+}
+
+fb::thread::task::task(const fb::thread::task::func_type& func) : func(func)
+{}
+
+fb::thread::task::task(const fb::thread::task::func_type& func, const fb::thread::task::callback_type& callback) : func(func), callback(callback)
+{}
+
+fb::thread::task::task(fb::thread::task&& r) noexcept : func(std::move(r.func)), callback(std::move(r.callback))
+{
+    
+}
+
+fb::thread::task::~task()
+{
+}
+
+void fb::thread::task::operator = (fb::thread::task&& r) noexcept
+{
+    this->func = std::move(r.func);
+    this->callback = std::move(r.callback);
 }
 
 std::thread::id fb::thread::id() const
@@ -234,40 +264,20 @@ size_t fb::threads::size() const
     return this->_threads.size();
 }
 
-void fb::threads::dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration, bool main)
+async::task<void> fb::threads::dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay)
 {
     auto current = this->current();
-    if(main || current == nullptr)
-    {
-        auto& context = this->_context;
-        auto  timer = std::make_unique<boost::asio::steady_timer>(this->_context, duration);
-        timer->async_wait
-        (
-            [&context, fn, timer = std::move(timer)] (const auto& e)
-            {
-                boost::asio::dispatch(context, fn);
-            }
-        );
-    }
-    else
-    {
-        current->dispatch(fn, duration);
-    }
+    if (current == nullptr)
+        throw std::runtime_error("therad not exists");
+
+    co_await current->dispatch(fn, delay);
 }
 
-void fb::threads::settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration)
+void fb::threads::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration)
 {
     if(this->_threads.empty())
     {
-        this->dispatch
-        (
-            [this, fn, duration]
-            {
-                fn(fb::thread::now(), std::this_thread::get_id());
-                this->settimer(fn, duration);
-            },
-            duration
-        );
+        throw std::runtime_error("cannot set timer. logic thread does not exists");
     }
     else
     {

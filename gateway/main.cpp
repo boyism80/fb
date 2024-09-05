@@ -4,7 +4,7 @@
 #include "resource.h"
 #include <fb/core/socket.h>
 #include <fb/gateway/context.h>
-#include <fb/core/leak.h>
+// #include <fb/core/leak.h>
 #include <fb/core/console.h>
 #include <fb/core/config.h>
 #include <fb/protocol/internal.h>
@@ -23,7 +23,7 @@ int main(int argc, const char** argv)
 #endif
 
         auto height = 8;
-        c.box(0, 0, c.width()-1, height);
+        c.box(c.width()-1, height);
 
         auto header = "The Kingdom of the wind [GATEWAY]";
         c.cursor((c.width()-1 - strlen(header)) / 2, 2).put(header);

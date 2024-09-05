@@ -18,7 +18,7 @@ public:
         name(name), time(time)
     { }
     buff(const fb::game::buff& buff) : fb::protocol::base::header(0x3A),
-        name(buff.spell.name), time(buff.time())
+        name(buff.model.name), time(buff.time())
     { }
 
 public:
@@ -26,7 +26,7 @@ public:
     {
         base::header::serialize(out_stream);
         out_stream.write(this->name)
-                  .write_u32(this->time.count() / 1000);
+                  .write_u32(static_cast<uint32_t>(this->time.count() / 1000));
     }
 };
 
@@ -44,7 +44,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write(this->buff.spell.name)
+        out_stream.write(this->buff.model.name)
                   .write_u32(0x00);
     }
 };
@@ -76,7 +76,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        auto                    spell = this->me.spells.at(index);
+        auto spell = this->me.spells.at(index);
         if(spell == nullptr)
             return;
 

@@ -2,21 +2,25 @@
 #define __LEAK_H__
 
 #if defined DEBUG | defined _DEBUG
-
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
 #include <crtdbg.h>
+
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+#define new DBG_NEW
 
 static class leak
 {
 public:
     leak()
     {
-        _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+        //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     }
 
     ~leak()
     {
         // _CRTDBG_LEAK_CHECK_DF 플래그 설정시 맨 마지막에 invoke해줌
-        //_CrtDumpMemoryLeaks();
+        _CrtDumpMemoryLeaks();
     }
 } mleak;
 

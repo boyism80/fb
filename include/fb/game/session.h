@@ -1,20 +1,19 @@
 #ifndef __MMO_H__
 #define __MMO_H__
 
-#include <stdint.h>
-#include <string>
-#include <algorithm>
-#include <optional>
-#include <sstream>
-#include <iostream>
-#include <fb/core/socket.h>
-#include <fb/core/string.h>
 #include <fb/game/item.h>
 #include <fb/game/spell.h>
 #include <fb/game/trade.h>
 #include <fb/game/mob.h>
 #include <fb/game/dialog.h>
 #include <fb/game/npc.h>
+#include <fb/core/socket.h>
+#include <fb/core/string.h>
+#include <stdint.h>
+#include <algorithm>
+#include <optional>
+#include <sstream>
+#include <iostream>
 
 namespace fb { namespace game {
 
@@ -91,12 +90,12 @@ private:
     uint8_t                     _hit             = 0; // 명중수정
     uint8_t                     _regenerative    = 0; // 재생력
 
-    fb::game::NATION_TYPE       _nation          = NATION_TYPE::GOGURYEO;
-    fb::game::CREATURE_TYPE     _creature        = CREATURE_TYPE::DRAGON;
-    fb::game::SEX_TYPE          _sex             = fb::game::SEX_TYPE::BOTH;
-    fb::game::STATE_TYPE        _state           = STATE_TYPE::NORMAL;
+    NATION                      _nation          = NATION::GOGURYEO;
+    CREATURE                    _creature        = CREATURE::DRAGON;
+    SEX                         _sex             = SEX::ALL;
+    STATE                       _state           = STATE::NORMAL;
     uint8_t                     _level           = 1;
-    uint8_t                     _class           = 0;
+    CLASS                       _class           = CLASS::NONE;
     uint8_t                     _promotion       = 0;
     uint32_t                    _money           = 0;
     std::optional<uint16_t>     _disguise        = 0;
@@ -109,7 +108,7 @@ private:
     fb::game::clan*             _clan            = nullptr;
 
 private:
-    std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
+    std::vector<std::function<async::task<bool>(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
 
 public:
     fb::game::trade             trade            = fb::game::trade(*this);
@@ -121,7 +120,7 @@ private:
     using object::based;
 
 public:
-    session(fb::socket<fb::game::session>& socket, fb::game::context& context);
+    session(fb::game::context& context, fb::socket<fb::game::session>& socket);
     ~session();
 
 protected:
@@ -137,11 +136,9 @@ protected:
 public:
     void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
-    object::types               type() const final;
-    fb::awaiter<bool>           co_map(fb::game::map* map, const point16_t& position) final;
-    fb::awaiter<bool>           co_map(fb::game::map* map) final;
-    bool                        map(fb::game::map* map, const point16_t& position) final;
-    bool                        map(fb::game::map* map) final;
+    OBJECT_TYPE                 what() const final;
+    async::task<bool>              map(fb::game::map* map, const point16_t& position) final;
+    async::task<bool>              map(fb::game::map* map) final;
 
 public:
     operator                    fb::socket<fb::game::session>& ();
@@ -159,7 +156,7 @@ public:
     bool                        transferring() const;
 
     void                        attack();
-    void                        action(fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound = 0x00);
+    void                        action(ACTION action, DURATION duration, uint8_t sound = 0x00);
 
     const std::string&          name() const final;
     void                        name(const std::string& value);
@@ -193,25 +190,25 @@ public:
     uint32_t                    base_hp() const;
     uint32_t                    base_mp() const;
 
-    fb::game::NATION_TYPE       nation() const;
-    bool                        nation(fb::game::NATION_TYPE value);
+    NATION                      nation() const;
+    bool                        nation(NATION value);
 
-    fb::game::CREATURE_TYPE     creature() const;
-    bool                        creature(fb::game::CREATURE_TYPE value);
+    CREATURE                    creature() const;
+    bool                        creature(CREATURE value);
 
     uint8_t                     level() const;
     void                        level(uint8_t value);
     bool                        level_up();
     bool                        max_level() const;
 
-    fb::game::SEX_TYPE          sex() const;
-    void                        sex(fb::game::SEX_TYPE value);
+    SEX                         sex() const;
+    void                        sex(SEX value);
 
-    fb::game::STATE_TYPE        state() const;
-    void                        state(fb::game::STATE_TYPE value);
+    STATE                       state() const;
+    void                        state(STATE value);
 
-    uint8_t                     cls() const;
-    void                        cls(uint8_t value);
+    CLASS                       cls() const;
+    void                        cls(CLASS value);
 
     uint8_t                     promotion() const;
     void                        promotion(uint8_t value);
@@ -239,7 +236,7 @@ public:
     void                        money(uint32_t value);
     uint32_t                    money_add(uint32_t value);
     uint32_t                    money_reduce(uint32_t value);
-    uint32_t                    money_drop(uint32_t value);
+    async::task<uint32_t>          money_drop(uint32_t value);
 
     uint32_t                    deposited_money() const;
     void                        deposited_money(uint32_t value);
@@ -249,11 +246,11 @@ public:
     bool                        deposit_item(fb::game::item& item);
     bool                        deposit_item(uint8_t index, uint16_t count);
     bool                        deposit_item(const std::string& name, uint16_t count);
-    fb::game::item*             deposited_item(const fb::game::item::model& item) const;
+    fb::game::item*             deposited_item(const fb::model::item& item) const;
     const std::vector<item*>&   deposited_items() const;
-    fb::game::item*             withdraw_item(uint8_t index, uint16_t count);
-    fb::game::item*             withdraw_item(const std::string& name, uint16_t count);
-    fb::game::item*             withdraw_item(const fb::game::item::model& item, uint16_t count);
+    async::task<fb::game::item*>   withdraw_item(uint8_t index, uint16_t count);
+    async::task<fb::game::item*>   withdraw_item(const std::string& name, uint16_t count);
+    async::task<fb::game::item*>   withdraw_item(const fb::model::item& item, uint16_t count);
 
     uint32_t                    damage() const;
     void                        damage(uint8_t value);
@@ -264,9 +261,9 @@ public:
     uint32_t                    regenerative() const;
     void                        regenerative(uint8_t value);
 
-    bool                        option(OPTION key) const;
-    void                        option(OPTION key, bool value);
-    bool                        option_toggle(OPTION key);
+    bool                        option(CUSTOM_SETTING key) const;
+    void                        option(CUSTOM_SETTING key, bool value);
+    bool                        option_toggle(CUSTOM_SETTING key);
 
     const std::string&          title() const;
     void                        title(const std::string& value);
@@ -274,37 +271,39 @@ public:
     fb::game::group*            group() const;
     fb::game::clan*             clan() const;
 
-    void                        assert_state(fb::game::STATE_TYPE value) const;
-    void                        assert_state(const std::vector<fb::game::STATE_TYPE>& values) const;
+    void                        assert_state(STATE value) const;
+    void                        assert_state(const std::vector<STATE>& values) const;
 
     bool                        move(const point16_t& before);
-    bool                        move(fb::game::DIRECTION_TYPE direction, const point16_t& before);
+    bool                        move(DIRECTION direction, const point16_t& before);
 
-    void                        ride(fb::game::mob& horse);
-    void                        ride();
-    void                        unride();
+    async::task<void>              ride(fb::game::mob& horse);
+    async::task<void>              ride();
+    async::task<void>              unride();
     bool                        alive() const;
     void                        refresh_map();
+    bool                        condition(const std::vector<fb::model::dsl>& conditions) const final;
+    void                        message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
 
 private:
-    bool                        inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-    bool                        inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
-    bool                        inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool>              inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     static int                  builtin_look(lua_State* lua);
@@ -347,13 +346,13 @@ public:
     virtual void                on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void                on_hold(session& me) = 0;
     virtual void                on_die(session& me, object* you) = 0;
-    virtual void                on_action(session& me, fb::game::ACTION_TYPE action, fb::game::DURATION duration, uint8_t sound) = 0;
+    virtual void                on_action(session& me, ACTION action, DURATION duration, uint8_t sound) = 0;
     virtual void                on_updated(session& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
     virtual void                on_money_changed(session& me, uint32_t value) = 0;
     virtual void                on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
-    virtual void                on_option(session& me, fb::game::OPTION option, bool enabled) = 0;
+    virtual void                on_option(session& me, CUSTOM_SETTING option, bool enabled) = 0;
     virtual void                on_level_up(session& me) = 0;
-    virtual void                on_transfer(session& me, fb::game::map& map, const point16_t& position, fb::awaiter<bool>* awaiter = nullptr) = 0;
+    virtual async::task<bool>      on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
     virtual void                on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
     virtual void                on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;

@@ -3,70 +3,34 @@
 #include <fb/game/session.h>
 #include <fb/game/context.h>
 
-bool fb::game::door::model::matched(const fb::game::map& map, const point16_t& position, bool open) const
-{
-    auto door_size = this->size();
-    for(int i = 0; i < door_size; i++)
-    {
-        auto now = map(position.x + i, position.y);
-        if(now == nullptr)
-            return false;
-
-        auto dst = open ? this->at(i).open : this->at(i).close;
-
-        if(now->object != dst)
-            return false;
-    }
-
-    return true;
-}
-
-bool fb::game::door::model::find(const fb::game::map& map, point16_t& position, bool open) const
-{
-    bool init = true;
-    for(int offset = position.y * map.width() + position.x; offset < map.width() * map.height(); offset++)
-    {
-        auto row = offset / map.width();
-        auto col = offset % map.width();
-
-        auto pos = point16_t(col, row);
-        if(this->matched(map, pos, open) == false)
-            continue;
-
-        position = pos;
-        return true;
-    }
-
-    return false;
-}
-
-fb::game::door::door(fb::game::map* owner, fb::game::door::model& model, const point16_t position, bool opened) : 
-    _owner(owner),
-    _model(model), 
+fb::game::door::door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened) : 
+    map(map),
+    model(model), 
     position(position), 
-    _opened(opened)
+    _opened(opened),
+    width(static_cast<uint16_t>(model.pairs.size()))
 { }
 
 fb::game::door::~door()
 { }
 
-const fb::game::door::model& fb::game::door::based() const
-{
-    return this->_model;
-}
-
 bool fb::game::door::toggle()
 {
-    this->_opened = !this->_opened;
-
-    for(int i = 0; i < this->_model.size(); i++)
+    for (int i = 0; i < this->width; i++)
     {
-        auto& object = (*this->_owner)(this->position.x + i, this->position.y)->object;
-        auto  door_e = this->_opened ? this->_model[i].open : this->_model[i].close;
+        auto tile = this->map(this->position.x + i, this->position.y);
+        if (tile == nullptr)
+            return false;
 
-        object = door_e;
+        auto index = this->model.pairs[i];
+        auto& model = this->map.context.model.door_pair[index];
+        if (this->_opened)
+            tile->object = model.close;
+        else
+            tile->object = model.open;
     }
 
+    this->_opened = !this->_opened;
     return true;
 }
 
@@ -85,116 +49,88 @@ void fb::game::door::lock(bool value)
     this->_locked = value;
 }
 
-const fb::game::map& fb::game::door::map() const
-{
-    return *this->_owner;
-}
-
-int fb::game::door::builtin_toggle(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
-
-    door->toggle();
-    lua_pushboolean(lua, door->opened());
-    return 1;
-}
-
-int fb::game::door::builtin_locked(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
-
-    lua_pushboolean(lua, door->locked());
-    return 1;
-}
-
-int fb::game::door::builtin_lock(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
-    auto value = thread->toboolean(2);
-
-    door->lock(value);
-    lua_pushboolean(lua, door->locked());
-    return 1;
-}
-
-int fb::game::door::builtin_opened(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
-
-    lua_pushboolean(lua, door->opened());
-    return 1;
-}
-
-int fb::game::door::builtin_update(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
-
-    auto model = door->based();
-    auto context = thread->env<fb::game::context>("context");
-
-    const auto& map = door->map();
-    const auto size = size8_t((uint8_t)model.size(), 1);
-    context->send(fb::protocol::game::response::map::update(map, door->position, size), map);
-    return 0;
-}
-
-fb::game::doors::doors()
+fb::game::doors::doors(const fb::game::map& map) : map(map)
 { }
 
 fb::game::doors::~doors()
 { }
 
-void fb::game::doors::add(map* map, fb::game::door::model& model, const point16_t position, bool opened)
+doors::iterator doors::begin()
 {
-    this->push_back(std::make_unique<fb::game::door>(map, model, position, opened));
+    return fb::game::doors::iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::begin(), *this);
 }
 
-fb::game::door* fb::game::doors::find(const point16_t position)
+doors::iterator doors::end()
 {
-    for(const auto& door : *this)
+   return doors::iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::end(), *this);
+}
+
+doors::const_iterator doors::begin() const
+{
+   return doors::const_iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::cbegin(), *this);
+}
+
+doors::const_iterator doors::end() const
+{
+   return doors::const_iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::cend(), *this);
+}
+
+void fb::game::doors::add(const point16_t& position, const fb::model::door& model, bool opened)
+{
+    auto index = this->map.index(position);
+    std::unordered_map<uint64_t, std::unique_ptr<door>>::insert({index, std::make_unique<fb::game::door>(this->map, model, position, opened) });
+}
+
+fb::game::door* fb::game::doors::find(const point16_t position) const
+{
+    for (auto& [index, door] : *this)
     {
-        const auto& model = door->based();
-        for(int i = 0; i < model.size(); i++)
+        for (int i = 0; i <= door.model.width; i++)
         {
-            if(position == point16_t(door->position.x + i, door->position.y))
-                return door.get();
+            auto door_p = point16_t(position.x + i, position.y);
+            auto door_index = this->map.index(door_p);
+            if (this->contains(door_index))
+                return this->at(door_index).get();
         }
     }
-
     return nullptr;
 }
 
-fb::game::door* fb::game::doors::find(const fb::game::session& session)
+fb::game::door* fb::game::doors::find(const fb::game::session& session) const
 {
     auto direction = session.direction();
-    if(direction == fb::game::DIRECTION_TYPE::LEFT || direction == fb::game::DIRECTION_TYPE::RIGHT)
-        return nullptr;
+    auto position = session.position();
+    switch (session.direction())
+    {
+    
+    case DIRECTION::TOP:
+        position.y = std::max(0, position.y - 1);
+        break;
 
-    auto forward = point16_t(session.x(), session.y() + (direction == fb::game::DIRECTION_TYPE::TOP ? -1 : 1));
-    return this->find(forward);
+    case DIRECTION::BOTTOM:
+        position.y = std::min(this->map.height() - 1, position.y + 1);
+    }
+
+    return this->find(position);
+}
+
+fb::game::doors::iterator::iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator& i, const doors& container) : 
+    std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator(i),
+    pair(i != container.end() ? std::make_optional<std::pair<point16_t, door&>>(container.map.point(i->first), *i->second.get()) : std::nullopt)
+{ }
+
+std::pair<point16_t, fb::game::door&> fb::game::doors::iterator::operator * ()
+{
+    return this->pair.value();
+}
+
+fb::game::doors::const_iterator::const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i, const doors& container) :
+    std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator(i),
+    pair(i != container.end() ? std::make_optional<std::pair<point16_t, door&>>(container.map.point(i->first), *i->second.get()) : std::nullopt)
+{
+}
+
+const std::pair<point16_t, fb::game::door&> fb::game::doors::const_iterator::operator * () const
+{
+    return this->pair.value();
 }

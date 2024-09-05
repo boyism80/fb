@@ -20,9 +20,10 @@ public:
     const fb::timer_callback                        fn;
     const std::chrono::steady_clock::time_point     begin = std::chrono::steady_clock::now();
     const std::chrono::steady_clock::duration       duration;
+    const bool                                      disposable = false;
 
 private:
-    timer(const fb::timer_callback& fn, std::chrono::steady_clock::duration duration) : fn(fn), duration(duration)
+    timer(const fb::timer_callback& fn, std::chrono::steady_clock::duration duration, bool disposable) : fn(fn), duration(duration), disposable(disposable)
     {}
     timer(const timer&) = delete;
     timer(timer&&) = delete;

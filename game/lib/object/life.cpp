@@ -2,18 +2,7 @@
 #include <fb/game/map.h>
 #include <fb/game/life.h>
 
-fb::game::life::model::model(const fb::game::life::model::config& config) : 
-    object::model(config),
-    defensive(config.defensive),
-    hp(config.hp),
-    mp(config.mp),
-    experience(config.exp)
-{ }
-
-fb::game::life::model::~model()
-{ }
-
-fb::game::life::life(fb::game::context& context, const model* model, const fb::game::life::config& config) : 
+fb::game::life::life(fb::game::context& context, const fb::model::life& model, const fb::game::life::config& config) : 
     object(context, model, config),
     _hp(config.hp),
     _mp(config.mp),
@@ -91,10 +80,10 @@ void fb::game::life::attack()
     if(this->alive() == false)
         return;
 
-    auto front = this->forward(object::types::UNKNOWN);
+    auto front = this->forward(OBJECT_TYPE::UNKNOWN);
     this->on_attack(front);
 
-    if(front == nullptr || front->is(fb::game::object::types::LIFE) == false)
+    if(front == nullptr || front->is(OBJECT_TYPE::LIFE) == false)
         return;
 
     auto you = static_cast<fb::game::life*>(front);
@@ -147,47 +136,47 @@ void fb::game::life::mp(uint32_t value)
 
 uint32_t fb::game::life::base_hp() const
 {
-    return static_cast<const model*>(this->_model)->hp;
+    return static_cast<const fb::model::life&>(this->_model).hp;
 }
 
 uint32_t fb::game::life::base_mp() const
 {
-    return static_cast<const model*>(this->_model)->mp;
+    return static_cast<const fb::model::life&>(this->_model).mp;
 }
 
 uint32_t fb::game::life::experience() const
 {
-    return static_cast<const model*>(this->_model)->experience;
+    return static_cast<const fb::model::life&>(this->_model).exp;
 }
 
 uint32_t fb::game::life::defensive_physical() const
 {
-    return static_cast<const model*>(this->_model)->defensive.physical;
+    return static_cast<const fb::model::life&>(this->_model).defensive_physical;
 }
 
 uint32_t fb::game::life::defensive_magical() const
 {
-    return static_cast<const model*>(this->_model)->defensive.magical;
+    return static_cast<const fb::model::life&>(this->_model).defensive_magical;
 }
 
-fb::game::CONDITION_TYPE fb::game::life::condition() const
+CONDITION fb::game::life::condition() const
 {
     return this->_condition;
 }
 
-fb::game::CONDITION_TYPE fb::game::life::condition_add(fb::game::CONDITION_TYPE value)
+CONDITION fb::game::life::condition_add(CONDITION value)
 {
-    this->_condition = fb::game::CONDITION_TYPE(this->_condition | value);
+    this->_condition = CONDITION(this->_condition | value);
     return this->_condition;
 }
 
-fb::game::CONDITION_TYPE fb::game::life::condition_remove(fb::game::CONDITION_TYPE value)
+CONDITION fb::game::life::condition_remove(CONDITION value)
 {
-    this->_condition = fb::game::CONDITION_TYPE(this->_condition & ~value);
+    this->_condition = CONDITION(this->_condition & ~value);
     return this->_condition;
 }
 
-bool fb::game::life::condition_contains(fb::game::CONDITION_TYPE value) const
+bool fb::game::life::condition_contains(CONDITION value) const
 {
     return uint32_t(this->_condition) & uint32_t(value);
 }
@@ -206,7 +195,7 @@ void fb::game::life::kill()
         listener->on_hide(*this);
 }
 
-bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
+bool fb::game::life::active(const fb::model::spell& spell, const std::string& message)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -215,7 +204,7 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
     thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type != fb::game::spell::types::INPUT)
+    if(spell.type != SPELL_TYPE::INPUT)
         return false;
 
     thread->pushobject(this)
@@ -225,7 +214,7 @@ bool fb::game::life::active(fb::game::spell& spell, const std::string& message)
     return true;
 }
 
-bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
+bool fb::game::life::active(const fb::model::spell& spell, uint32_t fd)
 {
     if(this->_map == nullptr)
         return false;
@@ -237,7 +226,7 @@ bool fb::game::life::active(fb::game::spell& spell, uint32_t fd)
     return this->active(spell, *to);
 }
 
-bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
+bool fb::game::life::active(const fb::model::spell& spell, fb::game::object& to)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -246,7 +235,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
     thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type != fb::game::spell::types::TARGET)
+    if(spell.type != SPELL_TYPE::TARGET)
         return false;
 
     auto                map = this->map();
@@ -266,7 +255,7 @@ bool fb::game::life::active(fb::game::spell& spell, fb::game::object& to)
     return true;
 }
 
-bool fb::game::life::active(fb::game::spell& spell)
+bool fb::game::life::active(const fb::model::spell& spell)
 {
     auto thread = fb::game::lua::get();
     if(thread == nullptr)
@@ -275,7 +264,7 @@ bool fb::game::life::active(fb::game::spell& spell)
     thread->from(spell.cast.c_str())
         .func("on_cast");
 
-    if(spell.type != fb::game::spell::types::NORMAL)
+    if(spell.type != SPELL_TYPE::NORMAL)
         return false;
 
     thread->pushobject(this)

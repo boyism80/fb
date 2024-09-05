@@ -1,18 +1,6 @@
 #include <fb/game/item.h>
 
-fb::game::ring::model::model(const fb::game::equipment::model::config& config) : fb::game::equipment::model(config)
-{ }
-
-fb::game::ring::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::ring::model::attr() const
-{
-    return item::ATTRIBUTE::RING;
-}
-
-
-fb::game::ring::ring(fb::game::context& context, const model* model) : 
+fb::game::ring::ring(fb::game::context& context, const fb::model::ring& model) : 
     equipment(context, model)
 { }
 

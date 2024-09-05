@@ -8,9 +8,9 @@ import jinja2
 import os
 import shutil
 import zipfile
-import optimizer
 import time
 import copy
+import pathlib
 
 env.timeout = 60
 CONFIGURATION = None
@@ -32,24 +32,35 @@ def environment(e):
 @task
 @runs_once
 def optimize():
-    with lcd('resources/maps'):
-        local('rm -f *.map')
-        local('rm -f *.block')
-        local('unzip -qq maps.zip')
-
     # for internal
-    hosts = optimizer.hosts()
+    with open('game/json/map.json', 'r', encoding='utf8') as f:
+        maps = json.load(f)
+        hosts = {x['id']:x['host'] for x in maps.values()}
+    
     with open('host.json', 'w', encoding='utf8') as f:
         f.write(json.dumps(hosts, ensure_ascii=False, sort_keys=True))
 
-    # for game
-    local('rm -rf temp && mkdir -p temp')
-    optimizer.convert(os.path.join('resources', 'table'), 'temp')
-    optimizer.compress(maps=os.path.join('resources', 'maps'),
-                       tables='temp',
-                       scripts=os.path.join('game', 'scripts'),
-                       dst='resources.zip')
-    local('rm -rf temp')
+    zfile = zipfile.ZipFile('resources.zip', 'w')
+    zfile.write('resources/maps/maps.zip', 'maps.zip')
+    for (path, dir, files) in os.walk('game/scripts'):
+        for file in files:
+            if not file.endswith('.lua'):
+                continue
+
+            src = os.path.join(path, file)
+            dst = os.path.join(*pathlib.Path(path).parts[1:], file)
+            zfile.write(src, dst)
+
+    for (path, dir, files) in os.walk('game/json'):
+        for file in files:
+            if not file.endswith('.json'):
+                continue
+
+            src = os.path.join(path, file)
+            dst = os.path.join(*pathlib.Path(path).parts[1:], file)
+            zfile.write(src, dst)
+
+    zfile.close()
 
 @task
 @parallel
@@ -58,21 +69,26 @@ def setup():
     if 'internal' in configs['deploy']:
         sudo('rm -rf internal', quiet=True)
         sudo('mkdir -p internal/table', quiet=True)
-        with cd('internal/table'):
-            put(f'host.json', '.', use_sudo=True)
+        put(f'host.json', 'internal/table/host.json', use_sudo=True)
 
     if 'game' in configs['deploy']:
         sudo('rm -rf game', quiet=True)
         sudo('mkdir -p game', quiet=True)
+
+        put('resources.zip', 'game/resources.zip', use_sudo=True)
         with cd('game'):
-            put('resources.zip', '.', use_sudo=True)
             sudo('unzip -qq resources.zip', quiet=True)
             sudo('rm -f resources.zip', quiet=True)
+            sudo('mkdir -p maps', quiet=True)
+            sudo('mv maps.zip maps', quiet=True)
+            with cd('maps'):
+                sudo('unzip -qq maps.zip', quiet=True)
+                sudo('rm -f maps.zip', quiet=True)
 
 @task
 def clean():
     local('rm -f host.json')
-    local('rm -f resources.zip')
+    local('rm -f resources.json')
 
 @task
 def build(service):

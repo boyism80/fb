@@ -15,10 +15,10 @@ class message : public fb::protocol::base::header
 {
 public:
     const std::string               text;
-    const fb::game::MESSAGE_TYPE    type;
+    const MESSAGE_TYPE    type;
 
 public:
-    message(const std::string& text, fb::game::MESSAGE_TYPE type) : fb::protocol::base::header(0x0A),
+    message(const std::string& text, MESSAGE_TYPE type) : fb::protocol::base::header(0x0A),
         text(text), type(type)
     { }
 
@@ -51,7 +51,7 @@ private:
         if(&this->session == &this->to)
             return true;
 
-        if(this->to.is(fb::game::object::types::SESSION) == false)
+        if(this->to.is(OBJECT_TYPE::SESSION) == false)
             return false;
 
         // TODO: to 에게 걸린 버프가 있어서 그게 투명 다 감지하는 버프면
@@ -84,18 +84,18 @@ public:
         }
 
         out_stream.write_u32(this->session.sequence())
-                  .write_u8(this->session.state() == fb::game::STATE_TYPE::DISGUISE) // 변신유무
+                  .write_u8(this->session.state() == STATE::DISGUISE) // 변신유무
                   .write_u8(this->session.sex()); // sex
 
 
         switch(this->session.state())
         {
-        case fb::game::STATE_TYPE::HALF_CLOACK:
+        case STATE::HALF_CLOACK:
         {
             if(this->clock_visible())
-                out_stream.write_8(fb::game::STATE_TYPE::HALF_CLOACK);
+                out_stream.write_8(STATE::HALF_CLOACK);
             else
-                out_stream.write_8(fb::game::STATE_TYPE::CLOACK);
+                out_stream.write_8(STATE::CLOACK);
         } break;
         default:
         {
@@ -103,7 +103,7 @@ public:
         } break;
         }
 
-        if(this->session.state() == fb::game::STATE_TYPE::DISGUISE)
+        if(this->session.state() == STATE::DISGUISE)
         {
             out_stream.write_u16(this->session.disguise().value())
                       .write_u8(this->session.current_armor_color());
@@ -116,7 +116,7 @@ public:
             auto armor = this->session.items.armor();
             if(armor != nullptr)
             {
-                out_stream.write_u8((uint8_t)armor->based<fb::game::armor>()->dress)
+                out_stream.write_u8((uint8_t)armor->based<fb::model::armor>().dress)
                           .write_u8(session.current_armor_color());
             }
             else
@@ -128,7 +128,7 @@ public:
             auto weapon = this->session.items.weapon();
             if(weapon != nullptr)
             {
-                out_stream.write_u16(weapon->based<fb::game::weapon>()->dress)
+                out_stream.write_u16(weapon->based<fb::model::weapon>().dress)
                           .write_u8(weapon->color());
             }
             else
@@ -140,7 +140,7 @@ public:
             auto shield = this->session.items.shield();
             if(shield != nullptr)
             {
-                out_stream.write_u8((uint8_t)shield->based<fb::game::shield>()->dress)
+                out_stream.write_u8((uint8_t)shield->based<fb::model::shield>().dress)
                           .write_u8(shield->color());
             }
             else
@@ -201,7 +201,7 @@ class state : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    fb::game::STATE_LEVEL       STATE_LEVEL;
+    STATE_LEVEL                 STATE_LEVEL;
     uint8_t                     nation       = 0;
     uint8_t                     creature     = 0;
     uint8_t                     level        = 0;
@@ -219,7 +219,7 @@ public:
     uint8_t                     fast_move    = 0;
 #else
     const fb::game::session&    session;
-    const fb::game::STATE_LEVEL level;
+    const STATE_LEVEL level;
 #endif
 
 public:
@@ -227,7 +227,7 @@ public:
     state() : fb::protocol::base::header(0x08)
     { }
 #else
-    state(const fb::game::session& session, fb::game::STATE_LEVEL level) : fb::protocol::base::header(0x08),
+    state(const fb::game::session& session, STATE_LEVEL level) : fb::protocol::base::header(0x08),
         session(session), level(level)
     { }
 #endif
@@ -271,11 +271,11 @@ public:
 
         if(enum_in(this->level, STATE_LEVEL::CONDITION))
         {
-            out_stream.write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::MOVE))  // condition::move
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::SIGHT))  // condition::sight
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::HEAR))  // condition::hear?
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::ORAL))  // condition:oral
-                      .write_u8(this->session.condition_contains(fb::game::CONDITION_TYPE::MAP)); // condition:map?
+            out_stream.write_u8(this->session.condition_contains(CONDITION::MOVE))  // condition::move
+                      .write_u8(this->session.condition_contains(CONDITION::SIGHT))  // condition::sight
+                      .write_u8(this->session.condition_contains(CONDITION::HEAR))  // condition::hear?
+                      .write_u8(this->session.condition_contains(CONDITION::ORAL))  // condition:oral
+                      .write_u8(this->session.condition_contains(CONDITION::MAP)); // condition:map?
         }
 
         out_stream.write_u8(0x00)  // mail count
@@ -285,7 +285,7 @@ public:
 #else
     void deserialize(fb::istream& in_stream)
     {
-        this->STATE_LEVEL = (fb::game::STATE_LEVEL)in_stream.read_u8();
+        this->STATE_LEVEL = static_cast<fb::model::enum_value::STATE_LEVEL>(in_stream.read_u8());
         if(enum_in(this->STATE_LEVEL, STATE_LEVEL::BASED))
         {
             this->nation = in_stream.read_u8();
@@ -319,15 +319,15 @@ public:
         if(enum_in(this->STATE_LEVEL, STATE_LEVEL::CONDITION))
         {
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::MOVE;
+                this->condition |= (uint32_t)CONDITION::MOVE;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::SIGHT;
+                this->condition |= (uint32_t)CONDITION::SIGHT;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::HEAR;
+                this->condition |= (uint32_t)CONDITION::HEAR;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::ORAL;
+                this->condition |= (uint32_t)CONDITION::ORAL;
             if (in_stream.read_u8())
-                this->condition |= (uint32_t)fb::game::CONDITION_TYPE::MAP;
+                this->condition |= (uint32_t)CONDITION::MAP;
         }
 
         this->mail = in_stream.read_u8();
@@ -402,10 +402,11 @@ class internal_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
+    const fb::model::model& model;
 
 public:
-    internal_info(const fb::game::session& session) : fb::protocol::base::header(0x39),
-        session(session)
+    internal_info(const fb::game::session& session, const fb::model::model& model) : fb::protocol::base::header(0x39),
+        session(session), model(model)
     { }
 
 public:
@@ -445,19 +446,16 @@ public:
         {
             out_stream.write("그룹 없음.");
         }
-        out_stream.write_u8(this->session.option(OPTION::GROUP));
+        out_stream.write_u8(this->session.option(CUSTOM_SETTING::GROUP));
 
 
         uint32_t                remained_exp = this->session.experience_remained();
         out_stream.write_u32(remained_exp);
 
-        auto                    class_name = fb::game::model::classes.class2name(this->session.cls(), this->session.promotion());
-        if(class_name == nullptr)
-            return;
+        auto&                   class_name = model.promotion[this->session.cls()][this->session.promotion()].name;
+        out_stream.write(class_name);
 
-        out_stream.write(*class_name);
-
-        fb::game::equipment*    equipments[] = {this->session.items.helmet(), this->session.items.ring(equipment::position::LEFT), this->session.items.ring(equipment::position::RIGHT), this->session.items.auxiliary(equipment::position::LEFT), this->session.items.auxiliary(equipment::position::RIGHT)};
+        fb::game::equipment*    equipments[] = {this->session.items.helmet(), this->session.items.ring(EQUIPMENT_POSITION::LEFT), this->session.items.ring(EQUIPMENT_POSITION::RIGHT), this->session.items.auxiliary(EQUIPMENT_POSITION::LEFT), this->session.items.auxiliary(EQUIPMENT_POSITION::RIGHT)};
         for(int i = 0, size = sizeof(equipments) / sizeof(fb::game::equipment*); i < size; i++)
         {
             if(equipments[i] == nullptr)
@@ -473,8 +471,8 @@ public:
         }
 
         out_stream.write_u8(0x00) // fixed;
-                  .write_u8(this->session.option(OPTION::TRADE))
-                  .write_u8(this->session.option(OPTION::PK));
+                  .write_u8(this->session.option(CUSTOM_SETTING::TRADE))
+                  .write_u8(this->session.option(CUSTOM_SETTING::PK));
 
         out_stream.write_u8((uint8_t)this->session.legends.size());
         for(auto legend : this->session.legends)
@@ -491,10 +489,11 @@ class external_info : public fb::protocol::base::header
 {
 public:
     const fb::game::session&    session;
+    const fb::model::model& model;
 
 public:
-    external_info(const fb::game::session& session) : fb::protocol::base::header(0x34),
-        session(session)
+    external_info(const fb::game::session& session, const fb::model::model& model) : fb::protocol::base::header(0x34),
+        session(session), model(model)
     { }
 
 public:
@@ -506,14 +505,11 @@ public:
                   .write("클랜 타이틀");
 
         // 클래스 이름
-        const auto              class_name = fb::game::model::classes.class2name(this->session.cls(), this->session.promotion());
-        if(class_name == nullptr)
-            return;
-
-        out_stream.write(*class_name)  // 직업
+        const auto&              class_name = model.promotion[this->session.cls()][this->session.promotion()].name;
+        out_stream.write(class_name)  // 직업
                   .write(this->session.name());    // 이름
 
-        auto                    disguised = (this->session.state() == fb::game::STATE_TYPE::DISGUISE);
+        auto                    disguised = (this->session.state() == STATE::DISGUISE);
         out_stream.write_u8(disguised)
                   .write_u8(this->session.sex())
                   .write_u8(this->session.state());
@@ -531,13 +527,13 @@ public:
             out_stream.write_u16(this->session.look())
                       .write_u8(this->session.color());
 
-            out_stream.write_u8(armor != nullptr ? armor->based<fb::game::armor>()->dress : 0xFF)
+            out_stream.write_u8(armor != nullptr ? armor->based<fb::model::armor>().dress : 0xFF)
                       .write_u8(this->session.current_armor_color());
 
-            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::game::weapon>()->dress : 0xFFFF)
+            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF)
                       .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-            out_stream.write_u8(shield != nullptr ? shield->based<fb::game::shield>()->dress : 0xFF)
+            out_stream.write_u8(shield != nullptr ? shield->based<fb::model::shield>().dress : 0xFF)
                       .write_u8(shield != nullptr ? shield->color() : 0x00);
         }
 
@@ -547,19 +543,19 @@ public:
         out_stream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
                   .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
-        auto                    ring_l = this->session.items.ring(equipment::position::LEFT); // 왼손
+        auto                    ring_l = this->session.items.ring(EQUIPMENT_POSITION::LEFT); // 왼손
         out_stream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
                   .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
-        auto                    ring_r = this->session.items.ring(equipment::position::RIGHT); // 오른손
+        auto                    ring_r = this->session.items.ring(EQUIPMENT_POSITION::RIGHT); // 오른손
         out_stream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
                   .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
-        auto                    aux_l = this->session.items.auxiliary(equipment::position::LEFT); // 보조1
+        auto                    aux_l = this->session.items.auxiliary(EQUIPMENT_POSITION::LEFT); // 보조1
         out_stream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
                   .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
-        auto                    aux_r = this->session.items.auxiliary(equipment::position::RIGHT); // 보조2
+        auto                    aux_r = this->session.items.auxiliary(EQUIPMENT_POSITION::RIGHT); // 보조2
         out_stream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
                   .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 
@@ -577,8 +573,8 @@ public:
 
 
         out_stream.write_u32(this->session.sequence())
-                  .write_u8(this->session.option(fb::game::OPTION::GROUP))
-                  .write_u8(this->session.option(fb::game::OPTION::TRADE))
+                  .write_u8(this->session.option(CUSTOM_SETTING::GROUP))
+                  .write_u8(this->session.option(CUSTOM_SETTING::TRADE))
                   .write_u32(0x00000000); // unknown
 
                                     // 업적
@@ -621,11 +617,11 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u8(this->session.option(OPTION::WEATHER_EFFECT)) // weather
-                  .write_u8(this->session.option(OPTION::MAGIC_EFFECT)) // magic effect
-                  .write_u8(this->session.option(OPTION::ROAR_WORLDS)) // listen news
-                  .write_u8(this->session.option(OPTION::FAST_MOVE)) // fast move
-                  .write_u8(this->session.option(OPTION::EFFECT_SOUND)) // effect sound
+        out_stream.write_u8(this->session.option(CUSTOM_SETTING::WEATHER_EFFECT)) // weather
+                  .write_u8(this->session.option(CUSTOM_SETTING::MAGIC_EFFECT)) // magic effect
+                  .write_u8(this->session.option(CUSTOM_SETTING::ROAR_WORLDS)) // listen news
+                  .write_u8(this->session.option(CUSTOM_SETTING::FAST_MOVE)) // fast move
+                  .write_u8(this->session.option(CUSTOM_SETTING::EFFECT_SOUND)) // effect sound
                   .write_u8(0x00);
     }
 #else
@@ -675,12 +671,12 @@ class action : public fb::protocol::base::header
 {
 public:
     const fb::game::session&        me;
-    const fb::game::ACTION_TYPE     value;
-    const fb::game::DURATION        duration;
+    const ACTION     value;
+    const DURATION        duration;
     const uint8_t                   sound;
 
 public:
-    action(const fb::game::session& me, fb::game::ACTION_TYPE value, fb::game::DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
+    action(const fb::game::session& me, ACTION value, DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
 

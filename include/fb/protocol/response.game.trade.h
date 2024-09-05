@@ -3,6 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/trade.h>
+#include <fb/game/model.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace trade {
 
@@ -10,21 +11,20 @@ class dialog : public fb::protocol::base::header
 {
 public:
     const fb::game::session&        me;
+    const fb::model::model&     model;
 
 public:
-    dialog(const fb::game::session& me) : fb::protocol::base::header(0x42),
-        me(me)
+    dialog(const fb::game::session& me, const fb::model::model& model) : fb::protocol::base::header(0x42),
+        me(me), model(model)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        const auto              class_name = fb::game::model::classes.class2name(this->me.cls(), this->me.promotion());
-        if(class_name == nullptr)
-            return;
+        const auto& cname = model.promotion[me.cls()][me.promotion()].name;
 
         std::stringstream sstream;
-        sstream << this->me.name() << '(' << class_name->c_str() << ')';
+        sstream << this->me.name() << '(' << cname.c_str() << ')';
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x00)
@@ -57,7 +57,7 @@ public:
             .write_u8(this->index) // trade slot index
             .write_u16(item->look())
             .write_u8(item->color())
-            .write(item->name_trade())
+            .write(item->trade_name())
             .write_u8(0x00);
     }
 };

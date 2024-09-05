@@ -35,7 +35,7 @@ public:
         base::header::serialize(out_stream);
         out_stream.write_u32(this->ip)
                   .write_u16(this->port)
-                  .write_u8(this->parameter.size())
+                  .write_u8(static_cast<uint8_t>(this->parameter.size()))
                   .write(this->parameter);
     }
 #else

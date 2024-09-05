@@ -13,26 +13,26 @@ gateway_bot::gateway_bot(bot_container& owner, uint32_t id) : base_bot(owner, id
 gateway_bot::~gateway_bot()
 {}
 
-fb::task<void> gateway_bot::handle_welcome(const fb::protocol::gateway::response::welcome& response)
+async::task<void> gateway_bot::handle_welcome(const fb::protocol::gateway::response::welcome& response)
 {
     this->send(fb::protocol::gateway::request::assert_version { 0x0226, 0xD7 }, false, true);
     co_return;
 }
 
-fb::task<void> gateway_bot::handle_crt(const fb::protocol::gateway::response::crt& response)
+async::task<void> gateway_bot::handle_crt(const fb::protocol::gateway::response::crt& response)
 {
     this->_cryptor = response.cryptor;
     this->send(fb::protocol::gateway::request::entry_list { 0x01, 0 });
     co_return;
 }
 
-fb::task<void> gateway_bot::handle_hosts(const fb::protocol::gateway::response::hosts& response)
+async::task<void> gateway_bot::handle_hosts(const fb::protocol::gateway::response::hosts& response)
 {
     this->send(fb::protocol::gateway::request::entry_list { 0x00, 1 });
     co_return;
 }
 
-fb::task<void> gateway_bot::handle_transfer(const fb::protocol::response::transfer& response)
+async::task<void> gateway_bot::handle_transfer(const fb::protocol::response::transfer& response)
 {
     this->close();
     

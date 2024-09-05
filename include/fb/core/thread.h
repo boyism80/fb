@@ -7,12 +7,14 @@
 #include <map>
 #include <future>
 #include <atomic>
-#include <fb/core/coroutine.h>
 #include <fb/core/logger.h>
 #include <fb/core/timer.h>
 #include <fb/core/pqueue.h>
+#include <async/task.h>
+#include <async/task_completion_source.h>
+#include <async/awaitable_then.h>
 
-#define MUTEX_GUARD(x) auto __gd = std::lock_guard<std::mutex>(x);
+#define MUTEX_GUARD(x) auto _ = std::lock_guard(x);
 
 namespace fb {
 
@@ -20,18 +22,40 @@ using queue_callback  = std::function<void(uint8_t)>;
 
 class thread
 {
+public:
+    class task
+    {
+    public:
+        using func_type = std::function<async::task<void>()>;
+        using callback_type = std::function<void()>;
+
+    public:
+        func_type               func;
+        callback_type           callback;
+
+    public:
+        task(const func_type& func);
+        task(const func_type& func, const callback_type& callback);
+        task(const task&) = delete;
+        task(task&&) noexcept;
+        ~task();
+
+    public:
+        void operator = (const task&) = delete;
+        void operator = (task&& r) noexcept;
+    };
+
 private:
     uint8_t                                         _index = 0;
     std::atomic<bool>                               _exit  = false;
     std::thread                                     _thread;
 
 private:
-    std::vector<std::shared_ptr<timer>>             _timers;
-    std::mutex                                      _mutex_timer;
+    std::vector<std::unique_ptr<timer>>             _timers;
+    std::recursive_mutex                            _mutex_timer;
 
 private:
-    fb::queue<fb::queue_callback>                   _queue;
-    fb::queue<fb::awaiter<void>*>                   _dispatch_awaiter_queue;
+    fb::queue<fb::thread::task>                     _queue;
 
 public:
     thread(uint8_t index);
@@ -53,11 +77,11 @@ public:
     void                                            exit();
 
 public:
-    void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration);
-    void                                            settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration);
-    void                                            dispatch(fb::queue_callback&& fn, int priority = 0);
-    fb::awaiter<void>                               dispatch(uint32_t priority = 0);
-    fb::awaiter<void>                               sleep(const std::chrono::steady_clock::duration& duration);
+    async::task<void>                                  dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    void                                            post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    async::task<void>                                  dispatch(uint32_t priority = 0);
+    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
+    async::task<void>                                  sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
     static std::chrono::steady_clock::duration      now();
@@ -98,8 +122,8 @@ public:
     size_t                                          size() const;
 
 public:
-    void                                            dispatch(const std::function<void()>& fn, const std::chrono::steady_clock::duration& duration, bool main = false);
-    void                                            settimer(fb::timer_callback fn, const std::chrono::steady_clock::duration& duration);
+    async::task<void>                                  dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay);
+    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
     void                                            exit();
 
 public:

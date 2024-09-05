@@ -86,17 +86,17 @@ protected:
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
-    void                        handle_internal_connected() final;
+    async::task<void>              handle_internal_connected() final;
 
 public:
-    fb::task<bool>              handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
+    async::task<bool>              handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 
 public:
-    fb::task<bool>              handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
-    fb::task<bool>              handle_create_account(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::create&);
-    fb::task<bool>              handle_account_complete(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::complete&);
-    fb::task<bool>              handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
-    fb::task<bool>              handle_change_password(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::change_pw&);
+    async::task<bool>              handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
+    async::task<bool>              handle_create_account(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::create&);
+    async::task<bool>              handle_account_complete(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::complete&);
+    async::task<bool>              handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
+    async::task<bool>              handle_change_password(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::change_pw&);
 };
 
 } }

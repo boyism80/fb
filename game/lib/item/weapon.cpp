@@ -1,46 +1,7 @@
 #include <fb/game/item.h>
 #include <fb/game/context.h>
 
-fb::game::weapon::model::model(const fb::game::weapon::model::config& config) : 
-    fb::game::equipment::model(config),
-    damage_range(config.small, config.large),
-    sound(config.sound),
-    spell(config.spell),
-    rename(config.rename)
-{ }
-
-
-fb::game::weapon::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::weapon::model::attr() const
-{
-    return item::ATTRIBUTE::WEAPON;
-}
-
-fb::game::weapon::types fb::game::weapon::model::weapon_type() const
-{
-    switch(this->look / 10000)
-    {
-    case 0:
-        return fb::game::weapon::types::NORMAL;
-
-    case 1:
-        return fb::game::weapon::types::SPEAR;
-
-    case 2:
-        return fb::game::weapon::types::BOW;
-
-    case 3:
-        return fb::game::weapon::types::FAN;
-
-    default:
-        return fb::game::weapon::types::UNKNOWN;
-    }
-}
-
-
-fb::game::weapon::weapon(fb::game::context& context, const model* model) : 
+fb::game::weapon::weapon(fb::game::context& context, const fb::model::weapon& model) : 
     equipment(context, model)
 { }
 
@@ -54,19 +15,31 @@ fb::game::weapon::~weapon()
 std::string fb::game::weapon::mid_message() const
 {
     std::stringstream       sstream;
-    auto                    model = this->based<fb::game::weapon>();
+    auto&                   model = this->based<fb::model::weapon>();
     
-    sstream << "파괴력: 　　 S:　" << std::to_string(model->damage_range.small.min) << 'm' << std::to_string(model->damage_range.small.max) << std::endl;
-    sstream << "　　　  　 　L:　" << std::to_string(model->damage_range.large.min) << 'm' << std::to_string(model->damage_range.large.max) << std::endl;
+    sstream << "파괴력: 　　 S:　" << std::to_string(model.damage_small.min) << 'm' << std::to_string(model.damage_small.max) << std::endl;
+    sstream << "　　　  　 　L:　" << std::to_string(model.damage_large.min) << 'm' << std::to_string(model.damage_large.max) << std::endl;
     return sstream.str();
 }
 
-const std::string& fb::game::weapon::name() const
+std::string fb::game::weapon::inven_name() const
 {
-    if (this->_custom_name.has_value())
-        return this->_custom_name.value();
+    auto& model = this->based<fb::model::equipment>();
+    return this->_custom_name.value_or(model.name);
+}
 
-    return fb::game::item::name();
+std::string fb::game::weapon::trade_name() const
+{
+    auto                    sstream = std::stringstream();
+    auto&                   model = this->based<fb::model::equipment>();
+    float                   percentage = this->_durability / float(model.durability) * 100;
+
+    sstream << this->_custom_name.value_or(model.name) 
+        << '(' 
+        << std::fixed << std::setprecision(1) << percentage 
+        << "%)";
+
+    return sstream.str();
 }
 
 const std::optional<std::string>& fb::game::weapon::custom_name() const

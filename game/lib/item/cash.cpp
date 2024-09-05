@@ -1,134 +1,74 @@
 #include <fb/game/item.h>
+#include <fb/game/context.h>
 
-const fb::game::cash::model fb::game::cash::BRONZE(fb::game::item::model::config
-    {
-        {
-            .name = "엽전", 
-            .look = 23 + 0xBFFF,
-            .color = 0
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::BRONZE_BUNDLE(fb::game::item::model::config
-    {
-        {
-            .name = "엽전뭉치", 
-            .look = 74 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::SILVER(fb::game::item::model::config
-    {
-        {
-            .name = "은전", 
-            .look = 70 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::SILVER_BUNDLE(fb::game::item::model::config
-    {
-        {
-            .name = "은전뭉치", 
-            .look = 73 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::GOLD(fb::game::item::model::config
-    {
-        {
-            .name = "금전", 
-            .look = 71 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-const fb::game::cash::model fb::game::cash::GOLD_BUNDLE(fb::game::item::model::config
-    {
-        {
-            .name = "금덩어리", 
-            .look = 72 + 0xBFFF
-        },
-        /* id */ 0xFFFFFFFF
-    });
-
-fb::game::cash::model::model(const fb::game::item::model::config& config) : fb::game::item::model(config)
-{ }
-
-fb::game::cash::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::cash::model::attr() const
+fb::game::cash::cash(fb::game::context& context, uint32_t value) : 
+    fb::game::item(context, match_model(context, value)), value(value)
 {
-    return item::ATTRIBUTE::CASH;
-}
-
-
-//
-// class cash
-//
-fb::game::cash::cash(fb::game::context& context, uint32_t chunk) : 
-    fb::game::item(context, nullptr)
-{
-    this->chunk(chunk);
+    
 }
 
 fb::game::cash::~cash()
 { }
 
-const std::string fb::game::cash::name_styled() const
+const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, uint32_t value)
 {
-    std::stringstream sstream;
-    sstream << this->name() << ' ' << this->_chunk << "전";
+    if (value == 0)
+        throw std::runtime_error("money cannot be zero");
+
+    if(value == 1)
+        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::BRONZE]);
+
+    if (value < 50)
+        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::BRONZE_BUNDLE]);
+
+    if (value == 50)
+        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::SILVER]);
+
+    if (value == 100)
+        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD]);
+
+    if (value < 1000)
+        return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::SILVER_BUNDLE]);
+    
+    return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
+}
+
+std::string fb::game::cash::inven_name() const
+{
+    auto& model = this->based<fb::model::cash>();
+    auto sstream = std::stringstream();
+    sstream << model.name 
+            << ' ' 
+            << this->value 
+            << "전";
 
     return sstream.str();
 }
 
-uint32_t fb::game::cash::chunk() const
+async::task< fb::game::cash*> fb::game::cash::replace(uint32_t value)
 {
-    return this->_chunk;
-}
-
-fb::game::cash* fb::game::cash::chunk(uint32_t value)
-{
-    this->_chunk = value;
-
-    const fb::game::item* model = nullptr;
-    if(this->_chunk == 1)
-        this->_model = &fb::game::cash::BRONZE;
-    else if(this->_chunk < 100)
-        this->_model = &fb::game::cash::BRONZE_BUNDLE;
-    else if(this->_chunk == 100)
-        this->_model = &fb::game::cash::SILVER;
-    else if(this->_chunk < 1000)
-        this->_model = &fb::game::cash::SILVER_BUNDLE;
-    else if(this->_chunk == 1000)
-        this->_model = &fb::game::cash::GOLD;
-    else
-        this->_model = &fb::game::cash::GOLD_BUNDLE;
-
-    if(this->_chunk == 0)
+    fb::game::cash* result = nullptr;
+    if(this->empty())
     {
-        this->destroy();
-        return nullptr;
+        result = nullptr;
     }
     else
     {
-        auto listener = this->get_listener<fb::game::object>();
-        if(listener != nullptr)
-            listener->on_show(*this, true);
-
-        return this;
+        result = this->context.make<fb::game::cash>(value);
     }
+    co_await this->destroy();
+    co_return result;
 }
 
-uint32_t fb::game::cash::chunk_reduce(uint32_t value)
+uint32_t fb::game::cash::reduce(uint32_t value)
 {
-    uint32_t reduce = std::min(this->_chunk, value);
+    uint32_t reduce = std::min<uint32_t>(this->value, value);
 
-    this->chunk(this->_chunk - reduce);
-    return this->_chunk;
+    this->replace(this->value - reduce);
+    return this->value;
 }
 
 bool fb::game::cash::empty() const
 {
-    return this->_chunk == 0;
+    return this->value == 0;
 }

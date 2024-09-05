@@ -1,3 +1,4 @@
+#if ENABLE_MYSQL
 #include <fb/core/db.h>
 
 using namespace fb::db;
@@ -146,7 +147,7 @@ base_context::base_context(int pool_size)
 {
     auto& config = fb::config::get();
     auto& databases = config["database"];
-    auto  count = databases["shard"].size();
+    auto  count = static_cast<int>(databases["shard"].size());
     auto  global_exists = (databases["global"].isNull() == false);
 
     this->_thread_pool = std::make_unique<boost::asio::thread_pool>(count + (global_exists ? 1 : 0));
@@ -198,7 +199,7 @@ void base_context::enqueue(uint32_t id, const task& t)
 
 void base_context::exit()
 {
-    std::lock_guard<std::mutex>(this->_mutex_exit);
+    auto _ = std::lock_guard(this->_mutex_exit);
 
     for(auto& worker : this->_workers)
     {
@@ -224,22 +225,18 @@ void fb::db::base_context::exec(uint32_t id, const std::string& sql)
     this->enqueue(id, task {sql, [] (auto& results) {}, [] (auto& e) {}});
 }
 
-fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
+fb::db::task_result_type fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
 {
-    auto await_callback = [this, id, sql](auto& awaiter)
+    auto promise = std::make_shared<async::task_completion_source<std::vector<daotk::mysql::result>>>();
+    this->enqueue(id, task{ sql, [promise](auto& results)
     {
-        this->enqueue(id, task {sql, [&awaiter] (auto& results) 
-        {
-            awaiter.result = &results;
-            awaiter.handler.resume();
-        }, [&awaiter] (auto& e)
-        {
-            awaiter.error = std::make_exception_ptr(std::runtime_error(e.what()));
-            awaiter.handler.resume();
-        }});
-    };
+        promise->set_value(std::move(results));
+    }, [promise](auto& e)
+    {
+        promise->set_exception(std::make_exception_ptr(e));
+    } });
 
-    return fb::awaiter<std::vector<daotk::mysql::result>>(await_callback);
+    return promise->task();
 }
 
 void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& queries)
@@ -256,7 +253,7 @@ void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& que
     this->exec(id, sstream.str());
 }
 
-fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
+fb::db::task_result_type fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -280,7 +277,7 @@ void fb::db::base_context::exec_f(uint32_t id, const std::string& format, ...)
     this->exec(id, sql);
 }
 
-fb::db::awaiter fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
+fb::db::task_result_type fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -289,3 +286,4 @@ fb::db::awaiter fb::db::base_context::co_exec_f(uint32_t id, const std::string& 
     
     return this->co_exec(id, sql);
 }
+#endif

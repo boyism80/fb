@@ -2,38 +2,10 @@
 #include <fb/game/item.h>
 #include <fb/game/context.h>
 
-fb::game::equipment::model::model(const fb::game::equipment::model::config& config) : 
-    fb::game::item::model(config),
-    dress(config.dress),
-    durability(config.durability),
-    repair(config.repair),
-    dress_script(config.dress_script),
-    undress_script(config.undress_script),
-    hit(config.hit),
-    damage(config.damage),
-    strength(config.strength),
-    intelligence(config.intelligence),
-    dexteritry(config.dexteritry),
-    base_hp(config.base_hp),
-    base_mp(config.base_mp),
-    hp_percentage(config.hp_percentage),
-    mp_percentage(config.mp_percentage),
-    healing_cycle(config.healing_cycle),
-    defensive(config.defensive)
-{ }
-
-fb::game::equipment::model::~model()
-{ }
-
-fb::game::item::ATTRIBUTE fb::game::equipment::model::attr() const
-{
-    return item::ATTRIBUTE::EQUIPMENT;
-}
-
-fb::game::equipment::equipment(fb::game::context& context, const equipment::model* model) : 
+fb::game::equipment::equipment(fb::game::context& context, const fb::model::equipment& model) : 
     item(context, model)
 {
-    this->_durability = model->durability;
+    this->_durability = model.durability;
 }
 
 fb::game::equipment::equipment(const equipment& right) :
@@ -44,12 +16,15 @@ fb::game::equipment::~equipment()
 { }
 
 
-const std::string fb::game::equipment::name_trade() const
+std::string fb::game::equipment::trade_name() const
 {
     std::stringstream       sstream;
-    auto                    model = this->based<fb::game::equipment>();
-    float                   percentage = this->_durability / float(model->durability) * 100;
-    sstream << this->name() << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
+    auto&                   model = this->based<fb::model::equipment>();
+    float                   percentage = this->_durability / float(model.durability) * 100;
+    sstream << model.name 
+        << '(' 
+        << std::fixed << std::setprecision(1) << percentage 
+        << "%)";
 
     return sstream.str();
 }
@@ -57,51 +32,52 @@ const std::string fb::game::equipment::name_trade() const
 bool fb::game::equipment::active()
 {
     fb::game::item*         before = nullptr;
-    auto                    parts = equipment::parts::UNKNOWN;
-    switch(this->attr())
+    auto                    parts = EQUIPMENT_PARTS::UNKNOWN;
+    auto&                   model = this->based<fb::model::equipment>();
+    switch(model.attr())
     {
-    case item::ATTRIBUTE::WEAPON:
+    case ITEM_ATTRIBUTE::WEAPON:
         before = this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
-        parts = equipment::parts::WEAPON;
+        parts = EQUIPMENT_PARTS::WEAPON;
         break;
 
-    case item::ATTRIBUTE::ARMOR:
+    case ITEM_ATTRIBUTE::ARMOR:
         before = this->_owner->items.armor(static_cast<fb::game::armor*>(this));
-        parts = equipment::parts::ARMOR;
+        parts = EQUIPMENT_PARTS::ARMOR;
         break;
 
-    case item::ATTRIBUTE::SHIELD:
+    case ITEM_ATTRIBUTE::SHIELD:
         before = this->_owner->items.shield(static_cast<fb::game::shield*>(this));
-        parts = equipment::parts::SHIELD;
+        parts = EQUIPMENT_PARTS::SHIELD;
         break;
 
-    case item::ATTRIBUTE::HELMET:
+    case ITEM_ATTRIBUTE::HELMET:
         before = this->_owner->items.helmet(static_cast<fb::game::helmet*>(this));
-        parts = equipment::parts::HELMET;
+        parts = EQUIPMENT_PARTS::HELMET;
         break;
 
-    case item::ATTRIBUTE::RING:
-        if(this->_owner->items.ring(equipment::position::LEFT) == nullptr)
+    case ITEM_ATTRIBUTE::RING:
+        if(this->_owner->items.ring(EQUIPMENT_POSITION::LEFT) == nullptr)
         {
-            parts = equipment::parts::LEFT_HAND;
+            parts = EQUIPMENT_PARTS::LEFT_HAND;
         }
         else
         {
-            parts = equipment::parts::RIGHT_HAND;
+            parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
         before = this->_owner->items.ring(static_cast<fb::game::ring*>(this));
         break;
 
 
-    case item::ATTRIBUTE::AUXILIARY:
-        if(this->_owner->items.auxiliary(equipment::position::LEFT) == nullptr)
+    case ITEM_ATTRIBUTE::AUXILIARY:
+        if(this->_owner->items.auxiliary(EQUIPMENT_POSITION::LEFT) == nullptr)
         {
-            parts = equipment::parts::LEFT_AUX;
+            parts = EQUIPMENT_PARTS::LEFT_AUX;
         }
         else
         {
-            parts = equipment::parts::RIGHT_AUX;
+            parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
         before = this->_owner->items.auxiliary(static_cast<fb::game::auxiliary*>(this));
@@ -124,15 +100,15 @@ bool fb::game::equipment::active()
     return true;
 }
 
-std::optional<uint16_t> fb::game::equipment::durability() const
+std::optional<uint32_t> fb::game::equipment::durability() const
 {
     return this->_durability;
 }
 
-void fb::game::equipment::durability(uint16_t value)
+void fb::game::equipment::durability(uint32_t value)
 {
-    auto model = this->based<fb::game::equipment>();
-    this->_durability = std::max(uint16_t(0), std::min(model->durability, value));
+    auto& model = this->based<fb::model::equipment>();
+    this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
 std::string fb::game::equipment::mid_message() const
@@ -143,73 +119,97 @@ std::string fb::game::equipment::mid_message() const
 std::string fb::game::equipment::tip_message() const
 {
     std::stringstream           sstream;
-    auto                        model = this->based<fb::game::equipment>();
+    auto&                       model = this->based<fb::model::equipment>();
 
     sstream << this->name() << std::endl;
-    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model->durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)model->durability) * 100 << '%' << std::endl;
+    sstream << "내구성: " << std::to_string(this->_durability) << '/' << std::to_string(model.durability) << ' ' << std::fixed << std::setprecision(1) << (this->_durability / (float)model.durability) * 100 << '%' << std::endl;
     sstream << this->mid_message();
-    sstream << "무장:   " << std::to_string(model->defensive.physical) << " Hit:  " << std::to_string(model->hit) << " Dam:  " << std::to_string(model->damage);
+    sstream << "무장:   " << std::to_string(model.defensive_physical) << " Hit:  " << std::to_string(model.hit) << " Dam:  " << std::to_string(model.damage);
 
-    if(model->base_hp)
-        sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model->base_hp);
+    if(model.base_hp)
+        sstream << std::left << std::setw(14) << std::endl << "체력치 상승:" << std::to_string(model.base_hp);
 
-    if(model->base_mp)
-        sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(model->base_mp);
+    if(model.base_mp)
+        sstream << std::left << std::setw(14) << std::endl << "마력치 상승:" << std::to_string(model.base_mp);
 
-    if(model->strength)
-        sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model->strength);
+    if(model.strength)
+        sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model.strength);
 
-    if(model->dexteritry)
-        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model->dexteritry);
+    if(model.dexteritry)
+        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model.dexteritry);
 
-    if(model->intelligence)
-        sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(model->intelligence);
+    if(model.intelligence)
+        sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(model.intelligence);
 
-    if(model->healing_cycle)
-        sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(model->healing_cycle);
+    if(model.healing_cycle)
+        sstream << std::left << std::setw(14) << std::endl << "재생력 상승:" << std::to_string(model.healing_cycle);
 
     std::stringstream class_stream;
 
     class_stream << std::endl << std::setw(14) << std::left;
     
-    if(model->condition.cls == 0)
-        class_stream << "직업제한무";
-    else
-        class_stream << fb::game::model::classes.class2name(model->condition.cls, 0) << "용";
-    sstream << class_stream.str() << "레벨 " << std::to_string(model->condition.level) << " 이상";
+    auto cls = CLASS::NONE;
+    auto level = uint8_t(0);
+    for (auto& dsl : model.condition)
+    {
+        switch (dsl.header)
+        {
+        case DSL::class_t:
+            cls = dsl::class_t(dsl.params).value;
+            break;
 
-    if(model->desc.empty() == false)
-        sstream << std::endl << std::endl << model->desc;
+        case DSL::level:
+            level = dsl::level(dsl.params).min.value_or(0);
+            break;
+        }
+    }
+
+    sstream << std::endl;
+    switch (cls)
+    {
+    case CLASS::NONE:
+        sstream << "직업제한무";
+        break;
+
+    default:
+        sstream << this->context.model.promotion[cls][0].name << "용";
+        break;
+    }
+
+    sstream << " 레벨 " << std::to_string(level) << " 이상";
+
+    if(model.desc.empty() == false)
+        sstream << std::endl << std::endl << model.desc;
 
     return sstream.str();
 }
 
-const std::string equipment::column(equipment::parts parts)
+const std::string fb::game::equipment::column(EQUIPMENT_PARTS parts)
 {
     switch(parts)
     {
-    case fb::game::equipment::parts::WEAPON:
+    case EQUIPMENT_PARTS::WEAPON:
         return "weapon";
 
-    case fb::game::equipment::parts::ARMOR:
+    case EQUIPMENT_PARTS::ARMOR:
         return "armor";
 
-    case fb::game::equipment::parts::SHIELD:
+    case EQUIPMENT_PARTS::SHIELD:
         return "shield";
 
-    case fb::game::equipment::parts::HELMET:
+    case EQUIPMENT_PARTS::HELMET:
         return "helmet";
 
-    case fb::game::equipment::parts::LEFT_HAND:
+    case EQUIPMENT_PARTS::LEFT_HAND:
         return "ring_left";
 
-    case fb::game::equipment::parts::RIGHT_HAND:
+    case EQUIPMENT_PARTS::RIGHT_HAND:
         return "ring_right";
 
-    case fb::game::equipment::parts::LEFT_AUX:
+    case EQUIPMENT_PARTS::LEFT_AUX:
         return "aux_top";
 
-    case fb::game::equipment::parts::RIGHT_AUX:
+    case EQUIPMENT_PARTS::RIGHT_AUX:
         return "aux_bot";
 
     default:

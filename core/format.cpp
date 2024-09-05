@@ -9,15 +9,10 @@ std::string fb::format(const std::string& format, va_list* args)
         throw std::exception();
     va_end(clone);
 
-    auto buffer = new char[size];
-    if(buffer == nullptr)
+    auto buffer = std::vector<char>(size);
+    if(vsprintf(buffer.data(), format.c_str(), *args) == -1)
         throw std::exception();
 
-    if(vsprintf(buffer, format.c_str(), *args) == -1)
-        throw std::exception();
-
-    auto result = std::string(buffer);
-    delete[] buffer;
-
+    auto result = std::string(buffer.data());
     return result;
 }

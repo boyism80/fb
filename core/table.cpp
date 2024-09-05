@@ -41,7 +41,7 @@ uint32_t fb::table::load(const std::string& path, const std::function<void(Json:
             auto            key = Json::Value();
             auto            data = Json::Value();
 
-            {   auto _ = std::lock_guard<std::mutex>(mutex);
+            {   auto _ = std::lock_guard(mutex);
                 
                 if(queue.empty())
                     break;
@@ -55,7 +55,7 @@ uint32_t fb::table::load(const std::string& path, const std::function<void(Json:
             auto percentage = 0.0;
             try
             {
-                {   auto _ = std::lock_guard<std::mutex>(mutex);
+                {   auto _ = std::lock_guard(mutex);
                     percentage = (read++ * 100) / double(count);
                 }
 

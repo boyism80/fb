@@ -10,57 +10,60 @@ base_bot::base_bot(bot_container& owner, uint32_t id): fb::awaitable_socket<void
 base_bot::~base_bot()
 { }
 
-void base_bot::on_receive(fb::base::socket<>& socket)
+async::task<void> base_bot::on_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t    base_size = sizeof(uint8_t) + sizeof(uint16_t);
-    auto& in_stream = socket.in_stream();
 
-    while (true)
+    co_await socket.in_stream<async::task<void>>([this, &socket] (auto& in_stream) -> async::task<void>
     {
-        try
+        while (true)
         {
-            if (in_stream.readable_size() < base_size)
-                break;
-
-            auto                head = in_stream.read_u8();
-            if (head != 0xAA)
-                throw std::exception();
-
-            auto                size = in_stream.read_u16(buffer::endian::BIG);
-            if (size > in_stream.capacity())
-                throw std::exception();
-
-            if (in_stream.readable_size() < size)
-                break;
-
-            auto cmd = in_stream.read_8();
-            if (this->decrypt_policy(cmd))
+            try
             {
-                size = this->_cryptor.decrypt(in_stream, in_stream.offset() - 1, size);
-            }
+                if (in_stream.readable_size() < base_size)
+                    break;
 
-            if (this->_handler.contains(cmd))
+                auto                head = in_stream.read_u8();
+                if (head != 0xAA)
+                    throw std::runtime_error("header mismatch");
+
+                auto                size = in_stream.read_u16(buffer::endian::BIG);
+                if (size > in_stream.capacity())
+                    throw std::runtime_error("limit packet size");
+
+                if (in_stream.readable_size() < size)
+                    break;
+
+                auto cmd = in_stream.read_8();
+                if (this->decrypt_policy(cmd))
+                {
+                    size = this->_cryptor.decrypt(in_stream, in_stream.offset() - 1, size);
+                }
+
+                if (this->_handler.contains(cmd))
+                {
+                    co_await this->_handler[cmd]([&in_stream, size]
+                    {
+                        in_stream.reset();
+                        in_stream.shift(base_size + size);
+                        in_stream.flush();
+                    });
+                }
+            }
+            catch (std::exception&)
             {
-                this->_handler[cmd]();
+                in_stream.clear();
+                break;
             }
+            catch (...)
+            {
+                in_stream.clear();
+                break;
+            }
+        }
 
-            in_stream.reset();
-            in_stream.shift(base_size + size);
-            in_stream.flush();
-        }
-        catch (std::exception&)
-        {
-            in_stream.clear();
-            break;
-        }
-        catch (...)
-        {
-            in_stream.clear();
-            break;
-        }
-    }
-
-    in_stream.reset();
+        in_stream.reset();
+    });
 }
 
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
@@ -78,10 +81,11 @@ void base_bot::on_connected()
 void base_bot::on_disconnected()
 { }
 
-void base_bot::on_closed(fb::base::socket<>& socket)
+async::task<void> base_bot::on_closed(fb::base::socket<>& socket)
 {
     this->on_disconnected();
     this->_owner.remove(*this);
+    co_return;
 }
 
 bool base_bot::on_encrypt(fb::ostream& out)

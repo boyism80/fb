@@ -37,7 +37,7 @@ int main(int, char**)
 	{
 		post(thread_pool, [&io] { io.run(); });
 	}
-	thread_pool.join();
 
+	thread_pool.join();
 	return 0;
 }

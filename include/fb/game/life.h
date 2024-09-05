@@ -13,9 +13,6 @@ public:
 public:
     interface listener;
 
-public:
-    class model;
-
 struct config : public fb::game::object::config
 {
 public:
@@ -26,13 +23,13 @@ public:
 
 protected:
     uint32_t                    _hp = 0, _mp = 0;
-    fb::game::CONDITION_TYPE    _condition = fb::game::CONDITION_TYPE::NONE;
+    CONDITION                   _condition = CONDITION::NONE;
 
 public:
     fb::game::spells            spells;
 
 protected:
-    life(fb::game::context& context, const model* model, const fb::game::life::config& config);
+    life(fb::game::context& context, const fb::model::life& model, const fb::game::life::config& config);
     virtual ~life();
 
 protected:
@@ -60,18 +57,18 @@ public:
     virtual uint32_t            mp_up(uint32_t value, fb::game::object* from = nullptr);
     virtual uint32_t            mp_down(uint32_t value, fb::game::object* from = nullptr);
 
-    fb::game::CONDITION_TYPE    condition() const;
-    fb::game::CONDITION_TYPE    condition_add(fb::game::CONDITION_TYPE value);
-    fb::game::CONDITION_TYPE    condition_remove(fb::game::CONDITION_TYPE value);
-    bool                        condition_contains(fb::game::CONDITION_TYPE value) const;
+    CONDITION                   condition() const;
+    CONDITION                   condition_add(CONDITION value);
+    CONDITION                   condition_remove(CONDITION value);
+    bool                        condition_contains(CONDITION value) const;
 
     virtual bool                alive() const;
     void                        kill();
 
-    bool                        active(fb::game::spell& spell);
-    bool                        active(fb::game::spell& spell, uint32_t fd);
-    bool                        active(fb::game::spell& spell, const std::string& message);
-    bool                        active(fb::game::spell& spell, fb::game::object& to);
+    bool                        active(const fb::model::spell& spell);
+    bool                        active(const fb::model::spell& spell, uint32_t fd);
+    bool                        active(const fb::model::spell& spell, const std::string& message);
+    bool                        active(const fb::model::spell& spell, fb::game::object& to);
 
 protected:
     virtual void                on_update() { }
@@ -104,7 +101,7 @@ public:
 };
 
 interface life::listener : public virtual fb::game::object::listener,
-    public virtual fb::game::spell::listener
+                           public virtual fb::game::spells::listener
 {
     virtual void                on_attack(life& me, object* you) = 0;
     virtual void                on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
@@ -116,39 +113,6 @@ interface life::listener : public virtual fb::game::object::listener,
     virtual void                on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
     virtual void                on_hp(life& me, uint32_t before, uint32_t current) = 0;
     virtual void                on_mp(life& me, uint32_t before, uint32_t current) = 0;
-};
-
-class life::model : public fb::game::object::model
-{
-public:
-    struct config : public fb::game::object::model::config
-    {
-    public:
-        fb::game::defensive     defensive;
-        uint32_t                hp  = 0;
-        uint32_t                mp  = 0;
-        uint32_t                exp = 0;
-    };
-
-public:
-    friend class life;
-
-public:
-    LUA_PROTOTYPE
-
-public:
-    const fb::game::defensive   defensive;
-    const uint32_t              hp          = 0;
-    const uint32_t              mp          = 0;
-    const uint32_t              experience  = 0;
-
-public:
-    model(const fb::game::life::model::config& config);
-    virtual ~model();
-
-public:
-    static int                  builtin_hp(lua_State* lua);
-    static int                  builtin_mp(lua_State* lua);
 };
 
 } }

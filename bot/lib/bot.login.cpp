@@ -37,14 +37,14 @@ bool login_bot::decrypt_policy(int cmd) const
     }
 }
 
-fb::task<void> login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
+async::task<void> login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
     auto id = boost::uuids::to_string(boost::uuids::random_generator()());
     auto pw = "admin123";
     
     try
     {
-        auto response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(id, pw));
+        auto& response1 = co_await this->request<fb::protocol::login::response::message>(fb::protocol::login::request::account::create(id, pw));
         if (response1.text.empty() == false)
             throw std::exception("request error");
 
@@ -68,7 +68,7 @@ fb::task<void> login_bot::handle_agreement(const fb::protocol::login::response::
     }
 }
 
-fb::task<void> login_bot::handle_message(const fb::protocol::login::response::message& response)
+async::task<void> login_bot::handle_message(const fb::protocol::login::response::message& response)
 { 
     if (this->_try_login)
     {
@@ -81,7 +81,7 @@ fb::task<void> login_bot::handle_message(const fb::protocol::login::response::me
     co_return;
 }
 
-fb::task<void> login_bot::handle_transfer(const fb::protocol::response::transfer& response)
+async::task<void> login_bot::handle_transfer(const fb::protocol::response::transfer& response)
 {
     this->close();
     

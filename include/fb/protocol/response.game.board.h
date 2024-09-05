@@ -3,6 +3,9 @@
 
 #include <fb/protocol/protocol.h>
 #include <fb/game/model.h>
+#ifdef BOT
+#include <fb/bot/board.h>
+#endif
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace board {
 
@@ -10,27 +13,33 @@ class sections : public fb::protocol::base::header
 {
 public:
 #ifdef BOT
-    std::vector<fb::game::board::section>       section_list;
+    std::vector<fb::bot::board>         boards;
+#else
+    const fb::model::model& model;
 #endif
 
 public:
+#ifdef BOT
     sections() : fb::protocol::base::header(0x31)
+#else
+    sections(const fb::model::model& model) : fb::protocol::base::header(0x31), model(model)
+#endif
     { }
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        auto size = fb::game::model::boards.size();
+        auto size = this->model.board.size();
 
         base::header::serialize(out_stream);
         out_stream.write_u8(0x01)
                   .write_u16(size);
 
-        for(const auto& [k, v] : fb::game::model::boards)
+        for(const auto& [k, v] : this->model.board)
         {
             out_stream.write_u16(k)
-                      .write(v->title);
+                      .write(v.name);
         }
     }
 #else
@@ -42,7 +51,8 @@ public:
         {
             auto id = in_stream.read_u16();
             auto title = in_stream.readstr_u8();
-            this->section_list.push_back(fb::game::board::section{id, title});
+
+            this->boards.push_back(fb::bot::board(id, title));
         }
     }
 #endif
@@ -52,23 +62,32 @@ public:
 class articles : public fb::protocol::base::header
 {
 public:
-    const fb::game::board::section&                 section;
+#ifndef BOT
+    const fb::model::board&                         board;
     const std::list<fb::game::board::article>&      article_list;
-    const fb::game::board::button_enabled           button_flags;
+    const BOARD_BUTTON_ENABLE                       button_flags;
+#else
+
+#endif
 
 public:
-    articles(const fb::game::board::section& section, const std::list<fb::game::board::article>& article_list, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
-        section(section), article_list(article_list), button_flags(button_flags)
+#ifndef BOT
+    articles(const fb::model::board& board, const std::list<fb::game::board::article>& article_list, BOARD_BUTTON_ENABLE button_flags) : fb::protocol::base::header(0x31),
+        board(board), article_list(article_list), button_flags(button_flags)
     { }
+#else
+
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
         out_stream.write_u8(0x02)
                   .write_u8(button_flags)
-                  .write_u16(section.id)
-                  .write(section.title);
+                  .write_u16(board.id)
+                  .write(board.name);
 
         auto                    count = this->article_list.size();
         out_stream.write_u8((uint8_t)count);
@@ -85,20 +104,32 @@ public:
 
         out_stream.write_u8(0x00);
     }
+#else
+
+#endif
 };
 
 class article : public fb::protocol::base::header
 {
 public:
-    const fb::game::board::article&            value;
-    const fb::game::board::button_enabled      button_flags;
+#ifndef BOT
+    const fb::game::board::article&     value;
+    const BOARD_BUTTON_ENABLE           button_flags;
+#else
+
+#endif
 
 public:
-    article(const fb::game::board::article& value, fb::game::board::button_enabled button_flags) : fb::protocol::base::header(0x31),
+#ifndef BOT
+    article(const fb::game::board::article& value, BOARD_BUTTON_ENABLE button_flags) : fb::protocol::base::header(0x31),
         value(value), button_flags(button_flags)
     { }
+#else
+
+#endif
 
 public:
+#ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
@@ -113,6 +144,9 @@ public:
                   .write(this->value.contents, true)
                   .write_u8(0x00);
     }
+#else
+
+#endif
 };
 
 
