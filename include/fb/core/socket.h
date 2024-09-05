@@ -12,7 +12,9 @@
 #include <fb/protocol/protocol.h>
 #include <fb/core/cryptor.h>
 #include <fb/core/stream.h>
-#include <fb/core/coroutine.h>
+#include <async/task.h>
+#include <async/task_completion_source.h>
+#include <async/awaitable_get.h>
 
 namespace fb { namespace base {
 
@@ -20,7 +22,7 @@ template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket
 {
 public:
-    using handler_event = std::function<fb::task<void>(fb::base::socket<T>&)>;
+    using handler_event = std::function<async::task<void>(fb::base::socket<T>&)>;
 
 private:
     handler_event                   _handle_received;
@@ -28,14 +30,12 @@ private:
     uint32_t                        _fd = 0xFFFFFFFF;
     istream                         _instream;
     std::recursive_mutex            _instream_mutex;
-    std::vector<fb::task<void>>     _tasks;
-    std::recursive_mutex            _tasks_mutex;
 
 protected:
     std::array<char, 256>           _buffer;
     T*                              _data;
     std::recursive_mutex            _boost_mutex, _task_mutex;
-    std::vector<fb::task<bool>>     _unfinished_tasks;
+    std::vector<async::task<bool>>     _unfinished_tasks;
 //
 //public:
 //    std::mutex              stream_mutex;
@@ -59,8 +59,6 @@ public:
     T*                      data() const;
     std::string             IP() const;
     uint32_t                fd();
-    void                    push_task(fb::task<bool>&& task);
-    bool                    flush_task();
     
     template<typename R = void>
     R in_stream(const std::function<R(fb::istream& in_stream)>& func)
@@ -146,7 +144,7 @@ template <typename T, typename C = uint8_t>
 class awaitable_socket : public fb::base::socket<T>
 {
 private:
-    std::mutex                      _awaiter_mutex;
+    std::mutex                      _promise_mutex;
     std::map<C, std::any>           _coroutines;
 
 protected:
@@ -156,18 +154,18 @@ public:
 
 private:
     template <typename R>
-    void                            register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>> awaiter);
+    void                            register_promise(C cmd, std::shared_ptr<async::task_completion_source<R>> promise);
 
 public:
     template <typename R>
-    void                            invoke_awaiter(C cmd, R& response);
+    void                            invoke_promise(C cmd, R& response);
 
 public:
     template <typename R>
-    fb::task<R, std::suspend_always>&   request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    async::task<R>                     request(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
 
     template <typename R>
-    fb::task<R, std::suspend_always>&   request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    async::task<R>                     request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
 };
 
 }

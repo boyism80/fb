@@ -225,18 +225,18 @@ void fb::db::base_context::exec(uint32_t id, const std::string& sql)
     this->enqueue(id, task {sql, [] (auto& results) {}, [] (auto& e) {}});
 }
 
-fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
+fb::db::task_result_type fb::db::base_context::co_exec(uint32_t id, const std::string& sql)
 {
-    auto awaiter = std::make_shared<fb::awaiter<std::vector<daotk::mysql::result>>>();
-    this->enqueue(id, task{ sql, [awaiter](auto& results)
+    auto promise = std::make_shared<async::task_completion_source<std::vector<daotk::mysql::result>>>();
+    this->enqueue(id, task{ sql, [promise](auto& results)
     {
-        awaiter->set_result(results);
-    }, [awaiter](auto& e)
+        promise->set_value(std::move(results));
+    }, [promise](auto& e)
     {
-        awaiter->set_error(e);
+        promise->set_exception(std::make_exception_ptr(e));
     } });
 
-    return awaiter->task;
+    return promise->task();
 }
 
 void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& queries)
@@ -253,7 +253,7 @@ void fb::db::base_context::exec(uint32_t id, const std::vector<std::string>& que
     this->exec(id, sstream.str());
 }
 
-fb::db::awaiter fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
+fb::db::task_result_type fb::db::base_context::co_exec(uint32_t id, const std::vector<std::string>& queries)
 {
     auto sstream = std::stringstream();
     for (auto& query : queries)
@@ -277,7 +277,7 @@ void fb::db::base_context::exec_f(uint32_t id, const std::string& format, ...)
     this->exec(id, sql);
 }
 
-fb::db::awaiter fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
+fb::db::task_result_type fb::db::base_context::co_exec_f(uint32_t id, const std::string& format, ...)
 {
     va_list args;
     va_start(args, format);

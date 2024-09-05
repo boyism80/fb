@@ -8,7 +8,7 @@ fb::game::spells::spells(life& owner) : inventory(owner)
 fb::game::spells::~spells()
 { }
 
-fb::task<uint8_t> fb::game::spells::add(const fb::model::spell& element)
+async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element)
 {
     auto index = co_await fb::game::inventory<const fb::model::spell>::add(element);
     auto listener = this->owner().get_listener<fb::game::spells>();
@@ -19,7 +19,7 @@ fb::task<uint8_t> fb::game::spells::add(const fb::model::spell& element)
     co_return index;
 }
 
-fb::task<uint8_t> fb::game::spells::add(const fb::model::spell& element, uint8_t index)
+async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element, uint8_t index)
 {
     auto listener = this->owner().get_listener<fb::game::spells>();
 
@@ -117,7 +117,7 @@ bool fb::game::buffs::push_back(buff& buff)
     return true;
 }
 
-fb::task<fb::game::buff*> fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
+async::task<fb::game::buff*> fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
 {
     if(this->contains(model.id))
         co_return nullptr;

@@ -66,7 +66,7 @@ private:
 public:
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
-    virtual fb::task<void>              destroy();
+    virtual async::task<void>              destroy();
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }
 
@@ -101,8 +101,8 @@ public:
     DIRECTION                           direction() const;
     bool                                direction(DIRECTION value);
 
-    virtual fb::task<bool>              map(fb::game::map* map, const point16_t& position);
-    virtual fb::task<bool>              map(fb::game::map* map);
+    virtual async::task<bool>           map(fb::game::map* map, const point16_t& position);
+    virtual async::task<bool>           map(fb::game::map* map);
     fb::game::map*                      map() const;
 
     bool                                sector(fb::game::sector* sector);

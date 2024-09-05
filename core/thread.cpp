@@ -18,24 +18,14 @@ void fb::thread::handle_thread(uint8_t index)
 
     while(!this->_exit)
     {
-        for(int i = this->_completors.size() - 1; i >= 0; i--)
-        {
-            auto& completor = this->_completors[i];
-            if(completor.task.done())
-            {
-                if (completor.callback != nullptr)
-                    completor.callback();
-                this->_completors.erase(this->_completors.begin() + i);
-            }
-        }
-
         auto completed = false;
         completed = this->_queue.dequeue([this](auto&& x) mutable
         {
-            this->_completors.push_back(task_completor
-                {
-                    x.func(), x.callback
-                });
+            async::awaitable_then(x.func(), [callback = x.callback](async::awaitable_result<void> result) 
+            {
+                if (callback != nullptr)
+                    callback();
+            });
         });
         if(completed)
             continue;
@@ -81,31 +71,31 @@ this->_mutex_timer.lock();
 this->_mutex_timer.unlock();
 }
 
-fb::task<void, std::suspend_always>& fb::thread::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
+async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
-    auto awaiter = std::make_shared<fb::awaiter<void>>();
+    auto promise = std::make_shared<async::task_completion_source<void>>();
     if (delay > 0s)
     {
-        this->settimer([this, priority, awaiter, fn](auto time, auto id) mutable
+        this->settimer([this, priority, promise, fn](auto time, auto id) mutable
         {
-            this->_queue.enqueue(fb::thread::task(fn, [awaiter]() 
+            this->_queue.enqueue(fb::thread::task(fn, [promise]() 
             {
-                awaiter->resume();
+                promise->set_value();
             }), priority);
         }, delay, true);
     }
     else
     {
-        this->_queue.enqueue(fb::thread::task(fn, [awaiter]() 
+        this->_queue.enqueue(fb::thread::task(fn, [promise]() 
         {
-            awaiter->resume();
+            promise->set_value();
         }), priority);
     }
 
-    return awaiter->task;
+    return promise->task();
 }
 
-void fb::thread::post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
+void fb::thread::post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
 {
     if (delay > 0s)
     {
@@ -120,14 +110,12 @@ void fb::thread::post(const std::function<fb::task<void>()>& fn, const std::chro
     }
 }
 
-fb::task<void, std::suspend_always>& fb::thread::dispatch(uint32_t priority)
+async::task<void> fb::thread::dispatch(uint32_t priority)
 {
-    static auto generator = [] () -> fb::task<void>
+    co_await this->dispatch([] () -> async::task<void>
     {
         co_return;
-    };
-
-    return this->dispatch(generator, 0s, priority);
+    }, 0s, priority);
 }
 
 void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable)
@@ -141,14 +129,12 @@ void fb::thread::settimer(const fb::timer_callback& fn, const std::chrono::stead
     this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
 }
 
-fb::task<void, std::suspend_always>& fb::thread::sleep(const std::chrono::steady_clock::duration& delay)
+async::task<void> fb::thread::sleep(const std::chrono::steady_clock::duration& delay)
 {
-    static auto generator = [] () -> fb::task<void>
+    co_await this->dispatch([] () -> async::task<void>
     {
         co_return;
-    };
-
-    return this->dispatch(generator, delay);
+    }, delay);
 }
 
 std::chrono::steady_clock::duration fb::thread::now()
@@ -278,7 +264,7 @@ size_t fb::threads::size() const
     return this->_threads.size();
 }
 
-fb::task<void> fb::threads::dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay)
+async::task<void> fb::threads::dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay)
 {
     auto current = this->current();
     if (current == nullptr)

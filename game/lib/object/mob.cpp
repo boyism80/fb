@@ -382,7 +382,7 @@ void fb::game::mob::on_die(fb::game::object* from)
                 continue;
 
             auto item = this->context.model.item[params.id].make(this->context);
-            item->map(this->map(), this->position()).wait();
+            async::awaitable_get(item->map(this->map(), this->position()));
         }
             break;
         }

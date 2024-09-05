@@ -24,7 +24,7 @@ class bot_container;
 class base_bot : public fb::awaitable_socket<void*>
 {
 private:
-    using handle_func_type = std::function<fb::task<void>(const std::function<void()>&)>;
+    using handle_func_type = std::function<async::task<void>(const std::function<void()>&)>;
 protected:
     bot_container&                              _owner;
     fb::cryptor                                 _cryptor;
@@ -40,8 +40,8 @@ public:
     virtual ~base_bot();
 
 private:
-    fb::task<void>                              on_receive(fb::base::socket<>& socket);
-    fb::task<void>                              on_closed(fb::base::socket<>& socket);
+    async::task<void>                              on_receive(fb::base::socket<>& socket);
+    async::task<void>                              on_closed(fb::base::socket<>& socket);
 
 protected:
     virtual void                                on_connected();
@@ -55,16 +55,16 @@ public:
     virtual void on_timer(std::chrono::steady_clock::duration now) {}
 
     template <typename T>
-    void bind(int cmd, const std::function<fb::task<void>(T&)>& fn)
+    void bind(int cmd, const std::function<async::task<void>(T&)>& fn)
     {
-        this->_handler.insert({ cmd, [this, fn](const std::function<void()>& callback) -> fb::task<void>
+        this->_handler.insert({ cmd, [this, fn](const std::function<void()>& callback) -> async::task<void>
         {
-            co_await this->in_stream<fb::task<void>>([this, fn, &callback](auto& in_stream) -> fb::task<void>
+            co_await this->in_stream<async::task<void>>([this, fn, &callback](auto& in_stream) -> async::task<void>
             {
                 T     header;
                 header.deserialize(in_stream);
                 callback();
-                this->invoke_awaiter(header.__id, header);
+                this->invoke_promise(header.__id, header);
 
                 co_await fn(header);
             });
@@ -72,7 +72,7 @@ public:
     }
 
     template <typename T>
-    void bind(const std::function<fb::task<void>(T&)> fn)
+    void bind(const std::function<async::task<void>(T&)> fn)
     {
         auto id = T().__id;
         bind(id, fn);
@@ -87,10 +87,10 @@ public:
     ~gateway_bot();
 
 private:
-    fb::task<void>                              handle_welcome(const fb::protocol::gateway::response::welcome& response);
-    fb::task<void>                              handle_crt(const fb::protocol::gateway::response::crt& response);
-    fb::task<void>                              handle_hosts(const fb::protocol::gateway::response::hosts& response);
-    fb::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
+    async::task<void>                              handle_welcome(const fb::protocol::gateway::response::welcome& response);
+    async::task<void>                              handle_crt(const fb::protocol::gateway::response::crt& response);
+    async::task<void>                              handle_hosts(const fb::protocol::gateway::response::hosts& response);
+    async::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
 
 protected:
     bool                                        decrypt_policy(int cmd) const;
@@ -109,16 +109,16 @@ public:
     ~login_bot();
 
 private:
-    fb::task<void>                              co_login(std::string id, std::string pw);
+    async::task<void>                              co_login(std::string id, std::string pw);
 
 protected:
     void                                        on_connected();
     bool                                        decrypt_policy(int cmd) const;
 
 public:
-    fb::task<void>                              handle_agreement(const fb::protocol::login::response::agreement& response);
-    fb::task<void>                              handle_message(const fb::protocol::login::response::message& response);
-    fb::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
+    async::task<void>                              handle_agreement(const fb::protocol::login::response::agreement& response);
+    async::task<void>                              handle_message(const fb::protocol::login::response::message& response);
+    async::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
 };
 
 
@@ -155,29 +155,29 @@ public:
     void                                        on_timer(std::chrono::steady_clock::duration now);
 
 public:
-    fb::task<void>                              handle_init(const fb::protocol::game::response::init& response);
-    fb::task<void>                              handle_time(const fb::protocol::game::response::time& response);
-    fb::task<void>                              handle_state(const fb::protocol::game::response::session::state& response);
-    fb::task<void>                              handle_option(const fb::protocol::game::response::session::option& response);
-    fb::task<void>                              handle_message(const fb::protocol::game::response::message& response);
-    fb::task<void>                              handle_sequence(const fb::protocol::game::response::session::id& response);
-    fb::task<void>                              handle_spell_update(const fb::protocol::game::response::spell::update& response);
-    fb::task<void>                              handle_chat(const fb::protocol::game::response::chat& response);
-    fb::task<void>                              handle_action(const fb::protocol::game::response::life::action& response);
-    fb::task<void>                              handle_direction(const fb::protocol::game::response::object::direction& response);
-    fb::task<void>                              handle_position(const fb::protocol::game::response::session::position& response);
-    fb::task<void>                              handle_move(const fb::protocol::game::response::object::move& response);
-    fb::task<void>                              handle_map(const fb::protocol::game::response::map::config& response);
-    fb::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
+    async::task<void>                              handle_init(const fb::protocol::game::response::init& response);
+    async::task<void>                              handle_time(const fb::protocol::game::response::time& response);
+    async::task<void>                              handle_state(const fb::protocol::game::response::session::state& response);
+    async::task<void>                              handle_option(const fb::protocol::game::response::session::option& response);
+    async::task<void>                              handle_message(const fb::protocol::game::response::message& response);
+    async::task<void>                              handle_sequence(const fb::protocol::game::response::session::id& response);
+    async::task<void>                              handle_spell_update(const fb::protocol::game::response::spell::update& response);
+    async::task<void>                              handle_chat(const fb::protocol::game::response::chat& response);
+    async::task<void>                              handle_action(const fb::protocol::game::response::life::action& response);
+    async::task<void>                              handle_direction(const fb::protocol::game::response::object::direction& response);
+    async::task<void>                              handle_position(const fb::protocol::game::response::session::position& response);
+    async::task<void>                              handle_move(const fb::protocol::game::response::object::move& response);
+    async::task<void>                              handle_map(const fb::protocol::game::response::map::config& response);
+    async::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
 
 public:
-    fb::task<void>                              pattern_chat();
-    fb::task<void>                              pattern_attack();
-    fb::task<void>                              pattern_direction();
-    fb::task<void>                              pattern_move();
-    fb::task<void>                              pattern_pickup();
-    fb::task<void>                              pattern_emotion();
-    fb::task<void>                              pattern_board_sections();
+    async::task<void>                              pattern_chat();
+    async::task<void>                              pattern_attack();
+    async::task<void>                              pattern_direction();
+    async::task<void>                              pattern_move();
+    async::task<void>                              pattern_pickup();
+    async::task<void>                              pattern_emotion();
+    async::task<void>                              pattern_board_sections();
 };
 
 class bot_container
@@ -218,7 +218,7 @@ public:
     }
     void remove(base_bot& bot);
     void handle_timer(std::chrono::steady_clock::duration now, std::thread::id id);
-    fb::task<void> dispatch(uint32_t id, std::function<fb::task<void>()>&& fn);
+    async::task<void> dispatch(uint32_t id, std::function<async::task<void>()>&& fn);
 };
 
 } }

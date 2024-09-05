@@ -444,7 +444,7 @@ void fb::game::context::on_map_changed(fb::game::object& me, fb::game::map* befo
         this->save(session);
 }
 
-fb::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
+async::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game::map& map, const point16_t& position)
 {
     fb::ostream         parameter;
     parameter.write(me.name());
@@ -456,7 +456,7 @@ fb::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game::m
     try
     {
         auto result = false;
-        auto& response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
+        auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
         auto socket = this->sockets[response.fd];
         co_return false;
 

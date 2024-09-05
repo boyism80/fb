@@ -7,7 +7,7 @@
 #include <queue>
 #include <mutex>
 #include <future>
-#include <fb/core/coroutine.h>
+#include <fb/core/generator.h>
 
 namespace fb {
 

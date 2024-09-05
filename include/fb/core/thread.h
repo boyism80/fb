@@ -7,10 +7,12 @@
 #include <map>
 #include <future>
 #include <atomic>
-#include <fb/core/coroutine.h>
 #include <fb/core/logger.h>
 #include <fb/core/timer.h>
 #include <fb/core/pqueue.h>
+#include <async/task.h>
+#include <async/task_completion_source.h>
+#include <async/awaitable_then.h>
 
 #define MUTEX_GUARD(x) auto _ = std::lock_guard(x);
 
@@ -24,7 +26,7 @@ public:
     class task
     {
     public:
-        using func_type = std::function<fb::task<void>()>;
+        using func_type = std::function<async::task<void>()>;
         using callback_type = std::function<void()>;
 
     public:
@@ -43,12 +45,6 @@ public:
         void operator = (task&& r) noexcept;
     };
 
-    struct task_completor
-    {
-        fb::task<void>          task;
-        task::callback_type     callback;
-    };
-
 private:
     uint8_t                                         _index = 0;
     std::atomic<bool>                               _exit  = false;
@@ -60,7 +56,6 @@ private:
 
 private:
     fb::queue<fb::thread::task>                     _queue;
-    std::vector<task_completor>                     _completors;
 
 public:
     thread(uint8_t index);
@@ -82,11 +77,11 @@ public:
     void                                            exit();
 
 public:
-    fb::task<void, std::suspend_always>&            dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
-    void                                            post(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
-    fb::task<void, std::suspend_always>&            dispatch(uint32_t priority = 0);
+    async::task<void>                                  dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    void                                            post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, int priority = 0);
+    async::task<void>                                  dispatch(uint32_t priority = 0);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
-    fb::task<void, std::suspend_always>&            sleep(const std::chrono::steady_clock::duration& duration);
+    async::task<void>                                  sleep(const std::chrono::steady_clock::duration& duration);
 
 public:
     static std::chrono::steady_clock::duration      now();
@@ -127,7 +122,7 @@ public:
     size_t                                          size() const;
 
 public:
-    fb::task<void>                                  dispatch(const std::function<fb::task<void>()>& fn, const std::chrono::steady_clock::duration& delay);
+    async::task<void>                                  dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay);
     void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
     void                                            exit();
 

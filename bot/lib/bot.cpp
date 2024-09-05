@@ -10,11 +10,11 @@ base_bot::base_bot(bot_container& owner, uint32_t id): fb::awaitable_socket<void
 base_bot::~base_bot()
 { }
 
-fb::task<void> base_bot::on_receive(fb::base::socket<>& socket)
+async::task<void> base_bot::on_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t    base_size = sizeof(uint8_t) + sizeof(uint16_t);
 
-    co_await socket.in_stream<fb::task<void>>([this, &socket] (auto& in_stream) -> fb::task<void>
+    co_await socket.in_stream<async::task<void>>([this, &socket] (auto& in_stream) -> async::task<void>
     {
         while (true)
         {
@@ -81,7 +81,7 @@ void base_bot::on_connected()
 void base_bot::on_disconnected()
 { }
 
-fb::task<void> base_bot::on_closed(fb::base::socket<>& socket)
+async::task<void> base_bot::on_closed(fb::base::socket<>& socket)
 {
     this->on_disconnected();
     this->_owner.remove(*this);

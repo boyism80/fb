@@ -28,7 +28,7 @@ int fb::game::context::builtin_sleep(lua_State* lua)
     thread->pending(true);
 
     auto context = thread->env<fb::game::context>("context");
-    context->threads().dispatch([lua] () -> fb::task<void>
+    context->threads().dispatch([lua] () -> async::task<void>
     {
         auto thread = fb::game::lua::get(lua);
         if(thread == nullptr)

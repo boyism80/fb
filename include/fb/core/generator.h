@@ -1,7 +1,8 @@
 #ifndef __GENERATOR_H__
 #define __GENERATOR_H__
 
-#include <fb/core/coroutine.h>
+#include <coroutine>
+#include <optional>
 
 namespace fb {
 

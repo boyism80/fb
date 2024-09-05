@@ -14,6 +14,7 @@
 #include <fb/core/logger.h>
 #include <fb/core/redis.h>
 #include <fb/core/mutex.h>
+#include <async/awaitable_get.h>
 
 using namespace std::chrono_literals;
 
@@ -26,7 +27,7 @@ private:
     fb::threads                                 _threads;
     bool                                        _running = false;
     std::mutex                                  _mutex_exit;
-    std::optional< fb::task<void>>              _internal_conn_task;
+    std::optional< async::task<void>>              _internal_conn_task;
 
 protected:
     std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
@@ -44,7 +45,7 @@ public:
     virtual ~acceptor();
 
 private:
-    virtual fb::task<void>                      handle_work(S<T>* socket);
+    virtual async::task<void>                      handle_work(S<T>* socket);
 
 protected:
     void                                        accept();
@@ -52,8 +53,8 @@ protected:
     const fb::threads&                          threads() const;
 
 protected:
-    virtual fb::task<void>                      handle_start() { co_return;  }
-    virtual fb::task<bool>                      handle_parse(S<T>& session) = 0;
+    virtual async::task<void>                      handle_start() { co_return;  }
+    virtual async::task<bool>                      handle_parse(S<T>& session) = 0;
     virtual T*                                  handle_accepted(S<T>& socket) = 0;
     virtual bool                                handle_connected(S<T>& session) { return true; }
     virtual bool                                handle_disconnected(S<T>& session) { return true; }
@@ -61,8 +62,8 @@ protected:
     virtual void                                handle_exit() { }
 
 public:
-    fb::task<void>                              handle_receive(fb::base::socket<T>& socket);
-    fb::task<void>                              handle_closed(fb::base::socket<T>& socket);
+    async::task<void>                              handle_receive(fb::base::socket<T>& socket);
+    async::task<void>                              handle_closed(fb::base::socket<T>& socket);
 
 protected:
     void                                        transfer(S<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from);
@@ -76,13 +77,13 @@ public:
 
 public:
     template <typename R>
-    fb::task<R>                                 request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
+    async::task<R>                                 request(const fb::protocol::internal::header& header, bool encrypt = true, bool wrap = true);
     fb::thread*                                 current_thread();
-    fb::task<void, std::suspend_always>&        dispatch(S<T>*, const std::function<fb::task<void>(void)>& fn, uint32_t priority = 0);
-    fb::task<void, std::suspend_always>&        dispatch(S<T>*, uint32_t priority = 0);
+    async::task<void>                              dispatch(S<T>*, const std::function<async::task<void>(void)>& fn, uint32_t priority = 0);
+    async::task<void>                              dispatch(S<T>*, uint32_t priority = 0);
     void                                        run(int thread_size);
     bool                                        running() const;
-    fb::task<void>                              sleep(const std::chrono::steady_clock::duration& duration);
+    async::task<void>                              sleep(const std::chrono::steady_clock::duration& duration);
     void                                        exit();
 
 public:
@@ -97,8 +98,8 @@ template <typename T>
 class acceptor : public fb::base::acceptor<fb::socket, T>
 {
 private:
-    using external_func                 = std::function<fb::task<bool>(fb::socket<T>&, const std::function<void()>&)>;
-    using internal_func                 = std::function<fb::task<bool>(fb::internal::socket<>&, const std::function<void()>&)>;
+    using external_func                 = std::function<async::task<bool>(fb::socket<T>&, const std::function<void()>&)>;
+    using internal_func                 = std::function<async::task<bool>(fb::internal::socket<>&, const std::function<void()>&)>;
 
 private:
     std::map<uint8_t, external_func>    _external_handler;
@@ -109,33 +110,33 @@ public:
     ~acceptor();
 
 private:
-    fb::task<bool>              default_handler();
-    fb::task<void>              connect_internal();
-    fb::task<void, std::suspend_always>& co_connect_internal(const std::string& ip, uint16_t port);
-    fb::task<void>              handle_internal_receive(fb::base::socket<>& socket);
+    async::task<bool>              default_handler();
+    async::task<void>              connect_internal();
+    async::task<void>              co_connect_internal(const std::string& ip, uint16_t port);
+    async::task<void>              handle_internal_receive(fb::base::socket<>& socket);
 
 protected:
     virtual bool                decrypt_policy(uint8_t cmd) const;
-    virtual fb::task<void>      handle_start();
-    fb::task<bool>              handle_parse(fb::socket<T>& socket);
+    virtual async::task<void>      handle_start();
+    async::task<bool>              handle_parse(fb::socket<T>& socket);
 
 public:
     template <typename R>
-    void                        bind(int cmd, const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn);
+    void                        bind(int cmd, const std::function<async::task<bool>(fb::socket<T>&, const R&)>& fn);
     template <typename R>
-    void                        bind(const std::function<fb::task<bool>(fb::socket<T>&, const R&)>& fn);
+    void                        bind(const std::function<async::task<bool>(fb::socket<T>&, const R&)>& fn);
     template <typename R>
-    void                        bind(const std::function<fb::task<bool>(fb::internal::socket<>&, const R&)>& fn);
+    void                        bind(const std::function<async::task<bool>(fb::internal::socket<>&, const R&)>& fn);
     template <typename R>
     void                        bind();
 
 private:
-    fb::task<void>              on_internal_disconnected(fb::base::socket<>& socket);
+    async::task<void>              on_internal_disconnected(fb::base::socket<>& socket);
 
 protected:
-    virtual fb::task<void>      handle_internal_disconnected(fb::base::socket<>& socket);
-    virtual fb::task<void>      handle_internal_connected();
-    virtual fb::task<void>      handle_internal_denied(const std::string& error);
+    virtual async::task<void>      handle_internal_disconnected(fb::base::socket<>& socket);
+    virtual async::task<void>      handle_internal_connected();
+    virtual async::task<void>      handle_internal_denied(const std::string& error);
 };
 
 }

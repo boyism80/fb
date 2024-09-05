@@ -5,11 +5,11 @@
 #include <set>
 #include <cpp_redis/cpp_redis>
 #include <fb/core/abstract.h>
-#include <fb/core/coroutine.h>
 #include <fb/core/concurrent.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
+#include <async/task_completion_source.h>
 
 namespace fb {
 
@@ -104,16 +104,16 @@ public:
 
 private:
     template <typename T>
-    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
+    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise, const std::function<async::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& current, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs)
     {
         try
         {
-            awaiter.result(co_await fn(current));
+            promise.set_result(co_await fn(current));
             concurrent::add(current);
         }
         catch (std::exception& e)
         {
-            awaiter.error(e);
+            promise.set_error(e);
         }
 
         conn->del({ key }, [this, subs, key](auto& reply) mutable
@@ -122,37 +122,37 @@ private:
             subs->commit();
             this->subs.release(subs);
         });
-        conn->publish(key, uuid, [this, key, conn, &awaiter](auto& reply) mutable
+        conn->publish(key, uuid, [this, key, conn, promise](auto& reply) mutable
         {
             this->conn.release(conn);
-            awaiter.resume();
+            promise.resume();
         });
         conn->commit();
     }
 
     template <typename T>
-    fb::task<void> handle_locked(fb::awaiter<T>& awaiter, const std::function<fb::task<T>(void)>& fn, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn)
+    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise, const std::function<async::task<T>(void)>& fn, const std::string key, const std::string uuid, std::shared_ptr<cpp_redis::client> conn)
     {
         try
         {
-            awaiter.result(co_await fn());
+            promise.set_result(co_await fn());
         }
         catch (std::exception& e)
         {
-            awaiter.error(e);
+            promise.set_error(e);
         }
 
         conn->del({ key });
-        conn->publish(key, uuid, [this, key, conn, &awaiter](auto& reply) mutable
+        conn->publish(key, uuid, [this, key, conn, promise](auto& reply) mutable
         {
             this->conn.release(conn);
-            awaiter.resume();
+            promise.resume();
         });
         conn->commit();
     }
 
     template <typename T>
-    bool lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, fb::dead_lock_detector& trans)
+    bool lock(const std::string& key, std::shared_ptr<async::task_completion_source<T>> promise, const std::function<async::task<T>(fb::dead_lock_detector&)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, std::shared_ptr<cpp_redis::subscriber> subs, fb::thread* thread, fb::dead_lock_detector& trans)
     {
         auto& current = static_cast<fb::mst<std::string>&>(trans).add<fb::dead_lock_detector>(key);
 
@@ -162,11 +162,11 @@ private:
         }
         catch (std::exception& e)
         {
-            awaiter.resume(e);
+            promise.resume(e);
             return false;
         }
 
-        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, &awaiter, &fn, &current](cpp_redis::reply& v) mutable
+        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, subs, key, uuid, thread, promise, &fn, &current](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
             if (success == false)
@@ -174,14 +174,14 @@ private:
 
             if (thread != nullptr)
             {
-                thread->dispatch([this, &awaiter, &fn, &current, key, uuid, conn, subs]() mutable
+                thread->dispatch([this, promise, &fn, &current, key, uuid, conn, subs]() mutable
                 {
-                    this->handle_locked(awaiter, fn, current, key, uuid, conn, subs);
+                    this->handle_locked(promise, fn, current, key, uuid, conn, subs);
                 });
             }
             else
             {
-                this->handle_locked(awaiter, fn, current, key, uuid, conn, subs);
+                this->handle_locked(promise, fn, current, key, uuid, conn, subs);
             }
         });
         conn->commit();
@@ -189,25 +189,25 @@ private:
     }
 
     template <typename T>
-    void try_lock(const std::string& key, fb::awaiter<T>& awaiter, const std::function<fb::task<T>(void)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, fb::thread* thread)
+    void try_lock(const std::string& key, std::shared_ptr<async::task_completion_source<T>> promise, const std::function<async::task<T>(void)>& fn, const std::string& uuid, std::shared_ptr<cpp_redis::client> conn, fb::thread* thread)
     {
-        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, key, uuid, thread, &awaiter, &fn](cpp_redis::reply& v) mutable
+        conn->evalsha(this->_scripts["lock"], 1, { key }, { std::to_string(this->_timeout) }, [this, conn, key, uuid, thread, promise, &fn](cpp_redis::reply& v) mutable
         {
             auto success = v.as_integer() == 1;
             if (success == false)
             {
-                awaiter.resume(fb::lock_error());
+                promise.resume(fb::lock_error());
             }
             else if (thread != nullptr)
             {
-                thread->dispatch([this, &awaiter, &fn, key, uuid, conn]() mutable 
+                thread->dispatch([this, promise, &fn, key, uuid, conn]() mutable 
                 {
-                    this->handle_locked(awaiter, fn, key, uuid, conn);
+                    this->handle_locked(promise, fn, key, uuid, conn);
                 });
             }
             else
             {
-                this->handle_locked(awaiter, fn, key, uuid, conn);
+                this->handle_locked(promise, fn, key, uuid, conn);
             }
         });
         conn->commit();
@@ -215,43 +215,44 @@ private:
 
 public:
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& trans)
+    async::task_completion_source<T> sync(const std::string& key, const std::function<async::task<T>(fb::dead_lock_detector&)>& fn, fb::dead_lock_detector& trans)
     {
-        return fb::awaiter<T>([this, key, &fn, &trans](auto& awaiter) mutable
+        auto conn = this->conn.get();
+        auto subs = this->subs.get();
+        auto thread = this->_owner.current_thread();
+        auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
+        auto promise = std::make_shared<async::task_completion_source<T>>();
+        
+        subs->subscribe(key, [this, key, uuid, conn, subs, promise, &fn, thread, &trans](const std::string& chan, const std::string& msg) mutable
         {
-            auto conn = this->conn.get();
-            auto subs = this->subs.get();
-            auto thread = this->_owner.current_thread();
-            auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-            subs->subscribe(key, [this, key, uuid, conn, subs, &awaiter, &fn, thread, &trans](const std::string& chan, const std::string& msg) mutable
-            {
-                if (chan != key)
-                    return;
+            if (chan != key)
+                return;
 
-                if (msg != uuid)
-                    this->lock(key, awaiter, fn, uuid, conn, subs, thread, trans);
-            });
-
-            if (this->lock(key, awaiter, fn, uuid, conn, subs, thread, trans))
-                subs->commit();
+            if (msg != uuid)
+                this->lock(key, promise, fn, uuid, conn, subs, thread, trans);
         });
+
+        if (this->lock(key, promise, fn, uuid, conn, subs, thread, trans))
+            subs->commit();
+        
+        return promise->task();
     }
 
     template <typename T>
-    fb::awaiter<T> sync(const std::string& key, const std::function<fb::task<T>(fb::dead_lock_detector&)>& fn)
+    async::task_completion_source<T> sync(const std::string& key, const std::function<async::task<T>(fb::dead_lock_detector&)>& fn)
     {
         return this->sync(key, fn, this->root);
     }
 
     template <typename T>
-    fb::awaiter<T> try_sync(const std::string& key, const std::function<fb::task<T>(void)>& fn)
+    async::task_completion_source<T> try_sync(const std::string& key, const std::function<async::task<T>(void)>& fn)
     {
-        return fb::awaiter<T>([this, key, &fn](auto& awaiter) mutable
+        return async::task_completion_source<T>([this, key, &fn](auto& promise) mutable
         {
             auto conn = this->conn.get();
             auto thread = this->_owner.current_thread();
             auto uuid = boost::uuids::to_string(boost::uuids::random_generator()());
-            this->try_lock(key, awaiter, fn, uuid, conn, thread);
+            this->try_lock(key, promise, fn, uuid, conn, thread);
         });
     }
 };

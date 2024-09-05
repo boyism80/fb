@@ -60,17 +60,6 @@ inline void fb::base::socket<T>::send(const fb::protocol::base::header& response
 template <typename T>
 void fb::base::socket<T>::recv()
 {
-    auto _ = std::lock_guard(this->_boost_mutex);
-    {
-        auto _ = std::lock_guard(this->_tasks_mutex);
-        for(int i = this->_tasks.size() - 1; i >= 0; i--)
-        {
-            auto& task = this->_tasks[i];
-            if(task.done())
-                this->_tasks.erase(this->_tasks.begin() + i);
-        }
-    }
-
     this->async_read_some
     (
         boost::asio::buffer(this->_buffer),
@@ -85,10 +74,9 @@ void fb::base::socket<T>::recv()
 
                 this->in_stream<void>([this, bytes_transferred](auto& in_stream)
                 {
-                    auto _ = std::lock_guard(this->_tasks_mutex);
                     this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
-                    this->_tasks.push_back(this->_handle_received(*this));
                 });
+                async::awaitable_get(this->_handle_received(*this));
 
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");
@@ -159,35 +147,6 @@ uint32_t fb::base::socket<T>::fd()
     return this->_fd;
 }
 
-template <typename T>
-void fb::base::socket<T>::push_task(fb::task<bool>&& task)
-{
-    auto _ = std::lock_guard(this->_task_mutex);
-    this->_unfinished_tasks.push_back(std::move(task));
-}
-
-template <typename T>
-bool fb::base::socket<T>::flush_task()
-{
-    auto _ = std::lock_guard(this->_task_mutex);
-    auto size = this->_unfinished_tasks.size();
-    if(size == 0)
-        return true;
-
-    auto result = false;
-    for(int i = size - 1; i >= 0; i--)
-    {
-        auto& task = this->_unfinished_tasks[i];
-        if(!task.done())
-            continue;
-
-        result |= task.value();
-        this->_unfinished_tasks.erase(this->_unfinished_tasks.begin() + i);
-    }
-
-    return result;
-}
-
 
 
 
@@ -250,84 +209,84 @@ fb::awaitable_socket<T,C>::awaitable_socket(boost::asio::io_context& context, co
 template <typename T, typename C>
 fb::awaitable_socket<T,C>::~awaitable_socket()
 {
-    auto _ = std::lock_guard(this->_awaiter_mutex);
+    auto _ = std::lock_guard(this->_promise_mutex);
 }
 
 
 template <typename T, typename C>
 template <typename R>
-void fb::awaitable_socket<T,C>::register_awaiter(C cmd, std::shared_ptr<fb::awaiter<R>> awaiter)
+void fb::awaitable_socket<T,C>::register_promise(C cmd, std::shared_ptr<async::task_completion_source<R>> promise)
 {
-    auto _ = std::lock_guard(this->_awaiter_mutex);
+    auto _ = std::lock_guard(this->_promise_mutex);
     auto i = this->_coroutines.find(cmd);
     if(i != this->_coroutines.end())
     {
-        auto& exists = any_cast<std::shared_ptr<fb::awaiter<R>>&>(i->second);
+        auto& exists = any_cast<std::shared_ptr<async::task_completion_source<R>>&>(i->second);
         auto sstream = std::stringstream();
-        sstream << "cannot register awaiter (id : " << cmd << ")";
-        exists->set_error(std::runtime_error(sstream.str()));
+        sstream << "cannot register promise (id : " << cmd << ")";
+        exists->set_exception(std::make_exception_ptr(std::runtime_error(sstream.str())));
         this->_coroutines.erase(cmd);
     }
     
-    this->_coroutines.insert({cmd, awaiter});
+    this->_coroutines.insert({cmd, promise});
 }
 
 
 template <typename T, typename C>
 template <typename R>
-void fb::awaitable_socket<T,C>::invoke_awaiter(C cmd, R& response)
+void fb::awaitable_socket<T,C>::invoke_promise(C cmd, R& response)
 {
     {
-        auto _ = std::lock_guard(this->_awaiter_mutex);
+        auto _ = std::lock_guard(this->_promise_mutex);
         if (this->_coroutines.contains(cmd) == false)
             return;
 
-        auto exists = any_cast<std::shared_ptr<fb::awaiter<R>>>(this->_coroutines[cmd]);
+        auto exists = any_cast<std::shared_ptr<async::task_completion_source<R>>>(this->_coroutines[cmd]);
         this->_coroutines.erase(cmd);
-        exists->set_result(response);
+        exists->set_value(response);
     }
 }
 
 template <typename T, typename C>
 template <typename R>
-fb::task<R, std::suspend_always>& fb::awaitable_socket<T, C>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
+async::task<R> fb::awaitable_socket<T, C>::request(const fb::protocol::base::header& header, bool encrypt, bool wrap)
 {
     auto cmd = R().__id;
-    auto awaiter = std::make_shared<fb::awaiter<R>>();
-    this->register_awaiter(cmd, awaiter);
+    auto promise = std::make_shared<async::task_completion_source<R>>();
+    this->register_promise(cmd, promise);
 
-    this->send(header, encrypt, wrap, [this, awaiter, cmd] (const boost::system::error_code& ec, auto transfer_size)
+    this->send(header, encrypt, wrap, [this, promise, cmd] (const boost::system::error_code& ec, auto transfer_size)
     {
         if(ec)
         {
             auto sstream = std::stringstream();
             sstream << "boost socket error(" << ec.value() << ")";
-            awaiter->set_error(std::runtime_error(sstream.str()));
+            promise->set_error(std::runtime_error(sstream.str()));
         }
     });
 
-    return awaiter->task;
+    co_return co_await promise->task;
 }
 
 template <typename T, typename C>
 template <typename R>
-fb::task<R, std::suspend_always>& fb::awaitable_socket<T, C>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
+async::task<R> fb::awaitable_socket<T, C>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
 {
     auto cmd = R().__id;
-    auto awaiter = std::make_shared<fb::awaiter<R>>();
-    this->register_awaiter(header.trans, awaiter);
+    auto promise = std::make_shared<async::task_completion_source<R>>();
+    this->register_promise(header.trans, promise);
 
-    this->send(header, encrypt, wrap, [this, awaiter] (const boost::system::error_code& ec, auto transfer_size)
+    this->send(header, encrypt, wrap, [this, promise] (const boost::system::error_code& ec, auto transfer_size)
     {
         if(ec)
         {
             auto sstream = std::stringstream();
             sstream << "boost socket error (" << ec.value() << ")";
-            awaiter->set_error(std::runtime_error(sstream.str()));
+            promise->set_exception(std::make_exception_ptr<std::runtime_error>(std::runtime_error(sstream.str())));
         }
     });
 
-    return awaiter->task;
+    return promise->task();
 }
 
 

@@ -50,7 +50,7 @@ inline T* fb::game::inventory<T>::at(uint8_t index) const
 }
 
 template<typename T>
-inline fb::task<uint8_t> fb::game::inventory<T>::add(T& element)
+inline async::task<uint8_t> fb::game::inventory<T>::add(T& element)
 {
     auto next = this->next();
     if(next != 0xFF)
@@ -62,7 +62,7 @@ inline fb::task<uint8_t> fb::game::inventory<T>::add(T& element)
 }
 
 template<typename T>
-inline fb::task<uint8_t> fb::game::inventory<T>::add(T& element, uint8_t index)
+inline async::task<uint8_t> fb::game::inventory<T>::add(T& element, uint8_t index)
 {
     if(this->_elements[index] != nullptr)
         co_return 0xFF;

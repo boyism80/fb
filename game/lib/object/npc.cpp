@@ -383,7 +383,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item*
     }
 }
 
-fb::task<bool> fb::game::npc::return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
+async::task<bool> fb::game::npc::return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {

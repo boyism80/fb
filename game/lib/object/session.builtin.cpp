@@ -294,7 +294,7 @@ int fb::game::session::builtin_item_drop(lua_State* lua)
     auto index = (uint8_t)thread->tointeger(2);
     auto drop_all = thread->toboolean(3);
 
-    auto dropped = session->items.drop(index - 1, drop_all ? 1 : -1).wait();
+    auto dropped = async::awaitable_get(session->items.drop(index - 1, drop_all ? 1 : -1));
     if(dropped != nullptr)
         thread->pushobject(dropped);
     else
@@ -330,7 +330,7 @@ int fb::game::session::builtin_mkitem(lua_State* lua)
     {
         auto context = thread->env<fb::game::context>("context");
         auto item = model->make(*context, count);
-        auto slot = session->items.add(item).wait();
+        auto slot = async::awaitable_get(session->items.add(item));
         if(slot == 0xFF)
         {
             thread->pushnil();
@@ -394,7 +394,7 @@ int fb::game::session::builtin_rmitem(lua_State* lua)
 
         auto dropped = session->items.remove(index, count, delete_attr);
         if(dropped != nullptr)
-            dropped->destroy().wait();
+            async::awaitable_get(dropped->destroy());
     }
     catch(...)
     { }
@@ -758,7 +758,7 @@ int fb::game::session::builtin_withdraw_item(lua_State* lua)
     else
     {
         auto index = std::distance(deposited_items.cbegin(), found);
-        auto returned = session->withdraw_item(index, count).wait();
+        auto returned = async::awaitable_get(session->withdraw_item(index, count));
         thread->pushobject(returned);
     }
     

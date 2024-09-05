@@ -22,7 +22,7 @@ fb::game::items::~items()
     }
 }
 
-fb::task<uint8_t> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
+async::task<uint8_t> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 
@@ -104,21 +104,21 @@ fb::task<uint8_t> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
     }
 }
 
-fb::task<uint8_t> fb::game::items::add(fb::game::item& item)
+async::task<uint8_t> fb::game::items::add(fb::game::item& item)
 {
     co_return co_await this->add(&item);
 }
 
-fb::task<uint8_t> fb::game::items::add(fb::game::item* item)
+async::task<uint8_t> fb::game::items::add(fb::game::item* item)
 {
-    auto& result = co_await this->add(std::vector<fb::game::item*> { item });
+    auto&& result = co_await this->add(std::vector<fb::game::item*> { item });
     if(result.empty())
         co_return 0xFF;
     else
         co_return result[0];
 }
 
-fb::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::item*>& items)
+async::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::item*>& items)
 {
     auto indices = std::vector<uint8_t>();
     auto updates = std::map<uint8_t, fb::game::item*>();
@@ -163,7 +163,7 @@ fb::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::
     co_return std::ref(indices);
 }
 
-fb::task<uint8_t> fb::game::items::add(fb::game::item& item, uint8_t index)
+async::task<uint8_t> fb::game::items::add(fb::game::item& item, uint8_t index)
 {
     if(co_await fb::game::inventory<fb::game::item>::add(item, index) == 0xFF)
         co_return 0xFF;
@@ -177,7 +177,7 @@ fb::task<uint8_t> fb::game::items::add(fb::game::item& item, uint8_t index)
     co_return index;
 }
 
-fb::task< fb::game::item*> fb::game::items::active(uint8_t index)
+async::task< fb::game::item*> fb::game::items::active(uint8_t index)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 
@@ -207,7 +207,7 @@ fb::task< fb::game::item*> fb::game::items::active(uint8_t index)
     }
 }
 
-fb::task<uint8_t> fb::game::items::inactive(EQUIPMENT_PARTS parts)
+async::task<uint8_t> fb::game::items::inactive(EQUIPMENT_PARTS parts)
 {
     co_return co_await this->equipment_off(parts);
 }
@@ -489,7 +489,7 @@ fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
     return this->find(model);
 }
 
-fb::task< fb::game::item*> fb::game::items::drop(uint8_t index, uint8_t count)
+async::task< fb::game::item*> fb::game::items::drop(uint8_t index, uint8_t count)
 {
     auto                        listener = this->_owner.get_listener<fb::game::session>();
 
@@ -520,7 +520,7 @@ fb::task< fb::game::item*> fb::game::items::drop(uint8_t index, uint8_t count)
     }
 }
 
-fb::task<void> fb::game::items::pickup(bool boost)
+async::task<void> fb::game::items::pickup(bool boost)
 {
     auto                    listener = this->_owner.get_listener<fb::game::session>();
 
@@ -583,7 +583,7 @@ fb::task<void> fb::game::items::pickup(bool boost)
     }
 }
 
-fb::task<bool> fb::game::items::throws(uint8_t index)
+async::task<bool> fb::game::items::throws(uint8_t index)
 {
     auto listener = this->_owner.get_listener<fb::game::session>();
 

@@ -69,7 +69,7 @@ OBJECT_TYPE fb::game::object::what() const
     return this->_model.what();
 }
 
-fb::task<void> fb::game::object::destroy()
+async::task<void> fb::game::object::destroy()
 {
     co_await this->context.destroy(*this);
 }
@@ -384,7 +384,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-fb::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position)
+async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position)
 {
     try
     {
@@ -424,7 +424,7 @@ fb::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& positi
         }
 
         auto before = this->_map;
-
+        auto position_x = position;
         if(this->_map != nullptr)
         {
             co_await this->map(nullptr);
@@ -436,7 +436,7 @@ fb::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& positi
             co_await thread->dispatch(uint32_t(-1));
 
         this->_map = map;
-        this->_position = position;
+        this->_position = position_x;
         this->_map->update(*this);
         this->_map->objects.push(*this);
         if(this->_listener != nullptr)
@@ -467,7 +467,7 @@ fb::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& positi
     }
 }
 
-fb::task<bool> fb::game::object::map(fb::game::map* map)
+async::task<bool> fb::game::object::map(fb::game::map* map)
 {
     co_return co_await this->map(map, point16_t(0, 0));
 }
@@ -949,7 +949,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
         return 0;
 
     auto seconds = (uint32_t)thread->tointeger(3);
-    auto buff = object->buffs.push_back(*spell, seconds).wait();
+    auto buff = async::awaitable_get(object->buffs.push_back(*spell, seconds));
     if(buff == nullptr)
         thread->pushnil();
     else
@@ -1115,7 +1115,7 @@ int fb::game::object::builtin_map(lua_State* lua)
             throw std::exception();
         }
 
-        object->map(map, position).wait();
+        async::awaitable_get(object->map(map, position));
     }
     catch(...)
     { }
@@ -1145,7 +1145,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     {
         auto context = thread->env<fb::game::context>("context");
         auto item = model->make(*context);
-        item->map(object->_map, object->_position).wait();
+        async::awaitable_get(item->map(object->_map, object->_position));
         thread->pushobject(item);
         
         context->send(*item, fb::protocol::game::response::object::show(*item), context::scope::PIVOT);

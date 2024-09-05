@@ -45,7 +45,7 @@ std::string fb::game::cash::detailed_name() const
     return sstream.str();
 }
 
-fb::task< fb::game::cash*> fb::game::cash::replace(uint32_t value)
+async::task< fb::game::cash*> fb::game::cash::replace(uint32_t value)
 {
     fb::game::cash* result = nullptr;
     if(this->empty())

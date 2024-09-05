@@ -3,8 +3,8 @@
 
 #include <fb/game/model.h>
 #include <fb/core/mst.h>
-#include <fb/core/coroutine.h>
 #include <fb/game/item.h>
+#include <fb/core/generator.h>
 
 using namespace fb::model::enum_value;
 
