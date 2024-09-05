@@ -35,7 +35,7 @@ std::string fb::game::item::tip_message() const
     return sstream.str();
 }
 
-std::string fb::game::item::detailed_name() const
+std::string fb::game::item::inven_name() const
 {
     auto& model = this->based<fb::model::item>();
 
@@ -51,6 +51,11 @@ std::string fb::game::item::detailed_name() const
     {
         return model.name;
     }
+}
+
+std::string fb::game::item::trade_name() const
+{
+    return this->inven_name();
 }
 
 uint16_t fb::game::item::fill(uint16_t count)

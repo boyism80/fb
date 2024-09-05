@@ -22,7 +22,13 @@ std::string fb::game::weapon::mid_message() const
     return sstream.str();
 }
 
-std::string fb::game::weapon::detailed_name() const
+std::string fb::game::weapon::inven_name() const
+{
+    auto& model = this->based<fb::model::equipment>();
+    return this->_custom_name.value_or(model.name);
+}
+
+std::string fb::game::weapon::trade_name() const
 {
     auto                    sstream = std::stringstream();
     auto&                   model = this->based<fb::model::equipment>();

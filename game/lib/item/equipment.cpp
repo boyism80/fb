@@ -16,7 +16,7 @@ fb::game::equipment::~equipment()
 { }
 
 
-std::string fb::game::equipment::detailed_name() const
+std::string fb::game::equipment::trade_name() const
 {
     std::stringstream       sstream;
     auto&                   model = this->based<fb::model::equipment>();

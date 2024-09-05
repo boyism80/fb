@@ -29,7 +29,7 @@ void fb::game::pack::durability(uint32_t value)
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
-std::string fb::game::pack::detailed_name() const
+std::string fb::game::pack::inven_name() const
 {
     auto& model = this->based<fb::model::pack>();
     auto sstream = std::stringstream();

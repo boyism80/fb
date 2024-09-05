@@ -33,7 +33,7 @@ const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, u
     return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
 }
 
-std::string fb::game::cash::detailed_name() const
+std::string fb::game::cash::inven_name() const
 {
     auto& model = this->based<fb::model::cash>();
     auto sstream = std::stringstream();

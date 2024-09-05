@@ -1216,7 +1216,7 @@ async::task<bool> fb::game::context::handle_front_info(fb::socket<fb::game::sess
     {
         auto object = *i;
         auto message = object->is(OBJECT_TYPE::ITEM) ? 
-            static_cast<fb::game::item*>(*i)->detailed_name() : 
+            static_cast<fb::game::item*>(*i)->inven_name() : 
             (*i)->name();
         
         session->message(message, MESSAGE_TYPE::STATE);
