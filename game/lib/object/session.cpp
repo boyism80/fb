@@ -1115,7 +1115,6 @@ async::task<void> fb::game::session::ride(fb::game::mob& horse)
         co_await horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
-        horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
         this->message(message::ride::ON);
     }
     catch(std::exception& e)

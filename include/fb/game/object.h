@@ -66,7 +66,7 @@ private:
 public:
     template <typename T>
     typename T::listener*               get_listener() const { return dynamic_cast<typename T::listener*>(this->_listener); }
-    virtual async::task<void>              destroy();
+    virtual async::task<void>           destroy();
     virtual void                        send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) { }
     virtual void                        send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) { }
 

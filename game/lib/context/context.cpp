@@ -173,7 +173,15 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<fb::game::session>(context, port, std::thread::hardware_concurrency()),
     _db(*this, 4),
     maps(*this, fb::config::get()["group"].asUInt())
+{ }
+
+fb::game::context::~context()
+{}
+
+async::task<void> fb::game::context::handle_start()
 {
+    co_await fb::acceptor<fb::game::session>::handle_start();
+
     const auto& config = fb::config::get();
 
     lua::env<fb::game::context>("context", this);
@@ -205,6 +213,18 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
     lua::bind_function("name_with",         builtin_name_with);
     lua::bind_function("assert_korean",     builtin_assert_korean);
     lua::bind_function("CP949",             builtin_cp949);
+
+    auto& threads = this->threads();
+    for(int i = 0; i < threads.count(); i++)
+    {
+        auto thread = threads.at(i);
+        co_await thread->dispatch([] () -> async::task<void>
+        {
+            auto& ist = fb::game::lua::container::ist();
+            auto& main = ist.get();
+            co_return;
+        });
+    }
 
     this->bind<fb::protocol::game::request::login>            (std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
@@ -392,27 +412,6 @@ fb::game::context::context(boost::asio::io_context& context, uint16_t port) :
             .fn = std::bind(&context::handle_concurrency, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
-}
-
-fb::game::context::~context()
-{}
-
-async::task<void> fb::game::context::handle_start()
-{
-    co_await fb::acceptor<fb::game::session>::handle_start();
-
-    // prepare lua context
-    auto& threads = this->threads();
-    for(int i = 0; i < threads.count(); i++)
-    {
-        auto thread = threads.at(i);
-        co_await thread->dispatch([] () -> async::task<void>
-        {
-            auto& ist = fb::game::lua::container::ist();
-            auto& main = ist.get();
-            co_return;
-        });
-    }
 }
 
 bool fb::game::context::decrypt_policy(uint8_t cmd) const
@@ -1998,32 +1997,9 @@ void fb::game::context::handle_mob_action(std::chrono::steady_clock::duration no
 
 void fb::game::context::handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id)
 {
-    // 리젠된 전체 몹을 저장
-    for(auto& [_, map] : this->maps)
+    for (auto& rezen : this->rezen)
     {
-        if(map.active == false)
-            continue;
-
-        auto thread = this->thread(&map);
-        if(thread != nullptr && thread->id() != id)
-            continue;
-
-        for(auto& [fd, obj] : map.objects)
-        {
-            if(obj.is(OBJECT_TYPE::MOB) == false)
-                continue;
-
-            auto mob = static_cast<fb::game::mob*>(&obj);
-            if(mob == nullptr)
-                continue;
-
-            if(mob->spawn(now) == false)
-                continue;
-
-            mob->visible(true);
-            mob->hp(mob->base_hp());
-            mob->mp(mob->base_mp());
-        }
+        rezen.spawn(id);
     }
 }
 

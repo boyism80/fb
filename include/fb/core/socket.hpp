@@ -261,11 +261,11 @@ async::task<R> fb::awaitable_socket<T, C>::request(const fb::protocol::base::hea
         {
             auto sstream = std::stringstream();
             sstream << "boost socket error(" << ec.value() << ")";
-            promise->set_error(std::runtime_error(sstream.str()));
+            promise->set_exception(std::make_exception_ptr(std::runtime_error(sstream.str())));
         }
     });
 
-    co_return co_await promise->task;
+    co_return co_await promise->task();
 }
 
 template <typename T, typename C>

@@ -80,10 +80,10 @@ void fb::game::life::attack()
     if(this->alive() == false)
         return;
 
-    auto front = this->forward(OBJECT_TYPE::UNKNOWN);
+    auto front = this->forward(OBJECT_TYPE::LIFE);
     this->on_attack(front);
 
-    if(front == nullptr || front->is(OBJECT_TYPE::LIFE) == false)
+    if(front == nullptr)
         return;
 
     auto you = static_cast<fb::game::life*>(front);

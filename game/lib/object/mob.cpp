@@ -4,8 +4,86 @@
 #include <fb/core/thread.h>
 #include <fb/game/context.h>
 
+fb::game::rezen::rezen(fb::game::context& context, const fb::model::mob_spawn& model) : 
+    _context(context),
+    _model(model)
+{
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
+    this->_respawn_time = now;
+}
+
+void fb::game::rezen::decrease()
+{
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
+
+    if (this->_respawn_time == 0ms)
+        this->_respawn_time = now + this->_model.rezen;
+    this->_count = std::max(0, this->_count - 1);
+}
+
+void fb::game::rezen::spawn(std::thread::id thread_id)
+{
+    auto& map = this->_context.maps[this->_model.parent];
+    if (map.active == false)
+        return;
+
+    if (map.activated() == false)
+        return;
+
+    auto thread = this->_context.thread(&map);
+    if (thread == nullptr || thread->id() != thread_id)
+        return;
+
+    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
+    if(this->_respawn_time == 0ms)
+        return;
+
+    if (now < this->_respawn_time)
+        return;
+
+    auto spawn_count = this->_model.count - this->_count;
+    if(spawn_count < 1)
+        return;
+
+    for (int i = 0; i < spawn_count; i++)
+    {
+        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob], fb::game::mob::config
+            {
+                .alive = true,
+                .rezen = this
+            });
+
+        mob->direction(DIRECTION(std::rand() % 4));
+        mob->hp_up(mob->base_hp());
+
+        while (true)
+        {
+            auto width = this->_model.end.x - this->_model.begin.x;
+            auto height = this->_model.end.y - this->_model.begin.y;
+            auto position = point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0), this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
+
+            auto& map = this->_context.maps[this->_model.parent];
+            if (position.x > map.width() - 1 || position.y > map.height() - 1)
+                continue;
+
+            if (map.blocked(position.x, position.y))
+                continue;
+
+            mob->position(position, true);
+            mob->map(&map, position);
+            break;
+        }
+
+        mob->action_time(now);
+        mob->visible(true);
+    }
+
+    this->_respawn_time = 0ms;
+}
+
 fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) : 
-    life(context, model, config)
+    life(context, model, config),
+    _rezen(config.rezen)
 {
     this->visible(config.alive);
     if(config.alive)
@@ -17,16 +95,15 @@ fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, cons
 
 fb::game::mob::mob(const fb::game::mob& right) :
     life(right),
-    _spawn_point(right._spawn_point),
-    _spawn_size(right._spawn_size),
     _action_time(right._action_time),
-    _dead_time(right._dead_time),
-    _respawn_time(right._respawn_time),
     _target(right._target)
 { }
 
 fb::game::mob::~mob()
-{ }
+{
+    if(this->_rezen != nullptr)
+        this->_rezen->decrease();
+}
 
 bool fb::game::mob::action()
 {
@@ -80,38 +157,6 @@ uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool cri
     return value;
 }
 
-const point16_t& fb::game::mob::spawn_point() const
-{
-    return this->_spawn_point;
-}
-
-void fb::game::mob::spawn_point(uint16_t x, uint16_t y)
-{
-    this->_spawn_point.x = x;
-    this->_spawn_point.y = y;
-}
-
-void fb::game::mob::spawn_point(const point16_t point)
-{
-    this->_spawn_point = point;
-}
-
-const size16_t& fb::game::mob::spawn_size() const
-{
-    return this->_spawn_size;
-}
-
-void fb::game::mob::spawn_size(uint16_t width, uint16_t height)
-{
-    this->_spawn_size.width = width;
-    this->_spawn_size.height = height;
-}
-
-void fb::game::mob::spawn_size(const size16_t size)
-{
-    this->_spawn_size = size;
-}
-
 std::chrono::milliseconds fb::game::mob::action_time() const
 {
     return this->_action_time;
@@ -120,62 +165,6 @@ std::chrono::milliseconds fb::game::mob::action_time() const
 void fb::game::mob::action_time(std::chrono::milliseconds ms)
 {
     this->_action_time = ms;
-}
-
-std::chrono::milliseconds fb::game::mob::dead_time() const
-{
-    return this->_dead_time;
-}
-
-void fb::game::mob::dead_time(std::chrono::milliseconds ms)
-{
-    this->_dead_time = ms;
-}
-
-std::chrono::milliseconds fb::game::mob::respawn_time() const
-{
-    return this->_respawn_time;
-}
-
-void fb::game::mob::respawn_time(std::chrono::milliseconds ms)
-{
-    this->_respawn_time = ms;
-}
-
-bool fb::game::mob::spawn(std::chrono::steady_clock::duration now)
-{
-    auto& config = fb::config::get();
-    if(this->_map->active == false)
-        return false;
-
-    if(this->alive())
-        return false;
-
-    if(this->_spawn_size.empty())
-        return false;
-
-    if((now - this->_dead_time) / 1000 < this->_respawn_time)
-        return false;
-
-    this->direction(DIRECTION(std::rand() % 4));
-    this->hp_up(this->base_hp());
-
-    while(true)
-    {
-        point16_t position(this->_spawn_point.x + (std::rand() % this->_spawn_size.width), this->_spawn_point.y + (std::rand() % this->_spawn_size.height));
-
-        if(position.x > this->_map->width()-1 || position.y > this->_map->height()-1)
-            continue;
-
-        if(this->_map->blocked(position.x, position.y))
-            continue;
-
-        this->position(position, true);
-        break;
-    }
-
-    this->action_time(std::chrono::duration_cast<std::chrono::milliseconds>(now));
-    return true;
 }
 
 fb::game::life* fb::game::mob::target() const
@@ -365,8 +354,6 @@ void fb::game::mob::on_die(fb::game::object* from)
 {
     fb::game::life::on_die(from);
 
-    this->dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
-
     // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();
     auto& drop = this->context.model.drop[model.drop];
@@ -378,7 +365,8 @@ void fb::game::mob::on_die(fb::game::object* from)
         case DSL::item:
         {
             auto params = fb::model::dsl::item(dsl.params);
-            if (std::rand() % 100 > params.percent)
+            auto random = std::rand() % 100;
+            if (random > (int)params.percent)
                 continue;
 
             auto item = this->context.model.item[params.id].make(this->context);
@@ -391,4 +379,6 @@ void fb::game::mob::on_die(fb::game::object* from)
     auto listener = this->get_listener<fb::game::mob>();
     if(listener != nullptr)
         listener->on_die(*this, from);
+
+    this->destroy();
 }
