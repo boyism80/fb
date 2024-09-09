@@ -462,6 +462,28 @@ inline DEATH_PENALTY enum_parse<DEATH_PENALTY>(const std::string k)
     return i->second;
 }
 
+enum class DESTROY_TYPE
+{
+    DEFAULT = 0, 
+    DEAD = 1
+};
+
+template <>
+inline DESTROY_TYPE enum_parse<DESTROY_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, DESTROY_TYPE> enums
+    {
+        { "DEFAULT", DESTROY_TYPE::DEFAULT }, 
+        { "DEAD", DESTROY_TYPE::DEAD }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class DIRECTION
 {
     TOP = 0, 
@@ -2208,7 +2230,7 @@ DECLARE_MOB_SPAWN_FIELDS
 #else
 public:
     const uint32_t parent;
-    const point<uint32_t> begin;
+    const point<uint16_t> begin;
     const point<uint16_t> end;
     const uint16_t count;
     const uint32_t mob;
@@ -2224,7 +2246,7 @@ public:
 DECLARE_MOB_SPAWN_CONSTRUCTOR
 #endif
         parent(fb::model::build<uint32_t>(json["parent"])),
-        begin(fb::model::build<point<uint32_t>>(json["begin"])),
+        begin(fb::model::build<point<uint16_t>>(json["begin"])),
         end(fb::model::build<point<uint16_t>>(json["end"])),
         count(fb::model::build<uint16_t>(json["count"])),
         mob(fb::model::build<uint32_t>(json["mob"])),
@@ -3269,9 +3291,8 @@ private:
             throw std::runtime_error(sstream.str());
         }
 
-        this->load(json);
         ifstream.close();
-        json.clear();
+        this->load(json);
     }
     void load(const Json::Value& json)
     {

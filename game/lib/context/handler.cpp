@@ -57,14 +57,38 @@ void fb::game::context::on_show(fb::game::object& me, fb::game::object& you, boo
         this->send(me, fb::protocol::game::response::object::show(you), scope::SELF);
 }
 
-void fb::game::context::on_hide(fb::game::object& me)
+void fb::game::context::on_hide(fb::game::object& me, DESTROY_TYPE destroy_type)
 {
-    this->send(me, fb::protocol::game::response::object::hide(me), scope::PIVOT);
+    switch(destroy_type)
+    {
+    case DESTROY_TYPE::DEFAULT:
+        this->send(me, fb::protocol::game::response::object::hide(me), scope::PIVOT, true);
+        break;
+
+    case DESTROY_TYPE::DEAD:
+        if (me.is(OBJECT_TYPE::LIFE) == false)
+            throw std::runtime_error("object must be life type");
+
+        this->send(me, fb::protocol::game::response::life::die(static_cast<fb::game::life&>(me)), scope::PIVOT, true);
+        break;
+    }
 }
 
-void fb::game::context::on_hide(fb::game::object& me, fb::game::object& you)
+void fb::game::context::on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type)
 {
-    this->send(me, fb::protocol::game::response::object::hide(you), scope::SELF);
+    switch(destroy_type)
+    {
+    case DESTROY_TYPE::DEFAULT:
+        this->send(me, fb::protocol::game::response::object::hide(you), scope::SELF);
+        break;
+
+    case DESTROY_TYPE::DEAD:
+        if (you.is(OBJECT_TYPE::LIFE) == false)
+            throw std::runtime_error("object must be life type");
+
+        this->send(me, fb::protocol::game::response::life::die(static_cast<fb::game::life&>(you)), scope::SELF);
+        break;
+    }
 }
 
 void fb::game::context::on_move(fb::game::object& me, const point16_t& before)
@@ -89,10 +113,52 @@ void fb::game::context::on_unbuff(fb::game::object& me, fb::game::buff& buff)
 }
 
 void fb::game::context::on_attack(life& me, object* you)
-{ }
+{
+    switch(me.what())
+    {
+    case OBJECT_TYPE::SESSION:
+        {
+            this->send(me, fb::protocol::game::response::session::action(static_cast<fb::game::session&>(me), ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
+            auto* weapon = static_cast<fb::game::session&>(me).items.weapon();
+            if (weapon != nullptr)
+            {
+                auto sound = weapon->based<fb::model::weapon>().sound;
+                this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? SOUND(sound) : SOUND::SWING), scope::PIVOT);
+            }
+        }
+        break;
+
+    case OBJECT_TYPE::MOB:
+        this->send(me, fb::protocol::game::response::life::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
+        break;
+    }
+}
 
 void fb::game::context::on_hit(life& me, life& you, uint32_t damage, bool critical)
-{ }
+{
+    switch (me.what())
+    {
+    case OBJECT_TYPE::MOB:
+    {
+        you.hp_down(damage, &me, critical);
+    }
+
+    case OBJECT_TYPE::SESSION:
+    {
+#ifndef PK
+        if (you.is(OBJECT_TYPE::SESSION))
+            return;
+#endif
+
+        auto* weapon = static_cast<fb::game::session&>(me).items.weapon();
+        if (weapon != nullptr)
+            this->send(me, fb::protocol::game::response::object::sound(me, SOUND::DAMAGE), scope::PIVOT);
+
+        you.hp_down(damage, &me, critical);
+    }
+    break;
+    }
+}
 
 void fb::game::context::on_kill(life& me, life& you)
 { }
@@ -130,45 +196,10 @@ void fb::game::context::on_updated(session& me, STATE_LEVEL level)
 void fb::game::context::on_money_changed(session& me, uint32_t value)
 { }
 
-void fb::game::context::on_attack(session& me, object* you)
-{
-    this->send(me, fb::protocol::game::response::session::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
-    auto* weapon = me.items.weapon();
-    if (weapon != nullptr)
-    {
-        auto            sound = weapon->based<fb::model::weapon>().sound;
-        this->send(me, fb::protocol::game::response::object::sound(me, sound != 0 ? SOUND(sound) : SOUND
-::SWING), scope::PIVOT);
-    }
-}
-
-void fb::game::context::on_hit(session& me, life& you, uint32_t damage, bool critical)
-{
-#ifndef PK
-    if(you.is(OBJECT_TYPE::SESSION))
-        return;
-#endif
-
-    auto* weapon = me.items.weapon();
-    if (weapon != nullptr)
-        this->send(me, fb::protocol::game::response::object::sound(me, SOUND::DAMAGE), scope::PIVOT);
-
-    you.hp_down(damage, &me, critical);
-}
-
-void fb::game::context::on_kill(session& me, life& you)
-{ }
-
-void fb::game::context::on_damaged(session& me, object* you, uint32_t damage, bool critical)
-{ }
-
 void fb::game::context::on_hold(session& me)
 {
     this->send(me, fb::protocol::game::response::session::position(me), scope::SELF);
 }
-
-void fb::game::context::on_die(session& me, object* you)
-{ }
 
 void fb::game::context::on_notify(session& me, const std::string& message, MESSAGE_TYPE type)
 {
@@ -513,27 +544,6 @@ void fb::game::context::on_item_changed(session& me, const std::map<uint8_t, fb:
 
 void fb::game::context::on_item_lost(session& me, const std::vector<uint8_t>& slots)
 { }
-
-void fb::game::context::on_attack(mob& me, object* you)
-{
-    this->send(me, fb::protocol::game::response::life::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
-}
-
-void fb::game::context::on_hit(mob& me, life& you, uint32_t damage, bool critical)
-{
-    you.hp_down(damage, &me, critical);
-}
-
-void fb::game::context::on_kill(mob& me, life& you)
-{ }
-
-void fb::game::context::on_damaged(mob& me, object* you, uint32_t damage, bool critical)
-{ }
-
-void fb::game::context::on_die(mob& me, object* you)
-{
-    this->send(me, fb::protocol::game::response::life::die(me), scope::PIVOT, true);
-}
 
 void fb::game::context::on_item_remove(session& me, uint8_t index, ITEM_DELETE_TYPE attr)
 {

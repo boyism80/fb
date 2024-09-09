@@ -49,7 +49,7 @@ OBJECT_TYPE fb::game::session::what() const
     return OBJECT_TYPE::SESSION;
 }
 
-async::task<bool> fb::game::session::map(fb::game::map* map, const point16_t& position)
+async::task<bool> fb::game::session::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
     if(this->_map_lock)
         co_return false;
@@ -65,13 +65,13 @@ async::task<bool> fb::game::session::map(fb::game::map* map, const point16_t& po
     }
     else
     {
-        co_return co_await fb::game::object::map(map, position);
+        co_return co_await fb::game::object::map(map, position, destroy_type);
     }
 }
 
-async::task<bool> fb::game::session::map(fb::game::map* map)
+async::task<bool> fb::game::session::map(fb::game::map* map, DESTROY_TYPE destroy_type)
 {
-    co_return co_await this->map(map, point16_t(0, 0));
+    co_return co_await this->map(map, point16_t(0, 0), destroy_type);
 }
 
 void fb::game::session::on_hold()
@@ -127,19 +127,6 @@ void fb::game::session::on_attack(fb::game::object* you)
     else
         thread->pushnil();
     thread->resume(2);
-
-    auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_attack(*this, you);
-}
-
-void fb::game::session::on_hit(fb::game::life& you, uint32_t damage, bool critical)
-{
-    fb::game::life::on_hit(you, damage, critical);
-
-    auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_hit(*this, you, damage, critical);
 }
 
 void fb::game::session::on_kill(fb::game::life& you)
@@ -158,30 +145,12 @@ void fb::game::session::on_kill(fb::game::life& you)
 #endif
         this->experience_add(exp, true);
     }
-
-    auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_kill(*this, you);
-}
-
-void fb::game::session::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
-{
-    fb::game::life::on_damaged(from, damage, critical);
-
-    auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_damaged(*this, from, damage, critical);
 }
 
 void fb::game::session::on_die(fb::game::object* from)
 {
     fb::game::life::on_die(from);
-
     this->state(STATE::GHOST);
-
-    auto listener = this->get_listener<fb::game::session>();
-    if(listener != nullptr)
-        listener->on_die(*this, from);
 }
 
 fb::game::session::operator fb::socket<fb::game::session>& ()
@@ -1115,7 +1084,6 @@ async::task<void> fb::game::session::ride(fb::game::mob& horse)
         co_await horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
-        horse.dead_time(std::chrono::duration_cast<std::chrono::milliseconds>(fb::thread::now()));
         this->message(message::ride::ON);
     }
     catch(std::exception& e)

@@ -69,9 +69,9 @@ OBJECT_TYPE fb::game::object::what() const
     return this->_model.what();
 }
 
-async::task<void> fb::game::object::destroy()
+async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
 {
-    co_await this->context.destroy(*this);
+    co_await this->context.destroy(*this, destroy_type);
 }
 
 void fb::game::object::chat(const std::string& message, bool shout)
@@ -384,7 +384,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
         begin.y <= you.y && end.y >= you.y;
 }
 
-async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position)
+async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
     try
     {
@@ -401,7 +401,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
                     for (auto x : this->_map->nears(this->_position))
                     {
                         if (x != this)
-                            this->_listener->on_hide(*x, *this);
+                            this->_listener->on_hide(*x, *this, destroy_type);
                     }
                 }
 
@@ -467,14 +467,14 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
     }
 }
 
-async::task<bool> fb::game::object::map(fb::game::map* map)
+async::task<bool> fb::game::object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
 {
-    co_return co_await this->map(map, point16_t(0, 0));
+    co_return co_await this->map(map, point16_t(0, 0), destroy_type);
 }
 
 fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) const
 {
-    fb::game::map* map = this->_map;
+    auto map = this->_map;
     if(map == nullptr)
         return nullptr;
 

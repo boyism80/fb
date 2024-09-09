@@ -32,7 +32,7 @@ public:
     bool                        hold_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        return_money(fb::game::session& session, std::optional<uint32_t> money);
     bool                        hold_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count);
-    async::task<bool>              return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count);
+    async::task<bool>           return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count);
     void                        sell_list();
     void                        buy_list();
     void                        sell_price(const fb::model::item* item);

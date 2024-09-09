@@ -35,7 +35,7 @@ protected:
     std::array<char, 256>           _buffer;
     T*                              _data;
     std::recursive_mutex            _boost_mutex, _task_mutex;
-    std::vector<async::task<bool>>     _unfinished_tasks;
+    std::vector<async::task<bool>>  _unfinished_tasks;
 //
 //public:
 //    std::mutex              stream_mutex;

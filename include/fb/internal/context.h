@@ -45,7 +45,7 @@ private:
     service*                        get(fb::protocol::internal::services type, uint8_t group = 0xFF);
 
 protected:
-    async::task<bool>                  handle_parse(fb::internal::socket<fb::internal::session>& socket) final;
+    async::task<bool>               handle_parse(fb::internal::socket<fb::internal::session>& socket) final;
     fb::internal::session*          handle_accepted(fb::internal::socket<fb::internal::session>& socket) final;
     bool                            handle_connected(fb::internal::socket<fb::internal::session>& session) final;
     bool                            handle_disconnected(fb::internal::socket<fb::internal::session>& session) final;
@@ -68,12 +68,12 @@ public:
     }
 
 public:
-    async::task<bool>                  handle_subscribe(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::subscribe&);
-    async::task<bool>                  handle_transfer(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::transfer&);
-    async::task<bool>                  handle_login(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::login&);
-    async::task<bool>                  handle_logout(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::logout&);
-    async::task<bool>                  handle_whisper(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::whisper&);
-    async::task<bool>                  handle_shutdown(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::shutdown&);
+    async::task<bool>               handle_subscribe(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::subscribe&);
+    async::task<bool>               handle_transfer(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::transfer&);
+    async::task<bool>               handle_login(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::login&);
+    async::task<bool>               handle_logout(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::logout&);
+    async::task<bool>               handle_whisper(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::whisper&);
+    async::task<bool>               handle_shutdown(fb::internal::socket<fb::internal::session>&, const fb::protocol::internal::request::shutdown&);
 };
 
 } }
