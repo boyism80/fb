@@ -128,17 +128,15 @@ protected:
     void                            on_update() final;
     uint32_t                        on_calculate_damage(bool critical) const final;
     void                            on_attack(fb::game::object* target) final;
-    void                            on_hit(fb::game::life& target, uint32_t damage, bool critical) final;
     void                            on_kill(fb::game::life& you) final;
-    void                            on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
     void                            on_die(fb::game::object* from) final;
 
 public:
     void                            send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void                            send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
     OBJECT_TYPE                     what() const final;
-    async::task<bool>               map(fb::game::map* map, const point16_t& position) final;
-    async::task<bool>               map(fb::game::map* map) final;
+    async::task<bool>               map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
+    async::task<bool>               map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
 
 public:
     operator                        fb::socket<fb::game::session>& ();
@@ -340,12 +338,7 @@ interface session::listener : public virtual fb::game::life::listener,
     public virtual                  fb::game::equipment::listener
 {
 public:
-    virtual void                    on_attack(session& me, object* you) = 0;
-    virtual void                    on_hit(session& me, life& you, uint32_t damage, bool critical) = 0;
-    virtual void                    on_kill(session& me, life& you) = 0;
-    virtual void                    on_damaged(session& me, object* you, uint32_t damage, bool critical) = 0;
     virtual void                    on_hold(session& me) = 0;
-    virtual void                    on_die(session& me, object* you) = 0;
     virtual void                    on_action(session& me, ACTION action, DURATION duration, uint8_t sound) = 0;
     virtual void                    on_updated(session& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
     virtual void                    on_money_changed(session& me, uint32_t value) = 0;

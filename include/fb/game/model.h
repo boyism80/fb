@@ -462,6 +462,28 @@ inline DEATH_PENALTY enum_parse<DEATH_PENALTY>(const std::string k)
     return i->second;
 }
 
+enum class DESTROY_TYPE
+{
+    DEFAULT = 0, 
+    DEAD = 1
+};
+
+template <>
+inline DESTROY_TYPE enum_parse<DESTROY_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, DESTROY_TYPE> enums
+    {
+        { "DEFAULT", DESTROY_TYPE::DEFAULT }, 
+        { "DEAD", DESTROY_TYPE::DEAD }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class DIRECTION
 {
     TOP = 0, 

@@ -73,11 +73,11 @@ public:
         return new T(*this, std::forward<Args>(args)...);
     }
     template <typename T>
-    async::task<void>       destroy(T& obj)
+    async::task<void>       destroy(T& obj, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            co_await obj.map(nullptr);
+            co_await obj.map(nullptr, destroy_type);
         }
         delete &obj;
         co_return;
@@ -205,8 +205,8 @@ public:
     void                    on_direction(fb::game::object& me) final;
     void                    on_show(fb::game::object& me, bool light) final;
     void                    on_show(fb::game::object& me, fb::game::object& you, bool light) final;
-    void                    on_hide(fb::game::object& me) final;
-    void                    on_hide(fb::game::object& me, fb::game::object& you) final;
+    void                    on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
+    void                    on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
     void                    on_move(fb::game::object& me, const point16_t& before) final;
     void                    on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
     void                    on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) final;
@@ -224,12 +224,7 @@ public:
     void                    on_mp(life& me, uint32_t before, uint32_t current) final;
 
     // listener : session
-    void                    on_attack(session& me, object* you) final;
-    void                    on_hit(session& me, life& you, uint32_t damage, bool critical) final;
-    void                    on_kill(session& me, life& you) final;
-    void                    on_damaged(session& me, object* you, uint32_t damage, bool critical) final;
     void                    on_hold(session& me) final;
-    void                    on_die(session& me, object* you) final;
     void                    on_action(session& me, ACTION action, DURATION duration, uint8_t sound) final;
     void                    on_updated(session& me, STATE_LEVEL level) final;
     void                    on_money_changed(session& me, uint32_t value) final;
@@ -240,13 +235,6 @@ public:
     void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) final;
     void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) final;
-
-    // listener : mob
-    void                    on_attack(mob& me, object* you) final;
-    void                    on_hit(mob& me, life& you, uint32_t damage, bool critical) final;
-    void                    on_kill(mob& me, life& you) final;
-    void                    on_damaged(mob& me, object* you, uint32_t damage, bool critical) final;
-    void                    on_die(mob& me, object* you) final;
 
     // listener : item
     void                    on_item_remove(session& me, uint8_t index, ITEM_DELETE_TYPE attr) final;

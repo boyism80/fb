@@ -65,8 +65,6 @@ private:
 
 public:
     bool                                    action();
-    uint32_t                                hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
-
     std::chrono::milliseconds               action_time() const;
     void                                    action_time(std::chrono::milliseconds ms);
 
@@ -80,9 +78,6 @@ public:
 
 protected:
     uint32_t                                on_calculate_damage(bool critical) const final;
-    void                                    on_attack(fb::game::object* target) final;
-    void                                    on_hit(fb::game::life& you, uint32_t damage, bool critical) final;
-    void                                    on_kill(fb::game::life& you) final;
     void                                    on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
     void                                    on_die(fb::game::object* from) final;
 
@@ -92,11 +87,6 @@ public:
 
 interface mob::listener : public virtual fb::game::life::listener
 {
-    virtual void                            on_attack(mob& me, object* you) = 0;
-    virtual void                            on_hit(mob& me, life& you, uint32_t damage, bool critical) = 0;
-    virtual void                            on_kill(mob& me, life& you) = 0;
-    virtual void                            on_damaged(mob& me, object* you, uint32_t damage, bool critical) = 0;
-    virtual void                            on_die(mob& me, object* you) = 0;
 };
 
 } }

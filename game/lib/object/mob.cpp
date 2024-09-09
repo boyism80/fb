@@ -148,15 +148,6 @@ bool fb::game::mob::action()
     return stop;
 }
 
-uint32_t fb::game::mob::hp_down(uint32_t value, fb::game::object* from, bool critical)
-{
-    value = fb::game::life::hp_down(value, from, critical);
-    if(this->_hp == 0)
-        this->visible(false);
-
-    return value;
-}
-
 std::chrono::milliseconds fb::game::mob::action_time() const
 {
     return this->_action_time;
@@ -302,33 +293,6 @@ uint32_t fb::game::mob::on_calculate_damage(bool critical) const
     return model.damage.min + (std::rand() % difference);
 }
 
-void fb::game::mob::on_attack(fb::game::object* target)
-{
-    fb::game::life::on_attack(target);
-
-    auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_attack(*this, target);
-}
-
-void fb::game::mob::on_hit(fb::game::life& you, uint32_t damage, bool critical)
-{
-    fb::game::life::on_hit(you, damage, critical);
-
-    auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_hit(*this, you, damage, critical);
-}
-
-void fb::game::mob::on_kill(fb::game::life& you)
-{
-    fb::game::life::on_kill(you);
-
-    auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_kill(*this, you);
-}
-
 void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
     fb::game::life::on_damaged(from, damage, critical);
@@ -338,10 +302,6 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
     {
         this->target(static_cast<fb::game::life*>(from));
     }
-
-    auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_damaged(*this, from, damage, critical);
 }
 
 uint32_t fb::game::mob::on_exp() const
@@ -376,9 +336,5 @@ void fb::game::mob::on_die(fb::game::object* from)
         }
     }
 
-    auto listener = this->get_listener<fb::game::mob>();
-    if(listener != nullptr)
-        listener->on_die(*this, from);
-
-    this->destroy();
+    this->destroy(DESTROY_TYPE::DEAD);
 }

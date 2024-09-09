@@ -192,7 +192,7 @@ void fb::game::life::kill()
 
     auto listener = this->get_listener<fb::game::life>();
     if(listener != nullptr)
-        listener->on_hide(*this);
+        listener->on_hide(*this, DESTROY_TYPE::DEAD);
 }
 
 bool fb::game::life::active(const fb::model::spell& spell, const std::string& message)
