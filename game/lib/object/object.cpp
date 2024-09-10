@@ -406,6 +406,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
                 }
 
                 this->_map = nullptr;
+                this->on_map_changed(this->_map);
             }
             this->_position = point16_t(1, 1); // 가상계 위치
             this->sector(nullptr);
@@ -437,6 +438,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
         this->_map = map;
         this->_position = position_x;
+        this->on_map_changed(this->_map);
         this->_map->update(*this);
         this->_map->objects.push(*this);
         if(this->_listener != nullptr)

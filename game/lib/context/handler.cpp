@@ -489,8 +489,6 @@ async::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game
         auto result = false;
         auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
         auto socket = this->sockets[response.fd];
-        co_return false;
-
         if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 

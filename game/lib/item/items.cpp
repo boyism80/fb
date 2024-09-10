@@ -118,7 +118,7 @@ async::task<uint8_t> fb::game::items::add(fb::game::item* item)
         co_return result[0];
 }
 
-async::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::item*>& items)
+async::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::item*>& items, bool stop_if_remained)
 {
     auto indices = std::vector<uint8_t>();
     auto updates = std::map<uint8_t, fb::game::item*>();
@@ -130,31 +130,55 @@ async::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::gam
             continue;
 
         auto& model = item->based<fb::model::item>();
-
-        auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
-        if(exists != nullptr)
+        if (model.attr(ITEM_ATTRIBUTE::CASH))
         {
-            exists->merge(*item);
-            if(item->empty() || item->map() == nullptr)
-                co_await item->destroy();
+            auto        cash = static_cast<fb::game::cash*>(item);
+            auto        remain = this->_owner.money_add(cash->value);
+            if (remain > 0)
+                cash = co_await cash->replace(remain); // 먹고 남은 돈으로 설정
+            else
+                co_await cash->destroy();
 
-            auto index = this->index(*exists);
-            updates.insert({ index, exists });
-            indices.push_back(index);
+            if (listener != nullptr)
+                listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MIN);
+
+            if (remain != 0)
+            {
+                this->_owner.message(message::money::FULL);
+                if (stop_if_remained)
+                    break;
+            }
         }
         else
         {
-            auto index = this->next();
-            if(index == 0xFF)
-                break;
+            auto exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
+            if (exists != nullptr)
+            {
+                exists->merge(*item);
 
-            this->add(*item, index);
+                auto index = this->index(*exists);
+                updates.insert({ index, exists });
+                indices.push_back(index);
 
-            if(item->_map != nullptr)
-                co_await item->map(nullptr);
+                if (item->empty())
+                    co_await item->destroy();
+                else if (stop_if_remained)
+                    break;
+            }
+            else
+            {
+                auto index = this->next();
+                if (index == 0xFF)
+                    break;
 
-            updates.insert({ index, item });
-            indices.push_back(index);
+                this->add(*item, index);
+
+                if (item->_map != nullptr)
+                    co_await item->map(nullptr);
+
+                updates.insert({ index, item });
+                indices.push_back(index);
+            }
         }
     }
 
@@ -533,39 +557,30 @@ async::task<void> fb::game::items::pickup(bool boost)
         this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
 
-        std::string         message;
-
         // Pick up items in reverse order
-        auto belows = map->belows(this->_owner.position(), OBJECT_TYPE::ITEM);
-        for(auto i = belows.size() - 1; i >= 0; i--)
+        auto belows = std::vector<fb::game::item*>();
+        for (auto below : map->belows(this->_owner.position(), OBJECT_TYPE::ITEM))
         {
-            auto            object = belows[i];
-            auto            below = static_cast<fb::game::item*>(object);
-            auto&           model = below->based<fb::model::item>();
-            if(model.attr(ITEM_ATTRIBUTE::CASH))
-            {
-                auto        cash = static_cast<fb::game::cash*>(below);
-                auto        remain = this->_owner.money_add(cash->value);
-                if (remain > 0)
-                    cash = co_await cash->replace(remain); // 먹고 남은 돈으로 설정
-                else
-                    co_await cash->destroy();
+            belows.push_back(static_cast<fb::game::item*>(below));
+        }
 
-                if(remain != 0)
-                    this->_owner.message(message::money::FULL);
+        std::sort(belows.begin(), belows.end(), [](auto* obj1, auto* obj2)
+        {
+            auto item1 = static_cast<fb::game::item*>(obj1);
+            auto item2 = static_cast<fb::game::item*>(obj2);
+            return item1->dropped_time() > item2->dropped_time();
+        });
 
-                if(listener != nullptr)
-                    listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MIN);
-            }
-            else
-            {
-                auto        index = co_await this->_owner.items.add(below);
-                if(index == -1)
-                    break;
-            }
-
-            if(boost == false)
-                break;
+        if (belows.size() == 0)
+        {
+        }
+        else if (boost)
+        {
+            this->_owner.items.add(belows, true);
+        }
+        else
+        {
+            this->_owner.items.add(belows[0]);
         }
 
         auto thread = lua::get();

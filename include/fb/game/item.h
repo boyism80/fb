@@ -42,15 +42,22 @@ public:
     
     static const conditions             DEFAULT_CONDITION;
 
+public:
+    using nullable_time = std::optional<std::chrono::steady_clock::duration>;
+
 
 protected:
     uint16_t                            _count = 0;
     session*                            _owner = nullptr;
+    nullable_time                       _dropped_time = std::nullopt;
 
 public:
     item(fb::game::context& context, const fb::model::item& model, const fb::game::item::config& config = fb::game::item::config { .count = 1 });
     item(const item& right);
     virtual ~item();
+
+protected:
+    virtual void                        on_map_changed(fb::game::map* map);
 
 
 public:
@@ -70,11 +77,11 @@ public:
     uint16_t                            count() const;
     void                                count(uint16_t value);
     virtual bool                        empty() const;
+    const nullable_time&                dropped_time() const;
 
 public:
     fb::game::session*                  owner() const;
     void                                owner(fb::game::session* owner);
-
 
 public:
     virtual bool                        active();
@@ -297,7 +304,7 @@ private:
 public:
     async::task<uint8_t>                add(fb::game::item& item);
     async::task<uint8_t>                add(fb::game::item* item);
-    async::task<std::vector<uint8_t>>   add(const std::vector<fb::game::item*>& items);
+    async::task<std::vector<uint8_t>>   add(const std::vector<fb::game::item*>& items, bool stop_if_remained = false);
     async::task<uint8_t>                add(fb::game::item& item, uint8_t index);
     async::task<fb::game::item*>        active(uint8_t index);
     async::task<uint8_t>                inactive(EQUIPMENT_PARTS parts);

@@ -22,6 +22,13 @@ void fb::game::item::durability(uint32_t value)
 { }
 
 
+void fb::game::item::on_map_changed(fb::game::map* map)
+{
+    if(map == nullptr)
+        this->_dropped_time = std::nullopt;
+    else
+        this->_dropped_time = fb::thread::now();
+}
 
 std::string fb::game::item::tip_message() const
 {
@@ -87,6 +94,11 @@ void fb::game::item::count(uint16_t value)
 bool fb::game::item::empty() const
 {
     return this->_count == 0;
+}
+
+const fb::game::item::nullable_time& fb::game::item::dropped_time() const
+{
+    return this->_dropped_time;
 }
 
 fb::game::session* fb::game::item::owner() const

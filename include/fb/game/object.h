@@ -140,6 +140,7 @@ public:
 
 protected:
     virtual void                        on_hold() { }
+    virtual void                        on_map_changed(fb::game::map*) { }
 
 public:
     bool                                operator == (const object& right) const;
