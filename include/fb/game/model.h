@@ -4100,7 +4100,7 @@ template <typename T> typename std::enable_if<is_default<T>::value, T>::type bui
 template <typename T> typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json)
 {
     if(json.isString())
-        return T(enum_value::enum_parse<T>(build<std::string>(json)));
+        return T(fb::model::enum_value::enum_parse<T>(build<std::string>(json)));
     else
         return T(json.asInt());
 }
