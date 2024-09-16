@@ -333,7 +333,7 @@ template <typename T>
 async::task<void> fb::acceptor<T>::handle_internal_receive(fb::base::socket<>& socket)
 {
     static constexpr uint8_t base_size = sizeof(uint16_t);
-    co_return co_await socket.in_stream<async::task<void>>([this, &socket](auto& in_stream) -> async::task<void>
+    co_return co_await socket.template in_stream<async::task<void>>([this, &socket](auto& in_stream) -> async::task<void>
     {
         while(true)
         {
@@ -517,7 +517,7 @@ async::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
 {
     static constexpr uint8_t    base_size     = sizeof(uint8_t) + sizeof(uint16_t);
 
-    co_return co_await socket.in_stream<async::task<bool>>([this, &socket](auto& in_stream) -> async::task<bool>
+    co_return co_await socket.template in_stream<async::task<bool>>([this, &socket](auto& in_stream) -> async::task<bool>
     {
         auto& crt = socket.crt();
         while(true)
@@ -595,7 +595,7 @@ void fb::acceptor<T>::bind(int cmd, const std::function<async::task<bool>(fb::so
 {
     this->_external_handler.insert({cmd, [this, fn](fb::socket<T>& socket, const std::function<void()>& callback)
     {
-        return socket.in_stream<async::task<bool>>([this, &fn, &socket, &callback] (auto& in_stream)
+        return socket.template in_stream<async::task<bool>>([this, &fn, &socket, &callback] (auto& in_stream)
         {
             R     header;
             header.deserialize(in_stream);
@@ -620,7 +620,7 @@ void fb::acceptor<T>::bind(const std::function<async::task<bool>(fb::internal::s
     auto id = R().__id;
     this->_internal_handler.insert({id, [this, fn](fb::internal::socket<>& socket, const std::function<void()>& callback)
     {
-        return socket.in_stream<async::task<bool>>([this, &fn, &socket, &callback](auto& in_stream)
+        return socket.template in_stream<async::task<bool>>([this, &fn, &socket, &callback](auto& in_stream)
         {
             R     header;
             header.deserialize(in_stream);

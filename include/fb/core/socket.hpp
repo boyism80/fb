@@ -93,10 +93,11 @@ void fb::base::socket<T>::recv()
                 auto ec = e.value();
                 switch (ec)
                 {
-                case ERROR_FILE_NOT_FOUND:
+                case ENOENT:
                     this->_handle_closed(*this);
                     break;
 
+#ifdef WIN32
                 case ERROR_OPERATION_ABORTED:
                     this->_handle_closed(*this);
                     break;
@@ -104,8 +105,10 @@ void fb::base::socket<T>::recv()
                 case WSAECONNRESET:
                     fb::logger::info("SYSTEM SHUTDOWN ALERT?");
                     break;
+#endif
 
                 default:
+                    fb::logger::fatal("unhandled exception : %d", ec);
                     break;
                 }
             }

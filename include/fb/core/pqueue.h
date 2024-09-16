@@ -43,7 +43,7 @@ public:
     bool                                            empty()
     {
         auto _ = std::lock_guard(this->_mutex);
-        return pqueue::empty();
+        return pqueue<T>::empty();
     }
     void                                            enqueue(T&& ref, uint32_t priority = 0)
     {

@@ -60,18 +60,18 @@ public:
     std::string             IP() const;
     uint32_t                fd();
     
-    template<typename R = void>
+    template<typename R>
     R in_stream(const std::function<R(fb::istream& in_stream)>& func)
     {
         auto _ = std::lock_guard(this->_instream_mutex);
-        return func(this->_instream);
-    }
-
-    template<>
-    void in_stream(const std::function<void(fb::istream& in_stream)>& func)
-    {
-        auto _ = std::lock_guard(this->_instream_mutex);
-        func(this->_instream);
+        if constexpr (std::is_void_v<T>)
+        {
+            func(this->_instream);
+        }
+        else
+        {
+            return func(this->_instream);
+        }
     }
 };
 
