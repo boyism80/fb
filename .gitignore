@@ -12,3 +12,4 @@ __pycache__
 optimize.bat
 ssh
 deploy/ssh
+external-tool

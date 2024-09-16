@@ -1,0 +1,9 @@
+include "monster.fbs";
+
+namespace fb.game.protocol;
+
+table Response {
+  monsters: [Monster];
+}
+ 
+root_type Response;
