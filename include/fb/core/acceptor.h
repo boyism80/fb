@@ -8,6 +8,7 @@
 #include <zlib.h>
 #include <functional>
 #include <iomanip>
+#include <httplib.h>
 #include <fb/core/stream.h>
 #include <fb/core/socket.h>
 #include <fb/protocol/protocol.h>
@@ -74,6 +75,15 @@ protected:
 public:
     void                                        send_stream(S<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true);
     void                                        send(S<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
+
+private:
+    async::task<httplib::Result>                post_async(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size);
+
+public:
+    // template <typename Response>
+    // async::task<Response>                       get(const std::string& host, const std::string& path, httplib::Headers headers);
+    template <typename Request, typename Response>
+    async::task<Response>                       post_async(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body);
 
 public:
     template <typename R>

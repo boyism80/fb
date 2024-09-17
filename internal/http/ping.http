@@ -1,0 +1,5 @@
+###
+POST {{host}}/ping
+Content-Type: application/octet-stream
+
+{}

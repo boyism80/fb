@@ -28,11 +28,11 @@ public:
 
 
 public:
-    auto Build(flatbuffers::FlatBufferBuilder& builder)
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::game::flatbuffer::inter::CreatePing(builder);
     }
-    std::vector<uint8_t> Serialize()
+    std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(this->Build(builder));

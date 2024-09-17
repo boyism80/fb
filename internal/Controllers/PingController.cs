@@ -13,7 +13,7 @@ public class PingController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet]
+    [HttpPost]
     public Pong Get(Ping request)
     {
         _logger.LogInformation("ping");

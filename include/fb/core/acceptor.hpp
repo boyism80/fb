@@ -197,6 +197,65 @@ void fb::base::acceptor<S, T>::send(S<T>& socket, const fb::protocol::base::head
     socket.send(out_stream, encrypt, wrap);
 }
 
+// template <template<class> class S, class T>
+// template <typename Response>
+// async::task<Response> fb::base::acceptor<S, T>::get(const std::string& host, const std::string& path, httplib::Headers headers)
+// {
+//     auto thread = this->current_thread();
+//     if (thread != nullptr)
+//         co_await thread->dispatch();
+// }
+
+template <template<class> class S, class T>
+async::task<httplib::Result> fb::base::acceptor<S, T>::post_async(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size)
+{
+    auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
+    auto buffer = std::vector<uint8_t>(size);
+    std::memcpy(buffer.data(), bytes, size);
+    std::async(std::launch::async, [this, promise, host, path, headers, buffer]() mutable
+    {
+        auto client = httplib::Client(host);
+        promise->set_value(client.Post(path, headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream"));
+    });
+
+    return promise->task();
+}
+
+template <template<class> class S, class T>
+template <typename Request, typename Response>
+async::task<Response> fb::base::acceptor<S, T>::post_async(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body)
+{
+    httplib::Headers headers;
+    headers.insert({ "Content-Type", "application/octet-stream" });
+    auto serialized = body.Serialize();
+
+    auto out_stream = fb::ostream();
+    out_stream.write_u32(Request::FlatBufferProtocolType);
+    out_stream.write_u32(serialized.size());
+    out_stream.write((const void*)serialized.data(), serialized.size());
+
+    auto&& res = co_await this->post_async(host, path, headers, out_stream.data(), out_stream.size());
+    if(!res)
+        throw std::runtime_error("http error");
+
+    if(res->status != 200)
+        throw std::runtime_error("http error");
+
+    auto ptr = (const uint8_t*)res->body.c_str();
+    auto size = std::stoi(res->get_header_value("Content-Length"));
+    auto in_stream = fb::istream(ptr, size);
+
+    auto protocol_type = in_stream.read_u32();
+    auto protocol_size = in_stream.read_u32();
+    auto protocol = Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
+
+    auto thread = this->current_thread();
+    if (thread != nullptr)
+        co_await thread->dispatch();
+
+    co_return protocol;
+}
+
 template <template<class> class S, class T>
 template <typename R>
 async::task<R> fb::base::acceptor<S, T>::request(const fb::protocol::internal::header& header, bool encrypt, bool wrap)
@@ -265,7 +324,7 @@ void fb::base::acceptor<S, T>::run(int thread_size)
     this->_boost_threads = std::make_unique<boost::asio::thread_pool>(thread_size);
     for(int i = 0; i < thread_size; i++)
     {
-        post(*this->_boost_threads, [this]
+        boost::asio::post(*this->_boost_threads, [this]
         {
             this->_context.run();
         });

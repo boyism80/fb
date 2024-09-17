@@ -5,7 +5,9 @@
 #include <fb/core/console.h>
 #include <fb/core/config.h>
 #include <fb/protocol/internal.h>
-#include <fb/protocol/flatbuffer/model/db.ping.h>
+
+#include <fb/protocol/flatbuffer/model/internal.ping.h>
+#include <fb/protocol/flatbuffer/model/internal.pong.h>
 
 int main(int argc, const char** argv)
 {
@@ -40,6 +42,16 @@ int main(int argc, const char** argv)
         // Execute acceptor
         boost::asio::io_context io_context;
         auto context = std::make_unique<fb::login::context>(io_context, config["port"].asInt());
+
+        auto fn = [&context]() -> async::task<void> 
+        {
+            std::this_thread::sleep_for(2s);
+            auto body = fb::game::flatbuffer::inter::model::Ping();
+            auto&& response = co_await context->post_async<fb::game::flatbuffer::inter::model::Ping, fb::game::flatbuffer::inter::model::Pong>("localhost:5126", "/ping", body);
+
+            puts("dd");
+        };
+        async::awaitable_get(fn());
 
         int count = fb::config::get()["thread"].isNull() ? std::thread::hardware_concurrency() : fb::config::get()["thread"].asInt();
         context->run(count);
