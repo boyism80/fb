@@ -1,5 +1,9 @@
+#ifndef __FB_GAME_FLATBUFFER_INTER_INTERNAL_WHISPER__
+#define __FB_GAME_FLATBUFFER_INTER_INTERNAL_WHISPER__
+
 #include "flatbuffers/flatbuffers.h"
 #include <fb/protocol/flatbuffer/internal.whisper_generated.h>
+#include <fb/protocol/flatbuffer/model/protocol_type.h>
 #include <string>
 #include <vector>
 
@@ -7,6 +11,9 @@ namespace fb { namespace game { namespace flatbuffer { namespace inter { namespa
 
 class Whisper
 {
+public:
+    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Whisper;
+
 public:
     std::string name;
     std::string message;
@@ -54,3 +61,5 @@ public:
 };
 
 } } } } }
+
+#endif

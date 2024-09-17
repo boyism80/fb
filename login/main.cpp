@@ -5,6 +5,7 @@
 #include <fb/core/console.h>
 #include <fb/core/config.h>
 #include <fb/protocol/internal.h>
+#include <fb/protocol/flatbuffer/model/db.ping.h>
 
 int main(int argc, const char** argv)
 {

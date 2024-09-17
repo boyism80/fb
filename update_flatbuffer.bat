@@ -27,7 +27,7 @@ popd
 del /S /Q http\fb\game\flatbuffer\model
 robocopy flatbuffer-ex\bin\output\c# http\fb\game\flatbuffer\model /S /E
 
-del /S /Q http\fb\game\flatbuffer\model
+del /S /Q include\fb\protocol\flatbuffer\model
 robocopy flatbuffer-ex\bin\output\c++ include\fb\protocol\flatbuffer\model /S /E
 
 pause

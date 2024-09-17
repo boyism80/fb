@@ -1,5 +1,9 @@
+#ifndef __FB_GAME_FLATBUFFER_INTER_INTERNAL_PING__
+#define __FB_GAME_FLATBUFFER_INTER_INTERNAL_PING__
+
 #include "flatbuffers/flatbuffers.h"
 #include <fb/protocol/flatbuffer/internal.ping_generated.h>
+#include <fb/protocol/flatbuffer/model/protocol_type.h>
 #include <string>
 #include <vector>
 
@@ -8,18 +12,19 @@ namespace fb { namespace game { namespace flatbuffer { namespace inter { namespa
 class Ping
 {
 public:
+    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Ping;
+
+public:
 
 public:
     Ping()
     { }
 
     Ping(const Ping& x)
-
     { }
 
     Ping(const fb::game::flatbuffer::inter::Ping& raw)
-    {
-    }
+    { }
 
 
 public:
@@ -46,3 +51,5 @@ public:
 };
 
 } } } } }
+
+#endif
