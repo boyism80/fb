@@ -260,12 +260,6 @@ async::task<void> fb::game::context::handle_start()
     this->bind<fb::protocol::game::request::whisper>          (std::bind(&context::handle_whisper,         this, std::placeholders::_1, std::placeholders::_2));   // 귓속말 핸들러
     this->bind<fb::protocol::game::request::map::world>       (std::bind(&context::handle_world,           this, std::placeholders::_1, std::placeholders::_2));   // 월드맵 핸들러
 
-    this->bind<fb::protocol::internal::response::transfer>();
-    this->bind<fb::protocol::internal::response::whisper>();
-    this->bind<fb::protocol::internal::response::message>     (std::bind(&context::handle_in_message,      this, std::placeholders::_1, std::placeholders::_2));   // 월드 메시지
-    this->bind<fb::protocol::internal::response::logout>      (std::bind(&context::handle_in_logout,       this, std::placeholders::_1, std::placeholders::_2));   // 접속종료
-    this->bind<fb::protocol::internal::response::shutdown>    (std::bind(&context::handle_in_shutdown,     this, std::placeholders::_1, std::placeholders::_2));   // 서버종료
-
     this->bind_timer(std::bind(&context::handle_mob_action,   this, std::placeholders::_1, std::placeholders::_2), 100ms);                                         // 몹 행동 타이머
     this->bind_timer(std::bind(&context::handle_mob_respawn,  this, std::placeholders::_1, std::placeholders::_2), 60s);                                           // 몹 리젠 타이머
     this->bind_timer(std::bind(&context::handle_buff_timer,   this, std::placeholders::_1, std::placeholders::_2), 1s);                                            // 버프 타이머
@@ -439,18 +433,10 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
     fb::logger::info("%s님이 접속을 종료했습니다.", session->name().c_str());
 
     this->save(*session);
-    this->_internal->send(fb::protocol::internal::request::logout(session->name()));
+    //this->_internal->send(fb::protocol::internal::request::logout(session->name()));
     async::awaitable_get(session->destroy());
     socket.data(nullptr);
     return true;
-}
-
-async::task<void> fb::game::context::handle_internal_connected()
-{
-    co_await fb::acceptor<fb::game::session>::handle_internal_connected();
-
-    auto& config = fb::config::get();
-    this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GAME, (uint8_t)config["group"].asUInt()));
 }
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
@@ -911,30 +897,6 @@ void fb::game::context::handle_click_npc(fb::game::session& session, fb::game::n
         .resume(2);
 }
 
-async::task<bool> fb::game::context::handle_in_message(fb::internal::socket<>& socket, const fb::protocol::internal::response::message& response)
-{
-    auto to = this->find(response.to);
-    if(to != nullptr)
-        to->message(response.contents, (MESSAGE_TYPE)response.type);
-
-    co_return true;
-}
-
-async::task<bool> fb::game::context::handle_in_logout(fb::internal::socket<>& socket, const fb::protocol::internal::response::logout& response)
-{
-    auto session = this->find(response.name);
-    if(session != nullptr)
-        static_cast<fb::socket<fb::game::session>&>(*session).close();
-    
-    co_return true;
-}
-
-async::task<bool> fb::game::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
-{
-    this->exit();
-    co_return true;
-}
-
 async::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>& socket, const fb::protocol::game::request::login& request)
 {
     auto session = socket.data();
@@ -977,7 +939,7 @@ async::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>&
         if (this->fetch_user(results[0], *session, transfer) == false)
             co_return false;
 
-        this->_internal->send(fb::protocol::internal::request::login(name, map));
+        //this->_internal->send(fb::protocol::internal::request::login(name, map));
         this->send(*session, fb::protocol::game::response::init(), scope::SELF);
         this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
         this->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MIN), scope::SELF);
@@ -1920,7 +1882,8 @@ async::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session
     auto& from = session->name();
     try
     {
-        auto&& response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, request.name, request.message));
+        //auto&& response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, request.name, request.message));
+        auto response = fb::protocol::internal::response::whisper();
         if (this->sockets.contains(fd) == false)
             co_return false;
 

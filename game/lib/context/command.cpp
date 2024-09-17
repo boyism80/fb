@@ -312,7 +312,7 @@ async::task<bool> fb::game::context::handle_command_armor_color(fb::game::sessio
 
 async::task<bool> fb::game::context::handle_command_exit(fb::game::session& session, Json::Value& parameters)
 {
-    this->_internal->send(fb::protocol::internal::request::shutdown());
+    //this->_internal->send(fb::protocol::internal::request::shutdown());
     co_return true;
 }
 

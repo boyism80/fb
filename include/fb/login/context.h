@@ -86,10 +86,6 @@ protected:
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
-    async::task<void>           handle_internal_connected() final;
-
-public:
-    async::task<bool>           handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 
 public:
     async::task<bool>           handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);

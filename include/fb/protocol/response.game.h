@@ -69,7 +69,7 @@ public:
 class user_list : public fb::protocol::base::header
 {
 private:
-    using container = fb::base::socket_container<fb::socket, fb::game::session>;
+    using container = fb::socket_container<fb::game::session>;
 
 public:
     const fb::game::session&                me;

@@ -21,7 +21,7 @@ namespace fb { namespace bot {
 
 class bot_container;
 
-class base_bot : public fb::awaitable_socket<void*>
+class base_bot : public fb::socket<void*>
 {
 private:
     using handle_func_type = std::function<async::task<void>(const std::function<void()>&)>;
@@ -40,8 +40,8 @@ public:
     virtual ~base_bot();
 
 private:
-    async::task<void>                              on_receive(fb::base::socket<>& socket);
-    async::task<void>                              on_closed(fb::base::socket<>& socket);
+    async::task<void>                              on_receive(fb::socket<>& socket);
+    async::task<void>                              on_closed(fb::socket<>& socket);
 
 protected:
     virtual void                                on_connected();

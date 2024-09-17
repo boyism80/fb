@@ -2,7 +2,7 @@
 
 using namespace fb::bot;
 
-base_bot::base_bot(bot_container& owner, uint32_t id): fb::awaitable_socket<void*>(owner.context(), 
+base_bot::base_bot(bot_container& owner, uint32_t id): fb::socket<void*>(owner.context(), 
     std::bind(&base_bot::on_receive, this, std::placeholders::_1),
     std::bind(&base_bot::on_closed, this, std::placeholders::_1)), _owner(owner), id(id)
 {}
@@ -10,7 +10,7 @@ base_bot::base_bot(bot_container& owner, uint32_t id): fb::awaitable_socket<void
 base_bot::~base_bot()
 { }
 
-async::task<void> base_bot::on_receive(fb::base::socket<>& socket)
+async::task<void> base_bot::on_receive(fb::socket<>& socket)
 {
     static constexpr uint8_t    base_size = sizeof(uint8_t) + sizeof(uint16_t);
 
@@ -81,7 +81,7 @@ void base_bot::on_connected()
 void base_bot::on_disconnected()
 { }
 
-async::task<void> base_bot::on_closed(fb::base::socket<>& socket)
+async::task<void> base_bot::on_closed(fb::socket<>& socket)
 {
     this->on_disconnected();
     this->_owner.remove(*this);

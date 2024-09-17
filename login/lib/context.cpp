@@ -14,9 +14,6 @@ fb::login::context::context(boost::asio::io_context& context, uint16_t port) :
     this->bind<fb::protocol::login::request::account::create>         (std::bind(&context::handle_create_account,      this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::login::request::account::complete>       (std::bind(&context::handle_account_complete,    this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::login::request::account::change_pw>      (std::bind(&context::handle_change_password,     this, std::placeholders::_1, std::placeholders::_2));
-
-    this->bind<fb::protocol::internal::response::transfer>();
-    this->bind<fb::protocol::internal::response::shutdown>            (std::bind(&context::handle_in_shutdown,         this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::login::context::~context()
@@ -103,20 +100,6 @@ bool fb::login::context::handle_disconnected(fb::socket<fb::login::session>& soc
 {
     fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
     return false;
-}
-
-async::task<void> fb::login::context::handle_internal_connected()
-{
-    co_await fb::acceptor<fb::login::session>::handle_internal_connected();
-
-    auto& config = fb::config::get();
-    this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::LOGIN, 0xFF));
-}
-
-async::task<bool> fb::login::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
-{
-    this->exit();
-    co_return true;
 }
 
 async::task<bool> fb::login::context::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::agreement& request)
@@ -262,7 +245,8 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
         auto map = auth_row.get_value<uint32_t>(1);
-        auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(name, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
+        //auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(name, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
+        auto response = fb::protocol::internal::response::transfer();
         if (this->sockets.contains(fd) == false)
             co_return false;
 

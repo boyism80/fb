@@ -43,14 +43,10 @@ protected:
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
-    async::task<void>           handle_internal_connected() final;
 
 public:
     async::task<bool>           handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
     async::task<bool>           handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
-
-public:
-    async::task<bool>           handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 };
 
 } }

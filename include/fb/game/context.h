@@ -107,17 +107,12 @@ protected:
     bool                    handle_connected(fb::socket<fb::game::session>& session) final;
     bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
-    async::task<void>       handle_internal_connected() final;
+    //async::task<void>       handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
     void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
-
-public:
-    async::task<bool>       handle_in_message(fb::internal::socket<>&, const fb::protocol::internal::response::message&);
-    async::task<bool>       handle_in_logout(fb::internal::socket<>&, const fb::protocol::internal::response::logout&);
-    async::task<bool>       handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 
     // game event method
 public:
