@@ -1,20 +1,21 @@
-﻿using fb.game.flatbuffer.inter;
-using Google.FlatBuffers;
+﻿using Google.FlatBuffers;
 using http.Util;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 
 namespace http.Formatter
 {
-    public class FlatBufferInputFormatter : InputFormatter
+    public abstract class FlatBufferInputFormatter : InputFormatter
     {
         const int bufferLength = 16384;
 
-        public FlatBufferInputFormatter()
+        protected FlatBufferInputFormatter()
         {
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/octet-stream"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
         }
+
+        protected abstract IFlatBufferEx GetProtocol(BinaryReader reader);
 
         public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
@@ -23,19 +24,14 @@ namespace http.Formatter
             ms.Position = 0;
 
             using var reader = new BinaryReader(ms);
-            var protocolType = (FlatBufferProtocolType)reader.ReadInt32().ToMachineEndian();
-            var size = reader.ReadInt32().ToMachineEndian();
-            var bytes = reader.ReadBytes(size);
-
-            var type = FlatBufferProtocolRouter.GetProtocolType(protocolType);
-            var protocol = Activator.CreateInstance(type, bytes);
+            var protocol = GetProtocol(reader);
             return await InputFormatterResult.SuccessAsync(protocol);
         }
     }
 
-    public class FlatBufferOutputFormatter : OutputFormatter
+    public abstract class FlatBufferOutputFormatter : OutputFormatter
     {
-        public FlatBufferOutputFormatter()
+        protected FlatBufferOutputFormatter()
         {
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/octet-stream"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
@@ -49,6 +45,8 @@ namespace http.Formatter
             return type.IsAssignableTo(typeof(IFlatBufferEx));
         }
 
+        protected abstract int GetProtocolId(IFlatBufferEx protocol);
+
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context.Object == null)
@@ -59,10 +57,8 @@ namespace http.Formatter
                 using var ms = new MemoryStream();
                 using (var writer = new BinaryWriter(ms))
                 {
-                    var protocolType = FlatBufferProtocolRouter.GetProtocolEnum(protocol);
                     var bytes = protocol.Serialize();
-
-                    writer.Write(((int)protocolType).ToMachineEndian());
+                    writer.Write(GetProtocolId(protocol).ToMachineEndian());
                     writer.Write(bytes.Length.ToMachineEndian());
                     writer.Write(bytes);
                     writer.Flush();
