@@ -1,4 +1,6 @@
 #include <fb/login/context.h>
+#include <fb/protocol/flatbuffer/model/internal.request.transfer.h>
+#include <fb/protocol/flatbuffer/model/internal.response.transfer.h>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 
     fb::acceptor<fb::login::session>(context, port, std::thread::hardware_concurrency()),
@@ -245,15 +247,23 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
         auto map = auth_row.get_value<uint32_t>(1);
-        //auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(fb::protocol::internal::request::transfer(name, fb::protocol::internal::services::LOGIN, fb::protocol::internal::services::GAME, map, fd));
-        auto response = fb::protocol::internal::response::transfer();
+        auto&& response = co_await this->post_async<fb::protocol::flatbuffer::inter::request::model::Transfer, fb::protocol::flatbuffer::inter::response::model::Transfer>("localhost:5126", "/transfer", fb::protocol::flatbuffer::inter::request::model::Transfer
+        {
+            UTF8(name, PLATFORM::Windows),
+            fb::protocol::flatbuffer::inter::request::Service::Service_Login,
+            fb::protocol::flatbuffer::inter::request::Service::Service_Game,
+            (uint16_t)map,
+            0xFFFF,
+            0xFFFF,
+            fd
+        });
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if(response.code == fb::protocol::internal::response::transfer_code::CONNECTED)
+        if(response.code == fb::protocol::flatbuffer::inter::response::TransferResultCode::TransferResultCode_CONNECTED)
             throw id_exception("이미 접속중입니다.");
 
-        if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
+        if(response.code != fb::protocol::flatbuffer::inter::response::TransferResultCode::TransferResultCode_SUCCESS)
             throw id_exception("비바람이 휘몰아치고 있습니다.");
 
         socket.send(fb::protocol::login::response::message("", 0x00));

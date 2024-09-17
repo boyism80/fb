@@ -1,0 +1,16 @@
+namespace fb.protocol.flatbuffer.inter.response;
+
+enum TransferResultCode : byte { CONNECTED, SUCCESS }
+
+table Transfer {
+  code: TransferResultCode;
+  name: string;
+  ip: string;
+  port: ushort;
+  map: ushort;
+  x: ushort;
+  y: ushort;
+  fd: uint;
+}
+
+root_type Transfer;

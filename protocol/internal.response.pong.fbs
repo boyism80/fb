@@ -1,0 +1,7 @@
+namespace fb.protocol.flatbuffer.inter.response;
+
+table Pong {
+  
+}
+
+root_type Pong;

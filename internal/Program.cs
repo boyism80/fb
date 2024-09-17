@@ -1,4 +1,4 @@
-using http.Extension;
+using fb.protocol.flatbuffer.inter;
 
 namespace Internal;
 
@@ -11,7 +11,11 @@ public class Program
         // Add services to the container.
 
         builder.Services.AddControllers();
-        builder.Services.AddFlatBufferFormatter();
+        builder.Services.AddMvc(opt => 
+        {
+            opt.InputFormatters.Insert(0, new FlatBufferInputFormatter());
+            opt.OutputFormatters.Insert(0, new FlatBufferOutputFormatter());
+        });
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();

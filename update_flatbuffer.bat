@@ -24,8 +24,8 @@ robocopy c# ..\http /S /E
 robocopy c++ ..\include\fb\protocol\flatbuffer /S /E
 popd
 
-del /S /Q http\fb\game\flatbuffer\model
-robocopy flatbuffer-ex\bin\output\c# http\fb\game\flatbuffer\model /S /E
+del /S /Q http\fb\protocol\flatbuffer\model
+robocopy flatbuffer-ex\bin\output\c# http\fb\protocol\flatbuffer\model /S /E
 
 del /S /Q include\fb\protocol\flatbuffer\model
 robocopy flatbuffer-ex\bin\output\c++ include\fb\protocol\flatbuffer\model /S /E

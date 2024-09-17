@@ -1,0 +1,7 @@
+namespace fb.protocol.flatbuffer.db.request;
+
+table Ping {
+  
+}
+
+root_type Ping;

@@ -1,7 +1,0 @@
-namespace fb.game.flatbuffer.inter;
-
-table Pong {
-  
-}
-
-root_type Pong;

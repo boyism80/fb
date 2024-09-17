@@ -1,7 +1,0 @@
-namespace fb.game.flatbuffer.db;
-
-table Ping {
-  
-}
-
-root_type Ping;

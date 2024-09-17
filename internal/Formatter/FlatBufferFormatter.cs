@@ -1,8 +1,7 @@
-﻿using fb.game.flatbuffer.inter;
-using Google.FlatBuffers;
+﻿using Google.FlatBuffers;
 using http.Util;
 
-namespace Internal.Formatter
+namespace fb.protocol.flatbuffer.inter
 {
     public class FlatBufferInputFormatter : http.Formatter.FlatBufferInputFormatter
     {
@@ -13,11 +12,11 @@ namespace Internal.Formatter
 
         protected override IFlatBufferEx GetProtocol(BinaryReader reader)
         {
-            var protocolType = (FlatBufferProtocolType)reader.ReadInt32().ToMachineEndian();
+            var protocolType = (request.FlatBufferProtocolType)reader.ReadInt32().ToMachineEndian();
             var size = reader.ReadInt32().ToMachineEndian();
             var bytes = reader.ReadBytes(size);
 
-            var type = FlatBufferProtocolRouter.GetProtocolType(protocolType);
+            var type = request.FlatBufferProtocolRouter.GetProtocolType(protocolType);
             return Activator.CreateInstance(type, bytes) as IFlatBufferEx;
         }
     }
@@ -31,7 +30,7 @@ namespace Internal.Formatter
 
         protected override int GetProtocolId(IFlatBufferEx protocol)
         {
-            return (int)FlatBufferProtocolRouter.GetProtocolEnum(protocol);
+            return (int)response.FlatBufferProtocolRouter.GetProtocolEnum(protocol);
         }
     }
 }

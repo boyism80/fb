@@ -1,0 +1,15 @@
+namespace fb.protocol.flatbuffer.inter.request;
+
+enum Service : byte { Gateway, Login, Game }
+
+table Transfer {
+  name: string;
+  from: Service;
+  to: Service;
+  map: ushort;
+  x: ushort;
+  y: ushort;
+  fd: uint;
+}
+
+root_type Transfer;

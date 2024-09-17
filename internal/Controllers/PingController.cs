@@ -1,7 +1,8 @@
-using fb.game.flatbuffer.inter.model;
+using fb.protocol.flatbuffer.inter.request.model;
+using fb.protocol.flatbuffer.inter.response.model;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Internal.Controllers;
+namespace fb.protocol.flatbuffer.inter;
 [ApiController]
 [Route("[controller]")]
 public class PingController : ControllerBase

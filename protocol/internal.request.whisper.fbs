@@ -1,0 +1,8 @@
+namespace fb.protocol.flatbuffer.inter.request;
+
+table Whisper {
+	name: string;
+	message: string;
+}
+
+root_type Whisper;
