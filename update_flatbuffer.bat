@@ -4,7 +4,7 @@ git submodule update --recursive --remote
 PUSHD flatbuffer-ex
 CALL dotnet publish -c Release -o "bin"
 PUSHD bin
-CALL FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#"
+CALL FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#" --include="fb/protocol/flatbuffer"
 POPD
 POPD
 
@@ -14,8 +14,20 @@ curl -L -o flatbuffer.zip https://github.com/google/flatbuffers/releases/downloa
 tar -xf flatbuffer.zip
 del flatbuffer.zip
 
-flatc --cpp -o c++ ../protocol/monster.fbs ../protocol/response.fbs
-flatc --csharp -o c# ../protocol/monster.fbs ../protocol/response.fbs
+del /S /Q c++
+del /S /Q c#
+for %%f in (..\protocol\*.fbs) do (
+	flatc --cpp -o c++ %%f
+	flatc --csharp -o c# %%f
+)
+robocopy c# ..\http /S /E
+robocopy c++ ..\include\fb\protocol\flatbuffer /S /E
 popd
+
+del /S /Q http\fb\game\flatbuffer\model
+robocopy flatbuffer-ex\bin\output\c# http\fb\game\flatbuffer\model /S /E
+
+del /S /Q http\fb\game\flatbuffer\model
+robocopy flatbuffer-ex\bin\output\c++ include\fb\protocol\flatbuffer\model /S /E
 
 pause

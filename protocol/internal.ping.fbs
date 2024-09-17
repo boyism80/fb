@@ -1,0 +1,7 @@
+namespace fb.game.flatbuffer.inter;
+
+table Ping {
+  
+}
+
+root_type Ping;

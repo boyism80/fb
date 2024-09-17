@@ -1,0 +1,8 @@
+namespace fb.game.flatbuffer.inter;
+
+table Whisper {
+	name: string;
+	message: string;
+}
+
+root_type Whisper;
