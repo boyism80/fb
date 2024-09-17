@@ -8,26 +8,12 @@ CALL FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#" --include="fb/protoc
 POPD
 POPD
 
-mkdir external-tool
-pushd external-tool
-curl -L -o flatbuffer.zip https://github.com/google/flatbuffers/releases/download/v24.3.25/Windows.flatc.binary.zip
-tar -xf flatbuffer.zip
-del flatbuffer.zip
+del /S /Q http\fb\protocol\flatbuffer
+robocopy flatbuffer-ex\bin\output\c# http\fb\protocol\flatbuffer /S /E
+robocopy flatbuffer-ex\bin\flatbuffer\c# http\fb\protocol\flatbuffer\origin /S /E
 
-del /S /Q c++
-del /S /Q c#
-for %%f in (..\protocol\*.fbs) do (
-	flatc --cpp -o c++ %%f
-	flatc --csharp -o c# %%f
-)
-robocopy c# ..\http /S /E
-robocopy c++ ..\include\fb\protocol\flatbuffer /S /E
-popd
-
-del /S /Q http\fb\protocol\flatbuffer\model
-robocopy flatbuffer-ex\bin\output\c# http\fb\protocol\flatbuffer\model /S /E
-
-del /S /Q include\fb\protocol\flatbuffer\model
-robocopy flatbuffer-ex\bin\output\c++ include\fb\protocol\flatbuffer\model /S /E
+del /S /Q include\fb\protocol\flatbuffer
+robocopy flatbuffer-ex\bin\output\c++ include\fb\protocol\flatbuffer /S /E
+robocopy flatbuffer-ex\bin\flatbuffer\c++ include\fb\protocol\flatbuffer\origin /S /E
 
 pause

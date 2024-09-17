@@ -1,4 +1,4 @@
-namespace fb.protocol.flatbuffer.db.request;
+namespace fb.protocol.db.request;
 
 table Ping {
   

@@ -1,4 +1,4 @@
-namespace fb.protocol.flatbuffer.inter.request;
+namespace fb.protocol.internal.request;
 
 table Whisper {
 	name: string;

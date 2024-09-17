@@ -1,4 +1,4 @@
-namespace fb.protocol.flatbuffer.inter.response;
+namespace fb.protocol.internal.response;
 
 enum TransferResultCode : byte { CONNECTED, SUCCESS }
 
