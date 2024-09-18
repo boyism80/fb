@@ -1,4 +1,6 @@
-﻿using Google.FlatBuffers;
+﻿using request = fb.protocol.inter.request;
+using response = fb.protocol.inter.request;
+using Google.FlatBuffers;
 using http.Util;
 
 namespace fb.protocol.flatbuffer.inter

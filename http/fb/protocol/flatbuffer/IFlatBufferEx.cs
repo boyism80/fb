@@ -19,7 +19,7 @@ namespace fb.protocol.db.request
         {
             return protocolType switch
             {
-                FlatBufferProtocolType.Ping => typeof(fb.protocol.db.request.model.Ping),
+                FlatBufferProtocolType.Ping => typeof(fb.protocol.db.request.Ping),
                 _ => throw new ArgumentException(),
             };
         }
@@ -28,13 +28,13 @@ namespace fb.protocol.db.request
         {
             return protocol switch
             {
-                fb.protocol.db.request.model.Ping => FlatBufferProtocolType.Ping,
+                fb.protocol.db.request.Ping => FlatBufferProtocolType.Ping,
                 _ => throw new ArgumentException(),
             };
         }
     }
 }
-namespace fb.protocol.internal.request
+namespace fb.protocol.inter.request
 {
     public enum FlatBufferProtocolType
     { 
@@ -49,9 +49,9 @@ namespace fb.protocol.internal.request
         {
             return protocolType switch
             {
-                FlatBufferProtocolType.Ping => typeof(fb.protocol.internal.request.model.Ping),
-                FlatBufferProtocolType.Transfer => typeof(fb.protocol.internal.request.model.Transfer),
-                FlatBufferProtocolType.Whisper => typeof(fb.protocol.internal.request.model.Whisper),
+                FlatBufferProtocolType.Ping => typeof(fb.protocol.inter.request.Ping),
+                FlatBufferProtocolType.Transfer => typeof(fb.protocol.inter.request.Transfer),
+                FlatBufferProtocolType.Whisper => typeof(fb.protocol.inter.request.Whisper),
                 _ => throw new ArgumentException(),
             };
         }
@@ -60,15 +60,15 @@ namespace fb.protocol.internal.request
         {
             return protocol switch
             {
-                fb.protocol.internal.request.model.Ping => FlatBufferProtocolType.Ping,
-                fb.protocol.internal.request.model.Transfer => FlatBufferProtocolType.Transfer,
-                fb.protocol.internal.request.model.Whisper => FlatBufferProtocolType.Whisper,
+                fb.protocol.inter.request.Ping => FlatBufferProtocolType.Ping,
+                fb.protocol.inter.request.Transfer => FlatBufferProtocolType.Transfer,
+                fb.protocol.inter.request.Whisper => FlatBufferProtocolType.Whisper,
                 _ => throw new ArgumentException(),
             };
         }
     }
 }
-namespace fb.protocol.internal.response
+namespace fb.protocol.inter.response
 {
     public enum FlatBufferProtocolType
     { 
@@ -82,8 +82,8 @@ namespace fb.protocol.internal.response
         {
             return protocolType switch
             {
-                FlatBufferProtocolType.Pong => typeof(fb.protocol.internal.response.model.Pong),
-                FlatBufferProtocolType.Transfer => typeof(fb.protocol.internal.response.model.Transfer),
+                FlatBufferProtocolType.Pong => typeof(fb.protocol.inter.response.Pong),
+                FlatBufferProtocolType.Transfer => typeof(fb.protocol.inter.response.Transfer),
                 _ => throw new ArgumentException(),
             };
         }
@@ -92,8 +92,8 @@ namespace fb.protocol.internal.response
         {
             return protocol switch
             {
-                fb.protocol.internal.response.model.Pong => FlatBufferProtocolType.Pong,
-                fb.protocol.internal.response.model.Transfer => FlatBufferProtocolType.Transfer,
+                fb.protocol.inter.response.Pong => FlatBufferProtocolType.Pong,
+                fb.protocol.inter.response.Transfer => FlatBufferProtocolType.Transfer,
                 _ => throw new ArgumentException(),
             };
         }

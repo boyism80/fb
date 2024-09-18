@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Text;
+using request = fb.protocol.inter.request;
+using response = fb.protocol.inter.response;
 
-namespace fb.protocol.flatbuffer.inter;
+namespace Internal.Controllers;
 [ApiController]
 [Route("[controller]")]
 public class TransferController : ControllerBase
@@ -14,9 +15,9 @@ public class TransferController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<response.model.Transfer> Transfer(request.model.Transfer request)
+    public async Task<response.Transfer> Transfer(request.Transfer request)
     {
-        return new response.model.Transfer
+        return new response.Transfer
         {
             Name = request.Name,
             Code = response.TransferResultCode.CONNECTED,
