@@ -27,8 +27,8 @@ public struct Transfer : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
-  public fb.protocol.inter.request.origin.Service From { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.inter.request.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.request.origin.Service.Gateway; } }
-  public fb.protocol.inter.request.origin.Service To { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.inter.request.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.request.origin.Service.Gateway; } }
+  public fb.protocol.inter.origin.Service From { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
+  public fb.protocol.inter.origin.Service To { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
   public ushort Map { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort X { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort Y { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
@@ -36,8 +36,8 @@ public struct Transfer : IFlatbufferObject
 
   public static Offset<fb.protocol.inter.request.origin.Transfer> CreateTransfer(FlatBufferBuilder builder,
       StringOffset nameOffset = default(StringOffset),
-      fb.protocol.inter.request.origin.Service from = fb.protocol.inter.request.origin.Service.Gateway,
-      fb.protocol.inter.request.origin.Service to = fb.protocol.inter.request.origin.Service.Gateway,
+      fb.protocol.inter.origin.Service from = fb.protocol.inter.origin.Service.Gateway,
+      fb.protocol.inter.origin.Service to = fb.protocol.inter.origin.Service.Gateway,
       ushort map = 0,
       ushort x = 0,
       ushort y = 0,
@@ -55,8 +55,8 @@ public struct Transfer : IFlatbufferObject
 
   public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
-  public static void AddFrom(FlatBufferBuilder builder, fb.protocol.inter.request.origin.Service from) { builder.AddSbyte(1, (sbyte)from, 0); }
-  public static void AddTo(FlatBufferBuilder builder, fb.protocol.inter.request.origin.Service to) { builder.AddSbyte(2, (sbyte)to, 0); }
+  public static void AddFrom(FlatBufferBuilder builder, fb.protocol.inter.origin.Service from) { builder.AddSbyte(1, (sbyte)from, 0); }
+  public static void AddTo(FlatBufferBuilder builder, fb.protocol.inter.origin.Service to) { builder.AddSbyte(2, (sbyte)to, 0); }
   public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(3, map, 0); }
   public static void AddX(FlatBufferBuilder builder, ushort x) { builder.AddUshort(4, x, 0); }
   public static void AddY(FlatBufferBuilder builder, ushort y) { builder.AddUshort(5, y, 0); }
@@ -76,8 +76,8 @@ static public class TransferVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 6 /*From*/, 1 /*fb.protocol.inter.request.origin.Service*/, 1, false)
-      && verifier.VerifyField(tablePos, 8 /*To*/, 1 /*fb.protocol.inter.request.origin.Service*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*From*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
+      && verifier.VerifyField(tablePos, 8 /*To*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
       && verifier.VerifyField(tablePos, 10 /*Map*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 12 /*X*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 14 /*Y*/, 2 /*ushort*/, 2, false)

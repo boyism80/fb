@@ -1,5 +1,20 @@
 ###
 POST {{host}}/ping
-Content-Type: application/octet-stream
+Content-Type: application/json
 
 {}
+
+
+###
+POST {{host}}/transfer
+Content-Type: application/json
+
+{
+    "name": "채승현",
+    "from": "Login",
+    "to": "Game",
+    "map": 123,
+    "x": 65535,
+    "y": 65535,
+    "fd": 32
+}

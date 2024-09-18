@@ -2,21 +2,20 @@ using Google.FlatBuffers;
 
 namespace fb.protocol.inter.request
 {
-    public enum Service : sbyte
-    {
-        Gateway = fb.protocol.inter.request.origin.Service.Gateway,
-        Login = fb.protocol.inter.request.origin.Service.Login,
-        Game = fb.protocol.inter.request.origin.Service.Game
-    }
-
     public class Ping : IFlatBufferEx
     {
+        public string Name { get; set; }
+        public fb.protocol.inter.Service Service { get; set; }
+        public byte Group { get; set; }
 
         public Ping()
         { }
 
         public Ping(fb.protocol.inter.request.origin.Ping raw)
         {
+            Name = raw.Name;
+            Service = (fb.protocol.inter.Service)raw.Service;
+            Group = raw.Group;
         }
 
         public Ping(byte[] bytes) : this(fb.protocol.inter.request.origin.Ping.GetRootAsPing(new ByteBuffer(bytes)))
@@ -24,8 +23,10 @@ namespace fb.protocol.inter.request
 
         public Offset<fb.protocol.inter.request.origin.Ping> Build(FlatBufferBuilder builder)
         {
-            fb.protocol.inter.request.origin.Ping.StartPing(builder);
-            return fb.protocol.inter.request.origin.Ping.EndPing(builder);
+            return fb.protocol.inter.request.origin.Ping.CreatePing(builder,
+                builder.CreateString(Name),
+                (fb.protocol.inter.origin.Service)Service,
+                Group);
         }
 
         public byte[] Serialize()
@@ -44,8 +45,8 @@ namespace fb.protocol.inter.request
     public class Transfer : IFlatBufferEx
     {
         public string Name { get; set; }
-        public Service From { get; set; }
-        public Service To { get; set; }
+        public fb.protocol.inter.Service From { get; set; }
+        public fb.protocol.inter.Service To { get; set; }
         public ushort Map { get; set; }
         public ushort X { get; set; }
         public ushort Y { get; set; }
@@ -57,8 +58,8 @@ namespace fb.protocol.inter.request
         public Transfer(fb.protocol.inter.request.origin.Transfer raw)
         {
             Name = raw.Name;
-            From = (fb.protocol.inter.request.Service)raw.From;
-            To = (fb.protocol.inter.request.Service)raw.To;
+            From = (fb.protocol.inter.Service)raw.From;
+            To = (fb.protocol.inter.Service)raw.To;
             Map = raw.Map;
             X = raw.X;
             Y = raw.Y;
@@ -72,8 +73,8 @@ namespace fb.protocol.inter.request
         {
             return fb.protocol.inter.request.origin.Transfer.CreateTransfer(builder,
                 builder.CreateString(Name),
-                (fb.protocol.inter.request.origin.Service)From,
-                (fb.protocol.inter.request.origin.Service)To,
+                (fb.protocol.inter.origin.Service)From,
+                (fb.protocol.inter.origin.Service)To,
                 Map,
                 X,
                 Y,

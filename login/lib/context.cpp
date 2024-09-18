@@ -1,13 +1,14 @@
 #include <fb/login/context.h>
 #include <fb/protocol/flatbuffer/fb.protocol.internal.request.h>
 #include <fb/protocol/flatbuffer/fb.protocol.internal.response.h>
+#include <boost/asio/high_resolution_timer.hpp>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 
     fb::acceptor<fb::login::session>(context, port, std::thread::hardware_concurrency()),
     _db(*this, 4)
 {
     const auto& config = fb::config::get();
-    for(auto x : config["forbidden"])
+    for(auto& x : config["forbidden"])
         this->_forbiddens.push_back(x.asString());
     
     // Register event handler
@@ -250,8 +251,8 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         auto&& response = co_await this->post_async<fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer>("localhost:5126", "/transfer", fb::protocol::internal::request::Transfer
         {
             UTF8(name, PLATFORM::Windows),
-            fb::protocol::internal::request::Service::Login,
-            fb::protocol::internal::request::Service::Game,
+            fb::protocol::internal::Service::Login,
+            fb::protocol::internal::Service::Game,
             (uint16_t)map,
             0xFFFF,
             0xFFFF,

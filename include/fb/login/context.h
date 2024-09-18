@@ -21,6 +21,8 @@
 
 #define MAX_NXCLUB_SIZE     14
 
+using namespace fb::protocol::internal;
+
 namespace fb { namespace login {
 
 
@@ -70,6 +72,7 @@ private:
     std::vector<std::string>                    _forbiddens;
     std::vector<unique_session>                 _sessions;
     fb::db::context<session>                    _db;
+    std::vector<boost::asio::deadline_timer>    _timers;
 
 public:
     context(boost::asio::io_context& context, uint16_t port);
@@ -86,6 +89,10 @@ protected:
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
     bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
+
+    // for heart-beat
+protected:
+    Service                     service() { return Service::Login; }
 
 public:
     async::task<bool>           handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);

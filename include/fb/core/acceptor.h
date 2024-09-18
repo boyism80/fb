@@ -17,6 +17,9 @@
 #include <fb/core/mutex.h>
 #include <async/awaitable_get.h>
 
+#include <fb/protocol/flatbuffer/fb.protocol.internal.request.h>
+#include <fb/protocol/flatbuffer/fb.protocol.internal.response.h>
+
 using namespace std::chrono_literals;
 
 namespace fb {
@@ -65,6 +68,12 @@ protected:
     virtual void                                handle_exit() { }
     async::task<bool>                           handle_parse(fb::socket<T>& socket);
 
+// for heart-beat api
+protected:
+    virtual std::string                         id() { return fb::config::get()["id"].asString(); }
+    virtual fb::protocol::internal::Service     service() = 0;
+    uint8_t                                     group() { return 0xFF; }
+
 public:
     async::task<void>                           handle_receive(fb::socket<T>& socket);
     async::task<void>                           handle_closed(fb::socket<T>& socket);
@@ -95,11 +104,12 @@ public:
     async::task<void>                           sleep(const std::chrono::steady_clock::duration& duration);
     void                                        exit();
 
-public:
+protected:
     template <typename R>
     void                                        bind(int cmd, const std::function<async::task<bool>(fb::socket<T>&, const R&)>& fn);
     template <typename R>
     void                                        bind(const std::function<async::task<bool>(fb::socket<T>&, const R&)>& fn);
+    void                                        bind_timer(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& duration);
 
 public:
     operator boost::asio::io_context& () const;

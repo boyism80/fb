@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
+#include "internal_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -24,8 +26,26 @@ struct PingBuilder;
 
 struct Ping FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PingBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_NAME = 4,
+    VT_SERVICE = 6,
+    VT_GROUP = 8
+  };
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  fb::protocol::internal::origin::Service service() const {
+    return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_SERVICE, 0));
+  }
+  uint8_t group() const {
+    return GetField<uint8_t>(VT_GROUP, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_GROUP, 1) &&
            verifier.EndTable();
   }
 };
@@ -34,6 +54,15 @@ struct PingBuilder {
   typedef Ping Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(Ping::VT_NAME, name);
+  }
+  void add_service(fb::protocol::internal::origin::Service service) {
+    fbb_.AddElement<int8_t>(Ping::VT_SERVICE, static_cast<int8_t>(service), 0);
+  }
+  void add_group(uint8_t group) {
+    fbb_.AddElement<uint8_t>(Ping::VT_GROUP, group, 0);
+  }
   explicit PingBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -46,9 +75,28 @@ struct PingBuilder {
 };
 
 inline ::flatbuffers::Offset<Ping> CreatePing(
-    ::flatbuffers::FlatBufferBuilder &_fbb) {
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    fb::protocol::internal::origin::Service service = fb::protocol::internal::origin::Service_Gateway,
+    uint8_t group = 0) {
   PingBuilder builder_(_fbb);
+  builder_.add_name(name);
+  builder_.add_group(group);
+  builder_.add_service(service);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Ping> CreatePingDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *name = nullptr,
+    fb::protocol::internal::origin::Service service = fb::protocol::internal::origin::Service_Gateway,
+    uint8_t group = 0) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return fb::protocol::internal::request::origin::CreatePing(
+      _fbb,
+      name__,
+      service,
+      group);
 }
 
 inline const fb::protocol::internal::request::origin::Ping *GetPing(const void *buf) {

@@ -34,6 +34,31 @@ namespace fb.protocol.db.request
         }
     }
 }
+namespace fb.protocol.inter
+{
+    public enum FlatBufferProtocolType
+    { 
+    }
+
+    public static class FlatBufferProtocolRouter
+    {
+        public static Type GetProtocolType(FlatBufferProtocolType protocolType)
+        {
+            return protocolType switch
+            {
+                _ => throw new ArgumentException(),
+            };
+        }
+
+        public static FlatBufferProtocolType GetProtocolEnum<T>(T protocol)
+        {
+            return protocol switch
+            {
+                _ => throw new ArgumentException(),
+            };
+        }
+    }
+}
 namespace fb.protocol.inter.request
 {
     public enum FlatBufferProtocolType

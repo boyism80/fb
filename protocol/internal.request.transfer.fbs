@@ -1,11 +1,11 @@
-namespace fb.protocol.internal.request;
+include "internal.fbs";
 
-enum Service : byte { Gateway, Login, Game }
+namespace fb.protocol.internal.request;
 
 table Transfer {
   name: string;
-  from: Service;
-  to: Service;
+  from: fb.protocol.internal.Service;
+  to: fb.protocol.internal.Service;
   map: ushort;
   x: ushort;
   y: ushort;

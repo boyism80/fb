@@ -1,7 +1,11 @@
+include "internal.fbs";
+
 namespace fb.protocol.internal.request;
 
 table Ping {
-  
+  name: string;
+  service: fb.protocol.internal.Service;
+  group: ubyte;
 }
 
 root_type Ping;

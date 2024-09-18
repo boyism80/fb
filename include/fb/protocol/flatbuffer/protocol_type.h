@@ -11,6 +11,14 @@ enum class FlatBufferProtocolType
 
 } } } } 
 
+namespace fb { namespace protocol { namespace internal { 
+
+enum class FlatBufferProtocolType
+{
+};
+
+} } } 
+
 namespace fb { namespace protocol { namespace internal { namespace request { 
 
 enum class FlatBufferProtocolType

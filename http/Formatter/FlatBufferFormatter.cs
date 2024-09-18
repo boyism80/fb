@@ -2,6 +2,8 @@
 using http.Util;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace http.Formatter
 {
@@ -23,9 +25,24 @@ namespace http.Formatter
             await context.HttpContext.Request.Body.CopyToAsync(ms);
             ms.Position = 0;
 
-            using var reader = new BinaryReader(ms);
-            var protocol = GetProtocol(reader);
-            return await InputFormatterResult.SuccessAsync(protocol);
+            switch (context.HttpContext.Request.ContentType)
+            {
+                case "application/json":
+                    {
+                        var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType);
+                        return await InputFormatterResult.SuccessAsync(protocol);
+                    }
+
+                case "application/octet-stream":
+                    {
+                        using var reader = new BinaryReader(ms);
+                        var protocol = GetProtocol(reader);
+                        return await InputFormatterResult.SuccessAsync(protocol);
+                    }
+
+                default:
+                    throw new InvalidOperationException();
+            }
         }
     }
 
@@ -49,24 +66,36 @@ namespace http.Formatter
 
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
-            if (context.Object == null)
+            if (context.Object == null || context.ObjectType == null)
                 throw new InvalidOperationException();
 
-            if (context.Object is IFlatBufferEx protocol)
-            {
-                using var ms = new MemoryStream();
-                using (var writer = new BinaryWriter(ms))
-                {
-                    var bytes = protocol.Serialize();
-                    writer.Write(GetProtocolId(protocol).ToMachineEndian());
-                    writer.Write(bytes.Length.ToMachineEndian());
-                    writer.Write(bytes);
-                    writer.Flush();
-                }
+            var protocol = context.Object as IFlatBufferEx ??
+                throw new InvalidOperationException();
 
-                var data = ms.ToArray();
-                context.HttpContext.Response.ContentLength = data.Length;
-                await context.HttpContext.Response.BodyWriter.WriteAsync(data);
+            switch (context.HttpContext.Request.ContentType)
+            {
+                case "application/json":
+                    context.HttpContext.Response.ContentType = "application/json";
+                    await context.HttpContext.Response.WriteAsJsonAsync(protocol, context.ObjectType);
+                    break;
+
+                case "application/octet-stream":
+                    {
+                        using var ms = new MemoryStream();
+                        using (var writer = new BinaryWriter(ms))
+                        {
+                            var bytes = protocol.Serialize();
+                            writer.Write(GetProtocolId(protocol).ToMachineEndian());
+                            writer.Write(bytes.Length.ToMachineEndian());
+                            writer.Write(bytes);
+                            writer.Flush();
+                        }
+
+                        var data = ms.ToArray();
+                        context.HttpContext.Response.ContentLength = data.Length;
+                        await context.HttpContext.Response.BodyWriter.WriteAsync(data);
+                    }
+                    break;
             }
         }
     }

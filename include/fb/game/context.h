@@ -21,6 +21,8 @@
 #include <fb/protocol/internal.h>
 #include <fb/game/model.h>
 
+using namespace fb::protocol::internal;
+
 namespace fb { namespace game {
 
 class context : public fb::acceptor<fb::game::session>, public fb::game::listener
@@ -109,6 +111,11 @@ protected:
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
     //async::task<void>       handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
+
+    // for heart-beat
+protected:
+    Service                 service() { return Service::Game; }
+    uint8_t                 group() { return fb::config::get()["group"].asUInt(); }
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);

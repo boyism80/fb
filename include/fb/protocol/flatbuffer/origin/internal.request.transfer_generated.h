@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
+#include "internal_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -21,39 +23,6 @@ namespace origin {
 
 struct Transfer;
 struct TransferBuilder;
-
-enum Service : int8_t {
-  Service_Gateway = 0,
-  Service_Login = 1,
-  Service_Game = 2,
-  Service_MIN = Service_Gateway,
-  Service_MAX = Service_Game
-};
-
-inline const Service (&EnumValuesService())[3] {
-  static const Service values[] = {
-    Service_Gateway,
-    Service_Login,
-    Service_Game
-  };
-  return values;
-}
-
-inline const char * const *EnumNamesService() {
-  static const char * const names[4] = {
-    "Gateway",
-    "Login",
-    "Game",
-    nullptr
-  };
-  return names;
-}
-
-inline const char *EnumNameService(Service e) {
-  if (::flatbuffers::IsOutRange(e, Service_Gateway, Service_Game)) return "";
-  const size_t index = static_cast<size_t>(e);
-  return EnumNamesService()[index];
-}
 
 struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TransferBuilder Builder;
@@ -69,11 +38,11 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
-  fb::protocol::internal::request::origin::Service from() const {
-    return static_cast<fb::protocol::internal::request::origin::Service>(GetField<int8_t>(VT_FROM, 0));
+  fb::protocol::internal::origin::Service from() const {
+    return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_FROM, 0));
   }
-  fb::protocol::internal::request::origin::Service to() const {
-    return static_cast<fb::protocol::internal::request::origin::Service>(GetField<int8_t>(VT_TO, 0));
+  fb::protocol::internal::origin::Service to() const {
+    return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_TO, 0));
   }
   uint16_t map() const {
     return GetField<uint16_t>(VT_MAP, 0);
@@ -108,10 +77,10 @@ struct TransferBuilder {
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Transfer::VT_NAME, name);
   }
-  void add_from(fb::protocol::internal::request::origin::Service from) {
+  void add_from(fb::protocol::internal::origin::Service from) {
     fbb_.AddElement<int8_t>(Transfer::VT_FROM, static_cast<int8_t>(from), 0);
   }
-  void add_to(fb::protocol::internal::request::origin::Service to) {
+  void add_to(fb::protocol::internal::origin::Service to) {
     fbb_.AddElement<int8_t>(Transfer::VT_TO, static_cast<int8_t>(to), 0);
   }
   void add_map(uint16_t map) {
@@ -140,8 +109,8 @@ struct TransferBuilder {
 inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    fb::protocol::internal::request::origin::Service from = fb::protocol::internal::request::origin::Service_Gateway,
-    fb::protocol::internal::request::origin::Service to = fb::protocol::internal::request::origin::Service_Gateway,
+    fb::protocol::internal::origin::Service from = fb::protocol::internal::origin::Service_Gateway,
+    fb::protocol::internal::origin::Service to = fb::protocol::internal::origin::Service_Gateway,
     uint16_t map = 0,
     uint16_t x = 0,
     uint16_t y = 0,
@@ -160,8 +129,8 @@ inline ::flatbuffers::Offset<Transfer> CreateTransfer(
 inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *name = nullptr,
-    fb::protocol::internal::request::origin::Service from = fb::protocol::internal::request::origin::Service_Gateway,
-    fb::protocol::internal::request::origin::Service to = fb::protocol::internal::request::origin::Service_Gateway,
+    fb::protocol::internal::origin::Service from = fb::protocol::internal::origin::Service_Gateway,
+    fb::protocol::internal::origin::Service to = fb::protocol::internal::origin::Service_Gateway,
     uint16_t map = 0,
     uint16_t x = 0,
     uint16_t y = 0,

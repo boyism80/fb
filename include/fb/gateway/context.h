@@ -11,6 +11,8 @@
 #include <fb/protocol/internal.h>
 #include <fb/core/encoding.h>
 
+using namespace fb::protocol::internal;
+
 namespace fb { namespace gateway {
 
 using namespace fb::protocol::gateway;
@@ -43,6 +45,10 @@ protected:
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
     bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+    
+    // for heart-beat
+protected:
+    Service                     service() { return Service::Gateway; }
 
 public:
     async::task<bool>           handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);

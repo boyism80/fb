@@ -9,6 +9,18 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
     _mutex(*this)
 {
     this->accept();
+
+    this->bind_timer([this]()->async::task<void>
+    {
+        auto&& response = co_await this->post_async<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
+            "localhost:5126", "/ping", 
+            fb::protocol::internal::request::Ping
+            {
+                this->id(),
+                this->service(),
+                this->group()
+            });
+    }, 1s);
 }
 
 template <typename T>
@@ -226,7 +238,6 @@ template <typename Request, typename Response>
 async::task<Response> fb::acceptor<T>::post_async(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body)
 {
     httplib::Headers headers;
-    headers.insert({ "Content-Type", "application/octet-stream" });
     auto serialized = body.Serialize();
 
     auto out_stream = fb::ostream();
@@ -451,4 +462,21 @@ void fb::acceptor<T>::bind(const std::function<async::task<bool>(fb::socket<T>&,
 {
     auto id = R().__id;
     this->bind(id, fn);
+}
+
+template <typename T>
+void fb::acceptor<T>::bind_timer(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& duration)
+{
+    auto timer = std::make_shared<boost::asio::deadline_timer>(this->_context, boost::posix_time::seconds(1));
+    auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
+    auto callback = [=](const boost::system::error_code&)
+    {
+        async::awaitable_then(fn(), [timer, callback_ptr, duration](async::awaitable_result<void> result)
+        {
+            timer->expires_at(timer->expires_at() + boost::posix_time::milliseconds(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
+            timer->async_wait(*callback_ptr.get());
+        });
+    };
+    *callback_ptr = callback;
+    timer->async_wait(*callback_ptr.get());
 }

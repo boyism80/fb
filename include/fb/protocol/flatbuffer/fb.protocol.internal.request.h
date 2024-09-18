@@ -2,6 +2,7 @@
 #define __FB_PROTOCOL_INTERNAL_REQUEST___
 
 #include "flatbuffers/flatbuffers.h"
+#include <fb/protocol/flatbuffer/fb.protocol.internal.h>
 #include <fb/protocol/flatbuffer/origin/internal.request.ping_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.request.transfer_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.request.whisper_generated.h>
@@ -11,12 +12,6 @@
 
 namespace fb { namespace protocol { namespace internal { namespace request { 
 
-enum class Service : int8_t
-{
-    Gateway = fb::protocol::internal::request::origin::Service::Service_Gateway,
-    Login = fb::protocol::internal::request::origin::Service::Service_Login,
-    Game = fb::protocol::internal::request::origin::Service::Service_Game
-};
 
 class Ping
 {
@@ -24,22 +19,34 @@ public:
     static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Ping;
 
 public:
+    std::string name;
+    fb::protocol::internal::Service service;
+    uint8_t group;
 
 public:
     Ping()
     { }
 
     Ping(const Ping& x)
+        : name(x.name), service(x.service), group(x.group)
     { }
 
-    Ping(const fb::protocol::internal::request::origin::Ping& raw)
+    Ping(const std::string& name, fb::protocol::internal::Service service, uint8_t group)
+        : name(name), service(service), group(group)
     { }
+    Ping(const fb::protocol::internal::request::origin::Ping& raw)
+        : name(raw.name()->c_str()), service((fb::protocol::internal::Service)raw.service()), group(raw.group())
+    {
+    }
 
 
 public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
-        return fb::protocol::internal::request::origin::CreatePing(builder);
+        return fb::protocol::internal::request::origin::CreatePing(builder,
+            builder.CreateString(this->name),
+            (fb::protocol::internal::origin::Service)this->service,
+            this->group);
     }
 
     std::vector<uint8_t> Serialize() const
@@ -67,8 +74,8 @@ public:
 
 public:
     std::string name;
-    Service from;
-    Service to;
+    fb::protocol::internal::Service from;
+    fb::protocol::internal::Service to;
     uint16_t map;
     uint16_t x;
     uint16_t y;
@@ -82,11 +89,11 @@ public:
         : name(x.name), from(x.from), to(x.to), map(x.map), x(x.x), y(x.y), fd(x.fd)
     { }
 
-    Transfer(const std::string& name, Service from, Service to, uint16_t map, uint16_t x, uint16_t y, uint32_t fd)
+    Transfer(const std::string& name, fb::protocol::internal::Service from, fb::protocol::internal::Service to, uint16_t map, uint16_t x, uint16_t y, uint32_t fd)
         : name(name), from(from), to(to), map(map), x(x), y(y), fd(fd)
     { }
     Transfer(const fb::protocol::internal::request::origin::Transfer& raw)
-        : name(raw.name()->c_str()), from((fb::protocol::internal::request::Service)raw.from()), to((fb::protocol::internal::request::Service)raw.to()), map(raw.map()), x(raw.x()), y(raw.y()), fd(raw.fd())
+        : name(raw.name()->c_str()), from((fb::protocol::internal::Service)raw.from()), to((fb::protocol::internal::Service)raw.to()), map(raw.map()), x(raw.x()), y(raw.y()), fd(raw.fd())
     {
     }
 
@@ -96,8 +103,8 @@ public:
     {
         return fb::protocol::internal::request::origin::CreateTransfer(builder,
             builder.CreateString(this->name),
-            (fb::protocol::internal::request::origin::Service)this->from,
-            (fb::protocol::internal::request::origin::Service)this->to,
+            (fb::protocol::internal::origin::Service)this->from,
+            (fb::protocol::internal::origin::Service)this->to,
             this->map,
             this->x,
             this->y,
