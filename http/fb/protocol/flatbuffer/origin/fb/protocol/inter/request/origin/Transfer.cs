@@ -20,47 +20,25 @@ public struct Transfer : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Transfer __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Name { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
-  public fb.protocol.inter.origin.Service From { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
-  public fb.protocol.inter.origin.Service To { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
-  public ushort Map { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort X { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort Y { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public uint Fd { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol.inter.origin.Service Service { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
+  public byte Group { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol.inter.request.origin.Transfer> CreateTransfer(FlatBufferBuilder builder,
-      StringOffset nameOffset = default(StringOffset),
-      fb.protocol.inter.origin.Service from = fb.protocol.inter.origin.Service.Gateway,
-      fb.protocol.inter.origin.Service to = fb.protocol.inter.origin.Service.Gateway,
-      ushort map = 0,
-      ushort x = 0,
-      ushort y = 0,
-      uint fd = 0) {
-    builder.StartTable(7);
-    Transfer.AddFd(builder, fd);
-    Transfer.AddName(builder, nameOffset);
-    Transfer.AddY(builder, y);
-    Transfer.AddX(builder, x);
-    Transfer.AddMap(builder, map);
-    Transfer.AddTo(builder, to);
-    Transfer.AddFrom(builder, from);
+      uint id = 0,
+      fb.protocol.inter.origin.Service service = fb.protocol.inter.origin.Service.Gateway,
+      byte group = 0) {
+    builder.StartTable(3);
+    Transfer.AddId(builder, id);
+    Transfer.AddGroup(builder, group);
+    Transfer.AddService(builder, service);
     return Transfer.EndTransfer(builder);
   }
 
-  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(7); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
-  public static void AddFrom(FlatBufferBuilder builder, fb.protocol.inter.origin.Service from) { builder.AddSbyte(1, (sbyte)from, 0); }
-  public static void AddTo(FlatBufferBuilder builder, fb.protocol.inter.origin.Service to) { builder.AddSbyte(2, (sbyte)to, 0); }
-  public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(3, map, 0); }
-  public static void AddX(FlatBufferBuilder builder, ushort x) { builder.AddUshort(4, x, 0); }
-  public static void AddY(FlatBufferBuilder builder, ushort y) { builder.AddUshort(5, y, 0); }
-  public static void AddFd(FlatBufferBuilder builder, uint fd) { builder.AddUint(6, fd, 0); }
+  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
+  public static void AddService(FlatBufferBuilder builder, fb.protocol.inter.origin.Service service) { builder.AddSbyte(1, (sbyte)service, 0); }
+  public static void AddGroup(FlatBufferBuilder builder, byte group) { builder.AddByte(2, group, 0); }
   public static Offset<fb.protocol.inter.request.origin.Transfer> EndTransfer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.inter.request.origin.Transfer>(o);
@@ -75,13 +53,9 @@ static public class TransferVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 6 /*From*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
-      && verifier.VerifyField(tablePos, 8 /*To*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
-      && verifier.VerifyField(tablePos, 10 /*Map*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 12 /*X*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 14 /*Y*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 16 /*Fd*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Service*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
+      && verifier.VerifyField(tablePos, 8 /*Group*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

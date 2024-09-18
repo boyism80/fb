@@ -2,6 +2,9 @@
 #define __FB_PROTOCOL_INTERNAL_RESPONSE___
 
 #include "flatbuffers/flatbuffers.h"
+#include <fb/protocol/flatbuffer/fb.protocol.internal.h>
+#include <fb/protocol/flatbuffer/origin/internal.response.login_generated.h>
+#include <fb/protocol/flatbuffer/origin/internal.response.logout_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.pong_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.transfer_generated.h>
 #include <fb/protocol/flatbuffer/protocol_type.h>
@@ -10,10 +13,105 @@
 
 namespace fb { namespace protocol { namespace internal { namespace response { 
 
-enum class TransferResultCode : int8_t
+
+class Login
 {
-    CONNECTED = fb::protocol::internal::response::origin::TransferResultCode::TransferResultCode_CONNECTED,
-    SUCCESS = fb::protocol::internal::response::origin::TransferResultCode::TransferResultCode_SUCCESS
+public:
+    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Login;
+
+public:
+    uint32_t uid;
+
+public:
+    Login()
+    { }
+
+    Login(const Login& x)
+        : uid(x.uid)
+    { }
+
+    Login(uint32_t uid)
+        : uid(uid)
+    { }
+    Login(const fb::protocol::internal::response::origin::Login& raw)
+        : uid(raw.uid())
+    {
+    }
+
+
+public:
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
+    {
+        return fb::protocol::internal::response::origin::CreateLogin(builder,
+            this->uid);
+    }
+
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(this->Build(builder));
+        auto bytes = builder.GetBufferPointer();
+        auto size = builder.GetSize();
+        auto result = std::vector<uint8_t>(size);
+        std::memcpy(result.data(), bytes, size);
+        return result;
+    }
+
+    static Login Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::origin::GetLogin(bytes);
+        return Login(*raw);
+    }
+};
+
+class Logout
+{
+public:
+    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Logout;
+
+public:
+    uint32_t uid;
+
+public:
+    Logout()
+    { }
+
+    Logout(const Logout& x)
+        : uid(x.uid)
+    { }
+
+    Logout(uint32_t uid)
+        : uid(uid)
+    { }
+    Logout(const fb::protocol::internal::response::origin::Logout& raw)
+        : uid(raw.uid())
+    {
+    }
+
+
+public:
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
+    {
+        return fb::protocol::internal::response::origin::CreateLogout(builder,
+            this->uid);
+    }
+
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(this->Build(builder));
+        auto bytes = builder.GetBufferPointer();
+        auto size = builder.GetSize();
+        auto result = std::vector<uint8_t>(size);
+        std::memcpy(result.data(), bytes, size);
+        return result;
+    }
+
+    static Logout Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::origin::GetLogout(bytes);
+        return Logout(*raw);
+    }
 };
 
 class Pong
@@ -64,28 +162,23 @@ public:
     static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Transfer;
 
 public:
-    TransferResultCode code;
-    std::string name;
+    fb::protocol::internal::TransferResult code;
     std::string ip;
     uint16_t port;
-    uint16_t map;
-    uint16_t x;
-    uint16_t y;
-    uint32_t fd;
 
 public:
     Transfer()
     { }
 
     Transfer(const Transfer& x)
-        : code(x.code), name(x.name), ip(x.ip), port(x.port), map(x.map), x(x.x), y(x.y), fd(x.fd)
+        : code(x.code), ip(x.ip), port(x.port)
     { }
 
-    Transfer(TransferResultCode code, const std::string& name, const std::string& ip, uint16_t port, uint16_t map, uint16_t x, uint16_t y, uint32_t fd)
-        : code(code), name(name), ip(ip), port(port), map(map), x(x), y(y), fd(fd)
+    Transfer(fb::protocol::internal::TransferResult code, const std::string& ip, uint16_t port)
+        : code(code), ip(ip), port(port)
     { }
     Transfer(const fb::protocol::internal::response::origin::Transfer& raw)
-        : code((fb::protocol::internal::response::TransferResultCode)raw.code()), name(raw.name()->c_str()), ip(raw.ip()->c_str()), port(raw.port()), map(raw.map()), x(raw.x()), y(raw.y()), fd(raw.fd())
+        : code((fb::protocol::internal::TransferResult)raw.code()), ip(raw.ip()->c_str()), port(raw.port())
     {
     }
 
@@ -94,14 +187,9 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::response::origin::CreateTransfer(builder,
-            (fb::protocol::internal::response::origin::TransferResultCode)this->code,
-            builder.CreateString(this->name),
+            (fb::protocol::internal::origin::TransferResult)this->code,
             builder.CreateString(this->ip),
-            this->port,
-            this->map,
-            this->x,
-            this->y,
-            this->fd);
+            this->port);
     }
 
     std::vector<uint8_t> Serialize() const

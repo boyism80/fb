@@ -1,0 +1,7 @@
+namespace fb.protocol.internal.request;
+
+table Login {
+  uid: uint;
+}
+
+root_type Login;

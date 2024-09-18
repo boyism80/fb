@@ -51,6 +51,39 @@ inline const char *EnumNameService(Service e) {
   return EnumNamesService()[index];
 }
 
+enum TransferResult : int8_t {
+  TransferResult_Success = 0,
+  TransferResult_Failed = 1,
+  TransferResult_LoggedIn = 2,
+  TransferResult_MIN = TransferResult_Success,
+  TransferResult_MAX = TransferResult_LoggedIn
+};
+
+inline const TransferResult (&EnumValuesTransferResult())[3] {
+  static const TransferResult values[] = {
+    TransferResult_Success,
+    TransferResult_Failed,
+    TransferResult_LoggedIn
+  };
+  return values;
+}
+
+inline const char * const *EnumNamesTransferResult() {
+  static const char * const names[4] = {
+    "Success",
+    "Failed",
+    "LoggedIn",
+    nullptr
+  };
+  return names;
+}
+
+inline const char *EnumNameTransferResult(TransferResult e) {
+  if (::flatbuffers::IsOutRange(e, TransferResult_Success, TransferResult_LoggedIn)) return "";
+  const size_t index = static_cast<size_t>(e);
+  return EnumNamesTransferResult()[index];
+}
+
 }  // namespace origin
 }  // namespace internal
 }  // namespace protocol

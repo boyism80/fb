@@ -236,7 +236,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
         auto id = name_row.get_value<uint32_t>(0);
-        auto&& auth_result = co_await this->_db.co_exec_f(id, "SELECT pw, map FROM user WHERE name='%s' LIMIT 1", name.c_str(), this->sha256(pw).c_str());
+        auto&& auth_result = co_await this->_db.co_exec_f(id, "SELECT id, pw, map FROM user WHERE name='%s' LIMIT 1", name.c_str(), this->sha256(pw).c_str());
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -244,33 +244,29 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         if(auth_row.count() == 0)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        if(auth_row.get_value<std::string>(0) != this->sha256(pw))
+        if(auth_row.get_value<std::string>(1) != this->sha256(pw))
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
-        auto map = auth_row.get_value<uint32_t>(1);
+        auto map = auth_row.get_value<uint32_t>(2);
         auto&& response = co_await this->post_async<fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer>("localhost:5126", "/transfer", fb::protocol::internal::request::Transfer
         {
-            UTF8(name, PLATFORM::Windows),
-            fb::protocol::internal::Service::Login,
+            auth_row.get_value<uint32_t>(0),
             fb::protocol::internal::Service::Game,
-            (uint16_t)map,
-            0xFFFF,
-            0xFFFF,
-            fd
+            0
         });
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if(response.code == fb::protocol::internal::response::TransferResultCode::CONNECTED)
+        if(response.code == fb::protocol::internal::TransferResult::LoggedIn)
             throw id_exception("이미 접속중입니다.");
 
-        if(response.code != fb::protocol::internal::response::TransferResultCode::SUCCESS)
+        if (response.code == fb::protocol::internal::TransferResult::Failed)
             throw id_exception("비바람이 휘몰아치고 있습니다.");
 
         socket.send(fb::protocol::login::response::message("", 0x00));
         fb::ostream         parameter;
         parameter.write_u32(id);
-        parameter.write(response.name);
+        parameter.write(name);
         parameter.write_u8(0);
         this->transfer(socket, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
     }

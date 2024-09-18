@@ -23,6 +23,8 @@ namespace fb { namespace protocol { namespace internal { namespace request {
 
 enum class FlatBufferProtocolType
 {
+	Login,
+	Logout,
 	Ping,
 	Transfer,
 	Whisper,
@@ -34,6 +36,8 @@ namespace fb { namespace protocol { namespace internal { namespace response {
 
 enum class FlatBufferProtocolType
 {
+	Login,
+	Logout,
 	Pong,
 	Transfer,
 };

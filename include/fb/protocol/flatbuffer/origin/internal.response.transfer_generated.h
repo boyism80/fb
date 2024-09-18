@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
+#include "internal_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -22,53 +24,15 @@ namespace origin {
 struct Transfer;
 struct TransferBuilder;
 
-enum TransferResultCode : int8_t {
-  TransferResultCode_CONNECTED = 0,
-  TransferResultCode_SUCCESS = 1,
-  TransferResultCode_MIN = TransferResultCode_CONNECTED,
-  TransferResultCode_MAX = TransferResultCode_SUCCESS
-};
-
-inline const TransferResultCode (&EnumValuesTransferResultCode())[2] {
-  static const TransferResultCode values[] = {
-    TransferResultCode_CONNECTED,
-    TransferResultCode_SUCCESS
-  };
-  return values;
-}
-
-inline const char * const *EnumNamesTransferResultCode() {
-  static const char * const names[3] = {
-    "CONNECTED",
-    "SUCCESS",
-    nullptr
-  };
-  return names;
-}
-
-inline const char *EnumNameTransferResultCode(TransferResultCode e) {
-  if (::flatbuffers::IsOutRange(e, TransferResultCode_CONNECTED, TransferResultCode_SUCCESS)) return "";
-  const size_t index = static_cast<size_t>(e);
-  return EnumNamesTransferResultCode()[index];
-}
-
 struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TransferBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CODE = 4,
-    VT_NAME = 6,
-    VT_IP = 8,
-    VT_PORT = 10,
-    VT_MAP = 12,
-    VT_X = 14,
-    VT_Y = 16,
-    VT_FD = 18
+    VT_IP = 6,
+    VT_PORT = 8
   };
-  fb::protocol::internal::response::origin::TransferResultCode code() const {
-    return static_cast<fb::protocol::internal::response::origin::TransferResultCode>(GetField<int8_t>(VT_CODE, 0));
-  }
-  const ::flatbuffers::String *name() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  fb::protocol::internal::origin::TransferResult code() const {
+    return static_cast<fb::protocol::internal::origin::TransferResult>(GetField<int8_t>(VT_CODE, 0));
   }
   const ::flatbuffers::String *ip() const {
     return GetPointer<const ::flatbuffers::String *>(VT_IP);
@@ -76,30 +40,12 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t port() const {
     return GetField<uint16_t>(VT_PORT, 0);
   }
-  uint16_t map() const {
-    return GetField<uint16_t>(VT_MAP, 0);
-  }
-  uint16_t x() const {
-    return GetField<uint16_t>(VT_X, 0);
-  }
-  uint16_t y() const {
-    return GetField<uint16_t>(VT_Y, 0);
-  }
-  uint32_t fd() const {
-    return GetField<uint32_t>(VT_FD, 0);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int8_t>(verifier, VT_CODE, 1) &&
-           VerifyOffset(verifier, VT_NAME) &&
-           verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
            VerifyField<uint16_t>(verifier, VT_PORT, 2) &&
-           VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
-           VerifyField<uint16_t>(verifier, VT_X, 2) &&
-           VerifyField<uint16_t>(verifier, VT_Y, 2) &&
-           VerifyField<uint32_t>(verifier, VT_FD, 4) &&
            verifier.EndTable();
   }
 };
@@ -108,29 +54,14 @@ struct TransferBuilder {
   typedef Transfer Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_code(fb::protocol::internal::response::origin::TransferResultCode code) {
+  void add_code(fb::protocol::internal::origin::TransferResult code) {
     fbb_.AddElement<int8_t>(Transfer::VT_CODE, static_cast<int8_t>(code), 0);
-  }
-  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
-    fbb_.AddOffset(Transfer::VT_NAME, name);
   }
   void add_ip(::flatbuffers::Offset<::flatbuffers::String> ip) {
     fbb_.AddOffset(Transfer::VT_IP, ip);
   }
   void add_port(uint16_t port) {
     fbb_.AddElement<uint16_t>(Transfer::VT_PORT, port, 0);
-  }
-  void add_map(uint16_t map) {
-    fbb_.AddElement<uint16_t>(Transfer::VT_MAP, map, 0);
-  }
-  void add_x(uint16_t x) {
-    fbb_.AddElement<uint16_t>(Transfer::VT_X, x, 0);
-  }
-  void add_y(uint16_t y) {
-    fbb_.AddElement<uint16_t>(Transfer::VT_Y, y, 0);
-  }
-  void add_fd(uint32_t fd) {
-    fbb_.AddElement<uint32_t>(Transfer::VT_FD, fd, 0);
   }
   explicit TransferBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -145,21 +76,11 @@ struct TransferBuilder {
 
 inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    fb::protocol::internal::response::origin::TransferResultCode code = fb::protocol::internal::response::origin::TransferResultCode_CONNECTED,
-    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    fb::protocol::internal::origin::TransferResult code = fb::protocol::internal::origin::TransferResult_Success,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
-    uint16_t port = 0,
-    uint16_t map = 0,
-    uint16_t x = 0,
-    uint16_t y = 0,
-    uint32_t fd = 0) {
+    uint16_t port = 0) {
   TransferBuilder builder_(_fbb);
-  builder_.add_fd(fd);
   builder_.add_ip(ip);
-  builder_.add_name(name);
-  builder_.add_y(y);
-  builder_.add_x(x);
-  builder_.add_map(map);
   builder_.add_port(port);
   builder_.add_code(code);
   return builder_.Finish();
@@ -167,26 +88,15 @@ inline ::flatbuffers::Offset<Transfer> CreateTransfer(
 
 inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    fb::protocol::internal::response::origin::TransferResultCode code = fb::protocol::internal::response::origin::TransferResultCode_CONNECTED,
-    const char *name = nullptr,
+    fb::protocol::internal::origin::TransferResult code = fb::protocol::internal::origin::TransferResult_Success,
     const char *ip = nullptr,
-    uint16_t port = 0,
-    uint16_t map = 0,
-    uint16_t x = 0,
-    uint16_t y = 0,
-    uint32_t fd = 0) {
-  auto name__ = name ? _fbb.CreateString(name) : 0;
+    uint16_t port = 0) {
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::response::origin::CreateTransfer(
       _fbb,
       code,
-      name__,
       ip__,
-      port,
-      map,
-      x,
-      y,
-      fd);
+      port);
 }
 
 inline const fb::protocol::internal::response::origin::Transfer *GetTransfer(const void *buf) {

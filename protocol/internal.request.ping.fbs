@@ -6,6 +6,8 @@ table Ping {
   name: string;
   service: fb.protocol.internal.Service;
   group: ubyte;
+  ip: string;
+  port: ushort;
 }
 
 root_type Ping;

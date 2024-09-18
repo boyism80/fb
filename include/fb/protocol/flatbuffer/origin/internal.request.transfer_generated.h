@@ -27,45 +27,24 @@ struct TransferBuilder;
 struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TransferBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_NAME = 4,
-    VT_FROM = 6,
-    VT_TO = 8,
-    VT_MAP = 10,
-    VT_X = 12,
-    VT_Y = 14,
-    VT_FD = 16
+    VT_ID = 4,
+    VT_SERVICE = 6,
+    VT_GROUP = 8
   };
-  const ::flatbuffers::String *name() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  fb::protocol::internal::origin::Service from() const {
-    return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_FROM, 0));
+  fb::protocol::internal::origin::Service service() const {
+    return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_SERVICE, 0));
   }
-  fb::protocol::internal::origin::Service to() const {
-    return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_TO, 0));
-  }
-  uint16_t map() const {
-    return GetField<uint16_t>(VT_MAP, 0);
-  }
-  uint16_t x() const {
-    return GetField<uint16_t>(VT_X, 0);
-  }
-  uint16_t y() const {
-    return GetField<uint16_t>(VT_Y, 0);
-  }
-  uint32_t fd() const {
-    return GetField<uint32_t>(VT_FD, 0);
+  uint8_t group() const {
+    return GetField<uint8_t>(VT_GROUP, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_NAME) &&
-           verifier.VerifyString(name()) &&
-           VerifyField<int8_t>(verifier, VT_FROM, 1) &&
-           VerifyField<int8_t>(verifier, VT_TO, 1) &&
-           VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
-           VerifyField<uint16_t>(verifier, VT_X, 2) &&
-           VerifyField<uint16_t>(verifier, VT_Y, 2) &&
-           VerifyField<uint32_t>(verifier, VT_FD, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_GROUP, 1) &&
            verifier.EndTable();
   }
 };
@@ -74,26 +53,14 @@ struct TransferBuilder {
   typedef Transfer Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
-    fbb_.AddOffset(Transfer::VT_NAME, name);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(Transfer::VT_ID, id, 0);
   }
-  void add_from(fb::protocol::internal::origin::Service from) {
-    fbb_.AddElement<int8_t>(Transfer::VT_FROM, static_cast<int8_t>(from), 0);
+  void add_service(fb::protocol::internal::origin::Service service) {
+    fbb_.AddElement<int8_t>(Transfer::VT_SERVICE, static_cast<int8_t>(service), 0);
   }
-  void add_to(fb::protocol::internal::origin::Service to) {
-    fbb_.AddElement<int8_t>(Transfer::VT_TO, static_cast<int8_t>(to), 0);
-  }
-  void add_map(uint16_t map) {
-    fbb_.AddElement<uint16_t>(Transfer::VT_MAP, map, 0);
-  }
-  void add_x(uint16_t x) {
-    fbb_.AddElement<uint16_t>(Transfer::VT_X, x, 0);
-  }
-  void add_y(uint16_t y) {
-    fbb_.AddElement<uint16_t>(Transfer::VT_Y, y, 0);
-  }
-  void add_fd(uint32_t fd) {
-    fbb_.AddElement<uint32_t>(Transfer::VT_FD, fd, 0);
+  void add_group(uint8_t group) {
+    fbb_.AddElement<uint8_t>(Transfer::VT_GROUP, group, 0);
   }
   explicit TransferBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -108,43 +75,14 @@ struct TransferBuilder {
 
 inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    fb::protocol::internal::origin::Service from = fb::protocol::internal::origin::Service_Gateway,
-    fb::protocol::internal::origin::Service to = fb::protocol::internal::origin::Service_Gateway,
-    uint16_t map = 0,
-    uint16_t x = 0,
-    uint16_t y = 0,
-    uint32_t fd = 0) {
+    uint32_t id = 0,
+    fb::protocol::internal::origin::Service service = fb::protocol::internal::origin::Service_Gateway,
+    uint8_t group = 0) {
   TransferBuilder builder_(_fbb);
-  builder_.add_fd(fd);
-  builder_.add_name(name);
-  builder_.add_y(y);
-  builder_.add_x(x);
-  builder_.add_map(map);
-  builder_.add_to(to);
-  builder_.add_from(from);
+  builder_.add_id(id);
+  builder_.add_group(group);
+  builder_.add_service(service);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *name = nullptr,
-    fb::protocol::internal::origin::Service from = fb::protocol::internal::origin::Service_Gateway,
-    fb::protocol::internal::origin::Service to = fb::protocol::internal::origin::Service_Gateway,
-    uint16_t map = 0,
-    uint16_t x = 0,
-    uint16_t y = 0,
-    uint32_t fd = 0) {
-  auto name__ = name ? _fbb.CreateString(name) : 0;
-  return fb::protocol::internal::request::origin::CreateTransfer(
-      _fbb,
-      name__,
-      from,
-      to,
-      map,
-      x,
-      y,
-      fd);
 }
 
 inline const fb::protocol::internal::request::origin::Transfer *GetTransfer(const void *buf) {

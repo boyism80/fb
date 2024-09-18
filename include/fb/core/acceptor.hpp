@@ -12,13 +12,16 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
 
     this->bind_timer([this]()->async::task<void>
     {
+        auto& config = fb::config::get();
         auto&& response = co_await this->post_async<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
             "localhost:5126", "/ping", 
             fb::protocol::internal::request::Ping
             {
                 this->id(),
                 this->service(),
-                this->group()
+                this->group(),
+                config["ip"].asString(),
+                (uint16_t)config["port"].asUInt()
             });
     }, 1s);
 }
@@ -258,13 +261,7 @@ async::task<Response> fb::acceptor<T>::post_async(const std::string& host, const
 
     auto protocol_type = in_stream.read_u32();
     auto protocol_size = in_stream.read_u32();
-    auto protocol = Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
-
-    auto thread = this->current_thread();
-    if (thread != nullptr)
-        co_await thread->dispatch();
-
-    co_return protocol;
+    return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
 }
 
 template <typename T>

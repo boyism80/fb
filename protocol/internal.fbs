@@ -1,3 +1,5 @@
 namespace fb.protocol.internal;
 
 enum Service : byte { Gateway, Login, Game }
+
+enum TransferResult : byte { Success, Failed, LoggedIn }

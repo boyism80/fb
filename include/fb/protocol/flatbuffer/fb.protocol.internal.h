@@ -15,6 +15,12 @@ enum class Service : int8_t
     Login = fb::protocol::internal::origin::Service::Service_Login,
     Game = fb::protocol::internal::origin::Service::Service_Game
 };
+enum class TransferResult : int8_t
+{
+    Success = fb::protocol::internal::origin::TransferResult::TransferResult_Success,
+    Failed = fb::protocol::internal::origin::TransferResult::TransferResult_Failed,
+    LoggedIn = fb::protocol::internal::origin::TransferResult::TransferResult_LoggedIn
+};
 
 
  }  }  } 

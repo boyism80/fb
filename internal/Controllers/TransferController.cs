@@ -1,5 +1,9 @@
-﻿using http.Service;
+﻿using fb.protocol.inter;
+using http.Service;
+using Internal.Model.Redis;
+using Internal.RedisKey;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using request = fb.protocol.inter.request;
 using response = fb.protocol.inter.response;
 
@@ -21,16 +25,23 @@ public class TransferController : ControllerBase
     [HttpPost]
     public async Task<response.Transfer> Transfer(request.Transfer request)
     {
+        var connection = _redisService.Connection;
+        var exists = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Group = request.Group }.Key);
+        if (exists.IsNull)
+        {
+            return new response.Transfer
+            {
+                Code = TransferResult.Failed,
+                Ip = "0.0.0.0",
+            };
+        }
+
+        var config = JsonConvert.DeserializeObject<HostConfig>(exists.ToString());
         return new response.Transfer
         {
-            Name = request.Name,
-            Code = response.TransferResultCode.CONNECTED,
-            Fd = request.Fd,
-            Ip = "127.0.0.1",
-            Port = 2001,
-            Map = request.Map,
-            X = request.X,
-            Y = request.Y
+            Code = TransferResult.Success,
+            Ip = config.IP,
+            Port = config.Port
         };
     }
 }

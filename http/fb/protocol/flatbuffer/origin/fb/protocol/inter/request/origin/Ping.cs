@@ -29,22 +29,36 @@ public struct Ping : IFlatbufferObject
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
   public fb.protocol.inter.origin.Service Service { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
   public byte Group { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public string Ip { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetIpBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetIpBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetIpArray() { return __p.__vector_as_array<byte>(10); }
+  public ushort Port { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol.inter.request.origin.Ping> CreatePing(FlatBufferBuilder builder,
       StringOffset nameOffset = default(StringOffset),
       fb.protocol.inter.origin.Service service = fb.protocol.inter.origin.Service.Gateway,
-      byte group = 0) {
-    builder.StartTable(3);
+      byte group = 0,
+      StringOffset ipOffset = default(StringOffset),
+      ushort port = 0) {
+    builder.StartTable(5);
+    Ping.AddIp(builder, ipOffset);
     Ping.AddName(builder, nameOffset);
+    Ping.AddPort(builder, port);
     Ping.AddGroup(builder, group);
     Ping.AddService(builder, service);
     return Ping.EndPing(builder);
   }
 
-  public static void StartPing(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartPing(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
   public static void AddService(FlatBufferBuilder builder, fb.protocol.inter.origin.Service service) { builder.AddSbyte(1, (sbyte)service, 0); }
   public static void AddGroup(FlatBufferBuilder builder, byte group) { builder.AddByte(2, group, 0); }
+  public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(3, ipOffset.Value, 0); }
+  public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(4, port, 0); }
   public static Offset<fb.protocol.inter.request.origin.Ping> EndPing(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.inter.request.origin.Ping>(o);
@@ -62,6 +76,8 @@ static public class PingVerify
       && verifier.VerifyString(tablePos, 4 /*Name*/, false)
       && verifier.VerifyField(tablePos, 6 /*Service*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
       && verifier.VerifyField(tablePos, 8 /*Group*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 10 /*Ip*/, false)
+      && verifier.VerifyField(tablePos, 12 /*Port*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
