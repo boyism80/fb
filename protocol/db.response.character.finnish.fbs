@@ -1,0 +1,8 @@
+namespace fb.protocol.db.response;
+
+table FinishCharacter
+{
+	success: bool;
+}
+
+root_type FinishCharacter;

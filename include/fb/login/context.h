@@ -18,6 +18,8 @@
 #include <fb/protocol/internal.h>
 #include <fb/core/acceptor.h>
 #include <fb/core/string.h>
+#include <fb/protocol/flatbuffer/fb.protocol.db.request.h>
+#include <fb/protocol/flatbuffer/fb.protocol.db.response.h>
 
 #define MAX_NXCLUB_SIZE     14
 

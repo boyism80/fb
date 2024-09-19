@@ -261,7 +261,7 @@ async::task<Response> fb::acceptor<T>::post_async(const std::string& host, const
 
     auto protocol_type = in_stream.read_u32();
     auto protocol_size = in_stream.read_u32();
-    return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
+    co_return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
 }
 
 template <typename T>

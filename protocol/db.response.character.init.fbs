@@ -1,0 +1,8 @@
+namespace fb.protocol.db.response;
+
+table InitCharacter
+{
+	success: bool;
+}
+
+root_type InitCharacter;
