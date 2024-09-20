@@ -403,7 +403,13 @@ async::task<void> fb::game::context::handle_start()
 
     this->bind_command("동시성테스트", command
         {
-            .fn = std::bind(&context::handle_concurrency, this, std::placeholders::_1, std::placeholders::_2),
+            .fn = std::bind(&context::handle_command_concurrency, this, std::placeholders::_1, std::placeholders::_2),
+            .admin = true
+        });
+
+    this->bind_command("sleep", command
+        {
+            .fn = std::bind(&context::handle_command_sleep, this, std::placeholders::_1, std::placeholders::_2),
             .admin = true
         });
 }
@@ -2075,6 +2081,5 @@ async::task<bool> fb::game::context::handle_command(fb::game::session& session, 
             parameters.append(*i);
     }
 
-    auto result = co_await found->second.fn(session, parameters);
-    co_return result;
+    co_return co_await found->second.fn(session, parameters);
 }

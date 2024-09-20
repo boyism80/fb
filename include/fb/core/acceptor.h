@@ -72,7 +72,7 @@ protected:
 protected:
     virtual std::string                         id() { return fb::config::get()["id"].asString(); }
     virtual fb::protocol::internal::Service     service() = 0;
-    uint8_t                                     group() { return 0xFF; }
+    virtual uint8_t                             group() { return 0xFF; }
 
 public:
     async::task<void>                           handle_receive(fb::socket<T>& socket);

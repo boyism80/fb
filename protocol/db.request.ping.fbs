@@ -1,6 +1,0 @@
-namespace fb.protocol.db.request;
-
-table Ping {
-}
-
-root_type Ping;

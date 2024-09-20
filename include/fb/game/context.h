@@ -197,7 +197,8 @@ public:
     async::task<bool>       handle_command_randmap(fb::game::session& session, Json::Value& parameters);
     async::task<bool>       handle_command_npc(fb::game::session& session, Json::Value& parameters);
     async::task<bool>       handle_command_durability(fb::game::session& session, Json::Value& parameters);
-    async::task<bool>       handle_concurrency(fb::game::session& session, Json::Value& parameters);
+    async::task<bool>       handle_command_concurrency(fb::game::session& session, Json::Value& parameters);
+    async::task<bool>       handle_command_sleep(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

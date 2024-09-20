@@ -448,7 +448,7 @@ async::task<bool> fb::game::context::handle_command_durability(fb::game::session
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_concurrency(fb::game::session& session, Json::Value& parameters)
+async::task<bool> fb::game::context::handle_command_concurrency(fb::game::session& session, Json::Value& parameters)
 {
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
@@ -474,5 +474,12 @@ async::task<bool> fb::game::context::handle_concurrency(fb::game::session& sessi
         session.chat(e.what());
     }
 
+    co_return true;
+}
+
+async::task<bool> fb::game::context::handle_command_sleep(fb::game::session& session, Json::Value& parameters)
+{
+    auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
+    co_await this->sleep(std::chrono::seconds{seconds});
     co_return true;
 }
