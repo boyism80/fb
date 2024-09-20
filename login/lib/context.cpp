@@ -134,43 +134,35 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
 
         this->assert_account(id, pw);
 
-        auto&& response_create = co_await this->post_async<fb::protocol::db::request::CreateCharacter, fb::protocol::db::response::CreateCharacter>
-            ("localhost:5034", "account/create", fb::protocol::db::request::CreateCharacter
-            {
-                UTF8(id, PLATFORM::Windows)
-            });
+        auto&& nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", id.c_str()); // 여기서 task suspend, DB스레드에서 promise resume
 
         // 여기부터 promise handler
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if(!response_create.success)
+        auto success = nameset_result[0].get_value<bool>(0);
+        if(success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        auto pk = response_create.pk;
+        auto pk = nameset_result[1].get_value<uint32_t>(0);
         auto& config = fb::config::get();
         std::srand(std::time(nullptr));
+        auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
+        auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
+        auto map = config["init"]["map"].asInt();
+        auto position_x = config["init"]["position"]["x"].asInt();
+        auto position_y = config["init"]["position"]["y"].asInt();
+        auto admin = config["admin mode"].asBool() ? 0 : 1;
 
         // 여기서 promise suspend
-        auto&& response_init = co_await this->post_async<fb::protocol::db::request::InitCharacter, fb::protocol::db::response::InitCharacter>
-            ("localhost:5034", "account/init", fb::protocol::db::request::InitCharacter
-            {
-                pk,
-                UTF8(id, PLATFORM::Windows),
-                this->sha256(pw),
-                config["init"]["hp"]["base"].asUInt() + std::rand() % config["init"]["hp"]["range"].asUInt(),
-                config["init"]["mp"]["base"].asUInt() + std::rand() % config["init"]["mp"]["range"].asUInt(),
-                (uint16_t)config["init"]["map"].asUInt(),
-                (uint16_t)config["init"]["position"]["x"].asUInt(),
-                (uint16_t)config["init"]["position"]["y"].asUInt(),
-                config["admin mode"].asBool()
-            });
+        auto&& init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
 
         // 여기서 새로운 promise handler
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if(response_init.success == false)
+        auto& init_row = init_result[0];
+        if(init_row.get_value<bool>(0) == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
         this->send(socket, fb::protocol::login::response::message("", 0x00));
@@ -204,15 +196,7 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
             throw std::exception();
 
         auto fd = socket.fd();
-        auto&& response = co_await this->post_async<fb::protocol::db::request::FinishCharacter, fb::protocol::db::response::FinishCharacter>
-            ("localhost:5034", "account/finish", fb::protocol::db::request::FinishCharacter
-            {
-                session->pk, 
-                request.hair, 
-                request.sex,
-                request.nation, 
-                request.creature
-            });
+        co_await this->_db.co_exec_f(session->pk, "CALL USP_CHARACTER_CREATE_FINISH(%d, %d, %d, %d, %d)", session->pk, request.hair, request.sex, request.nation, request.creature);
         if (this->sockets.contains(fd) == false)
             co_return false;
 

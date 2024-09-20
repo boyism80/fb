@@ -72,10 +72,10 @@ namespace fb.protocol.inter.request
     }
     public class Ping : IFlatBufferEx
     {
-        public string Name { get; set; } = string.Empty;
+        public string Name { get; set; }
         public fb.protocol.inter.Service Service { get; set; }
         public byte Group { get; set; }
-        public string Ip { get; set; } = string.Empty;
+        public string Ip { get; set; }
         public ushort Port { get; set; }
 
         public Ping()
@@ -158,8 +158,8 @@ namespace fb.protocol.inter.request
     }
     public class Whisper : IFlatBufferEx
     {
-        public string Name { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
+        public string Name { get; set; }
+        public string Message { get; set; }
 
         public Whisper()
         { }

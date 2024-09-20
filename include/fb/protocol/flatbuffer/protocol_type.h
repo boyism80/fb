@@ -2,33 +2,11 @@
 #define	__FLATBUFFER_PROTOCOL_TYPE_H__
 
 
-namespace fb { namespace protocol { namespace db { 
-
-enum class FlatBufferProtocolType
-{
-};
-
-} } } 
-
 namespace fb { namespace protocol { namespace db { namespace request { 
 
 enum class FlatBufferProtocolType
 {
-	CreateCharacter,
-	FinishCharacter,
-	InitCharacter,
 	Ping,
-};
-
-} } } } 
-
-namespace fb { namespace protocol { namespace db { namespace response { 
-
-enum class FlatBufferProtocolType
-{
-	CreateCharacter,
-	FinishCharacter,
-	InitCharacter,
 };
 
 } } } } 
@@ -65,13 +43,5 @@ enum class FlatBufferProtocolType
 };
 
 } } } } 
-
-namespace fb { namespace protocol { 
-
-enum class FlatBufferProtocolType
-{
-};
-
-} } 
 
 #endif

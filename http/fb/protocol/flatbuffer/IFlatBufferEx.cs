@@ -10,9 +10,6 @@ namespace fb.protocol.db.request
 {
     public enum FlatBufferProtocolType
     { 
-        CreateCharacter,
-        FinishCharacter,
-        InitCharacter,
         Ping
     }
 
@@ -22,9 +19,6 @@ namespace fb.protocol.db.request
         {
             return protocolType switch
             {
-                FlatBufferProtocolType.CreateCharacter => typeof(fb.protocol.db.request.CreateCharacter),
-                FlatBufferProtocolType.FinishCharacter => typeof(fb.protocol.db.request.FinishCharacter),
-                FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.request.InitCharacter),
                 FlatBufferProtocolType.Ping => typeof(fb.protocol.db.request.Ping),
                 _ => throw new ArgumentException(),
             };
@@ -34,22 +28,16 @@ namespace fb.protocol.db.request
         {
             return protocol switch
             {
-                fb.protocol.db.request.CreateCharacter => FlatBufferProtocolType.CreateCharacter,
-                fb.protocol.db.request.FinishCharacter => FlatBufferProtocolType.FinishCharacter,
-                fb.protocol.db.request.InitCharacter => FlatBufferProtocolType.InitCharacter,
                 fb.protocol.db.request.Ping => FlatBufferProtocolType.Ping,
                 _ => throw new ArgumentException(),
             };
         }
     }
 }
-namespace fb.protocol.db.response
+namespace fb.protocol.inter
 {
     public enum FlatBufferProtocolType
     { 
-        CreateCharacter,
-        FinishCharacter,
-        InitCharacter
     }
 
     public static class FlatBufferProtocolRouter
@@ -58,9 +46,6 @@ namespace fb.protocol.db.response
         {
             return protocolType switch
             {
-                FlatBufferProtocolType.CreateCharacter => typeof(fb.protocol.db.response.CreateCharacter),
-                FlatBufferProtocolType.FinishCharacter => typeof(fb.protocol.db.response.FinishCharacter),
-                FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.response.InitCharacter),
                 _ => throw new ArgumentException(),
             };
         }
@@ -69,9 +54,6 @@ namespace fb.protocol.db.response
         {
             return protocol switch
             {
-                fb.protocol.db.response.CreateCharacter => FlatBufferProtocolType.CreateCharacter,
-                fb.protocol.db.response.FinishCharacter => FlatBufferProtocolType.FinishCharacter,
-                fb.protocol.db.response.InitCharacter => FlatBufferProtocolType.InitCharacter,
                 _ => throw new ArgumentException(),
             };
         }

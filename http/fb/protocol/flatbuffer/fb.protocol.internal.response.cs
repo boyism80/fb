@@ -105,7 +105,7 @@ namespace fb.protocol.inter.response
     public class Transfer : IFlatBufferEx
     {
         public fb.protocol.inter.TransferResult Code { get; set; }
-        public string Ip { get; set; } = string.Empty;
+        public string Ip { get; set; }
         public ushort Port { get; set; }
 
         public Transfer()

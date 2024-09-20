@@ -1,8 +1,0 @@
-namespace fb.protocol.db.request;
-
-table CreateCharacter
-{
-	name: string;
-}
-
-root_type CreateCharacter;

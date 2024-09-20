@@ -1,9 +1,0 @@
-namespace fb.protocol.db.response;
-
-table CreateCharacter
-{
-	pk: uint;
-	success: bool;
-}
-
-root_type CreateCharacter;
