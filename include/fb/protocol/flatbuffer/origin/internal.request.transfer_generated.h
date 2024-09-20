@@ -27,13 +27,9 @@ struct TransferBuilder;
 struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TransferBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ID = 4,
-    VT_SERVICE = 6,
-    VT_GROUP = 8
+    VT_SERVICE = 4,
+    VT_GROUP = 6
   };
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
-  }
   fb::protocol::internal::origin::Service service() const {
     return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_SERVICE, 0));
   }
@@ -42,7 +38,6 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
            VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
            VerifyField<uint8_t>(verifier, VT_GROUP, 1) &&
            verifier.EndTable();
@@ -53,9 +48,6 @@ struct TransferBuilder {
   typedef Transfer Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(Transfer::VT_ID, id, 0);
-  }
   void add_service(fb::protocol::internal::origin::Service service) {
     fbb_.AddElement<int8_t>(Transfer::VT_SERVICE, static_cast<int8_t>(service), 0);
   }
@@ -75,11 +67,9 @@ struct TransferBuilder {
 
 inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
     fb::protocol::internal::origin::Service service = fb::protocol::internal::origin::Service_Gateway,
     uint8_t group = 0) {
   TransferBuilder builder_(_fbb);
-  builder_.add_id(id);
   builder_.add_group(group);
   builder_.add_service(service);
   return builder_.Finish();

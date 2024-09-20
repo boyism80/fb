@@ -1,7 +1,7 @@
 ﻿using fb.protocol.inter;
 using http.Service;
 using Internal.Model.Redis;
-using Internal.RedisKey;
+using Internal.Redis.Key;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using request = fb.protocol.inter.request;

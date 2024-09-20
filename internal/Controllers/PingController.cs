@@ -2,7 +2,7 @@ using fb.protocol.inter.request;
 using fb.protocol.inter.response;
 using http.Service;
 using Internal.Model.Redis;
-using Internal.RedisKey;
+using Internal.Redis.Key;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 

@@ -118,7 +118,6 @@ namespace fb.protocol.inter.request
     }
     public class Transfer : IFlatBufferEx
     {
-        public uint Id { get; set; }
         public fb.protocol.inter.Service Service { get; set; }
         public byte Group { get; set; }
 
@@ -127,7 +126,6 @@ namespace fb.protocol.inter.request
 
         public Transfer(fb.protocol.inter.request.origin.Transfer raw)
         {
-            Id = raw.Id;
             Service = (fb.protocol.inter.Service)raw.Service;
             Group = raw.Group;
         }
@@ -138,7 +136,6 @@ namespace fb.protocol.inter.request
         public Offset<fb.protocol.inter.request.origin.Transfer> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.inter.request.origin.Transfer.CreateTransfer(builder,
-                Id,
                 (fb.protocol.inter.origin.Service)Service,
                 Group);
         }

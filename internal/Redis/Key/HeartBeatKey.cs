@@ -1,6 +1,6 @@
 ﻿using fb.protocol.inter;
 
-namespace Internal.RedisKey
+namespace Internal.Redis.Key
 {
     public class HeartBeatKey : IRedisKey
     {

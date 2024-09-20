@@ -15,4 +15,14 @@
     <ProjectReference Include="..\http\http.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Redis\Script\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Redis\Script\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -20,21 +20,24 @@ public:
     static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Login;
 
 public:
-    uint32_t uid;
+    bool success;
+    bool logon;
+    std::string ip;
+    uint16_t port;
 
 public:
     Login()
     { }
 
     Login(const Login& x)
-        : uid(x.uid)
+        : success(x.success), logon(x.logon), ip(x.ip), port(x.port)
     { }
 
-    Login(uint32_t uid)
-        : uid(uid)
+    Login(bool success, bool logon, const std::string& ip, uint16_t port)
+        : success(success), logon(logon), ip(ip), port(port)
     { }
     Login(const fb::protocol::internal::response::origin::Login& raw)
-        : uid(raw.uid())
+        : success(raw.success()), logon(raw.logon()), ip(raw.ip()->c_str()), port(raw.port())
     {
     }
 
@@ -43,7 +46,10 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::response::origin::CreateLogin(builder,
-            this->uid);
+            this->success,
+            this->logon,
+            builder.CreateString(this->ip),
+            this->port);
     }
 
     std::vector<uint8_t> Serialize() const

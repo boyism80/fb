@@ -71,7 +71,7 @@ this->_mutex_timer.lock();
 this->_mutex_timer.unlock();
 }
 
-async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
+async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, uint32_t priority)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     if (delay > 0s)
@@ -95,7 +95,7 @@ async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>&
     return promise->task();
 }
 
-void fb::thread::post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, int priority)
+void fb::thread::post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay, uint32_t priority)
 {
     if (delay > 0s)
     {

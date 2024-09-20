@@ -1,6 +1,10 @@
-﻿using http.Service;
-using Internal.RedisKey;
+﻿using fb.protocol.inter;
+using http.Service;
+using Internal.Model.Redis;
+using Internal.Redis;
+using Internal.Redis.Key;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using request = fb.protocol.inter.request;
 using response = fb.protocol.inter.response;
 
@@ -23,10 +27,26 @@ public class AccessController : ControllerBase
     public async Task<response.Login> Login(request.Login request)
     {
         var connection = _redisService.Connection;
-        await connection.HashSetAsync(new LoginKey { }.Key, $"{request.Uid}", true);
+        var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = Service.Game, Group = 0 }.Key);
+        if (config == null)
+            return new response.Login { Success = false, Logon = false };
+
+        var redisResult = await connection.ScriptEvaluateAsync("login.lua", new 
+        {
+            key = new RedisKey(new LoginKey { }.Key),
+            uid = $"{request.Uid}"
+        });
+
+        var success = (bool)redisResult[0];
+        if (success == false)
+            return new response.Login { Success = false, Logon = true };
+
         return new response.Login
         {
-            Uid = request.Uid
+            Success = success,
+            Logon = false,
+            Ip = config.IP,
+            Port = config.Port
         };
     }
 

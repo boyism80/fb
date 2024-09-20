@@ -1,7 +1,10 @@
 namespace fb.protocol.internal.response;
 
 table Login {
-  uid: uint;
+  success: bool;
+  logon: bool;
+  ip: string;
+  port: ushort;
 }
 
 root_type Login;

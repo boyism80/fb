@@ -4,14 +4,20 @@ namespace fb.protocol.inter.response
 {
     public class Login : IFlatBufferEx
     {
-        public uint Uid { get; set; }
+        public bool Success { get; set; }
+        public bool Logon { get; set; }
+        public string Ip { get; set; } = string.Empty;
+        public ushort Port { get; set; }
 
         public Login()
         { }
 
         public Login(fb.protocol.inter.response.origin.Login raw)
         {
-            Uid = raw.Uid;
+            Success = raw.Success;
+            Logon = raw.Logon;
+            Ip = raw.Ip;
+            Port = raw.Port;
         }
 
         public Login(byte[] bytes) : this(fb.protocol.inter.response.origin.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -20,7 +26,10 @@ namespace fb.protocol.inter.response
         public Offset<fb.protocol.inter.response.origin.Login> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.inter.response.origin.Login.CreateLogin(builder,
-                Uid);
+                Success,
+                Logon,
+                builder.CreateString(Ip),
+                Port);
         }
 
         public byte[] Serialize()

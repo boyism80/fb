@@ -154,10 +154,9 @@ public:
                     for (auto& result : results)
                         ptr->push_back(std::move(result));
 
-                    thread->post([promise, ptr]() mutable -> async::task<void>
+                    async::awaitable_then(thread->dispatch(), [promise, ptr] (async::awaitable_result<void> result) mutable
                     {
                         promise->set_value(std::move(*ptr.get()));
-                        co_return;
                     });
                 }
                 else

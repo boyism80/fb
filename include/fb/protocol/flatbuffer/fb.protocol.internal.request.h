@@ -179,7 +179,6 @@ public:
     static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Transfer;
 
 public:
-    uint32_t id;
     fb::protocol::internal::Service service;
     uint8_t group;
 
@@ -188,14 +187,14 @@ public:
     { }
 
     Transfer(const Transfer& x)
-        : id(x.id), service(x.service), group(x.group)
+        : service(x.service), group(x.group)
     { }
 
-    Transfer(uint32_t id, fb::protocol::internal::Service service, uint8_t group)
-        : id(id), service(service), group(group)
+    Transfer(fb::protocol::internal::Service service, uint8_t group)
+        : service(service), group(group)
     { }
     Transfer(const fb::protocol::internal::request::origin::Transfer& raw)
-        : id(raw.id()), service((fb::protocol::internal::Service)raw.service()), group(raw.group())
+        : service((fb::protocol::internal::Service)raw.service()), group(raw.group())
     {
     }
 
@@ -204,7 +203,6 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::request::origin::CreateTransfer(builder,
-            this->id,
             (fb::protocol::internal::origin::Service)this->service,
             this->group);
     }

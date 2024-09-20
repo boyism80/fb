@@ -440,7 +440,13 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
 
     this->save(*session);
     //this->_internal->send(fb::protocol::internal::request::logout(session->name()));
-    async::awaitable_get(session->destroy());
+    async::awaitable_get([this, &session]() -> async::task<void>
+        {
+            co_await session->destroy();
+            co_await this->post_async<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>(
+                "localhost:5126", "/access/logout",
+                fb::protocol::internal::request::Logout{ session->fd() });
+        }());
     socket.data(nullptr);
     return true;
 }
@@ -945,7 +951,6 @@ async::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>&
         if (this->fetch_user(results[0], *session, transfer) == false)
             co_return false;
 
-        //this->_internal->send(fb::protocol::internal::request::login(name, map));
         this->send(*session, fb::protocol::game::response::init(), scope::SELF);
         this->send(*session, fb::protocol::game::response::time(this->_time->tm_hour), scope::SELF);
         this->send(*session, fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MIN), scope::SELF);

@@ -1,4 +1,4 @@
-﻿namespace Internal.RedisKey
+﻿namespace Internal.Redis.Key
 {
     public class LoginKey : IRedisKey
     {

@@ -3,7 +3,6 @@ include "internal.fbs";
 namespace fb.protocol.internal.request;
 
 table Transfer {
-  id: uint;
   service: fb.protocol.internal.Service;
   group: ubyte;
 }
