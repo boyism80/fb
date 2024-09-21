@@ -2,6 +2,7 @@ namespace fb.protocol.internal.request;
 
 table Login {
   uid: uint;
+  map: ushort;
 }
 
 root_type Login;

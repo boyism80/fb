@@ -160,7 +160,6 @@ public:
                 try
                 {
                     this->on_work(*input);
-
                     this->on_worked(*input, (++processed * 100) / count);
                 }
                 catch (std::exception& e)

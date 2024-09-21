@@ -1,5 +1,6 @@
 using fb.protocol.flatbuffer.inter;
 using http.Service;
+using http.Worker;
 
 namespace Internal;
 
@@ -7,6 +8,8 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        var model = new Fb.Model.Model();
+
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
@@ -21,8 +24,11 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
+        builder.Services.AddSingleton<Fb.Model.Model>();
 
         var app = builder.Build();
+        var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;
+        dataTableLoader.Run();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

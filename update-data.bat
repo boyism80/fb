@@ -18,9 +18,9 @@ RMDIR /s /q "game\json"
 XCOPY "data-converter\bin\output\C++\server\*.h" "include\fb\game\*.h"
 XCOPY "data-converter\bin\output\json\server\*.json" "game\json\*.json"
 
-DEL /s /q "internal\Model\Model.cs"
-RMDIR /s /q "internal\json"
-XCOPY "data-converter\bin\output\C#\server\*.cs" "internal\Model\*.cs"
+DEL /s /q "http\Model\Model.cs"
+RMDIR /s /q "http\json"
+XCOPY "data-converter\bin\output\C#\server\*.cs" "http\Model\*.cs"
 XCOPY "data-converter\bin\output\json\server\*.json" "internal\json\*.json"
 
 GOTO SKIP_PAUSE

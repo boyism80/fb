@@ -15,19 +15,23 @@ public class AccessController : ControllerBase
 {
     private readonly ILogger<TransferController> _logger;
     private readonly RedisService _redisService;
+    private readonly Fb.Model.Model _dataSet;
 
     public AccessController(ILogger<TransferController> logger,
-        RedisService redisService)
+        RedisService redisService,
+        Fb.Model.Model dataSet)
     {
         _logger = logger;
         _redisService = redisService;
+        _dataSet = dataSet;
     }
 
     [HttpPost("login")]
     public async Task<response.Login> Login(request.Login request)
     {
+        var map = _dataSet.Map[request.Map] ?? throw new KeyNotFoundException($"{request.Map} not found in map data");
         var connection = _redisService.Connection;
-        var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = Service.Game, Group = 0 }.Key);
+        var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = Service.Game, Group = map.Host }.Key);
         if (config == null)
             return new response.Login { Success = false, Logon = false };
 

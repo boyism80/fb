@@ -5,6 +5,7 @@ namespace fb.protocol.inter.request
     public class Login : IFlatBufferEx
     {
         public uint Uid { get; set; }
+        public ushort Map { get; set; }
 
         public Login()
         { }
@@ -12,6 +13,7 @@ namespace fb.protocol.inter.request
         public Login(fb.protocol.inter.request.origin.Login raw)
         {
             Uid = raw.Uid;
+            Map = raw.Map;
         }
 
         public Login(byte[] bytes) : this(fb.protocol.inter.request.origin.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -20,7 +22,8 @@ namespace fb.protocol.inter.request
         public Offset<fb.protocol.inter.request.origin.Login> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.inter.request.origin.Login.CreateLogin(builder,
-                Uid);
+                Uid,
+                Map);
         }
 
         public byte[] Serialize()

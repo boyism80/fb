@@ -21,16 +21,20 @@ public struct Login : IFlatbufferObject
   public Login __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Map { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol.inter.request.origin.Login> CreateLogin(FlatBufferBuilder builder,
-      uint uid = 0) {
-    builder.StartTable(1);
+      uint uid = 0,
+      ushort map = 0) {
+    builder.StartTable(2);
     Login.AddUid(builder, uid);
+    Login.AddMap(builder, map);
     return Login.EndLogin(builder);
   }
 
-  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
+  public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(1, map, 0); }
   public static Offset<fb.protocol.inter.request.origin.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.inter.request.origin.Login>(o);
@@ -46,6 +50,7 @@ static public class LoginVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Map*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

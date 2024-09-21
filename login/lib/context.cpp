@@ -251,7 +251,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         auto&& response = co_await this->post_async<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
             "localhost:5126", "/access/login", 
             fb::protocol::internal::request::Login
-            { auth_row.get_value<uint32_t>(0) });
+            { auth_row.get_value<uint32_t>(0), (uint16_t)map });
         if (this->sockets.contains(fd) == false)
             co_return false;
 

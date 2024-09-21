@@ -22,20 +22,21 @@ public:
 
 public:
     uint32_t uid;
+    uint16_t map;
 
 public:
     Login()
     { }
 
     Login(const Login& x)
-        : uid(x.uid)
+        : uid(x.uid), map(x.map)
     { }
 
-    Login(uint32_t uid)
-        : uid(uid)
+    Login(uint32_t uid, uint16_t map)
+        : uid(uid), map(map)
     { }
     Login(const fb::protocol::internal::request::origin::Login& raw)
-        : uid(raw.uid())
+        : uid(raw.uid()), map(raw.map())
     {
     }
 
@@ -44,7 +45,8 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::request::origin::CreateLogin(builder,
-            this->uid);
+            this->uid,
+            this->map);
     }
 
     std::vector<uint8_t> Serialize() const

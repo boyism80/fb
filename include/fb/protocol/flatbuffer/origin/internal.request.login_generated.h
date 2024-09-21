@@ -25,14 +25,19 @@ struct LoginBuilder;
 struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LoginBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4
+    VT_UID = 4,
+    VT_MAP = 6
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
   }
+  uint16_t map() const {
+    return GetField<uint16_t>(VT_MAP, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
+           VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
            verifier.EndTable();
   }
 };
@@ -43,6 +48,9 @@ struct LoginBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(Login::VT_UID, uid, 0);
+  }
+  void add_map(uint16_t map) {
+    fbb_.AddElement<uint16_t>(Login::VT_MAP, map, 0);
   }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,9 +65,11 @@ struct LoginBuilder {
 
 inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t uid = 0) {
+    uint32_t uid = 0,
+    uint16_t map = 0) {
   LoginBuilder builder_(_fbb);
   builder_.add_uid(uid);
+  builder_.add_map(map);
   return builder_.Finish();
 }
 
