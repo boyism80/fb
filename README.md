@@ -2,7 +2,7 @@
 2D mmorpg server written by c++
 
 ## Dependency
-boost asio 1.74
+boost asio 1.84
 <br>
 lua 5.3
 <br>
