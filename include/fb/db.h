@@ -6,16 +6,16 @@
 #define __DB_H__
 
 #include "mysql+++/mysql+++.h"
-#include <fb/core/config.h>
-#include <fb/core/thread.h>
+#include <fb/config.h>
+#include <fb/thread.h>
 #include <string>
 #include <boost/asio.hpp>
 #include <future>
 #include <functional>
 #include <deque>
-#include <fb/core/logger.h>
-#include <fb/core/acceptor.h>
-#include <fb/core/format.h>
+#include <fb/logger.h>
+#include <fb/acceptor.h>
+#include <fb/format.h>
 
 namespace fb { namespace db {
 

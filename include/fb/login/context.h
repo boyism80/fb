@@ -10,14 +10,14 @@
 #include <ctime>
 #include <zlib.h>
 #include <openssl/sha.h>
-#include <fb/core/db.h>
-#include <fb/core/socket.h>
+#include <fb/db.h>
+#include <fb/socket.h>
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/internal.h>
-#include <fb/core/acceptor.h>
-#include <fb/core/string.h>
+#include <fb/acceptor.h>
+#include <fb/string.h>
 
 #define MAX_NXCLUB_SIZE     14
 

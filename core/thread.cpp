@@ -1,4 +1,4 @@
-#include <fb/core/thread.h>
+#include <fb/thread.h>
 
 
 fb::thread::thread(uint8_t index) : 

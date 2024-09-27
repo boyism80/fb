@@ -1,7 +1,7 @@
 #ifndef __CONCURRENT_H__
 #define __CONCURRENT_H__
 
-#include <fb/core/dead_lock.h>
+#include <fb/dead_lock.h>
 
 namespace fb {
 

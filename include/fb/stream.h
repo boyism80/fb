@@ -10,7 +10,7 @@
 #ifdef __linux__
 #include <sys/types.h>
 #endif
-#include <fb/core/encoding.h>
+#include <fb/encoding.h>
 
 namespace fb {
 

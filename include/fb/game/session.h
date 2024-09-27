@@ -7,8 +7,8 @@
 #include <fb/game/mob.h>
 #include <fb/game/dialog.h>
 #include <fb/game/npc.h>
-#include <fb/core/socket.h>
-#include <fb/core/string.h>
+#include <fb/socket.h>
+#include <fb/string.h>
 #include <stdint.h>
 #include <algorithm>
 #include <optional>

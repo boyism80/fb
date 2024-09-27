@@ -1,4 +1,4 @@
-#include <fb/core/query.h>
+#include <fb/query.h>
 
 std::string fb::query::make_update(const std::map<std::string, std::string>& value)
 {

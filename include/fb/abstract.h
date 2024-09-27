@@ -2,7 +2,7 @@
 #define __ABSTRACT_H__
 
 #include <boost/asio.hpp>
-#include <fb/core/thread.h>
+#include <fb/thread.h>
 
 namespace fb {
 

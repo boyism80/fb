@@ -7,9 +7,9 @@
 #include <map>
 #include <future>
 #include <atomic>
-#include <fb/core/logger.h>
-#include <fb/core/timer.h>
-#include <fb/core/pqueue.h>
+#include <fb/logger.h>
+#include <fb/timer.h>
+#include <fb/pqueue.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <async/awaitable_then.h>

@@ -1,4 +1,4 @@
-#include <fb/core/format.h>
+#include <fb/format.h>
 
 std::string fb::format(const std::string& format, va_list* args)
 {

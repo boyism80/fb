@@ -8,9 +8,9 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <random>
 #include <sstream>
-#include <fb/core/stream.h>
-#include <fb/core/socket.h>
-#include <fb/core/thread.h>
+#include <fb/stream.h>
+#include <fb/socket.h>
+#include <fb/thread.h>
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/game.h>

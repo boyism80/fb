@@ -1,4 +1,4 @@
-#include <fb/core/console.h>
+#include <fb/console.h>
 
 #ifdef _WIN32
 bool SetConsoleIcon(int id)

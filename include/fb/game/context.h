@@ -9,9 +9,9 @@
 #include <sstream>
 #include <ctime>
 #include <unordered_set>
-#include <fb/core/format.h>
-#include <fb/core/db.h>
-#include <fb/core/acceptor.h>
+#include <fb/format.h>
+#include <fb/db.h>
+#include <fb/acceptor.h>
 #include <fb/game/session.h>
 #include <fb/game/group.h>
 #include <fb/game/listener.h>

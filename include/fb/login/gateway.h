@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <fb/core/socket.h>
+#include <fb/socket.h>
 
 namespace fb { namespace login {
 

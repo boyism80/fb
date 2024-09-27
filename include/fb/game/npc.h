@@ -3,8 +3,8 @@
 
 #include <fb/game/object.h>
 #include <fb/game/item.h>
-#include <fb/core/encoding.h>
-#include <fb/core/format.h>
+#include <fb/encoding.h>
+#include <fb/format.h>
 #include <optional>
 
 namespace fb { namespace game {

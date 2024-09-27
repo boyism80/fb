@@ -98,7 +98,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8 /bigobj /Zm1000 %(AdditionalOptions)</AdditionalOptions>
@@ -108,14 +108,14 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmtd.lib;cpp_redis\x86\cpp_redis_d.lib;cpp_redis\x86\tacopie_d.lib;zlib\x86\zlibd.lib;lua5.3\x86\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmtd.lib;cpp_redis\x86\cpp_redis_d.lib;cpp_redis\x86\tacopie_d.lib;zlib\x86\zlibd.lib;lua5.3\x86\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;rabbitmq-c\x86\librabbitmq.4_d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8 /bigobj /Zm1000 %(AdditionalOptions)</AdditionalOptions>
@@ -125,7 +125,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib\x64\zlibd.lib;lua5.3\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib\x64\zlibd.lib;lua5.3\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -134,7 +134,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8 /bigobj /Zm1000 %(AdditionalOptions)</AdditionalOptions>
@@ -146,7 +146,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmt.lib;cpp_redis\x86\cpp_redis.lib;cpp_redis\x86\tacopie.lib;zlib\x86\zlib.lib;lua5.3\x86\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x86\json_vc71_libmt.lib;cpp_redis\x86\cpp_redis.lib;cpp_redis\x86\tacopie.lib;zlib\x86\zlib.lib;lua5.3\x86\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib;rabbitmq-c\x86\librabbitmq.4.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -155,7 +155,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8 /bigobj /Zm1000 %(AdditionalOptions)</AdditionalOptions>
@@ -167,7 +167,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib\x64\zlib.lib;lua5.3\x64\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib\x64\zlib.lib;lua5.3\x64\lua5.3.5-static.lib;%(AdditionalDependencies);libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib;rabbitmq-c\x64\librabbitmq.4.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

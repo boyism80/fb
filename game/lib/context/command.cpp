@@ -1,5 +1,5 @@
 #include <fb/game/context.h>
-#include <fb/core/redis.h>
+#include <fb/redis.h>
 using namespace fb::game;
 
 async::task<bool> fb::game::context::handle_command_map(fb::game::session& session, Json::Value& parameters)

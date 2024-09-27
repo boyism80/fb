@@ -1,4 +1,4 @@
-#include <fb/core/cryptor.h>
+#include <fb/cryptor.h>
 
 uint32_t fb::cryptor::HEX_TABLE[10][0x100] = 
 {

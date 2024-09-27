@@ -3,7 +3,7 @@
 
 #include <map>
 #include <optional>
-#include <fb/core/table.h>
+#include <fb/table.h>
 
 namespace fb { namespace internal {
 

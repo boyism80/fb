@@ -1,7 +1,7 @@
 #ifndef __FB_CRYPTOR_H__
 #define __FB_CRYPTOR_H__
 
-#include <fb/core/stream.h>
+#include <fb/stream.h>
 
 namespace fb {
 

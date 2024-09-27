@@ -1,8 +1,8 @@
 #ifndef __SQL_SERVICE_H__
 #define __SQL_SERVICE_H__
 
-#include <fb/core/query.h>
-#include <fb/core/time.h>
+#include <fb/query.h>
+#include <fb/time.h>
 
 namespace fb { namespace game { namespace query {
 

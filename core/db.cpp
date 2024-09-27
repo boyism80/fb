@@ -1,5 +1,5 @@
 #if ENABLE_MYSQL
-#include <fb/core/db.h>
+#include <fb/db.h>
 
 using namespace fb::db;
 

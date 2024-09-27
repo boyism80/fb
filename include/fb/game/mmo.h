@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 #include <type_traits>
-#include <fb/core/socket.h>
-#include <fb/core/stream.h>
+#include <fb/socket.h>
+#include <fb/stream.h>
 
 #ifndef interface
 #define interface struct

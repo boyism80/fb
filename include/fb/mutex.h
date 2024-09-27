@@ -3,8 +3,8 @@
 
 #include <map>
 #include <mutex>
-#include <fb/core/abstract.h>
-#include <fb/core/concurrent.h>
+#include <fb/abstract.h>
+#include <fb/concurrent.h>
 
 namespace fb {
 

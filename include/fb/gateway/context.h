@@ -1,15 +1,15 @@
 #ifndef __FB_GATEWAY_H__
 #define __FB_GATEWAY_H__
 
-#include <fb/core/acceptor.h>
-#include <fb/core/config.h>
+#include <fb/acceptor.h>
+#include <fb/config.h>
 #include <fb/gateway/session.h>
 #include <fb/gateway/util.h>
 #include <zlib.h>
 #include <memory>
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/internal.h>
-#include <fb/core/encoding.h>
+#include <fb/encoding.h>
 
 using namespace fb::protocol::internal;
 

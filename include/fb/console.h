@@ -15,8 +15,8 @@ bool SetConsoleIcon(int id);
 #include <optional>
 #include <memory>
 #include <mutex>
-#include <fb/core/format.h>
-#include <fb/core/encoding.h>
+#include <fb/format.h>
+#include <fb/encoding.h>
 
 namespace fb {
 

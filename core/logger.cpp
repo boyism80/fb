@@ -1,4 +1,4 @@
-#include <fb/core/logger.h>
+#include <fb/logger.h>
 
 fb::logger::logger(fb::logger::level level) : _level(level)
 { }

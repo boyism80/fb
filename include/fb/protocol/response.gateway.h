@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_GATEWAY_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/core/cryptor.h>
+#include <fb/cryptor.h>
 #ifndef _WIN32
 #include <arpa/inet.h>
 #endif

@@ -1,9 +1,9 @@
 #include "resource.h"
-#include <fb/core/db.h>
+#include <fb/db.h>
 #include <fb/login/context.h>
-#include <fb/core/leak.h>
-#include <fb/core/console.h>
-#include <fb/core/config.h>
+#include <fb/leak.h>
+#include <fb/console.h>
+#include <fb/config.h>
 #include <fb/protocol/internal.h>
 
 int main(int argc, const char** argv)

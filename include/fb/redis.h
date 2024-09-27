@@ -4,8 +4,8 @@
 #include <functional>
 #include <set>
 #include <cpp_redis/cpp_redis>
-#include <fb/core/abstract.h>
-#include <fb/core/concurrent.h>
+#include <fb/abstract.h>
+#include <fb/concurrent.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>

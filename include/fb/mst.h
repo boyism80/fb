@@ -9,7 +9,7 @@
 #include <set>
 #include <sstream>
 #include <boost/algorithm/string/join.hpp>
-#include <fb/core/logger.h>
+#include <fb/logger.h>
 
 namespace fb {
 

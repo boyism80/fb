@@ -1,7 +1,7 @@
 #include <fb/game/session.h>
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
-#include <fb/core/thread.h>
+#include <fb/thread.h>
 #include <fb/game/context.h>
 
 fb::game::rezen::rezen(fb::game::context& context, const fb::model::mob_spawn& model) : 

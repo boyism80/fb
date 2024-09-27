@@ -1,7 +1,7 @@
 #ifndef __DEAD_LOCK_H__
 #define __DEAD_LOCK_H__
 
-#include <fb/core/mst.h>
+#include <fb/mst.h>
 
 namespace fb {
 

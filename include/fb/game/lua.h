@@ -13,9 +13,9 @@ extern "C"
 #include <map>
 #include <list>
 #include <random>
-#include <fb/core/socket.h>
-#include <fb/core/encoding.h>
-#include <fb/core/logger.h>
+#include <fb/socket.h>
+#include <fb/encoding.h>
+#include <fb/logger.h>
 #include <fb/game/mmo.h>
 
 #define LUA_PROTOTYPE                       static const struct luaL_Reg    LUA_METHODS[];\

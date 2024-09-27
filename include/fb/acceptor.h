@@ -4,17 +4,17 @@
 #include <map>
 #include <ctime>
 #include <chrono>
-#include <fb/core/abstract.h>
+#include <fb/abstract.h>
 #include <zlib.h>
 #include <functional>
 #include <iomanip>
 #include <httplib.h>
-#include <fb/core/stream.h>
-#include <fb/core/socket.h>
+#include <fb/stream.h>
+#include <fb/socket.h>
 #include <fb/protocol/protocol.h>
-#include <fb/core/logger.h>
-#include <fb/core/redis.h>
-#include <fb/core/mutex.h>
+#include <fb/logger.h>
+#include <fb/redis.h>
+#include <fb/mutex.h>
 #include <async/awaitable_get.h>
 
 #include <fb/protocol/flatbuffer/fb.protocol.internal.request.h>

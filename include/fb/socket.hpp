@@ -1,5 +1,5 @@
 #include "socket.h"
-#include <fb/core/logger.h>
+#include <fb/logger.h>
 
 template<typename T>
 fb::socket<T>::socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) : 

@@ -4,10 +4,10 @@
 #include <fb/internal/session.h>
 #include <zlib.h>
 #include <fb/protocol/internal.h>
-#include <fb/core/acceptor.h>
+#include <fb/acceptor.h>
 #include <fb/internal/model.h>
 #include <fb/internal/exception.h>
-#include <fb/core/config.h>
+#include <fb/config.h>
 
 namespace fb { namespace internal {
 

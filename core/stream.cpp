@@ -1,4 +1,4 @@
-#include <fb/core/stream.h>
+#include <fb/stream.h>
 
 fb::buffer::buffer(size_t size)
 {

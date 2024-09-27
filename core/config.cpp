@@ -1,4 +1,4 @@
-#include <fb/core/config.h>
+#include <fb/config.h>
 
 fb::config::config(const char* env)
 {

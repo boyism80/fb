@@ -1,4 +1,4 @@
-#include <fb/core/table.h>
+#include <fb/table.h>
 
 bool fb::table::load(const std::string& path, Json::Value& json)
 {
