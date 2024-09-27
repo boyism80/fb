@@ -154,13 +154,13 @@ base_context::base_context(int pool_size)
     for (int i = 0; i < count; i++)
     {
         this->_workers.push_back(std::make_unique<worker>(databases["shard"][i], pool_size));
-        post(*_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
+        boost::asio::post(*this->_thread_pool, [this, i] { this->_workers.at(i)->on_work(); });
     }
 
     if(global_exists)
     {
         this->_global_worker = std::make_unique<worker>(databases["global"], pool_size);
-        post(*_thread_pool, [this] { this->_global_worker->on_work(); });
+        boost::asio::post(*this->_thread_pool, [this] { this->_global_worker->on_work(); });
     }
 }
 

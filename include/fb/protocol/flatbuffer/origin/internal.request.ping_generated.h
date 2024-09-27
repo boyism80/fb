@@ -27,20 +27,20 @@ struct PingBuilder;
 struct Ping FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef PingBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_NAME = 4,
-    VT_SERVICE = 6,
-    VT_GROUP = 8,
+    VT_ID = 4,
+    VT_NAME = 6,
+    VT_SERVICE = 8,
     VT_IP = 10,
     VT_PORT = 12
   };
+  uint8_t id() const {
+    return GetField<uint8_t>(VT_ID, 0);
+  }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   fb::protocol::internal::origin::Service service() const {
     return static_cast<fb::protocol::internal::origin::Service>(GetField<int8_t>(VT_SERVICE, 0));
-  }
-  uint8_t group() const {
-    return GetField<uint8_t>(VT_GROUP, 0);
   }
   const ::flatbuffers::String *ip() const {
     return GetPointer<const ::flatbuffers::String *>(VT_IP);
@@ -50,10 +50,10 @@ struct Ping FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_ID, 1) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
            VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
-           VerifyField<uint8_t>(verifier, VT_GROUP, 1) &&
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
            VerifyField<uint16_t>(verifier, VT_PORT, 2) &&
@@ -65,14 +65,14 @@ struct PingBuilder {
   typedef Ping Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_id(uint8_t id) {
+    fbb_.AddElement<uint8_t>(Ping::VT_ID, id, 0);
+  }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Ping::VT_NAME, name);
   }
   void add_service(fb::protocol::internal::origin::Service service) {
     fbb_.AddElement<int8_t>(Ping::VT_SERVICE, static_cast<int8_t>(service), 0);
-  }
-  void add_group(uint8_t group) {
-    fbb_.AddElement<uint8_t>(Ping::VT_GROUP, group, 0);
   }
   void add_ip(::flatbuffers::Offset<::flatbuffers::String> ip) {
     fbb_.AddOffset(Ping::VT_IP, ip);
@@ -93,34 +93,34 @@ struct PingBuilder {
 
 inline ::flatbuffers::Offset<Ping> CreatePing(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     fb::protocol::internal::origin::Service service = fb::protocol::internal::origin::Service_Gateway,
-    uint8_t group = 0,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
     uint16_t port = 0) {
   PingBuilder builder_(_fbb);
   builder_.add_ip(ip);
   builder_.add_name(name);
   builder_.add_port(port);
-  builder_.add_group(group);
   builder_.add_service(service);
+  builder_.add_id(id);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Ping> CreatePingDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t id = 0,
     const char *name = nullptr,
     fb::protocol::internal::origin::Service service = fb::protocol::internal::origin::Service_Gateway,
-    uint8_t group = 0,
     const char *ip = nullptr,
     uint16_t port = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::request::origin::CreatePing(
       _fbb,
+      id,
       name__,
       service,
-      group,
       ip__,
       port);
 }

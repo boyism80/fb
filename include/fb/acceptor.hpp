@@ -18,8 +18,8 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
             fb::protocol::internal::request::Ping
             {
                 this->id(),
+                this->name(),
                 this->service(),
-                this->group(),
                 config["ip"].asString(),
                 (uint16_t)config["port"].asUInt()
             });

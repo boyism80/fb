@@ -75,9 +75,9 @@ namespace fb.protocol.inter.request
     }
     public class Ping : IFlatBufferEx
     {
+        public byte Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public fb.protocol.inter.Service Service { get; set; }
-        public byte Group { get; set; }
         public string Ip { get; set; } = string.Empty;
         public ushort Port { get; set; }
 
@@ -86,9 +86,9 @@ namespace fb.protocol.inter.request
 
         public Ping(fb.protocol.inter.request.origin.Ping raw)
         {
+            Id = raw.Id;
             Name = raw.Name;
             Service = (fb.protocol.inter.Service)raw.Service;
-            Group = raw.Group;
             Ip = raw.Ip;
             Port = raw.Port;
         }
@@ -99,9 +99,9 @@ namespace fb.protocol.inter.request
         public Offset<fb.protocol.inter.request.origin.Ping> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.inter.request.origin.Ping.CreatePing(builder,
+                Id,
                 builder.CreateString(Name),
                 (fb.protocol.inter.origin.Service)Service,
-                Group,
                 builder.CreateString(Ip),
                 Port);
         }

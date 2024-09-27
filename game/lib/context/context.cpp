@@ -172,7 +172,7 @@ END_LUA_EXTENSION
 fb::game::context::context(boost::asio::io_context& context, uint16_t port) : 
     fb::acceptor<fb::game::session>(context, port, std::thread::hardware_concurrency()),
     _db(*this, 4),
-    maps(*this, fb::config::get()["group"].asUInt())
+    maps(*this, fb::config::get()["id"].asUInt())
 { }
 
 fb::game::context::~context()

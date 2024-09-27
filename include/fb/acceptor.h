@@ -70,9 +70,9 @@ protected:
 
 // for heart-beat api
 protected:
-    virtual std::string                         id() { return fb::config::get()["id"].asString(); }
-    virtual fb::protocol::internal::Service     service() = 0;
-    virtual uint8_t                             group() { return 0xFF; }
+    virtual uint8_t                             id() const { return (uint8_t)fb::config::get()["id"].asUInt(); }
+    virtual std::string                         name() const { return fb::config::get()["name"].asString(); }
+    virtual fb::protocol::internal::Service     service() const = 0;
 
 public:
     async::task<void>                           handle_receive(fb::socket<T>& socket);

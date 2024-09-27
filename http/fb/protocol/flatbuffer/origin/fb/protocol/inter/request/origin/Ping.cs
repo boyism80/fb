@@ -20,15 +20,15 @@ public struct Ping : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Ping __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Name { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public string Name { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(4, 1); }
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(4); }
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
-  public fb.protocol.inter.origin.Service Service { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
-  public byte Group { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
+  public fb.protocol.inter.origin.Service Service { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
   public string Ip { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetIpBytes() { return __p.__vector_as_span<byte>(10, 1); }
@@ -39,24 +39,24 @@ public struct Ping : IFlatbufferObject
   public ushort Port { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol.inter.request.origin.Ping> CreatePing(FlatBufferBuilder builder,
+      byte id = 0,
       StringOffset nameOffset = default(StringOffset),
       fb.protocol.inter.origin.Service service = fb.protocol.inter.origin.Service.Gateway,
-      byte group = 0,
       StringOffset ipOffset = default(StringOffset),
       ushort port = 0) {
     builder.StartTable(5);
     Ping.AddIp(builder, ipOffset);
     Ping.AddName(builder, nameOffset);
     Ping.AddPort(builder, port);
-    Ping.AddGroup(builder, group);
     Ping.AddService(builder, service);
+    Ping.AddId(builder, id);
     return Ping.EndPing(builder);
   }
 
   public static void StartPing(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
-  public static void AddService(FlatBufferBuilder builder, fb.protocol.inter.origin.Service service) { builder.AddSbyte(1, (sbyte)service, 0); }
-  public static void AddGroup(FlatBufferBuilder builder, byte group) { builder.AddByte(2, group, 0); }
+  public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(0, id, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
+  public static void AddService(FlatBufferBuilder builder, fb.protocol.inter.origin.Service service) { builder.AddSbyte(2, (sbyte)service, 0); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(3, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(4, port, 0); }
   public static Offset<fb.protocol.inter.request.origin.Ping> EndPing(FlatBufferBuilder builder) {
@@ -73,9 +73,9 @@ static public class PingVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 6 /*Service*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
-      && verifier.VerifyField(tablePos, 8 /*Group*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 6 /*Name*/, false)
+      && verifier.VerifyField(tablePos, 8 /*Service*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
       && verifier.VerifyString(tablePos, 10 /*Ip*/, false)
       && verifier.VerifyField(tablePos, 12 /*Port*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);

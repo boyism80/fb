@@ -123,9 +123,9 @@ public:
     static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Ping;
 
 public:
+    uint8_t id;
     std::string name;
     fb::protocol::internal::Service service;
-    uint8_t group;
     std::string ip;
     uint16_t port;
 
@@ -134,14 +134,14 @@ public:
     { }
 
     Ping(const Ping& x)
-        : name(x.name), service(x.service), group(x.group), ip(x.ip), port(x.port)
+        : id(x.id), name(x.name), service(x.service), ip(x.ip), port(x.port)
     { }
 
-    Ping(const std::string& name, fb::protocol::internal::Service service, uint8_t group, const std::string& ip, uint16_t port)
-        : name(name), service(service), group(group), ip(ip), port(port)
+    Ping(uint8_t id, const std::string& name, fb::protocol::internal::Service service, const std::string& ip, uint16_t port)
+        : id(id), name(name), service(service), ip(ip), port(port)
     { }
     Ping(const fb::protocol::internal::request::origin::Ping& raw)
-        : name(raw.name()->c_str()), service((fb::protocol::internal::Service)raw.service()), group(raw.group()), ip(raw.ip()->c_str()), port(raw.port())
+        : id(raw.id()), name(raw.name()->c_str()), service((fb::protocol::internal::Service)raw.service()), ip(raw.ip()->c_str()), port(raw.port())
     {
     }
 
@@ -150,9 +150,9 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::request::origin::CreatePing(builder,
+            this->id,
             builder.CreateString(this->name),
             (fb::protocol::internal::origin::Service)this->service,
-            this->group,
             builder.CreateString(this->ip),
             this->port);
     }

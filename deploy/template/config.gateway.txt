@@ -1,5 +1,6 @@
 {
-    "id": "{{ name }}",
+    "id": {{ deploy.gateway[name].id }},
+    "name": "{{ name }}",
     "ip":  "{{ deploy.gateway[name].ip }}",
     "port": {{ deploy.gateway[name].port }},
     "thread": null,

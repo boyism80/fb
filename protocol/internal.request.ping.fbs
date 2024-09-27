@@ -3,9 +3,9 @@ include "internal.fbs";
 namespace fb.protocol.internal.request;
 
 table Ping {
+  id: ubyte;
   name: string;
   service: fb.protocol.internal.Service;
-  group: ubyte;
   ip: string;
   port: ushort;
 }

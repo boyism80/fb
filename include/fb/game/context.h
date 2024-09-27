@@ -20,6 +20,7 @@
 #include <fb/protocol/game.h>
 #include <fb/protocol/internal.h>
 #include <fb/game/model.h>
+#include <fb/amqp.h>
 
 using namespace fb::protocol::internal;
 
@@ -47,6 +48,7 @@ private:
     commands                 _commands;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
+    fb::amqp::socket         _amqp;
 
 public:
     fb::model::model         model;
@@ -114,8 +116,8 @@ protected:
 
     // for heart-beat
 protected:
-    Service                 service() { return Service::Game; }
-    uint8_t                 group() { return fb::config::get()["group"].asUInt(); }
+    uint8_t                 id() const { return fb::config::get()["id"].asUInt(); }
+    Service                 service() const { return Service::Game; }
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);

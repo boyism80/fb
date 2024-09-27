@@ -1,5 +1,6 @@
 {
-    "id": "login",
+    "id": 0,
+    "name": "login",
     "ip": "127.0.0.1",
     "port": 3002,
     "thread": null,

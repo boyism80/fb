@@ -8,7 +8,7 @@
     "save": 600,
     "internal": {
         "ip": "127.0.0.1",
-        "port": 3000
+        "port": 5126
     },
     "login": {
         "ip": "127.0.0.1",
@@ -39,6 +39,12 @@
             "port": 6379,
             "db": 0
         }
+    },
+    "amqp": {
+        "ip": "192.168.0.181",
+        "port": 5672,
+        "uid": "fb",
+        "pwd": "admin"
     },
     "log": ["debug", "info", "warn", "fatal"]
 }
