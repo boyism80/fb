@@ -33,7 +33,7 @@ public class PingController : ControllerBase
         await connection.StringSetAsync(new HeartBeatKey 
         {
             Service = request.Service, 
-            Group = request.Group,
+            Id = request.Id,
         }.Key, JsonConvert.SerializeObject(config), TimeSpan.FromSeconds(5));
         return new Pong
         { };

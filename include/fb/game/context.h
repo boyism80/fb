@@ -48,7 +48,8 @@ private:
     commands                 _commands;
     fb::db::context<session> _db;
     tm*                      _time = fb::now();
-    fb::amqp::socket         _amqp;
+    std::unique_ptr<fb::amqp::socket> _amqp;
+    std::unique_ptr<std::thread> _amqp_thread;
 
 public:
     fb::model::model         model;
@@ -104,6 +105,7 @@ public:
     fb::thread*             thread(const fb::game::object& obj) const;
     uint8_t                 thread_index(const fb::game::object& obj) const;
     const fb::thread*       current_thread() const;
+    void                    amqp_thread();
 
 protected:
     bool                    decrypt_policy(uint8_t cmd) const final;

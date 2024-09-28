@@ -31,7 +31,7 @@ public class AccessController : ControllerBase
     {
         var map = _dataSet.Map[request.Map] ?? throw new KeyNotFoundException($"{request.Map} not found in map data");
         var connection = _redisService.Connection;
-        var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = Service.Game, Group = map.Host }.Key);
+        var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = Service.Game, Id = map.Host }.Key);
         if (config == null)
             return new response.Login { Success = false, Logon = false };
 

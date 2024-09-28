@@ -182,21 +182,21 @@ public:
 
 public:
     fb::protocol::internal::Service service;
-    uint8_t group;
+    uint8_t id;
 
 public:
     Transfer()
     { }
 
     Transfer(const Transfer& x)
-        : service(x.service), group(x.group)
+        : service(x.service), id(x.id)
     { }
 
-    Transfer(fb::protocol::internal::Service service, uint8_t group)
-        : service(service), group(group)
+    Transfer(fb::protocol::internal::Service service, uint8_t id)
+        : service(service), id(id)
     { }
     Transfer(const fb::protocol::internal::request::origin::Transfer& raw)
-        : service((fb::protocol::internal::Service)raw.service()), group(raw.group())
+        : service((fb::protocol::internal::Service)raw.service()), id(raw.id())
     {
     }
 
@@ -206,7 +206,7 @@ public:
     {
         return fb::protocol::internal::request::origin::CreateTransfer(builder,
             (fb::protocol::internal::origin::Service)this->service,
-            this->group);
+            this->id);
     }
 
     std::vector<uint8_t> Serialize() const

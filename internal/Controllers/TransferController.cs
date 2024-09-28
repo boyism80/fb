@@ -26,7 +26,7 @@ public class TransferController : ControllerBase
     public async Task<response.Transfer> Transfer(request.Transfer request)
     {
         var connection = _redisService.Connection;
-        var exists = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Group = request.Group }.Key);
+        var exists = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
         if (exists.IsNull)
         {
             return new response.Transfer

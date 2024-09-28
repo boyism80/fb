@@ -21,20 +21,20 @@ public struct Transfer : IFlatbufferObject
   public Transfer __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public fb.protocol.inter.origin.Service Service { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol.inter.origin.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol.inter.origin.Service.Gateway; } }
-  public byte Group { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol.inter.request.origin.Transfer> CreateTransfer(FlatBufferBuilder builder,
       fb.protocol.inter.origin.Service service = fb.protocol.inter.origin.Service.Gateway,
-      byte group = 0) {
+      byte id = 0) {
     builder.StartTable(2);
-    Transfer.AddGroup(builder, group);
+    Transfer.AddId(builder, id);
     Transfer.AddService(builder, service);
     return Transfer.EndTransfer(builder);
   }
 
   public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddService(FlatBufferBuilder builder, fb.protocol.inter.origin.Service service) { builder.AddSbyte(0, (sbyte)service, 0); }
-  public static void AddGroup(FlatBufferBuilder builder, byte group) { builder.AddByte(1, group, 0); }
+  public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(1, id, 0); }
   public static Offset<fb.protocol.inter.request.origin.Transfer> EndTransfer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.inter.request.origin.Transfer>(o);
@@ -50,7 +50,7 @@ static public class TransferVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Service*/, 1 /*fb.protocol.inter.origin.Service*/, 1, false)
-      && verifier.VerifyField(tablePos, 6 /*Group*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*Id*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

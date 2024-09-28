@@ -122,7 +122,7 @@ namespace fb.protocol.inter.request
     public class Transfer : IFlatBufferEx
     {
         public fb.protocol.inter.Service Service { get; set; }
-        public byte Group { get; set; }
+        public byte Id { get; set; }
 
         public Transfer()
         { }
@@ -130,7 +130,7 @@ namespace fb.protocol.inter.request
         public Transfer(fb.protocol.inter.request.origin.Transfer raw)
         {
             Service = (fb.protocol.inter.Service)raw.Service;
-            Group = raw.Group;
+            Id = raw.Id;
         }
 
         public Transfer(byte[] bytes) : this(fb.protocol.inter.request.origin.Transfer.GetRootAsTransfer(new ByteBuffer(bytes)))
@@ -140,7 +140,7 @@ namespace fb.protocol.inter.request
         {
             return fb.protocol.inter.request.origin.Transfer.CreateTransfer(builder,
                 (fb.protocol.inter.origin.Service)Service,
-                Group);
+                Id);
         }
 
         public byte[] Serialize()

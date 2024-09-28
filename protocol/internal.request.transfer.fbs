@@ -4,7 +4,7 @@ namespace fb.protocol.internal.request;
 
 table Transfer {
   service: fb.protocol.internal.Service;
-  group: ubyte;
+  id: ubyte;
 }
 
 root_type Transfer;

@@ -44,8 +44,8 @@ const std::string& queue::consumer_tag() const
 	return this->_tag;
 }
 
-void queue::invoke(const std::vector<uint8_t>& message)
+async::task<void> queue::invoke(const std::vector<uint8_t>& message)
 {
-	if(this->_func)
-		this->_func(message);
+	if (this->_func)
+		co_await this->_func(message);
 }

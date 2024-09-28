@@ -226,6 +226,8 @@ async::task<void> fb::game::context::handle_start()
         });
     }
 
+    this->_amqp_thread = std::make_unique<std::thread>(&context::amqp_thread, this);
+
     this->bind<fb::protocol::game::request::login>            (std::bind(&context::handle_login,           this, std::placeholders::_1, std::placeholders::_2));   // 게임서버 접속 핸들러
     this->bind<fb::protocol::game::request::direction>        (std::bind(&context::handle_direction,       this, std::placeholders::_1, std::placeholders::_2));   // 방향전환 핸들러
     this->bind<fb::protocol::game::request::exit>             (std::bind(&context::handle_logout,          this, std::placeholders::_1, std::placeholders::_2));   // 접속 종료
@@ -433,6 +435,7 @@ bool fb::game::context::handle_connected(fb::socket<fb::game::session>& socket)
 
 bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socket)
 {
+    auto& config = fb::config::get();
     auto session = socket.data();
     session->init(false);
 
@@ -444,7 +447,7 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
         {
             co_await session->destroy();
             co_await this->post_async<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>(
-                "localhost:5126", "/access/logout",
+                fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt()), "/access/logout",
                 fb::protocol::internal::request::Logout{ session->fd() });
         }());
     socket.data(nullptr);
@@ -885,6 +888,53 @@ uint8_t fb::game::context::thread_index(const fb::game::object& obj) const
 const fb::thread* fb::game::context::current_thread() const
 {
     return this->threads().current();
+}
+
+void fb::game::context::amqp_thread()
+{
+    auto& config = fb::config::get();
+    auto timeout = timeval{ 5, 0 };
+    while (this->running())
+    {
+        try
+        {
+            this->_amqp = std::make_unique<fb::amqp::socket>();
+            this->_amqp->connect(config["amqp"]["ip"].asString(),
+                config["amqp"]["port"].asUInt(),
+                config["amqp"]["uid"].asString(),
+                config["amqp"]["pwd"].asString(),
+                "/");
+
+            this->_amqp->declare_queue().bind("amq.direct", fb::format("fb.game.%d", config["id"].asInt()), [](auto& message) -> async::task<void>
+                {
+                    co_return;
+                });
+
+            this->_amqp->declare_queue().bind("amq.direct", "fb.global", [](auto& message) -> async::task<void>
+                {
+                    co_return;
+                });
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+            std::this_thread::sleep_for(1s);
+            continue;
+        }
+
+        while (this->running())
+        {
+            try
+            {
+                if(this->_amqp->select(&timeout) == false)
+                    continue;
+            }
+            catch (std::exception& e)
+            {
+                break;
+            }
+        }
+    }
 }
 
 // TODO : 클릭도 인터페이스로

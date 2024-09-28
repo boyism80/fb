@@ -14,7 +14,7 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
     {
         auto& config = fb::config::get();
         auto&& response = co_await this->post_async<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
-            "localhost:5126", "/ping", 
+            fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt()), "/ping",
             fb::protocol::internal::request::Ping
             {
                 this->id(),

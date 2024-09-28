@@ -11,6 +11,8 @@ extern "C"
 #include <stdexcept>
 #include <memory>
 #include <functional>
+#include <async/task.h>
+#include <async/awaitable_then.h>
 #ifdef _WIN32
 #include <WinSock2.h>
 #else
@@ -24,8 +26,8 @@ class queue;
 class socket
 {
 private:
-    amqp_socket_t*                              _socket;
-    amqp_connection_state_t                     _conn;
+    amqp_socket_t*                              _socket = nullptr;
+    amqp_connection_state_t                     _conn = nullptr;
     std::vector<std::unique_ptr<queue>>         _queues;
 
 public:
@@ -43,7 +45,7 @@ public:
 class queue
 {
 public:
-    using func_type = std::function<void(const std::vector<uint8_t>&)>;
+    using func_type = std::function<async::task<void>(const std::vector<uint8_t>&)>;
 
     friend class socket;
 
@@ -65,7 +67,7 @@ public:
     bool                                        bind(const std::string& exchange, const std::string& binding_key, const func_type& func);
     const std::string&                          name() const;
     const std::string&                          consumer_tag() const;
-    void                                        invoke(const std::vector<uint8_t>& message);
+    async::task<void>                           invoke(const std::vector<uint8_t>& message);
 };
 
 } }

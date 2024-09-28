@@ -7,9 +7,12 @@ socket::socket()
 
 socket::~socket()
 {
-    amqp_channel_close(this->_conn, 1, AMQP_REPLY_SUCCESS);
-    amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
-    amqp_destroy_connection(this->_conn);
+    if (this->_conn != nullptr)
+    {
+        amqp_channel_close(this->_conn, 1, AMQP_REPLY_SUCCESS);
+        amqp_connection_close(this->_conn, AMQP_REPLY_SUCCESS);
+        amqp_destroy_connection(this->_conn);
+    }
 }
 
 bool socket::connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost)
@@ -68,7 +71,10 @@ bool socket::select(const timeval* timeout)
             if (queue->consumer_tag() == consumer_tag)
             {
                 auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes, (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
-                queue->invoke(message);
+                async::awaitable_then(queue->invoke(message), [](async::awaitable_result<void> result)
+                {
+                    // work done
+                });
                 break;
             }
         }

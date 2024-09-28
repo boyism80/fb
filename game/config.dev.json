@@ -1,6 +1,6 @@
 {
-    "id": "game1",
-    "group": 0,
+    "id": 0,
+    "name": "game1",
     "delay": 5,
     "ip": "127.0.0.1",
     "port": 2004,
