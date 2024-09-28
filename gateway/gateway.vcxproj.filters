@@ -450,51 +450,6 @@
     <ClCompile Include="..\core\time.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\session.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="lib\util.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
@@ -513,6 +468,23 @@
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />

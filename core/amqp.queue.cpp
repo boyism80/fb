@@ -53,5 +53,5 @@ async::task<void> queue::invoke(const std::vector<uint8_t>& message)
 	if (found == this->_handler.end())
 		co_return;
 
-	co_await found->second((const uint8_t*)in_stream.data() + 4);
+	co_await found->second(((const uint8_t*)in_stream.data()) + (sizeof(uint32_t) * 2));
 }

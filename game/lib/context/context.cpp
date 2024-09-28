@@ -911,6 +911,20 @@ void fb::game::context::amqp_thread()
             {
                 co_return;
             });
+            queue1.handler<fb::protocol::internal::response::KickOut>([this](fb::protocol::internal::response::KickOut& response) -> async::task<void>
+                {
+                    auto socket = this->sockets.find([uid = response.uid](fb::socket<fb::game::session>& socket)
+                        {
+                            auto data = socket.data();
+                            return data->id() == uid;
+                        });
+
+                    if (socket == nullptr)
+                        co_return;
+
+                    co_await this->dispatch(socket);
+                    socket->shutdown(boost::asio::socket_base::shutdown_type::shutdown_send);
+                });
 
             auto& queue2 = this->_amqp->declare_queue();
             queue2.bind("amq.direct", "fb.global");

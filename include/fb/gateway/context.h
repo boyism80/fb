@@ -48,7 +48,7 @@ protected:
     
     // for heart-beat
 protected:
-    Service                     service() { return Service::Gateway; }
+    Service                     service() const final { return Service::Gateway; }
 
 public:
     async::task<bool>           handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);

@@ -6,6 +6,7 @@ namespace fb.protocol.inter.request
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
         public uint Uid { get; set; }
+        public string Name { get; set; } = string.Empty;
         public ushort Map { get; set; }
 
         public Login()
@@ -14,6 +15,7 @@ namespace fb.protocol.inter.request
         public Login(fb.protocol.inter.request.origin.Login raw)
         {
             Uid = raw.Uid;
+            Name = raw.Name;
             Map = raw.Map;
         }
 
@@ -24,6 +26,7 @@ namespace fb.protocol.inter.request
         {
             return fb.protocol.inter.request.origin.Login.CreateLogin(builder,
                 Uid,
+                builder.CreateString(Name),
                 Map);
         }
 

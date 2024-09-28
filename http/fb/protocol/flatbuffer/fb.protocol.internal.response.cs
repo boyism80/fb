@@ -2,6 +2,41 @@ using Google.FlatBuffers;
 
 namespace fb.protocol.inter.response
 {
+    public class KickOut : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.KickOut;
+        public uint Uid { get; set; }
+
+        public KickOut()
+        { }
+
+        public KickOut(fb.protocol.inter.response.origin.KickOut raw)
+        {
+            Uid = raw.Uid;
+        }
+
+        public KickOut(byte[] bytes) : this(fb.protocol.inter.response.origin.KickOut.GetRootAsKickOut(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.inter.response.origin.KickOut> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.inter.response.origin.KickOut.CreateKickOut(builder,
+                Uid);
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static KickOut Deserialize(byte[] bytes)
+        {
+            return new KickOut(bytes);
+        }
+    }
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;

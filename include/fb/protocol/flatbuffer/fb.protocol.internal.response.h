@@ -3,6 +3,7 @@
 
 #include "flatbuffers/flatbuffers.h"
 #include <fb/protocol/flatbuffer/fb.protocol.internal.h>
+#include <fb/protocol/flatbuffer/origin/internal.response.kick_out_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.login_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.logout_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.pong_generated.h>
@@ -13,6 +14,56 @@
 
 namespace fb { namespace protocol { namespace internal { namespace response { 
 
+
+class KickOut
+{
+public:
+    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::KickOut;
+
+public:
+    uint32_t uid;
+
+public:
+    KickOut()
+    { }
+
+    KickOut(const KickOut& x)
+        : uid(x.uid)
+    { }
+
+    KickOut(uint32_t uid)
+        : uid(uid)
+    { }
+    KickOut(const fb::protocol::internal::response::origin::KickOut& raw)
+        : uid(raw.uid())
+    {
+    }
+
+
+public:
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
+    {
+        return fb::protocol::internal::response::origin::CreateKickOut(builder,
+            this->uid);
+    }
+
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(this->Build(builder));
+        auto bytes = builder.GetBufferPointer();
+        auto size = builder.GetSize();
+        auto result = std::vector<uint8_t>(size);
+        std::memcpy(result.data(), bytes, size);
+        return result;
+    }
+
+    static KickOut Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::origin::GetKickOut(bytes);
+        return KickOut(*raw);
+    }
+};
 
 class Login
 {

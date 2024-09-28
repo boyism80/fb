@@ -92,7 +92,7 @@ protected:
 
     // for heart-beat
 protected:
-    Service                     service() { return Service::Login; }
+    Service                     service() const final { return Service::Login; };
 
 public:
     async::task<bool>           handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);

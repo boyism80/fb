@@ -27,6 +27,7 @@ namespace fb { namespace protocol { namespace internal { namespace response {
 
 enum class FlatBufferProtocolType
 {
+	KickOut,
 	Login,
 	Logout,
 	Pong,

@@ -38,6 +38,7 @@ namespace fb.protocol.inter.response
 {
     public enum FlatBufferProtocolType
     { 
+        KickOut,
         Login,
         Logout,
         Pong,
@@ -50,6 +51,7 @@ namespace fb.protocol.inter.response
         {
             return protocolType switch
             {
+                FlatBufferProtocolType.KickOut => typeof(fb.protocol.inter.response.KickOut),
                 FlatBufferProtocolType.Login => typeof(fb.protocol.inter.response.Login),
                 FlatBufferProtocolType.Logout => typeof(fb.protocol.inter.response.Logout),
                 FlatBufferProtocolType.Pong => typeof(fb.protocol.inter.response.Pong),

@@ -26,10 +26,14 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LoginBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_UID = 4,
-    VT_MAP = 6
+    VT_NAME = 6,
+    VT_MAP = 8
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   uint16_t map() const {
     return GetField<uint16_t>(VT_MAP, 0);
@@ -37,6 +41,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
            VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
            verifier.EndTable();
   }
@@ -48,6 +54,9 @@ struct LoginBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(Login::VT_UID, uid, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(Login::VT_NAME, name);
   }
   void add_map(uint16_t map) {
     fbb_.AddElement<uint16_t>(Login::VT_MAP, map, 0);
@@ -66,11 +75,26 @@ struct LoginBuilder {
 inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t uid = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     uint16_t map = 0) {
   LoginBuilder builder_(_fbb);
+  builder_.add_name(name);
   builder_.add_uid(uid);
   builder_.add_map(map);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Login> CreateLoginDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t uid = 0,
+    const char *name = nullptr,
+    uint16_t map = 0) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return fb::protocol::internal::request::origin::CreateLogin(
+      _fbb,
+      uid,
+      name__,
+      map);
 }
 
 inline const fb::protocol::internal::request::origin::Login *GetLogin(const void *buf) {

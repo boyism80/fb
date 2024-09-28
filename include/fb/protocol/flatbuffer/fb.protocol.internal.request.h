@@ -22,6 +22,7 @@ public:
 
 public:
     uint32_t uid;
+    std::string name;
     uint16_t map;
 
 public:
@@ -29,14 +30,14 @@ public:
     { }
 
     Login(const Login& x)
-        : uid(x.uid), map(x.map)
+        : uid(x.uid), name(x.name), map(x.map)
     { }
 
-    Login(uint32_t uid, uint16_t map)
-        : uid(uid), map(map)
+    Login(uint32_t uid, const std::string& name, uint16_t map)
+        : uid(uid), name(name), map(map)
     { }
     Login(const fb::protocol::internal::request::origin::Login& raw)
-        : uid(raw.uid()), map(raw.map())
+        : uid(raw.uid()), name(raw.name()->c_str()), map(raw.map())
     {
     }
 
@@ -46,6 +47,7 @@ public:
     {
         return fb::protocol::internal::request::origin::CreateLogin(builder,
             this->uid,
+            builder.CreateString(this->name),
             this->map);
     }
 
