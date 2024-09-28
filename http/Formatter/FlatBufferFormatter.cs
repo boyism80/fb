@@ -62,8 +62,6 @@ namespace http.Formatter
             return type.IsAssignableTo(typeof(IFlatBufferEx));
         }
 
-        protected abstract int GetProtocolId(IFlatBufferEx protocol);
-
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context.Object == null || context.ObjectType == null)
@@ -81,19 +79,9 @@ namespace http.Formatter
 
                 case "application/octet-stream":
                     {
-                        using var ms = new MemoryStream();
-                        using (var writer = new BinaryWriter(ms))
-                        {
-                            var bytes = protocol.Serialize();
-                            writer.Write(GetProtocolId(protocol).ToMachineEndian());
-                            writer.Write(bytes.Length.ToMachineEndian());
-                            writer.Write(bytes);
-                            writer.Flush();
-                        }
-
-                        var data = ms.ToArray();
-                        context.HttpContext.Response.ContentLength = data.Length;
-                        await context.HttpContext.Response.BodyWriter.WriteAsync(data);
+                        var bytes = protocol.ToBytes();
+                        context.HttpContext.Response.ContentLength = bytes.Length;
+                        await context.HttpContext.Response.BodyWriter.WriteAsync(bytes);
                     }
                     break;
             }

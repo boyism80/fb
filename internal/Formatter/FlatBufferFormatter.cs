@@ -1,7 +1,6 @@
 ﻿using Google.FlatBuffers;
 using http.Util;
 using request = fb.protocol.inter.request;
-using response = fb.protocol.inter.response;
 
 namespace fb.protocol.flatbuffer.inter
 {
@@ -28,11 +27,6 @@ namespace fb.protocol.flatbuffer.inter
         public FlatBufferOutputFormatter()
         {
 
-        }
-
-        protected override int GetProtocolId(IFlatBufferEx protocol)
-        {
-            return (int)response.FlatBufferProtocolRouter.GetProtocolEnum(protocol);
         }
     }
 }

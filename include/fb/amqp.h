@@ -1,23 +1,22 @@
 #ifndef __FB_AMQP_H__
 #define __FB_AMQP_H__
 
-extern "C" 
-{
-#include <rabbitmq-c/amqp.h>
-#include <rabbitmq-c/tcp_socket.h>
-}
-#include <string>
-#include <vector>
-#include <stdexcept>
-#include <memory>
-#include <functional>
-#include <async/task.h>
-#include <async/awaitable_then.h>
 #ifdef _WIN32
 #include <WinSock2.h>
 #else
 #include <sys/time.h>
 #endif
+#include <rabbitmq-c/amqp.h>
+#include <rabbitmq-c/tcp_socket.h>
+#include <fb/stream.h>
+#include <string>
+#include <vector>
+#include <stdexcept>
+#include <memory>
+#include <functional>
+#include <unordered_map>
+#include <async/task.h>
+#include <async/awaitable_then.h>
 
 namespace fb { namespace amqp {
 
@@ -45,17 +44,18 @@ public:
 class queue
 {
 public:
-    using func_type = std::function<async::task<void>(const std::vector<uint8_t>&)>;
-
     friend class socket;
+
+public:
+    using handle_func = std::function<async::task<void>(const uint8_t*)>;
 
 private:
     socket&                                     _owner;
+    std::unordered_map<uint32_t, handle_func>   _handler;
     amqp_bytes_t                                _raw_name;
     std::string                                 _name;
     amqp_bytes_t                                _raw_tag;
     std::string                                 _tag;
-    func_type                                   _func;
 
 private:
     queue(socket& owner, const amqp_bytes_t& name);
@@ -64,10 +64,21 @@ public:
     ~queue();
 
 public:
-    bool                                        bind(const std::string& exchange, const std::string& binding_key, const func_type& func);
+    bool                                        bind(const std::string& exchange, const std::string& binding_key);
     const std::string&                          name() const;
     const std::string&                          consumer_tag() const;
     async::task<void>                           invoke(const std::vector<uint8_t>& message);
+
+    template <typename R>
+    void                                        handler(const std::function<async::task<void>(R&)>& fn)
+    {
+        auto cmd = (uint32_t)R::FlatBufferProtocolType;
+        this->_handler.insert({ cmd, [this, fn](const uint8_t* ptr) -> async::task<void>
+        {
+            auto protocol = R::Deserialize(ptr);
+            co_await fn(protocol);
+        } });
+    }
 };
 
 } }

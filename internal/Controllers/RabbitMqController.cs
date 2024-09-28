@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using fb.protocol.inter.response;
+using http.Util;
+using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
-using System.Text;
 
 namespace Internal.Controllers
 {
@@ -28,8 +29,9 @@ namespace Internal.Controllers
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            var body = Encoding.UTF8.GetBytes(request.Message);
-            channel.BasicPublish(exchange: request.ExchangeName, routingKey: request.RouteKey, basicProperties: null, body: body);
+            var protocol = new Pong();
+            var bytes = protocol.ToBytes();
+            channel.BasicPublish(exchange: request.ExchangeName, routingKey: request.RouteKey, basicProperties: null, body: bytes);
         }
     }
 }

@@ -4,6 +4,7 @@ namespace fb.protocol.inter.request
 {
     public class Login : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Login;
         public uint Uid { get; set; }
         public ushort Map { get; set; }
 
@@ -41,6 +42,7 @@ namespace fb.protocol.inter.request
     }
     public class Logout : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Logout;
         public uint Uid { get; set; }
 
         public Logout()
@@ -75,6 +77,7 @@ namespace fb.protocol.inter.request
     }
     public class Ping : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Ping;
         public byte Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public fb.protocol.inter.Service Service { get; set; }
@@ -121,6 +124,7 @@ namespace fb.protocol.inter.request
     }
     public class Transfer : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Transfer;
         public fb.protocol.inter.Service Service { get; set; }
         public byte Id { get; set; }
 
@@ -158,6 +162,7 @@ namespace fb.protocol.inter.request
     }
     public class Whisper : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
         public string Name { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
 

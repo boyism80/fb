@@ -4,6 +4,7 @@ namespace fb.protocol.inter.response
 {
     public class Login : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Login;
         public bool Success { get; set; }
         public bool Logon { get; set; }
         public string Ip { get; set; } = string.Empty;
@@ -47,6 +48,7 @@ namespace fb.protocol.inter.response
     }
     public class Logout : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Logout;
         public uint Uid { get; set; }
 
         public Logout()
@@ -81,6 +83,7 @@ namespace fb.protocol.inter.response
     }
     public class Pong : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Pong;
 
         public Pong()
         { }
@@ -113,6 +116,7 @@ namespace fb.protocol.inter.response
     }
     public class Transfer : IFlatBufferEx
     {
+        public int ProtocolType => (int)FlatBufferProtocolType.Transfer;
         public fb.protocol.inter.TransferResult Code { get; set; }
         public string Ip { get; set; } = string.Empty;
         public ushort Port { get; set; }

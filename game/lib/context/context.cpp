@@ -443,7 +443,7 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
 
     this->save(*session);
     //this->_internal->send(fb::protocol::internal::request::logout(session->name()));
-    async::awaitable_get([this, &session]() -> async::task<void>
+    async::awaitable_get([this, &config, &session]() -> async::task<void>
         {
             co_await session->destroy();
             co_await this->post_async<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>(
@@ -905,15 +905,19 @@ void fb::game::context::amqp_thread()
                 config["amqp"]["pwd"].asString(),
                 "/");
 
-            this->_amqp->declare_queue().bind("amq.direct", fb::format("fb.game.%d", config["id"].asInt()), [](auto& message) -> async::task<void>
-                {
-                    co_return;
-                });
+            auto& queue1 = this->_amqp->declare_queue();
+            queue1.bind("amq.direct", fb::format("fb.game.%d", config["id"].asInt()));
+            queue1.handler<fb::protocol::internal::response::Pong>([](auto& response) -> async::task<void>
+            {
+                co_return;
+            });
 
-            this->_amqp->declare_queue().bind("amq.direct", "fb.global", [](auto& message) -> async::task<void>
-                {
-                    co_return;
-                });
+            auto& queue2 = this->_amqp->declare_queue();
+            queue2.bind("amq.direct", "fb.global");
+            queue2.handler<fb::protocol::internal::response::Pong>([](auto& response) -> async::task<void>
+            {
+                co_return;
+            });
         }
         catch (std::exception& e)
         {
