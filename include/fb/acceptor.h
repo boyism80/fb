@@ -17,8 +17,8 @@
 #include <fb/mutex.h>
 #include <async/awaitable_get.h>
 
-#include <fb/protocol/flatbuffer/fb.protocol.internal.request.h>
-#include <fb/protocol/flatbuffer/fb.protocol.internal.response.h>
+#include <fb/protocol/internal/request.h>
+#include <fb/protocol/internal/response.h>
 
 using namespace std::chrono_literals;
 

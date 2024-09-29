@@ -1,6 +1,4 @@
 #include <fb/login/context.h>
-#include <fb/protocol/flatbuffer/fb.protocol.internal.request.h>
-#include <fb/protocol/flatbuffer/fb.protocol.internal.response.h>
 #include <boost/asio/high_resolution_timer.hpp>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 

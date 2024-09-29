@@ -2,14 +2,14 @@
 #define __FB_PROTOCOL_INTERNAL_RESPONSE___
 
 #include "flatbuffers/flatbuffers.h"
-#include <fb/protocol/flatbuffer/fb.protocol.internal.h>
-#include <fb/protocol/flatbuffer/origin/internal.response.kick_out_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.response.login_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.response.logout_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.response.pong_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.response.transfer_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.response.whisper_generated.h>
-#include <fb/protocol/flatbuffer/protocol_type.h>
+#include <fb/protocol/internal.h>
+#include <fb/protocol/origin/internal.response.kick_out_generated.h>
+#include <fb/protocol/origin/internal.response.login_generated.h>
+#include <fb/protocol/origin/internal.response.logout_generated.h>
+#include <fb/protocol/origin/internal.response.pong_generated.h>
+#include <fb/protocol/origin/internal.response.transfer_generated.h>
+#include <fb/protocol/origin/internal.response.whisper_generated.h>
+#include <fb/protocol/protocol_type.h>
 #include <string>
 #include <vector>
 

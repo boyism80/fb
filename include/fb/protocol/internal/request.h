@@ -2,13 +2,13 @@
 #define __FB_PROTOCOL_INTERNAL_REQUEST___
 
 #include "flatbuffers/flatbuffers.h"
-#include <fb/protocol/flatbuffer/fb.protocol.internal.h>
-#include <fb/protocol/flatbuffer/origin/internal.request.login_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.request.logout_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.request.ping_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.request.transfer_generated.h>
-#include <fb/protocol/flatbuffer/origin/internal.request.whisper_generated.h>
-#include <fb/protocol/flatbuffer/protocol_type.h>
+#include <fb/protocol/internal.h>
+#include <fb/protocol/origin/internal.request.login_generated.h>
+#include <fb/protocol/origin/internal.request.logout_generated.h>
+#include <fb/protocol/origin/internal.request.ping_generated.h>
+#include <fb/protocol/origin/internal.request.transfer_generated.h>
+#include <fb/protocol/origin/internal.request.whisper_generated.h>
+#include <fb/protocol/protocol_type.h>
 #include <string>
 #include <vector>
 
