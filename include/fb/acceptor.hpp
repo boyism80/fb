@@ -13,8 +13,7 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
     this->bind_timer([this]()->async::task<void>
     {
         auto& config = fb::config::get();
-        auto&& response = co_await this->post_async<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
-            fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt()), "/ping",
+        auto&& response = co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>("/in-game/ping",
             fb::protocol::internal::request::Ping
             {
                 this->id(),
@@ -212,7 +211,7 @@ void fb::acceptor<T>::send(fb::socket<T>& socket, const fb::protocol::base::head
 // }
 
 template <typename T>
-async::task<httplib::Result> fb::acceptor<T>::post_async(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size)
+async::task<httplib::Result> fb::acceptor<T>::post(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size)
 {
     auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
     auto buffer = std::vector<uint8_t>(size);
@@ -228,7 +227,7 @@ async::task<httplib::Result> fb::acceptor<T>::post_async(const std::string& host
 
 template <typename T>
 template <typename Request, typename Response>
-async::task<Response> fb::acceptor<T>::post_async(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body)
+async::task<Response> fb::acceptor<T>::post(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body)
 {
     httplib::Headers headers;
     auto serialized = body.Serialize();
@@ -238,7 +237,7 @@ async::task<Response> fb::acceptor<T>::post_async(const std::string& host, const
     out_stream.write_u32(serialized.size());
     out_stream.write((const void*)serialized.data(), serialized.size());
 
-    auto&& res = co_await this->post_async(host, path, headers, out_stream.data(), out_stream.size());
+    auto&& res = co_await this->post(host, path, headers, out_stream.data(), out_stream.size());
     if(!res)
         throw std::runtime_error("http error");
 
@@ -252,6 +251,15 @@ async::task<Response> fb::acceptor<T>::post_async(const std::string& host, const
     auto protocol_type = in_stream.read_u32();
     auto protocol_size = in_stream.read_u32();
     co_return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
+}
+
+template <typename T>
+template <typename Request, typename Response>
+async::task<Response> fb::acceptor<T>::post(const std::string& path, const Request& body)
+{
+    auto& config = fb::config::get();
+    auto  host = fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt());
+    co_return co_await this->post<Request, Response>(host, path, body);
 }
 
 template <typename T>

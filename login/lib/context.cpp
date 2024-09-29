@@ -248,8 +248,8 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
         auto map = auth_row.get_value<uint32_t>(2);
-        auto&& response = co_await this->post_async<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
-            "localhost:5126", "/access/login", 
+        auto&& response = co_await this->post<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
+            "/in-game/login", 
             fb::protocol::internal::request::Login
             {
                 auth_row.get_value<uint32_t>(0), 

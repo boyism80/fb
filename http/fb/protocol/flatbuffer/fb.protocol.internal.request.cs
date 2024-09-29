@@ -166,7 +166,8 @@ namespace fb.protocol.inter.request
     public class Whisper : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
-        public string Name { get; set; } = string.Empty;
+        public string From { get; set; } = string.Empty;
+        public string To { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
 
         public Whisper()
@@ -174,7 +175,8 @@ namespace fb.protocol.inter.request
 
         public Whisper(fb.protocol.inter.request.origin.Whisper raw)
         {
-            Name = raw.Name;
+            From = raw.From;
+            To = raw.To;
             Message = raw.Message;
         }
 
@@ -184,7 +186,8 @@ namespace fb.protocol.inter.request
         public Offset<fb.protocol.inter.request.origin.Whisper> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.inter.request.origin.Whisper.CreateWhisper(builder,
-                builder.CreateString(Name),
+                builder.CreateString(From),
+                builder.CreateString(To),
                 builder.CreateString(Message));
         }
 

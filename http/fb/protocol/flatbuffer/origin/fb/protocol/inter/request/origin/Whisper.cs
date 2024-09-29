@@ -20,33 +20,43 @@ public struct Whisper : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Whisper __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Name { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string From { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(4, 1); }
+  public Span<byte> GetFromBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(4); }
+  public ArraySegment<byte>? GetFromBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
-  public string Message { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetFromArray() { return __p.__vector_as_array<byte>(4); }
+  public string To { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetToBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetToBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(6); }
+  public byte[] GetToArray() { return __p.__vector_as_array<byte>(6); }
+  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol.inter.request.origin.Whisper> CreateWhisper(FlatBufferBuilder builder,
-      StringOffset nameOffset = default(StringOffset),
+      StringOffset fromOffset = default(StringOffset),
+      StringOffset toOffset = default(StringOffset),
       StringOffset messageOffset = default(StringOffset)) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     Whisper.AddMessage(builder, messageOffset);
-    Whisper.AddName(builder, nameOffset);
+    Whisper.AddTo(builder, toOffset);
+    Whisper.AddFrom(builder, fromOffset);
     return Whisper.EndWhisper(builder);
   }
 
-  public static void StartWhisper(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(1, messageOffset.Value, 0); }
+  public static void StartWhisper(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddFrom(FlatBufferBuilder builder, StringOffset fromOffset) { builder.AddOffset(0, fromOffset.Value, 0); }
+  public static void AddTo(FlatBufferBuilder builder, StringOffset toOffset) { builder.AddOffset(1, toOffset.Value, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
   public static Offset<fb.protocol.inter.request.origin.Whisper> EndWhisper(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.inter.request.origin.Whisper>(o);
@@ -61,8 +71,9 @@ static public class WhisperVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Name*/, false)
-      && verifier.VerifyString(tablePos, 6 /*Message*/, false)
+      && verifier.VerifyString(tablePos, 4 /*From*/, false)
+      && verifier.VerifyString(tablePos, 6 /*To*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

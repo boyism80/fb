@@ -444,9 +444,7 @@ async::task<bool> fb::game::context::handle_disconnected(fb::socket<fb::game::se
     this->save(*session);
     //this->_internal->send(fb::protocol::internal::request::logout(session->name()));
 
-    auto host = fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt());
-    co_await this->post_async<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>(
-        host, "/access/logout",
+    co_await this->post<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>("/in-game/logout",
         fb::protocol::internal::request::Logout{ session->fd() });
     co_await session->destroy();
     socket.data(nullptr);
@@ -910,7 +908,7 @@ void fb::game::context::amqp_thread()
             {
                 co_return;
             });
-            queue1.handler<fb::protocol::internal::response::KickOut>([this](fb::protocol::internal::response::KickOut& response) -> async::task<void>
+            queue1.handler<fb::protocol::internal::response::KickOut>([this](auto& response) -> async::task<void>
                 {
                     auto socket = this->sockets.find([uid = response.uid](fb::socket<fb::game::session>& socket)
                         {
@@ -922,6 +920,23 @@ void fb::game::context::amqp_thread()
                         co_return;
 
                     socket->cancel();
+                });
+
+            queue1.handler<fb::protocol::internal::response::Whisper>([this](auto& response) -> async::task<void>
+                {
+                    auto socket = this->sockets.find([uid = response.to](fb::socket<fb::game::session>& socket)
+                        {
+                            auto data = socket.data();
+                            return data->id() == uid;
+                        });
+                    if (socket == nullptr)
+                        co_return;
+                    
+                    auto session = socket->data();
+                    if (session == nullptr)
+                        co_return;
+                    
+                    session->message(fb::format("%s> %s", CP949(response.from, PLATFORM::Windows).c_str(), CP949(response.message, PLATFORM::Windows).c_str()), MESSAGE_TYPE::NOTIFY);
                 });
 
             auto& queue2 = this->_amqp->declare_queue();
@@ -1957,18 +1972,24 @@ async::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session
 
     auto fd = session->fd();
     auto& from = session->name();
+    auto to = std::string(request.name);
+    auto message = std::string(request.message);
     try
     {
-        //auto&& response = co_await this->request<fb::protocol::internal::response::whisper>(fb::protocol::internal::request::whisper(from, request.name, request.message));
-        auto response = fb::protocol::internal::response::whisper();
+        auto&& response = co_await this->post<fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper>("/in-game/whisper", fb::protocol::internal::request::Whisper
+            {
+                UTF8(from, PLATFORM::Windows), 
+                UTF8(to, PLATFORM::Windows), 
+                UTF8(message, PLATFORM::Windows)
+            });
         if (this->sockets.contains(fd) == false)
             co_return false;
 
         std::stringstream sstream;
         if(response.success)
-            sstream << response.to << "> " << response.message;
+            sstream << to << "< " << message;
         else
-            sstream << response.to << "님은 바람의나라에 없습니다.";
+            sstream << to << "님은 바람의나라에 없습니다.";
 
         session->message(sstream.str(), MESSAGE_TYPE::NOTIFY);
     }

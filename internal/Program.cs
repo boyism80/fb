@@ -27,6 +27,7 @@ public class Program
         builder.Services.AddSingleton<RedisService>();
         builder.Services.AddSingleton<Fb.Model.Model>();
         builder.Services.AddSingleton<RabbitMqService>();
+        builder.Services.AddSingleton<SessionService>();
 
         var app = builder.Build();
         var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;

@@ -1,0 +1,10 @@
+namespace fb.protocol.internal.response;
+
+table Whisper {
+	success: bool;
+	from : string;
+	to: uint;
+	message: string;
+}
+
+root_type Whisper;

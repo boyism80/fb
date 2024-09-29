@@ -42,7 +42,8 @@ namespace fb.protocol.inter.response
         Login,
         Logout,
         Pong,
-        Transfer
+        Transfer,
+        Whisper
     }
 
     public static class FlatBufferProtocolRouter
@@ -56,6 +57,7 @@ namespace fb.protocol.inter.response
                 FlatBufferProtocolType.Logout => typeof(fb.protocol.inter.response.Logout),
                 FlatBufferProtocolType.Pong => typeof(fb.protocol.inter.response.Pong),
                 FlatBufferProtocolType.Transfer => typeof(fb.protocol.inter.response.Transfer),
+                FlatBufferProtocolType.Whisper => typeof(fb.protocol.inter.response.Whisper),
                 _ => throw new ArgumentException(),
             };
         }

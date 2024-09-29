@@ -190,4 +190,48 @@ namespace fb.protocol.inter.response
             return new Transfer(bytes);
         }
     }
+    public class Whisper : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
+        public bool Success { get; set; }
+        public string From { get; set; } = string.Empty;
+        public uint To { get; set; }
+        public string Message { get; set; } = string.Empty;
+
+        public Whisper()
+        { }
+
+        public Whisper(fb.protocol.inter.response.origin.Whisper raw)
+        {
+            Success = raw.Success;
+            From = raw.From;
+            To = raw.To;
+            Message = raw.Message;
+        }
+
+        public Whisper(byte[] bytes) : this(fb.protocol.inter.response.origin.Whisper.GetRootAsWhisper(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.inter.response.origin.Whisper> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.inter.response.origin.Whisper.CreateWhisper(builder,
+                Success,
+                builder.CreateString(From),
+                To,
+                builder.CreateString(Message));
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Whisper Deserialize(byte[] bytes)
+        {
+            return new Whisper(bytes);
+        }
+    }
 }

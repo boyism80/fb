@@ -8,6 +8,7 @@
 #include <fb/protocol/flatbuffer/origin/internal.response.logout_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.pong_generated.h>
 #include <fb/protocol/flatbuffer/origin/internal.response.transfer_generated.h>
+#include <fb/protocol/flatbuffer/origin/internal.response.whisper_generated.h>
 #include <fb/protocol/flatbuffer/protocol_type.h>
 #include <string>
 #include <vector>
@@ -264,6 +265,62 @@ public:
     {
         auto raw = fb::protocol::internal::response::origin::GetTransfer(bytes);
         return Transfer(*raw);
+    }
+};
+
+class Whisper
+{
+public:
+    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Whisper;
+
+public:
+    bool success;
+    std::string from;
+    uint32_t to;
+    std::string message;
+
+public:
+    Whisper()
+    { }
+
+    Whisper(const Whisper& x)
+        : success(x.success), from(x.from), to(x.to), message(x.message)
+    { }
+
+    Whisper(bool success, const std::string& from, uint32_t to, const std::string& message)
+        : success(success), from(from), to(to), message(message)
+    { }
+    Whisper(const fb::protocol::internal::response::origin::Whisper& raw)
+        : success(raw.success()), from(raw.from()->c_str()), to(raw.to()), message(raw.message()->c_str())
+    {
+    }
+
+
+public:
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
+    {
+        return fb::protocol::internal::response::origin::CreateWhisper(builder,
+            this->success,
+            builder.CreateString(this->from),
+            this->to,
+            builder.CreateString(this->message));
+    }
+
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(this->Build(builder));
+        auto bytes = builder.GetBufferPointer();
+        auto size = builder.GetSize();
+        auto result = std::vector<uint8_t>(size);
+        std::memcpy(result.data(), bytes, size);
+        return result;
+    }
+
+    static Whisper Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::origin::GetWhisper(bytes);
+        return Whisper(*raw);
     }
 };
 

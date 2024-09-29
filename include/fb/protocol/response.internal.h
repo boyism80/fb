@@ -90,42 +90,6 @@ public:
     }
 };
 
-class whisper : public fb::protocol::internal::header
-{
-public:
-    bool                    success;
-    std::string             from;
-    std::string             to;
-    std::string             message;
-
-public:
-    whisper() : fb::protocol::internal::header(WHISPER)
-    { }
-    whisper(const std::string& trans, bool success, const std::string& from, const std::string& to, const std::string& message) : fb::protocol::internal::header(WHISPER, trans),
-        success(success), from(from), to(to), message(message)
-    { }
-
-public:
-    void serialize(fb::ostream& out_stream) const
-    {
-        fb::protocol::internal::header::serialize(out_stream);
-        out_stream.write_u8(this->success)
-                  .writestr_u8(this->from, false)
-                  .writestr_u8(this->to, false)
-                  .writestr_u8(this->message, false);
-    }
-
-    void deserialize(fb::istream& in_stream)
-    {
-        fb::protocol::internal::header::deserialize(in_stream);
-
-        this->success = in_stream.read_u8();
-        this->from = in_stream.readstr_u8(false);
-        this->to = in_stream.readstr_u8(false);
-        this->message = in_stream.readstr_u8(false);
-    }
-};
-
 class message : public fb::protocol::internal::header
 {
 public:

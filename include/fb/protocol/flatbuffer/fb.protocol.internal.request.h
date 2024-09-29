@@ -235,7 +235,8 @@ public:
     static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Whisper;
 
 public:
-    std::string name;
+    std::string from;
+    std::string to;
     std::string message;
 
 public:
@@ -243,14 +244,14 @@ public:
     { }
 
     Whisper(const Whisper& x)
-        : name(x.name), message(x.message)
+        : from(x.from), to(x.to), message(x.message)
     { }
 
-    Whisper(const std::string& name, const std::string& message)
-        : name(name), message(message)
+    Whisper(const std::string& from, const std::string& to, const std::string& message)
+        : from(from), to(to), message(message)
     { }
     Whisper(const fb::protocol::internal::request::origin::Whisper& raw)
-        : name(raw.name()->c_str()), message(raw.message()->c_str())
+        : from(raw.from()->c_str()), to(raw.to()->c_str()), message(raw.message()->c_str())
     {
     }
 
@@ -259,7 +260,8 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::request::origin::CreateWhisper(builder,
-            builder.CreateString(this->name),
+            builder.CreateString(this->from),
+            builder.CreateString(this->to),
             builder.CreateString(this->message));
     }
 

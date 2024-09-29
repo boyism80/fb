@@ -32,6 +32,7 @@ enum class FlatBufferProtocolType
 	Logout,
 	Pong,
 	Transfer,
+	Whisper,
 };
 
 } } } } 

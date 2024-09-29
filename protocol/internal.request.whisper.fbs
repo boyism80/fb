@@ -1,7 +1,8 @@
 namespace fb.protocol.internal.request;
 
 table Whisper {
-	name: string;
+	from: string;
+	to: string;
 	message: string;
 }
 
