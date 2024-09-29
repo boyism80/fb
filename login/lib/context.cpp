@@ -99,10 +99,10 @@ bool fb::login::context::handle_connected(fb::socket<fb::login::session>& socket
     return true;
 }
 
-bool fb::login::context::handle_disconnected(fb::socket<fb::login::session>& socket)
+async::task<bool> fb::login::context::handle_disconnected(fb::socket<fb::login::session>& socket)
 {
     fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
-    return false;
+    co_return false;
 }
 
 async::task<bool> fb::login::context::handle_agreement(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::agreement& request)

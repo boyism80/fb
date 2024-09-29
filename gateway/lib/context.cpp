@@ -87,10 +87,10 @@ bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& so
     return true;
 }
 
-bool fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
+async::task<bool> fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
     fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
-    return false;
+    co_return false;
 }
 
 async::task<bool> fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)

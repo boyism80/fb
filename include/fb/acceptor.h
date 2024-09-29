@@ -63,7 +63,7 @@ protected:
     virtual async::task<void>                   handle_start() { co_return;  }
     virtual T*                                  handle_accepted(fb::socket<T>& socket) = 0;
     virtual bool                                handle_connected(fb::socket<T>& session) { return true; }
-    virtual bool                                handle_disconnected(fb::socket<T>& session) { return true; }
+    virtual async::task<bool>                   handle_disconnected(fb::socket<T>& session) { co_return true; }
     virtual uint8_t                             handle_thread_index(fb::socket<T>& socket) const;
     virtual void                                handle_exit() { }
     async::task<bool>                           handle_parse(fb::socket<T>& socket);

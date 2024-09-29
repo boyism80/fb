@@ -88,7 +88,7 @@ protected:
     bool                        decrypt_policy(uint8_t) const final;
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
-    bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
+    async::task<bool>           handle_disconnected(fb::socket<fb::login::session>&) final;
 
     // for heart-beat
 protected:

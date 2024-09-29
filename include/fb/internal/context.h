@@ -48,7 +48,7 @@ protected:
     async::task<bool>               handle_parse(fb::internal::socket<fb::internal::session>& socket) final;
     fb::internal::session*          handle_accepted(fb::internal::socket<fb::internal::session>& socket) final;
     bool                            handle_connected(fb::internal::socket<fb::internal::session>& session) final;
-    bool                            handle_disconnected(fb::internal::socket<fb::internal::session>& session) final;
+    async::task<bool>               handle_disconnected(fb::internal::socket<fb::internal::session>& session) final;
 
 public:
     template <typename R>

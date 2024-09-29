@@ -433,7 +433,7 @@ bool fb::game::context::handle_connected(fb::socket<fb::game::session>& socket)
     return true;
 }
 
-bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socket)
+async::task<bool> fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socket)
 {
     auto& config = fb::config::get();
     auto session = socket.data();
@@ -443,15 +443,14 @@ bool fb::game::context::handle_disconnected(fb::socket<fb::game::session>& socke
 
     this->save(*session);
     //this->_internal->send(fb::protocol::internal::request::logout(session->name()));
-    async::awaitable_get([this, &config, &session]() -> async::task<void>
-        {
-            co_await session->destroy();
-            co_await this->post_async<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>(
-                fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt()), "/access/logout",
-                fb::protocol::internal::request::Logout{ session->fd() });
-        }());
+
+    auto host = fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt());
+    co_await this->post_async<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>(
+        host, "/access/logout",
+        fb::protocol::internal::request::Logout{ session->fd() });
+    co_await session->destroy();
     socket.data(nullptr);
-    return true;
+    co_return true;
 }
 
 void fb::game::context::handle_timer(uint64_t elapsed_milliseconds)
@@ -922,8 +921,7 @@ void fb::game::context::amqp_thread()
                     if (socket == nullptr)
                         co_return;
 
-                    co_await this->dispatch(socket);
-                    socket->shutdown(boost::asio::socket_base::shutdown_type::shutdown_send);
+                    socket->cancel();
                 });
 
             auto& queue2 = this->_amqp->declare_queue();

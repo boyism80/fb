@@ -20,12 +20,13 @@ fb::socket<T>::~socket()
 {
     auto _1 = std::lock_guard(this->_boost_mutex);
     auto _2 = std::lock_guard(this->_instream_mutex);
+    this->close();
 }
 
 template<typename T>
 inline void fb::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback)
 {
-    auto clone = stream;
+    auto clone = fb::ostream(stream);
     if (encrypt && this->on_encrypt(clone) == false)
         return;
 
@@ -77,8 +78,6 @@ void fb::socket<T>::recv()
                 if(ec)
                     throw boost::system::error_code(ec);
                 
-                // auto gd = std::lock_guard<std::mutex>(this->stream_mutex);
-
                 this->in_stream<void>([this, bytes_transferred](auto& in_stream)
                 {
                     this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
@@ -93,7 +92,7 @@ void fb::socket<T>::recv()
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
-                this->_handle_closed(*this);
+                async::awaitable_get(this->_handle_closed(*this));
             }
             catch (boost::system::error_code& e)
             {
@@ -101,11 +100,11 @@ void fb::socket<T>::recv()
                 switch (ec)
                 {
                 case ERROR_FILE_NOT_FOUND:
-                    this->_handle_closed(*this);
+                    async::awaitable_get(this->_handle_closed(*this));
                     break;
 
                 case ERROR_OPERATION_ABORTED:
-                    this->_handle_closed(*this);
+                    async::awaitable_get(this->_handle_closed(*this));
                     break;
 
                 case WSAECONNRESET:
@@ -118,7 +117,7 @@ void fb::socket<T>::recv()
             }
             catch(...)
             {
-                this->_handle_closed(*this);
+                async::awaitable_get(this->_handle_closed(*this));
             }
         }
     );

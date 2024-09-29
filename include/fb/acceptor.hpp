@@ -128,21 +128,11 @@ async::task<void> fb::acceptor<T>::handle_closed(fb::socket<T>& socket)
 
     auto                        casted = static_cast<fb::socket<T>*>(&socket);
     auto                        id     = this->handle_thread_index(*casted);
-    auto                        fn     = [this, casted] () -> async::task<void>
-    {
-        this->handle_disconnected(*casted);
-        this->sockets.erase(*casted);
-        co_return;
-    };
+    if (id != 0xFF)
+        co_await this->_threads[id]->dispatch();
 
-    if(id == 0xFF)
-    {
-        co_await fn();
-    }
-    else
-    {
-        co_await this->_threads[id]->dispatch(fn);
-    }
+    co_await this->handle_disconnected(*casted);
+    this->sockets.erase(*casted);
 }
 
 template <typename T>
