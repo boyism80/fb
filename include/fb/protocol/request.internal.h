@@ -38,53 +38,6 @@ public:
     }
 };
 
-class transfer : public fb::protocol::internal::header
-{
-public:
-    std::string             name;
-    services                from;
-    services                to;
-    uint16_t                map;
-    uint16_t                x, y;
-    uint32_t                fd;
-
-public:
-    transfer() : fb::protocol::internal::header(TRANSFER)
-    { }
-    transfer(const std::string& name, services from, services to, uint32_t map, uint32_t fd) : fb::protocol::internal::header(TRANSFER),
-        name(name), from(from), to(to), fd(fd), map(map), x(0xFFFF), y(0xFFFF)
-    { }
-    transfer(const std::string& name, services from, services to, uint32_t map, uint16_t x, uint16_t y, uint32_t fd) : fb::protocol::internal::header(TRANSFER),
-        name(name), from(from), to(to), fd(fd), map(map), x(x), y(y)
-    { }
-
-public:
-    void serialize(fb::ostream& out_stream) const
-    {
-        fb::protocol::internal::header::serialize(out_stream);
-        out_stream.writestr_u8(this->name, false)
-                  .write_u8(this->from)
-                  .write_u8(this->to)
-                  .write_u16(this->map)
-                  .write_u16(this->x)
-                  .write_u16(this->y)
-                  .write_u32(this->fd);
-    }
-
-    void deserialize(fb::istream& in_stream)
-    {
-        fb::protocol::internal::header::deserialize(in_stream);
-
-        this->name = in_stream.readstr_u8(false);
-        this->from = (services)in_stream.read_u8();
-        this->to = (services)in_stream.read_u8();
-        this->map = in_stream.read_u16();
-        this->x = in_stream.read_u16();
-        this->y = in_stream.read_u16();
-        this->fd = in_stream.read_u32();
-    }
-};
-
 class login : public fb::protocol::internal::header
 {
 public:

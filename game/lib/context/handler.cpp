@@ -482,29 +482,30 @@ async::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game
 
     auto& socket   = static_cast<fb::socket<fb::game::session>&>(me);
     auto  fd       = static_cast<uint32_t>(socket.native_handle());
-    auto  request  = fb::protocol::internal::request::transfer(me.name(), fb::protocol::internal::services::GAME, fb::protocol::internal::services::GAME, map.model.id, position.x, position.y, fd);
     
     try
     {
-        auto result = false;
-        //auto&& response = co_await this->request<fb::protocol::internal::response::transfer>(request, true, true);
-        auto response = fb::protocol::internal::response::transfer();
-        auto socket = this->sockets[response.fd];
-        if(response.code != fb::protocol::internal::response::transfer_code::SUCCESS)
+        auto&& response = co_await this->post<fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer>("/in-game/transfer", fb::protocol::internal::request::Transfer
+            {
+                fb::protocol::internal::Service::Game,
+                map.model.host
+            });
+
+        if(response.code != fb::protocol::internal::TransferResult::Success)
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
 
-        auto session = socket->data();
+        auto session = socket.data();
         co_await session->map(nullptr);
         
         co_await this->co_save(*session);
         fb::ostream         parameter;
         parameter.write_u32(me.id());
-        parameter.write(response.name);
+        parameter.write(session->name());
         parameter.write_u8(1);
-        parameter.write_u16(response.map);
-        parameter.write_u16(response.x);
-        parameter.write_u16(response.y);
-        this->transfer(*socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
+        parameter.write_u16(map.model.id);
+        parameter.write_u16(position.x);
+        parameter.write_u16(position.y);
+        this->transfer(socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
         
         co_return true;
     }
