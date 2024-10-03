@@ -16,13 +16,13 @@ int main(int argc, const char** argv)
     c.box(c.width()-1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.cursor((c.width()-1 - strlen(header)) / 2, 2).put(header);
+    c.cursor((c.width()-1 - strlen(header)) / 2, 2).render(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.cursor(c.width()-1 - strlen(github) - 3, 4).put(github);
+    c.cursor(c.width()-1 - strlen(github) - 3, 4).render(github);
 
     auto madeby = "made by cshyeon";
-    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).put(madeby);
+    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).render(madeby);
 
     c.cursor(0, height + 1);
 

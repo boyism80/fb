@@ -7,9 +7,9 @@ fb::config::config(const char* env)
     {
         std::stringstream   sstream;
         if(env == nullptr)
-            sstream << "config.json";
+            sstream << "config/config.json";
         else
-            sstream << "config." << env << ".json";
+            sstream << "config/config." << env << ".json";
 
         ifstream.open(sstream.str());
         if(ifstream.is_open() == false)

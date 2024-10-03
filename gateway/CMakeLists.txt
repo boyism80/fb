@@ -26,4 +26,4 @@ add_executable(app ${CORE_FILES} ${SOURCE_FILES} main.cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(app jsoncpp z pthread mysqlclient crypto ncursesw boost_program_options cpp_redis tacopie)
+target_link_libraries(app jsoncpp z pthread mysqlclient crypto ncursesw boost_program_options cpp_redis tacopie rabbitmq)

@@ -18,7 +18,7 @@ namespace fb { namespace protocol { namespace internal { namespace request {
 class Login
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Login;
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Login;
 
 public:
     uint32_t uid;
@@ -72,7 +72,7 @@ public:
 class Logout
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Logout;
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Logout;
 
 public:
     uint32_t uid;
@@ -122,7 +122,7 @@ public:
 class Ping
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Ping;
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Ping;
 
 public:
     uint8_t id;
@@ -180,7 +180,7 @@ public:
 class Transfer
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Transfer;
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Transfer;
 
 public:
     fb::protocol::internal::Service service;
@@ -232,7 +232,7 @@ public:
 class Whisper
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Whisper;
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Whisper;
 
 public:
     std::string from;

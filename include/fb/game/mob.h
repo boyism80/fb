@@ -43,7 +43,7 @@ public:
     {
     public:
         const bool alive = false;
-        rezen* const rezen = nullptr;
+        fb::game::rezen* const rezen = nullptr;
     };
 
 private:

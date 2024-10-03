@@ -10,8 +10,9 @@ fb::socket<T>::socket(boost::asio::io_context& context, const handler_event& han
 
 template<typename T>
 fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const handler_event& handle_received, const handler_event& handle_closed) : 
-    fb::socket<T>::socket(context, handle_received, handle_closed),
     boost::asio::ip::tcp::socket(context),
+    _handle_received(handle_received),
+    _handle_closed(handle_closed),
     _crt(crt)
 { }
 
@@ -99,15 +100,15 @@ void fb::socket<T>::recv()
                 auto ec = e.value();
                 switch (ec)
                 {
-                case ERROR_FILE_NOT_FOUND:
+                case ENOENT:
                     async::awaitable_get(this->_handle_closed(*this));
                     break;
 
-                case ERROR_OPERATION_ABORTED:
+                case ECONNABORTED:
                     async::awaitable_get(this->_handle_closed(*this));
                     break;
 
-                case WSAECONNRESET:
+                case ECONNRESET:
                     fb::logger::info("SYSTEM SHUTDOWN ALERT?");
                     break;
 

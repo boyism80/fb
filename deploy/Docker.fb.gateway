@@ -1,0 +1,19 @@
+FROM cshyeon/fb:build AS build
+
+WORKDIR /app
+COPY include ./include
+COPY plugin/linux ./plugin/linux
+COPY core ./core
+COPY gateway ./gateway
+
+WORKDIR /app/gateway/build
+RUN cmake ..
+RUN make -j4
+
+FROM cshyeon/fb:base
+WORKDIR /app
+COPY --from=build /app/gateway/build/app .
+COPY --from=build /app/gateway/config/* ./config/
+
+WORKDIR /app
+ENTRYPOINT ./app

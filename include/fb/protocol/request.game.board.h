@@ -1,6 +1,10 @@
 #ifndef __PROTOCOL_RESPONSE_BOARD_H__
 #define __PROTOCOL_RESPONSE_BOARD_H__
 
+#ifdef DELETE
+#undef DELETE
+#endif
+
 #include <fb/protocol/protocol.h>
 #include <fb/game/board.h>
 

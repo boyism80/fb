@@ -1,0 +1,72 @@
+{
+    "id": 10,
+    "name": "game10",
+    "delay": 5,
+    "ip":  "192.168.0.182",
+    "port": 2013,
+    "thread": 2,
+    "save": 600,
+    "internal": {
+        "ip": "192.168.0.180",
+        "port": 5126
+    },
+    "login": {
+        "ip": "192.168.0.180",
+        "port": 2002
+    },
+    "database": {
+        "global":
+        {
+            "ip": "192.168.0.180",
+            "port": 3306,
+            "name": "fb",
+            "uid": "fb",
+            "pwd": "admin"
+        },
+        "shard": [
+            {
+                "ip": "192.168.0.180",
+                "port": 3306,
+                "name": "fb",
+                "uid": "fb",
+                "pwd": "admin"
+            }, 
+            {
+                "ip": "192.168.0.181",
+                "port": 3306,
+                "name": "fb",
+                "uid": "fb",
+                "pwd": "admin"
+            }, 
+            {
+                "ip": "192.168.0.182",
+                "port": 3306,
+                "name": "fb",
+                "uid": "fb",
+                "pwd": "admin"
+            }, 
+            {
+                "ip": "192.168.0.183",
+                "port": 3306,
+                "name": "fb",
+                "uid": "fb",
+                "pwd": "admin"
+            }
+        ]
+    },
+    "redis": {
+        "default": 
+        {
+            "ip": "192.168.0.180",
+            "port": 6379,
+            "db": 0
+        }
+    },
+    "amqp": {
+        "ip": "192.168.0.181",
+        "port": 5672,
+        "uid": "fb",
+        "pwd": "admin"
+    },
+    "log": ["info", "fatal"]
+}

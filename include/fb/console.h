@@ -25,9 +25,9 @@ class console
 private:
 #ifdef _WIN32
     HANDLE                  _stdout;
+#endif
     int                     _x            = 0;
     int                     _y            = 0;
-#endif
     uint16_t                _width        = 0;
     uint16_t                _height       = 0;
     uint16_t                _additional_y = 0;
@@ -48,6 +48,7 @@ public:
 public:
     fb::console&            put(const char* format, ...);
     fb::console&            puts(const char* format, ...);
+    fb::console&            render(const char* format, ...);
     fb::console&            comment(const char* format, ...);
     fb::console&            clear(uint16_t x, uint16_t y);
     fb::console&            trim();

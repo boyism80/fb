@@ -91,14 +91,17 @@ def clean():
     local('rm -f resources.json')
 
 @task
-def build(service):
+def build_cpp(service):
     local(f'docker pull cshyeon/fb:build')
     local(f'docker run -v $PWD:/app -i -w /app/{service}/build cshyeon/fb:build /bin/bash -c "cmake .. && make -j4 && cp ./app /app/dist/fb/{service}/app"')
 
+@task
+def build_dotnet(service):
+    local(f'docker build --tag cshyeon/fb/dotnet:latest --build-arg SERVICE={service} -f ./deploy/Dockerfile.net .')
 
 @task
 @parallel
-def deploy(service):
+def deploy_cpp(service):
     global CONFIGURATION
 
     configs = current()
@@ -121,6 +124,23 @@ def deploy(service):
         for name, config in configs['deploy'][service].items():
             sudo(f'docker pull cshyeon/fb:latest')
             sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -e KINGDOM_OF_WIND_ENVIRONMENT={name} -p {config['port']}:{config['port']} cshyeon/fb:latest ./app")
+
+@task
+@runs_once
+def generate_config_file(service,output='.'):
+    global CONFIGURATION
+    configs = current()
+    if service not in configs['deploy']:
+        return
+
+    os.makedirs(output, exist_ok=True)
+    context = copy.deepcopy(CONFIGURATION)
+    for name, config in configs['deploy'][service].items():
+        context.update({'name': name})
+
+        template = jinja2.Environment(loader=jinja2.FileSystemLoader(searchpath=f"deploy/template")).get_template(f'config.{service}.txt')
+        with open(f'{output}/config.{name}.json', 'w', encoding='utf8') as f:
+            f.write(template.render(context))
 
 def current():
     global CONFIGURATION

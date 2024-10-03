@@ -1,0 +1,17 @@
+FROM cshyeon/fb:build AS build
+
+FROM ubuntu:22.04
+
+RUN apt-get update -y
+RUN apt-get upgrade -y
+RUN apt-get install gcc gdb make libjsoncpp-dev libmysqlclient-dev libstdc++-12-dev libboost-program-options-dev wget -y
+
+RUN wget https://ftp.icm.edu.pl/packages/zlib/zlib-1.1.4.tar.gz
+RUN tar xvfz zlib-1.1.4.tar.gz
+WORKDIR /zlib-1.1.4
+RUN ./configure && make && make install
+WORKDIR /
+RUN rm -rf zlib-1.1.4*
+
+COPY --from=build /usr/lib/librabbitmq.* /usr/lib/
+COPY --from=build /usr/include/rabbitmq-c /usr/include/rabbitmq-c

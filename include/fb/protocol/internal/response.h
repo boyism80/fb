@@ -19,7 +19,7 @@ namespace fb { namespace protocol { namespace internal { namespace response {
 class KickOut
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::KickOut;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::KickOut;
 
 public:
     uint32_t uid;
@@ -69,7 +69,7 @@ public:
 class Login
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Login;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Login;
 
 public:
     bool success;
@@ -125,7 +125,7 @@ public:
 class Logout
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Logout;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Logout;
 
 public:
     uint32_t uid;
@@ -175,7 +175,7 @@ public:
 class Pong
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Pong;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Pong;
 
 public:
 
@@ -217,7 +217,7 @@ public:
 class Transfer
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Transfer;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Transfer;
 
 public:
     fb::protocol::internal::TransferResult code;
@@ -271,7 +271,7 @@ public:
 class Whisper
 {
 public:
-    static inline FlatBufferProtocolType FlatBufferProtocolType = FlatBufferProtocolType::Whisper;
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Whisper;
 
 public:
     bool success;

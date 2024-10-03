@@ -33,19 +33,19 @@ pipeline {
 
         stage('Build') {
             steps { 
-                sh 'fab -f deploy/fabfile.py build:game'
-                sh 'fab -f deploy/fabfile.py build:login'
-                sh 'fab -f deploy/fabfile.py build:internal'
-                sh 'fab -f deploy/fabfile.py build:gateway'
+                sh 'fab -f deploy/fabfile.py build_cpp:game'
+                sh 'fab -f deploy/fabfile.py build_cpp:login'
+                sh 'fab -f deploy/fabfile.py build_cpp:gateway'
+                sh 'fab -f deploy/fabfile.py build_dotnet:internal'
             }
         }
 
         stage('Deploy') {
             steps { 
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:internal'
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:gateway'
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:login'
-                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy:game'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy_dotnet:internal'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy_cpp:gateway'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy_cpp:login'
+                sh 'fab -f deploy/fabfile.py environment:${ENVIRONMENT} deploy_cpp:game'
             }
         }
 

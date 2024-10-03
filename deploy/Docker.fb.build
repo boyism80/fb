@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS build
 
 RUN apt-get update -y
 RUN apt-get upgrade -y
@@ -46,3 +46,16 @@ RUN make
 RUN make install
 WORKDIR /
 RUN rm -rf cpp_redis
+
+# rabbitmq-c
+WORKDIR /
+RUN git clone https://github.com/alanxz/rabbitmq-c
+WORKDIR /rabbitmq-c/build
+RUN cmake ..
+RUN cmake --build . --config Release
+WORKDIR /
+RUN mkdir -p /usr/include/rabbitmq-c
+RUN mv /rabbitmq-c/include/rabbitmq-c/* /usr/include/rabbitmq-c
+RUN mv /rabbitmq-c/build/include/rabbitmq-c/* /usr/include/rabbitmq-c
+RUN mv /rabbitmq-c/build/librabbitmq/librabbitmq.* /usr/lib
+RUN rm -rf /rabbitmq-c

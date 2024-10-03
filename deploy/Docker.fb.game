@@ -1,0 +1,28 @@
+FROM cshyeon/fb:build AS build
+
+WORKDIR /app
+COPY include ./include
+COPY plugin/linux ./plugin/linux
+COPY core ./core
+COPY game ./game
+
+WORKDIR /app/game/build
+RUN cmake ..
+RUN make -j4
+
+FROM cshyeon/fb:base
+RUN apt-get install lua5.3-dev zip unzip -y
+
+WORKDIR /app
+COPY --from=build /app/game/build/app .
+COPY --from=build /app/game/config/* ./config/
+COPY --from=build /app/game/json ./json
+COPY --from=build /app/game/scripts ./scripts
+COPY --from=build /app/game/scripts .
+COPY resources/maps/maps.zip /app/maps/maps.zip
+WORKDIR /app/maps
+RUN unzip -qq maps.zip
+RUN rm -f maps.zip
+
+WORKDIR /app
+ENTRYPOINT ./app
