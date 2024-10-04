@@ -8,6 +8,10 @@
         "ip": "{{ deploy.internal[deploy.gateway[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.gateway[name].internal].port }}
     },
+    "db": {
+        "ip": "{{ deploy.db[deploy.gateway[name].db].ip }}",
+        "port": {{ deploy.db[deploy.gateway[name].db].port }}
+    },
     "log": ["info", "fatal"],
     "redis": {
 {%- for key, value in redis.items() %}

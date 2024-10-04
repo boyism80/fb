@@ -1,4 +1,4 @@
-﻿using fb.protocol.inter;
+﻿using http.fb.protocol;
 using http.Service;
 using Internal.Model.Redis;
 using Internal.Redis;
@@ -19,13 +19,13 @@ namespace Internal.Controllers
     {
         private readonly ILogger<TransferController> _logger;
         private readonly RedisService _redisService;
-        private readonly Fb.Model.Model _dataSet;
+        private readonly http.Model.Model _dataSet;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
 
         public InGameController(ILogger<TransferController> logger,
             RedisService redisService,
-            Fb.Model.Model dataSet,
+            http.Model.Model dataSet,
             RabbitMqService rabbitMqService,
             SessionService sessionService)
         {
@@ -37,11 +37,11 @@ namespace Internal.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<response.Login> Login(request.Login request)
+        public async Task<http.fb.protocol.@internal.Login> Login(http.fb.protocol.@internal.Login request)
         {
             var map = _dataSet.Map[request.Map] ?? throw new KeyNotFoundException($"{request.Map} not found in map data");
             var connection = _redisService.Connection;
-            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol.inter.Service.Game, Id = map.Host }.Key);
+            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = http.fb.protocol.Service.Game, Id = map.Host }.Key);
             if (config == null)
                 return new response.Login { Success = false, Logon = false };
 
@@ -77,7 +77,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<response.Logout> Logout(request.Logout request)
+        public async Task<http.fb.protocol.@internal.Logout> Logout(http.fb.protocol.@internal.Logout request)
         {
             var connection = _redisService.Connection;
             await connection.HashDeleteAsync(new SessionKey { }.Key, $"{request.Uid}");
@@ -89,7 +89,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("transfer")]
-        public async Task<response.Transfer> Transfer(request.Transfer request)
+        public async Task<http.fb.protocol.@internal.Transfer> Transfer(http.fb.protocol.@internal.Transfer request)
         {
             var connection = _redisService.Connection;
             var exists = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
@@ -112,7 +112,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("ping")]
-        public async Task<response.Pong> Ping(request.Ping request)
+        public async Task<http.fb.protocol.@internal.Pong> Ping(http.fb.protocol.@internal.Ping request)
         {
             var connection = _redisService.Connection;
             var config = new HostConfig
@@ -131,7 +131,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("whisper")]
-        public async Task<response.Whisper> Whisper(request.Whisper request)
+        public async Task<http.fb.protocol.@internal.Whisper> Whisper(http.fb.protocol.@internal.Whisper request)
         {
             var you = await _sessionService.Get(request.To);
             if (you == null)

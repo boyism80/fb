@@ -10,6 +10,10 @@
         "ip": "{{ deploy.internal[deploy.game[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.game[name].internal].port }}
     },
+    "db": {
+        "ip": "{{ deploy.db[deploy.game[name].db].ip }}",
+        "port": {{ deploy.db[deploy.game[name].db].port }}
+    },
     "login": {
         "ip": "{{ deploy.login[deploy.game[name].login].ip }}",
         "port": {{ deploy.login[deploy.game[name].login].port }}

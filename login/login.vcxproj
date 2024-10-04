@@ -107,7 +107,7 @@
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmtd.lib;rabbitmq-c\x86\librabbitmq.4_d.lib;cpp_redis\x86\cpp_redis_d.lib;cpp_redis\x86\tacopie_d.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmtd.lib;rabbitmq-c\x86\librabbitmq.4_d.lib;cpp_redis\x86\cpp_redis_d.lib;cpp_redis\x86\tacopie_d.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -127,7 +127,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -151,7 +151,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmt.lib;rabbitmq-c\x86\librabbitmq.4.lib;cpp_redis\x86\cpp_redis.lib;cpp_redis\x86\tacopie.lib;zlib/x86/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmt.lib;rabbitmq-c\x86\librabbitmq.4.lib;cpp_redis\x86\cpp_redis.lib;cpp_redis\x86\tacopie.lib;zlib/x86/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -175,7 +175,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;libmysql.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

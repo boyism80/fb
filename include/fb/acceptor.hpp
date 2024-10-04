@@ -13,7 +13,7 @@ fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8
     this->bind_timer([this]()->async::task<void>
     {
         auto& config = fb::config::get();
-        auto&& response = co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>("/in-game/ping",
+        auto&& response = co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>("internal", "/in-game/ping",
             fb::protocol::internal::request::Ping
             {
                 this->id(),
@@ -211,33 +211,39 @@ void fb::acceptor<T>::send(fb::socket<T>& socket, const fb::protocol::base::head
 // }
 
 template <typename T>
-async::task<httplib::Result> fb::acceptor<T>::post(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size)
+async::task<httplib::Result> fb::acceptor<T>::get_internal(const std::string& host, const std::string& path, httplib::Headers headers)
 {
     auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
-    auto buffer = std::vector<uint8_t>(size);
-    std::memcpy(buffer.data(), bytes, size);
-    std::async(std::launch::async, [this, promise, host, path, headers, buffer]() mutable
-    {
-        auto client = httplib::Client(host);
-        promise->set_value(client.Post(path, headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream"));
-    });
+    auto future = std::async(std::launch::async, [this, promise, host, path, headers]() mutable
+        {
+            auto client = httplib::Client(host);
+            promise->set_value(client.Get(path, headers));
+        });
 
     return promise->task();
 }
 
 template <typename T>
-template <typename Request, typename Response>
-async::task<Response> fb::acceptor<T>::post(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body)
+async::task<httplib::Result> fb::acceptor<T>::post_internal(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size)
+{
+    auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
+    auto buffer = std::vector<uint8_t>(size);
+    std::memcpy(buffer.data(), bytes, size);
+    auto future = std::async(std::launch::async, [this, promise, host, path, headers, buffer]() mutable
+        {
+            auto client = httplib::Client(host);
+            promise->set_value(client.Post(path, headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream"));
+        });
+
+    return promise->task();
+}
+
+template <typename T>
+template <typename Response>
+async::task<Response> fb::acceptor<T>::get_internal(const std::string& host, const std::string& path/* , httplib::Headers headers,  */)
 {
     httplib::Headers headers;
-    auto serialized = body.Serialize();
-
-    auto out_stream = fb::ostream();
-    out_stream.write_u32(Request::FlatBufferProtocolType);
-    out_stream.write_u32(serialized.size());
-    out_stream.write((const void*)serialized.data(), serialized.size());
-
-    auto&& res = co_await this->post(host, path, headers, out_stream.data(), out_stream.size());
+    auto&& res = co_await this->get_internal(host, path, headers);
     if(!res)
         throw std::runtime_error("http error");
 
@@ -255,11 +261,48 @@ async::task<Response> fb::acceptor<T>::post(const std::string& host, const std::
 
 template <typename T>
 template <typename Request, typename Response>
-async::task<Response> fb::acceptor<T>::post(const std::string& path, const Request& body)
+async::task<Response> fb::acceptor<T>::post_internal(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body)
+{
+    httplib::Headers headers;
+    auto serialized = body.Serialize();
+
+    auto out_stream = fb::ostream();
+    out_stream.write_u32(Request::FlatBufferProtocolType);
+    out_stream.write_u32(serialized.size());
+    out_stream.write((const void*)serialized.data(), serialized.size());
+
+    auto&& res = co_await this->post_internal(host, path, headers, out_stream.data(), out_stream.size());
+    if(!res)
+        throw std::runtime_error("http error");
+
+    if(res->status != 200)
+        throw std::runtime_error("http error");
+
+    auto ptr = (const uint8_t*)res->body.c_str();
+    auto size = std::stoi(res->get_header_value("Content-Length"));
+    auto in_stream = fb::istream(ptr, size);
+
+    auto protocol_type = in_stream.read_u32();
+    auto protocol_size = in_stream.read_u32();
+    co_return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
+}
+
+template <typename T>
+template <typename Response>
+async::task<Response> fb::acceptor<T>::get(const std::string& route, const std::string& path)
 {
     auto& config = fb::config::get();
-    auto  host = fb::format("http://%s:%d", config["internal"]["ip"].asCString(), config["internal"]["port"].asUInt());
-    co_return co_await this->post<Request, Response>(host, path, body);
+    auto  host = fb::format("http://%s:%d", config[route.c_str()]["ip"].asCString(), config["internal"]["port"].asUInt());
+    co_return co_await this->get_internal<Response>(host, path);
+}
+
+template <typename T>
+template <typename Request, typename Response>
+async::task<Response> fb::acceptor<T>::post(const std::string& route, const std::string& path, const Request& body)
+{
+    auto& config = fb::config::get();
+    auto  host = fb::format("http://%s:%d", config[route.c_str()]["ip"].asCString(), config["internal"]["port"].asUInt());
+    co_return co_await this->post_internal<Request, Response>(host, path, body);
 }
 
 template <typename T>

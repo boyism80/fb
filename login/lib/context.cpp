@@ -1,9 +1,9 @@
 #include <fb/login/context.h>
+#include <format>
 #include <boost/asio/high_resolution_timer.hpp>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<fb::login::session>(context, port, std::thread::hardware_concurrency()),
-    _db(*this, 4)
+    fb::acceptor<fb::login::session>(context, port, std::thread::hardware_concurrency())
 {
     const auto& config = fb::config::get();
     for(auto& x : config["forbidden"])
@@ -127,46 +127,50 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
 
     try
     {
-        auto id = request.id;
-        auto pw = request.pw;
+        auto name = std::string(request.id);
+        auto pw = std::string(request.pw);
 
-        this->assert_account(id, pw);
+        this->assert_account(name, pw);
 
-        auto&& nameset_result = co_await this->_db.co_exec_f("CALL USP_NAME_SET('%s')", id.c_str()); // 여기서 task suspend, DB스레드에서 promise resume
+        auto&& response1 = co_await this->post<fb::protocol::db::request::ReserveName, fb::protocol::db::response::ReserveName>("db", "/user/reserve-name", fb::protocol::db::request::ReserveName
+            {
+                name
+            });
 
-        // 여기부터 promise handler
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto success = nameset_result[0].get_value<bool>(0);
-        if(success == false)
+        if(response1.uid == -1)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        auto pk = nameset_result[1].get_value<uint32_t>(0);
+        auto uid = response1.uid;
         auto& config = fb::config::get();
         std::srand(std::time(nullptr));
-        auto hp = config["init"]["hp"]["base"].asInt() + std::rand() % config["init"]["hp"]["range"].asInt();
-        auto mp = config["init"]["mp"]["base"].asInt() + std::rand() % config["init"]["mp"]["range"].asInt();
-        auto map = config["init"]["map"].asInt();
-        auto position_x = config["init"]["position"]["x"].asInt();
-        auto position_y = config["init"]["position"]["y"].asInt();
-        auto admin = config["admin mode"].asBool() ? 0 : 1;
 
-        // 여기서 promise suspend
-        auto&& init_result = co_await this->_db.co_exec_f(pk, "CALL USP_CHARACTER_INIT(%d, '%s', '%s', %d, %d, %d, %d, %d, %d)", pk, id.c_str(), this->sha256(pw).c_str(), hp, mp, map, position_x, position_y, admin);
+        auto&& response2 = co_await this->post<fb::protocol::db::request::InitCharacter, fb::protocol::db::response::InitCharacter>("db", "/user/init-ch", fb::protocol::db::request::InitCharacter
+        {
+            uid,
+            name,
+            pw,
+            config["init"]["hp"]["base"].asUInt() + std::rand() % config["init"]["hp"]["range"].asUInt(), // hp
+            config["init"]["mp"]["base"].asUInt() + std::rand() % config["init"]["mp"]["range"].asUInt(), // mp
+            (uint16_t)config["init"]["map"].asUInt(), // map
+            (uint16_t)config["init"]["position"]["x"].asUInt(), // position_x
+            (uint16_t)config["init"]["position"]["y"].asUInt(), // position_y
+            config["admin mode"].asBool(), // admin
+        });
 
         // 여기서 새로운 promise handler
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto& init_row = init_result[0];
-        if(init_row.get_value<bool>(0) == false)
+        if(response2.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
         this->send(socket, fb::protocol::login::response::message("", 0x00));
         auto session = socket.data();
-        session->pk = pk;
-        session->name = id;
+        session->pk = uid;
+        session->name = name;
     }
     catch(login_exception& e)
     {
@@ -187,24 +191,39 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
 
 async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::complete& request)
 {
+    auto fd = socket.fd();
+
     try
     {
         auto session = socket.data();
         if(session->pk == -1)
             throw std::exception();
 
-        auto fd = socket.fd();
-        co_await this->_db.co_exec_f(session->pk, "CALL USP_CHARACTER_CREATE_FINISH(%d, %d, %d, %d, %d)", session->pk, request.hair, request.sex, request.nation, request.creature);
+        auto&& response = co_await this->post<fb::protocol::db::request::MakeCharacter, fb::protocol::db::response::MakeCharacter>("db", "/user/mk-ch", fb::protocol::db::request::MakeCharacter
+        {
+            session->pk,
+            request.hair,
+            request.sex,
+            request.nation,
+            request.creature
+        });
         if (this->sockets.contains(fd) == false)
             co_return false;
+
+        if(response.success == false)
+            throw id_exception("이미 존재하는 이름입니다.");
 
         socket.send(fb::protocol::login::response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
         session->pk = -1;
         session->name.clear();
         co_return true;
     }
-    catch(login_exception&)
+    catch(login_exception& e)
     {
+        if (this->sockets.contains(fd) == false)
+            co_return false;
+
+        socket.send(fb::protocol::login::response::message(e.what(), e.type()));
         co_return true;
     }
     catch(std::exception&)
@@ -225,41 +244,40 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
     {
         this->assert_account(name, pw);
 
-        auto&& name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
+        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", name.c_str()));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto& name_row = name_result[0];
-        if(name_row.count() == 0)
+        if(response.success == false)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        auto id = name_row.get_value<uint32_t>(0);
-        auto&& auth_result = co_await this->_db.co_exec_f(id, "SELECT id, pw, map FROM user WHERE name='%s' LIMIT 1", name.c_str(), this->sha256(pw).c_str());
+        auto uid = response.uid;
+        auto&& response2 = co_await this->get<fb::protocol::db::response::Account>("db", std::format("/user/account/{}", uid));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto& auth_row = auth_result[0];
-        if(auth_row.count() == 0)
+        if(response2.success == false)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        if(auth_row.get_value<std::string>(1) != this->sha256(pw))
+        if(response2.pw != this->sha256(pw))
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
-        auto map = auth_row.get_value<uint32_t>(2);
-        auto&& response = co_await this->post<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
+        auto map = response2.map;
+        auto&& response3 = co_await this->post<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
+            "internal",
             "/in-game/login", 
             fb::protocol::internal::request::Login
             {
-                auth_row.get_value<uint32_t>(0), 
+                uid, 
                 UTF8(name, PLATFORM::Windows),
                 (uint16_t)map 
             });
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if (!response.success)
+        if (!response3.success)
         {
-            if(response.logon)
+            if(response3.logon)
                 throw id_exception("이미 접속중입니다.");
             else
                 throw id_exception("비바람이 휘몰아치고 있습니다.");
@@ -267,10 +285,10 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
 
         socket.send(fb::protocol::login::response::message("", 0x00));
         fb::ostream         parameter;
-        parameter.write_u32(id);
+        parameter.write_u32(uid);
         parameter.write(name);
         parameter.write_u8(0);
-        this->transfer(socket, response.ip, response.port, fb::protocol::internal::services::LOGIN, parameter);
+        this->transfer(socket, response3.ip, response3.port, fb::protocol::internal::services::LOGIN, parameter);
     }
     catch(login_exception& e)
     {
@@ -336,23 +354,27 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         if(pw == new_pw)
             throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
 
-        auto&& name_result = co_await this->_db.co_exec_f("CALL USP_NAME_GET_ID('%s')", name.c_str());
+        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", name.c_str()));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto& name_row = name_result[0];
-        if(name_row.count() == 0)
+        if (response.success == false)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        auto id = name_row.get_value<uint32_t>(0);
+        auto uid = response.uid;
 
-        auto&& pw_result = co_await this->_db.co_exec_f(id, "CALL USP_CHANGE_PW(%d, '%s', '%s', %d)", id, this->sha256(pw).c_str(), this->sha256(new_pw).c_str(), birthday);
+        auto&& response2 = co_await this->post<fb::protocol::db::request::ChangePw, fb::protocol::db::response::ChangePw>("db", "/user/change-pw", fb::protocol::db::request::ChangePw
+            {
+                uid,
+                this->sha256(pw),
+                this->sha256(new_pw),
+                birthday
+            });
+
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto& pw_row = pw_result[0];
-        auto  result_code = pw_row.get_value<int>(0);
-        switch(result_code)
+        switch(response2.result)
         {
         case -1: // id wrong
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);

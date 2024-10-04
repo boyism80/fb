@@ -25,7 +25,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
-        builder.Services.AddSingleton<Fb.Model.Model>();
+        builder.Services.AddSingleton<http.Model.Model>();
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
 

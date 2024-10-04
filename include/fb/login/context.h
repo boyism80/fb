@@ -10,7 +10,6 @@
 #include <ctime>
 #include <zlib.h>
 #include <openssl/sha.h>
-#include <fb/db.h>
 #include <fb/socket.h>
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
@@ -18,6 +17,8 @@
 #include <fb/protocol/internal.h>
 #include <fb/protocol/internal/request.h>
 #include <fb/protocol/internal/response.h>
+#include <fb/protocol/db/request.h>
+#include <fb/protocol/db/response.h>
 #include <fb/acceptor.h>
 #include <fb/string.h>
 
@@ -73,7 +74,6 @@ private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     std::vector<std::string>                    _forbiddens;
     std::vector<unique_session>                 _sessions;
-    fb::db::context<session>                    _db;
     std::vector<boost::asio::deadline_timer>    _timers;
 
 public:

@@ -7,6 +7,62 @@ namespace Google.FlatBuffers
     }
 }
 
+namespace fb.protocol.db.request
+{
+    public enum FlatBufferProtocolType
+    { 
+        Account,
+        ChangePw,
+        InitCharacter,
+        MakeCharacter,
+        ReserveName
+    }
+
+    public static class FlatBufferProtocolRouter
+    {
+        public static Type GetProtocolType(FlatBufferProtocolType protocolType)
+        {
+            return protocolType switch
+            {
+                FlatBufferProtocolType.Account => typeof(fb.protocol.db.request.Account),
+                FlatBufferProtocolType.ChangePw => typeof(fb.protocol.db.request.ChangePw),
+                FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.request.InitCharacter),
+                FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.request.MakeCharacter),
+                FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.request.ReserveName),
+                _ => throw new ArgumentException(),
+            };
+        }
+    }
+}
+namespace fb.protocol.db.response
+{
+    public enum FlatBufferProtocolType
+    { 
+        Account,
+        ChangePw,
+        GetUid,
+        InitCharacter,
+        MakeCharacter,
+        ReserveName
+    }
+
+    public static class FlatBufferProtocolRouter
+    {
+        public static Type GetProtocolType(FlatBufferProtocolType protocolType)
+        {
+            return protocolType switch
+            {
+                FlatBufferProtocolType.Account => typeof(fb.protocol.db.response.Account),
+                FlatBufferProtocolType.ChangePw => typeof(fb.protocol.db.response.ChangePw),
+                FlatBufferProtocolType.GetUid => typeof(fb.protocol.db.response.GetUid),
+                FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.response.InitCharacter),
+                FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.response.MakeCharacter),
+                FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.response.ReserveName),
+                _ => throw new ArgumentException(),
+            };
+        }
+    }
+}
 namespace fb.protocol.inter.request
 {
     public enum FlatBufferProtocolType

@@ -1,0 +1,5 @@
+namespace fb.protocol.db;
+
+table nullable_uint {
+	value: uint;
+}

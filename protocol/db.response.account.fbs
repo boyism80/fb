@@ -1,0 +1,9 @@
+namespace fb.protocol.db.response;
+
+table Account {
+  pw: string;
+  map: ushort;
+  success: bool;
+}
+
+root_type Account;

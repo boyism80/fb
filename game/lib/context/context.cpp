@@ -444,7 +444,7 @@ async::task<bool> fb::game::context::handle_disconnected(fb::socket<fb::game::se
     this->save(*session);
     //this->_internal->send(fb::protocol::internal::request::logout(session->name()));
 
-    co_await this->post<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>("/in-game/logout",
+    co_await this->post<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>("internal", "/in-game/logout",
         fb::protocol::internal::request::Logout{ session->fd() });
     co_await session->destroy();
     socket.data(nullptr);
@@ -1976,7 +1976,7 @@ async::task<bool> fb::game::context::handle_whisper(fb::socket<fb::game::session
     auto message = std::string(request.message);
     try
     {
-        auto&& response = co_await this->post<fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper>("/in-game/whisper", fb::protocol::internal::request::Whisper
+        auto&& response = co_await this->post<fb::protocol::internal::request::Whisper, fb::protocol::internal::response::Whisper>("internal", "/in-game/whisper", fb::protocol::internal::request::Whisper
             {
                 UTF8(from, PLATFORM::Windows), 
                 UTF8(to, PLATFORM::Windows), 

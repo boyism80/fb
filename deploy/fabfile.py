@@ -126,7 +126,6 @@ def deploy_cpp(service):
             sudo(f"docker run -d -it --name fb_{name} -v $PWD:/app --restart unless-stopped -w /app -e LC_ALL=C.UTF-8 -e KINGDOM_OF_WIND_ENVIRONMENT={name} -p {config['port']}:{config['port']} cshyeon/fb:latest ./app")
 
 @task
-@runs_once
 def generate_config_file(service,output='.'):
     global CONFIGURATION
     configs = current()

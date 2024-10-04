@@ -1,0 +1,11 @@
+namespace fb.protocol.db.request;
+
+table MakeCharacter {
+  uid: uint;
+  hair: ushort;
+  sex: ubyte;
+  nation: ubyte;
+  creature: ubyte;
+}
+
+root_type MakeCharacter;

@@ -1,0 +1,10 @@
+namespace fb.protocol.db.request;
+
+table ChangePw {
+  uid: uint;
+  before: string;
+  after: string;
+  birthday: uint;
+}
+
+root_type ChangePw;

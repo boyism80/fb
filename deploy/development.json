@@ -15,6 +15,13 @@
                 "port": 5126 
             }
         },
+        "db": {
+            "db": 
+            {
+                "ip": "192.168.0.180", 
+                "port": 5086 
+            }
+        },
         "gateway":
         {
             "gateway": 
@@ -23,6 +30,7 @@
                 "ip": "192.168.0.180", 
                 "port": 2001,
                 "internal": "internal",
+                "db": "db",
                 "entrypoints": 
                 [
                     { "name": "채승현", "desc": "채승현은 신이다.", "login": "login" },
@@ -49,6 +57,7 @@
                 "ip": "192.168.0.180", 
                 "port": 2002,
                 "internal": "internal",
+                "db": "db",
                 "name_size": {
                     "min": 4,
                     "max": 12
@@ -68,7 +77,8 @@
                 "ip": "192.168.0.181", 
                 "port": 2003,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game1": 
             { 
@@ -76,7 +86,8 @@
                 "ip": "192.168.0.182", 
                 "port": 2004,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game2": 
             { 
@@ -84,7 +95,8 @@
                 "ip": "192.168.0.183", 
                 "port": 2005,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game3": 
             { 
@@ -92,7 +104,8 @@
                 "ip": "192.168.0.181", 
                 "port": 2006,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game4": 
             { 
@@ -100,7 +113,8 @@
                 "ip": "192.168.0.182", 
                 "port": 2007,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game5": 
             { 
@@ -108,7 +122,8 @@
                 "ip": "192.168.0.183", 
                 "port": 2008,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game6": 
             { 
@@ -116,7 +131,8 @@
                 "ip": "192.168.0.181", 
                 "port": 2009,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game7": 
             { 
@@ -124,7 +140,8 @@
                 "ip": "192.168.0.182", 
                 "port": 2010,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game8": 
             { 
@@ -132,7 +149,8 @@
                 "ip": "192.168.0.183", 
                 "port": 2011,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game9": 
             { 
@@ -140,7 +158,8 @@
                 "ip": "192.168.0.181", 
                 "port": 2012,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game10": 
             { 
@@ -148,7 +167,8 @@
                 "ip": "192.168.0.182", 
                 "port": 2013,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game11": 
             { 
@@ -156,7 +176,8 @@
                 "ip": "192.168.0.183", 
                 "port": 2014,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game12": 
             { 
@@ -164,7 +185,8 @@
                 "ip": "192.168.0.181", 
                 "port": 2015,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game13": 
             { 
@@ -172,7 +194,8 @@
                 "ip": "192.168.0.182", 
                 "port": 2016,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game14": 
             { 
@@ -180,7 +203,8 @@
                 "ip": "192.168.0.183", 
                 "port": 2017,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game15": 
             { 
@@ -188,7 +212,8 @@
                 "ip": "192.168.0.181", 
                 "port": 2018,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game16": 
             { 
@@ -196,7 +221,8 @@
                 "ip": "192.168.0.182", 
                 "port": 2019,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             }
         }
     },

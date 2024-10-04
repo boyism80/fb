@@ -2,6 +2,41 @@
 #define	__FLATBUFFER_PROTOCOL_TYPE_H__
 
 
+namespace fb { namespace protocol { namespace db { 
+
+enum class FlatBufferProtocolType
+{
+};
+
+} } } 
+
+namespace fb { namespace protocol { namespace db { namespace request { 
+
+enum class FlatBufferProtocolType
+{
+	Account,
+	ChangePw,
+	InitCharacter,
+	MakeCharacter,
+	ReserveName,
+};
+
+} } } } 
+
+namespace fb { namespace protocol { namespace db { namespace response { 
+
+enum class FlatBufferProtocolType
+{
+	Account,
+	ChangePw,
+	GetUid,
+	InitCharacter,
+	MakeCharacter,
+	ReserveName,
+};
+
+} } } } 
+
 namespace fb { namespace protocol { namespace internal { 
 
 enum class FlatBufferProtocolType

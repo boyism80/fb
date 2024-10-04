@@ -1,5 +1,4 @@
 #include "resource.h"
-#include <fb/db.h>
 #include <fb/login/context.h>
 #include <fb/leak.h>
 #include <fb/console.h>

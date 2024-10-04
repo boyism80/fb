@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "internal", "internal\intern
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "http", "http\http.csproj", "{3404E322-A2F4-4B71-A958-207955F97794}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "db", "db\db.csproj", "{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -97,6 +99,18 @@ Global
 		{3404E322-A2F4-4B71-A958-207955F97794}.Release|x64.Build.0 = Release|Any CPU
 		{3404E322-A2F4-4B71-A958-207955F97794}.Release|x86.ActiveCfg = Release|Any CPU
 		{3404E322-A2F4-4B71-A958-207955F97794}.Release|x86.Build.0 = Release|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Debug|x64.Build.0 = Debug|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Debug|x86.Build.0 = Debug|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|x64.ActiveCfg = Release|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|x64.Build.0 = Release|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|x86.ActiveCfg = Release|Any CPU
+		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

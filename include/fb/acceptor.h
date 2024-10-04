@@ -89,13 +89,18 @@ public:
     void                                        send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
 
 private:
-    async::task<httplib::Result>                post(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size);
+    async::task<httplib::Result>                get_internal(const std::string& host, const std::string& path, httplib::Headers headers);
+    async::task<httplib::Result>                post_internal(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size);
+    template <typename Response>
+    async::task<Response>                       get_internal(const std::string& host, const std::string& path/* , httplib::Headers headers,  */);
     template <typename Request, typename Response>
-    async::task<Response>                       post(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body);
+    async::task<Response>                       post_internal(const std::string& host, const std::string& path, /* httplib::Headers headers,  */const Request& body);
 
 public:
+    template <typename Response>
+    async::task<Response>                       get(const std::string& route, const std::string& path);
     template <typename Request, typename Response>
-    async::task<Response>                       post(const std::string& path, const Request& body);
+    async::task<Response>                       post(const std::string& route, const std::string& path, const Request& body);
 
 public:
     fb::thread*                                 current_thread();

@@ -485,7 +485,7 @@ async::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game
     
     try
     {
-        auto&& response = co_await this->post<fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer>("/in-game/transfer", fb::protocol::internal::request::Transfer
+        auto&& response = co_await this->post<fb::protocol::internal::request::Transfer, fb::protocol::internal::response::Transfer>("internal", "/in-game/transfer", fb::protocol::internal::request::Transfer
             {
                 fb::protocol::internal::Service::Game,
                 map.model.host

@@ -1,8 +1,8 @@
-﻿using Google.FlatBuffers;
+﻿using http.fb.protocol;
 using http.Util;
 using request = fb.protocol.inter.request;
 
-namespace fb.protocol.flatbuffer.inter
+namespace Internal.Formatter
 {
     public class FlatBufferInputFormatter : http.Formatter.FlatBufferInputFormatter
     {
