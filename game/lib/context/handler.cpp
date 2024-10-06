@@ -497,7 +497,7 @@ async::task<bool> fb::game::context::on_transfer(fb::game::session& me, fb::game
         auto session = socket.data();
         co_await session->map(nullptr);
         
-        co_await this->co_save(*session);
+        co_await this->save(*session);
         fb::ostream         parameter;
         parameter.write_u32(me.id());
         parameter.write(session->name());

@@ -1,6 +1,6 @@
-using fb.protocol.flatbuffer.inter;
 using http.Service;
 using http.Worker;
+using Internal.Formatter;
 using Internal.Service;
 
 namespace Internal;
@@ -9,8 +9,6 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var model = new Fb.Model.Model();
-
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
@@ -25,7 +23,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
-        builder.Services.AddSingleton<http.Model.Model>();
+        builder.Services.AddSingleton<Fb.Model.Model>();
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
 

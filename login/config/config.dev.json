@@ -8,6 +8,10 @@
         "ip": "127.0.0.1",
         "port": 5126
     },
+    "db": {
+        "ip": "127.0.0.1",
+        "port": 5086
+    },
     "transfer delay": 0,
     "allow other language": true,
     "forbidden": [ "김대중", "노무현" ],

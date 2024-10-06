@@ -14,6 +14,7 @@
 #include <optional>
 #include <sstream>
 #include <iostream>
+#include <fb/protocol/db.h>
 
 namespace fb { namespace game {
 
@@ -73,6 +74,7 @@ private:
     fb::socket<session>&            _socket;
     bool                            _admin           = false;
     std::string                     _name;
+    datetime             _last_login;
     uint16_t                        _look            = 0;
     uint8_t                         _color           = 0;
     std::optional<uint8_t>          _armor_color     = 0;
@@ -158,6 +160,9 @@ public:
 
     const std::string&              name() const final;
     void                            name(const std::string& value);
+
+    const datetime&      last_login() const;
+    void                            last_login(const datetime& value);
 
     uint16_t                        look() const final;
     void                            look(uint16_t value);
@@ -302,6 +307,7 @@ private:
 
 public:
     async::task<bool>               inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    fb::protocol::db::Character     to_protocol() const;
 
 public:
     static int                      builtin_look(lua_State* lua);

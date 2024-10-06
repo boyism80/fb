@@ -6,7 +6,7 @@
     "thread": null,
     "internal": {
         "ip": "127.0.0.1",
-        "port": 3000
+        "port": 5126
     },
     "log": ["debug", "info", "warn", "fatal"],
     "redis": {

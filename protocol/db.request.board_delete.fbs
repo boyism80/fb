@@ -1,0 +1,8 @@
+namespace fb.protocol.db.request;
+
+table DeleteArticle {
+  id: uint;
+  user: uint;
+}
+
+root_type DeleteArticle;

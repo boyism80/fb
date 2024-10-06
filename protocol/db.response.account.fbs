@@ -2,7 +2,7 @@ namespace fb.protocol.db.response;
 
 table Account {
   pw: string;
-  map: ushort;
+  map: uint;
   success: bool;
 }
 

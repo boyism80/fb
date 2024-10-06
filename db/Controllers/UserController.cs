@@ -1,5 +1,7 @@
+using AutoMapper;
 using Dapper;
 using db.Model;
+using Db.Model;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using System.Data;
@@ -13,10 +15,12 @@ namespace db.Controllers
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly IMapper _mapper;
 
-        public UserController(IConfiguration configuration)
+        public UserController(IConfiguration configuration, IMapper mapper)
         {
             _configuration = configuration;
+            _mapper = mapper;
         }
 
         [HttpGet("uid/{name}")]
@@ -25,7 +29,7 @@ namespace db.Controllers
             using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
             var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new 
             {
-                n = "name"
+                n = name
             }, commandType: CommandType.StoredProcedure);
 
             if (result.Any())
@@ -49,8 +53,8 @@ namespace db.Controllers
         public async Task<Response.Account> Account(uint uid)
         {
             using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
-            var user = await connection.QueryFirstOrDefaultAsync<User>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
-            if (user == null)
+            var account = await connection.QueryFirstOrDefaultAsync<Account>($"SELECT id, pw, map FROM user WHERE id = {uid} LIMIT 1");
+            if (account == null)
             {
                 return new Response.Account
                 {
@@ -59,8 +63,8 @@ namespace db.Controllers
             }
             return new Response.Account
             { 
-                Pw = user.Pw,
-                Map = user.Map,
+                Pw = account.Pw,
+                Map = account.Map,
                 Success = true
             };
         }
@@ -121,6 +125,36 @@ namespace db.Controllers
             return new Response.MakeCharacter
             { 
                 Success = (affectedRows != 0)
+            };
+        }
+
+        [HttpGet("login/{uid}")]
+        public async Task<Response.Login> Login(uint uid)
+        {
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
+            var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid}");
+            var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid}");
+            
+            var response = new Response.Login
+            {
+                Character = _mapper.Map<fb.protocol.db.Character>(character),
+                Items = items.Select(item => _mapper.Map<fb.protocol.db.Item>(item)).ToList(),
+                Spells = spells.Select(spell => _mapper.Map<fb.protocol.db.Spell>(spell)).ToList()
+            };
+
+            return response;
+        }
+
+        [HttpPost("save")]
+        public async Task<Response.Save> Save(Request.Save request)
+        {
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            await connection.ExecuteAsync("USP_CHARACTER_SET", _mapper.Map<Db.Model.Character>(request.Character), commandType: CommandType.StoredProcedure);
+
+            return new Response.Save
+            { 
+                Success = true
             };
         }
     }

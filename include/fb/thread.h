@@ -13,6 +13,7 @@
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <async/awaitable_then.h>
+#include <datetime.h>
 
 #define MUTEX_GUARD(x) auto _ = std::lock_guard(x);
 
@@ -77,14 +78,11 @@ public:
     void                                            exit();
 
 public:
-    async::task<void>                               dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, uint32_t priority = 0);
-    void                                            post(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay = 0s, uint32_t priority = 0);
+    async::task<void>                               dispatch(const std::function<async::task<void>()>& fn, const timespan& delay = 0s, uint32_t priority = 0);
+    void                                            post(const std::function<async::task<void>()>& fn, const timespan& delay = 0s, uint32_t priority = 0);
     async::task<void>                               dispatch(uint32_t priority = 0);
-    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration, bool disposable = false);
-    async::task<void>                               sleep(const std::chrono::steady_clock::duration& duration);
-
-public:
-    static std::chrono::steady_clock::duration      now();
+    void                                            settimer(const fb::timer_callback& fn, const timespan& duration, bool disposable = false);
+    async::task<void>                               sleep(const timespan& duration);
 };
 
 class threads
@@ -122,8 +120,8 @@ public:
     size_t                                          size() const;
 
 public:
-    async::task<void>                               dispatch(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& delay);
-    void                                            settimer(const fb::timer_callback& fn, const std::chrono::steady_clock::duration& duration);
+    async::task<void>                               dispatch(const std::function<async::task<void>()>& fn, const timespan& delay);
+    void                                            settimer(const fb::timer_callback& fn, const timespan& duration);
     void                                            exit();
 
 public:

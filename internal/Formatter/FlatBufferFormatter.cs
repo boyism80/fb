@@ -1,6 +1,6 @@
-﻿using http.fb.protocol;
+﻿using Google.FlatBuffers;
 using http.Util;
-using request = fb.protocol.inter.request;
+using Request = fb.protocol.inter.request;
 
 namespace Internal.Formatter
 {
@@ -13,11 +13,11 @@ namespace Internal.Formatter
 
         protected override IFlatBufferEx GetProtocol(BinaryReader reader)
         {
-            var protocolType = (request.FlatBufferProtocolType)reader.ReadInt32().ToMachineEndian();
+            var protocolType = (Request.FlatBufferProtocolType)reader.ReadInt32().ToMachineEndian();
             var size = reader.ReadInt32().ToMachineEndian();
             var bytes = reader.ReadBytes(size);
 
-            var type = request.FlatBufferProtocolRouter.GetProtocolType(protocolType);
+            var type = Request.FlatBufferProtocolRouter.GetProtocolType(protocolType);
             return Activator.CreateInstance(type, bytes) as IFlatBufferEx;
         }
     }

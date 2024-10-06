@@ -9,8 +9,7 @@
 #include <optional>
 #include <chrono>
 #include <jsoncpp/json/json.h>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/xpressive/xpressive.hpp>
+#include <datetime.h>
 #include <unordered_map>
 #include <fb/game/lua.h>
 #include <fb/game/model.preprocessor.h>
@@ -59,10 +58,10 @@ public:
 class date_range
 {
 public:
-    const std::optional<boost::posix_time::ptime> begin, end;
+    const std::optional<datetime> begin, end;
 
 public:
-    date_range(const std::optional<boost::posix_time::ptime>& begin, const std::optional<boost::posix_time::ptime>& end) : 
+    date_range(const std::optional<datetime>& begin, const std::optional<datetime>& end) : 
         begin(begin),
         end(end)
     {}
@@ -1538,8 +1537,8 @@ template <> std::string build<std::string>(const Json::Value& json);
 template <> float build<float>(const Json::Value& json);
 template <> double build<double>(const Json::Value& json);
 template <> bool build<bool>(const Json::Value& json);
-template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json::Value& json);
-template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json);
+template <> datetime build<datetime>(const Json::Value& json);
+template <> timespan build<timespan>(const Json::Value& json);
 template <> fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
 template <> fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
 
@@ -2234,7 +2233,7 @@ public:
     const point<uint16_t> end;
     const uint16_t count;
     const uint32_t mob;
-    const std::chrono::milliseconds rezen;
+    const timespan rezen;
 #endif
 
 #ifdef DECLARE_MOB_SPAWN_CUSTOM_CONSTRUCTOR
@@ -2250,7 +2249,7 @@ DECLARE_MOB_SPAWN_CONSTRUCTOR
         end(fb::model::build<point<uint16_t>>(json["end"])),
         count(fb::model::build<uint16_t>(json["count"])),
         mob(fb::model::build<uint32_t>(json["mob"])),
-        rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
+        rezen(fb::model::build<timespan>(json["rezen"]))
 #ifdef DECLARE_MOB_SPAWN_INITIALIZER
 DECLARE_MOB_SPAWN_INITIALIZER
 #endif
@@ -3024,7 +3023,7 @@ public:
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
     const range<uint32_t> damage;
-    const std::chrono::milliseconds speed;
+    const timespan speed;
     const std::string drop;
     const std::string attack_script;
     const std::string die_script;
@@ -3039,7 +3038,7 @@ public:
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
         damage(fb::model::build<range<uint32_t>>(json["damage"])),
-        speed(fb::model::build<std::chrono::milliseconds>(json["speed"])),
+        speed(fb::model::build<timespan>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
         attack_script(fb::model::build<std::string>(json["attack_script"])),
         die_script(fb::model::build<std::string>(json["die_script"]))
@@ -4219,49 +4218,21 @@ template <> bool build<bool>(const Json::Value& json)
     return json.asBool();
 }
 
-template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json::Value& json)
+template <> datetime build<datetime>(const Json::Value& json)
 {
     try
     {
-        return boost::posix_time::time_from_string(build<std::string>(json));
+        return datetime(build<std::string>(json));
     }
     catch (std::exception&)
     {
-        return boost::posix_time::ptime();
+        return datetime();
     }
 }
 
-template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json)
+template <> timespan build<timespan>(const Json::Value& json)
 {
-    static const auto regex = boost::xpressive::sregex::compile("((?P<day>\\d+).)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
-    auto what = boost::xpressive::smatch();
-    auto data = build<std::string>(json);
-    if (boost::xpressive::regex_match(data, what, regex) == false)
-        throw std::runtime_error("cannot parse timespan");
-
-    auto day = what["day"].matched ? std::stoi(what["day"].str()) : 0;
-    auto hours = std::stoi(what["hour"].str());
-    auto mins = std::stoi(what["min"].str());
-    auto secs = std::stoi(what["sec"].str());
-    auto ms = 0;
-    if(what["ms"].matched)
-    {
-        auto in = what["ms"].str();
-        auto step = 100;
-        for (int i = 0; i < std::min<uint32_t>(3, in.size()); i++)
-        {
-            auto v = in.at(i) - '0';
-            ms += v * step;
-            step /= 10;
-        }
-    }
-
-    auto count = day;
-    count = count * 24 + hours;
-    count = count * 60 + mins;
-    count = count * 60 + secs;
-    count = count * 1000 + ms;
-    return std::chrono::milliseconds(count);
+    return timespan(build<std::string>(json));
 }
 
 template <> dsl build<dsl>(const Json::Value& json)
@@ -4271,7 +4242,7 @@ template <> dsl build<dsl>(const Json::Value& json)
 
 template <> date_range build<date_range>(const Json::Value& json)
 {
-    return date_range(build<std::optional<boost::posix_time::ptime>>(json["Begin"]), build<std::optional<boost::posix_time::ptime>>(json["End"]));
+    return date_range(build<std::optional<datetime>>(json["Begin"]), build<std::optional<datetime>>(json["End"]));
 }
 
 template <typename T> typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json)

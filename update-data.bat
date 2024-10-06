@@ -19,9 +19,11 @@ XCOPY "data-converter\bin\output\C++\server\*.h" "include\fb\game\*.h"
 XCOPY "data-converter\bin\output\json\server\*.json" "game\json\*.json"
 
 DEL /s /q "http\Model\Model.cs"
-RMDIR /s /q "http\json"
+RMDIR /s /q "internal\json"
+RMDIR /s /q "db\json"
 XCOPY "data-converter\bin\output\C#\server\*.cs" "http\Model\*.cs"
 XCOPY "data-converter\bin\output\json\server\*.json" "internal\json\*.json"
+XCOPY "data-converter\bin\output\json\server\*.json" "db\json\*.json"
 
 GOTO SKIP_PAUSE
 :END

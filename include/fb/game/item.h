@@ -3,6 +3,8 @@
 
 #include <iomanip>
 #include <fb/game/object.h>
+#include <fb/protocol/db.h>
+#include <datetime.h>
 
 #ifdef small
 #undef small
@@ -43,7 +45,7 @@ public:
     static const conditions             DEFAULT_CONDITION;
 
 public:
-    using nullable_time = std::optional<std::chrono::steady_clock::duration>;
+    using nullable_time = std::optional<datetime>;
 
 
 protected:
@@ -87,6 +89,9 @@ public:
     virtual bool                        active();
     virtual item*                       split(uint16_t count = 1);
     virtual void                        merge(fb::game::item& item);
+
+public:
+    virtual fb::protocol::db::Item      to_protocol() const;
 
 public:
     static int                          builtin_model(lua_State* lua);
@@ -225,6 +230,7 @@ public:
     const std::optional<std::string>&   custom_name() const;
     void                                custom_name(const std::string& name);
     void                                reset_custom_name();
+    fb::protocol::db::Item              to_protocol() const override;
 };
 
 class armor : public equipment

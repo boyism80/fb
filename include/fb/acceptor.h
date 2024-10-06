@@ -15,6 +15,7 @@
 #include <fb/logger.h>
 #include <fb/redis.h>
 #include <fb/mutex.h>
+#include <datetime.h>
 #include <async/awaitable_get.h>
 
 #include <fb/protocol/internal/request.h>
@@ -108,7 +109,7 @@ public:
     async::task<void>                           dispatch(fb::socket<T>*, uint32_t priority = 0);
     void                                        run(int thread_size);
     bool                                        running() const;
-    async::task<void>                           sleep(const std::chrono::steady_clock::duration& duration);
+    async::task<void>                           sleep(const timespan& duration);
     void                                        exit();
 
 protected:

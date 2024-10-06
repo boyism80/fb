@@ -37,7 +37,7 @@ public:
         : uid(uid), name(name), map(map)
     { }
     Login(const fb::protocol::internal::request::origin::Login& raw)
-        : uid(raw.uid()), name(raw.name()->c_str()), map(raw.map())
+        : uid(raw.uid()), name(raw.name() != nullptr ? raw.name()->c_str() : ""), map(raw.map())
     {
     }
 
@@ -75,21 +75,21 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Logout;
 
 public:
-    uint32_t uid;
+    std::string name;
 
 public:
     Logout()
     { }
 
     Logout(const Logout& x)
-        : uid(x.uid)
+        : name(x.name)
     { }
 
-    Logout(uint32_t uid)
-        : uid(uid)
+    Logout(const std::string& name)
+        : name(name)
     { }
     Logout(const fb::protocol::internal::request::origin::Logout& raw)
-        : uid(raw.uid())
+        : name(raw.name() != nullptr ? raw.name()->c_str() : "")
     {
     }
 
@@ -98,7 +98,7 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::request::origin::CreateLogout(builder,
-            this->uid);
+            builder.CreateString(this->name));
     }
 
     std::vector<uint8_t> Serialize() const
@@ -143,7 +143,7 @@ public:
         : id(id), name(name), service(service), ip(ip), port(port)
     { }
     Ping(const fb::protocol::internal::request::origin::Ping& raw)
-        : id(raw.id()), name(raw.name()->c_str()), service((fb::protocol::internal::Service)raw.service()), ip(raw.ip()->c_str()), port(raw.port())
+        : id(raw.id()), name(raw.name() != nullptr ? raw.name()->c_str() : ""), service((fb::protocol::internal::Service)raw.service()), ip(raw.ip() != nullptr ? raw.ip()->c_str() : ""), port(raw.port())
     {
     }
 
@@ -251,7 +251,7 @@ public:
         : from(from), to(to), message(message)
     { }
     Whisper(const fb::protocol::internal::request::origin::Whisper& raw)
-        : from(raw.from()->c_str()), to(raw.to()->c_str()), message(raw.message()->c_str())
+        : from(raw.from() != nullptr ? raw.from()->c_str() : ""), to(raw.to() != nullptr ? raw.to()->c_str() : ""), message(raw.message() != nullptr ? raw.message()->c_str() : "")
     {
     }
 

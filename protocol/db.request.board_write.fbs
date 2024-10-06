@@ -1,0 +1,10 @@
+namespace fb.protocol.db.request;
+
+table WriteArticle {
+  section: uint;
+  user: uint;
+  title: string;
+  contents: string;
+}
+
+root_type WriteArticle;

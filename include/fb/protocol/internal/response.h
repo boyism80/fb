@@ -89,7 +89,7 @@ public:
         : success(success), logon(logon), ip(ip), port(port)
     { }
     Login(const fb::protocol::internal::response::origin::Login& raw)
-        : success(raw.success()), logon(raw.logon()), ip(raw.ip()->c_str()), port(raw.port())
+        : success(raw.success()), logon(raw.logon()), ip(raw.ip() != nullptr ? raw.ip()->c_str() : ""), port(raw.port())
     {
     }
 
@@ -128,21 +128,21 @@ public:
     static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Logout;
 
 public:
-    uint32_t uid;
+    bool success;
 
 public:
     Logout()
     { }
 
     Logout(const Logout& x)
-        : uid(x.uid)
+        : success(x.success)
     { }
 
-    Logout(uint32_t uid)
-        : uid(uid)
+    Logout(bool success)
+        : success(success)
     { }
     Logout(const fb::protocol::internal::response::origin::Logout& raw)
-        : uid(raw.uid())
+        : success(raw.success())
     {
     }
 
@@ -151,7 +151,7 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::internal::response::origin::CreateLogout(builder,
-            this->uid);
+            this->success);
     }
 
     std::vector<uint8_t> Serialize() const
@@ -236,7 +236,7 @@ public:
         : code(code), ip(ip), port(port)
     { }
     Transfer(const fb::protocol::internal::response::origin::Transfer& raw)
-        : code((fb::protocol::internal::TransferResult)raw.code()), ip(raw.ip()->c_str()), port(raw.port())
+        : code((fb::protocol::internal::TransferResult)raw.code()), ip(raw.ip() != nullptr ? raw.ip()->c_str() : ""), port(raw.port())
     {
     }
 
@@ -291,7 +291,7 @@ public:
         : success(success), from(from), to(to), message(message)
     { }
     Whisper(const fb::protocol::internal::response::origin::Whisper& raw)
-        : success(raw.success()), from(raw.from()->c_str()), to(raw.to()), message(raw.message()->c_str())
+        : success(raw.success()), from(raw.from() != nullptr ? raw.from()->c_str() : ""), to(raw.to()), message(raw.message() != nullptr ? raw.message()->c_str() : "")
     {
     }
 

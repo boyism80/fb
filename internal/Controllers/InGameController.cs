@@ -1,4 +1,4 @@
-﻿using http.fb.protocol;
+﻿using fb.protocol.inter;
 using http.Service;
 using Internal.Model.Redis;
 using Internal.Redis;
@@ -7,9 +7,8 @@ using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using StackExchange.Redis;
-using System.Runtime.CompilerServices;
-using request = fb.protocol.inter.request;
-using response = fb.protocol.inter.response;
+using Request = fb.protocol.inter.request;
+using Response = fb.protocol.inter.response;
 
 namespace Internal.Controllers
 {
@@ -19,13 +18,13 @@ namespace Internal.Controllers
     {
         private readonly ILogger<TransferController> _logger;
         private readonly RedisService _redisService;
-        private readonly http.Model.Model _dataSet;
+        private readonly Fb.Model.Model _dataSet;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
 
         public InGameController(ILogger<TransferController> logger,
             RedisService redisService,
-            http.Model.Model dataSet,
+            Fb.Model.Model dataSet,
             RabbitMqService rabbitMqService,
             SessionService sessionService)
         {
@@ -37,13 +36,13 @@ namespace Internal.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<http.fb.protocol.@internal.Login> Login(http.fb.protocol.@internal.Login request)
+        public async Task<Response.Login> Login(Request.Login request)
         {
             var map = _dataSet.Map[request.Map] ?? throw new KeyNotFoundException($"{request.Map} not found in map data");
             var connection = _redisService.Connection;
-            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = http.fb.protocol.Service.Game, Id = map.Host }.Key);
+            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol.inter.Service.Game, Id = map.Host }.Key);
             if (config == null)
-                return new response.Login { Success = false, Logon = false };
+                return new Response.Login { Success = false, Logon = false };
 
             var redisResult = await connection.ScriptEvaluateAsync("login.lua", new
             {
@@ -60,14 +59,14 @@ namespace Internal.Controllers
             if (success == false)
             {
                 var session = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
-                _rabbitMqService.Publish(new response.KickOut
+                _rabbitMqService.Publish(new Response.KickOut
                 {
                     Uid = session.Uid
                 }, "amq.direct", $"fb.game.{session.Host}");
-                return new response.Login { Success = false, Logon = true };
+                return new Response.Login { Success = false, Logon = true };
             }
 
-            return new response.Login
+            return new Response.Login
             {
                 Success = success,
                 Logon = false,
@@ -77,25 +76,25 @@ namespace Internal.Controllers
         }
 
         [HttpPost("logout")]
-        public async Task<http.fb.protocol.@internal.Logout> Logout(http.fb.protocol.@internal.Logout request)
+        public async Task<Response.Logout> Logout(Request.Logout request)
         {
             var connection = _redisService.Connection;
-            await connection.HashDeleteAsync(new SessionKey { }.Key, $"{request.Uid}");
+            await connection.HashDeleteAsync(new SessionKey { }.Key, request.Name);
 
-            return new response.Logout
+            return new Response.Logout
             {
-                Uid = request.Uid
+                Success = true
             };
         }
 
         [HttpPost("transfer")]
-        public async Task<http.fb.protocol.@internal.Transfer> Transfer(http.fb.protocol.@internal.Transfer request)
+        public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
             var connection = _redisService.Connection;
             var exists = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
             if (exists.IsNull)
             {
-                return new response.Transfer
+                return new Response.Transfer
                 {
                     Code = TransferResult.Failed,
                     Ip = "0.0.0.0",
@@ -103,7 +102,7 @@ namespace Internal.Controllers
             }
 
             var config = JsonConvert.DeserializeObject<HostConfig>(exists.ToString());
-            return new response.Transfer
+            return new Response.Transfer
             {
                 Code = TransferResult.Success,
                 Ip = config.IP,
@@ -112,7 +111,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("ping")]
-        public async Task<http.fb.protocol.@internal.Pong> Ping(http.fb.protocol.@internal.Ping request)
+        public async Task<Response.Pong> Ping(Request.Ping request)
         {
             var connection = _redisService.Connection;
             var config = new HostConfig
@@ -126,18 +125,18 @@ namespace Internal.Controllers
                 Service = request.Service,
                 Id = request.Id,
             }.Key, JsonConvert.SerializeObject(config), TimeSpan.FromSeconds(5));
-            return new response.Pong
+            return new Response.Pong
             { };
         }
 
         [HttpPost("whisper")]
-        public async Task<http.fb.protocol.@internal.Whisper> Whisper(http.fb.protocol.@internal.Whisper request)
+        public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
             var you = await _sessionService.Get(request.To);
             if (you == null)
-                return new response.Whisper { Success = false };
+                return new Response.Whisper { Success = false };
 
-            var response = new response.Whisper
+            var response = new Response.Whisper
             {
                 Success = true,
                 From = request.From,

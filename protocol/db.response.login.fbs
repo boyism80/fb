@@ -1,0 +1,11 @@
+include "db.fbs";
+
+namespace fb.protocol.db.response;
+
+table Login {
+  character: fb.protocol.db.Character;
+  items: [fb.protocol.db.Item];
+  spells: [fb.protocol.db.Spell];
+}
+
+root_type Login;

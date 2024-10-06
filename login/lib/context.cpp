@@ -244,7 +244,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
     {
         this->assert_account(name, pw);
 
-        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", name.c_str()));
+        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", UTF8(name, PLATFORM::Windows)));
         if (this->sockets.contains(fd) == false)
             co_return false;
 

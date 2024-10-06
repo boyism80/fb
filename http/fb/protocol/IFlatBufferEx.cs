@@ -13,9 +13,15 @@ namespace fb.protocol.db.request
     { 
         Account,
         ChangePw,
+        DeleteArticle,
+        GetArticle,
+        GetArticleList,
         InitCharacter,
+        Login,
         MakeCharacter,
-        ReserveName
+        ReserveName,
+        Save,
+        WriteArticle
     }
 
     public static class FlatBufferProtocolRouter
@@ -26,9 +32,15 @@ namespace fb.protocol.db.request
             {
                 FlatBufferProtocolType.Account => typeof(fb.protocol.db.request.Account),
                 FlatBufferProtocolType.ChangePw => typeof(fb.protocol.db.request.ChangePw),
+                FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol.db.request.DeleteArticle),
+                FlatBufferProtocolType.GetArticle => typeof(fb.protocol.db.request.GetArticle),
+                FlatBufferProtocolType.GetArticleList => typeof(fb.protocol.db.request.GetArticleList),
                 FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.request.InitCharacter),
+                FlatBufferProtocolType.Login => typeof(fb.protocol.db.request.Login),
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.request.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.request.ReserveName),
+                FlatBufferProtocolType.Save => typeof(fb.protocol.db.request.Save),
+                FlatBufferProtocolType.WriteArticle => typeof(fb.protocol.db.request.WriteArticle),
                 _ => throw new ArgumentException(),
             };
         }
@@ -40,10 +52,16 @@ namespace fb.protocol.db.response
     { 
         Account,
         ChangePw,
+        DeleteArticle,
+        GetArticle,
+        GetArticleList,
         GetUid,
         InitCharacter,
+        Login,
         MakeCharacter,
-        ReserveName
+        ReserveName,
+        Save,
+        WriteArticle
     }
 
     public static class FlatBufferProtocolRouter
@@ -54,10 +72,16 @@ namespace fb.protocol.db.response
             {
                 FlatBufferProtocolType.Account => typeof(fb.protocol.db.response.Account),
                 FlatBufferProtocolType.ChangePw => typeof(fb.protocol.db.response.ChangePw),
+                FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol.db.response.DeleteArticle),
+                FlatBufferProtocolType.GetArticle => typeof(fb.protocol.db.response.GetArticle),
+                FlatBufferProtocolType.GetArticleList => typeof(fb.protocol.db.response.GetArticleList),
                 FlatBufferProtocolType.GetUid => typeof(fb.protocol.db.response.GetUid),
                 FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.response.InitCharacter),
+                FlatBufferProtocolType.Login => typeof(fb.protocol.db.response.Login),
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.response.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.response.ReserveName),
+                FlatBufferProtocolType.Save => typeof(fb.protocol.db.response.Save),
+                FlatBufferProtocolType.WriteArticle => typeof(fb.protocol.db.response.WriteArticle),
                 _ => throw new ArgumentException(),
             };
         }

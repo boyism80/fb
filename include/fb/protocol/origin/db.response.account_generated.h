@@ -32,8 +32,8 @@ struct Account FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *pw() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PW);
   }
-  uint16_t map() const {
-    return GetField<uint16_t>(VT_MAP, 0);
+  uint32_t map() const {
+    return GetField<uint32_t>(VT_MAP, 0);
   }
   bool success() const {
     return GetField<uint8_t>(VT_SUCCESS, 0) != 0;
@@ -42,7 +42,7 @@ struct Account FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_PW) &&
            verifier.VerifyString(pw()) &&
-           VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
+           VerifyField<uint32_t>(verifier, VT_MAP, 4) &&
            VerifyField<uint8_t>(verifier, VT_SUCCESS, 1) &&
            verifier.EndTable();
   }
@@ -55,8 +55,8 @@ struct AccountBuilder {
   void add_pw(::flatbuffers::Offset<::flatbuffers::String> pw) {
     fbb_.AddOffset(Account::VT_PW, pw);
   }
-  void add_map(uint16_t map) {
-    fbb_.AddElement<uint16_t>(Account::VT_MAP, map, 0);
+  void add_map(uint32_t map) {
+    fbb_.AddElement<uint32_t>(Account::VT_MAP, map, 0);
   }
   void add_success(bool success) {
     fbb_.AddElement<uint8_t>(Account::VT_SUCCESS, static_cast<uint8_t>(success), 0);
@@ -75,11 +75,11 @@ struct AccountBuilder {
 inline ::flatbuffers::Offset<Account> CreateAccount(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
-    uint16_t map = 0,
+    uint32_t map = 0,
     bool success = false) {
   AccountBuilder builder_(_fbb);
-  builder_.add_pw(pw);
   builder_.add_map(map);
+  builder_.add_pw(pw);
   builder_.add_success(success);
   return builder_.Finish();
 }
@@ -87,7 +87,7 @@ inline ::flatbuffers::Offset<Account> CreateAccount(
 inline ::flatbuffers::Offset<Account> CreateAccountDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *pw = nullptr,
-    uint16_t map = 0,
+    uint32_t map = 0,
     bool success = false) {
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   return fb::protocol::db::response::origin::CreateAccount(

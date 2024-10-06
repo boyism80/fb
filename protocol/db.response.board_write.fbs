@@ -1,0 +1,9 @@
+include "db.fbs";
+
+namespace fb.protocol.db.response;
+
+table WriteArticle {
+  success: bool;
+}
+
+root_type WriteArticle;

@@ -1,4 +1,4 @@
-﻿using http.fb.protocol;
+﻿using Google.FlatBuffers;
 using http.Util;
 using RabbitMQ.Client;
 

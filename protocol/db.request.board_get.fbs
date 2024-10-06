@@ -1,0 +1,8 @@
+namespace fb.protocol.db.request;
+
+table GetArticle {
+  section: uint;
+  article: uint;
+}
+
+root_type GetArticle;

@@ -20,17 +20,17 @@ public struct Logout : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Logout __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol.inter.response.origin.Logout> CreateLogout(FlatBufferBuilder builder,
-      uint uid = 0) {
+      bool success = false) {
     builder.StartTable(1);
-    Logout.AddUid(builder, uid);
+    Logout.AddSuccess(builder, success);
     return Logout.EndLogout(builder);
   }
 
   public static void StartLogout(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
+  public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
   public static Offset<fb.protocol.inter.response.origin.Logout> EndLogout(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.inter.response.origin.Logout>(o);
@@ -45,7 +45,7 @@ static public class LogoutVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

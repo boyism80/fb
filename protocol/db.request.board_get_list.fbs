@@ -1,0 +1,8 @@
+namespace fb.protocol.db.request;
+
+table GetArticleList {
+  section: uint;
+  position: uint;
+}
+
+root_type GetArticleList;

@@ -1,7 +1,7 @@
 namespace fb.protocol.internal.request;
 
 table Logout {
-  uid: uint;
+  name: string;
 }
 
 root_type Logout;

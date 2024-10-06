@@ -171,7 +171,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="..\core\amqp.queue.cpp" />
+    <ClCompile Include="..\core\amqp.socket.cpp" />
+    <ClCompile Include="..\core\config.cpp" />
+    <ClCompile Include="..\core\console.cpp" />
+    <ClCompile Include="..\core\cryptor.cpp" />
+    <ClCompile Include="..\core\dead_lock.cpp" />
+    <ClCompile Include="..\core\encoding.cpp" />
+    <ClCompile Include="..\core\format.cpp" />
+    <ClCompile Include="..\core\logger.cpp" />
+    <ClCompile Include="..\core\mst.cpp" />
+    <ClCompile Include="..\core\stream.cpp" />
+    <ClCompile Include="..\core\table.cpp" />
+    <ClCompile Include="..\core\thread.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

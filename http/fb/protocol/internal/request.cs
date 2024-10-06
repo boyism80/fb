@@ -46,14 +46,14 @@ namespace fb.protocol.inter.request
     public class Logout : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Logout;
-        public uint Uid { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public Logout()
         { }
 
         public Logout(fb.protocol.inter.request.origin.Logout raw)
         {
-            Uid = raw.Uid;
+            Name = raw.Name;
         }
 
         public Logout(byte[] bytes) : this(fb.protocol.inter.request.origin.Logout.GetRootAsLogout(new ByteBuffer(bytes)))
@@ -62,7 +62,7 @@ namespace fb.protocol.inter.request
         public Offset<fb.protocol.inter.request.origin.Logout> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.inter.request.origin.Logout.CreateLogout(builder,
-                Uid);
+                builder.CreateString(Name));
         }
 
         public byte[] Serialize()

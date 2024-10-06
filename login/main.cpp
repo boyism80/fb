@@ -8,7 +8,7 @@
 int main(int argc, const char** argv)
 {
     auto& c = fb::console::get();
-
+    
     try
     {
         //_CrtSetBreakAlloc(80);

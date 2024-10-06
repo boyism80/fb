@@ -342,7 +342,7 @@ async::task<bool> fb::game::context::handle_command_tile(fb::game::session& sess
 
 async::task<bool> fb::game::context::handle_command_save(fb::game::session& session, Json::Value& parameters)
 {
-    this->save();
+    co_await this->save(session);
     co_return true;
 }
 

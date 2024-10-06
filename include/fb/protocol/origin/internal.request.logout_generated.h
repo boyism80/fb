@@ -25,14 +25,15 @@ struct LogoutBuilder;
 struct Logout FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LogoutBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4
+    VT_NAME = 4
   };
-  uint32_t uid() const {
-    return GetField<uint32_t>(VT_UID, 0);
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_UID, 4) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
            verifier.EndTable();
   }
 };
@@ -41,8 +42,8 @@ struct LogoutBuilder {
   typedef Logout Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_uid(uint32_t uid) {
-    fbb_.AddElement<uint32_t>(Logout::VT_UID, uid, 0);
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(Logout::VT_NAME, name);
   }
   explicit LogoutBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,10 +58,19 @@ struct LogoutBuilder {
 
 inline ::flatbuffers::Offset<Logout> CreateLogout(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t uid = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
   LogoutBuilder builder_(_fbb);
-  builder_.add_uid(uid);
+  builder_.add_name(name);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Logout> CreateLogoutDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *name = nullptr) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return fb::protocol::internal::request::origin::CreateLogout(
+      _fbb,
+      name__);
 }
 
 inline const fb::protocol::internal::request::origin::Logout *GetLogout(const void *buf) {

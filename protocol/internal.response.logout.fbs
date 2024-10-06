@@ -1,7 +1,7 @@
 namespace fb.protocol.internal.response;
 
 table Logout {
-  uid: uint;
+  success: bool;
 }
 
 root_type Logout;

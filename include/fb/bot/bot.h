@@ -14,6 +14,7 @@
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/game.h>
+#include <datetime.h>
 
 using namespace std::chrono_literals;
 
@@ -137,7 +138,7 @@ private:
     point16_t                                   _position;
     fb::buffer                                  _transfer_buffer;
     std::vector<pattern_params>                 _pattern_params;
-    std::chrono::steady_clock::duration         _next_action_time;
+    datetime                                    _next_action_time;
     bool                                        _inited = false;
 
 public:

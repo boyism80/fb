@@ -1,5 +1,90 @@
 namespace fb.protocol.db;
 
-table nullable_uint {
+table nullopt_ushort {
+	value: ushort;
+	empty: bool;
+}
+table nullopt_ubyte {
+	value: ubyte;
+	empty: bool;
+}
+table nullopt_uint {
 	value: uint;
+	empty: bool;
+}
+
+table Position {
+	x: ushort;
+	y: ushort;
+}
+
+table Character {
+	id: uint;
+	name: string;
+	last_login: string;
+	admin: bool;
+	look: ushort;
+	color: ushort;
+	sex: ushort;
+	nation: ushort;
+	creature: nullopt_ushort;
+	map: uint;
+	position: Position;
+	direction: ubyte;
+	state: ubyte;
+	class_type: ubyte;
+	promotion: ubyte;
+	exp: uint;
+	money: uint;
+	deposited_money: uint;
+	disguise: nullopt_ushort;
+	hp: uint;
+	base_hp: uint;
+	additional_hp: uint;
+	mp: uint;
+	base_mp: uint;
+	additional_mp: uint;
+	weapon_color: nullopt_ubyte;
+	helmet_color: nullopt_ubyte;
+	armor_color: nullopt_ubyte;
+	shield_color: nullopt_ubyte;
+	ring_left_color: nullopt_ubyte;
+	ring_right_color: nullopt_ubyte;
+	aux_top_color: nullopt_ubyte;
+	aux_bot_color: nullopt_ubyte;
+	clan: nullopt_uint;
+}
+
+table Item {
+	user: uint;
+	index: short;
+	parts: short;
+	deposited: short;
+	model: uint;
+	count: ushort;
+	durability: nullopt_uint;
+	custom_name: string;
+}
+
+table Spell {
+	user: uint;
+	slot: ubyte;
+	id: uint;
+}
+
+table ArticleSummary {
+	id: uint;
+	user: uint;
+	user_name: string;
+	title: string;
+	created_date: string;
+}
+
+table Article {
+	id: uint;
+	user: uint;
+	user_name: string;
+	title: string;
+	contents: string;
+	created_date: string;
 }

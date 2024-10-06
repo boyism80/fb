@@ -16,9 +16,15 @@ enum class FlatBufferProtocolType
 {
 	Account,
 	ChangePw,
+	DeleteArticle,
+	GetArticle,
+	GetArticleList,
 	InitCharacter,
+	Login,
 	MakeCharacter,
 	ReserveName,
+	Save,
+	WriteArticle,
 };
 
 } } } } 
@@ -29,10 +35,16 @@ enum class FlatBufferProtocolType
 {
 	Account,
 	ChangePw,
+	DeleteArticle,
+	GetArticle,
+	GetArticleList,
 	GetUid,
 	InitCharacter,
+	Login,
 	MakeCharacter,
 	ReserveName,
+	Save,
+	WriteArticle,
 };
 
 } } } } 

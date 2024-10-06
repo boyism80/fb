@@ -6,7 +6,7 @@ namespace fb.protocol.db.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Account;
         public string Pw { get; set; } = string.Empty;
-        public ushort Map { get; set; }
+        public uint Map { get; set; }
         public bool Success { get; set; }
 
         public Account()
@@ -41,6 +41,152 @@ namespace fb.protocol.db.response
         public static Account Deserialize(byte[] bytes)
         {
             return new Account(bytes);
+        }
+    }
+    public class DeleteArticle : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.DeleteArticle;
+        public int Result { get; set; }
+
+        public DeleteArticle()
+        { }
+
+        public DeleteArticle(fb.protocol.db.response.origin.DeleteArticle raw)
+        {
+            Result = raw.Result;
+        }
+
+        public DeleteArticle(byte[] bytes) : this(fb.protocol.db.response.origin.DeleteArticle.GetRootAsDeleteArticle(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.origin.DeleteArticle> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.origin.DeleteArticle.CreateDeleteArticle(builder,
+                Result);
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static DeleteArticle Deserialize(byte[] bytes)
+        {
+            return new DeleteArticle(bytes);
+        }
+    }
+    public class GetArticle : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.GetArticle;
+        public fb.protocol.db.Article Article { get; set; }
+        public bool Next { get; set; }
+        public bool Success { get; set; }
+
+        public GetArticle()
+        { }
+
+        public GetArticle(fb.protocol.db.response.origin.GetArticle raw)
+        {
+            Article = new Article(raw.Article.Value);
+            Next = raw.Next;
+            Success = raw.Success;
+        }
+
+        public GetArticle(byte[] bytes) : this(fb.protocol.db.response.origin.GetArticle.GetRootAsGetArticle(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.origin.GetArticle> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.origin.GetArticle.CreateGetArticle(builder,
+                Article.Build(builder),
+                Next,
+                Success);
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static GetArticle Deserialize(byte[] bytes)
+        {
+            return new GetArticle(bytes);
+        }
+    }
+    public class GetArticleList : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.GetArticleList;
+        public List<fb.protocol.db.ArticleSummary> SummaryList { get; set; }
+
+        public GetArticleList()
+        { }
+
+        public GetArticleList(fb.protocol.db.response.origin.GetArticleList raw)
+        {
+            SummaryList = Enumerable.Range(0, raw.SummaryListLength).Select(i => new ArticleSummary(raw.SummaryList(i).Value)).ToList();
+        }
+
+        public GetArticleList(byte[] bytes) : this(fb.protocol.db.response.origin.GetArticleList.GetRootAsGetArticleList(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.origin.GetArticleList> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.origin.GetArticleList.CreateGetArticleList(builder,
+                fb.protocol.db.response.origin.GetArticleList.CreateSummaryListVector(builder, SummaryList.ConvertAll(x => x.Build(builder)).ToArray()));
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static GetArticleList Deserialize(byte[] bytes)
+        {
+            return new GetArticleList(bytes);
+        }
+    }
+    public class WriteArticle : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.WriteArticle;
+        public bool Success { get; set; }
+
+        public WriteArticle()
+        { }
+
+        public WriteArticle(fb.protocol.db.response.origin.WriteArticle raw)
+        {
+            Success = raw.Success;
+        }
+
+        public WriteArticle(byte[] bytes) : this(fb.protocol.db.response.origin.WriteArticle.GetRootAsWriteArticle(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.origin.WriteArticle> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.origin.WriteArticle.CreateWriteArticle(builder,
+                Success);
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static WriteArticle Deserialize(byte[] bytes)
+        {
+            return new WriteArticle(bytes);
         }
     }
     public class ChangePw : IFlatBufferEx
@@ -151,6 +297,47 @@ namespace fb.protocol.db.response
             return new InitCharacter(bytes);
         }
     }
+    public class Login : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Login;
+        public fb.protocol.db.Character Character { get; set; }
+        public List<fb.protocol.db.Item> Items { get; set; }
+        public List<fb.protocol.db.Spell> Spells { get; set; }
+
+        public Login()
+        { }
+
+        public Login(fb.protocol.db.response.origin.Login raw)
+        {
+            Character = new Character(raw.Character.Value);
+            Items = Enumerable.Range(0, raw.ItemsLength).Select(i => new Item(raw.Items(i).Value)).ToList();
+            Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => new Spell(raw.Spells(i).Value)).ToList();
+        }
+
+        public Login(byte[] bytes) : this(fb.protocol.db.response.origin.Login.GetRootAsLogin(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.origin.Login> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.origin.Login.CreateLogin(builder,
+                Character.Build(builder),
+                fb.protocol.db.response.origin.Login.CreateItemsVector(builder, Items.ConvertAll(x => x.Build(builder)).ToArray()),
+                fb.protocol.db.response.origin.Login.CreateSpellsVector(builder, Spells.ConvertAll(x => x.Build(builder)).ToArray()));
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Login Deserialize(byte[] bytes)
+        {
+            return new Login(bytes);
+        }
+    }
     public class MakeCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.MakeCharacter;
@@ -222,6 +409,41 @@ namespace fb.protocol.db.response
         public static ReserveName Deserialize(byte[] bytes)
         {
             return new ReserveName(bytes);
+        }
+    }
+    public class Save : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Save;
+        public bool Success { get; set; }
+
+        public Save()
+        { }
+
+        public Save(fb.protocol.db.response.origin.Save raw)
+        {
+            Success = raw.Success;
+        }
+
+        public Save(byte[] bytes) : this(fb.protocol.db.response.origin.Save.GetRootAsSave(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.origin.Save> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.origin.Save.CreateSave(builder,
+                Success);
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Save Deserialize(byte[] bytes)
+        {
+            return new Save(bytes);
         }
     }
 }

@@ -9,3 +9,6 @@ docker push cshyeon/fb:game
 
 docker build --tag cshyeon/fb:internal -f deploy/Docker.fb.dotnet --build-arg SERVICE=internal .
 docker push cshyeon/fb:internal
+
+docker build --tag cshyeon/fb:db -f deploy/Docker.fb.dotnet --build-arg SERVICE=db .
+docker push cshyeon/fb:db

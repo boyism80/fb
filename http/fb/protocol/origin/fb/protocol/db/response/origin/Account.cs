@@ -27,23 +27,23 @@ public struct Account : IFlatbufferObject
   public ArraySegment<byte>? GetPwBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetPwArray() { return __p.__vector_as_array<byte>(4); }
-  public ushort Map { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public uint Map { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public bool Success { get { int o = __p.__offset(8); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol.db.response.origin.Account> CreateAccount(FlatBufferBuilder builder,
       StringOffset pwOffset = default(StringOffset),
-      ushort map = 0,
+      uint map = 0,
       bool success = false) {
     builder.StartTable(3);
-    Account.AddPw(builder, pwOffset);
     Account.AddMap(builder, map);
+    Account.AddPw(builder, pwOffset);
     Account.AddSuccess(builder, success);
     return Account.EndAccount(builder);
   }
 
   public static void StartAccount(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(0, pwOffset.Value, 0); }
-  public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(1, map, 0); }
+  public static void AddMap(FlatBufferBuilder builder, uint map) { builder.AddUint(1, map, 0); }
   public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(2, success, false); }
   public static Offset<fb.protocol.db.response.origin.Account> EndAccount(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -60,7 +60,7 @@ static public class AccountVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*Pw*/, false)
-      && verifier.VerifyField(tablePos, 6 /*Map*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 6 /*Map*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Success*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }

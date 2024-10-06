@@ -18,48 +18,1113 @@ namespace protocol {
 namespace db {
 namespace origin {
 
-struct nullable_uint;
-struct nullable_uintBuilder;
+struct nullopt_ushort;
+struct nullopt_ushortBuilder;
 
-struct nullable_uint FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
-  typedef nullable_uintBuilder Builder;
+struct nullopt_ubyte;
+struct nullopt_ubyteBuilder;
+
+struct nullopt_uint;
+struct nullopt_uintBuilder;
+
+struct Position;
+struct PositionBuilder;
+
+struct Character;
+struct CharacterBuilder;
+
+struct Item;
+struct ItemBuilder;
+
+struct Spell;
+struct SpellBuilder;
+
+struct ArticleSummary;
+struct ArticleSummaryBuilder;
+
+struct Article;
+struct ArticleBuilder;
+
+struct nullopt_ushort FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef nullopt_ushortBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_VALUE = 4
+    VT_VALUE = 4,
+    VT_EMPTY = 6
   };
-  uint32_t value() const {
-    return GetField<uint32_t>(VT_VALUE, 0);
+  uint16_t value() const {
+    return GetField<uint16_t>(VT_VALUE, 0);
+  }
+  bool empty() const {
+    return GetField<uint8_t>(VT_EMPTY, 0) != 0;
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_VALUE, 4) &&
+           VerifyField<uint16_t>(verifier, VT_VALUE, 2) &&
+           VerifyField<uint8_t>(verifier, VT_EMPTY, 1) &&
            verifier.EndTable();
   }
 };
 
-struct nullable_uintBuilder {
-  typedef nullable_uint Table;
+struct nullopt_ushortBuilder {
+  typedef nullopt_ushort Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_value(uint32_t value) {
-    fbb_.AddElement<uint32_t>(nullable_uint::VT_VALUE, value, 0);
+  void add_value(uint16_t value) {
+    fbb_.AddElement<uint16_t>(nullopt_ushort::VT_VALUE, value, 0);
   }
-  explicit nullable_uintBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+  void add_empty(bool empty) {
+    fbb_.AddElement<uint8_t>(nullopt_ushort::VT_EMPTY, static_cast<uint8_t>(empty), 0);
+  }
+  explicit nullopt_ushortBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
   }
-  ::flatbuffers::Offset<nullable_uint> Finish() {
+  ::flatbuffers::Offset<nullopt_ushort> Finish() {
     const auto end = fbb_.EndTable(start_);
-    auto o = ::flatbuffers::Offset<nullable_uint>(end);
+    auto o = ::flatbuffers::Offset<nullopt_ushort>(end);
     return o;
   }
 };
 
-inline ::flatbuffers::Offset<nullable_uint> Createnullable_uint(
+inline ::flatbuffers::Offset<nullopt_ushort> Createnullopt_ushort(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t value = 0) {
-  nullable_uintBuilder builder_(_fbb);
+    uint16_t value = 0,
+    bool empty = false) {
+  nullopt_ushortBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_empty(empty);
+  return builder_.Finish();
+}
+
+struct nullopt_ubyte FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef nullopt_ubyteBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_VALUE = 4,
+    VT_EMPTY = 6
+  };
+  uint8_t value() const {
+    return GetField<uint8_t>(VT_VALUE, 0);
+  }
+  bool empty() const {
+    return GetField<uint8_t>(VT_EMPTY, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_VALUE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_EMPTY, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct nullopt_ubyteBuilder {
+  typedef nullopt_ubyte Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_value(uint8_t value) {
+    fbb_.AddElement<uint8_t>(nullopt_ubyte::VT_VALUE, value, 0);
+  }
+  void add_empty(bool empty) {
+    fbb_.AddElement<uint8_t>(nullopt_ubyte::VT_EMPTY, static_cast<uint8_t>(empty), 0);
+  }
+  explicit nullopt_ubyteBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<nullopt_ubyte> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<nullopt_ubyte>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<nullopt_ubyte> Createnullopt_ubyte(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint8_t value = 0,
+    bool empty = false) {
+  nullopt_ubyteBuilder builder_(_fbb);
+  builder_.add_empty(empty);
   builder_.add_value(value);
   return builder_.Finish();
+}
+
+struct nullopt_uint FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef nullopt_uintBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_VALUE = 4,
+    VT_EMPTY = 6
+  };
+  uint32_t value() const {
+    return GetField<uint32_t>(VT_VALUE, 0);
+  }
+  bool empty() const {
+    return GetField<uint8_t>(VT_EMPTY, 0) != 0;
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_VALUE, 4) &&
+           VerifyField<uint8_t>(verifier, VT_EMPTY, 1) &&
+           verifier.EndTable();
+  }
+};
+
+struct nullopt_uintBuilder {
+  typedef nullopt_uint Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_value(uint32_t value) {
+    fbb_.AddElement<uint32_t>(nullopt_uint::VT_VALUE, value, 0);
+  }
+  void add_empty(bool empty) {
+    fbb_.AddElement<uint8_t>(nullopt_uint::VT_EMPTY, static_cast<uint8_t>(empty), 0);
+  }
+  explicit nullopt_uintBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<nullopt_uint> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<nullopt_uint>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<nullopt_uint> Createnullopt_uint(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t value = 0,
+    bool empty = false) {
+  nullopt_uintBuilder builder_(_fbb);
+  builder_.add_value(value);
+  builder_.add_empty(empty);
+  return builder_.Finish();
+}
+
+struct Position FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef PositionBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_X = 4,
+    VT_Y = 6
+  };
+  uint16_t x() const {
+    return GetField<uint16_t>(VT_X, 0);
+  }
+  uint16_t y() const {
+    return GetField<uint16_t>(VT_Y, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint16_t>(verifier, VT_X, 2) &&
+           VerifyField<uint16_t>(verifier, VT_Y, 2) &&
+           verifier.EndTable();
+  }
+};
+
+struct PositionBuilder {
+  typedef Position Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_x(uint16_t x) {
+    fbb_.AddElement<uint16_t>(Position::VT_X, x, 0);
+  }
+  void add_y(uint16_t y) {
+    fbb_.AddElement<uint16_t>(Position::VT_Y, y, 0);
+  }
+  explicit PositionBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Position> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Position>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Position> CreatePosition(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint16_t x = 0,
+    uint16_t y = 0) {
+  PositionBuilder builder_(_fbb);
+  builder_.add_y(y);
+  builder_.add_x(x);
+  return builder_.Finish();
+}
+
+struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef CharacterBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_NAME = 6,
+    VT_LAST_LOGIN = 8,
+    VT_ADMIN = 10,
+    VT_LOOK = 12,
+    VT_COLOR = 14,
+    VT_SEX = 16,
+    VT_NATION = 18,
+    VT_CREATURE = 20,
+    VT_MAP = 22,
+    VT_POSITION = 24,
+    VT_DIRECTION = 26,
+    VT_STATE = 28,
+    VT_CLASS_TYPE = 30,
+    VT_PROMOTION = 32,
+    VT_EXP = 34,
+    VT_MONEY = 36,
+    VT_DEPOSITED_MONEY = 38,
+    VT_DISGUISE = 40,
+    VT_HP = 42,
+    VT_BASE_HP = 44,
+    VT_ADDITIONAL_HP = 46,
+    VT_MP = 48,
+    VT_BASE_MP = 50,
+    VT_ADDITIONAL_MP = 52,
+    VT_WEAPON_COLOR = 54,
+    VT_HELMET_COLOR = 56,
+    VT_ARMOR_COLOR = 58,
+    VT_SHIELD_COLOR = 60,
+    VT_RING_LEFT_COLOR = 62,
+    VT_RING_RIGHT_COLOR = 64,
+    VT_AUX_TOP_COLOR = 66,
+    VT_AUX_BOT_COLOR = 68,
+    VT_CLAN = 70
+  };
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *last_login() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_LAST_LOGIN);
+  }
+  bool admin() const {
+    return GetField<uint8_t>(VT_ADMIN, 0) != 0;
+  }
+  uint16_t look() const {
+    return GetField<uint16_t>(VT_LOOK, 0);
+  }
+  uint16_t color() const {
+    return GetField<uint16_t>(VT_COLOR, 0);
+  }
+  uint16_t sex() const {
+    return GetField<uint16_t>(VT_SEX, 0);
+  }
+  uint16_t nation() const {
+    return GetField<uint16_t>(VT_NATION, 0);
+  }
+  const fb::protocol::db::origin::nullopt_ushort *creature() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ushort *>(VT_CREATURE);
+  }
+  uint32_t map() const {
+    return GetField<uint32_t>(VT_MAP, 0);
+  }
+  const fb::protocol::db::origin::Position *position() const {
+    return GetPointer<const fb::protocol::db::origin::Position *>(VT_POSITION);
+  }
+  uint8_t direction() const {
+    return GetField<uint8_t>(VT_DIRECTION, 0);
+  }
+  uint8_t state() const {
+    return GetField<uint8_t>(VT_STATE, 0);
+  }
+  uint8_t class_type() const {
+    return GetField<uint8_t>(VT_CLASS_TYPE, 0);
+  }
+  uint8_t promotion() const {
+    return GetField<uint8_t>(VT_PROMOTION, 0);
+  }
+  uint32_t exp() const {
+    return GetField<uint32_t>(VT_EXP, 0);
+  }
+  uint32_t money() const {
+    return GetField<uint32_t>(VT_MONEY, 0);
+  }
+  uint32_t deposited_money() const {
+    return GetField<uint32_t>(VT_DEPOSITED_MONEY, 0);
+  }
+  const fb::protocol::db::origin::nullopt_ushort *disguise() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ushort *>(VT_DISGUISE);
+  }
+  uint32_t hp() const {
+    return GetField<uint32_t>(VT_HP, 0);
+  }
+  uint32_t base_hp() const {
+    return GetField<uint32_t>(VT_BASE_HP, 0);
+  }
+  uint32_t additional_hp() const {
+    return GetField<uint32_t>(VT_ADDITIONAL_HP, 0);
+  }
+  uint32_t mp() const {
+    return GetField<uint32_t>(VT_MP, 0);
+  }
+  uint32_t base_mp() const {
+    return GetField<uint32_t>(VT_BASE_MP, 0);
+  }
+  uint32_t additional_mp() const {
+    return GetField<uint32_t>(VT_ADDITIONAL_MP, 0);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *weapon_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_WEAPON_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *helmet_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_HELMET_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *armor_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_ARMOR_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *shield_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_SHIELD_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *ring_left_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_RING_LEFT_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *ring_right_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_RING_RIGHT_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *aux_top_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_AUX_TOP_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_ubyte *aux_bot_color() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_ubyte *>(VT_AUX_BOT_COLOR);
+  }
+  const fb::protocol::db::origin::nullopt_uint *clan() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_uint *>(VT_CLAN);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_LAST_LOGIN) &&
+           verifier.VerifyString(last_login()) &&
+           VerifyField<uint8_t>(verifier, VT_ADMIN, 1) &&
+           VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
+           VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
+           VerifyField<uint16_t>(verifier, VT_SEX, 2) &&
+           VerifyField<uint16_t>(verifier, VT_NATION, 2) &&
+           VerifyOffset(verifier, VT_CREATURE) &&
+           verifier.VerifyTable(creature()) &&
+           VerifyField<uint32_t>(verifier, VT_MAP, 4) &&
+           VerifyOffset(verifier, VT_POSITION) &&
+           verifier.VerifyTable(position()) &&
+           VerifyField<uint8_t>(verifier, VT_DIRECTION, 1) &&
+           VerifyField<uint8_t>(verifier, VT_STATE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_CLASS_TYPE, 1) &&
+           VerifyField<uint8_t>(verifier, VT_PROMOTION, 1) &&
+           VerifyField<uint32_t>(verifier, VT_EXP, 4) &&
+           VerifyField<uint32_t>(verifier, VT_MONEY, 4) &&
+           VerifyField<uint32_t>(verifier, VT_DEPOSITED_MONEY, 4) &&
+           VerifyOffset(verifier, VT_DISGUISE) &&
+           verifier.VerifyTable(disguise()) &&
+           VerifyField<uint32_t>(verifier, VT_HP, 4) &&
+           VerifyField<uint32_t>(verifier, VT_BASE_HP, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ADDITIONAL_HP, 4) &&
+           VerifyField<uint32_t>(verifier, VT_MP, 4) &&
+           VerifyField<uint32_t>(verifier, VT_BASE_MP, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ADDITIONAL_MP, 4) &&
+           VerifyOffset(verifier, VT_WEAPON_COLOR) &&
+           verifier.VerifyTable(weapon_color()) &&
+           VerifyOffset(verifier, VT_HELMET_COLOR) &&
+           verifier.VerifyTable(helmet_color()) &&
+           VerifyOffset(verifier, VT_ARMOR_COLOR) &&
+           verifier.VerifyTable(armor_color()) &&
+           VerifyOffset(verifier, VT_SHIELD_COLOR) &&
+           verifier.VerifyTable(shield_color()) &&
+           VerifyOffset(verifier, VT_RING_LEFT_COLOR) &&
+           verifier.VerifyTable(ring_left_color()) &&
+           VerifyOffset(verifier, VT_RING_RIGHT_COLOR) &&
+           verifier.VerifyTable(ring_right_color()) &&
+           VerifyOffset(verifier, VT_AUX_TOP_COLOR) &&
+           verifier.VerifyTable(aux_top_color()) &&
+           VerifyOffset(verifier, VT_AUX_BOT_COLOR) &&
+           verifier.VerifyTable(aux_bot_color()) &&
+           VerifyOffset(verifier, VT_CLAN) &&
+           verifier.VerifyTable(clan()) &&
+           verifier.EndTable();
+  }
+};
+
+struct CharacterBuilder {
+  typedef Character Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(Character::VT_ID, id, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(Character::VT_NAME, name);
+  }
+  void add_last_login(::flatbuffers::Offset<::flatbuffers::String> last_login) {
+    fbb_.AddOffset(Character::VT_LAST_LOGIN, last_login);
+  }
+  void add_admin(bool admin) {
+    fbb_.AddElement<uint8_t>(Character::VT_ADMIN, static_cast<uint8_t>(admin), 0);
+  }
+  void add_look(uint16_t look) {
+    fbb_.AddElement<uint16_t>(Character::VT_LOOK, look, 0);
+  }
+  void add_color(uint16_t color) {
+    fbb_.AddElement<uint16_t>(Character::VT_COLOR, color, 0);
+  }
+  void add_sex(uint16_t sex) {
+    fbb_.AddElement<uint16_t>(Character::VT_SEX, sex, 0);
+  }
+  void add_nation(uint16_t nation) {
+    fbb_.AddElement<uint16_t>(Character::VT_NATION, nation, 0);
+  }
+  void add_creature(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ushort> creature) {
+    fbb_.AddOffset(Character::VT_CREATURE, creature);
+  }
+  void add_map(uint32_t map) {
+    fbb_.AddElement<uint32_t>(Character::VT_MAP, map, 0);
+  }
+  void add_position(::flatbuffers::Offset<fb::protocol::db::origin::Position> position) {
+    fbb_.AddOffset(Character::VT_POSITION, position);
+  }
+  void add_direction(uint8_t direction) {
+    fbb_.AddElement<uint8_t>(Character::VT_DIRECTION, direction, 0);
+  }
+  void add_state(uint8_t state) {
+    fbb_.AddElement<uint8_t>(Character::VT_STATE, state, 0);
+  }
+  void add_class_type(uint8_t class_type) {
+    fbb_.AddElement<uint8_t>(Character::VT_CLASS_TYPE, class_type, 0);
+  }
+  void add_promotion(uint8_t promotion) {
+    fbb_.AddElement<uint8_t>(Character::VT_PROMOTION, promotion, 0);
+  }
+  void add_exp(uint32_t exp) {
+    fbb_.AddElement<uint32_t>(Character::VT_EXP, exp, 0);
+  }
+  void add_money(uint32_t money) {
+    fbb_.AddElement<uint32_t>(Character::VT_MONEY, money, 0);
+  }
+  void add_deposited_money(uint32_t deposited_money) {
+    fbb_.AddElement<uint32_t>(Character::VT_DEPOSITED_MONEY, deposited_money, 0);
+  }
+  void add_disguise(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ushort> disguise) {
+    fbb_.AddOffset(Character::VT_DISGUISE, disguise);
+  }
+  void add_hp(uint32_t hp) {
+    fbb_.AddElement<uint32_t>(Character::VT_HP, hp, 0);
+  }
+  void add_base_hp(uint32_t base_hp) {
+    fbb_.AddElement<uint32_t>(Character::VT_BASE_HP, base_hp, 0);
+  }
+  void add_additional_hp(uint32_t additional_hp) {
+    fbb_.AddElement<uint32_t>(Character::VT_ADDITIONAL_HP, additional_hp, 0);
+  }
+  void add_mp(uint32_t mp) {
+    fbb_.AddElement<uint32_t>(Character::VT_MP, mp, 0);
+  }
+  void add_base_mp(uint32_t base_mp) {
+    fbb_.AddElement<uint32_t>(Character::VT_BASE_MP, base_mp, 0);
+  }
+  void add_additional_mp(uint32_t additional_mp) {
+    fbb_.AddElement<uint32_t>(Character::VT_ADDITIONAL_MP, additional_mp, 0);
+  }
+  void add_weapon_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> weapon_color) {
+    fbb_.AddOffset(Character::VT_WEAPON_COLOR, weapon_color);
+  }
+  void add_helmet_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> helmet_color) {
+    fbb_.AddOffset(Character::VT_HELMET_COLOR, helmet_color);
+  }
+  void add_armor_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> armor_color) {
+    fbb_.AddOffset(Character::VT_ARMOR_COLOR, armor_color);
+  }
+  void add_shield_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> shield_color) {
+    fbb_.AddOffset(Character::VT_SHIELD_COLOR, shield_color);
+  }
+  void add_ring_left_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> ring_left_color) {
+    fbb_.AddOffset(Character::VT_RING_LEFT_COLOR, ring_left_color);
+  }
+  void add_ring_right_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> ring_right_color) {
+    fbb_.AddOffset(Character::VT_RING_RIGHT_COLOR, ring_right_color);
+  }
+  void add_aux_top_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> aux_top_color) {
+    fbb_.AddOffset(Character::VT_AUX_TOP_COLOR, aux_top_color);
+  }
+  void add_aux_bot_color(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> aux_bot_color) {
+    fbb_.AddOffset(Character::VT_AUX_BOT_COLOR, aux_bot_color);
+  }
+  void add_clan(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_uint> clan) {
+    fbb_.AddOffset(Character::VT_CLAN, clan);
+  }
+  explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Character> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Character>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Character> CreateCharacter(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> last_login = 0,
+    bool admin = false,
+    uint16_t look = 0,
+    uint16_t color = 0,
+    uint16_t sex = 0,
+    uint16_t nation = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ushort> creature = 0,
+    uint32_t map = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::Position> position = 0,
+    uint8_t direction = 0,
+    uint8_t state = 0,
+    uint8_t class_type = 0,
+    uint8_t promotion = 0,
+    uint32_t exp = 0,
+    uint32_t money = 0,
+    uint32_t deposited_money = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ushort> disguise = 0,
+    uint32_t hp = 0,
+    uint32_t base_hp = 0,
+    uint32_t additional_hp = 0,
+    uint32_t mp = 0,
+    uint32_t base_mp = 0,
+    uint32_t additional_mp = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> weapon_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> helmet_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> armor_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> shield_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> ring_left_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> ring_right_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> aux_top_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> aux_bot_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_uint> clan = 0) {
+  CharacterBuilder builder_(_fbb);
+  builder_.add_clan(clan);
+  builder_.add_aux_bot_color(aux_bot_color);
+  builder_.add_aux_top_color(aux_top_color);
+  builder_.add_ring_right_color(ring_right_color);
+  builder_.add_ring_left_color(ring_left_color);
+  builder_.add_shield_color(shield_color);
+  builder_.add_armor_color(armor_color);
+  builder_.add_helmet_color(helmet_color);
+  builder_.add_weapon_color(weapon_color);
+  builder_.add_additional_mp(additional_mp);
+  builder_.add_base_mp(base_mp);
+  builder_.add_mp(mp);
+  builder_.add_additional_hp(additional_hp);
+  builder_.add_base_hp(base_hp);
+  builder_.add_hp(hp);
+  builder_.add_disguise(disguise);
+  builder_.add_deposited_money(deposited_money);
+  builder_.add_money(money);
+  builder_.add_exp(exp);
+  builder_.add_position(position);
+  builder_.add_map(map);
+  builder_.add_creature(creature);
+  builder_.add_last_login(last_login);
+  builder_.add_name(name);
+  builder_.add_id(id);
+  builder_.add_nation(nation);
+  builder_.add_sex(sex);
+  builder_.add_color(color);
+  builder_.add_look(look);
+  builder_.add_promotion(promotion);
+  builder_.add_class_type(class_type);
+  builder_.add_state(state);
+  builder_.add_direction(direction);
+  builder_.add_admin(admin);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    const char *name = nullptr,
+    const char *last_login = nullptr,
+    bool admin = false,
+    uint16_t look = 0,
+    uint16_t color = 0,
+    uint16_t sex = 0,
+    uint16_t nation = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ushort> creature = 0,
+    uint32_t map = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::Position> position = 0,
+    uint8_t direction = 0,
+    uint8_t state = 0,
+    uint8_t class_type = 0,
+    uint8_t promotion = 0,
+    uint32_t exp = 0,
+    uint32_t money = 0,
+    uint32_t deposited_money = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ushort> disguise = 0,
+    uint32_t hp = 0,
+    uint32_t base_hp = 0,
+    uint32_t additional_hp = 0,
+    uint32_t mp = 0,
+    uint32_t base_mp = 0,
+    uint32_t additional_mp = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> weapon_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> helmet_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> armor_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> shield_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> ring_left_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> ring_right_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> aux_top_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_ubyte> aux_bot_color = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_uint> clan = 0) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto last_login__ = last_login ? _fbb.CreateString(last_login) : 0;
+  return fb::protocol::db::origin::CreateCharacter(
+      _fbb,
+      id,
+      name__,
+      last_login__,
+      admin,
+      look,
+      color,
+      sex,
+      nation,
+      creature,
+      map,
+      position,
+      direction,
+      state,
+      class_type,
+      promotion,
+      exp,
+      money,
+      deposited_money,
+      disguise,
+      hp,
+      base_hp,
+      additional_hp,
+      mp,
+      base_mp,
+      additional_mp,
+      weapon_color,
+      helmet_color,
+      armor_color,
+      shield_color,
+      ring_left_color,
+      ring_right_color,
+      aux_top_color,
+      aux_bot_color,
+      clan);
+}
+
+struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ItemBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_USER = 4,
+    VT_INDEX = 6,
+    VT_PARTS = 8,
+    VT_DEPOSITED = 10,
+    VT_MODEL = 12,
+    VT_COUNT = 14,
+    VT_DURABILITY = 16,
+    VT_CUSTOM_NAME = 18
+  };
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  int16_t index() const {
+    return GetField<int16_t>(VT_INDEX, 0);
+  }
+  int16_t parts() const {
+    return GetField<int16_t>(VT_PARTS, 0);
+  }
+  int16_t deposited() const {
+    return GetField<int16_t>(VT_DEPOSITED, 0);
+  }
+  uint32_t model() const {
+    return GetField<uint32_t>(VT_MODEL, 0);
+  }
+  uint16_t count() const {
+    return GetField<uint16_t>(VT_COUNT, 0);
+  }
+  const fb::protocol::db::origin::nullopt_uint *durability() const {
+    return GetPointer<const fb::protocol::db::origin::nullopt_uint *>(VT_DURABILITY);
+  }
+  const ::flatbuffers::String *custom_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CUSTOM_NAME);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<int16_t>(verifier, VT_INDEX, 2) &&
+           VerifyField<int16_t>(verifier, VT_PARTS, 2) &&
+           VerifyField<int16_t>(verifier, VT_DEPOSITED, 2) &&
+           VerifyField<uint32_t>(verifier, VT_MODEL, 4) &&
+           VerifyField<uint16_t>(verifier, VT_COUNT, 2) &&
+           VerifyOffset(verifier, VT_DURABILITY) &&
+           verifier.VerifyTable(durability()) &&
+           VerifyOffset(verifier, VT_CUSTOM_NAME) &&
+           verifier.VerifyString(custom_name()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ItemBuilder {
+  typedef Item Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(Item::VT_USER, user, 0);
+  }
+  void add_index(int16_t index) {
+    fbb_.AddElement<int16_t>(Item::VT_INDEX, index, 0);
+  }
+  void add_parts(int16_t parts) {
+    fbb_.AddElement<int16_t>(Item::VT_PARTS, parts, 0);
+  }
+  void add_deposited(int16_t deposited) {
+    fbb_.AddElement<int16_t>(Item::VT_DEPOSITED, deposited, 0);
+  }
+  void add_model(uint32_t model) {
+    fbb_.AddElement<uint32_t>(Item::VT_MODEL, model, 0);
+  }
+  void add_count(uint16_t count) {
+    fbb_.AddElement<uint16_t>(Item::VT_COUNT, count, 0);
+  }
+  void add_durability(::flatbuffers::Offset<fb::protocol::db::origin::nullopt_uint> durability) {
+    fbb_.AddOffset(Item::VT_DURABILITY, durability);
+  }
+  void add_custom_name(::flatbuffers::Offset<::flatbuffers::String> custom_name) {
+    fbb_.AddOffset(Item::VT_CUSTOM_NAME, custom_name);
+  }
+  explicit ItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Item> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Item>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Item> CreateItem(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    int16_t index = 0,
+    int16_t parts = 0,
+    int16_t deposited = 0,
+    uint32_t model = 0,
+    uint16_t count = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_uint> durability = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0) {
+  ItemBuilder builder_(_fbb);
+  builder_.add_custom_name(custom_name);
+  builder_.add_durability(durability);
+  builder_.add_model(model);
+  builder_.add_user(user);
+  builder_.add_count(count);
+  builder_.add_deposited(deposited);
+  builder_.add_parts(parts);
+  builder_.add_index(index);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Item> CreateItemDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    int16_t index = 0,
+    int16_t parts = 0,
+    int16_t deposited = 0,
+    uint32_t model = 0,
+    uint16_t count = 0,
+    ::flatbuffers::Offset<fb::protocol::db::origin::nullopt_uint> durability = 0,
+    const char *custom_name = nullptr) {
+  auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
+  return fb::protocol::db::origin::CreateItem(
+      _fbb,
+      user,
+      index,
+      parts,
+      deposited,
+      model,
+      count,
+      durability,
+      custom_name__);
+}
+
+struct Spell FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef SpellBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_USER = 4,
+    VT_SLOT = 6,
+    VT_ID = 8
+  };
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  uint8_t slot() const {
+    return GetField<uint8_t>(VT_SLOT, 0);
+  }
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyField<uint8_t>(verifier, VT_SLOT, 1) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           verifier.EndTable();
+  }
+};
+
+struct SpellBuilder {
+  typedef Spell Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(Spell::VT_USER, user, 0);
+  }
+  void add_slot(uint8_t slot) {
+    fbb_.AddElement<uint8_t>(Spell::VT_SLOT, slot, 0);
+  }
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(Spell::VT_ID, id, 0);
+  }
+  explicit SpellBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Spell> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Spell>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Spell> CreateSpell(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    uint8_t slot = 0,
+    uint32_t id = 0) {
+  SpellBuilder builder_(_fbb);
+  builder_.add_id(id);
+  builder_.add_user(user);
+  builder_.add_slot(slot);
+  return builder_.Finish();
+}
+
+struct ArticleSummary FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ArticleSummaryBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_USER = 6,
+    VT_USER_NAME = 8,
+    VT_TITLE = 10,
+    VT_CREATED_DATE = 12
+  };
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  const ::flatbuffers::String *user_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_USER_NAME);
+  }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
+  }
+  const ::flatbuffers::String *created_date() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyOffset(verifier, VT_USER_NAME) &&
+           verifier.VerifyString(user_name()) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
+           VerifyOffset(verifier, VT_CREATED_DATE) &&
+           verifier.VerifyString(created_date()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ArticleSummaryBuilder {
+  typedef ArticleSummary Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(ArticleSummary::VT_ID, id, 0);
+  }
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(ArticleSummary::VT_USER, user, 0);
+  }
+  void add_user_name(::flatbuffers::Offset<::flatbuffers::String> user_name) {
+    fbb_.AddOffset(ArticleSummary::VT_USER_NAME, user_name);
+  }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(ArticleSummary::VT_TITLE, title);
+  }
+  void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
+    fbb_.AddOffset(ArticleSummary::VT_CREATED_DATE, created_date);
+  }
+  explicit ArticleSummaryBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<ArticleSummary> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<ArticleSummary>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<ArticleSummary> CreateArticleSummary(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    uint32_t user = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> user_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
+  ArticleSummaryBuilder builder_(_fbb);
+  builder_.add_created_date(created_date);
+  builder_.add_title(title);
+  builder_.add_user_name(user_name);
+  builder_.add_user(user);
+  builder_.add_id(id);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<ArticleSummary> CreateArticleSummaryDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    uint32_t user = 0,
+    const char *user_name = nullptr,
+    const char *title = nullptr,
+    const char *created_date = nullptr) {
+  auto user_name__ = user_name ? _fbb.CreateString(user_name) : 0;
+  auto title__ = title ? _fbb.CreateString(title) : 0;
+  auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
+  return fb::protocol::db::origin::CreateArticleSummary(
+      _fbb,
+      id,
+      user,
+      user_name__,
+      title__,
+      created_date__);
+}
+
+struct Article FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
+  typedef ArticleBuilder Builder;
+  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
+    VT_ID = 4,
+    VT_USER = 6,
+    VT_USER_NAME = 8,
+    VT_TITLE = 10,
+    VT_CONTENTS = 12,
+    VT_CREATED_DATE = 14
+  };
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
+  }
+  uint32_t user() const {
+    return GetField<uint32_t>(VT_USER, 0);
+  }
+  const ::flatbuffers::String *user_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_USER_NAME);
+  }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
+  }
+  const ::flatbuffers::String *contents() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CONTENTS);
+  }
+  const ::flatbuffers::String *created_date() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CREATED_DATE);
+  }
+  bool Verify(::flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_USER, 4) &&
+           VerifyOffset(verifier, VT_USER_NAME) &&
+           verifier.VerifyString(user_name()) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
+           VerifyOffset(verifier, VT_CONTENTS) &&
+           verifier.VerifyString(contents()) &&
+           VerifyOffset(verifier, VT_CREATED_DATE) &&
+           verifier.VerifyString(created_date()) &&
+           verifier.EndTable();
+  }
+};
+
+struct ArticleBuilder {
+  typedef Article Table;
+  ::flatbuffers::FlatBufferBuilder &fbb_;
+  ::flatbuffers::uoffset_t start_;
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(Article::VT_ID, id, 0);
+  }
+  void add_user(uint32_t user) {
+    fbb_.AddElement<uint32_t>(Article::VT_USER, user, 0);
+  }
+  void add_user_name(::flatbuffers::Offset<::flatbuffers::String> user_name) {
+    fbb_.AddOffset(Article::VT_USER_NAME, user_name);
+  }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(Article::VT_TITLE, title);
+  }
+  void add_contents(::flatbuffers::Offset<::flatbuffers::String> contents) {
+    fbb_.AddOffset(Article::VT_CONTENTS, contents);
+  }
+  void add_created_date(::flatbuffers::Offset<::flatbuffers::String> created_date) {
+    fbb_.AddOffset(Article::VT_CREATED_DATE, created_date);
+  }
+  explicit ArticleBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
+        : fbb_(_fbb) {
+    start_ = fbb_.StartTable();
+  }
+  ::flatbuffers::Offset<Article> Finish() {
+    const auto end = fbb_.EndTable(start_);
+    auto o = ::flatbuffers::Offset<Article>(end);
+    return o;
+  }
+};
+
+inline ::flatbuffers::Offset<Article> CreateArticle(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    uint32_t user = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> user_name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> contents = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> created_date = 0) {
+  ArticleBuilder builder_(_fbb);
+  builder_.add_created_date(created_date);
+  builder_.add_contents(contents);
+  builder_.add_title(title);
+  builder_.add_user_name(user_name);
+  builder_.add_user(user);
+  builder_.add_id(id);
+  return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Article> CreateArticleDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t id = 0,
+    uint32_t user = 0,
+    const char *user_name = nullptr,
+    const char *title = nullptr,
+    const char *contents = nullptr,
+    const char *created_date = nullptr) {
+  auto user_name__ = user_name ? _fbb.CreateString(user_name) : 0;
+  auto title__ = title ? _fbb.CreateString(title) : 0;
+  auto contents__ = contents ? _fbb.CreateString(contents) : 0;
+  auto created_date__ = created_date ? _fbb.CreateString(created_date) : 0;
+  return fb::protocol::db::origin::CreateArticle(
+      _fbb,
+      id,
+      user,
+      user_name__,
+      title__,
+      contents__,
+      created_date__);
 }
 
 }  // namespace origin

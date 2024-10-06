@@ -213,6 +213,8 @@ void fb::acceptor<T>::send(fb::socket<T>& socket, const fb::protocol::base::head
 template <typename T>
 async::task<httplib::Result> fb::acceptor<T>::get_internal(const std::string& host, const std::string& path, httplib::Headers headers)
 {
+    headers.insert({ "Content-Type", "application/octet-stream" });
+
     auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
     auto future = std::async(std::launch::async, [this, promise, host, path, headers]() mutable
         {
@@ -292,7 +294,7 @@ template <typename Response>
 async::task<Response> fb::acceptor<T>::get(const std::string& route, const std::string& path)
 {
     auto& config = fb::config::get();
-    auto  host = fb::format("http://%s:%d", config[route.c_str()]["ip"].asCString(), config["internal"]["port"].asUInt());
+    auto  host = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
     co_return co_await this->get_internal<Response>(host, path);
 }
 
@@ -301,7 +303,7 @@ template <typename Request, typename Response>
 async::task<Response> fb::acceptor<T>::post(const std::string& route, const std::string& path, const Request& body)
 {
     auto& config = fb::config::get();
-    auto  host = fb::format("http://%s:%d", config[route.c_str()]["ip"].asCString(), config["internal"]["port"].asUInt());
+    auto  host = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
     co_return co_await this->post_internal<Request, Response>(host, path, body);
 }
 
@@ -361,7 +363,7 @@ bool fb::acceptor<T>::running() const
 }
 
 template <typename T>
-async::task<void> fb::acceptor<T>::sleep(const std::chrono::steady_clock::duration& duration)
+async::task<void> fb::acceptor<T>::sleep(const timespan& duration)
 {
     auto thread = this->_threads.current();
     if (thread == nullptr)
