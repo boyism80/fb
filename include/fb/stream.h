@@ -1,6 +1,7 @@
 #ifndef __FB_STREAM_H__
 #define __FB_STREAM_H__
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 #include <algorithm>
@@ -54,10 +55,10 @@ public:
     int32_t                 read_32(buffer::endian endian = buffer::endian::BIG);
     uint32_t                read_u32(buffer::endian endian = buffer::endian::BIG);
     void                    read(void* buffer, size_t size);
-    std::string             readstr(bool encoding = true);
-    std::string             readstr_u8(bool encoding = true);
-    std::string             readstr_u16(bool encoding = true, buffer::endian endian = buffer::endian::BIG);
-    std::string             readstr_u32(bool encoding = true, buffer::endian endian = buffer::endian::BIG);
+    std::string             readstr();
+    std::string             readstr_u8();
+    std::string             readstr_u16(buffer::endian endian = buffer::endian::BIG);
+    std::string             readstr_u32(buffer::endian endian = buffer::endian::BIG);
     uint32_t                readable_size() const;
     void                    reset();
     void                    shift(size_t size);
@@ -118,12 +119,12 @@ public:
         return write_u32(static_cast<uint32_t>(value), endian);
     }
 
-    ostream&                writestr_u8(const std::string& value, bool encoding = true);
-    ostream&                writestr_u16(const std::string& value, buffer::endian endian = buffer::endian::BIG, bool encoding = true);
-    ostream&                writestr_u32(const std::string& value, buffer::endian endian = buffer::endian::BIG, bool encoding = true);
+    ostream&                writestr_u8(const std::string& value);
+    ostream&                writestr_u16(const std::string& value, buffer::endian endian = buffer::endian::BIG);
+    ostream&                writestr_u32(const std::string& value, buffer::endian endian = buffer::endian::BIG);
     ostream&                write(const void* buffer, size_t size);
     ostream&                write(const buffer& wb);
-    ostream&                write(const std::string& str, bool uint16 = false, bool encoding = true);
+    ostream&                write(const std::string& str, bool uint16 = false);
 };
 
 }

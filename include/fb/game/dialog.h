@@ -62,8 +62,10 @@ private:
     lua::context*           current() const;
 
 public:
-    dialog&                 from(const char* format, ...);
-    dialog&                 func(const char* format, ...);
+    template <class... Args>
+    dialog&                 from(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    dialog&                 func(const std::string& fmt, Args&&... args);
     dialog&                 resume(int argc);
     dialog&                 release();
     bool                    active() const;
@@ -97,5 +99,27 @@ public:
 };
 
 } }
+
+template <class... Args>
+fb::game::dialog& fb::game::dialog::from(const std::string& fmt, Args&&... args)
+{
+    auto buffer = std::vformat(fmt, std::make_format_args(args...));
+    auto ctx = fb::game::lua::get();
+    ctx->from(buffer.c_str());
+    this->_scripts.push(ctx);
+    return *this;
+}
+
+template <class... Args>
+fb::game::dialog& fb::game::dialog::func(const std::string& fmt, Args&&... args)
+{
+    auto ctx = this->current();
+    if(ctx == nullptr)
+        throw inactive_error();
+
+    auto buffer = std::vformat(fmt, std::make_format_args(args...));
+    ctx->func(buffer.c_str());
+    return *this;
+}
 
 #endif

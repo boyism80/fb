@@ -135,7 +135,8 @@ public:
     {
         auto queue = std::queue<T>();
         auto mutex_queue = std::mutex();
-        auto processed = std::atomic<int>(0);
+        auto mutex_percent = std::mutex();
+        auto processed = 0;
 
         auto gen = this->on_ready();
         while (gen.next())
@@ -161,11 +162,17 @@ public:
                 try
                 {
                     this->on_work(*input);
-                    this->on_worked(*input, (++processed * 100) / count);
+                    {
+                        auto _ = std::lock_guard(mutex_percent);
+                        this->on_worked(*input, (++processed * 100) / count);
+                    }
                 }
                 catch (std::exception& e)
                 {
-                    processed++;
+                    {
+                        auto _ = std::lock_guard(mutex_percent);
+                        processed++;
+                    }
                     this->on_error(*input, e);
                 }
             }

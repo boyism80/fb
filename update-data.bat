@@ -14,8 +14,10 @@ POPD
 if ERRORLEVEL 1 GOTO END
 
 DEL /s /q "include\fb\game\model.h"
+DEL /s /q "include\fb\model\datetime.h"
 RMDIR /s /q "game\json"
 XCOPY "data-converter\bin\output\C++\server\*.h" "include\fb\game\*.h"
+XCOPY "data-converter\bin\output\C++\*.h" "include\fb\model\*.h"
 XCOPY "data-converter\bin\output\json\server\*.json" "game\json\*.json"
 
 DEL /s /q "http\Model\Model.cs"

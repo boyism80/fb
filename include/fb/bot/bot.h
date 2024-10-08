@@ -14,7 +14,7 @@
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/game.h>
-#include <datetime.h>
+#include <fb/model/datetime.h>
 
 using namespace std::chrono_literals;
 

@@ -93,13 +93,13 @@ fb::login::session* fb::login::context::handle_accepted(fb::socket<fb::login::se
 
 bool fb::login::context::handle_connected(fb::socket<fb::login::session>& socket)
 {
-    fb::logger::info("%s님이 접속했습니다.", socket.IP().c_str());
+    fb::logger::info("{}님이 접속했습니다.", socket.IP());
     return true;
 }
 
 async::task<bool> fb::login::context::handle_disconnected(fb::socket<fb::login::session>& socket)
 {
-    fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
+    fb::logger::info("{}님의 연결이 끊어졌습니다.", socket.IP());
     co_return false;
 }
 
@@ -244,7 +244,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
     {
         this->assert_account(name, pw);
 
-        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", UTF8(name, PLATFORM::Windows)));
+        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", name));
         if (this->sockets.contains(fd) == false)
             co_return false;
 

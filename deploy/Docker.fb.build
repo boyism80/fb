@@ -4,9 +4,6 @@ RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install git make cmake gcc-14 g++-14 wget libjsoncpp-dev lua5.3-dev libstdc++-14-dev libmysqlcppconn-dev libmysqlclient-dev redis libssl-dev libncurses5-dev libncursesw5-dev python3-pip default-jre unzip libboost-program-options-dev -y
 RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g++
-RUN pip3 install --upgrade --ignore-installed pip setuptools
-RUN pip3 install fabric3 
-RUN pip3 install jinja2
 
 # zlib
 RUN wget https://ftp.icm.edu.pl/packages/zlib/zlib-1.1.4.tar.gz

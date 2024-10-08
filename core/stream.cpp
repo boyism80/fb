@@ -135,12 +135,12 @@ uint32_t fb::istream::read_u32(buffer::endian endian)
 
 void fb::istream::read(void * buffer, size_t size)
 {
-	if(buffer != nullptr)
-		memcpy(buffer, (uint8_t*)this->data() + this->_offset, size);
+    if(buffer != nullptr)
+        memcpy(buffer, (uint8_t*)this->data() + this->_offset, size);
     this->_offset += uint32_t(size);
 }
 
-std::string fb::istream::readstr(bool encoding)
+std::string fb::istream::readstr()
 {
     auto size = strlen((const char*)this->data() + this->_offset);
     char* buffer = new char[size + 1];
@@ -149,37 +149,37 @@ std::string fb::istream::readstr(bool encoding)
     std::string text(buffer);
     delete[] buffer;
     this->_offset += size + 1;
-    return encoding ? UTF8(text) : text;
+    return UTF8(text, PLATFORM::Linux);
 }
 
-std::string fb::istream::readstr_u8(bool encoding)
+std::string fb::istream::readstr_u8()
 {
-	uint8_t					size = this->read_u8();
-	char					buffer[0xFF];
-	this->read(buffer, size);
-	buffer[std::min(size, uint8_t(0xFF))] = 0x00;
+    uint8_t                 size = this->read_u8();
+    char                    buffer[0xFF];
+    this->read(buffer, size);
+    buffer[std::min(size, uint8_t(0xFF))] = 0x00;
 
-	return encoding ? UTF8(buffer) : buffer;
+    return UTF8(buffer, PLATFORM::Linux);
 }
 
-std::string fb::istream::readstr_u16(bool encoding, buffer::endian endian)
+std::string fb::istream::readstr_u16(buffer::endian endian)
 {
-	uint16_t				size = this->read_u16(endian);
-	char					buffer[0xFF];
-	this->read(buffer, size);
-	buffer[std::min(size, uint16_t(0xFF))] = 0x00;
+    uint16_t                size = this->read_u16(endian);
+    char                    buffer[0xFF];
+    this->read(buffer, size);
+    buffer[std::min(size, uint16_t(0xFF))] = 0x00;
 
-	return encoding ? UTF8(buffer) : buffer;
+    return UTF8(buffer, PLATFORM::Linux);
 }
 
-std::string fb::istream::readstr_u32(bool encoding, buffer::endian endian)
+std::string fb::istream::readstr_u32(buffer::endian endian)
 {
-    uint32_t				size = this->read_u32(endian);
-    char					buffer[0xFF];
+    uint32_t                size = this->read_u32(endian);
+    char                    buffer[0xFF];
     this->read(buffer, size);
     buffer[std::min(size, uint32_t(0xFF))] = 0x00;
 
-    return encoding ? UTF8(buffer) : buffer;
+    return UTF8(buffer, PLATFORM::Linux);
 }
 
 uint32_t fb::istream::readable_size() const
@@ -268,25 +268,25 @@ fb::ostream& fb::ostream::write_u32(uint32_t value, buffer::endian endian)
     return *this;
 }
 
-fb::ostream& fb::ostream::writestr_u8(const std::string& value, bool encoding)
+fb::ostream& fb::ostream::writestr_u8(const std::string& value)
 {
-    auto cp949 = encoding ? CP949(value) : value;
+    auto cp949 = CP949(value, PLATFORM::Linux);
     this->write_u8((uint8_t)cp949.length());
     this->write(cp949.c_str(), cp949.length());
     return *this;
 }
 
-fb::ostream& fb::ostream::writestr_u16(const std::string& value, buffer::endian endian, bool encoding)
+fb::ostream& fb::ostream::writestr_u16(const std::string& value, buffer::endian endian)
 {
-    auto cp949 = encoding ? CP949(value) : value;
+    auto cp949 = CP949(value, PLATFORM::Linux);
     this->write_u16((uint16_t)cp949.length());
     this->write(cp949.c_str(), cp949.length());
     return *this;
 }
 
-fb::ostream& fb::ostream::writestr_u32(const std::string& value, buffer::endian endian, bool encoding)
+fb::ostream& fb::ostream::writestr_u32(const std::string& value, buffer::endian endian)
 {
-    auto cp949 = encoding ? CP949(value) : value;
+    auto cp949 = CP949(value, PLATFORM::Linux);
     this->write_u32((uint32_t)cp949.length());
     this->write(cp949.c_str(), cp949.length());
     return *this;
@@ -304,16 +304,16 @@ fb::ostream& fb::ostream::write(const buffer& wb)
     return *this;
 }
 
-fb::ostream& fb::ostream::write(const std::string& str, bool uint16, bool encoding)
+fb::ostream& fb::ostream::write(const std::string& str, bool uint16)
 {
-    auto cp949 = encoding ? CP949(str) : str;
-	if(uint16)
-		this->write_u16((uint16_t)cp949.size());
-	else
-		this->write_u8((uint8_t)cp949.size());
+    auto cp949 = CP949(str, PLATFORM::Linux);
+    if(uint16)
+        this->write_u16((uint16_t)cp949.size());
+    else
+        this->write_u8((uint8_t)cp949.size());
     
-	if(cp949.empty() == false)
-		this->write(cp949.c_str(), cp949.size());
+    if(cp949.empty() == false)
+        this->write(cp949.c_str(), cp949.size());
 
-	return *this;
+    return *this;
 }

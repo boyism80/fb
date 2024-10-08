@@ -9,9 +9,9 @@
 #include <optional>
 #include <chrono>
 #include <jsoncpp/json/json.h>
-#include <datetime.h>
 #include <unordered_map>
 #include <fb/game/lua.h>
+#include <fb/model/datetime.h>
 #include <fb/game/model.preprocessor.h>
 
 #ifdef BEGIN_PREPROCESSOR
@@ -1340,40 +1340,40 @@ public:
     inline static constexpr const char* ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
     inline static constexpr const char* ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
     inline static constexpr const char* ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
-    inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [%0.2lf%%] 맵 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [%0.2lf%%] 정규표현식 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [%0.2lf%%] 월드맵 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_DOOR_LOADED = "* [%0.2lf%%] 도어 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_SPELL_LOADED = "* [%0.2lf%%] 스펠 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_WARP_LOADED = "* [%0.2lf%%] 워프 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_LOADED = "* [%0.2lf%%] 아이템 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_LOADED = "* [%0.2lf%%] 조합 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_SELL_LOADED = "* [%0.2lf%%] 판매 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_BUY_LOADED = "* [%0.2lf%%] 구매 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_LOADED = "* [%0.2lf%%] NPC 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_LOADED = "* [%0.2lf%%] 몹 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_DROP_LOADED = "* [%0.2lf%%] 드롭 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_LOADED = "* [%0.2lf%%] NPC 스폰 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_LOADED = "* [%0.2lf%%] 몹 스폰 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_CLASS_LOADED = "* [%0.2lf%%] 클래스 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_BOARD_LOADED = "* [%0.2lf%%] 게시판 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_MAP_ALL_LOADED = "* [100%%] 총 %d개의 맵 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_REGEX_ALL_LOADED = "* [100%%] 총 %d개의 정규표현식 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_ALL_LOADED = "* [100%%] 총 %d개의 월드맵 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_DOOR_ALL_LOADED = "* [100%%] 총 %d개의 도어 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_SPELL_ALL_LOADED = "* [100%%] 총 %d개의 스펠 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_WARP_ALL_LOADED = "* [100%%] 총 %d개의 워프 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_ALL_LOADED = "* [100%%] 총 %d개의 아이템 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_ALL_LOADED = "* [100%%] 총 %d개의 조합 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_SELL_ALL_LOADED = "* [100%%] 총 %d개의 판매 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_BUY_ALL_LOADED = "* [100%%] 총 %d개의 구매 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_ALL_LOADED = "* [100%%] 총 %d개의 NPC 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_ALL_LOADED = "* [100%%] 총 %d개의 몹 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_DROP_ALL_LOADED = "* [100%%] 총 %d개의 드롭 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED = "* [100%%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED = "* [100%%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_CLASS_ALL_LOADED = "* [100%%] 총 %d개의 클래스 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_BOARD_ALL_LOADED = "* [100%%] 총 %d개의 게시판 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_DOOR_LOADED = "* [{:0.2f}%] 도어 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_SPELL_LOADED = "* [{:0.2f}%] 스펠 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_WARP_LOADED = "* [{:0.2f}%] 워프 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_LOADED = "* [{:0.2f}%] 아이템 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_LOADED = "* [{:0.2f}%] 조합 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_SELL_LOADED = "* [{:0.2f}%] 판매 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_BUY_LOADED = "* [{:0.2f}%] 구매 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_LOADED = "* [{:0.2f}%] NPC 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_LOADED = "* [{:0.2f}%] 몹 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_DROP_LOADED = "* [{:0.2f}%] 드롭 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_LOADED = "* [{:0.2f}%] NPC 스폰 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_LOADED = "* [{:0.2f}%] 몹 스폰 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_CLASS_LOADED = "* [{:0.2f}%] 클래스 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_BOARD_LOADED = "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_MAP_ALL_LOADED = "* [100%] 총 %d개의 맵 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_REGEX_ALL_LOADED = "* [100%] 총 %d개의 정규표현식 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_ALL_LOADED = "* [100%] 총 %d개의 월드맵 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_DOOR_ALL_LOADED = "* [100%] 총 %d개의 도어 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_SPELL_ALL_LOADED = "* [100%] 총 %d개의 스펠 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_WARP_ALL_LOADED = "* [100%] 총 %d개의 워프 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_ALL_LOADED = "* [100%] 총 %d개의 아이템 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_ALL_LOADED = "* [100%] 총 %d개의 조합 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_SELL_ALL_LOADED = "* [100%] 총 %d개의 판매 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BUY_ALL_LOADED = "* [100%] 총 %d개의 구매 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_ALL_LOADED = "* [100%] 총 %d개의 NPC 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_ALL_LOADED = "* [100%] 총 %d개의 몹 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_DROP_ALL_LOADED = "* [100%] 총 %d개의 드롭 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED = "* [100%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED = "* [100%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_CLASS_ALL_LOADED = "* [100%] 총 %d개의 클래스 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BOARD_ALL_LOADED = "* [100%] 총 %d개의 게시판 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_SEX = "성별을 확인할 수 없습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_DEATH_PENALTY = "아이템 데스 패널티를 확인할 수 없습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_MOB_SIZE = "몹 크기 형식을 확인할 수 없습니다.";

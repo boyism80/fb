@@ -54,9 +54,9 @@ bool fb::game::npc::buy(fb::game::session& session, const fb::model::item* item_
                 session.money_add(price * count.value());
 
                 if(count == 1)
-                    this->chat(fb::format("%s %d전에 샀습니다.", name_with(item_model->name).c_str(), price));
+                    this->chat(std::format("{} {}전에 샀습니다.", name_with(item_model->name), price));
                 else
-                    this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name.c_str(), count.value(), price * count.value()));
+                    this->chat(std::format("{} {}개를 {}전에 샀습니다.", item_model->name, count.value(), price * count.value()));
             }
         }
         else
@@ -78,9 +78,9 @@ bool fb::game::npc::buy(fb::game::session& session, const fb::model::item* item_
             }
             session.money_add(price * sell_count);
             if(sell_count == 1)
-                this->chat(fb::format("%s %d전에 샀습니다.", name_with(item_model->name).c_str(), price * sell_count));
+                this->chat(std::format("{} {}전에 샀습니다.", name_with(item_model->name), price * sell_count));
             else
-                this->chat(fb::format("%s %d개를 %d전에 샀습니다.", item_model->name.c_str(), sell_count, price * sell_count));
+                this->chat(std::format("{} {}개를 {}전에 샀습니다.", item_model->name, sell_count, price * sell_count));
         }
 
         return true;
@@ -139,9 +139,9 @@ bool fb::game::npc::sell(fb::game::session& session, const fb::model::item* item
             session.items.add(item_model->make(this->context, count));
             session.money_reduce(price);
             if (count == 1)
-                this->chat(fb::format("%s %d전에 팔았습니다.", name_with(item_model->name).c_str(), price));
+                this->chat(std::format("{} {}전에 팔았습니다.", name_with(item_model->name), price));
             else
-                this->chat(fb::format("%s %d개를 %d전에 팔았습니다.", item_model->name.c_str(), count, price));
+                this->chat(std::format("{} {}개를 {}전에 팔았습니다.", item_model->name, count, price));
         }
         return true;
     }
@@ -213,7 +213,7 @@ bool fb::game::npc::repair(fb::game::session& session, const fb::model::item* it
 
             auto& equipment_model = static_cast<const fb::model::equipment&>(*item_model);
             if(equipment_model.repair.has_value() == false)
-                throw std::runtime_error(fb::format("%s 고칠 수 없습니다.", name_with(item_model->name).c_str()));
+                throw std::runtime_error(std::format("{} 고칠 수 없습니다.", name_with(item_model->name)));
 
             auto equipment = static_cast<fb::game::equipment*>(item);
             if (equipment->durability() >= equipment_model.durability)
@@ -249,7 +249,7 @@ bool fb::game::npc::repair(fb::game::session& session, const fb::model::item* it
         }
         else
         {
-            this->chat(fb::format("고치는데 %d전이 들었습니다.", price));
+            this->chat(std::format("고치는데 {}전이 들었습니다.", price));
         }
 
         return true;
@@ -284,7 +284,7 @@ bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_
 
         session.money_reduce(money.value());
         session.deposit_money(money.value());
-        this->chat(fb::format("금전 %d전을 맡았습니다.", money.value()));
+        this->chat(std::format("금전 {}전을 맡았습니다.", money.value()));
 
         return true;
     }
@@ -318,7 +318,7 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
 
         session.withdraw_money(money.value());
         session.money_add(money.value());
-        this->chat(fb::format("금전 %d전을 돌려드렸습니다.", money.value()));
+        this->chat(std::format("금전 {}전을 돌려드렸습니다.", money.value()));
 
         return true;
     }
@@ -345,7 +345,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item*
             throw std::runtime_error("가지고 있지 않습니다.");
 
         if(item->deposit_price.has_value() == false)
-            throw std::runtime_error(fb::format("%s 맡을 수 없습니다.", name_with(item->name, {"은", "는"}).c_str()));
+            throw std::runtime_error(std::format("{} 맡을 수 없습니다.", name_with(item->name, {"은", "는"})));
 
         if(item->deposit_price > session.money())
             throw std::runtime_error("돈이 부족합니다.");
@@ -370,9 +370,9 @@ bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item*
         session.deposit_item(index, count.value());
         session.money_reduce(item->deposit_price.value());
         if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
-            this->chat(fb::format("%s %d개를 맡았습니다.", item->name.c_str(), count.value()));
+            this->chat(std::format("{} {}개를 맡았습니다.", item->name, count.value()));
         else
-            this->chat(fb::format("%s 맡았습니다.", name_with(item->name).c_str()));
+            this->chat(std::format("{} 맡았습니다.", name_with(item->name)));
 
         return true;
     }
@@ -423,9 +423,9 @@ async::task<bool> fb::game::npc::return_item(fb::game::session& session, const f
             throw std::runtime_error("알 수 없는 에러");
 
         if (item->attr(ITEM_ATTRIBUTE::BUNDLE))
-            this->chat(fb::format("%s %d개를 돌려드렸습니다.", item->name.c_str(), count.value()));
+            this->chat(std::format("{} {}개를 돌려드렸습니다.", item->name, count.value()));
         else
-            this->chat(fb::format("%s 돌려드렸습니다.", name_with(item->name).c_str()));
+            this->chat(std::format("{} 돌려드렸습니다.", name_with(item->name)));
 
         co_return true;
     }
@@ -509,7 +509,7 @@ void fb::game::npc::sell_price(const fb::model::item* item)
             if (sell != nullptr)
             {
                 auto price = sell->price.value_or(item->price);
-                this->chat(fb::format("%s %d전에 팔고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
+                this->chat(std::format("{} {}전에 팔고 있습니다.", name_with(item->name, { "은", "는" }), price));
             }
         }
 
@@ -535,7 +535,7 @@ void fb::game::npc::buy_price(const fb::model::item* item)
             if (sell != nullptr)
             {
                 auto price = sell->price.value_or(item->price / 2);
-                this->chat(fb::format("%s %d전에 사고 있습니다.", name_with(item->name, { "은", "는" }).c_str(), price));
+                this->chat(std::format("{} {}전에 사고 있습니다.", name_with(item->name, { "은", "는" }), price));
             }
         }
 
@@ -557,7 +557,7 @@ bool fb::game::npc::deposited_money(const fb::game::session& session)
     if(money == 0)
         this->chat("맡긴 돈이 없습니다.");
     else
-        this->chat(fb::format("%d전을 맡아두고 있습니다.", money));
+        this->chat(std::format("{}전을 맡아두고 있습니다.", money));
     
     return true;
 }
@@ -574,19 +574,19 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
             throw std::runtime_error("그게 뭐야?");
 
         if(item->attr(ITEM_ATTRIBUTE::WEAPON) == false)
-            throw std::runtime_error(fb::format("%s 무기가 아닙니다.", name_with(item->name, {"은", "는"}).c_str()));
+            throw std::runtime_error(std::format("{} 무기가 아닙니다.", name_with(item->name, {"은", "는"})));
 
         auto weapon = session.items.find(*item);
         if (weapon == nullptr)
-            throw std::runtime_error(fb::format("%s 가지고 있지 않습니다.", name_with(item->name).c_str()));
+            throw std::runtime_error(std::format("{} 가지고 있지 않습니다.", name_with(item->name)));
 
         auto& weapon_model = static_cast<const fb::model::weapon&>(*item);
         if (weapon_model.rename.has_value() == false)
-            throw std::runtime_error(fb::format("%s 별칭을 부여할 수 없습니다.", name_with(item->name, {"은", "는"})));
+            throw std::runtime_error(std::format("{} 별칭을 부여할 수 없습니다.", name_with(item->name, {"은", "는"})));
 
         auto money = session.money();
         if (weapon_model.rename.value() > money)
-            throw std::runtime_error(fb::format("돈이 모자랍니다. %s에 별칭을 부여하려면 %d전이 필요합니다.", item->name.c_str(), weapon_model.rename.value()));
+            throw std::runtime_error(std::format("돈이 모자랍니다. {}에 별칭을 부여하려면 {}전이 필요합니다.", item->name, weapon_model.rename.value()));
 
         auto cp949 = CP949(name);
         if(cp949.size() < 4)
@@ -600,7 +600,7 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
 
         static_cast<fb::game::weapon*>(weapon)->custom_name(name);
         session.money_reduce(weapon_model.rename.value());
-        this->chat(fb::format("%s의 이름을 %s로 변경했습니다.", item->name.c_str(), name_with(name, { "으", "" }).c_str()));
+        this->chat(std::format("{}의 이름을 {}로 변경했습니다.", item->name, name_with(name, { "으", "" })));
     }
     catch(std::runtime_error& e)
     {
@@ -636,7 +636,7 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
         auto sstream = std::stringstream();
         auto names = boost::algorithm::join(items, ", ");
         if (overflow > 0)
-            sstream << names << fb::format(" 외 %d개를", overflow);
+            sstream << names << std::format(" 외 {}개를", overflow);
         else
             sstream << name_with(names);
 
@@ -667,7 +667,7 @@ bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::
         if(deposited_item == nullptr)
             throw std::runtime_error("그런 물건은 맡고 있지 않습니다.");
 
-        this->chat(fb::format("%s %d개 맡고 있습니다.", name_with(item->name).c_str(), deposited_item->count()));
+        this->chat(std::format("{} {}개 맡고 있습니다.", name_with(item->name), deposited_item->count()));
     }
     catch(std::runtime_error& e)
     {

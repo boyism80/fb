@@ -8,6 +8,7 @@
 #include <iconv.h>
 #include <codecvt>
 #endif
+#include <cstdint>
 #include <wchar.h>
 #include <stdlib.h>
 #include <stdarg.h>

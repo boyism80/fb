@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x64">
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
@@ -26,19 +18,6 @@
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
-    <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -57,12 +36,6 @@
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -70,46 +43,16 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\include</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\include</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x86;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(MYSQL_SVR_SDK)\include;$(MYSQL_SDK)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
-    <LibraryPath>$(MYSQL_SVR_SDK)\lib;$(MYSQL_SDK)\lib;$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <StackReserveSize>
-      </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmtd.lib;rabbitmq-c\x86\librabbitmq.4_d.lib;cpp_redis\x86\cpp_redis_d.lib;cpp_redis\x86\tacopie_d.lib;zlib/x86/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -117,7 +60,7 @@
       <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -127,31 +70,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib</AdditionalDependencies>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-    </ClCompile>
-    <Link>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <StackReserveSize>
-      </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x86\json_vc71_libmt.lib;rabbitmq-c\x86\librabbitmq.4.lib;cpp_redis\x86\cpp_redis.lib;cpp_redis\x86\tacopie.lib;zlib/x86/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;cpp-terminal\x64\cpp-terminal_d.lib;cpp-terminal\x64\cpp-terminal-private_d.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,7 +82,7 @@
       <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalOptions>/source-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/source-charset:utf-8</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -175,7 +94,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib;cpp-terminal\x64\cpp-terminal.lib;cpp-terminal\x64\cpp-terminal-private.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -186,13 +105,14 @@
     <ClCompile Include="..\core\cryptor.cpp" />
     <ClCompile Include="..\core\dead_lock.cpp" />
     <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\format.cpp" />
     <ClCompile Include="..\core\logger.cpp" />
     <ClCompile Include="..\core\mst.cpp" />
     <ClCompile Include="..\core\stream.cpp" />
     <ClCompile Include="..\core\table.cpp" />
     <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\context.cpp" />
+    <ClCompile Include="lib\gateway.cpp" />
+    <ClCompile Include="lib\session.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

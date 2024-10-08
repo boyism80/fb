@@ -219,7 +219,7 @@ async::task<httplib::Result> fb::acceptor<T>::get_internal(const std::string& ho
     auto future = std::async(std::launch::async, [this, promise, host, path, headers]() mutable
         {
             auto client = httplib::Client(host);
-            promise->set_value(client.Get(path, headers));
+            promise->set_value(client.Get(UTF8(path, PLATFORM::Windows), headers));
         });
 
     return promise->task();
@@ -234,7 +234,7 @@ async::task<httplib::Result> fb::acceptor<T>::post_internal(const std::string& h
     auto future = std::async(std::launch::async, [this, promise, host, path, headers, buffer]() mutable
         {
             auto client = httplib::Client(host);
-            promise->set_value(client.Post(path, headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream"));
+            promise->set_value(client.Post(UTF8(path, PLATFORM::Windows), headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream"));
         });
 
     return promise->task();
@@ -363,7 +363,7 @@ bool fb::acceptor<T>::running() const
 }
 
 template <typename T>
-async::task<void> fb::acceptor<T>::sleep(const timespan& duration)
+async::task<void> fb::acceptor<T>::sleep(const fb::model::timespan& duration)
 {
     auto thread = this->_threads.current();
     if (thread == nullptr)

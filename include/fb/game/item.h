@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <fb/game/object.h>
 #include <fb/protocol/db.h>
-#include <datetime.h>
+#include <fb/model/datetime.h>
 
 #ifdef small
 #undef small

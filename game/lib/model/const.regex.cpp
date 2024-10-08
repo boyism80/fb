@@ -14,7 +14,7 @@ bool fb::model::const_value::regex::match_sell_message(const std::string& messag
         {
             count = std::stoi(what["count"].str());
             if (count > 0xFFFF)
-                throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+                throw std::out_of_range(std::format("count cannot be {}", what["count"].str()));
         }
         catch (std::out_of_range&)
         {
@@ -47,7 +47,7 @@ bool fb::model::const_value::regex::match_buy_message(const std::string& message
         {
             count = std::stoi(what["count"].str());
             if (count > 0xFFFF)
-                throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+                throw std::out_of_range(std::format("count cannot be {}", what["count"].str()));
         }
         catch (std::out_of_range&)
         {
@@ -100,7 +100,7 @@ bool fb::model::const_value::regex::match_deposit_money_message(const std::strin
         {
             money = std::stoul(what["money"].str());
             if (money > 0xFFFFFFFF)
-                throw std::out_of_range(fb::format("money cannot be %s", what["money"].str().c_str()));
+                throw std::out_of_range(std::format("money cannot be {}", what["money"].str().c_str()));
         }
     }
     catch (std::out_of_range&)
@@ -129,7 +129,7 @@ bool fb::model::const_value::regex::match_withdraw_money_message(const std::stri
         {
             money = std::stoul(what["money"].str());
             if (money > 0xFFFFFFFF)
-                throw std::out_of_range(fb::format("money cannot be %s", what["money"].str().c_str()));
+                throw std::out_of_range(std::format("money cannot be {}", what["money"].str().c_str()));
         }
     }
     catch (std::out_of_range&)
@@ -157,7 +157,7 @@ bool fb::model::const_value::regex::match_deposit_item_message(const std::string
         {
             count = std::stoul(what["count"].str());
             if (count > 0XFFFF)
-                throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+                throw std::out_of_range(std::format("count cannot be {}", what["count"].str()));
         }
         else
         {
@@ -192,7 +192,7 @@ bool fb::model::const_value::regex::match_withdraw_item_message(const std::strin
         {
             count = std::stoul(what["count"].str());
             if (count > 0XFFFF)
-                throw std::out_of_range(fb::format("count cannot be %s", what["count"].str().c_str()));
+                throw std::out_of_range(std::format("count cannot be {}", what["count"].str()));
         }
         else
         {

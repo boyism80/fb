@@ -4,7 +4,7 @@
 #include <fb/game/object.h>
 #include <fb/game/item.h>
 #include <fb/encoding.h>
-#include <fb/format.h>
+#include <format>
 #include <optional>
 
 namespace fb { namespace game {

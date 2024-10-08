@@ -4,7 +4,7 @@ using namespace fb::bot;
 
 game_bot::game_bot(bot_container& owner, uint32_t id) : base_bot(owner, id)
 {
-    this->_next_action_time = datetime();
+    this->_next_action_time = fb::model::datetime();
 
     this->bind<fb::protocol::game::response::session::id>       (std::bind(&game_bot::handle_sequence,      this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::spell::update>     (std::bind(&game_bot::handle_spell_update,  this, std::placeholders::_1));

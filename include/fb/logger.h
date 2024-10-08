@@ -39,12 +39,72 @@ private:
     static logger&          get();
 
 public:
-    static fb::logger&      debug(const char* format, ...);
-    static fb::logger&      info(const char* format, ...);
-    static fb::logger&      warn(const char* format, ...);
-    static fb::logger&      fatal(const char* format, ...);
+    template <class... Args>
+    static fb::logger&      debug(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    static fb::logger&      info(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    static fb::logger&      warn(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    static fb::logger&      fatal(const std::string& fmt, Args&&... args);
 };
 
+}
+
+template <class... Args>
+fb::logger& fb::logger::debug(const std::string& fmt, Args&&... args)
+{
+    auto& ist = get();
+    if(ist.has_flag(fb::logger::level::DEBUG) == false)
+        return ist;
+
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    auto& c = fb::console::get();
+    c.puts("[DEBUG] {}", message);
+
+    return ist;
+}
+
+template <class... Args>
+fb::logger& fb::logger::info(const std::string& fmt, Args&&... args)
+{
+    auto& ist = get();
+    if(ist.has_flag(fb::logger::level::INFO) == false)
+        return ist;
+
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    auto& c = fb::console::get();
+    c.puts("[INFO] {}", message);
+
+    return ist;
+}
+
+template <class... Args>
+fb::logger& fb::logger::warn(const std::string& fmt, Args&&... args)
+{
+    auto& ist = get();
+    if(ist.has_flag(fb::logger::level::WARN) == false)
+        return ist;
+
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    auto& c = fb::console::get();
+    c.puts("[WARN] {}", message);
+
+    return ist;
+}
+
+template <class... Args>
+fb::logger& fb::logger::fatal(const std::string& fmt, Args&&... args)
+{
+    auto& ist = get();
+    if(ist.has_flag(fb::logger::level::FATAL) == false)
+        return ist;
+
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    auto& c = fb::console::get();
+    c.puts("[FATAL] {}", message);
+
+    return ist;
 }
 
 #endif // !__LOGGER_H__

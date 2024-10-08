@@ -438,7 +438,7 @@ async::task<bool> fb::game::context::handle_disconnected(fb::socket<fb::game::se
     auto session = socket.data();
     session->init(false);
 
-    fb::logger::info("%s님이 접속을 종료했습니다.", session->name().c_str());
+    fb::logger::info("{}님이 접속을 종료했습니다.", session->name());
 
     co_await this->save(*session);
     co_await this->post<fb::protocol::internal::request::Logout, fb::protocol::internal::response::Logout>("internal", "/in-game/logout",
@@ -834,7 +834,7 @@ void fb::game::context::amqp_thread()
                 "/");
 
             auto& queue1 = this->_amqp->declare_queue();
-            queue1.bind("amq.direct", fb::format("fb.game.%d", config["id"].asInt()));
+            queue1.bind("amq.direct", std::format("fb.game.{}", config["id"].asInt()));
             queue1.handler<fb::protocol::internal::response::Pong>([](auto& response) -> async::task<void>
             {
                 co_return;
@@ -867,7 +867,7 @@ void fb::game::context::amqp_thread()
                     if (session == nullptr)
                         co_return;
                     
-                    session->message(fb::format("%s> %s", CP949(response.from, PLATFORM::Windows).c_str(), CP949(response.message, PLATFORM::Windows).c_str()), MESSAGE_TYPE::NOTIFY);
+                    session->message(std::format("{}> {}", CP949(response.from, PLATFORM::Windows), CP949(response.message, PLATFORM::Windows)), MESSAGE_TYPE::NOTIFY);
                 });
 
             auto& queue2 = this->_amqp->declare_queue();
@@ -935,7 +935,7 @@ async::task<bool> fb::game::context::handle_login(fb::socket<fb::game::session>&
     auto from = request.from;
 
     session->name(request.name);
-    fb::logger::info("%s님이 접속했습니다.", request.name.c_str());
+    fb::logger::info("{}님이 접속했습니다.", request.name);
     
 
     auto fd = socket.fd();

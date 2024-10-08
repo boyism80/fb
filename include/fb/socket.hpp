@@ -105,6 +105,9 @@ void fb::socket<T>::recv()
                     break;
 
                 case ECONNABORTED:
+#ifdef _WIN32
+                case WSA_OPERATION_ABORTED:
+#endif
                     async::awaitable_get(this->_handle_closed(*this));
                     break;
 

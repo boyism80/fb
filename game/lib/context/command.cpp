@@ -459,7 +459,7 @@ async::task<bool> fb::game::context::handle_command_concurrency(fb::game::sessio
         {
             for (int i = 0; i < seconds; i++)
             {
-                session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+                session.chat(std::format("{}초 후에 풀립니다.", seconds - i));
                 co_await this->sleep(1s);
             }
             co_return true;

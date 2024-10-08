@@ -28,13 +28,13 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
 void fb::game::npc_spawner::on_worked(const fb::game::npc_spawner::input_type& input, double percent)
 {
      auto& c = fb::console::get();
-     c.put("* [%0.2lf%%] NPC 스폰 읽었습니다.", percent);
+     c.put("* [{:0.2f}%] NPC 스폰 읽었습니다.", percent);
 }
 
 void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& input, std::exception& e)
 {
      auto& c = fb::console::get();
-     c.comment("    - %s", e.what());
+     c.comment("    - {}", e.what());
 }
 
 void fb::game::npc_spawner::on_finish()

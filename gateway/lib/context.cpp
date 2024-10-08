@@ -83,13 +83,13 @@ bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& so
 {
     socket.send(this->_connection_cache, false);
 
-    fb::logger::info("%s님이 접속했습니다.", socket.IP().c_str());
+    fb::logger::info("{}님이 접속했습니다.", socket.IP());
     return true;
 }
 
 async::task<bool> fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
-    fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
+    fb::logger::info("{}님의 연결이 끊어졌습니다.", socket.IP());
     co_return false;
 }
 

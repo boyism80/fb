@@ -80,15 +80,17 @@ protected:
     context(context&&)                 = delete;
 
 public:
-    virtual ~context();
+    virtual ~context() = default;
 
 public:
     context operator = (context&)       = delete;
     context operator = (const context&) = delete;
 
 public:
-    context&                    from(const char* format, ...);
-    context&                    func(const char* format, ...);
+    template <class... Args>
+    context&                    from(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    context&                    func(const std::string& fmt, Args&&... args);
                                 
     context&                    pushstring(const std::string& value);
     context&                    pushinteger(lua_Integer value);
@@ -106,9 +108,9 @@ public:
         return this->pushinteger(static_cast<lua_Integer>(value));
     }
 
-    const std::string           tostring(int offset);
-    const std::string           arg_string(int offset) { return tostring(offset); }
-    const std::string           ret_string(int offset) { return tostring(-offset); }
+    std::string                 tostring(int offset);
+    std::string                 arg_string(int offset) { return tostring(offset); }
+    std::string                 ret_string(int offset) { return tostring(-offset); }
     
     int                         tointeger(int offset) { return (int)lua_tointeger(*this, offset); }
     lua_Integer                 tonumber(int offset) { return lua_tonumber(*this, offset); }
@@ -323,6 +325,40 @@ inline void to_lua(lua_State* ctx, const T* self)
     auto metaname = self->metaname();
     luaL_getmetatable(ctx, metaname.c_str());
     lua_setmetatable(ctx, -2);
+}
+
+
+template <class... Args>
+fb::game::lua::context& fb::game::lua::context::from(const std::string& fmt, Args&&... args)
+{
+    auto fname = std::vformat(fmt, std::make_format_args(args...));
+#if defined DEBUG || defined _DEBUG
+    luaL_dofile(*this, fname.c_str());
+#else
+    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    if (main->_bytecodes.contains(fname) == false)
+    {
+        fb::logger::fatal("cannot find script {}", fname);
+        return *this;
+    }
+
+    auto& bytes = main->_bytecodes[fname];
+    if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
+        return *this;
+
+    if (lua_pcall(*this, 0, LUA_MULTRET, 0))
+        return *this;
+#endif
+
+    return *this;
+}
+
+template <class... Args>
+fb::game::lua::context& fb::game::lua::context::func(const std::string& fmt, Args&&... args)
+{
+    auto fname = std::vformat(fmt, std::make_format_args(args...));
+    lua_getglobal(*this, fname.c_str());
+    return *this;
 }
 
 #endif // !__LUA_H__

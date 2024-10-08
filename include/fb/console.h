@@ -15,22 +15,19 @@ bool SetConsoleIcon(int id);
 #include <optional>
 #include <memory>
 #include <mutex>
-#include <fb/format.h>
+#include <format>
 #include <fb/encoding.h>
+#include <cpp-terminal/iostream.hpp>
+#include <cpp-terminal/screen.hpp>
+#include <cpp-terminal/cursor.hpp>
 
 namespace fb {
 
 class console
 {
 private:
-#ifdef _WIN32
-    HANDLE                  _stdout;
-#endif
-    int                     _x            = 0;
-    int                     _y            = 0;
-    uint16_t                _width        = 0;
-    uint16_t                _height       = 0;
-    uint16_t                _additional_y = 0;
+    uint32_t                _x = 0, _y = 1;
+    uint32_t                _additional_y = 0;
     std::mutex              _mutex;
 
 private:
@@ -46,10 +43,14 @@ public:
     console& operator = (const console&) = delete;
 
 public:
-    fb::console&            put(const char* format, ...);
-    fb::console&            puts(const char* format, ...);
-    fb::console&            render(const char* format, ...);
-    fb::console&            comment(const char* format, ...);
+    template <class... Args>
+    fb::console&            put(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    fb::console&            puts(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    fb::console&            render(const std::string& fmt, Args&&... args);
+    template <class... Args>
+    fb::console&            comment(const std::string& fmt, Args&&... args);
     fb::console&            clear(uint16_t x, uint16_t y);
     fb::console&            trim();
     bool                    line(uint16_t width, char content, char side = '+');
@@ -70,6 +71,65 @@ public:
     static console&         get();
 };
 
+}
+
+template <class ...Args>
+fb::console& fb::console::put(const std::string& fmt, Args&&... args)
+{
+    auto _ = std::lock_guard(this->_mutex);
+
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    Term::cout << Term::cursor_move(this->_y, 0)
+               << std::string(this->width(), ' ')
+               << Term::cursor_move(this->_y, this->_x)
+               << UTF8(message, PLATFORM::Windows)
+               << std::flush;
+    return *this;
+}
+
+template <class... Args>
+fb::console& fb::console::puts(const std::string& fmt, Args&&... args)
+{
+    auto _ = std::lock_guard(this->_mutex);
+    
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    Term::cout << Term::cursor_move(this->_y, 0)
+               << std::string(this->width(), ' ')
+               << Term::cursor_move(this->_y, this->_x)
+               << UTF8(message, PLATFORM::Windows)
+               << std::flush;
+
+    this->next();
+    return *this;
+}
+
+template <class... Args>
+fb::console& fb::console::render(const std::string& fmt, Args&&... args)
+{
+    auto _ = std::lock_guard(this->_mutex);
+    
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    Term::cout << Term::cursor_move(this->_y, this->_x)
+               << UTF8(message, PLATFORM::Windows)
+               << std::flush;
+
+    return *this;
+}
+
+template <class... Args>
+fb::console& fb::console::comment(const std::string& fmt, Args&&... args)
+{
+    auto _ = std::lock_guard(this->_mutex);
+    auto additional_y = ++this->_additional_y;
+    auto message = std::vformat(fmt, std::make_format_args(args...));
+    Term::cout << Term::cursor_move(this->_y + additional_y, 0)
+               << std::string(this->width(), ' ')
+               << Term::cursor_move(this->_y + additional_y, this->_x)
+               << UTF8(message, PLATFORM::Windows)
+               << std::flush;
+    this->clear(message.size(), this->_y + additional_y);
+
+    return *this;
 }
 
 #endif // !__CONSOLE_H__
