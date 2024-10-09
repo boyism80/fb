@@ -17,17 +17,6 @@ bool SetConsoleIcon(int id)
 }
 #endif
 
-fb::console::console()
-{
-}
-
-fb::console::~console()
-{
-#ifdef __linux__
-    endwin();
-#endif
-}
-
 bool fb::console::line(uint16_t width, char content, char side)
 {
     if(width < 3)

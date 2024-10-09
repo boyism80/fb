@@ -1,8 +1,8 @@
-docker build --tag cshyeon/fb:build -f deploy/Docker.fb.build .
-docker push cshyeon/fb:build
-
 docker build --tag cshyeon/fb:base -f deploy/Docker.fb.base .
 docker push cshyeon/fb:base
+
+docker build --tag cshyeon/fb:build -f deploy/Docker.fb.build .
+docker push cshyeon/fb:build
 
 docker build --tag cshyeon/fb:gateway -f deploy/Docker.fb.gateway .
 docker push cshyeon/fb:gateway

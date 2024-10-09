@@ -1,20 +1,6 @@
-FROM ubuntu:24.04 AS build
+FROM cshyeon/fb:base
 
-RUN apt-get update -y
-RUN apt-get upgrade -y
-RUN apt-get install git make cmake gcc-14 g++-14 wget libjsoncpp-dev lua5.3-dev libstdc++-14-dev libmysqlcppconn-dev libmysqlclient-dev redis libssl-dev libncurses5-dev libncursesw5-dev python3-pip default-jre unzip libboost-program-options-dev -y
-RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g++
-
-# zlib
-RUN wget https://ftp.icm.edu.pl/packages/zlib/zlib-1.1.4.tar.gz
-RUN tar xvfz zlib-1.1.4.tar.gz
-WORKDIR /zlib-1.1.4
-RUN ./configure
-RUN make
-RUN make install
-WORKDIR /
-RUN rm -f zlib-1.1.4.tar.gz
-RUN rm -rf zlib-1.1.4
+RUN apt-get install libssl-dev python3-pip default-jre -y
 
 # boost
 RUN wget -O boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
@@ -26,33 +12,3 @@ RUN ./b2 install
 WORKDIR /
 RUN rm -f boost_1_84_0.tar.gz
 RUN rm -rf boost_1_84_0
-
-# cpp_redis
-RUN git clone https://github.com/cpp-redis/cpp_redis.git
-WORKDIR ./cpp_redis
-RUN git submodule init && git submodule update
-WORKDIR ./tacopie
-RUN git fetch origin pull/5/head:cmake-fixes && git checkout cmake-fixes
-RUN sed -i 's/add_library(${PROJECT_NAME} SHARED ${tacopie_sources})/add_library(${PROJECT_NAME} ${tacopie_sources})/' CMakeLists.txt
-WORKDIR ../
-RUN sed -i 's/add_library(${PROJECT_NAME} SHARED ${cpp_redis_sources})/add_library(${PROJECT_NAME} ${cpp_redis_sources})/' CMakeLists.txt
-RUN mkdir build
-WORKDIR ./build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release
-RUN make
-RUN make install
-WORKDIR /
-RUN rm -rf cpp_redis
-
-# rabbitmq-c
-WORKDIR /
-RUN git clone https://github.com/alanxz/rabbitmq-c
-WORKDIR /rabbitmq-c/build
-RUN cmake ..
-RUN cmake --build . --config Release
-WORKDIR /
-RUN mkdir -p /usr/include/rabbitmq-c
-RUN mv /rabbitmq-c/include/rabbitmq-c/* /usr/include/rabbitmq-c
-RUN mv /rabbitmq-c/build/include/rabbitmq-c/* /usr/include/rabbitmq-c
-RUN mv /rabbitmq-c/build/librabbitmq/librabbitmq.* /usr/lib
-RUN rm -rf /rabbitmq-c

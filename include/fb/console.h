@@ -7,7 +7,6 @@
 bool SetConsoleIcon(int id);
 #else
 #include <locale.h>
-#include <ncursesw/curses.h>
 #endif
 #include <stdarg.h>
 #include <string>
@@ -31,12 +30,12 @@ private:
     std::mutex              _mutex;
 
 private:
-    console();
+    console() = default;
 
 public:
     console(const console&) = delete;
     console(console&&) = delete;
-    ~console();
+    ~console() = default;
 
 public:
     console& operator = (console&) = delete;
