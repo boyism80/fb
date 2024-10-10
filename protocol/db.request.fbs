@@ -1,0 +1,80 @@
+include "db.fbs";
+
+namespace fb.protocol.db.request;
+
+table Account {
+  uid: uint;
+}
+
+
+table ChangePw {
+  uid: uint;
+  before: string;
+  after: string;
+  birthday: uint;
+}
+
+
+table InitCharacter {
+  uid: uint;
+  name: string;
+  pw: string;
+  hp: uint;
+  mp: uint;
+  map: ushort;
+  x: ushort;
+  y: ushort;
+  admin: bool;
+}
+
+
+table Login {
+  uid: uint;
+}
+
+
+table MakeCharacter {
+  uid: uint;
+  hair: ushort;
+  sex: ubyte;
+  nation: ubyte;
+  creature: ubyte;
+}
+
+
+table ReserveName {
+  name: string;
+}
+
+
+table Save {
+  character: fb.protocol.db.Character;
+  items: [fb.protocol.db.Item];
+  spells: [fb.protocol.db.Spell];
+}
+
+
+table GetArticle {
+  section: uint;
+  article: uint;
+}
+
+
+table GetArticleList {
+  section: uint;
+  position: uint;
+}
+
+
+table WriteArticle {
+  section: uint;
+  user: uint;
+  title: string;
+  contents: string;
+}
+
+
+table DeleteArticle {
+  id: uint;
+  user: uint;
+}

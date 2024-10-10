@@ -1,0 +1,70 @@
+include "db.fbs";
+
+namespace fb.protocol.db.response;
+
+table Account {
+  pw: string;
+  map: uint;
+  success: bool;
+}
+
+
+table DeleteArticle {
+  result: int;
+}
+
+
+table GetArticle {
+  article: fb.protocol.db.Article;
+  next: bool;
+  success: bool;
+}
+
+
+table GetArticleList {
+  summary_list: [fb.protocol.db.ArticleSummary];
+}
+
+
+table WriteArticle {
+  success: bool;
+}
+
+
+table ChangePw {
+  result: int;
+}
+
+
+table GetUid {
+  uid: uint;
+  success: bool;
+}
+
+
+table InitCharacter {
+  success: bool;
+}
+
+
+table Login {
+  character: fb.protocol.db.Character;
+  items: [fb.protocol.db.Item];
+  spells: [fb.protocol.db.Spell];
+}
+
+
+table MakeCharacter {
+  success: bool;
+}
+
+
+table ReserveName {
+  uid: uint;
+  success: bool;
+}
+
+
+table Save {
+  success: bool;
+}

@@ -1,7 +1,0 @@
-namespace fb.protocol.internal.request;
-
-table Logout {
-  name: string;
-}
-
-root_type Logout;

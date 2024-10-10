@@ -1,7 +1,0 @@
-namespace fb.protocol.db.response;
-
-table ChangePw {
-  result: int;
-}
-
-root_type ChangePw;

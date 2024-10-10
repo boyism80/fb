@@ -1,7 +1,0 @@
-namespace fb.protocol.db.request;
-
-table Account {
-  uid: uint;
-}
-
-root_type Account;

@@ -1,7 +1,0 @@
-namespace fb.protocol.internal.response;
-
-table Pong {
-  
-}
-
-root_type Pong;

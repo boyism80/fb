@@ -1,9 +1,0 @@
-include "db.fbs";
-
-namespace fb.protocol.db.request;
-
-table Login {
-  uid: uint;
-}
-
-root_type Login;

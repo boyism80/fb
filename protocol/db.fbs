@@ -1,18 +1,5 @@
 namespace fb.protocol.db;
 
-table nullopt_ushort {
-	value: ushort;
-	empty: bool;
-}
-table nullopt_ubyte {
-	value: ubyte;
-	empty: bool;
-}
-table nullopt_uint {
-	value: uint;
-	empty: bool;
-}
-
 table Position {
 	x: ushort;
 	y: ushort;
@@ -27,7 +14,7 @@ table Character {
 	color: ushort;
 	sex: ushort;
 	nation: ushort;
-	creature: nullopt_ushort;
+	creature: ushort?;
 	map: uint;
 	position: Position;
 	direction: ubyte;
@@ -37,22 +24,22 @@ table Character {
 	exp: uint;
 	money: uint;
 	deposited_money: uint;
-	disguise: nullopt_ushort;
+	disguise: ushort?;
 	hp: uint;
 	base_hp: uint;
 	additional_hp: uint;
 	mp: uint;
 	base_mp: uint;
 	additional_mp: uint;
-	weapon_color: nullopt_ubyte;
-	helmet_color: nullopt_ubyte;
-	armor_color: nullopt_ubyte;
-	shield_color: nullopt_ubyte;
-	ring_left_color: nullopt_ubyte;
-	ring_right_color: nullopt_ubyte;
-	aux_top_color: nullopt_ubyte;
-	aux_bot_color: nullopt_ubyte;
-	clan: nullopt_uint;
+	weapon_color: ubyte?;
+	helmet_color: ubyte?;
+	armor_color: ubyte?;
+	shield_color: ubyte?;
+	ring_left_color: ubyte?;
+	ring_right_color: ubyte?;
+	aux_top_color: ubyte?;
+	aux_bot_color: ubyte?;
+	clan: uint?;
 }
 
 table Item {
@@ -62,7 +49,7 @@ table Item {
 	deposited: short;
 	model: uint;
 	count: ushort;
-	durability: nullopt_uint;
+	durability: uint?;
 	custom_name: string;
 }
 

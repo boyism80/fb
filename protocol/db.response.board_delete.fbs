@@ -1,9 +1,0 @@
-include "db.fbs";
-
-namespace fb.protocol.db.response;
-
-table DeleteArticle {
-  result: int;
-}
-
-root_type DeleteArticle;

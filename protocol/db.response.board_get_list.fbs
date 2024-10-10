@@ -1,9 +1,0 @@
-include "db.fbs";
-
-namespace fb.protocol.db.response;
-
-table GetArticleList {
-  summary_list: [fb.protocol.db.ArticleSummary];
-}
-
-root_type GetArticleList;

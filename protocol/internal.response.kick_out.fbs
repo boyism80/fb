@@ -1,7 +1,0 @@
-namespace fb.protocol.internal.response;
-
-table KickOut {
-	uid: uint;
-}
-
-root_type KickOut;

@@ -1,7 +1,0 @@
-namespace fb.protocol.db.request;
-
-table ReserveName {
-  name: string;
-}
-
-root_type ReserveName;

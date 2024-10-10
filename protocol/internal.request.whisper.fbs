@@ -1,9 +1,0 @@
-namespace fb.protocol.internal.request;
-
-table Whisper {
-	from: string;
-	to: string;
-	message: string;
-}
-
-root_type Whisper;

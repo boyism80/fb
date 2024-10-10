@@ -1,7 +1,0 @@
-namespace fb.protocol.internal.response;
-
-table Logout {
-  success: bool;
-}
-
-root_type Logout;

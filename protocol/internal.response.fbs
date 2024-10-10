@@ -1,0 +1,45 @@
+include "internal.fbs";
+
+namespace fb.protocol.internal.response;
+
+table KickOut {
+	uid: uint;
+}
+
+
+
+table Login {
+  success: bool;
+  logon: bool;
+  ip: string;
+  port: ushort;
+}
+
+
+
+table Logout {
+  success: bool;
+}
+
+
+
+table Pong {
+  
+}
+
+
+
+table Transfer {
+  code: fb.protocol.internal.TransferResult;
+  ip: string;
+  port: ushort;
+}
+
+
+
+table Whisper {
+	success: bool;
+	from : string;
+	to: uint;
+	message: string;
+}
