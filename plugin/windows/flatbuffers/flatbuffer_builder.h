@@ -317,7 +317,10 @@ template<bool Is64Aware = false> class FlatBufferBuilderImpl {
   template<typename T, template<typename> class OffsetT = Offset>
   uoffset_t PushElement(OffsetT<T> off) {
     // Special case for offsets: see ReferTo below.
-    return PushElement(ReferTo(off.o));
+      if (off.o == 0)
+          return PushElement(0);
+      else
+          return PushElement(ReferTo(off.o));;
   }
 
   // When writing fields, we track where they are, so we can create correct
@@ -381,12 +384,12 @@ template<bool Is64Aware = false> class FlatBufferBuilderImpl {
   }
 
   template<typename T, typename T2> T ReferTo(const T off, const T2 size) {
-    FLATBUFFERS_ASSERT(off && off <= size);
+    FLATBUFFERS_ASSERT(off <= size);
     return size - off + static_cast<T>(sizeof(T));
   }
 
   template<typename T> T ReferTo(const T off, const T size) {
-    FLATBUFFERS_ASSERT(off && off <= size);
+    FLATBUFFERS_ASSERT(off <= size);
     return size - off + static_cast<T>(sizeof(T));
   }
 

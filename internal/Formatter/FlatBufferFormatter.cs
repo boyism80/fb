@@ -1,6 +1,6 @@
 ﻿using Google.FlatBuffers;
 using http.Util;
-using Request = fb.protocol.inter.request;
+using Request = fb.protocol._internal.request;
 
 namespace Internal.Formatter
 {

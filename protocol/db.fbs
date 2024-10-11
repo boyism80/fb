@@ -50,7 +50,7 @@ table Item {
 	model: uint;
 	count: ushort;
 	durability: uint?;
-	custom_name: string;
+	custom_name: string?;
 }
 
 table Spell {

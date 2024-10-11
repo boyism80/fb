@@ -3,7 +3,7 @@
 #include <fb/leak.h>
 #include <fb/console.h>
 #include <fb/config.h>
-#include <fb/protocol/internal.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 int main(int argc, const char** argv)
 {

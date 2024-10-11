@@ -1,4 +1,4 @@
-﻿using fb.protocol.inter;
+﻿using fb.protocol._internal;
 using http.Service;
 using Internal.Model.Redis;
 using Internal.Redis;
@@ -7,8 +7,8 @@ using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using StackExchange.Redis;
-using Request = fb.protocol.inter.request;
-using Response = fb.protocol.inter.response;
+using Request = fb.protocol._internal.request;
+using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
@@ -40,7 +40,7 @@ namespace Internal.Controllers
         {
             var map = _dataSet.Map[request.Map] ?? throw new KeyNotFoundException($"{request.Map} not found in map data");
             var connection = _redisService.Connection;
-            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol.inter.Service.Game, Id = map.Host }.Key);
+            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = map.Host }.Key);
             if (config == null)
                 return new Response.Login { Success = false, Logon = false };
 

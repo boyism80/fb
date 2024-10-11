@@ -16,9 +16,7 @@
 #include <fb/game/listener.h>
 #include <fb/game/regex.h>
 #include <fb/protocol/game.h>
-#include <fb/protocol/internal.h>
-#include <fb/protocol/db/request.h>
-#include <fb/protocol/db/response.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/game/model.h>
 #include <fb/amqp.h>
 

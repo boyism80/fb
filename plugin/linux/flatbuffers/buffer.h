@@ -116,6 +116,8 @@ struct IndirectHelper<OffsetT<T>> {
     // Offsets are relative to themselves, so first update the pointer to
     // point to the offset location.
     const uint8_t *const offset_location = p + i * element_stride;
+    if (*offset_location == 0)
+        return nullptr;
 
     // Then read the scalar value of the offset (which may be 32 or 64-bits) and
     // then determine the relative location from the offset location.

@@ -3,7 +3,7 @@
 
 #include <iomanip>
 #include <fb/game/object.h>
-#include <fb/protocol/db.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/model/datetime.h>
 
 #ifdef small

@@ -1,4 +1,4 @@
-﻿using fb.protocol.inter.response;
+﻿using fb.protocol._internal.response;
 using Internal.Service;
 using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;

@@ -1503,7 +1503,7 @@ fb::protocol::db::Character fb::game::session::to_protocol() const
     dto.color = this->_color;
     dto.sex = (uint16_t)this->_sex;
     dto.nation = (uint16_t)this->_nation;
-    dto.creature = fb::protocol::db::nullopt_ushort((uint16_t)this->_creature, false);
+    dto.creature = (uint16_t)this->_creature;
     dto.map = this->_map != nullptr ? this->_map->model.id : 0;
     dto.position = fb::protocol::db::Position{ this->_position.x, this->_position.y };
     dto.direction = (uint8_t)this->_direction;
@@ -1513,22 +1513,22 @@ fb::protocol::db::Character fb::game::session::to_protocol() const
     dto.exp = this->_experience;
     dto.money = this->_money;
     dto.deposited_money = this->_deposited_money;
-    dto.disguise = fb::protocol::db::nullopt_ushort(this->_disguise.value_or(0), !this->_disguise.has_value());
+    dto.disguise = this->_disguise;
     dto.hp = this->_hp;
     dto.base_hp = this->_base_hp;
     dto.additional_hp = 0;
     dto.mp = this->_mp;
     dto.base_mp = this->_base_mp;
     dto.additional_mp = 0;
-    dto.weapon_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.helmet_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.armor_color = fb::protocol::db::nullopt_ubyte(this->_armor_color.value_or(0), !this->_armor_color.has_value());
-    dto.shield_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.ring_left_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.ring_right_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.aux_top_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.aux_bot_color = fb::protocol::db::nullopt_ubyte(0, true);
-    dto.clan = fb::protocol::db::nullopt_uint(0, true);
+    dto.weapon_color = std::nullopt;
+    dto.helmet_color = std::nullopt;
+    dto.armor_color = this->_armor_color;
+    dto.shield_color = std::nullopt;
+    dto.ring_left_color = std::nullopt;
+    dto.ring_right_color = std::nullopt;
+    dto.aux_top_color = std::nullopt;
+    dto.aux_bot_color = std::nullopt;
+    dto.clan = std::nullopt;
     return dto;
 }
 

@@ -14,7 +14,7 @@
 #include <optional>
 #include <sstream>
 #include <iostream>
-#include <fb/protocol/db.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 namespace fb { namespace game {
 

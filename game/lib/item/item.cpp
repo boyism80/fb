@@ -172,7 +172,7 @@ fb::protocol::db::Item fb::game::item::to_protocol() const
     result.deposited = -1;
     result.model = model.id;
     result.count = this->_count;
-    result.durability = fb::protocol::db::nullopt_uint(this->durability().value_or(0), !this->durability().has_value());
+    result.durability = this->durability();
     result.custom_name = "";
     return result;
 }

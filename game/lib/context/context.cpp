@@ -528,11 +528,11 @@ bool fb::game::context::init_ch(const fb::protocol::db::Character& response, fb:
     session.experience(response.exp);
     session.state(STATE(response.state));
 
-    if (!response.armor_color.empty)
-        session.armor_color(response.armor_color.value);
+    if (response.armor_color.has_value())
+        session.armor_color(response.armor_color.value());
 
-    if (!response.disguise.empty)
-        session.disguise(response.disguise.value);
+    if (response.disguise.has_value())
+        session.disguise(response.disguise.value());
     else
         session.undisguise();
 
@@ -561,11 +561,11 @@ void fb::game::context::init_items(const std::vector<fb::protocol::db::Item>& re
         auto item = this->model.item[x.model].make(*this);
 
         item->count(x.count);
-        if (!x.durability.empty)
-            item->durability(x.durability.value);
+        if (x.durability.has_value())
+            item->durability(x.durability.value());
 
-        if (!x.custom_name.empty() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<fb::game::weapon*>(item)->custom_name(x.custom_name);
+        if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
+            static_cast<fb::game::weapon*>(item)->custom_name(x.custom_name.value());
 
         if(x.deposited != -1)
             session.deposit_item(*item);

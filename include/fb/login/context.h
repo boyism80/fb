@@ -14,11 +14,7 @@
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
 #include <fb/protocol/login.h>
-#include <fb/protocol/internal.h>
-#include <fb/protocol/internal/request.h>
-#include <fb/protocol/internal/response.h>
-#include <fb/protocol/db/request.h>
-#include <fb/protocol/db/response.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/acceptor.h>
 #include <fb/string.h>
 

@@ -4,18 +4,22 @@ git submodule update --recursive --remote
 PUSHD flatbuffer-ex
 CALL dotnet publish -c Release -o "bin"
 PUSHD bin
-CALL FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#" --include="fb/protocol"
+CALL FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#" --include="fb/protocol/flatbuffer/raw"
 POPD
 POPD
 
+if %ERRORLEVEL% NEQ 0 GOTO END
+
+del /S /Q http\FlatBuffer
 del /S /Q http\fb\protocol\flatbuffer
-robocopy flatbuffer-ex\bin\output\c# http /S /E
-robocopy flatbuffer-ex\bin\flatbuffer\c# http\fb\protocol\origin /S /E
-move http\IFlatBufferEx.cs http\fb\protocol\IFlatBufferEx.cs
+xcopy flatbuffer-ex\bin\output\c#\* http\FlatBuffer\* /S /E
+robocopy flatbuffer-ex\bin\flatbuffer\c# http\fb\protocol\raw /S /E
 
 del /S /Q include\fb\protocol\flatbuffer
-robocopy flatbuffer-ex\bin\output\c++ include /S /E
-robocopy flatbuffer-ex\bin\flatbuffer\c++ include\fb\protocol\origin /S /E
-move include\protocol_type.h include\fb\protocol\protocol_type.h
+xcopy flatbuffer-ex\bin\output\c++\* include\fb\protocol\flatbuffer\* /S /E
+xcopy flatbuffer-ex\bin\flatbuffer\c++\* include\fb\protocol\flatbuffer\raw\* /S /E
 
-pause
+GOTO SKIP_PAUSE
+:END
+PAUSE
+:SKIP_PAUSE

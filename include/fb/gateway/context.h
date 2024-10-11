@@ -8,7 +8,7 @@
 #include <zlib.h>
 #include <memory>
 #include <fb/protocol/gateway.h>
-#include <fb/protocol/internal.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/encoding.h>
 
 using namespace fb::protocol::internal;
