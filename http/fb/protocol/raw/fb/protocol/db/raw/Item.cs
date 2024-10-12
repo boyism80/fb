@@ -27,7 +27,13 @@ public struct Item : IFlatbufferObject
   public uint Model { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public ushort Count { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public nullable.nullable_uint? Durability { get { int o = __p.__offset(16); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_string? CustomName { get { int o = __p.__offset(18); return o != 0 ? (nullable.nullable_string?)(new nullable.nullable_string()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public string CustomName { get { int o = __p.__offset(18); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetCustomNameBytes() { return __p.__vector_as_span<byte>(18, 1); }
+#else
+  public ArraySegment<byte>? GetCustomNameBytes() { return __p.__vector_as_arraysegment(18); }
+#endif
+  public byte[] GetCustomNameArray() { return __p.__vector_as_array<byte>(18); }
 
   public static Offset<fb.protocol.db.raw.Item> CreateItem(FlatBufferBuilder builder,
       uint user = 0,
@@ -37,7 +43,7 @@ public struct Item : IFlatbufferObject
       uint model = 0,
       ushort count = 0,
       Offset<nullable.nullable_uint> durabilityOffset = default(Offset<nullable.nullable_uint>),
-      Offset<nullable.nullable_string> custom_nameOffset = default(Offset<nullable.nullable_string>)) {
+      StringOffset custom_nameOffset = default(StringOffset)) {
     builder.StartTable(8);
     Item.AddCustomName(builder, custom_nameOffset);
     Item.AddDurability(builder, durabilityOffset);
@@ -58,7 +64,7 @@ public struct Item : IFlatbufferObject
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(4, model, 0); }
   public static void AddCount(FlatBufferBuilder builder, ushort count) { builder.AddUshort(5, count, 0); }
   public static void AddDurability(FlatBufferBuilder builder, Offset<nullable.nullable_uint> durabilityOffset) { builder.AddOffset(6, durabilityOffset.Value, 0); }
-  public static void AddCustomName(FlatBufferBuilder builder, Offset<nullable.nullable_string> customNameOffset) { builder.AddOffset(7, customNameOffset.Value, 0); }
+  public static void AddCustomName(FlatBufferBuilder builder, StringOffset customNameOffset) { builder.AddOffset(7, customNameOffset.Value, 0); }
   public static Offset<fb.protocol.db.raw.Item> EndItem(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.db.raw.Item>(o);
@@ -80,7 +86,7 @@ static public class ItemVerify
       && verifier.VerifyField(tablePos, 12 /*Model*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*Count*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTable(tablePos, 16 /*Durability*/, nullable.nullable_uintVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 18 /*CustomName*/, nullable.nullable_stringVerify.Verify, false)
+      && verifier.VerifyString(tablePos, 18 /*CustomName*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

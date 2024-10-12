@@ -13,7 +13,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
-#include "nullable_string_generated.h"
 #include "nullable_uint_generated.h"
 
 namespace fb {
@@ -57,8 +56,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const nullable::nullable_uint *durability() const {
     return GetPointer<const nullable::nullable_uint *>(VT_DURABILITY);
   }
-  const nullable::nullable_string *custom_name() const {
-    return GetPointer<const nullable::nullable_string *>(VT_CUSTOM_NAME);
+  const ::flatbuffers::String *custom_name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_CUSTOM_NAME);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -71,7 +70,7 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_DURABILITY) &&
            verifier.VerifyTable(durability()) &&
            VerifyOffset(verifier, VT_CUSTOM_NAME) &&
-           verifier.VerifyTable(custom_name()) &&
+           verifier.VerifyString(custom_name()) &&
            verifier.EndTable();
   }
 };
@@ -101,7 +100,7 @@ struct ItemBuilder {
   void add_durability(::flatbuffers::Offset<nullable::nullable_uint> durability) {
     fbb_.AddOffset(Item::VT_DURABILITY, durability);
   }
-  void add_custom_name(::flatbuffers::Offset<nullable::nullable_string> custom_name) {
+  void add_custom_name(::flatbuffers::Offset<::flatbuffers::String> custom_name) {
     fbb_.AddOffset(Item::VT_CUSTOM_NAME, custom_name);
   }
   explicit ItemBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
@@ -124,7 +123,7 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
-    ::flatbuffers::Offset<nullable::nullable_string> custom_name = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> custom_name = 0) {
   ItemBuilder builder_(_fbb);
   builder_.add_custom_name(custom_name);
   builder_.add_durability(durability);
@@ -135,6 +134,29 @@ inline ::flatbuffers::Offset<Item> CreateItem(
   builder_.add_parts(parts);
   builder_.add_index(index);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Item> CreateItemDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t user = 0,
+    int16_t index = 0,
+    int16_t parts = 0,
+    int16_t deposited = 0,
+    uint32_t model = 0,
+    uint16_t count = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
+    const char *custom_name = nullptr) {
+  auto custom_name__ = custom_name ? _fbb.CreateString(custom_name) : 0;
+  return fb::protocol::db::raw::CreateItem(
+      _fbb,
+      user,
+      index,
+      parts,
+      deposited,
+      model,
+      count,
+      durability,
+      custom_name__);
 }
 
 inline const fb::protocol::db::raw::Item *GetItem(const void *buf) {

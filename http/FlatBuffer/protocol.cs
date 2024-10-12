@@ -180,7 +180,7 @@ namespace fb.protocol.db
             Color = raw.Color;
             Sex = raw.Sex;
             Nation = raw.Nation;
-            Creature = raw.Creature?.Value;
+            Creature = raw.Creature != null ? (ushort?)raw.Creature.Value.Value : null;
             Map = raw.Map;
             Position = new Position(raw.Position.Value);
             Direction = raw.Direction;
@@ -190,22 +190,22 @@ namespace fb.protocol.db
             Exp = raw.Exp;
             Money = raw.Money;
             DepositedMoney = raw.DepositedMoney;
-            Disguise = raw.Disguise?.Value;
+            Disguise = raw.Disguise != null ? (ushort?)raw.Disguise.Value.Value : null;
             Hp = raw.Hp;
             BaseHp = raw.BaseHp;
             AdditionalHp = raw.AdditionalHp;
             Mp = raw.Mp;
             BaseMp = raw.BaseMp;
             AdditionalMp = raw.AdditionalMp;
-            WeaponColor = raw.WeaponColor?.Value;
-            HelmetColor = raw.HelmetColor?.Value;
-            ArmorColor = raw.ArmorColor?.Value;
-            ShieldColor = raw.ShieldColor?.Value;
-            RingLeftColor = raw.RingLeftColor?.Value;
-            RingRightColor = raw.RingRightColor?.Value;
-            AuxTopColor = raw.AuxTopColor?.Value;
-            AuxBotColor = raw.AuxBotColor?.Value;
-            Clan = raw.Clan?.Value;
+            WeaponColor = raw.WeaponColor != null ? (byte?)raw.WeaponColor.Value.Value : null;
+            HelmetColor = raw.HelmetColor != null ? (byte?)raw.HelmetColor.Value.Value : null;
+            ArmorColor = raw.ArmorColor != null ? (byte?)raw.ArmorColor.Value.Value : null;
+            ShieldColor = raw.ShieldColor != null ? (byte?)raw.ShieldColor.Value.Value : null;
+            RingLeftColor = raw.RingLeftColor != null ? (byte?)raw.RingLeftColor.Value.Value : null;
+            RingRightColor = raw.RingRightColor != null ? (byte?)raw.RingRightColor.Value.Value : null;
+            AuxTopColor = raw.AuxTopColor != null ? (byte?)raw.AuxTopColor.Value.Value : null;
+            AuxBotColor = raw.AuxBotColor != null ? (byte?)raw.AuxBotColor.Value.Value : null;
+            Clan = raw.Clan != null ? (uint?)raw.Clan.Value.Value : null;
         }
 
         public Character(byte[] bytes) : this(fb.protocol.db.raw.Character.GetRootAsCharacter(new ByteBuffer(bytes)))
@@ -222,7 +222,7 @@ namespace fb.protocol.db
                 Color,
                 Sex,
                 Nation,
-                Creature.HasValue ? nullable_ushort.Createnullable_ushort(builder, Creature.Value) : default,
+                Creature != null ? nullable_ushort.Createnullable_ushort(builder, Creature.Value) : default,
                 Map,
                 Position.Build(builder),
                 Direction,
@@ -232,22 +232,22 @@ namespace fb.protocol.db
                 Exp,
                 Money,
                 DepositedMoney,
-                Disguise.HasValue ? nullable_ushort.Createnullable_ushort(builder, Disguise.Value) : default,
+                Disguise != null ? nullable_ushort.Createnullable_ushort(builder, Disguise.Value) : default,
                 Hp,
                 BaseHp,
                 AdditionalHp,
                 Mp,
                 BaseMp,
                 AdditionalMp,
-                WeaponColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, WeaponColor.Value) : default,
-                HelmetColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, HelmetColor.Value) : default,
-                ArmorColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, ArmorColor.Value) : default,
-                ShieldColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, ShieldColor.Value) : default,
-                RingLeftColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, RingLeftColor.Value) : default,
-                RingRightColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, RingRightColor.Value) : default,
-                AuxTopColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, AuxTopColor.Value) : default,
-                AuxBotColor.HasValue ? nullable_ubyte.Createnullable_ubyte(builder, AuxBotColor.Value) : default,
-                Clan.HasValue ? nullable_uint.Createnullable_uint(builder, Clan.Value) : default);
+                WeaponColor != null ? nullable_ubyte.Createnullable_ubyte(builder, WeaponColor.Value) : default,
+                HelmetColor != null ? nullable_ubyte.Createnullable_ubyte(builder, HelmetColor.Value) : default,
+                ArmorColor != null ? nullable_ubyte.Createnullable_ubyte(builder, ArmorColor.Value) : default,
+                ShieldColor != null ? nullable_ubyte.Createnullable_ubyte(builder, ShieldColor.Value) : default,
+                RingLeftColor != null ? nullable_ubyte.Createnullable_ubyte(builder, RingLeftColor.Value) : default,
+                RingRightColor != null ? nullable_ubyte.Createnullable_ubyte(builder, RingRightColor.Value) : default,
+                AuxTopColor != null ? nullable_ubyte.Createnullable_ubyte(builder, AuxTopColor.Value) : default,
+                AuxBotColor != null ? nullable_ubyte.Createnullable_ubyte(builder, AuxBotColor.Value) : default,
+                Clan != null ? nullable_uint.Createnullable_uint(builder, Clan.Value) : default);
         }
 
         public byte[] Serialize()
@@ -286,8 +286,8 @@ namespace fb.protocol.db
             Deposited = raw.Deposited;
             Model = raw.Model;
             Count = raw.Count;
-            Durability = raw.Durability?.Value;
-            CustomName = raw.CustomName?.Value;
+            Durability = raw.Durability != null ? (uint?)raw.Durability.Value.Value : null;
+            CustomName = raw.CustomName;
         }
 
         public Item(byte[] bytes) : this(fb.protocol.db.raw.Item.GetRootAsItem(new ByteBuffer(bytes)))
@@ -302,8 +302,8 @@ namespace fb.protocol.db
                 Deposited,
                 Model,
                 Count,
-                Durability.HasValue ? nullable_uint.Createnullable_uint(builder, Durability.Value) : default,
-                CustomName != null ? nullable_string.Createnullable_string(builder, builder.CreateString(CustomName)) : default);
+                Durability != null ? nullable_uint.Createnullable_uint(builder, Durability.Value) : default,
+                CustomName != null ? builder.CreateString(CustomName) : default);
         }
 
         public byte[] Serialize()
@@ -746,8 +746,8 @@ namespace fb.protocol.db.request
         public Save(fb.protocol.db.request.raw.Save raw)
         {
             Character = new Character(raw.Character.Value);
-            Items = Enumerable.Range(0, raw.ItemsLength).Select(i => new fb.protocol.db.Item(raw.Items(i).Value)).ToList();
-            Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => new fb.protocol.db.Spell(raw.Spells(i).Value)).ToList();
+            Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
+            Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
         }
 
         public Save(byte[] bytes) : this(fb.protocol.db.request.raw.Save.GetRootAsSave(new ByteBuffer(bytes)))
@@ -757,8 +757,8 @@ namespace fb.protocol.db.request
         {
             return fb.protocol.db.request.raw.Save.CreateSave(builder,
                 Character.Build(builder),
-                fb.protocol.db.request.raw.Save.CreateItemsVector(builder, Items.ConvertAll(x => x.Build(builder)).ToArray()),
-                fb.protocol.db.request.raw.Save.CreateSpellsVector(builder, Spells.ConvertAll(x => x.Build(builder)).ToArray()));
+                fb.protocol.db.request.raw.Save.CreateItemsVector(builder, Items.Select(x => x.Build(builder)).ToArray()),
+                fb.protocol.db.request.raw.Save.CreateSpellsVector(builder, Spells.Select(x => x.Build(builder)).ToArray()));
         }
 
         public byte[] Serialize()
@@ -1085,7 +1085,7 @@ namespace fb.protocol.db.response
 
         public GetArticleList(fb.protocol.db.response.raw.GetArticleList raw)
         {
-            SummaryList = Enumerable.Range(0, raw.SummaryListLength).Select(i => new fb.protocol.db.ArticleSummary(raw.SummaryList(i).Value)).ToList();
+            SummaryList = Enumerable.Range(0, raw.SummaryListLength).Select(i => raw.SummaryList(i)).Select(x => new ArticleSummary(x.Value)).ToList();
         }
 
         public GetArticleList(byte[] bytes) : this(fb.protocol.db.response.raw.GetArticleList.GetRootAsGetArticleList(new ByteBuffer(bytes)))
@@ -1094,7 +1094,7 @@ namespace fb.protocol.db.response
         public Offset<fb.protocol.db.response.raw.GetArticleList> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
-                fb.protocol.db.response.raw.GetArticleList.CreateSummaryListVector(builder, SummaryList.ConvertAll(x => x.Build(builder)).ToArray()));
+                fb.protocol.db.response.raw.GetArticleList.CreateSummaryListVector(builder, SummaryList.Select(x => x.Build(builder)).ToArray()));
         }
 
         public byte[] Serialize()
@@ -1266,8 +1266,8 @@ namespace fb.protocol.db.response
         public Login(fb.protocol.db.response.raw.Login raw)
         {
             Character = new Character(raw.Character.Value);
-            Items = Enumerable.Range(0, raw.ItemsLength).Select(i => new fb.protocol.db.Item(raw.Items(i).Value)).ToList();
-            Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => new fb.protocol.db.Spell(raw.Spells(i).Value)).ToList();
+            Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
+            Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
         }
 
         public Login(byte[] bytes) : this(fb.protocol.db.response.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -1277,8 +1277,8 @@ namespace fb.protocol.db.response
         {
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 Character.Build(builder),
-                fb.protocol.db.response.raw.Login.CreateItemsVector(builder, Items.ConvertAll(x => x.Build(builder)).ToArray()),
-                fb.protocol.db.response.raw.Login.CreateSpellsVector(builder, Spells.ConvertAll(x => x.Build(builder)).ToArray()));
+                fb.protocol.db.response.raw.Login.CreateItemsVector(builder, Items.Select(x => x.Build(builder)).ToArray()),
+                fb.protocol.db.response.raw.Login.CreateSpellsVector(builder, Spells.Select(x => x.Build(builder)).ToArray()));
         }
 
         public byte[] Serialize()
@@ -1548,7 +1548,7 @@ namespace fb.protocol._internal.request
         {
             Id = raw.Id;
             Name = raw.Name;
-            Service = (Service)raw.Service;
+            Service = (fb.protocol._internal.Service)raw.Service;
             Ip = raw.Ip;
             Port = raw.Port;
         }
@@ -1590,7 +1590,7 @@ namespace fb.protocol._internal.request
 
         public Transfer(fb.protocol._internal.request.raw.Transfer raw)
         {
-            Service = (Service)raw.Service;
+            Service = (fb.protocol._internal.Service)raw.Service;
             Id = raw.Id;
         }
 
@@ -1873,7 +1873,7 @@ namespace fb.protocol._internal.response
 
         public Transfer(fb.protocol._internal.response.raw.Transfer raw)
         {
-            Code = (TransferResult)raw.Code;
+            Code = (fb.protocol._internal.TransferResult)raw.Code;
             Ip = raw.Ip;
             Port = raw.Port;
         }

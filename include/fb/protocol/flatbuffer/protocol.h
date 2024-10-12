@@ -172,12 +172,12 @@ public:
         : id(x.id), name(x.name), last_login(x.last_login), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), clan(x.clan)
     { }
 
-    Character(uint32_t id, const std::string& name, const std::string& last_login, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, fb::protocol::db::Position position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::optional<uint32_t>& clan)
+    Character(uint32_t id, const std::string& name, const std::string& last_login, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::db::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::optional<uint32_t>& clan)
         : id(id), name(name), last_login(last_login), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), clan(clan)
     { }
 
     Character(const fb::protocol::db::raw::Character& raw)
-        : id(raw.id()), name(raw.name()->c_str()), last_login(raw.last_login()->c_str()), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? std::optional<uint16_t>(raw.creature()->value()) : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? std::optional<uint16_t>(raw.disguise()->value()) : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? std::optional<uint8_t>(raw.weapon_color()->value()) : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? std::optional<uint8_t>(raw.helmet_color()->value()) : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? std::optional<uint8_t>(raw.armor_color()->value()) : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? std::optional<uint8_t>(raw.shield_color()->value()) : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? std::optional<uint8_t>(raw.ring_left_color()->value()) : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? std::optional<uint8_t>(raw.ring_right_color()->value()) : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? std::optional<uint8_t>(raw.aux_top_color()->value()) : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? std::optional<uint8_t>(raw.aux_bot_color()->value()) : std::optional<uint8_t>()), clan(raw.clan() != nullptr ? std::optional<uint32_t>(raw.clan()->value()) : std::optional<uint32_t>())
+        : id(raw.id()), name(raw.name()->c_str()), last_login(raw.last_login()->c_str()), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>())
     {
     }
 
@@ -265,7 +265,7 @@ public:
     { }
 
     Item(const fb::protocol::db::raw::Item& raw)
-        : user(raw.user()), index(raw.index()), parts(raw.parts()), deposited(raw.deposited()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? std::optional<uint32_t>(raw.durability()->value()) : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? std::optional<std::string>(raw.custom_name()->value()->c_str()) : std::optional<std::string>())
+        : user(raw.user()), index(raw.index()), parts(raw.parts()), deposited(raw.deposited()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? raw.custom_name()->c_str() : std::optional<std::string>())
     {
     }
 
@@ -281,7 +281,7 @@ public:
             this->model,
             this->count,
             this->durability.has_value() ? this->durability.value() : 0,
-            this->custom_name.has_value() ? nullable::Createnullable_string(builder, builder.CreateString(this->custom_name.value())) : flatbuffers::Offset<nullable::nullable_string>{ 0 });
+            this->custom_name.has_value() ? builder.CreateString(this->custom_name.value()) : 0);
     }
 
     std::vector<uint8_t> Serialize() const
@@ -819,7 +819,7 @@ public:
         : character(x.character), items(x.items), spells(x.spells)
     { }
 
-    Save(fb::protocol::db::Character character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells)
+    Save(const fb::protocol::db::Character& character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells)
         : character(character), items(items), spells(spells)
     { }
 
@@ -840,21 +840,19 @@ private:
     auto CreateItems(flatbuffers::FlatBufferBuilder& builder) const
     {
         auto result = std::vector<flatbuffers::Offset<fb::protocol::db::raw::Item>>();
-        for(auto& x : this->items)
+        for (auto& x : this->items)
         {
             result.push_back(x.Build(builder));
         }
-
         return builder.CreateVector(result);
     }
     auto CreateSpells(flatbuffers::FlatBufferBuilder& builder) const
     {
         auto result = std::vector<flatbuffers::Offset<fb::protocol::db::raw::Spell>>();
-        for(auto& x : this->spells)
+        for (auto& x : this->spells)
         {
             result.push_back(x.Build(builder));
         }
-
         return builder.CreateVector(result);
     }
 
@@ -1223,7 +1221,7 @@ public:
         : article(x.article), next(x.next), success(x.success)
     { }
 
-    GetArticle(fb::protocol::db::Article article, bool next, bool success)
+    GetArticle(const fb::protocol::db::Article& article, bool next, bool success)
         : article(article), next(next), success(success)
     { }
 
@@ -1289,11 +1287,10 @@ private:
     auto CreateSummary_list(flatbuffers::FlatBufferBuilder& builder) const
     {
         auto result = std::vector<flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary>>();
-        for(auto& x : this->summary_list)
+        for (auto& x : this->summary_list)
         {
             result.push_back(x.Build(builder));
         }
-
         return builder.CreateVector(result);
     }
 
@@ -1531,7 +1528,7 @@ public:
         : character(x.character), items(x.items), spells(x.spells)
     { }
 
-    Login(fb::protocol::db::Character character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells)
+    Login(const fb::protocol::db::Character& character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells)
         : character(character), items(items), spells(spells)
     { }
 
@@ -1552,21 +1549,19 @@ private:
     auto CreateItems(flatbuffers::FlatBufferBuilder& builder) const
     {
         auto result = std::vector<flatbuffers::Offset<fb::protocol::db::raw::Item>>();
-        for(auto& x : this->items)
+        for (auto& x : this->items)
         {
             result.push_back(x.Build(builder));
         }
-
         return builder.CreateVector(result);
     }
     auto CreateSpells(flatbuffers::FlatBufferBuilder& builder) const
     {
         auto result = std::vector<flatbuffers::Offset<fb::protocol::db::raw::Spell>>();
-        for(auto& x : this->spells)
+        for (auto& x : this->spells)
         {
             result.push_back(x.Build(builder));
         }
-
         return builder.CreateVector(result);
     }
 
