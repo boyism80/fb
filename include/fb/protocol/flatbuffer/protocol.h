@@ -194,7 +194,7 @@ public:
             this->color,
             this->sex,
             this->nation,
-            this->creature.has_value() ? this->creature.value() : 0,
+            this->creature.has_value() ? nullable::Createnullable_ushort(builder, this->creature.value()) : 0,
             this->map,
             this->position.Build(builder),
             this->direction,
@@ -204,22 +204,22 @@ public:
             this->exp,
             this->money,
             this->deposited_money,
-            this->disguise.has_value() ? this->disguise.value() : 0,
+            this->disguise.has_value() ? nullable::Createnullable_ushort(builder, this->disguise.value()) : 0,
             this->hp,
             this->base_hp,
             this->additional_hp,
             this->mp,
             this->base_mp,
             this->additional_mp,
-            this->weapon_color.has_value() ? this->weapon_color.value() : 0,
-            this->helmet_color.has_value() ? this->helmet_color.value() : 0,
-            this->armor_color.has_value() ? this->armor_color.value() : 0,
-            this->shield_color.has_value() ? this->shield_color.value() : 0,
-            this->ring_left_color.has_value() ? this->ring_left_color.value() : 0,
-            this->ring_right_color.has_value() ? this->ring_right_color.value() : 0,
-            this->aux_top_color.has_value() ? this->aux_top_color.value() : 0,
-            this->aux_bot_color.has_value() ? this->aux_bot_color.value() : 0,
-            this->clan.has_value() ? this->clan.value() : 0);
+            this->weapon_color.has_value() ? nullable::Createnullable_ubyte(builder, this->weapon_color.value()) : 0,
+            this->helmet_color.has_value() ? nullable::Createnullable_ubyte(builder, this->helmet_color.value()) : 0,
+            this->armor_color.has_value() ? nullable::Createnullable_ubyte(builder, this->armor_color.value()) : 0,
+            this->shield_color.has_value() ? nullable::Createnullable_ubyte(builder, this->shield_color.value()) : 0,
+            this->ring_left_color.has_value() ? nullable::Createnullable_ubyte(builder, this->ring_left_color.value()) : 0,
+            this->ring_right_color.has_value() ? nullable::Createnullable_ubyte(builder, this->ring_right_color.value()) : 0,
+            this->aux_top_color.has_value() ? nullable::Createnullable_ubyte(builder, this->aux_top_color.value()) : 0,
+            this->aux_bot_color.has_value() ? nullable::Createnullable_ubyte(builder, this->aux_bot_color.value()) : 0,
+            this->clan.has_value() ? nullable::Createnullable_uint(builder, this->clan.value()) : 0);
     }
 
     std::vector<uint8_t> Serialize() const
@@ -280,7 +280,7 @@ public:
             this->deposited,
             this->model,
             this->count,
-            this->durability.has_value() ? this->durability.value() : 0,
+            this->durability.has_value() ? nullable::Createnullable_uint(builder, this->durability.value()) : 0,
             this->custom_name.has_value() ? builder.CreateString(this->custom_name.value()) : 0);
     }
 
