@@ -42,7 +42,15 @@ namespace Internal.Controllers
             var connection = _redisService.Connection;
             var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = map.Host }.Key);
             if (config == null)
-                return new Response.Login { Success = false, Logon = false };
+            {
+                return new Response.Login 
+                {
+                    Success = false, 
+                    Logon = false ,
+                    Ip = string.Empty,
+                    Port = 0
+                };
+            }
 
             var redisResult = await connection.ScriptEvaluateAsync("login.lua", new
             {
@@ -63,7 +71,13 @@ namespace Internal.Controllers
                 {
                     Uid = session.Uid
                 }, "amq.direct", $"fb.game.{session.Host}");
-                return new Response.Login { Success = false, Logon = true };
+                return new Response.Login
+                {
+                    Success = false,
+                    Logon = true,
+                    Ip = String.Empty,
+                    Port = 0
+                };
             }
 
             return new Response.Login
