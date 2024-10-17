@@ -1,5 +1,6 @@
 using AutoMapper;
 using Db.Formatter;
+using Db.Service;
 using fb.protocol.db;
 using http.Service;
 using http.Worker;
@@ -44,6 +45,8 @@ namespace db
             builder.Services.AddSingleton<RedisService>();
             builder.Services.AddSingleton<Fb.Model.Model>();
             builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
+            builder.Services.AddSingleton<DbExecuteService>();
+            builder.Services.AddHostedService(p => p.GetRequiredService<DbExecuteService>());
 
             var app = builder.Build();
             var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;

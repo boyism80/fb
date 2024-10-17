@@ -16,6 +16,9 @@ namespace http.Service
 
         private void LoadScriptFiles(string path)
         {
+            if (!Directory.Exists(path))
+                return;
+
             var redis = ConnectionMultiplexer.Connect(_configuration.ConfigurationOptions);
             foreach (var file in Directory.GetFiles(path, "*.lua"))
             {

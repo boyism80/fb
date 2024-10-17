@@ -2,6 +2,7 @@ using AutoMapper;
 using Dapper;
 using db.Model;
 using Db.Model;
+using Db.Service;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using System.Data;
@@ -16,17 +17,19 @@ namespace db.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
+        private readonly DbExecuteService _dbExecuteService;
 
-        public UserController(IConfiguration configuration, IMapper mapper)
+        public UserController(IConfiguration configuration, IMapper mapper, DbExecuteService dbExecuteService)
         {
             _configuration = configuration;
             _mapper = mapper;
+            _dbExecuteService = dbExecuteService;
         }
 
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new 
             {
                 n = name
@@ -52,7 +55,7 @@ namespace db.Controllers
         [HttpGet("account/{uid}")]
         public async Task<Response.Account> Account(uint uid)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var account = await connection.QueryFirstOrDefaultAsync<Account>($"SELECT id, pw, map FROM user WHERE id = {uid} LIMIT 1");
             if (account == null)
             {
@@ -73,7 +76,7 @@ namespace db.Controllers
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             // 동시성 제어 필요
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
                 name = "name"
@@ -89,7 +92,7 @@ namespace db.Controllers
         [HttpPost("init-ch")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var success = await connection.QueryFirstAsync<bool>("USP_CHARACTER_INIT", new
             {
                 id = request.Uid,
@@ -112,7 +115,7 @@ namespace db.Controllers
         [HttpPost("mk-ch")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var affectedRows = await connection.ExecuteAsync("USP_CHARACTER_CREATE_FINISH", new
             {
                 id = request.Uid,
@@ -131,7 +134,7 @@ namespace db.Controllers
         [HttpGet("login/{uid}")]
         public async Task<Response.Login> Login(uint uid)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
             var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid}");
             var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid}");
@@ -149,8 +152,44 @@ namespace db.Controllers
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("Default"));
+            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             await connection.ExecuteAsync("USP_CHARACTER_SET", _mapper.Map<Db.Model.Character>(request.Character), commandType: CommandType.StoredProcedure);
+            var sql = $@"
+UPDATE user
+SET look = {request.Character.Look},
+    color = {request.Character.Color},
+    sex = {request.Character.Sex},
+    nation = {request.Character.Nation},
+    creature = {request.Character.Creature},
+    map = {request.Character.Map},
+    position_x = {request.Character.Position.X},
+    position_y = {request.Character.Position.Y},
+    direction = {request.Character.Direction},
+    state = {request.Character.State},
+    class = {request.Character.ClassType},
+    promotion = {request.Character.Promotion},
+    exp = {request.Character.Exp},
+    money = {request.Character.Money},
+    deposited_money = {request.Character.DepositedMoney},
+    disguise = {request.Character.Disguise?.ToString() ?? "NULL"},
+    hp = {request.Character.Hp},
+    base_hp = {request.Character.BaseHp},
+    additional_hp = {request.Character.AdditionalHp},
+    mp = {request.Character.Mp},
+    base_mp = {request.Character.BaseMp},
+    additional_mp = {request.Character.AdditionalMp},
+    weapon_color = {request.Character.WeaponColor?.ToString() ?? "NULL"},
+    helmet_color = {request.Character.HelmetColor?.ToString() ?? "NULL"},
+    armor_color = {request.Character.ArmorColor?.ToString() ?? "NULL"},
+    shield_color = {request.Character.ShieldColor?.ToString() ?? "NULL"},
+    ring_left_color = {request.Character.RingLeftColor?.ToString() ?? "NULL"},
+    ring_right_color = {request.Character.RingRightColor?.ToString() ?? "NULL"},
+    aux_top_color = {request.Character.AuxTopColor?.ToString() ?? "NULL"},
+    aux_bot_color = {request.Character.AuxBotColor?.ToString() ?? "NULL"},
+    clan = {request.Character.Clan?.ToString() ?? "NULL"}
+WHERE user.id = {request.Character.Id} LIMIT 1;";
+
+            await _dbExecuteService.Post(request.Character.Id, sql);
 
             return new Response.Save
             { 

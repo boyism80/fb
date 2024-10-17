@@ -16,4 +16,20 @@
     <ProjectReference Include="..\http\http.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Redis\Script\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="json\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Redis\Script\*.lua">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -1,4 +1,5 @@
 ﻿using fb.protocol._internal;
+using http.Redis;
 using http.Service;
 using Internal.Model.Redis;
 using Internal.Redis;
@@ -75,7 +76,7 @@ namespace Internal.Controllers
                 {
                     Success = false,
                     Logon = true,
-                    Ip = String.Empty,
+                    Ip = string.Empty,
                     Port = 0
                 };
             }

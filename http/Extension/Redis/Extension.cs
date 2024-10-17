@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
 
-namespace Internal.Redis
+namespace http.Redis
 {
     public static class Extension
     {
