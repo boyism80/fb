@@ -3,7 +3,11 @@
     "name": "{{ name }}",
     "ip":  "{{ deploy.gateway[name].ip }}",
     "port": {{ deploy.gateway[name].port }},
-    "thread": null,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
     "internal": {
         "ip": "{{ deploy.internal[deploy.gateway[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.gateway[name].internal].port }}

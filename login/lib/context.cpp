@@ -3,7 +3,7 @@
 #include <boost/asio/high_resolution_timer.hpp>
 
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) : 
-    fb::acceptor<fb::login::session>(context, port, std::thread::hardware_concurrency())
+    fb::acceptor<fb::login::session>(context, port)
 {
     const auto& config = fb::config::get();
     for(auto& x : config["forbidden"])

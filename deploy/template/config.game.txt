@@ -4,7 +4,11 @@
     "delay": 5,
     "ip":  "{{ deploy.game[name].ip }}",
     "port": {{ deploy.game[name].port }},
-    "thread": 2,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
     "save": 600,
     "internal": {
         "ip": "{{ deploy.internal[deploy.game[name].internal].ip }}",

@@ -3,7 +3,11 @@
     "name": "login",
     "ip": "127.0.0.1",
     "port": 3002,
-    "thread": null,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
     "internal": {
         "ip": "127.0.0.1",
         "port": 5126

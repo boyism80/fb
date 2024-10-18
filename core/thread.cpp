@@ -169,9 +169,10 @@ uint8_t fb::thread::index() const
     return this->_index;
 }
 
-fb::threads::threads(boost::asio::io_context& context, uint8_t count) : 
+fb::threads::threads(boost::asio::io_context& context) : 
     _context(context)
 {
+    auto count = fb::config::get()["thread"]["logic"].asUInt();
     if(count > 0)
         this->_keys = std::make_unique<std::thread::id[]>(count);
 

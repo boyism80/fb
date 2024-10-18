@@ -98,7 +98,7 @@ private:
     unique_id_list                                  _keys;
 
 public:
-    threads(boost::asio::io_context& context, uint8_t count);
+    threads(boost::asio::io_context& context);
     ~threads() = default;
 
     threads(const threads&) = delete;
