@@ -135,7 +135,7 @@ namespace db.Controllers
         [HttpGet("login/{uid}")]
         public async Task<Response.Login> Login(uint uid)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
             var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid} AND deleted = 0");
             var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid} AND deleted = 0");
@@ -153,7 +153,7 @@ namespace db.Controllers
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             await connection.ExecuteAsync("USP_CHARACTER_SET", _mapper.Map<Db.Model.Character>(request.Character), commandType: CommandType.StoredProcedure);
             var characterSql = $@"
 UPDATE user

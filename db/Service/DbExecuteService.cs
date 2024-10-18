@@ -1,7 +1,6 @@
 ﻿using Dapper;
 using http.Redis;
 using http.Service;
-using MySqlConnector;
 using StackExchange.Redis;
 
 namespace Db.Service
@@ -9,18 +8,21 @@ namespace Db.Service
     public class DbExecuteService : BackgroundService
     {
         private readonly RedisService _redisService;
+        private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<DbExecuteService> _logger;
         private const string RedisBufferKey = "exec-buffer";
         private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
-        private static uint SharedDbSize = 0;
 
-        public DbExecuteService(RedisService redisService, IConfiguration configuration)
+        public DbExecuteService(RedisService redisService, 
+            IConfiguration configuration, 
+            IServiceProvider serviceProvider,
+            ILogger<DbExecuteService> logger)
         {
             _redisService = redisService;
             _configuration = configuration;
-
-            var section = _configuration.GetSection("ConnectionStrings:MySql");
-            SharedDbSize = (uint)section.GetChildren().Where(x => x.Key != "-1").Count();
+            _logger = logger;
+            _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,7 +30,7 @@ namespace Db.Service
             var section = _configuration.GetSection("ConnectionStrings:MySql");
             var threads = section.GetChildren().Select(x => new Thread(() => 
             {
-                var task = OnWork(x.Key, stoppingToken);
+                var task = OnWork(int.Parse(x.Key), stoppingToken);
                 task.Wait(stoppingToken);
             })).ToArray();
 
@@ -39,11 +41,11 @@ namespace Db.Service
 
             while (!stoppingToken.IsCancellationRequested && threads.Any(thread => thread.IsAlive))
             {
-                await Task.Delay(_delay);
+                await Task.Delay(_delay, stoppingToken);
             }
         }
 
-        private async Task OnWork(string i, CancellationToken stoppingToken)
+        private async Task OnWork(int i, CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -62,11 +64,12 @@ namespace Db.Service
                     }
 
                     var sql = string.Join(Environment.NewLine, ((RedisResult[])result).Select(x => x.ToString()));
-                    using var connection = new MySqlConnection(_configuration.GetConnectionString($"MySql:{i}"));
+                    await using var connection = _dbContext.Connection(i);
                     await connection.ExecuteAsync(sql);
                 }
                 catch (Exception e)
                 {
+                    _logger.LogError(e, e.Message);
                 }
             }
         }
@@ -79,7 +82,7 @@ namespace Db.Service
 
         public async Task Post(uint modKey, string sql)
         {
-            var db = modKey % SharedDbSize;
+            var db = modKey % _dbContext.SharedDbSize;
             await Post((int)db, sql);
         }
     }

@@ -45,6 +45,7 @@ namespace db
             builder.Services.AddSingleton<RedisService>();
             builder.Services.AddSingleton<Fb.Model.Model>();
             builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
+            builder.Services.AddScoped<DbContext>();
             builder.Services.AddSingleton<DbExecuteService>();
             builder.Services.AddHostedService(p => p.GetRequiredService<DbExecuteService>());
 
