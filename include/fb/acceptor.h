@@ -7,6 +7,7 @@
 #include <fb/abstract.h>
 #include <zlib.h>
 #include <functional>
+#include <queue>
 #include <iomanip>
 #include <httplib.h>
 #include <fb/stream.h>
@@ -16,7 +17,9 @@
 #include <fb/redis.h>
 #include <fb/mutex.h>
 #include <fb/model/datetime.h>
+#include <async/task.h>
 #include <async/awaitable_get.h>
+#include <async/task_completion_source.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 
 using namespace std::chrono_literals;
@@ -28,6 +31,7 @@ class acceptor : public icontext
 {
 private:
     using handle_func = std::function<async::task<bool>(fb::socket<T>&, const std::function<void()>&)>;
+    using background_func = std::function<async::task<void>()>;
 
 private:
     std::map<uint8_t, handle_func>              _handler;
@@ -36,21 +40,24 @@ private:
     std::mutex                                  _mutex_exit;
 
 protected:
-    std::unique_ptr<boost::asio::thread_pool>   _boost_threads;
     boost::asio::io_context&                    _context;
     fb::redis                                   _redis;
     fb::mutex                                   _mutex;
+
+    std::queue<background_func>                 _background_queue;
+    std::mutex                                  _background_queue_mutex;
 
 
 public:
     fb::socket_container<T>                     sockets;
 
 public:
-    acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads = 0);
+    acceptor(boost::asio::io_context& context, uint16_t port);
     virtual ~acceptor();
 
 private:
     virtual async::task<void>                   handle_work(fb::socket<T>* socket);
+    virtual void                                handle_background();
 
 protected:
     void                                        accept();
@@ -86,6 +93,8 @@ protected:
 public:
     void                                        send_stream(fb::socket<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true);
     void                                        send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
+    template <typename R>
+    async::task<R>                              background(const std::function<async::task<R>()>& func);
 
 private:
     async::task<httplib::Result>                get_internal(const std::string& host, const std::string& path, httplib::Headers headers);
@@ -105,7 +114,7 @@ public:
     fb::thread*                                 current_thread();
     async::task<void>                           dispatch(fb::socket<T>*, const std::function<async::task<void>(void)>& fn, uint32_t priority = 0);
     async::task<void>                           dispatch(fb::socket<T>*, uint32_t priority = 0);
-    void                                        run(int thread_size);
+    void                                        run();
     bool                                        running() const;
     async::task<void>                           sleep(const fb::model::timespan& duration);
     void                                        exit();

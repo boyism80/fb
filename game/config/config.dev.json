@@ -4,7 +4,11 @@
     "delay": 5,
     "ip": "127.0.0.1",
     "port": 2004,
-    "thread": null,
+    "thread": {
+        "logic": 12,
+        "io": 12,
+        "background": 8
+    },
     "save": 600,
     "internal": {
         "ip": "127.0.0.1",

@@ -1,10 +1,10 @@
 #include "acceptor.h"
 
 template <typename T>
-fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port, uint8_t num_threads) : 
+fb::acceptor<T>::acceptor(boost::asio::io_context& context, uint16_t port) : 
     icontext(context, port),
     _context(context),
-    _threads(context, num_threads),
+    _threads(context),
     _redis(*this, fb::config::get()["redis"]["default"]["ip"].asString(), fb::config::get()["redis"]["default"]["port"].asUInt()),
     _mutex(*this)
 {
@@ -42,6 +42,28 @@ async::task<void> fb::acceptor<T>::handle_work(fb::socket<T>* socket)
         co_return;
 
     co_await this->dispatch(socket, std::bind(&fb::acceptor<T>::handle_work, this, socket));
+}
+
+template <typename T>
+void fb::acceptor<T>::handle_background()
+{
+    while(this->_running)
+    {
+        background_func func;
+        {
+            auto _ = std::lock_guard(this->_background_queue_mutex);
+            if (this->_background_queue.size() > 0)
+            {
+                func = this->_background_queue.front();
+                this->_background_queue.pop();
+            }
+        }
+
+        if (func)
+            async::awaitable_get(func());
+        else
+            std::this_thread::sleep_for(100ms);
+    }
 }
 
 template <typename T>
@@ -211,18 +233,50 @@ void fb::acceptor<T>::send(fb::socket<T>& socket, const fb::protocol::base::head
 // }
 
 template <typename T>
+template <typename R>
+async::task<R> fb::acceptor<T>::background(const std::function<async::task<R>()>& func)
+{
+    auto _ = std::lock_guard(this->_background_queue_mutex);
+    auto promise = std::make_shared<async::task_completion_source<R>>();
+    auto thread = this->current_thread();
+    this->_background_queue.push([this, promise, thread, func]() -> async::task<void>
+        {
+            try
+            {
+                if constexpr (std::is_void_v<R>)
+                {
+                    co_await func();
+                    if (thread != nullptr)
+                        co_await thread->dispatch();
+                    promise->set_value();
+                }
+                else
+                {
+                    R result = co_await func();
+                    if (thread != nullptr)
+                        co_await thread->dispatch();
+                    promise->set_value(std::move(result));
+                }
+            }
+            catch (std::exception& e)
+            {
+                promise->set_exception(std::make_exception_ptr(e));
+            }
+        });
+
+    return promise->task();
+}
+
+template <typename T>
 async::task<httplib::Result> fb::acceptor<T>::get_internal(const std::string& host, const std::string& path, httplib::Headers headers)
 {
     headers.insert({ "Content-Type", "application/octet-stream" });
 
-    auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
-    auto future = std::async(std::launch::async, [this, promise, host, path, headers]() mutable
-        {
-            auto client = httplib::Client(host);
-            promise->set_value(client.Get(UTF8(path, PLATFORM::Windows), headers));
-        });
-
-    return promise->task();
+    co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result>
+    {
+        auto client = httplib::Client(host);
+        co_return client.Get(UTF8(path, PLATFORM::Windows), headers);
+    });
 }
 
 template <typename T>
@@ -231,13 +285,11 @@ async::task<httplib::Result> fb::acceptor<T>::post_internal(const std::string& h
     auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
     auto buffer = std::vector<uint8_t>(size);
     std::memcpy(buffer.data(), bytes, size);
-    auto future = std::async(std::launch::async, [this, promise, host, path, headers, buffer]() mutable
-        {
-            auto client = httplib::Client(host);
-            promise->set_value(client.Post(UTF8(path, PLATFORM::Windows), headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream"));
-        });
-
-    return promise->task();
+    co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result>
+    {
+        auto client = httplib::Client(host);
+        co_return client.Post(UTF8(path, PLATFORM::Windows), headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream");
+    });
 }
 
 template <typename T>
@@ -338,19 +390,31 @@ async::task<void> fb::acceptor<T>::dispatch(fb::socket<T>* socket, uint32_t prio
 }
 
 template <typename T>
-void fb::acceptor<T>::run(int thread_size)
+void fb::acceptor<T>::run()
 {
-    if(this->_boost_threads != nullptr)
-        return;
+    auto& config = fb::config::get();
+    auto  threads = std::vector<std::thread>();
 
     this->_running = true;
-    this->_boost_threads = std::make_unique<boost::asio::thread_pool>(thread_size);
-    for(int i = 0; i < thread_size; i++)
+    for(int i = 0; i < config["thread"]["io"].asUInt(); i++)
     {
-        boost::asio::post(*this->_boost_threads, [this]
+        threads.push_back(std::thread([this]()
         {
             this->_context.run();
-        });
+        }));
+    }
+
+    for(int i = 0; i < config["thread"]["background"].asUInt(); i++)
+    {
+        threads.push_back(std::thread([this]()
+        {
+            this->handle_background();
+        }));
+    }
+
+    for(auto& thread : threads)
+    {
+        thread.join();
     }
 
     async::awaitable_get(this->handle_start());
