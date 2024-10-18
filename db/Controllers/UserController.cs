@@ -6,6 +6,7 @@ using Db.Service;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using System.Data;
+using System.Linq;
 using Request = fb.protocol.db.request;
 using Response = fb.protocol.db.response;
 
@@ -136,8 +137,8 @@ namespace db.Controllers
         {
             using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
-            var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid}");
-            var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid}");
+            var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid} AND deleted = 0");
+            var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid} AND deleted = 0");
             
             var response = new Response.Login
             {
@@ -154,7 +155,7 @@ namespace db.Controllers
         {
             using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
             await connection.ExecuteAsync("USP_CHARACTER_SET", _mapper.Map<Db.Model.Character>(request.Character), commandType: CommandType.StoredProcedure);
-            var sql = $@"
+            var characterSql = $@"
 UPDATE user
 SET look = {request.Character.Look},
     color = {request.Character.Color},
@@ -188,8 +189,47 @@ SET look = {request.Character.Look},
     aux_bot_color = {request.Character.AuxBotColor?.ToString() ?? "NULL"},
     clan = {request.Character.Clan?.ToString() ?? "NULL"}
 WHERE user.id = {request.Character.Id} LIMIT 1;";
+            await _dbExecuteService.Post(request.Character.Id, characterSql);
 
-            await _dbExecuteService.Post(request.Character.Id, sql);
+            if (request.Items.Count > 0)
+            {
+                var itemArgs = request.Items.Select(item =>
+                {
+                    var customName = item.CustomName;
+                    if (string.IsNullOrEmpty(customName))
+                        customName = "NULL";
+                    else
+                        customName = $"\"{customName}\"";
+
+                    return $"({item.User}, {item.Index}, {item.Parts}, {item.Deposited}, {item.Model}, {item.Count}, {item.Durability?.ToString() ?? "NULL"}, {customName}, 0)";
+                });
+
+                var itemSql = @$"
+UPDATE item SET deleted = 1 WHERE item.owner = {request.Character.Id};
+
+INSERT INTO item (`owner`, `index`, `parts`, `deposited`, `model`, `count`, `durability`, `custom_name`, `deleted`)
+VALUES {string.Join(',', itemArgs)}
+ON DUPLICATE KEY UPDATE model=VALUES(model), count=VALUES(count), durability=VALUES(durability), custom_name=VALUES(custom_name), deleted=0;
+";
+                await _dbExecuteService.Post(request.Character.Id, itemSql);
+            }
+
+            if (request.Spells.Count > 0)
+            {
+                var spellArgs = request.Spells.Select(spell =>
+                {
+                    return $"({spell.User}, {spell.Slot}, {spell.Model}, 0)";
+                });
+
+                var spellSql = @$"
+UPDATE spell SET deleted = 1 WHERE spell.owner = {request.Character.Id};
+
+INSERT INTO spell (`owner`, `slot`, `model`, `deleted`)
+VALUES {string.Join(',', spellArgs)}
+ON DUPLICATE KEY UPDATE model=VALUES(model), deleted=0;
+";
+                await _dbExecuteService.Post(request.Character.Id, spellSql);
+            }
 
             return new Response.Save
             { 

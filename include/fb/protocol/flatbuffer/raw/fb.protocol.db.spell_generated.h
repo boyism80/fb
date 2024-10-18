@@ -26,7 +26,7 @@ struct Spell FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_USER = 4,
     VT_SLOT = 6,
-    VT_ID = 8
+    VT_MODEL = 8
   };
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -34,14 +34,14 @@ struct Spell FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t slot() const {
     return GetField<uint8_t>(VT_SLOT, 0);
   }
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
+  uint32_t model() const {
+    return GetField<uint32_t>(VT_MODEL, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint8_t>(verifier, VT_SLOT, 1) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_MODEL, 4) &&
            verifier.EndTable();
   }
 };
@@ -56,8 +56,8 @@ struct SpellBuilder {
   void add_slot(uint8_t slot) {
     fbb_.AddElement<uint8_t>(Spell::VT_SLOT, slot, 0);
   }
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(Spell::VT_ID, id, 0);
+  void add_model(uint32_t model) {
+    fbb_.AddElement<uint32_t>(Spell::VT_MODEL, model, 0);
   }
   explicit SpellBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -74,9 +74,9 @@ inline ::flatbuffers::Offset<Spell> CreateSpell(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
     uint8_t slot = 0,
-    uint32_t id = 0) {
+    uint32_t model = 0) {
   SpellBuilder builder_(_fbb);
-  builder_.add_id(id);
+  builder_.add_model(model);
   builder_.add_user(user);
   builder_.add_slot(slot);
   return builder_.Finish();

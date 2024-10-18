@@ -555,9 +555,6 @@ void fb::game::context::init_items(const std::vector<fb::protocol::db::Item>& re
 {
     for (auto& x : response)
     {
-        if (x.model)
-            continue;
-
         auto item = this->model.item[x.model].make(*this);
 
         item->count(x.count);
@@ -580,10 +577,10 @@ void fb::game::context::init_spells(const std::vector<fb::protocol::db::Spell>& 
 {
     for (auto& x : response)
     {
-        if (this->model.spell.contains(x.id) == false)
+        if (this->model.spell.contains(x.model) == false)
             continue;
 
-        auto& model = this->model.spell[x.id];
+        auto& model = this->model.spell[x.model];
         session.spells.add(model, x.slot);
     }
 }

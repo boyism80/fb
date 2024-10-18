@@ -56,7 +56,7 @@ table Item {
 table Spell {
 	user: uint;
 	slot: ubyte;
-	id: uint;
+	model: uint;
 }
 
 table ArticleSummary {

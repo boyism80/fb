@@ -308,21 +308,21 @@ public:
 public:
     uint32_t user = 0;
     uint8_t slot = 0;
-    uint32_t id = 0;
+    uint32_t model = 0;
 
 public:
     Spell() = default;
 
     Spell(const Spell& x)
-        : user(x.user), slot(x.slot), id(x.id)
+        : user(x.user), slot(x.slot), model(x.model)
     { }
 
-    Spell(uint32_t user, uint8_t slot, uint32_t id)
-        : user(user), slot(slot), id(id)
+    Spell(uint32_t user, uint8_t slot, uint32_t model)
+        : user(user), slot(slot), model(model)
     { }
 
     Spell(const fb::protocol::db::raw::Spell& raw)
-        : user(raw.user()), slot(raw.slot()), id(raw.id())
+        : user(raw.user()), slot(raw.slot()), model(raw.model())
     {
     }
 
@@ -333,7 +333,7 @@ public:
         return fb::protocol::db::raw::CreateSpell(builder,
             this->user,
             this->slot,
-            this->id);
+            this->model);
     }
 
     std::vector<uint8_t> Serialize() const

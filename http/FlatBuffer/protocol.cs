@@ -324,7 +324,7 @@ namespace fb.protocol.db
         public int ProtocolType => (int)FlatBufferProtocolType.Spell;
         public uint User { get; set; }
         public byte Slot { get; set; }
-        public uint Id { get; set; }
+        public uint Model { get; set; }
 
         public Spell()
         { }
@@ -333,7 +333,7 @@ namespace fb.protocol.db
         {
             User = raw.User;
             Slot = raw.Slot;
-            Id = raw.Id;
+            Model = raw.Model;
         }
 
         public Spell(byte[] bytes) : this(fb.protocol.db.raw.Spell.GetRootAsSpell(new ByteBuffer(bytes)))
@@ -344,7 +344,7 @@ namespace fb.protocol.db
             return fb.protocol.db.raw.Spell.CreateSpell(builder,
                 User,
                 Slot,
-                Id);
+                Model);
         }
 
         public byte[] Serialize()

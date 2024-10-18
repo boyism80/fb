@@ -787,6 +787,7 @@ uint32_t fb::game::session::withdraw_money(uint32_t value)
 
 bool fb::game::session::deposit_item(fb::game::item& item)
 {
+    item.owner(this);
     if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
         auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)

@@ -22,14 +22,14 @@ public struct Spell : IFlatbufferObject
 
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public byte Slot { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public uint Id { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Model { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.db.raw.Spell> CreateSpell(FlatBufferBuilder builder,
       uint user = 0,
       byte slot = 0,
-      uint id = 0) {
+      uint model = 0) {
     builder.StartTable(3);
-    Spell.AddId(builder, id);
+    Spell.AddModel(builder, model);
     Spell.AddUser(builder, user);
     Spell.AddSlot(builder, slot);
     return Spell.EndSpell(builder);
@@ -38,7 +38,7 @@ public struct Spell : IFlatbufferObject
   public static void StartSpell(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddSlot(FlatBufferBuilder builder, byte slot) { builder.AddByte(1, slot, 0); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(2, id, 0); }
+  public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(2, model, 0); }
   public static Offset<fb.protocol.db.raw.Spell> EndSpell(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.db.raw.Spell>(o);
@@ -55,7 +55,7 @@ static public class SpellVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Slot*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 8 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Model*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

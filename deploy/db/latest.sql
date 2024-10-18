@@ -81,6 +81,7 @@ CREATE TABLE `item` (
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` int(10) unsigned DEFAULT NULL,
   `custom_name` varchar(32) DEFAULT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`owner`,`index`,`parts`,`deposited`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -133,7 +134,8 @@ DROP TABLE IF EXISTS `spell`;
 CREATE TABLE `spell` (
   `owner` int(10) unsigned NOT NULL,
   `slot` tinyint(4) NOT NULL,
-  `id` int(11) NOT NULL,
+  `model` int(11) NOT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`owner`,`slot`),
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -568,4 +570,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-06 22:51:31
+-- Dump completed on 2024-10-18 23:49:31
