@@ -1,0 +1,15 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+ARG SERVICE
+ENV SERVICE=$SERVICE
+
+WORKDIR /app
+COPY http ./http
+COPY ${SERVICE} ./${SERVICE}
+RUN dotnet publish -c Release -o /app/dist/${SERVICE} ./${SERVICE}
+
+FROM mcr.microsoft.com/dotnet/aspnet:6.0
+ARG SERVICE
+ENV SERVICE=$SERVICE
+COPY --from=build /app/dist/${SERVICE} /app
+WORKDIR /app
+ENTRYPOINT dotnet ${SERVICE}.dll

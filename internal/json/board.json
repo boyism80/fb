@@ -1,0 +1,27 @@
+{
+  "0": {
+    "id": 0,
+    "name": "공지사항",
+    "condition": [
+      {
+        "Type": "admin",
+        "Parameters": [
+          true
+        ]
+      }
+    ]
+  },
+  "1": {
+    "id": 1,
+    "name": "자유게시판",
+    "condition": [
+      {
+        "Type": "level",
+        "Parameters": [
+          10,
+          null
+        ]
+      }
+    ]
+  }
+}

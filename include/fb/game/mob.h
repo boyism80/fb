@@ -17,7 +17,7 @@ private:
     fb::game::context&                      _context;
     const fb::model::mob_spawn&             _model;
     uint16_t                                _count = 0;
-    std::chrono::milliseconds               _respawn_time = 0ms;
+    std::optional<datetime>      _respawn_time;
 
 public:
     rezen(fb::game::context& context, const fb::model::mob_spawn& model);
@@ -48,7 +48,7 @@ public:
 
 private:
     listener*                               _listener       = nullptr;
-    std::chrono::milliseconds               _action_time    = 0ms;
+    datetime                     _action_time;
     fb::game::rezen*                        _rezen          = nullptr;
 
     fb::game::life*                         _target         = nullptr;
@@ -65,14 +65,14 @@ private:
 
 public:
     bool                                    action();
-    std::chrono::milliseconds               action_time() const;
-    void                                    action_time(std::chrono::milliseconds ms);
+    const datetime&              action_time() const;
+    void                                    action_time(const datetime& dt);
 
     fb::game::life*                         target() const;
     void                                    target(fb::game::life* value);
 
     fb::game::life*                         fix();
-    void                                    AI(std::chrono::steady_clock::duration now);
+    void                                    AI(const datetime& now);
 
     virtual bool                            available() const { return this->alive(); }
 

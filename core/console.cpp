@@ -1,4 +1,4 @@
-#include <fb/core/console.h>
+#include <fb/console.h>
 
 #ifdef _WIN32
 bool SetConsoleIcon(int id)
@@ -16,37 +16,6 @@ bool SetConsoleIcon(int id)
     return true;
 }
 #endif
-
-fb::console::console()
-{
-#ifdef _WIN32
-    this->_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    // get size
-    CONSOLE_SCREEN_BUFFER_INFO      screen;
-    GetConsoleScreenBufferInfo(this->_stdout, &screen);
-    this->_width = screen.dwSize.X;
-    this->_height = screen.dwSize.Y;
-
-    CONSOLE_CURSOR_INFO             cursor;
-    GetConsoleCursorInfo(this->_stdout, &cursor);
-    cursor.bVisible = false;
-    SetConsoleCursorInfo(this->_stdout, &cursor);
-#else
-    setlocale(LC_ALL, "C.UTF-8");
-
-    initscr();
-    getmaxyx(stdscr, this->_height, this->_width);
-    noecho();
-#endif
-}
-
-fb::console::~console()
-{
-#ifdef __linux__
-    endwin();
-#endif
-}
 
 bool fb::console::line(uint16_t width, char content, char side)
 {
@@ -68,99 +37,9 @@ bool fb::console::line(uint16_t width, char content, char side)
     return true;
 }
 
-fb::console& fb::console::put(const char* fmt, ...)
-{
-    auto _ = std::lock_guard(this->_mutex);
-    
-    va_list                 args;
-
-    va_start(args, fmt);
-    auto                    combined = fb::format(fmt, &args);
-    va_end(args);
-
-    uint16_t                x, y;
-    this->cursor(&x, &y);
-
-#ifdef _WIN32
-    DWORD                   written;
-    x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
-#else
-    mvaddstr(y, x, combined.c_str());
-    refresh();
-#endif
-
-    this->clear(x, y);
-    return *this;
-}
-
-fb::console& fb::console::puts(const char* fmt, ...)
-{
-    auto _ = std::lock_guard(this->_mutex);
-    
-    va_list                 args;
-
-    va_start(args, fmt);
-    auto                    combined = fb::format(fmt, &args);
-    va_end(args);
-
-    uint16_t                x, y;
-    this->cursor(&x, &y);
-
-#ifdef _WIN32
-    DWORD                   written;
-    x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
-#else
-    mvaddstr(y, x, combined.c_str());
-    refresh();
-#endif
-
-    this->clear(x, y);
-    this->next();
-    return *this;
-}
-
-fb::console& fb::console::comment(const char* fmt, ...)
-{
-    auto _ = std::lock_guard(this->_mutex);
-    
-    va_list                 args;
-
-    va_start(args, fmt);
-    auto                    combined = fb::format(fmt, &args);
-    va_end(args);
-
-    uint16_t                x, y;
-    this->cursor(&x, &y);
-    y += ++this->_additional_y;
-
-#ifdef _WIN32
-    DWORD                   written;
-    x += WriteConsoleOutputCharacterA(this->_stdout, combined.c_str(), combined.length(), COORD {(SHORT)x, (SHORT)y}, &written) == 0 ? 0 : combined.length();
-#else
-    mvaddstr(y, x, combined.c_str());
-    refresh();
-#endif
-
-    this->clear(x, y);
-    return *this;
-}
-
 fb::console& fb::console::clear(uint16_t x, uint16_t y)
 {
-#ifdef _WIN32
-    COORD                   coord = {x, y};
-    DWORD                   written;
-    FillConsoleOutputCharacterA(this->_stdout, ' ', this->_width - x, coord, &written);
-#else
-    uint16_t                _x, _y;
-    this->cursor(&_x, &_y);
-
-    this->cursor(x, y);
-    clrtoeol();
-
-    this->cursor(_x, _y);
-#endif
-
+    Term::cout << Term::cursor_move(y, x - 1) << std::string(this->width() - x + 1, ' ') << std::flush;
     return *this;
 }
 
@@ -192,13 +71,7 @@ bool fb::console::box(uint16_t width, uint16_t height)
 
 uint16_t fb::console::x() const
 {
-#ifdef _WIN32
     return this->_x;
-#else
-    uint16_t                x, y;
-    this->cursor(&x, &y);
-    return x;
-#endif
 }
 
 void fb::console::x(uint16_t val)
@@ -208,13 +81,7 @@ void fb::console::x(uint16_t val)
 
 uint16_t fb::console::y() const
 {
-#ifdef _WIN32
     return this->_y;
-#else
-    uint16_t                x, y;
-    this->cursor(&x, &y);
-    return y;
-#endif
 }
 
 void fb::console::y(uint16_t val)
@@ -234,47 +101,34 @@ void fb::console::reset_y()
 
 uint16_t fb::console::width() const
 {
-    return this->_width;
+    auto size = Term::screen_size();
+    return size.columns();
 }
 
 uint16_t fb::console::height() const
 {
-    return this->_height;
+    auto size = Term::screen_size();
+    return size.rows();
 }
 
 fb::console& fb::console::next()
 {
-#ifdef _WIN32
-    this->_x = 0;
-    this->_y += (this->_additional_y + 1);
-#else
-    uint16_t                x, y;
-    this->cursor(x, y+1);
-#endif
-
+    this->cursor(0, this->_y + this->_additional_y + 1);
     this->_additional_y = 0;
     return *this;
 }
 
 fb::console& fb::console::cursor(uint16_t x, uint16_t y)
 {
-#ifdef _WIN32
     this->_x = x;
     this->_y = y;
-#else
-    ::move(y, x);
-#endif
     return *this;
 }
 
 void fb::console::cursor(uint16_t* x, uint16_t* y) const
 {
-#ifdef _WIN32
     *x = this->_x;
     *y = this->_y;
-#else
-    getyx(stdscr, *y, *x);
-#endif
 }
 
 fb::console& fb::console::get()

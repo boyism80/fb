@@ -1,5 +1,5 @@
 #include <fb/game/context.h>
-#include <fb/core/redis.h>
+#include <fb/redis.h>
 using namespace fb::game;
 
 async::task<bool> fb::game::context::handle_command_map(fb::game::session& session, Json::Value& parameters)
@@ -312,7 +312,7 @@ async::task<bool> fb::game::context::handle_command_armor_color(fb::game::sessio
 
 async::task<bool> fb::game::context::handle_command_exit(fb::game::session& session, Json::Value& parameters)
 {
-    this->_internal->send(fb::protocol::internal::request::shutdown());
+    //this->_internal->send(fb::protocol::internal::request::shutdown());
     co_return true;
 }
 
@@ -342,7 +342,7 @@ async::task<bool> fb::game::context::handle_command_tile(fb::game::session& sess
 
 async::task<bool> fb::game::context::handle_command_save(fb::game::session& session, Json::Value& parameters)
 {
-    this->save();
+    co_await this->save(session);
     co_return true;
 }
 
@@ -448,7 +448,7 @@ async::task<bool> fb::game::context::handle_command_durability(fb::game::session
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_concurrency(fb::game::session& session, Json::Value& parameters)
+async::task<bool> fb::game::context::handle_command_concurrency(fb::game::session& session, Json::Value& parameters)
 {
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     auto key = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
@@ -459,7 +459,7 @@ async::task<bool> fb::game::context::handle_concurrency(fb::game::session& sessi
         {
             for (int i = 0; i < seconds; i++)
             {
-                session.chat(fb::format("%d초 후에 풀립니다.", seconds - i));
+                session.chat(std::format("{}초 후에 풀립니다.", seconds - i));
                 co_await this->sleep(1s);
             }
             co_return true;
@@ -474,5 +474,12 @@ async::task<bool> fb::game::context::handle_concurrency(fb::game::session& sessi
         session.chat(e.what());
     }
 
+    co_return true;
+}
+
+async::task<bool> fb::game::context::handle_command_sleep(fb::game::session& session, Json::Value& parameters)
+{
+    auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
+    co_await this->sleep(std::chrono::seconds{seconds});
     co_return true;
 }

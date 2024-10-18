@@ -1,15 +1,17 @@
 #ifndef __FB_GATEWAY_H__
 #define __FB_GATEWAY_H__
 
-#include <fb/core/acceptor.h>
-#include <fb/core/config.h>
+#include <fb/acceptor.h>
+#include <fb/config.h>
 #include <fb/gateway/session.h>
 #include <fb/gateway/util.h>
 #include <zlib.h>
 #include <memory>
 #include <fb/protocol/gateway.h>
-#include <fb/protocol/internal.h>
-#include <fb/core/encoding.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/encoding.h>
+
+using namespace fb::protocol::internal;
 
 namespace fb { namespace gateway {
 
@@ -42,15 +44,15 @@ protected:
     bool                        decrypt_policy(uint8_t) const final;
     fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
-    bool                        handle_disconnected(fb::socket<fb::gateway::session>& session) final;
-    async::task<void>           handle_internal_connected() final;
+    async::task<bool>           handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+    
+    // for heart-beat
+protected:
+    Service                     service() const final { return Service::Gateway; }
 
 public:
     async::task<bool>           handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
     async::task<bool>           handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
-
-public:
-    async::task<bool>           handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 };
 
 } }

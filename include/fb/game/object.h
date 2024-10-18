@@ -4,7 +4,7 @@
 #include <fb/game/mmo.h>
 #include <fb/game/spell.h>
 #include <fb/game/lua.h>
-#include <fb/core/stream.h>
+#include <fb/stream.h>
 #include <fb/game/model.h>
 
 using namespace fb::model;

@@ -9,10 +9,9 @@
 #include <optional>
 #include <chrono>
 #include <jsoncpp/json/json.h>
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/xpressive/xpressive.hpp>
 #include <unordered_map>
 #include <fb/game/lua.h>
+#include <fb/model/datetime.h>
 #include <fb/game/model.preprocessor.h>
 
 #ifdef BEGIN_PREPROCESSOR
@@ -59,10 +58,10 @@ public:
 class date_range
 {
 public:
-    const std::optional<boost::posix_time::ptime> begin, end;
+    const std::optional<datetime> begin, end;
 
 public:
-    date_range(const std::optional<boost::posix_time::ptime>& begin, const std::optional<boost::posix_time::ptime>& end) : 
+    date_range(const std::optional<datetime>& begin, const std::optional<datetime>& end) : 
         begin(begin),
         end(end)
     {}
@@ -1341,40 +1340,40 @@ public:
     inline static constexpr const char* ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
     inline static constexpr const char* ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
     inline static constexpr const char* ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
-    inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [%0.2lf%%] 맵 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [%0.2lf%%] 정규표현식 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [%0.2lf%%] 월드맵 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_DOOR_LOADED = "* [%0.2lf%%] 도어 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_SPELL_LOADED = "* [%0.2lf%%] 스펠 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_WARP_LOADED = "* [%0.2lf%%] 워프 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_LOADED = "* [%0.2lf%%] 아이템 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_LOADED = "* [%0.2lf%%] 조합 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_SELL_LOADED = "* [%0.2lf%%] 판매 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_BUY_LOADED = "* [%0.2lf%%] 구매 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_LOADED = "* [%0.2lf%%] NPC 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_LOADED = "* [%0.2lf%%] 몹 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_DROP_LOADED = "* [%0.2lf%%] 드롭 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_LOADED = "* [%0.2lf%%] NPC 스폰 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_LOADED = "* [%0.2lf%%] 몹 스폰 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_CLASS_LOADED = "* [%0.2lf%%] 클래스 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_BOARD_LOADED = "* [%0.2lf%%] 게시판 정보를 읽었습니다. (%s)";
-    inline static constexpr const char* MESSAGE_ASSET_MAP_ALL_LOADED = "* [100%%] 총 %d개의 맵 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_REGEX_ALL_LOADED = "* [100%%] 총 %d개의 정규표현식 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_ALL_LOADED = "* [100%%] 총 %d개의 월드맵 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_DOOR_ALL_LOADED = "* [100%%] 총 %d개의 도어 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_SPELL_ALL_LOADED = "* [100%%] 총 %d개의 스펠 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_WARP_ALL_LOADED = "* [100%%] 총 %d개의 워프 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_ALL_LOADED = "* [100%%] 총 %d개의 아이템 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_ALL_LOADED = "* [100%%] 총 %d개의 조합 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_SELL_ALL_LOADED = "* [100%%] 총 %d개의 판매 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_BUY_ALL_LOADED = "* [100%%] 총 %d개의 구매 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_ALL_LOADED = "* [100%%] 총 %d개의 NPC 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_ALL_LOADED = "* [100%%] 총 %d개의 몹 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_DROP_ALL_LOADED = "* [100%%] 총 %d개의 드롭 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED = "* [100%%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED = "* [100%%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_CLASS_ALL_LOADED = "* [100%%] 총 %d개의 클래스 정보를 읽었습니다.";
-    inline static constexpr const char* MESSAGE_ASSET_BOARD_ALL_LOADED = "* [100%%] 총 %d개의 게시판 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_DOOR_LOADED = "* [{:0.2f}%] 도어 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_SPELL_LOADED = "* [{:0.2f}%] 스펠 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_WARP_LOADED = "* [{:0.2f}%] 워프 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_LOADED = "* [{:0.2f}%] 아이템 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_LOADED = "* [{:0.2f}%] 조합 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_SELL_LOADED = "* [{:0.2f}%] 판매 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_BUY_LOADED = "* [{:0.2f}%] 구매 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_LOADED = "* [{:0.2f}%] NPC 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_LOADED = "* [{:0.2f}%] 몹 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_DROP_LOADED = "* [{:0.2f}%] 드롭 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_LOADED = "* [{:0.2f}%] NPC 스폰 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_LOADED = "* [{:0.2f}%] 몹 스폰 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_CLASS_LOADED = "* [{:0.2f}%] 클래스 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_BOARD_LOADED = "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})";
+    inline static constexpr const char* MESSAGE_ASSET_MAP_ALL_LOADED = "* [100%] 총 %d개의 맵 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_REGEX_ALL_LOADED = "* [100%] 총 %d개의 정규표현식 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_ALL_LOADED = "* [100%] 총 %d개의 월드맵 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_DOOR_ALL_LOADED = "* [100%] 총 %d개의 도어 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_SPELL_ALL_LOADED = "* [100%] 총 %d개의 스펠 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_WARP_ALL_LOADED = "* [100%] 총 %d개의 워프 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_ALL_LOADED = "* [100%] 총 %d개의 아이템 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_ITEM_MIX_ALL_LOADED = "* [100%] 총 %d개의 조합 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_SELL_ALL_LOADED = "* [100%] 총 %d개의 판매 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BUY_ALL_LOADED = "* [100%] 총 %d개의 구매 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_ALL_LOADED = "* [100%] 총 %d개의 NPC 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_ALL_LOADED = "* [100%] 총 %d개의 몹 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_DROP_ALL_LOADED = "* [100%] 총 %d개의 드롭 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_NPC_SPAWN_ALL_LOADED = "* [100%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_MOB_SPAWN_ALL_LOADED = "* [100%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_CLASS_ALL_LOADED = "* [100%] 총 %d개의 클래스 정보를 읽었습니다.";
+    inline static constexpr const char* MESSAGE_ASSET_BOARD_ALL_LOADED = "* [100%] 총 %d개의 게시판 정보를 읽었습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_SEX = "성별을 확인할 수 없습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_DEATH_PENALTY = "아이템 데스 패널티를 확인할 수 없습니다.";
     inline static constexpr const char* MESSAGE_ASSET_INVALID_MOB_SIZE = "몹 크기 형식을 확인할 수 없습니다.";
@@ -1538,8 +1537,8 @@ template <> std::string build<std::string>(const Json::Value& json);
 template <> float build<float>(const Json::Value& json);
 template <> double build<double>(const Json::Value& json);
 template <> bool build<bool>(const Json::Value& json);
-template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json::Value& json);
-template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json);
+template <> datetime build<datetime>(const Json::Value& json);
+template <> timespan build<timespan>(const Json::Value& json);
 template <> fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
 template <> fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
 
@@ -2234,7 +2233,7 @@ public:
     const point<uint16_t> end;
     const uint16_t count;
     const uint32_t mob;
-    const std::chrono::milliseconds rezen;
+    const timespan rezen;
 #endif
 
 #ifdef DECLARE_MOB_SPAWN_CUSTOM_CONSTRUCTOR
@@ -2250,7 +2249,7 @@ DECLARE_MOB_SPAWN_CONSTRUCTOR
         end(fb::model::build<point<uint16_t>>(json["end"])),
         count(fb::model::build<uint16_t>(json["count"])),
         mob(fb::model::build<uint32_t>(json["mob"])),
-        rezen(fb::model::build<std::chrono::milliseconds>(json["rezen"]))
+        rezen(fb::model::build<timespan>(json["rezen"]))
 #ifdef DECLARE_MOB_SPAWN_INITIALIZER
 DECLARE_MOB_SPAWN_INITIALIZER
 #endif
@@ -3024,7 +3023,7 @@ public:
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
     const range<uint32_t> damage;
-    const std::chrono::milliseconds speed;
+    const timespan speed;
     const std::string drop;
     const std::string attack_script;
     const std::string die_script;
@@ -3039,7 +3038,7 @@ public:
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
         damage(fb::model::build<range<uint32_t>>(json["damage"])),
-        speed(fb::model::build<std::chrono::milliseconds>(json["speed"])),
+        speed(fb::model::build<timespan>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
         attack_script(fb::model::build<std::string>(json["attack_script"])),
         die_script(fb::model::build<std::string>(json["die_script"]))
@@ -4100,7 +4099,7 @@ template <typename T> typename std::enable_if<is_default<T>::value, T>::type bui
 template <typename T> typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json)
 {
     if(json.isString())
-        return T(enum_value::enum_parse<T>(build<std::string>(json)));
+        return T(fb::model::enum_value::enum_parse<T>(build<std::string>(json)));
     else
         return T(json.asInt());
 }
@@ -4219,49 +4218,21 @@ template <> bool build<bool>(const Json::Value& json)
     return json.asBool();
 }
 
-template <> boost::posix_time::ptime build<boost::posix_time::ptime>(const Json::Value& json)
+template <> datetime build<datetime>(const Json::Value& json)
 {
     try
     {
-        return boost::posix_time::time_from_string(build<std::string>(json));
+        return datetime(build<std::string>(json));
     }
     catch (std::exception&)
     {
-        return boost::posix_time::ptime();
+        return datetime();
     }
 }
 
-template <> std::chrono::milliseconds build<std::chrono::milliseconds>(const Json::Value& json)
+template <> timespan build<timespan>(const Json::Value& json)
 {
-    static const auto regex = boost::xpressive::sregex::compile("((?P<day>\\d+).)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
-    auto what = boost::xpressive::smatch();
-    auto data = build<std::string>(json);
-    if (boost::xpressive::regex_match(data, what, regex) == false)
-        throw std::runtime_error("cannot parse timespan");
-
-    auto day = what["day"].matched ? std::stoi(what["day"].str()) : 0;
-    auto hours = std::stoi(what["hour"].str());
-    auto mins = std::stoi(what["min"].str());
-    auto secs = std::stoi(what["sec"].str());
-    auto ms = 0;
-    if(what["ms"].matched)
-    {
-        auto in = what["ms"].str();
-        auto step = 100;
-        for (int i = 0; i < std::min<uint32_t>(3, in.size()); i++)
-        {
-            auto v = in.at(i) - '0';
-            ms += v * step;
-            step /= 10;
-        }
-    }
-
-    auto count = day;
-    count = count * 24 + hours;
-    count = count * 60 + mins;
-    count = count * 60 + secs;
-    count = count * 1000 + ms;
-    return std::chrono::milliseconds(count);
+    return timespan(build<std::string>(json));
 }
 
 template <> dsl build<dsl>(const Json::Value& json)
@@ -4271,7 +4242,7 @@ template <> dsl build<dsl>(const Json::Value& json)
 
 template <> date_range build<date_range>(const Json::Value& json)
 {
-    return date_range(build<std::optional<boost::posix_time::ptime>>(json["Begin"]), build<std::optional<boost::posix_time::ptime>>(json["End"]));
+    return date_range(build<std::optional<datetime>>(json["Begin"]), build<std::optional<datetime>>(json["End"]));
 }
 
 template <typename T> typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json)

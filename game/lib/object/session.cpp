@@ -234,6 +234,16 @@ void fb::game::session::name(const std::string& value)
     this->_name = value;
 }
 
+const datetime& fb::game::session::last_login() const
+{
+    return this->_last_login;
+}
+
+void fb::game::session::last_login(const datetime& value)
+{
+    this->_last_login = value;
+}
+
 uint16_t fb::game::session::look() const
 {
     return this->_look;
@@ -777,6 +787,7 @@ uint32_t fb::game::session::withdraw_money(uint32_t value)
 
 bool fb::game::session::deposit_item(fb::game::item& item)
 {
+    item.owner(this);
     if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
         auto found = std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](fb::game::item* deposited_item)
@@ -1480,6 +1491,46 @@ async::task<bool> fb::game::session::inline_interaction(const std::string& messa
     }
 
     co_return false;
+}
+
+fb::protocol::db::Character fb::game::session::to_protocol() const
+{
+    auto dto = fb::protocol::db::Character();
+    dto.id = this->_id;
+    dto.name = UTF8(this->_name, PLATFORM::Windows);
+    dto.last_login = datetime().to_string();
+    dto.admin = this->_admin;
+    dto.look = this->_look;
+    dto.color = this->_color;
+    dto.sex = (uint16_t)this->_sex;
+    dto.nation = (uint16_t)this->_nation;
+    dto.creature = (uint16_t)this->_creature;
+    dto.map = this->_map != nullptr ? this->_map->model.id : 0;
+    dto.position = fb::protocol::db::Position{ this->_position.x, this->_position.y };
+    dto.direction = (uint8_t)this->_direction;
+    dto.state = (uint8_t)this->_state;
+    dto.class_type = (uint8_t)this->_class;
+    dto.promotion = this->_promotion;
+    dto.exp = this->_experience;
+    dto.money = this->_money;
+    dto.deposited_money = this->_deposited_money;
+    dto.disguise = this->_disguise;
+    dto.hp = this->_hp;
+    dto.base_hp = this->_base_hp;
+    dto.additional_hp = 0;
+    dto.mp = this->_mp;
+    dto.base_mp = this->_base_mp;
+    dto.additional_mp = 0;
+    dto.weapon_color = std::nullopt;
+    dto.helmet_color = std::nullopt;
+    dto.armor_color = this->_armor_color;
+    dto.shield_color = std::nullopt;
+    dto.ring_left_color = std::nullopt;
+    dto.ring_right_color = std::nullopt;
+    dto.aux_top_color = std::nullopt;
+    dto.aux_bot_color = std::nullopt;
+    dto.clan = std::nullopt;
+    return dto;
 }
 
 fb::game::session::container::container()

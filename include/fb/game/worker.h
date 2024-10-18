@@ -1,7 +1,7 @@
 #ifndef __WORKER_H__
 #define __WORKER_H__
 
-#include <fb/core/parallel_worker.h>
+#include <fb/parallel_worker.h>
 #include <fb/game/model.h>
 
 namespace fb { namespace game {

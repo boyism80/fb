@@ -477,7 +477,7 @@ fb::game::maps::~maps()
 
 bool fb::game::maps::load_data(uint32_t id, std::vector<char>& buffer)
 {
-    auto                    fname = fb::format("maps/%06d.map", id);
+    auto                    fname = std::format("maps/{:06}.map", id);
     auto                    file = std::ifstream(fname, std::ios::binary);
     if(file.is_open() == false)
         return false;
@@ -490,7 +490,7 @@ bool fb::game::maps::load_data(uint32_t id, std::vector<char>& buffer)
 
 bool fb::game::maps::load_block(uint32_t id, Json::Value& buffer)
 {
-    auto                    fname = fb::format("maps/%06d.block", id);
+    auto                    fname = std::format("maps/{:06}.block", id);
     std::ifstream           file(fname);
     if(file.is_open() == false)
         return false;

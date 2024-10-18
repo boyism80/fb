@@ -12,16 +12,25 @@
             "internal": 
             { 
                 "ip": "192.168.0.180", 
-                "port": 2000 
+                "port": 5126 
+            }
+        },
+        "db": {
+            "db": 
+            {
+                "ip": "192.168.0.180", 
+                "port": 5086 
             }
         },
         "gateway":
         {
             "gateway": 
             { 
+                "id": 0,
                 "ip": "192.168.0.180", 
                 "port": 2001,
                 "internal": "internal",
+                "db": "db",
                 "entrypoints": 
                 [
                     { "name": "채승현", "desc": "채승현은 신이다.", "login": "login" },
@@ -44,9 +53,11 @@
         {
             "login": 
             { 
+                "id": 0,
                 "ip": "192.168.0.180", 
                 "port": 2002,
                 "internal": "internal",
+                "db": "db",
                 "name_size": {
                     "min": 4,
                     "max": 12
@@ -62,139 +73,156 @@
         {
             "game0": 
             { 
-                "group": 0,
+                "id": 0,
                 "ip": "192.168.0.181", 
                 "port": 2003,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game1": 
             { 
-                "group": 1,
+                "id": 1,
                 "ip": "192.168.0.182", 
                 "port": 2004,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game2": 
             { 
-                "group": 2,
+                "id": 2,
                 "ip": "192.168.0.183", 
                 "port": 2005,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game3": 
             { 
-                "group": 3,
+                "id": 3,
                 "ip": "192.168.0.181", 
                 "port": 2006,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game4": 
             { 
-                "group": 4,
+                "id": 4,
                 "ip": "192.168.0.182", 
                 "port": 2007,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game5": 
             { 
-                "group": 5,
+                "id": 5,
                 "ip": "192.168.0.183", 
                 "port": 2008,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game6": 
             { 
-                "group": 6,
+                "id": 6,
                 "ip": "192.168.0.181", 
                 "port": 2009,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game7": 
             { 
-                "group": 7,
+                "id": 7,
                 "ip": "192.168.0.182", 
                 "port": 2010,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game8": 
             { 
-                "group": 8,
+                "id": 8,
                 "ip": "192.168.0.183", 
                 "port": 2011,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game9": 
             { 
-                "group": 9,
+                "id": 9,
                 "ip": "192.168.0.181", 
                 "port": 2012,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game10": 
             { 
-                "group": 10,
+                "id": 10,
                 "ip": "192.168.0.182", 
                 "port": 2013,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game11": 
             { 
-                "group": 11,
+                "id": 11,
                 "ip": "192.168.0.183", 
                 "port": 2014,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game12": 
             { 
-                "group": 12,
+                "id": 12,
                 "ip": "192.168.0.181", 
                 "port": 2015,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game13": 
             { 
-                "group": 13,
+                "id": 13,
                 "ip": "192.168.0.182", 
                 "port": 2016,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game14": 
             { 
-                "group": 14,
+                "id": 14,
                 "ip": "192.168.0.183", 
                 "port": 2017,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game15": 
             { 
-                "group": 15,
+                "id": 15,
                 "ip": "192.168.0.181", 
                 "port": 2018,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             },
             "game16": 
             { 
-                "group": 16,
+                "id": 16,
                 "ip": "192.168.0.182", 
                 "port": 2019,
                 "login": "login",
-                "internal": "internal"
+                "internal": "internal",
+                "db": "db"
             }
         }
     },
@@ -244,5 +272,11 @@
             "port": 6379,
             "db": 0
         }
+    },
+    "amqp": {
+        "ip": "192.168.0.181",
+        "port": 5672,
+        "uid": "fb",
+        "pwd": "admin"
     }
 }

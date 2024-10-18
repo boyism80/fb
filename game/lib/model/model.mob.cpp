@@ -13,7 +13,7 @@ int fb::model::mob::builtin_speed(lua_State* lua)
     if (mob == nullptr)
         return 0;
 
-    lua_pushinteger(lua, mob->speed.count());
+    lua_pushinteger(lua, mob->speed.total_milliseconds());
     return 1;
 }
 

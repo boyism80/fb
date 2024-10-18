@@ -1,7 +1,7 @@
 #ifndef __SESSION_INTERNAL_H__
 #define __SESSION_INTERNAL_H__
 
-#include <fb/core/socket.h>
+#include <fb/socket.h>
 #include <vector>
 
 namespace fb { namespace internal {

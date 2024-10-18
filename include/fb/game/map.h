@@ -9,9 +9,9 @@
 #include <memory>
 #include <fb/game/door.h>
 #include <fb/game/sector.h>
-#include <fb/core/stream.h>
-#include <fb/core/config.h>
-#include <fb/core/container.h>
+#include <fb/stream.h>
+#include <fb/config.h>
+#include <fb/container.h>
 
 namespace fb { namespace game {
 

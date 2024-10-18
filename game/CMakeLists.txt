@@ -28,4 +28,4 @@ add_executable(app ${CORE_FILES} ${SOURCE_FILES} main.cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(app jsoncpp z pthread mysqlclient crypto lua5.3 ncursesw boost_program_options cpp_redis tacopie)
+target_link_libraries(app jsoncpp z pthread crypto lua5.3 boost_program_options cpp_redis tacopie rabbitmq cpp-terminal cpp-terminal-private)

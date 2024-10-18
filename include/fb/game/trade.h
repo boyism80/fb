@@ -2,7 +2,7 @@
 #define __TRADE_H__
 
 #include <vector>
-#include <fb/core/stream.h>
+#include <fb/stream.h>
 
 namespace fb { namespace game {
 

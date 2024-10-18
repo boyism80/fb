@@ -1,4 +1,4 @@
-#include <fb/core/logger.h>
+#include <fb/logger.h>
 
 fb::logger::logger(fb::logger::level level) : _level(level)
 { }
@@ -32,72 +32,4 @@ fb::logger& fb::logger::get()
         ist = std::unique_ptr<fb::logger>(new fb::logger((fb::logger::level)level));
     });
     return *ist;
-}
-
-fb::logger& fb::logger::debug(const char* format, ...)
-{
-    auto& ist = get();
-    if(ist.has_flag(fb::logger::level::DEBUG) == false)
-        return ist;
-
-    va_list args;
-    va_start(args, format);
-    auto message = fb::format(format, &args);
-    va_end(args);
-
-    auto& c = fb::console::get();
-    c.puts("[DEBUG] %s", message.c_str());
-
-    return ist;
-}
-
-fb::logger& fb::logger::info(const char* format, ...)
-{
-    auto& ist = get();
-    if(ist.has_flag(fb::logger::level::INFO) == false)
-        return ist;
-
-    va_list args;
-    va_start(args, format);
-    auto message = fb::format(format, &args);
-    va_end(args);
-
-    auto& c = fb::console::get();
-    c.puts("[INFO] %s", message.c_str());
-
-    return ist;
-}
-
-fb::logger& fb::logger::warn(const char* format, ...)
-{
-    auto& ist = get();
-    if(ist.has_flag(fb::logger::level::WARN) == false)
-        return ist;
-
-    va_list args;
-    va_start(args, format);
-    auto message = fb::format(format, &args);
-    va_end(args);
-
-    auto& c = fb::console::get();
-    c.puts("[WARN] %s", message.c_str());
-
-    return ist;
-}
-
-fb::logger& fb::logger::fatal(const char* format, ...)
-{
-    auto& ist = get();
-    if(ist.has_flag(fb::logger::level::FATAL) == false)
-        return ist;
-
-    va_list args;
-    va_start(args, format);
-    auto message = fb::format(format, &args);
-    va_end(args);
-
-    auto& c = fb::console::get();
-    c.puts("[FATAL] %s", message.c_str());
-
-    return ist;
 }

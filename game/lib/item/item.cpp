@@ -27,7 +27,7 @@ void fb::game::item::on_map_changed(fb::game::map* map)
     if(map == nullptr)
         this->_dropped_time = std::nullopt;
     else
-        this->_dropped_time = fb::thread::now();
+        this->_dropped_time = datetime();
 }
 
 std::string fb::game::item::tip_message() const
@@ -156,4 +156,23 @@ void fb::game::item::merge(fb::game::item& item)
         if(remain > 0 && this->_count == model.capacity)
             listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
     }
+}
+
+
+fb::protocol::db::Item fb::game::item::to_protocol() const
+{
+    if (this->_owner == nullptr)
+        throw std::runtime_error("cannot convert to protocol because owner is empty");
+
+    auto& model = this->based<fb::model::item>();
+    auto result = fb::protocol::db::Item();
+    result.user = this->_owner->id();
+    result.index = -1;
+    result.parts = (uint16_t)EQUIPMENT_PARTS::UNKNOWN;
+    result.deposited = -1;
+    result.model = model.id;
+    result.count = this->_count;
+    result.durability = this->durability();
+    result.custom_name = "";
+    return result;
 }

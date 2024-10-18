@@ -1,23 +1,6 @@
-FROM ubuntu:22.04
+FROM cshyeon/fb:base
 
-RUN apt-get update -y
-RUN apt-get upgrade -y
-RUN apt-get install git make cmake gcc-12 g++-12 wget libjsoncpp-dev lua5.3-dev libmysqlcppconn-dev libmysqlclient-dev redis libssl-dev libncurses5-dev libncursesw5-dev python3-pip default-jre unzip libboost-program-options-dev -y
-RUN ln -s -f /usr/bin/gcc-12 /usr/bin/gcc && ln -s -f /usr/bin/g++-12 /usr/bin/g++
-RUN pip3 install --upgrade --ignore-installed pip setuptools
-RUN pip3 install fabric3 
-RUN pip3 install jinja2
-
-# zlib
-RUN wget https://ftp.icm.edu.pl/packages/zlib/zlib-1.1.4.tar.gz
-RUN tar xvfz zlib-1.1.4.tar.gz
-WORKDIR /zlib-1.1.4
-RUN ./configure
-RUN make
-RUN make install
-WORKDIR /
-RUN rm -f zlib-1.1.4.tar.gz
-RUN rm -rf zlib-1.1.4
+RUN apt-get install libssl-dev python3-pip default-jre -y
 
 # boost
 RUN wget -O boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
@@ -29,20 +12,3 @@ RUN ./b2 install
 WORKDIR /
 RUN rm -f boost_1_84_0.tar.gz
 RUN rm -rf boost_1_84_0
-
-# cpp_redis
-RUN git clone https://github.com/cpp-redis/cpp_redis.git
-WORKDIR ./cpp_redis
-RUN git submodule init && git submodule update
-WORKDIR ./tacopie
-RUN git fetch origin pull/5/head:cmake-fixes && git checkout cmake-fixes
-RUN sed -i 's/add_library(${PROJECT_NAME} SHARED ${tacopie_sources})/add_library(${PROJECT_NAME} ${tacopie_sources})/' CMakeLists.txt
-WORKDIR ../
-RUN sed -i 's/add_library(${PROJECT_NAME} SHARED ${cpp_redis_sources})/add_library(${PROJECT_NAME} ${cpp_redis_sources})/' CMakeLists.txt
-RUN mkdir build
-WORKDIR ./build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release
-RUN make
-RUN make install
-WORKDIR /
-RUN rm -rf cpp_redis

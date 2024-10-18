@@ -13,8 +13,6 @@ fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
     // Register event handler
     this->bind<fb::protocol::gateway::request::assert_version>  (std::bind(&context::handle_check_version,   this, std::placeholders::_1, std::placeholders::_2));
     this->bind<fb::protocol::gateway::request::entry_list>      (std::bind(&context::handle_entry_list,      this, std::placeholders::_1, std::placeholders::_2));
-
-    this->bind<fb::protocol::internal::response::shutdown>      (std::bind(&context::handle_in_shutdown,     this, std::placeholders::_1, std::placeholders::_2));
 }
 
 fb::gateway::context::~context()
@@ -85,22 +83,14 @@ bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& so
 {
     socket.send(this->_connection_cache, false);
 
-    fb::logger::info("%s님이 접속했습니다.", socket.IP().c_str());
+    fb::logger::info("{}님이 접속했습니다.", socket.IP());
     return true;
 }
 
-bool fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
+async::task<bool> fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
 {
-    fb::logger::info("%s님의 연결이 끊어졌습니다.", socket.IP().c_str());
-    return false;
-}
-
-async::task<void> fb::gateway::context::handle_internal_connected()
-{
-    co_await fb::acceptor<fb::gateway::session>::handle_internal_connected();
-
-    auto& config = fb::config::get();
-    this->_internal->send(fb::protocol::internal::request::subscribe(config["id"].asString(), fb::protocol::internal::services::GATEWAY, 0xFF));
+    fb::logger::info("{}님의 연결이 끊어졌습니다.", socket.IP());
+    co_return false;
 }
 
 async::task<bool> fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
@@ -141,10 +131,4 @@ async::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway
     default:
         co_return false;
     }
-}
-
-async::task<bool> fb::gateway::context::handle_in_shutdown(fb::internal::socket<>& socket, const fb::protocol::internal::response::shutdown& response)
-{
-    this->exit();
-    co_return true;
 }

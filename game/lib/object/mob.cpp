@@ -1,22 +1,21 @@
 #include <fb/game/session.h>
 #include <fb/game/map.h>
 #include <fb/game/mob.h>
-#include <fb/core/thread.h>
+#include <fb/thread.h>
 #include <fb/game/context.h>
 
 fb::game::rezen::rezen(fb::game::context& context, const fb::model::mob_spawn& model) : 
     _context(context),
     _model(model)
 {
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
-    this->_respawn_time = now;
+    this->_respawn_time = datetime();
 }
 
 void fb::game::rezen::decrease()
 {
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
+    auto now = datetime();
 
-    if (this->_respawn_time == 0ms)
+    if (!this->_respawn_time.has_value())
         this->_respawn_time = now + this->_model.rezen;
     this->_count = std::max(0, this->_count - 1);
 }
@@ -34,8 +33,8 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     if (thread == nullptr || thread->id() != thread_id)
         return;
 
-    auto now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
-    if(this->_respawn_time == 0ms)
+    auto now = datetime();
+    if(!this->_respawn_time.has_value())
         return;
 
     if (now < this->_respawn_time)
@@ -78,7 +77,7 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
         mob->visible(true);
     }
 
-    this->_respawn_time = 0ms;
+    this->_respawn_time.reset();
 }
 
 fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) : 
@@ -148,14 +147,14 @@ bool fb::game::mob::action()
     return stop;
 }
 
-std::chrono::milliseconds fb::game::mob::action_time() const
+const datetime& fb::game::mob::action_time() const
 {
     return this->_action_time;
 }
 
-void fb::game::mob::action_time(std::chrono::milliseconds ms)
+void fb::game::mob::action_time(const datetime& dt)
 {
-    this->_action_time = ms;
+    this->_action_time = dt;
 }
 
 fb::game::life* fb::game::mob::target() const
@@ -231,7 +230,7 @@ bool fb::game::mob::near_target(DIRECTION& out) const
     return false;
 }
 
-void fb::game::mob::AI(std::chrono::steady_clock::duration now)
+void fb::game::mob::AI(const datetime& now)
 {
     try
     {
@@ -283,7 +282,7 @@ void fb::game::mob::AI(std::chrono::steady_clock::duration now)
         
     }
 
-    this->_action_time = std::chrono::duration_cast<std::chrono::milliseconds>(now);
+    this->_action_time = now;
 }
 
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const

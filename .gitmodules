@@ -1,0 +1,6 @@
+[submodule "data-converter"]
+	path = data-converter
+	url = https://github.com/boyism80/data-converter
+[submodule "flatbuffer-ex"]
+	path = flatbuffer-ex
+	url = https://github.com/boyism80/flatbuffer-ex.git

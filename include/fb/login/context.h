@@ -10,16 +10,17 @@
 #include <ctime>
 #include <zlib.h>
 #include <openssl/sha.h>
-#include <fb/core/db.h>
-#include <fb/core/socket.h>
+#include <fb/socket.h>
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
 #include <fb/protocol/login.h>
-#include <fb/protocol/internal.h>
-#include <fb/core/acceptor.h>
-#include <fb/core/string.h>
+#include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/acceptor.h>
+#include <fb/string.h>
 
 #define MAX_NXCLUB_SIZE     14
+
+using namespace fb::protocol::internal;
 
 namespace fb { namespace login {
 
@@ -69,7 +70,7 @@ private:
     fb::protocol::login::response::agreement    _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     std::vector<std::string>                    _forbiddens;
     std::vector<unique_session>                 _sessions;
-    fb::db::context<session>                    _db;
+    std::vector<boost::asio::deadline_timer>    _timers;
 
 public:
     context(boost::asio::io_context& context, uint16_t port);
@@ -85,11 +86,11 @@ protected:
     bool                        decrypt_policy(uint8_t) const final;
     fb::login::session*         handle_accepted(fb::socket<fb::login::session>&) final;
     bool                        handle_connected(fb::socket<fb::login::session>&) final;
-    bool                        handle_disconnected(fb::socket<fb::login::session>&) final;
-    async::task<void>           handle_internal_connected() final;
+    async::task<bool>           handle_disconnected(fb::socket<fb::login::session>&) final;
 
-public:
-    async::task<bool>           handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
+    // for heart-beat
+protected:
+    Service                     service() const final { return Service::Login; };
 
 public:
     async::task<bool>           handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);

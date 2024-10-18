@@ -2,9 +2,9 @@
 #define __MST_RECIPE_H__
 
 #include <fb/game/model.h>
-#include <fb/core/mst.h>
+#include <fb/mst.h>
 #include <fb/game/item.h>
-#include <fb/core/generator.h>
+#include <fb/generator.h>
 
 using namespace fb::model::enum_value;
 

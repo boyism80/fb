@@ -1,4 +1,4 @@
-#include <fb/core/dead_lock.h>
+#include <fb/dead_lock.h>
 
 fb::dead_lock_detector::dead_lock_detector(const std::string& data, const dead_lock_detector* parent) : fb::mst<std::string>(data, parent)
 { }

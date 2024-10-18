@@ -1,9 +1,8 @@
 #include "resource.h"
 #include <fb/game/context.h>
-// #include <fb/core/leak.h>
-#include <fb/core/mst.h>
+// #include <fb/leak.h>
+#include <fb/mst.h>
 #include <fb/game/worker.h>
-#include <fb/game/mst.recipe.h>
 
 using namespace fb::model::enum_value;
 
@@ -12,17 +11,17 @@ int main(int argc, const char** argv)
     auto& c = fb::console::get();
     auto& config = fb::config::get();
 
-    auto height = 8;
+    auto height = 9;
     c.box(c.width()-1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.cursor((c.width()-1 - strlen(header)) / 2, 2).put(header);
+    c.cursor((c.width()-1 - strlen(header)) / 2, 3).render(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.cursor(c.width()-1 - strlen(github) - 3, 4).put(github);
+    c.cursor(c.width()-1 - strlen(github) - 3, 5).render(github);
 
     auto madeby = "made by cshyeon";
-    c.cursor(c.width()-1 - strlen(madeby) - 3, 5).put(madeby);
+    c.cursor(c.width()-1 - strlen(madeby) - 3, 6).render(madeby);
 
     c.cursor(0, height + 1);
 

@@ -2,12 +2,12 @@
 #include <iostream>
 #include <iomanip>
 #include "resource.h"
-#include <fb/core/socket.h>
+#include <fb/socket.h>
 #include <fb/gateway/context.h>
-// #include <fb/core/leak.h>
-#include <fb/core/console.h>
-#include <fb/core/config.h>
-#include <fb/protocol/internal.h>
+// #include <fb/leak.h>
+#include <fb/console.h>
+#include <fb/config.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 int main(int argc, const char** argv)
 {
@@ -22,17 +22,17 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        auto height = 8;
+        auto height = 9;
         c.box(c.width()-1, height);
 
         auto header = "The Kingdom of the wind [GATEWAY]";
-        c.cursor((c.width()-1 - strlen(header)) / 2, 2).put(header);
+        c.cursor((c.width()-1 - strlen(header)) / 2, 3).render(header);
 
         auto github = "https://github.com/boyism80/fb";
-        c.cursor(c.width()-1 - strlen(github) - 3, 4).put(github);
+        c.cursor(c.width()-1 - strlen(github) - 3, 5).render(github);
 
         auto madeby = "made by cshyeon";
-        c.cursor(c.width()-1 - strlen(madeby) - 3, 5).put(madeby);
+        c.cursor(c.width()-1 - strlen(madeby) - 3, 6).render(madeby);
 
         c.cursor(0, height + 1);
 

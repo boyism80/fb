@@ -2,7 +2,8 @@
 #define __PROTOCOL_RESPONSE_GATEWAY_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/core/cryptor.h>
+#include <fb/cryptor.h>
+#include <format>
 #ifndef _WIN32
 #include <arpa/inet.h>
 #endif
@@ -125,17 +126,16 @@ public:
     {
         // 서버정보를 바이너리 형식으로 변환
         fb::ostream                 formats;
-        char                        buffer[256];
         formats.write_u8((uint8_t)this->entries.size());
         for(uint32_t i = 0; i < this->entries.size(); i++)
         {
             auto                    gateway = this->entries.at(i);
-            uint32_t                len = sprintf(buffer, "%s;%s", gateway.name.c_str(), gateway.desc.c_str()) + 1;
+            auto                    buffer = std::format("{};{}", gateway.name, gateway.desc);
 
             formats.write_u8(i)
                 .write_u32(gateway.ip)
                 .write_u16(gateway.port)
-                .write(buffer, len);
+                .write(buffer.c_str(), buffer.size() + 1);
         }
 
         // 바이너리 데이터 압축

@@ -1,0 +1,41 @@
+include "internal.fbs";
+
+namespace fb.protocol.internal.request;
+
+table Login {
+  uid: uint;
+  name: string;
+  map: ushort;
+}
+
+
+table Logout {
+  name: string;
+}
+
+
+table Ping {
+  id: ubyte;
+  name: string;
+  service: fb.protocol.internal.Service;
+  ip: string;
+  port: ushort;
+}
+
+
+table Transfer {
+  service: fb.protocol.internal.Service;
+  id: ubyte;
+}
+
+
+table Whisper {
+  from: string;
+  to: string;
+  message: string;
+}
+
+
+table KickOut {
+  uid: uint;
+}

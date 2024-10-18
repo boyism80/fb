@@ -34,11 +34,10 @@ void fb::game::lua::load(const std::string& path)
 
 void luable::to_lua(lua_State* ctx) const
 {
-    auto context = fb::game::lua::get(ctx);
-    if (context == nullptr)
+    if (const auto context = fb::game::lua::get(ctx); context == nullptr)
         return;
 
-    auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**)));     // [val]
+    const auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**)));     // [val]
     *allocated = (void*)this;
 
     {
@@ -61,8 +60,7 @@ luable::~luable()
 
 int luable::builtin_gc(lua_State* ctx)
 {
-    auto allocated = (void**)lua_touserdata(ctx, 1);
-    if(allocated != nullptr)
+    if(const auto allocated = static_cast<void**>(lua_touserdata(ctx, 1)); allocated != nullptr)
         *allocated = nullptr;
     return 0;
 }
@@ -72,48 +70,6 @@ context::context(lua_State* ctx) : _ctx(ctx), owner(nullptr)
 
 context::context(lua_State* ctx, context& owner) : _ctx(ctx), owner(&owner)
 { }
-
-context::~context()
-{ }
-
-context& context::from(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    auto fname = fb::format(fmt, &args);
-    va_end(args);
-
-#if defined DEBUG || defined _DEBUG
-    luaL_dofile(*this, fname.c_str());
-#else
-    auto main = static_cast<fb::game::lua::main*>(this->owner);
-    if(main->_bytecodes.contains(fname) == false)
-    {
-        fb::logger::fatal("cannot find script %s", fname.c_str());
-        return *this;
-    }
-
-    auto& bytes = main->_bytecodes[fname];
-    if(luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
-        return *this;
-
-    if(lua_pcall(*this, 0, LUA_MULTRET, 0))
-        return *this;
-#endif
-
-    return *this;
-}
-
-context& context::func(const char* fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    auto fname = fb::format(fmt, &args);
-    va_end(args);
-
-    lua_getglobal(*this, fname.c_str());
-    return *this;
-}
 
 context& context::pushstring(const std::string& value)
 {
@@ -169,7 +125,7 @@ context& context::pop(int offset)
     return *this;
 }
 
-const std::string context::tostring(int offset)
+std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);
     if(x == nullptr)
@@ -218,7 +174,7 @@ bool context::resume(int argc, bool auto_release)
 
     case LUA_ERRRUN:
     case LUA_ERRERR:
-        fb::logger::fatal("lua error message : %s", this->tostring(-1).c_str());
+        fb::logger::fatal("lua error message : {}", this->tostring(-1).c_str());
         lua_pop(*this, 1);
         main->revoke(*this);
         return false;

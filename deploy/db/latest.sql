@@ -77,10 +77,11 @@ CREATE TABLE `item` (
   `index` smallint(6) NOT NULL DEFAULT '-1',
   `parts` smallint(6) NOT NULL DEFAULT '0',
   `deposited` smallint(6) NOT NULL DEFAULT '-1',
-  `model` int(10) unsigned DEFAULT NULL,
+  `model` int(10) unsigned NOT NULL,
   `count` smallint(5) unsigned DEFAULT '1',
   `durability` int(10) unsigned DEFAULT NULL,
   `custom_name` varchar(32) DEFAULT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`owner`,`index`,`parts`,`deposited`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -120,7 +121,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -133,7 +134,8 @@ DROP TABLE IF EXISTS `spell`;
 CREATE TABLE `spell` (
   `owner` int(10) unsigned NOT NULL,
   `slot` tinyint(4) NOT NULL,
-  `id` int(11) DEFAULT NULL,
+  `model` int(11) NOT NULL,
+  `deleted` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`owner`,`slot`),
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -152,7 +154,6 @@ CREATE TABLE `user` (
   `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `birth` int(10) unsigned DEFAULT NULL,
-  `datetime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `last_login` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `admin` tinyint(4) NOT NULL DEFAULT '0',
   `look` smallint(5) unsigned NOT NULL DEFAULT '0',
@@ -226,18 +227,18 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(id INT, uid INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(id INT, user INT)
 BEGIN
 	DECLARE _id INT;
-    DECLARE _uid INT;
+    DECLARE _user INT;
     DECLARE _deleted TINYINT;
     
-    SELECT id, user, deleted INTO _id, _uid, _deleted FROM board WHERE board.id = id LIMIT 1;
+    SELECT id, user, deleted INTO _id, _user, _deleted FROM board WHERE board.id = id LIMIT 1;
     IF _id IS NULL THEN
 		SELECT -1 AS result;
 	ELSEIF _deleted = 1 THEN
 		SELECT -2 AS result;
-	ELSEIF _uid != uid THEN
+	ELSEIF _user != user THEN
 		SELECT -3 AS result;
 	ELSE
 		UPDATE board SET deleted = 1 WHERE board.id = id;
@@ -421,6 +422,98 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_CHARACTER_SET` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CHARACTER_SET`(
+                                      Id INT,
+                                      Name VARCHAR(256),
+                                      Birth INT,
+                                      LastLogin DATETIME,
+                                      Admin TINYINT,
+                                      Look SMALLINT,
+                                      Color TINYINT,
+                                      Sex TINYINT,
+                                      Nation SMALLINT,
+                                      Creature SMALLINT,
+                                      Map SMALLINT,
+                                      PositionX SMALLINT,
+                                      PositionY SMALLINT,
+                                      Direction TINYINT,
+                                      State TINYINT,
+                                      Class TINYINT,
+                                      Promotion TINYINT,
+                                      Exp INT,
+                                      Money INT,
+                                      DepositedMoney INT,
+                                      Disguise SMALLINT,
+                                      Hp INT,
+                                      BaseHp INT,
+                                      AdditionalHp INT,
+                                      Mp INT,
+                                      BaseMp INT,
+                                      AdditionalMp INT,
+                                      WeaponColor TINYINT,
+                                      HelmetColor TINYINT,
+                                      ArmorColor TINYINT,
+                                      ShieldColor TINYINT,
+                                      RingLeftColor TINYINT,
+                                      RingRightColor TINYINT,
+                                      AuxTopColor TINYINT,
+                                      AuxBotColor TINYINT,
+                                      Clan INT)
+BEGIN
+    UPDATE user
+    SET id = Id,
+        name = Name,
+        birth = Birth,
+        last_login = LastLogin,
+        admin = Admin,
+        look = Look,
+        color = Color,
+        sex = Sex,
+        nation = Nation,
+        creature = Creature,
+        map = Map,
+        position_x = PositionX,
+        position_y = PositionY,
+        direction = Direction,
+        state = State,
+        class = Class,
+        promotion = Promotion,
+        exp = Exp,
+        money = Money,
+        deposited_money = DepositedMoney,
+        disguise = Disguise,
+        hp = Hp,
+        base_hp = BaseHp,
+        additional_hp = AdditionalHp,
+        mp = Mp,
+        base_mp = BaseMp,
+        additional_mp = AdditionalMp,
+        weapon_color = WeaponColor,
+        helmet_color = HelmetColor,
+        armor_color = ArmorColor,
+        shield_color = ShieldColor,
+        ring_left_color = RingLeftColor,
+        ring_right_color = RingRightColor,
+        aux_top_color = AuxTopColor,
+        aux_bot_color = AuxBotColor,
+        clan = Clan
+    WHERE user.id = id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `USP_NAME_GET_ID` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -456,11 +549,10 @@ BEGIN
     SELECT EXISTS(SELECT * FROM name WHERE name.name = name) INTO exist;
     
     IF exist = 0 THEN
-		SELECT 1 as result;
 		INSERT INTO name (name) VALUES (name);
-        SELECT last_insert_id() as id;
+        SELECT 1 AS result, last_insert_id() as uid;
 	ELSE
-		SELECT 0 AS result;
+		SELECT 0 AS result, 0 as uid;
     END IF;
 END ;;
 DELIMITER ;
@@ -478,4 +570,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-07-01 22:36:10
+-- Dump completed on 2024-10-18 23:49:31

@@ -9,17 +9,18 @@
 #include <sstream>
 #include <ctime>
 #include <unordered_set>
-#include <fb/core/format.h>
-#include <fb/core/db.h>
-#include <fb/core/acceptor.h>
+#include <format>
+#include <fb/acceptor.h>
 #include <fb/game/session.h>
 #include <fb/game/group.h>
 #include <fb/game/listener.h>
-#include <fb/game/query.h>
 #include <fb/game/regex.h>
 #include <fb/protocol/game.h>
-#include <fb/protocol/internal.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/game/model.h>
+#include <fb/amqp.h>
+
+using namespace fb::protocol::internal;
 
 namespace fb { namespace game {
 
@@ -43,8 +44,9 @@ public:
 
 private:
     commands                 _commands;
-    fb::db::context<session> _db;
-    tm*                      _time = fb::now();
+    datetime                 _time;
+    std::unique_ptr<fb::amqp::socket> _amqp;
+    std::unique_ptr<std::thread> _amqp_thread;
 
 public:
     fb::model::model         model;
@@ -57,14 +59,13 @@ public:
     ~context();
 
 private:
-    uint32_t                elapsed_seconds(const daotk::mysql::datetime& datetime);
-    std::string             elapsed_message(const daotk::mysql::datetime& datetime);
+    std::string             elapsed_message(const std::string& datetime);
     fb::game::session*      find(const std::string& name);
-    void                    bind_timer(const std::function<void(std::chrono::steady_clock::duration, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
+    void                    bind_timer(const std::function<void(const datetime&, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
     void                    bind_command(const std::string& cmd, const command& param);
-    bool                    fetch_user(daotk::mysql::result& db_result, fb::game::session& session, const std::optional<transfer_param>& transfer);
-    void                    fetch_item(daotk::mysql::result& db_result, fb::game::session& session);
-    void                    fetch_spell(daotk::mysql::result& db_result, fb::game::session& session);
+    bool                    init_ch(const fb::protocol::db::Character& response, fb::game::session& session, const std::optional<transfer_param>& transfer);
+    void                    init_items(const std::vector<fb::protocol::db::Item>& response, fb::game::session& session);
+    void                    init_spells(const std::vector<fb::protocol::db::Spell>& response, fb::game::session& session);
 
 public:
     template <typename T, typename... Args>
@@ -88,11 +89,7 @@ public:
     void                    send(fb::game::object& object, const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn, context::scope scope, bool exclude_self = false, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void                    send(const fb::protocol::base::header& header, bool encrypt = true);
-    void                    save(fb::game::session& session);
-    async::task<void>       save(fb::game::session& session, std::function<void(fb::game::session&)> fn);
-    void                    save();
-    void                    save(const std::function<void(fb::game::session&)>& fn);
-    async::task<void>       co_save(fb::game::session& session);
+    async::task<void>       save(fb::game::session& session);
 
 public:
     fb::thread*             thread(const fb::game::map* map) const;
@@ -100,24 +97,25 @@ public:
     fb::thread*             thread(const fb::game::object& obj) const;
     uint8_t                 thread_index(const fb::game::object& obj) const;
     const fb::thread*       current_thread() const;
+    void                    amqp_thread();
 
 protected:
     bool                    decrypt_policy(uint8_t cmd) const final;
     async::task<void>       handle_start() final;
     bool                    handle_connected(fb::socket<fb::game::session>& session) final;
-    bool                    handle_disconnected(fb::socket<fb::game::session>& session) final;
+    async::task<bool>       handle_disconnected(fb::socket<fb::game::session>& session) final;
     fb::game::session*      handle_accepted(fb::socket<fb::game::session>& socket) final;
-    async::task<void>       handle_internal_connected() final;
+    //async::task<void>       handle_internal_connected() final;
     uint8_t                 handle_thread_index(fb::socket<fb::game::session>& socket) const final;
+
+    // for heart-beat
+protected:
+    uint8_t                 id() const { return fb::config::get()["id"].asUInt(); }
+    Service                 service() const { return Service::Game; }
 
 public:
     void                    handle_click_mob(fb::game::session& session, fb::game::mob& mob);
     void                    handle_click_npc(fb::game::session& session, fb::game::npc& npc);
-
-public:
-    async::task<bool>       handle_in_message(fb::internal::socket<>&, const fb::protocol::internal::response::message&);
-    async::task<bool>       handle_in_logout(fb::internal::socket<>&, const fb::protocol::internal::response::logout&);
-    async::task<bool>       handle_in_shutdown(fb::internal::socket<>&, const fb::protocol::internal::response::shutdown&);
 
     // game event method
 public:
@@ -161,11 +159,11 @@ public:
     async::task<bool>       handle_world(fb::socket<fb::game::session>&, const fb::protocol::game::request::map::world&);
 
 public:
-    void                    handle_mob_action(std::chrono::steady_clock::duration now, std::thread::id id);
-    void                    handle_mob_respawn(std::chrono::steady_clock::duration now, std::thread::id id);
-    void                    handle_buff_timer(std::chrono::steady_clock::duration now, std::thread::id id);
-    void                    handle_save_timer(std::chrono::steady_clock::duration now, std::thread::id id);
-    void                    handle_time(std::chrono::steady_clock::duration now, std::thread::id id);
+    void                    handle_mob_action(const datetime& now, std::thread::id id);
+    void                    handle_mob_respawn(const datetime& now, std::thread::id id);
+    void                    handle_buff_timer(const datetime& now, std::thread::id id);
+    void                    handle_save_timer(const datetime& now, std::thread::id id);
+    void                    handle_time(const datetime& now, std::thread::id id);
     async::task<bool>       handle_command(fb::game::session& session, const std::string& message);
 
 public:
@@ -195,7 +193,8 @@ public:
     async::task<bool>       handle_command_randmap(fb::game::session& session, Json::Value& parameters);
     async::task<bool>       handle_command_npc(fb::game::session& session, Json::Value& parameters);
     async::task<bool>       handle_command_durability(fb::game::session& session, Json::Value& parameters);
-    async::task<bool>       handle_concurrency(fb::game::session& session, Json::Value& parameters);
+    async::task<bool>       handle_command_concurrency(fb::game::session& session, Json::Value& parameters);
+    async::task<bool>       handle_command_sleep(fb::game::session& session, Json::Value& parameters);
 
 public:
     // listener : object

@@ -1,11 +1,16 @@
 {
-    "id": "{{ name }}",
+    "id":  "{{ deploy.login[name].id }}",
+    "name": "{{ name }}",
     "ip":  "{{ deploy.login[name].ip }}",
     "port": {{ deploy.login[name].port }},
     "thread": null,
     "internal": {
         "ip": "{{ deploy.internal[deploy.login[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.login[name].internal].port }}
+    },
+    "db": {
+        "ip": "{{ deploy.db[deploy.login[name].db].ip }}",
+        "port": {{ deploy.db[deploy.login[name].db].port }}
     },
     "transfer delay": 2,
     "allow other language": false,

@@ -1,6 +1,6 @@
 {
-    "id": "{{ name }}",
-    "group": {{ deploy.game[name].group }},
+    "id": {{ deploy.game[name].id }},
+    "name": "{{ name }}",
     "delay": 5,
     "ip":  "{{ deploy.game[name].ip }}",
     "port": {{ deploy.game[name].port }},
@@ -9,6 +9,10 @@
     "internal": {
         "ip": "{{ deploy.internal[deploy.game[name].internal].ip }}",
         "port": {{ deploy.internal[deploy.game[name].internal].port }}
+    },
+    "db": {
+        "ip": "{{ deploy.db[deploy.game[name].db].ip }}",
+        "port": {{ deploy.db[deploy.game[name].db].port }}
     },
     "login": {
         "ip": "{{ deploy.login[deploy.game[name].login].ip }}",
@@ -48,6 +52,12 @@
             "db": {{ value.db }}
         }{%- if not loop.last %}, {% endif %}
 {%- endfor %}
+    },
+    "amqp": {
+        "ip": "{{ amqp.ip }}",
+        "port": {{ amqp.port }},
+        "uid": "{{ amqp.uid }}",
+        "pwd": "{{ amqp.pwd }}"
     },
     "log": ["info", "fatal"]
 }

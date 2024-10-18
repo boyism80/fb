@@ -1,4 +1,4 @@
-#include <fb/core/encoding.h>
+#include <fb/encoding.h>
 
 std::string cp949(const std::string& utf8)
 {

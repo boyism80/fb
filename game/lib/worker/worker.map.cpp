@@ -20,13 +20,13 @@ void fb::game::map_loader::on_work(const fb::game::map_loader::input_type& value
 void fb::game::map_loader::on_worked(const fb::game::map_loader::input_type& input, double percent)
 {
      auto& c = fb::console::get();
-     c.put("* [%0.2lf%%] 맵 데이터를 읽었습니다.", percent);
+     c.put("* [{:0.2f}%] 맵 데이터를 읽었습니다.", percent);
 }
 
 void fb::game::map_loader::on_error(const fb::game::map_loader::input_type& input, std::exception& e)
 {
      auto& c = fb::console::get();
-     c.comment("    - %s", e.what());
+     c.comment("    - {}", e.what());
 }
 
 void fb::game::map_loader::on_finish()

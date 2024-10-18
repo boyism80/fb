@@ -8,12 +8,13 @@
 #include <boost/uuid/uuid_io.hpp>
 #include <random>
 #include <sstream>
-#include <fb/core/stream.h>
-#include <fb/core/socket.h>
-#include <fb/core/thread.h>
+#include <fb/stream.h>
+#include <fb/socket.h>
+#include <fb/thread.h>
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/game.h>
+#include <fb/model/datetime.h>
 
 using namespace std::chrono_literals;
 
@@ -21,7 +22,7 @@ namespace fb { namespace bot {
 
 class bot_container;
 
-class base_bot : public fb::awaitable_socket<void*>
+class base_bot : public fb::socket<void*>
 {
 private:
     using handle_func_type = std::function<async::task<void>(const std::function<void()>&)>;
@@ -40,8 +41,8 @@ public:
     virtual ~base_bot();
 
 private:
-    async::task<void>                              on_receive(fb::base::socket<>& socket);
-    async::task<void>                              on_closed(fb::base::socket<>& socket);
+    async::task<void>                              on_receive(fb::socket<>& socket);
+    async::task<void>                              on_closed(fb::socket<>& socket);
 
 protected:
     virtual void                                on_connected();
@@ -137,7 +138,7 @@ private:
     point16_t                                   _position;
     fb::buffer                                  _transfer_buffer;
     std::vector<pattern_params>                 _pattern_params;
-    std::chrono::steady_clock::duration         _next_action_time;
+    datetime                                    _next_action_time;
     bool                                        _inited = false;
 
 public:
