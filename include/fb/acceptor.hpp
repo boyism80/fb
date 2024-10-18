@@ -412,12 +412,11 @@ void fb::acceptor<T>::run()
         }));
     }
 
+    async::awaitable_get(this->handle_start());
     for(auto& thread : threads)
     {
         thread.join();
     }
-
-    async::awaitable_get(this->handle_start());
 }
 
 template <typename T>
