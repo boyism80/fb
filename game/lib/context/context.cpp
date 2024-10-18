@@ -429,6 +429,7 @@ bool fb::game::context::decrypt_policy(uint8_t cmd) const
 
 bool fb::game::context::handle_connected(fb::socket<fb::game::session>& socket)
 {
+    fb::logger::info("{}님이 접속했습니다.", socket.IP());
     return true;
 }
 
