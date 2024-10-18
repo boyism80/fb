@@ -506,7 +506,7 @@ async::task<bool> fb::acceptor<T>::handle_parse(fb::socket<T>& socket)
                 // Call function that matched by command byte
                 if(this->_handler.contains(cmd) == false)
                 {
-                    fb::logger::warn("정의되지 않은 요청입니다. [0x%2X]", cmd);
+                    fb::logger::warn("정의되지 않은 요청입니다. [{:#x}]", cmd);
                     in_stream.reset();
                     in_stream.shift(base_size + size);
                     in_stream.flush();
