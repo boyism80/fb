@@ -5,12 +5,13 @@ RUN apt-get install lua5.3-dev unzip -y
 
 WORKDIR /app
 COPY include ./include
+COPY lib/include ./lib/include
 COPY plugin/linux ./plugin/linux
 COPY game ./game
 
 WORKDIR /app/game/build
 RUN cmake ..
-RUN make -j4
+RUN cmake --build . --config Release --parallel 4
 
 FROM cshyeon/fb:base
 RUN apt-get install lua5.3-dev zip unzip -y

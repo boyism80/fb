@@ -28,5 +28,4 @@ ADD_LIBRARY(fb ${SOURCE_FILES})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(fb jsoncpp z pthread crypto boost_program_options cpp_redis tacopie rabbitmq cpp-terminal cpp-terminal-private)
-install(TARGETS fb DESTINATION /usr/lib)
+install(TARGETS fb DESTINATION /usr/local/lib)

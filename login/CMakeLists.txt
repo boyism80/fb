@@ -19,6 +19,7 @@ add_definitions(-DREDISCPP_HEADER_ONLY)
 include_directories("${PROJECT_SOURCE_DIR}/..")
 include_directories("${PROJECT_SOURCE_DIR}/../plugin/linux")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
+include_directories("${PROJECT_SOURCE_DIR}/../lib/include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("/usr/include/mysql")
 
@@ -31,4 +32,4 @@ add_executable(app ${CORE_FILES} ${SOURCE_FILES} main.cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(app jsoncpp z pthread crypto boost_program_options cpp_redis tacopie rabbitmq cpp-terminal cpp-terminal-private fb)
+target_link_libraries(app fb jsoncpp z pthread crypto boost_program_options cpp_redis tacopie rabbitmq cpp-terminal cpp-terminal-private)
