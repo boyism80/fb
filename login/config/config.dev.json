@@ -21,24 +21,6 @@
     "forbidden": [ "김대중", "노무현" ],
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
     "admin_mode": true,
-    "database": {
-        "global": {
-            "ip": "127.0.0.1",
-            "port": 3306,
-            "name": "fb",
-            "uid": "fb",
-            "pwd": "admin"
-        },
-        "shard": [
-            {
-                "ip": "127.0.0.1",
-                "port": 3306,
-                "name": "fb",
-                "uid": "fb",
-                "pwd": "admin"
-            }
-        ]
-    },
     "redis": {
         "default": 
         {

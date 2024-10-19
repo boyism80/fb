@@ -22,31 +22,6 @@
         "ip": "{{ deploy.login[deploy.game[name].login].ip }}",
         "port": {{ deploy.login[deploy.game[name].login].port }}
     },
-    "database": {
-        "global": 
-{%- if database.global is none -%}
-        null, 
-{%- else %}
-        {
-            "ip": "{{ database.global.ip }}",
-            "port": {{ database.global.port }},
-            "name": "{{ database.global.name}}",
-            "uid": "{{ database.global.uid }}",
-            "pwd": "{{ database.global.pwd }}"
-        },
-{%- endif %}
-        "shard": [
-{%- for database in database.shard %}
-            {
-                "ip": "{{ database.ip }}",
-                "port": {{ database.port }},
-                "name": "{{ database.name}}",
-                "uid": "{{ database.uid }}",
-                "pwd": "{{ database.pwd }}"
-            }{%- if not loop.last %}, {% endif %}
-{%- endfor %}
-        ]
-    },
     "redis": {
 {%- for key, value in redis.items() %}
         "{{ key }}": 
