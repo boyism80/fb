@@ -2,9 +2,9 @@
 #define __PROTOCOL_REQUEST_GAME_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/mmo.h>
-#include <fb/game/trade.h>
-#include <fb/game/dialog.h>
+#include <mmo.h>
+#include <trade.h>
+#include <dialog.h>
 #include <optional>
 
 using namespace fb::game;

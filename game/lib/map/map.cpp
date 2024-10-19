@@ -1,5 +1,5 @@
-#include <fb/game/map.h>
-#include <fb/game/context.h>
+#include <map.h>
+#include <context.h>
 
 fb::game::map::map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size) :
     context(context),

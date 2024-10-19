@@ -1,4 +1,4 @@
-#include <fb/game/model.h>
+#include <model.h>
 
 int fb::model::map::builtin_name(lua_State* lua)
 {

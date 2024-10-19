@@ -1,6 +1,6 @@
-#include <fb/game/session.h>
-#include <fb/game/context.h>
-#include <fb/game/regex.h>
+#include <session.h>
+#include <context.h>
+#include <regex.h>
 
 using namespace fb::game;
 

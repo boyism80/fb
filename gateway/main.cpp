@@ -3,7 +3,7 @@
 #include <iomanip>
 #include "resource.h"
 #include <fb/socket.h>
-#include <fb/gateway/context.h>
+#include <context.h>
 // #include <fb/leak.h>
 #include <fb/console.h>
 #include <fb/config.h>

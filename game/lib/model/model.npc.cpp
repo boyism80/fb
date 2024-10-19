@@ -1,5 +1,5 @@
-#include <fb/game/model.h>
-#include <fb/game/context.h>
+#include <model.h>
+#include <context.h>
 
 int fb::model::npc::builtin_input(lua_State* lua)
 {

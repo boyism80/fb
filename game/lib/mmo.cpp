@@ -1,4 +1,4 @@
-#include <fb/game/mmo.h>
+#include <mmo.h>
 
 using namespace fb::game;
 

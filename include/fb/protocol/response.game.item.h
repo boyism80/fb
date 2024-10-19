@@ -2,8 +2,8 @@
 #define __PROTOCOL_RESPONSE_GAME_ITEM_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/item.h>
-#include <fb/game/model.h>
+#include <item.h>
+#include <model.h>
 
 using namespace fb::model::enum_value;
 

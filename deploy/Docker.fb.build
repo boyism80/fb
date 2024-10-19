@@ -12,3 +12,16 @@ RUN ./b2 install
 WORKDIR /
 RUN rm -f boost_1_84_0.tar.gz
 RUN rm -rf boost_1_84_0
+
+# fb.lib
+WORKDIR /app
+COPY include ./include
+COPY plugin/linux ./plugin/linux
+COPY lib ./lib
+
+WORKDIR /app/lib/build
+RUN cmake ..
+RUN cmake --build . --config Release --parallel 4
+RUN make install
+WORKDIR /
+RUN rm -rf /app

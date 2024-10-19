@@ -1,4 +1,4 @@
-#include <fb/game/model.h>
+#include <model.h>
 
 const fb::model::sell* fb::model::__sell::find(uint32_t pursuit, const fb::model::item& item) const
 {

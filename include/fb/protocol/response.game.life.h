@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_GAME_LIFE_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/life.h>
+#include <life.h>
 
 using namespace fb::game;
 

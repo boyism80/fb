@@ -1,7 +1,7 @@
 #include <algorithm>
-#include <fb/game/item.h>
-#include <fb/game/context.h>
-#include <fb/game/model.h>
+#include <item.h>
+#include <context.h>
+#include <model.h>
 
 fb::game::pack::pack(fb::game::context& context, const fb::model::pack& model) : 
     fb::game::item(context, model)

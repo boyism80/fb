@@ -1,6 +1,6 @@
 #include <algorithm>
-#include <fb/game/item.h>
-#include <fb/game/context.h>
+#include <item.h>
+#include <context.h>
 
 fb::game::equipment::equipment(fb::game::context& context, const fb::model::equipment& model) : 
     item(context, model)

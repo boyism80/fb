@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_GAME_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/session.h>
+#include <session.h>
 
 namespace fb { namespace protocol { namespace game { namespace response {
 

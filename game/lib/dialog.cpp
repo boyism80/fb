@@ -1,5 +1,5 @@
-#include <fb/game/dialog.h>
-#include <fb/game/session.h>
+#include <dialog.h>
+#include <session.h>
 
 fb::game::dialog::dialog(fb::game::session& owner) :
     _owner(owner)

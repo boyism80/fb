@@ -1,4 +1,4 @@
-#include <fb/game/map.h>
+#include <map.h>
 
 using namespace fb::game;
 

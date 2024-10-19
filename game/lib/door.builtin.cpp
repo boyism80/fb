@@ -1,5 +1,5 @@
-#include <fb/game/door.h>
-#include <fb/game/context.h>
+#include <door.h>
+#include <context.h>
 
 int fb::game::door::builtin_toggle(lua_State* lua)
 {

@@ -1,4 +1,4 @@
-#include <fb/game/group.h>
+#include <group.h>
 
 fb::game::group::group(session& leader) : 
     _leader(&leader)

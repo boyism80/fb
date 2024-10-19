@@ -1,5 +1,5 @@
-#include <fb/game/item.h>
-#include <fb/game/context.h>
+#include <item.h>
+#include <context.h>
 
 fb::game::item::item(fb::game::context& context, const fb::model::item& model, const fb::game::item::config& config) : 
     fb::game::object(context, model, config),

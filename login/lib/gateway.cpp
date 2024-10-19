@@ -1,4 +1,4 @@
-#include <fb/login/gateway.h>
+#include <gateway.h>
 
 fb::login::gateway::gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) : 
     _name(name), _desc(desc), _ip(ip), _port(port)

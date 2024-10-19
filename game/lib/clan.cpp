@@ -1,4 +1,4 @@
-#include <fb/game/clan.h>
+#include <clan.h>
 
 fb::game::clan::clan(const std::string& name, fb::game::session& owner, const session::container& members) : 
     _name(name), _owner(owner), _members(members)

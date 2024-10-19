@@ -1,5 +1,5 @@
-#include <fb/game/session.h>
-#include <fb/game/context.h>
+#include <session.h>
+#include <context.h>
 
 int fb::game::session::builtin_look(lua_State* lua)
 {

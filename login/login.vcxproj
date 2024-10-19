@@ -45,19 +45,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
     <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(ProjectDir);$(SolutionDir);$(SolutionDir)\zlib;$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
     <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\zlib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;KINGDOM_OF_THE_WIND;AMQP_STATIC;_WINSOCK_DEPRECATED_NO_WARNINGS;NOMINMAX;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8</AdditionalOptions>
@@ -70,7 +70,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;cpp-terminal\x64\cpp-terminal_d.lib;cpp-terminal\x64\cpp-terminal-private_d.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;cpp-terminal\x64\cpp-terminal_d.lib;cpp-terminal\x64\cpp-terminal-private_d.lib;fb\fbd.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -79,7 +79,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;ENABLE_MYSQL;KINGDOM_OF_THE_WIND;AMQP_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_NO_VA_START_VALIDATION;REDISCPP_HEADER_ONLY;KINGDOM_OF_THE_WIND;AMQP_STATIC;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);NOMINMAX</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalOptions>/source-charset:utf-8</AdditionalOptions>
@@ -94,25 +94,11 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\zlib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <StackReserveSize>
       </StackReserveSize>
-      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib;cpp-terminal\x64\cpp-terminal.lib;cpp-terminal\x64\cpp-terminal-private.lib</AdditionalDependencies>
+      <AdditionalDependencies>jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;%(AdditionalDependencies);ws2_32.lib;openssl/libcryptoMT.lib;openssl/libsslMT.lib;cpp-terminal\x64\cpp-terminal.lib;cpp-terminal\x64\cpp-terminal-private.lib;fb\fb.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\core\amqp.queue.cpp" />
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="lib\context.cpp" />
-    <ClCompile Include="lib\gateway.cpp" />
-    <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -2,8 +2,8 @@
 #define __PROTOCOL_RESPONSE_GAME_TRADE_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/trade.h>
-#include <fb/game/model.h>
+#include <trade.h>
+#include <model.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace trade {
 

@@ -6,7 +6,6 @@ RUN apt-get install lua5.3-dev unzip -y
 WORKDIR /app
 COPY include ./include
 COPY plugin/linux ./plugin/linux
-COPY core ./core
 COPY game ./game
 
 WORKDIR /app/game/build

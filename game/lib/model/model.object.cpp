@@ -1,9 +1,9 @@
-#include <fb/game/model.h>
-#include <fb/game/object.h>
-#include <fb/game/map.h>
-#include <fb/game/session.h>
-#include <fb/game/mob.h>
-#include <fb/game/context.h>
+#include <model.h>
+#include <object.h>
+#include <map.h>
+#include <session.h>
+#include <mob.h>
+#include <context.h>
 
 uint8_t fb::model::object::dialog_look_type() const
 {

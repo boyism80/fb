@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_GAME_OBJECT_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/object.h>
+#include <object.h>
 
 using namespace fb::game;
 

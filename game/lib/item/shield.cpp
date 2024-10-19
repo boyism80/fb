@@ -1,4 +1,4 @@
-#include <fb/game/item.h>
+#include <item.h>
 
 fb::game::shield::shield(fb::game::context& context, const fb::model::shield& model) : 
     equipment(context, model)

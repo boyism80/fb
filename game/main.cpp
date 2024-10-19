@@ -1,8 +1,8 @@
 #include "resource.h"
-#include <fb/game/context.h>
+#include <context.h>
 // #include <fb/leak.h>
 #include <fb/mst.h>
-#include <fb/game/worker.h>
+#include <worker.h>
 
 using namespace fb::model::enum_value;
 

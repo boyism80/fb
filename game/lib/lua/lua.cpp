@@ -1,7 +1,7 @@
-#include <fb/game/lua.h>
-#include <fb/game/object.h>
-#include <fb/game/item.h>
-#include <fb/game/mob.h>
+#include <lua.h>
+#include <object.h>
+#include <item.h>
+#include <mob.h>
 using namespace fb::game::lua;
 
 context* fb::game::lua::get()

@@ -1,4 +1,4 @@
-#include <fb/game/model.h>
+#include <model.h>
 
 const fb::model::promotion* fb::model::__promotion::operator () (fb::model::enum_value::CLASS cls, uint8_t promotion) const
 {

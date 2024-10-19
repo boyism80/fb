@@ -1,5 +1,5 @@
-#include <fb/game/worker.h>
-#include <fb/game/context.h>
+#include <worker.h>
+#include <context.h>
 
 fb::game::npc_spawner::npc_spawner(fb::game::context& context) : _context(context)
 { }

@@ -1,6 +1,6 @@
-#include <fb/game/context.h>
-#include <fb/game/map.h>
-#include <fb/game/life.h>
+#include <context.h>
+#include <map.h>
+#include <life.h>
 
 int fb::game::life::builtin_hp(lua_State* lua)
 {

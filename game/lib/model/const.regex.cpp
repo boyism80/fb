@@ -1,4 +1,4 @@
-#include <fb/game/model.h>
+#include <model.h>
 
 bool fb::model::const_value::regex::match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {

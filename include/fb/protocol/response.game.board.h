@@ -2,7 +2,7 @@
 #define __PROTOCOL_REQUEST_BOARD_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/model.h>
+#include <model.h>
 #ifdef BOT
 #include <fb/bot/board.h>
 #endif

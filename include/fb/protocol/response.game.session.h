@@ -2,10 +2,10 @@
 #define __PROTOCOL_RESPONSE_GAME_SESSION_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/session.h>
-#include <fb/game/model.h>
-#include <fb/game/clan.h>
-#include <fb/game/group.h>
+#include <session.h>
+#include <model.h>
+#include <clan.h>
+#include <group.h>
 
 using namespace fb::game;
 

@@ -3,7 +3,7 @@
 
 #include <chrono>
 #include <fb/protocol/protocol.h>
-#include <fb/game/spell.h>
+#include <spell.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace spell {
 

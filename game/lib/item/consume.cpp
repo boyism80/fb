@@ -1,5 +1,5 @@
-#include <fb/game/item.h>
-#include <fb/game/session.h>
+#include <item.h>
+#include <session.h>
 
 fb::game::consume::consume(fb::game::context& context, const fb::model::consume& model, uint16_t count) : 
     fb::game::item(context, model, fb::game::item::config { .count = count })

@@ -1,5 +1,5 @@
-#include <fb/game/context.h>
-#include <fb/game/lua.h>
+#include <context.h>
+#include <lua.h>
 
 using namespace fb::game;
 

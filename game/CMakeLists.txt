@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.28)
+
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif (POLICY CMP0048)
@@ -28,4 +30,4 @@ add_executable(app ${CORE_FILES} ${SOURCE_FILES} main.cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-target_link_libraries(app jsoncpp z pthread crypto lua5.3 boost_program_options cpp_redis tacopie rabbitmq cpp-terminal cpp-terminal-private)
+target_link_libraries(app jsoncpp z pthread crypto lua5.3 boost_program_options cpp_redis tacopie rabbitmq cpp-terminal cpp-terminal-private fb)

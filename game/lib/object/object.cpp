@@ -1,7 +1,7 @@
-#include <fb/game/object.h>
-#include <fb/game/session.h>
-#include <fb/game/context.h>
-#include <fb/game/model.h>
+#include <object.h>
+#include <session.h>
+#include <context.h>
+#include <model.h>
 
 using namespace fb::model::enum_value;
 

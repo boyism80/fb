@@ -1,5 +1,5 @@
-#include <fb/game/worker.h>
-#include <fb/game/context.h>
+#include <worker.h>
+#include <context.h>
 
 fb::game::map_loader::map_loader(fb::game::context& context) : _context(context)
 { }

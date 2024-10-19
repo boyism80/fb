@@ -1,4 +1,4 @@
-#include <fb/game/model.h>
+#include <model.h>
 
 fb::model::spell* fb::model::__spell::name2spell(const std::string& name) const
 {

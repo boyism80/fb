@@ -1,6 +1,6 @@
-#include <fb/game/model.h>
-#include <fb/game/map.h>
-#include <fb/game/context.h>
+#include <model.h>
+#include <map.h>
+#include <context.h>
 
 bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool is_open) const
 {

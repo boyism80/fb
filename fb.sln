@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "http", "http\http.csproj", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "db", "db\db.csproj", "{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib", "lib\lib.vcxproj", "{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -81,6 +83,14 @@ Global
 		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|x64.ActiveCfg = Release|Any CPU
 		{19E8D52A-941B-4BA5-994A-95EB5A6C04D7}.Release|x64.Build.0 = Release|Any CPU
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Debug|Any CPU.Build.0 = Debug|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Debug|x64.ActiveCfg = Debug|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Debug|x64.Build.0 = Debug|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Release|Any CPU.ActiveCfg = Release|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Release|Any CPU.Build.0 = Release|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Release|x64.ActiveCfg = Release|x64
+		{C2B6FF4E-EE88-4F05-889C-1BC5F5BE779C}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

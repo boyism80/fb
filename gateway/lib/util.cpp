@@ -1,4 +1,4 @@
-#include <fb/gateway/util.h>
+#include <util.h>
 
 void fb::gateway::util::assert_client(const fb::protocol::gateway::request::assert_version& request)
 {

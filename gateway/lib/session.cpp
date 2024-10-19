@@ -1,4 +1,4 @@
-#include <fb/gateway/session.h>
+#include <session.h>
 
 fb::gateway::session::session()
 { }

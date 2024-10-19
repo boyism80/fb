@@ -1,5 +1,5 @@
-#include <fb/game/item.h>
-#include <fb/game/context.h>
+#include <item.h>
+#include <context.h>
 
 
 int fb::game::item::builtin_model(lua_State* lua)

@@ -2,7 +2,7 @@
 #define __PROTOCOL_REQUEST_GAME_SPELL_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/spell.h>
+#include <spell.h>
 
 namespace fb { namespace protocol { namespace game { namespace request { namespace spell {
 

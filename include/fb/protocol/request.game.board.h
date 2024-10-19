@@ -6,7 +6,7 @@
 #endif
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/board.h>
+#include <board.h>
 
 namespace fb { namespace protocol { namespace game { namespace request { namespace board {
 

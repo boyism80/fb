@@ -1,5 +1,5 @@
-#include <fb/game/item.h>
-#include <fb/game/context.h>
+#include <item.h>
+#include <context.h>
 
 fb::game::cash::cash(fb::game::context& context, uint32_t value) : 
     fb::game::item(context, match_model(context, value)), value(value)

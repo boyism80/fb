@@ -1,7 +1,7 @@
-#include <fb/game/door.h>
-#include <fb/game/map.h>
-#include <fb/game/session.h>
-#include <fb/game/context.h>
+#include <door.h>
+#include <map.h>
+#include <session.h>
+#include <context.h>
 
 fb::game::door::door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened) : 
     map(map),

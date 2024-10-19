@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_DIALOG_ITEM_H__
 
 #include <fb/protocol/protocol.h>
-#include <fb/game/npc.h>
+#include <npc.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace dialog {
 
