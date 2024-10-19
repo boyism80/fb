@@ -19,6 +19,7 @@ add_definitions(-DREDISCPP_HEADER_ONLY)
 include_directories("${PROJECT_SOURCE_DIR}/..")
 include_directories("${PROJECT_SOURCE_DIR}/../plugin/linux")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
+include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("/usr/include/mysql")
 
 file(GLOB_RECURSE CORE_FILES "${PROJECT_SOURCE_DIR}/../core/*.cpp")
