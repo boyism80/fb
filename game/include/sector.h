@@ -9,7 +9,7 @@ using namespace fb::model;
 namespace fb { namespace game {
 
 class map;
-class session;
+class character;
 class sectors;
 
 class sector : private std::vector<fb::game::object*>

@@ -477,12 +477,12 @@ namespace Fb.Model.EnumValue
         Npc = 0x02, 
         [EnumMember(Value = "MOB")]
         Mob = 0x04, 
-        [EnumMember(Value = "SESSION")]
-        Session = 0x08, 
+        [EnumMember(Value = "CHARACTER")]
+        Character = 0x08, 
         [EnumMember(Value = "OBJECT")]
         Object = Item | Npc | Mob, 
         [EnumMember(Value = "LIFE")]
-        Life = Mob | Session
+        Life = Mob | Character
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

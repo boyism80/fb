@@ -101,12 +101,12 @@ const fb::game::item::nullable_time& fb::game::item::dropped_time() const
     return this->_dropped_time;
 }
 
-fb::game::session* fb::game::item::owner() const
+fb::game::character* fb::game::item::owner() const
 {
     return this->_owner;
 }
 
-void fb::game::item::owner(fb::game::session* owner)
+void fb::game::item::owner(fb::game::character* owner)
 {
     this->_owner = owner;
 }
@@ -146,12 +146,12 @@ void fb::game::item::merge(fb::game::item& item)
     auto remain = this->fill(item.count());
     item.count(remain);
 
-    auto listener = this->_owner->get_listener<fb::game::session>();
+    auto listener = this->_owner->get_listener<fb::game::character>();
     
     if(listener != nullptr)
     {
         if(before != this->_count)
-            listener->on_item_update(static_cast<session&>(*this->_owner), this->_owner->items.index(*this));
+            listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
 
         if(remain > 0 && this->_count == model.capacity)
             listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);

@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_GAME_H__
 
 #include <fb/protocol/protocol.h>
-#include <session.h>
+#include <character.h>
 
 namespace fb { namespace protocol { namespace game { namespace response {
 
@@ -69,14 +69,14 @@ public:
 class user_list : public fb::protocol::base::header
 {
 private:
-    using container = fb::socket_container<fb::game::session>;
+    using container = fb::socket_container<fb::game::character>;
 
 public:
-    const fb::game::session&                me;
+    const fb::game::character&                me;
     container&                              sockets;
 
 public:
-    user_list(const fb::game::session& me, container& sockets) : fb::protocol::base::header(0x36),
+    user_list(const fb::game::character& me, container& sockets) : fb::protocol::base::header(0x36),
         me(me), sockets(sockets)
     { }
 

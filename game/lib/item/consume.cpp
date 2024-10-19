@@ -1,5 +1,5 @@
 #include <item.h>
-#include <session.h>
+#include <character.h>
 
 fb::game::consume::consume(fb::game::context& context, const fb::model::consume& model, uint16_t count) : 
     fb::game::item(context, model, fb::game::item::config { .count = count })
@@ -19,7 +19,7 @@ bool fb::game::consume::active()
     
     this->_count--;
     
-    auto listener = this->_owner->get_listener<fb::game::session>();
+    auto listener = this->_owner->get_listener<fb::game::character>();
     if(listener != nullptr)
     {
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));

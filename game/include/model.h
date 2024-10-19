@@ -941,9 +941,9 @@ enum class OBJECT_TYPE
     ITEM = 0x01, 
     NPC = 0x02, 
     MOB = 0x04, 
-    SESSION = 0x08, 
+    CHARACTER = 0x08, 
     OBJECT = ITEM | NPC | MOB, 
-    LIFE = MOB | SESSION
+    LIFE = MOB | CHARACTER
 };
 
 template <>
@@ -955,7 +955,7 @@ inline OBJECT_TYPE enum_parse<OBJECT_TYPE>(const std::string k)
         { "ITEM", OBJECT_TYPE::ITEM }, 
         { "NPC", OBJECT_TYPE::NPC }, 
         { "MOB", OBJECT_TYPE::MOB }, 
-        { "SESSION", OBJECT_TYPE::SESSION }, 
+        { "CHARACTER", OBJECT_TYPE::CHARACTER }, 
         { "OBJECT", OBJECT_TYPE::OBJECT }, 
         { "LIFE", OBJECT_TYPE::LIFE }
     };

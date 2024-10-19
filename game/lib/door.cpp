@@ -1,6 +1,6 @@
 #include <door.h>
 #include <map.h>
-#include <session.h>
+#include <character.h>
 #include <context.h>
 
 fb::game::door::door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened) : 
@@ -96,7 +96,7 @@ fb::game::door* fb::game::doors::find(const point16_t position) const
     return nullptr;
 }
 
-fb::game::door* fb::game::doors::find(const fb::game::session& session) const
+fb::game::door* fb::game::doors::find(const fb::game::character& session) const
 {
     auto direction = session.direction();
     auto position = session.position();

@@ -1,4 +1,4 @@
-#include <session.h>
+#include <character.h>
 #include <map.h>
 #include <mob.h>
 #include <fb/thread.h>
@@ -199,7 +199,7 @@ fb::game::life* fb::game::mob::find_target()
         return nullptr;
 
     auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto x : this->showings(OBJECT_TYPE::SESSION))
+    for(auto x : this->showings(OBJECT_TYPE::CHARACTER))
     {
         auto                life = static_cast<fb::game::life*>(x);
         if(life->alive() == false)
@@ -220,7 +220,7 @@ bool fb::game::mob::near_target(DIRECTION& out) const
     for(int i = 0; i < 4; i++)
     {
         auto                direction = DIRECTION(i);
-        if(this->side(direction, OBJECT_TYPE::SESSION) != this->_target)
+        if(this->side(direction, OBJECT_TYPE::CHARACTER) != this->_target)
             continue;
 
         out = direction;

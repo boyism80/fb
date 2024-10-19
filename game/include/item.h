@@ -13,7 +13,7 @@
 
 namespace fb { namespace game {
 
-class session;
+class character;
 class items;
 
 class item : public object
@@ -50,7 +50,7 @@ public:
 
 protected:
     uint16_t                            _count = 0;
-    session*                            _owner = nullptr;
+    character*                            _owner = nullptr;
     nullable_time                       _dropped_time = std::nullopt;
 
 public:
@@ -82,8 +82,8 @@ public:
     const nullable_time&                dropped_time() const;
 
 public:
-    fb::game::session*                  owner() const;
-    void                                owner(fb::game::session* owner);
+    fb::game::character*                  owner() const;
+    void                                owner(fb::game::character* owner);
 
 public:
     virtual bool                        active();
@@ -103,11 +103,11 @@ public:
 
 interface item::listener : public virtual fb::game::object::listener
 {
-    virtual void on_item_remove(session& me, uint8_t index, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE) = 0;
-    virtual void on_item_update(session& me, uint8_t index) = 0;
-    virtual void on_item_swap(session& me, uint8_t src, uint8_t dst) = 0;
-    virtual void on_item_active(session& me, item& item) = 0;
-    virtual void on_item_throws(session& me, item& item, const point16_t& to) = 0;
+    virtual void on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE) = 0;
+    virtual void on_item_update(character& me, uint8_t index) = 0;
+    virtual void on_item_swap(character& me, uint8_t src, uint8_t dst) = 0;
+    virtual void on_item_active(character& me, item& item) = 0;
+    virtual void on_item_throws(character& me, item& item, const point16_t& to) = 0;
 };
 
 
@@ -203,8 +203,8 @@ public:
 
 interface equipment::listener : public virtual fb::game::item::listener
 {
-    virtual void on_equipment_on(session& me, item& item, EQUIPMENT_PARTS parts) = 0;
-    virtual void on_equipment_off(session& me, EQUIPMENT_PARTS parts, uint8_t index) = 0;
+    virtual void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) = 0;
+    virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) = 0;
 };
 
 
@@ -290,7 +290,7 @@ public:
 class items : public fb::game::inventory<fb::game::item>
 {
 private:
-    fb::game::session&                  _owner;
+    fb::game::character&                  _owner;
 
 private:
     fb::game::weapon*                   _weapon          = nullptr;
@@ -301,7 +301,7 @@ private:
     fb::game::auxiliary*                _auxiliaries[2]  = { nullptr, nullptr };
 
 public:
-    items(session& owner);
+    items(fb::game::character& owner);
     ~items();
 
 private:

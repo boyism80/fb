@@ -9,7 +9,7 @@ using namespace std::chrono_literals;
 
 namespace fb { namespace game {
 
-class session;
+class character;
 
 class rezen
 {

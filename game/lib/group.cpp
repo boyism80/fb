@@ -1,6 +1,6 @@
 #include <group.h>
 
-fb::game::group::group(session& leader) : 
+fb::game::group::group(character& leader) : 
     _leader(&leader)
 {
     this->enter(leader);
@@ -9,7 +9,7 @@ fb::game::group::group(session& leader) :
 fb::game::group::~group()
 { }
 
-fb::game::session* fb::game::group::enter(session& session)
+fb::game::character* fb::game::group::enter(character& session)
 {
     if(this->_members.size() >= 8)
         return nullptr;
@@ -23,7 +23,7 @@ fb::game::session* fb::game::group::enter(session& session)
     return &session;
 }
 
-fb::game::session* fb::game::group::leave(session& session)
+fb::game::character* fb::game::group::leave(character& session)
 {
     auto i = std::find(this->_members.begin(), this->_members.end(), &session);
     if(i == this->_members.end())
@@ -43,22 +43,22 @@ fb::game::session* fb::game::group::leave(session& session)
     return this->_leader;
 }
 
-bool fb::game::group::contains(session& session)
+bool fb::game::group::contains(character& session)
 {
     return std::find(this->_members.begin(), this->_members.end(), &session) != this->_members.end();
 }
 
-fb::game::session& fb::game::group::leader() const
+fb::game::character& fb::game::group::leader() const
 {
     return *this->_leader;
 }
 
-const fb::game::session::container& fb::game::group::members() const
+const fb::game::character::container& fb::game::group::members() const
 {
     return this->_members;
 }
 
-fb::game::group* fb::game::group::create(session& leader)
+fb::game::group* fb::game::group::create(character& leader)
 {
     if(leader._group == nullptr)
         return new fb::game::group(leader);

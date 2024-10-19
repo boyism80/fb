@@ -18,7 +18,7 @@ namespace fb { namespace game {
 class object;
 class map;
 class mob;
-class session;
+class character;
 class context;
 
 class objects

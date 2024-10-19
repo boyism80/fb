@@ -10,11 +10,11 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class dialog : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&        me;
+    const fb::game::character&        me;
     const fb::model::model&     model;
 
 public:
-    dialog(const fb::game::session& me, const fb::model::model& model) : fb::protocol::base::header(0x42),
+    dialog(const fb::game::character& me, const fb::model::model& model) : fb::protocol::base::header(0x42),
         me(me), model(model)
     { }
 
@@ -37,12 +37,12 @@ public:
 class upload : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    me;
+    const fb::game::character&    me;
     const uint8_t               index;
     const bool                  mine;
 
 public:
-    upload(const fb::game::session& me, uint8_t index, bool mine) : fb::protocol::base::header(0x42),
+    upload(const fb::game::character& me, uint8_t index, bool mine) : fb::protocol::base::header(0x42),
         me(me), index(index), mine(mine)
     { }
 
@@ -80,11 +80,11 @@ public:
 class money : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    me;
+    const fb::game::character&    me;
     const bool                  mine;
 
 public:
-    money(const fb::game::session& me, bool mine) : fb::protocol::base::header(0x42),
+    money(const fb::game::character& me, bool mine) : fb::protocol::base::header(0x42),
         me(me), mine(mine)
     { }
 

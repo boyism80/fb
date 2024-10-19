@@ -2,12 +2,12 @@
 #define __LISTENER_H__
 
 #include <mob.h>
-#include <session.h>
+#include <character.h>
 #include <item.h>
 
 namespace fb { namespace game {
 
-interface listener : public virtual session::listener,
+interface listener : public virtual character::listener,
     public virtual mob::listener
 { };
 

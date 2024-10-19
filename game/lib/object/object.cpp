@@ -1,5 +1,5 @@
 #include <object.h>
-#include <session.h>
+#include <character.h>
 #include <context.h>
 #include <model.h>
 
@@ -826,14 +826,14 @@ int fb::game::object::builtin_position(lua_State* lua)
     std::vector<fb::game::object*> shows, hides, showings, hiddens;
     object->position(x, y, true);
 
-    if(object->is(OBJECT_TYPE::SESSION))
+    if(object->is(OBJECT_TYPE::CHARACTER))
     {
         context->send
         (
             *object, 
             [object](const auto& to)
             {
-                return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::session&>(*object), to));
+                return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::character&>(*object), to));
             }, 
             context::scope::PIVOT
         );
@@ -843,9 +843,9 @@ int fb::game::object::builtin_position(lua_State* lua)
         context->send(*object, fb::protocol::game::response::object::show(*object), context::scope::PIVOT);
     }
 
-    if(object->is(OBJECT_TYPE::SESSION))
+    if(object->is(OBJECT_TYPE::CHARACTER))
     {
-        auto session = static_cast<fb::game::session*>(object);
+        auto session = static_cast<fb::game::character*>(object);
         context->send(*object, fb::protocol::game::response::session::position(*session), context::scope::SELF);
     }
 
@@ -929,7 +929,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto message = thread->tostring(2);
     auto type = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
 
-    if(object->is(OBJECT_TYPE::SESSION))
+    if(object->is(OBJECT_TYPE::CHARACTER))
         context->send(*object, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
 
     return 0;

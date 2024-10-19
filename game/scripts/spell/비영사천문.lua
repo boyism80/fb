@@ -39,7 +39,7 @@ function on_cast(me, spell)
        lookup(me, front, (direction + 3) % 4) or
        lookup(me, front, (direction + 1) % 4) then
 
-        if me:isbuff('투명') and front:is(MOB | SESSION) then
+        if me:isbuff('투명') and front:is(MOB | CHARACTER) then
             me:unbuff('투명')
         end
         me:action(ACTION_ATTACK, 0x0a, 0x1e)

@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <ctime>
-#include <session.h>
+#include <character.h>
 
 namespace fb { namespace game { namespace board {
 

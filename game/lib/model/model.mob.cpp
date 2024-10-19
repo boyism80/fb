@@ -1,4 +1,4 @@
-#include <session.h>
+#include <character.h>
 #include <map.h>
 #include <mob.h>
 #include <model.h>

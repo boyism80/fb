@@ -234,8 +234,8 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "NPC");
     lua_pushinteger(*this, OBJECT_TYPE::MOB);
     lua_setglobal(*this, "MOB");
-    lua_pushinteger(*this, OBJECT_TYPE::SESSION);
-    lua_setglobal(*this, "SESSION");
+    lua_pushinteger(*this, OBJECT_TYPE::CHARACTER);
+    lua_setglobal(*this, "CHARACTER");
     lua_pushinteger(*this, OBJECT_TYPE::LIFE);
     lua_setglobal(*this, "LIFE");
     lua_pushinteger(*this, OBJECT_TYPE::OBJECT);

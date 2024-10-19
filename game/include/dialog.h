@@ -10,7 +10,7 @@
 
 namespace fb { namespace game {
 
-class session;
+class character;
 
 class dialog
 {
@@ -35,12 +35,12 @@ public:
 public:
     interface listener
     {
-        virtual void        on_dialog(session& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, interaction interaction = interaction::NORMAL) = 0;
-        virtual void        on_dialog(session& me, const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(character& me, const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(character& me, const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(character& me, const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(character& me, const fb::model::npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(character& me, const fb::model::npc& npc, const std::string& message, interaction interaction = interaction::NORMAL) = 0;
+        virtual void        on_dialog(character& me, const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen = 0xFF, bool prev = false, interaction interaction = interaction::NORMAL) = 0;
     };
 
 public:
@@ -50,12 +50,12 @@ public:
     using lua_stack = std::stack<lua::context*>;
 
 private:
-    session&                _owner;
+    character&                _owner;
     lua_stack               _scripts;
 
 
 public:
-    dialog(session& owner);
+    dialog(character& owner);
     ~dialog();
 
 private:

@@ -2,7 +2,7 @@
 #define __PROTOCOL_RESPONSE_GAME_SESSION_H__
 
 #include <fb/protocol/protocol.h>
-#include <session.h>
+#include <character.h>
 #include <model.h>
 #include <clan.h>
 #include <group.h>
@@ -34,12 +34,12 @@ public:
 class show : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    session;
+    const fb::game::character&    session;
     const fb::game::object&     to;
     const bool                  light;
 
 public:
-    show(const fb::game::session& session, const fb::game::object& to, bool light = false) : fb::protocol::base::header(light ? 0x1D : 0x33),
+    show(const fb::game::character& session, const fb::game::object& to, bool light = false) : fb::protocol::base::header(light ? 0x1D : 0x33),
         session(session), to(to), light(light)
     { }
 
@@ -51,7 +51,7 @@ private:
         if(&this->session == &this->to)
             return true;
 
-        if(this->to.is(OBJECT_TYPE::SESSION) == false)
+        if(this->to.is(OBJECT_TYPE::CHARACTER) == false)
             return false;
 
         // TODO: to 에게 걸린 버프가 있어서 그게 투명 다 감지하는 버프면
@@ -61,7 +61,7 @@ private:
         if(mine == nullptr)
             return false;
 
-        auto your = static_cast<const fb::game::session&>(this->to).group();
+        auto your = static_cast<const fb::game::character&>(this->to).group();
         if(your == nullptr)
             return false;
 
@@ -159,7 +159,7 @@ class id : public fb::protocol::base::header
 {
 public:
 #ifndef BOT
-    const fb::game::session&    session;
+    const fb::game::character&    session;
 #else
     uint32_t                    sequence = 0;
     uint32_t                    direction = 0;
@@ -168,7 +168,7 @@ public:
 
 public:
 #ifndef BOT
-    id(const fb::game::session& session) : fb::protocol::base::header(0x05),
+    id(const fb::game::character& session) : fb::protocol::base::header(0x05),
         session(session)
     { }
 #else
@@ -218,7 +218,7 @@ public:
     uint8_t                     mail         = 0;
     uint8_t                     fast_move    = 0;
 #else
-    const fb::game::session&    session;
+    const fb::game::character&    session;
     const STATE_LEVEL level;
 #endif
 
@@ -227,7 +227,7 @@ public:
     state() : fb::protocol::base::header(0x08)
     { }
 #else
-    state(const fb::game::session& session, STATE_LEVEL level) : fb::protocol::base::header(0x08),
+    state(const fb::game::character& session, STATE_LEVEL level) : fb::protocol::base::header(0x08),
         session(session), level(level)
     { }
 #endif
@@ -341,7 +341,7 @@ class position : public fb::protocol::base::header
 {
 public:
 #ifndef BOT
-    const fb::game::session&    session;
+    const fb::game::character&    session;
 #else
     point16_t                   abs;
     point16_t                   rel;
@@ -349,7 +349,7 @@ public:
 
 public:
 #ifndef BOT
-    position(const fb::game::session& session) : fb::protocol::base::header(0x04),
+    position(const fb::game::character& session) : fb::protocol::base::header(0x04),
         session(session)
     { }
 #else
@@ -401,11 +401,11 @@ public:
 class internal_info : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    session;
+    const fb::game::character&    session;
     const fb::model::model& model;
 
 public:
-    internal_info(const fb::game::session& session, const fb::model::model& model) : fb::protocol::base::header(0x39),
+    internal_info(const fb::game::character& session, const fb::model::model& model) : fb::protocol::base::header(0x39),
         session(session), model(model)
     { }
 
@@ -488,11 +488,11 @@ public:
 class external_info : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    session;
+    const fb::game::character&    session;
     const fb::model::model& model;
 
 public:
-    external_info(const fb::game::session& session, const fb::model::model& model) : fb::protocol::base::header(0x34),
+    external_info(const fb::game::character& session, const fb::model::model& model) : fb::protocol::base::header(0x34),
         session(session), model(model)
     { }
 
@@ -599,7 +599,7 @@ public:
     bool                        fast_move = false;
     bool                        effect_sound = false;
 #else
-    const fb::game::session&    session;
+    const fb::game::character&    session;
 #endif
 
 public:
@@ -607,7 +607,7 @@ public:
     option() : fb::protocol::base::header(0x23)
     { }
 #else
-    option(const fb::game::session& session) : fb::protocol::base::header(0x23),
+    option(const fb::game::character& session) : fb::protocol::base::header(0x23),
         session(session)
     { }
 #endif
@@ -640,12 +640,12 @@ public:
 class throws : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    session;
+    const fb::game::character&    session;
     const fb::game::item&       item;
     const point16_t             to;
 
 public:
-    throws(const fb::game::session& session, const fb::game::item& item, const point16_t& to) : fb::protocol::base::header(0x16),
+    throws(const fb::game::character& session, const fb::game::item& item, const point16_t& to) : fb::protocol::base::header(0x16),
         session(session), item(item), to(to)
     { }
 
@@ -670,13 +670,13 @@ public:
 class action : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&        me;
+    const fb::game::character&        me;
     const ACTION     value;
     const DURATION        duration;
     const uint8_t                   sound;
 
 public:
-    action(const fb::game::session& me, ACTION value, DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
+    action(const fb::game::character& me, ACTION value, DURATION duration, uint8_t sound = 0x00) : fb::protocol::base::header(0x1A),
         me(me), value(value), duration(duration), sound(sound)
     { }
 

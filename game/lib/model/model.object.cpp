@@ -1,7 +1,7 @@
 #include <model.h>
 #include <object.h>
 #include <map.h>
-#include <session.h>
+#include <character.h>
 #include <mob.h>
 #include <context.h>
 
@@ -93,7 +93,7 @@ int fb::model::object::builtin_dialog(lua_State* lua)
         if(object == nullptr)
             return 0;
 
-        auto session = thread->touserdata<fb::game::session>(2);
+        auto session = thread->touserdata<fb::game::character>(2);
         if(session == nullptr)
             return 0;
 

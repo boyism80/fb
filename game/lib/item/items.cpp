@@ -1,8 +1,8 @@
 #include <item.h>
-#include <session.h>
+#include <character.h>
 #include <map.h>
 
-fb::game::items::items(session& owner) :
+fb::game::items::items(fb::game::character& owner) :
     inventory(owner),
     _owner(owner)
 { }
@@ -24,7 +24,7 @@ fb::game::items::~items()
 
 async::task<uint8_t> fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
 
     try
     {
@@ -122,7 +122,7 @@ async::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::gam
 {
     auto indices = std::vector<uint8_t>();
     auto updates = std::map<uint8_t, fb::game::item*>();
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
 
     for(auto item : items)
     {
@@ -194,16 +194,16 @@ async::task<uint8_t> fb::game::items::add(fb::game::item& item, uint8_t index)
 
     item.owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(item.empty() == false && listener != nullptr)
-        listener->on_item_update(static_cast<session&>(this->owner()), index);
+        listener->on_item_update(static_cast<character&>(this->owner()), index);
 
     co_return index;
 }
 
 async::task< fb::game::item*> fb::game::items::active(uint8_t index)
 {
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
 
     try
     {
@@ -326,7 +326,7 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
     this->_weapon = weapon;
     weapon->owner(&this->_owner);
     
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -345,7 +345,7 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
     this->_armor = armor;
     armor->owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -364,7 +364,7 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
     this->_shield = shield;
     shield->owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -383,7 +383,7 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
     this->_helmet = helmet;
     helmet->owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -409,7 +409,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
     }
     ring->owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -421,7 +421,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, EQUIPMENT_POSITION p
     auto before = this->_rings[static_cast<int>(position)];
     this->_rings[static_cast<int>(position)] = ring;
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -447,7 +447,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     }
     auxiliary->owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -459,7 +459,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
     auto before = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
 
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
         listener->on_show(this->_owner, true);
     
@@ -515,7 +515,7 @@ fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
 
 async::task< fb::game::item*> fb::game::items::drop(uint8_t index, uint8_t count)
 {
-    auto                        listener = this->_owner.get_listener<fb::game::session>();
+    auto                        listener = this->_owner.get_listener<fb::game::character>();
 
     try
     {
@@ -546,7 +546,7 @@ async::task< fb::game::item*> fb::game::items::drop(uint8_t index, uint8_t count
 
 async::task<void> fb::game::items::pickup(bool boost)
 {
-    auto                    listener = this->_owner.get_listener<fb::game::session>();
+    auto                    listener = this->_owner.get_listener<fb::game::character>();
 
     try
     {
@@ -600,7 +600,7 @@ async::task<void> fb::game::items::pickup(bool boost)
 
 async::task<bool> fb::game::items::throws(uint8_t index)
 {
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
 
     try
     {
@@ -647,7 +647,7 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
     if(item == nullptr)
         return nullptr;
 
-    auto                    listener = this->_owner.get_listener<fb::game::session>();
+    auto                    listener = this->_owner.get_listener<fb::game::character>();
     auto                    splitted = item->split(count);
     if(splitted == item)
     {
@@ -684,7 +684,7 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     if(fb::game::inventory<fb::game::item>::swap(src, dst) == false)
         return false;
     
-    auto listener = this->_owner.get_listener<fb::game::session>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if(listener != nullptr)
     {
         const auto              right = this->at(src);

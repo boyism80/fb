@@ -11,7 +11,7 @@ using namespace fb::model;
 namespace fb { namespace game {
 
 class map;
-class session;
+class character;
 
 class door : public lua::luable
 {
@@ -82,7 +82,7 @@ public:
     const_iterator              end() const;
     void                        add(const point16_t& position, const fb::model::door& model, bool opened);
     door*                       find(const point16_t position) const;
-    door*                       find(const session& session) const;
+    door*                       find(const character& session) const;
 };
 
 class doors::iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator

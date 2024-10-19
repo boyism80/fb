@@ -1,5 +1,5 @@
-#ifndef __MMO_H__
-#define __MMO_H__
+#ifndef __CHARACTER_H__
+#define __CHARACTER_H__
 
 #include <item.h>
 #include <spell.h>
@@ -22,7 +22,7 @@ class map;
 class clan;
 class group;
 
-class session : public life
+class character : public life
 {
     friend class group;
     friend class clan;
@@ -30,29 +30,29 @@ class session : public life
 public:
     using fb::game::object::map;
 
-class container : private std::vector<fb::game::session*>
+class container : private std::vector<fb::game::character*>
 {
 public:
-    using std::vector<fb::game::session*>::begin;
-    using std::vector<fb::game::session*>::end;
-    using std::vector<fb::game::session*>::size;
-    using std::vector<fb::game::session*>::operator[];
+    using std::vector<fb::game::character*>::begin;
+    using std::vector<fb::game::character*>::end;
+    using std::vector<fb::game::character*>::size;
+    using std::vector<fb::game::character*>::operator[];
 
 public:
     container();
-    container(const std::vector<fb::game::session*>& right);
+    container(const std::vector<fb::game::character*>& right);
     ~container();
 
 public:
-    container&                      push(fb::game::session& session);
-    container&                      erase(fb::game::session& session);
+    container&                      push(fb::game::character& session);
+    container&                      erase(fb::game::character& session);
 
 public:
-    fb::game::session*              find(const std::string& name);
-    bool                            contains(const fb::game::session& session) const;
+    fb::game::character*              find(const std::string& name);
+    bool                            contains(const fb::game::character& session) const;
 
 public:
-    fb::game::session*              operator [] (const std::string& name);
+    fb::game::character*              operator [] (const std::string& name);
 };
 
 public:
@@ -71,7 +71,7 @@ public:
 private:
     bool                            _init            = false;
     uint32_t                        _id              = 0xFFFFFFFF;
-    fb::socket<session>&            _socket;
+    fb::socket<character>&            _socket;
     bool                            _admin           = false;
     std::string                     _name;
     datetime             _last_login;
@@ -122,8 +122,8 @@ private:
     using object::based;
 
 public:
-    session(fb::game::context& context, fb::socket<fb::game::session>& socket);
-    ~session();
+    character(fb::game::context& context, fb::socket<fb::game::character>& socket);
+    ~character();
 
 protected:
     void                            on_hold() final;
@@ -141,7 +141,7 @@ public:
     async::task<bool>               map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
 
 public:
-    operator                        fb::socket<fb::game::session>& ();
+    operator                        fb::socket<fb::game::character>& ();
 
 public:
     bool                            inited() const;
@@ -338,23 +338,23 @@ public:
 };
 
 
-interface session::listener : public virtual fb::game::life::listener, 
+interface character::listener : public virtual fb::game::life::listener, 
     public virtual                  fb::game::dialog::listener,
     public virtual                  fb::game::trade::listener,
     public virtual                  fb::game::equipment::listener
 {
 public:
-    virtual void                    on_hold(session& me) = 0;
-    virtual void                    on_action(session& me, ACTION action, DURATION duration, uint8_t sound) = 0;
-    virtual void                    on_updated(session& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
-    virtual void                    on_money_changed(session& me, uint32_t value) = 0;
-    virtual void                    on_notify(session& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
-    virtual void                    on_option(session& me, CUSTOM_SETTING option, bool enabled) = 0;
-    virtual void                    on_level_up(session& me) = 0;
-    virtual async::task<bool>       on_transfer(session& me, fb::game::map& map, const point16_t& position) = 0;
-    virtual void                    on_item_get(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
-    virtual void                    on_item_changed(session& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
-    virtual void                    on_item_lost(session& me, const std::vector<uint8_t>& slots) = 0;
+    virtual void                    on_hold(character& me) = 0;
+    virtual void                    on_action(character& me, ACTION action, DURATION duration, uint8_t sound) = 0;
+    virtual void                    on_updated(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
+    virtual void                    on_money_changed(character& me, uint32_t value) = 0;
+    virtual void                    on_notify(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
+    virtual void                    on_option(character& me, CUSTOM_SETTING option, bool enabled) = 0;
+    virtual void                    on_level_up(character& me) = 0;
+    virtual async::task<bool>       on_transfer(character& me, fb::game::map& map, const point16_t& position) = 0;
+    virtual void                    on_item_get(character& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual void                    on_item_changed(character& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual void                    on_item_lost(character& me, const std::vector<uint8_t>& slots) = 0;
 };
 
 } }

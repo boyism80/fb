@@ -6,7 +6,7 @@
 
 namespace fb { namespace game {
 
-class session;
+class character;
 class item;
 
 class trade
@@ -18,15 +18,15 @@ public:
     interface listener;
 
 private:
-    session&                                _owner;
-    session*                                _you      = nullptr;
+    character&                                _owner;
+    character*                                _you      = nullptr;
     std::vector<fb::game::item*>            _items;
     fb::game::item*                         _selected = nullptr;
     uint32_t                                _money    = 0;
     bool                                    _locked   = false;
 
 public:
-    trade(session& owner);
+    trade(character& owner);
     ~trade();
 
 private:
@@ -38,9 +38,9 @@ private:
     void                                    end();
 
 public:
-    session*                                you() const;
+    character*                                you() const;
 
-    bool                                    begin(session& you);
+    bool                                    begin(character& you);
     bool                                    trading() const;
 
     bool                                    up(fb::game::item& item);
@@ -68,14 +68,14 @@ enum class trade::state : uint8_t
 
 interface trade::listener
 {
-    virtual void                            on_trade_begin(session& me, session& you) = 0;
-    virtual void                            on_trade_bundle(session& me) = 0;
-    virtual void                            on_trade_item(session& me, session& from, uint8_t index) = 0;
-    virtual void                            on_trade_money(session& me, session& from) = 0;
-    virtual void                            on_trade_cancel(session& me, session& from) = 0;
-    virtual void                            on_trade_lock(session& me, bool mine) = 0;
-    virtual void                            on_trade_failed(session& me) = 0;
-    virtual void                            on_trade_success(session& me) = 0;
+    virtual void                            on_trade_begin(character& me, character& you) = 0;
+    virtual void                            on_trade_bundle(character& me) = 0;
+    virtual void                            on_trade_item(character& me, character& from, uint8_t index) = 0;
+    virtual void                            on_trade_money(character& me, character& from) = 0;
+    virtual void                            on_trade_cancel(character& me, character& from) = 0;
+    virtual void                            on_trade_lock(character& me, bool mine) = 0;
+    virtual void                            on_trade_failed(character& me) = 0;
+    virtual void                            on_trade_success(character& me) = 0;
 };
 
 } }

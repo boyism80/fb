@@ -1,12 +1,12 @@
 #ifndef __GROUP_H__
 #define __GROUP_H__
 
-#include <session.h>
+#include <character.h>
 // #include <lua.h>
 
 namespace fb { namespace game {
 
-class session;
+class character;
 
 class group : public lua::luable
 {
@@ -14,24 +14,24 @@ public:
     LUA_PROTOTYPE
 
 private:
-    session*                        _leader;
-    session::container              _members;
+    character*                        _leader;
+    character::container              _members;
 
 private:
-    group(session& leader);
+    group(character& leader);
 
 public:
     ~group();
 
 public:
-    session*                        enter(session& session);
-    session*                        leave(session& session);
-    bool                            contains(session& session);
-    session&                        leader() const;
-    const session::container&       members() const;
+    character*                        enter(character& session);
+    character*                        leave(character& session);
+    bool                            contains(character& session);
+    character&                        leader() const;
+    const character::container&       members() const;
 
 public:
-    static fb::game::group*         create(session& leader);
+    static fb::game::group*         create(character& leader);
     static void                     destroy(fb::game::group& group);
 
 public:

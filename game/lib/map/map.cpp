@@ -405,7 +405,7 @@ int fb::game::map::builtin_door(lua_State* lua)
     if(map == nullptr)
         return 0;
     
-    auto session = thread->touserdata<fb::game::session>(2);
+    auto session = thread->touserdata<fb::game::character>(2);
     if(session == nullptr)
         return 0;
 

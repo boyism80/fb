@@ -14,7 +14,7 @@ fb::game::npc::npc(const npc& right) :
 fb::game::npc::~npc()
 { }
 
-bool fb::game::npc::buy(fb::game::session& session, const fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
+bool fb::game::npc::buy(fb::game::character& session, const fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
 {
     try
     {
@@ -92,7 +92,7 @@ bool fb::game::npc::buy(fb::game::session& session, const fb::model::item* item_
     }
 }
 
-bool fb::game::npc::sell(fb::game::session& session, const fb::model::item* item_model, uint16_t count, bool sold)
+bool fb::game::npc::sell(fb::game::character& session, const fb::model::item* item_model, uint16_t count, bool sold)
 {
     try
     {
@@ -152,7 +152,7 @@ bool fb::game::npc::sell(fb::game::session& session, const fb::model::item* item
     }
 }
 
-bool fb::game::npc::repair(fb::game::session& session, const fb::model::item* item_model, bool done)
+bool fb::game::npc::repair(fb::game::character& session, const fb::model::item* item_model, bool done)
 {
     try
     {
@@ -261,7 +261,7 @@ bool fb::game::npc::repair(fb::game::session& session, const fb::model::item* it
     }
 }
 
-bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_t> money)
+bool fb::game::npc::hold_money(fb::game::character& session, std::optional<uint32_t> money)
 {
     try
     {
@@ -295,7 +295,7 @@ bool fb::game::npc::hold_money(fb::game::session& session, std::optional<uint32_
     }
 }
 
-bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint32_t> money)
+bool fb::game::npc::return_money(fb::game::character& session, std::optional<uint32_t> money)
 {
     try
     {
@@ -329,7 +329,7 @@ bool fb::game::npc::return_money(fb::game::session& session, std::optional<uint3
     }
 }
 
-bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
+bool fb::game::npc::hold_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
@@ -383,7 +383,7 @@ bool fb::game::npc::hold_item(fb::game::session& session, const fb::model::item*
     }
 }
 
-async::task<bool> fb::game::npc::return_item(fb::game::session& session, const fb::model::item* item, std::optional<uint16_t> count)
+async::task<bool> fb::game::npc::return_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count)
 {
     try
     {
@@ -547,7 +547,7 @@ void fb::game::npc::buy_price(const fb::model::item* item)
     }
 }
 
-bool fb::game::npc::deposited_money(const fb::game::session& session)
+bool fb::game::npc::deposited_money(const fb::game::character& session)
 {
     auto& model = this->based<fb::model::npc>();
     if(model.hold_money == false)
@@ -562,7 +562,7 @@ bool fb::game::npc::deposited_money(const fb::game::session& session)
     return true;
 }
 
-bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::item* item, const std::string& name)
+bool fb::game::npc::rename_weapon(fb::game::character& session, const fb::model::item* item, const std::string& name)
 {
     auto& model = this->based<fb::model::npc>();
     if(model.rename == false)
@@ -611,7 +611,7 @@ bool fb::game::npc::rename_weapon(fb::game::session& session, const fb::model::i
     return true;
 }
 
-bool fb::game::npc::hold_item_list(const fb::game::session& session)
+bool fb::game::npc::hold_item_list(const fb::game::character& session)
 {
     auto& model = this->based<fb::model::npc>();
     if (model.hold_item == false)
@@ -652,7 +652,7 @@ bool fb::game::npc::hold_item_list(const fb::game::session& session)
     return true;
 }
 
-bool fb::game::npc::hold_item_count(const fb::game::session& session, const fb::model::item* item)
+bool fb::game::npc::hold_item_count(const fb::game::character& session, const fb::model::item* item)
 {
     auto& model = this->based<fb::model::npc>();
     if (model.hold_item == false)

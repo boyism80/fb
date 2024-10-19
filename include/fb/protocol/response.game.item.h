@@ -33,11 +33,11 @@ public:
 class update : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&    me;
+    const fb::game::character&    me;
     const uint8_t               index;
 
 public:
-    update(const fb::game::session& me, uint8_t index) : fb::protocol::base::header(0x0F),
+    update(const fb::game::character& me, uint8_t index) : fb::protocol::base::header(0x0F),
         me(me), index(index)
     { }
 
@@ -62,11 +62,11 @@ public:
 class update_slot : public fb::protocol::base::header
 {
 public:
-    const fb::game::session&            me;
+    const fb::game::character&            me;
     const EQUIPMENT_PARTS               parts;
 
 public:
-    update_slot(const fb::game::session& me, EQUIPMENT_PARTS parts) : fb::protocol::base::header(0x37),
+    update_slot(const fb::game::character& me, EQUIPMENT_PARTS parts) : fb::protocol::base::header(0x37),
         me(me), parts(parts)
     { }
 

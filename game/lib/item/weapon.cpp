@@ -50,7 +50,7 @@ const std::optional<std::string>& fb::game::weapon::custom_name() const
 void fb::game::weapon::custom_name(const std::string& name)
 {
     this->_custom_name = name;
-    auto listener = this->_owner->get_listener<fb::game::session>();
+    auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
     {
         auto index = this->_owner->items.index(*this);
@@ -62,7 +62,7 @@ void fb::game::weapon::custom_name(const std::string& name)
 void fb::game::weapon::reset_custom_name()
 {
     this->_custom_name.reset();
-    auto listener = this->_owner->get_listener<fb::game::session>();
+    auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
     {
         auto index = this->_owner->items.index(*this);

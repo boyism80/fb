@@ -1,6 +1,6 @@
 #include <sector.h>
 #include <map.h>
-#include <session.h>
+#include <character.h>
 #include <mob.h>
 
 fb::game::sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) : 
@@ -14,7 +14,7 @@ fb::game::sector::~sector()
 void fb::game::sector::push(fb::game::object& object)
 {
     this->push_back(&object);
-    if(object.is(OBJECT_TYPE::SESSION))
+    if(object.is(OBJECT_TYPE::CHARACTER))
     {
         if(this->_activated)
             return;
@@ -34,14 +34,14 @@ void fb::game::sector::erase(fb::game::object& object)
     std::vector<fb::game::object*>::erase(found);
 
     // 섹터에서 세션을 지워낸 경우 active 상태를 검사한다.
-    if(object.is(OBJECT_TYPE::SESSION))
+    if(object.is(OBJECT_TYPE::CHARACTER))
     {
         this->_activated = std::find_if
         (
             this->begin(), this->end(),
             [] (auto x) 
             {
-                return x->is(OBJECT_TYPE::SESSION);
+                return x->is(OBJECT_TYPE::CHARACTER);
             }
         ) != this->end();
         
