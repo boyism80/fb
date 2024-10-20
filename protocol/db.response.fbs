@@ -25,7 +25,7 @@ table WriteArticle {
 
 
 table ChangePw {
-  result: int;
+  error_code: uint;
 }
 
 

@@ -154,6 +154,51 @@ namespace db.Controllers
             };
         }
 
+        [HttpPost("change-pw")]
+        public async Task<Response.ChangePw> ChangePassword(Request.ChangePw request)
+        { 
+            await using var connection = _dbContext.Connection(request.Uid);
+            using (var reader = await connection.ExecuteReaderAsync($"SELECT pw, birth FROM user WHERE id = {request.Uid}"))
+            {
+                if (await reader.ReadAsync() == false)
+                {
+                    return new Response.ChangePw
+                    {
+                        ErrorCode = 1
+                    };
+                }
+
+                var pw = reader.GetString("pw");
+                if (pw != SHA256Hash(request.Before))
+                {
+                    return new Response.ChangePw
+                    {
+                        ErrorCode = 2
+                    };
+                }
+
+                var birth = reader.GetValue("birth");
+                if ((birth is DBNull) || ((uint)birth != request.Birthday))
+                {
+                    return new Response.ChangePw
+                    {
+                        ErrorCode = 3
+                    };
+                }
+            }
+            
+            await connection.ExecuteAsync($"UPDATE user SET pw = @pw WHERE id = @id LIMIT 1", new 
+            {
+                id = request.Uid,
+                pw = SHA256Hash(request.After)
+            });
+
+            return new Response.ChangePw
+            {
+                ErrorCode = 0
+            };
+        }
+
         [HttpGet("login/{uid}")]
         public async Task<Response.Login> Login(uint uid)
         {

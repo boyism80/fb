@@ -41,26 +41,6 @@ bool fb::login::context::is_forbidden(const std::string& str) const
         });
 }
 
-std::string fb::login::context::sha256(const std::string& data) const
-{
-    auto buffer = new char[data.size()];
-    memcpy(buffer, data.c_str(), data.size());
-
-    SHA256_CTX ctx;
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, buffer, data.size());
-    delete[] buffer;
-
-    uint8_t hash[SHA256_DIGEST_LENGTH];
-    SHA256_Final(hash, &ctx);
-    
-    std::stringstream sstream;
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
-        sstream << std::hex << std::setw(2) << std::setfill('0') << (int)hash[i];
-
-    return sstream.str();
-}
-
 void fb::login::context::assert_account(const std::string& id, const std::string& pw) const
 {
     const auto& config = fb::config::get();
@@ -372,23 +352,23 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         auto&& response2 = co_await this->post<fb::protocol::db::request::ChangePw, fb::protocol::db::response::ChangePw>("db", "/user/change-pw", fb::protocol::db::request::ChangePw
             {
                 uid,
-                this->sha256(pw),
-                this->sha256(new_pw),
+                pw,
+                new_pw,
                 birthday
             });
 
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        switch(response2.result)
+        switch(response2.error_code)
         {
-        case -1: // id wrong
+        case 1: // id wrong
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        case -2: // pw wrong
+        case 2: // pw wrong
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
 
-        case -3: // birthday wrong
+        case 3: // birthday wrong
             throw pw_exception(fb::login::message::account::INVALID_BIRTHDAY);
         }
 

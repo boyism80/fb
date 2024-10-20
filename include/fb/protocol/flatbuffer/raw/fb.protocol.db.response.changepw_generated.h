@@ -25,14 +25,14 @@ struct ChangePwBuilder;
 struct ChangePw FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef ChangePwBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_RESULT = 4
+    VT_ERROR_CODE = 4
   };
-  int32_t result() const {
-    return GetField<int32_t>(VT_RESULT, 0);
+  uint32_t error_code() const {
+    return GetField<uint32_t>(VT_ERROR_CODE, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_RESULT, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR_CODE, 4) &&
            verifier.EndTable();
   }
 };
@@ -41,8 +41,8 @@ struct ChangePwBuilder {
   typedef ChangePw Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_result(int32_t result) {
-    fbb_.AddElement<int32_t>(ChangePw::VT_RESULT, result, 0);
+  void add_error_code(uint32_t error_code) {
+    fbb_.AddElement<uint32_t>(ChangePw::VT_ERROR_CODE, error_code, 0);
   }
   explicit ChangePwBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,9 +57,9 @@ struct ChangePwBuilder {
 
 inline ::flatbuffers::Offset<ChangePw> CreateChangePw(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    int32_t result = 0) {
+    uint32_t error_code = 0) {
   ChangePwBuilder builder_(_fbb);
-  builder_.add_result(result);
+  builder_.add_error_code(error_code);
   return builder_.Finish();
 }
 

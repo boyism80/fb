@@ -1371,21 +1371,21 @@ public:
     static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::ChangePw;
 
 public:
-    int result = 0;
+    uint32_t error_code = 0;
 
 public:
     ChangePw() = default;
 
     ChangePw(const ChangePw& x)
-        : result(x.result)
+        : error_code(x.error_code)
     { }
 
-    ChangePw(int result)
-        : result(result)
+    ChangePw(uint32_t error_code)
+        : error_code(error_code)
     { }
 
     ChangePw(const fb::protocol::db::response::raw::ChangePw& raw)
-        : result(raw.result())
+        : error_code(raw.error_code())
     {
     }
 
@@ -1394,7 +1394,7 @@ public:
     auto Build(flatbuffers::FlatBufferBuilder& builder) const
     {
         return fb::protocol::db::response::raw::CreateChangePw(builder,
-            this->result);
+            this->error_code);
     }
 
     std::vector<uint8_t> Serialize() const

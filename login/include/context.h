@@ -78,7 +78,6 @@ public:
 
 private:
     bool                        is_forbidden(const std::string& str) const;
-    std::string                 sha256(const std::string& data) const;
     void                        assert_account(const std::string& id, const std::string& pw) const;
 
     // override

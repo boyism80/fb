@@ -1147,14 +1147,14 @@ namespace fb.protocol.db.response
     public class ChangePw : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ChangePw;
-        public int Result { get; set; }
+        public uint ErrorCode { get; set; }
 
         public ChangePw()
         { }
 
         public ChangePw(fb.protocol.db.response.raw.ChangePw raw)
         {
-            Result = raw.Result;
+            ErrorCode = raw.ErrorCode;
         }
 
         public ChangePw(byte[] bytes) : this(fb.protocol.db.response.raw.ChangePw.GetRootAsChangePw(new ByteBuffer(bytes)))
@@ -1163,7 +1163,7 @@ namespace fb.protocol.db.response
         public Offset<fb.protocol.db.response.raw.ChangePw> Build(FlatBufferBuilder builder)
         {
             return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
-                Result);
+                ErrorCode);
         }
 
         public byte[] Serialize()
