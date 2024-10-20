@@ -98,7 +98,7 @@ function setupMySql(namespace, secret, storageClass, i) {
 }
 
 module.exports = {
-    setup: function (namespace, size) {
+    setup: function (namespace, storageClass, size) {
         const mysqlSecret = new k8s.core.v1.Secret("mysql-secret", {
             metadata: {
                 name: "mysql-secret",
@@ -109,16 +109,6 @@ module.exports = {
                 MYSQL_USER: "fb",
                 MYSQL_PASSWORD: "admin"
             }
-        });
-
-        const storageClass = new k8s.storage.v1.StorageClass("storage-class", {
-            metadata: {
-                name: "storage-class",
-                namespace: namespace.metadata.name, 
-            },
-            provisioner: "kubernetes.io/no-provisioner",
-            volumeBindingMode: "WaitForFirstConsumer",
-            reclaimPolicy: "Retain"
         });
 
         const ports = []
