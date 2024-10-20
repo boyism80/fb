@@ -29,6 +29,7 @@ namespace fb.protocol.db.request
         Account,
         ChangePw,
         InitCharacter,
+        Authenticate,
         Login,
         MakeCharacter,
         ReserveName,
@@ -43,7 +44,6 @@ namespace fb.protocol.db.response
 {
     public enum FlatBufferProtocolType
     { 
-        Account,
         DeleteArticle,
         GetArticle,
         GetArticleList,
@@ -51,6 +51,7 @@ namespace fb.protocol.db.response
         ChangePw,
         GetUid,
         InitCharacter,
+        Authenticate,
         Login,
         MakeCharacter,
         ReserveName,
@@ -616,6 +617,44 @@ namespace fb.protocol.db.request
             return new InitCharacter(bytes);
         }
     }
+    public class Authenticate : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Authenticate;
+        public uint Uid { get; set; }
+        public string Pw { get; set; }
+
+        public Authenticate()
+        { }
+
+        public Authenticate(fb.protocol.db.request.raw.Authenticate raw)
+        {
+            Uid = raw.Uid;
+            Pw = raw.Pw;
+        }
+
+        public Authenticate(byte[] bytes) : this(fb.protocol.db.request.raw.Authenticate.GetRootAsAuthenticate(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.request.raw.Authenticate> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                Uid,
+                builder.CreateString(Pw));
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Authenticate Deserialize(byte[] bytes)
+        {
+            return new Authenticate(bytes);
+        }
+    }
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
@@ -942,6 +981,7 @@ namespace fb.protocol.db.request
                 FlatBufferProtocolType.Account => typeof(fb.protocol.db.request.Account),
                 FlatBufferProtocolType.ChangePw => typeof(fb.protocol.db.request.ChangePw),
                 FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.request.InitCharacter),
+                FlatBufferProtocolType.Authenticate => typeof(fb.protocol.db.request.Authenticate),
                 FlatBufferProtocolType.Login => typeof(fb.protocol.db.request.Login),
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.request.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.request.ReserveName),
@@ -958,47 +998,6 @@ namespace fb.protocol.db.request
 namespace fb.protocol.db.response
 {
 
-    public class Account : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.Account;
-        public string Pw { get; set; }
-        public uint Map { get; set; }
-        public bool Success { get; set; }
-
-        public Account()
-        { }
-
-        public Account(fb.protocol.db.response.raw.Account raw)
-        {
-            Pw = raw.Pw;
-            Map = raw.Map;
-            Success = raw.Success;
-        }
-
-        public Account(byte[] bytes) : this(fb.protocol.db.response.raw.Account.GetRootAsAccount(new ByteBuffer(bytes)))
-        { }
-
-        public Offset<fb.protocol.db.response.raw.Account> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.Account.CreateAccount(builder,
-                builder.CreateString(Pw),
-                Map,
-                Success);
-        }
-
-        public byte[] Serialize()
-        {
-            var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
-        }
-
-        public static Account Deserialize(byte[] bytes)
-        {
-            return new Account(bytes);
-        }
-    }
     public class DeleteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteArticle;
@@ -1253,6 +1252,44 @@ namespace fb.protocol.db.response
             return new InitCharacter(bytes);
         }
     }
+    public class Authenticate : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Authenticate;
+        public uint Map { get; set; }
+        public uint ErrorCode { get; set; }
+
+        public Authenticate()
+        { }
+
+        public Authenticate(fb.protocol.db.response.raw.Authenticate raw)
+        {
+            Map = raw.Map;
+            ErrorCode = raw.ErrorCode;
+        }
+
+        public Authenticate(byte[] bytes) : this(fb.protocol.db.response.raw.Authenticate.GetRootAsAuthenticate(new ByteBuffer(bytes)))
+        { }
+
+        public Offset<fb.protocol.db.response.raw.Authenticate> Build(FlatBufferBuilder builder)
+        {
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                Map,
+                ErrorCode);
+        }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = Build(builder);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Authenticate Deserialize(byte[] bytes)
+        {
+            return new Authenticate(bytes);
+        }
+    }
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
@@ -1409,7 +1446,6 @@ namespace fb.protocol.db.response
         {
             return protocolType switch
             {
-                FlatBufferProtocolType.Account => typeof(fb.protocol.db.response.Account),
                 FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol.db.response.DeleteArticle),
                 FlatBufferProtocolType.GetArticle => typeof(fb.protocol.db.response.GetArticle),
                 FlatBufferProtocolType.GetArticleList => typeof(fb.protocol.db.response.GetArticleList),
@@ -1417,6 +1453,7 @@ namespace fb.protocol.db.response
                 FlatBufferProtocolType.ChangePw => typeof(fb.protocol.db.response.ChangePw),
                 FlatBufferProtocolType.GetUid => typeof(fb.protocol.db.response.GetUid),
                 FlatBufferProtocolType.InitCharacter => typeof(fb.protocol.db.response.InitCharacter),
+                FlatBufferProtocolType.Authenticate => typeof(fb.protocol.db.response.Authenticate),
                 FlatBufferProtocolType.Login => typeof(fb.protocol.db.response.Login),
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.response.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.response.ReserveName),

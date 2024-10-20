@@ -134,7 +134,7 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
 
         auto&& response1 = co_await this->post<fb::protocol::db::request::ReserveName, fb::protocol::db::response::ReserveName>("db", "/user/reserve-name", fb::protocol::db::request::ReserveName
             {
-                name
+                UTF8(name, PLATFORM::Windows)
             });
 
         if (this->sockets.contains(fd) == false)
@@ -150,7 +150,7 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         auto&& response2 = co_await this->post<fb::protocol::db::request::InitCharacter, fb::protocol::db::response::InitCharacter>("db", "/user/init-ch", fb::protocol::db::request::InitCharacter
         {
             uid,
-            name,
+            UTF8(name, PLATFORM::Windows),
             pw,
             config["init"]["hp"]["base"].asUInt() + std::rand() % config["init"]["hp"]["range"].asUInt(), // hp
             config["init"]["mp"]["base"].asUInt() + std::rand() % config["init"]["mp"]["range"].asUInt(), // mp
@@ -252,15 +252,21 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
         auto uid = response.uid;
-        auto&& response2 = co_await this->get<fb::protocol::db::response::Account>("db", std::format("/user/account/{}", uid));
+        auto&& response2 = co_await this->post<fb::protocol::db::request::Authenticate, fb::protocol::db::response::Authenticate>("db", "/user/authenticate", fb::protocol::db::request::Authenticate
+            {
+                uid, pw
+            });
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if(response2.success == false)
+        switch (response2.error_code)
+        {
+        case 1:
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        if(response2.pw != this->sha256(pw))
+        case 2:
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
+        }
 
         auto map = response2.map;
         auto&& response3 = co_await this->post<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
@@ -319,29 +325,29 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
 
 async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::session>& socket, const fb::protocol::login::request::account::change_pw& request)
 {
-    auto delay = fb::config::get()["transfer delay"].asInt();
-    co_await this->sleep(std::chrono::seconds(delay));
-
     auto fd = socket.fd();
     try
     {
         //co_await this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
 
-        auto name = request.name;
-        auto pw = request.pw;
-        auto new_pw = request.new_pw;
+        auto name = std::string(request.name);
+        auto pw = std::string(request.pw);
+        auto new_pw = std::string(request.new_pw);
         auto birthday = request.birthday;
+
+        auto delay = fb::config::get()["transfer delay"].asInt();
+        co_await this->sleep(std::chrono::seconds(delay));
 
         const auto& config = fb::config::get();
         if(name.length() < config["name_size"]["min"].asInt() || name.length() > config["name_size"]["max"].asInt())
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         // Name must be full-hangul characters
-        if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && assert_korean(name.c_str()) == false)
+        if(fb::config::get()["login"]["account option"]["allow other language"].asBool() == false && assert_korean(name) == false)
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list
-        if(this->is_forbidden(name.c_str()))
+        if(this->is_forbidden(name))
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         if(pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
@@ -354,7 +360,7 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         if(pw == new_pw)
             throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
 
-        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", name.c_str()));
+        auto&& response = co_await this->get<fb::protocol::db::response::GetUid>("db", std::format("/user/uid/{}", name));
         if (this->sockets.contains(fd) == false)
             co_return false;
 

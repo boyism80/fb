@@ -4,9 +4,9 @@ using db.Model;
 using Db.Model;
 using Db.Service;
 using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
 using System.Data;
-using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Request = fb.protocol.db.request;
 using Response = fb.protocol.db.response;
 
@@ -19,18 +19,20 @@ namespace db.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly DbExecuteService _dbExecuteService;
+        private readonly DbContext _dbContext;
 
-        public UserController(IConfiguration configuration, IMapper mapper, DbExecuteService dbExecuteService)
+        public UserController(IConfiguration configuration, IMapper mapper, DbExecuteService dbExecuteService, DbContext dbContext)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbExecuteService = dbExecuteService;
+            _dbContext = dbContext;
         }
 
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = _dbContext.Connection(-1);
             var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new 
             {
                 n = name
@@ -53,23 +55,43 @@ namespace db.Controllers
             }
         }
 
-        [HttpGet("account/{uid}")]
-        public async Task<Response.Account> Account(uint uid)
+        private static string SHA256Hash(string value)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
-            var account = await connection.QueryFirstOrDefaultAsync<Account>($"SELECT id, pw, map FROM user WHERE id = {uid} LIMIT 1");
+            var sha = new SHA256Managed();
+            var hash = sha.ComputeHash(Encoding.ASCII.GetBytes(value));
+            var builder = new StringBuilder();
+            foreach (byte b in hash)
+            {
+                builder.AppendFormat("{0:x2}", b);
+            }
+            return builder.ToString();
+        }
+
+        [HttpPost("authenticate")]
+        public async Task<Response.Authenticate> Authenticate(Request.Authenticate request)
+        {
+            await using var connection = _dbContext.Connection(request.Uid);
+            var account = await connection.QueryFirstOrDefaultAsync<Account>($"SELECT id, pw, map FROM user WHERE id = {request.Uid} LIMIT 1");
             if (account == null)
             {
-                return new Response.Account
+                return new Response.Authenticate
                 {
-                    Success = false
+                    ErrorCode = 1
                 };
             }
-            return new Response.Account
-            { 
-                Pw = account.Pw,
-                Map = account.Map,
-                Success = true
+
+            if (account.Pw != SHA256Hash(request.Pw))
+            {
+                return new Response.Authenticate
+                {
+                    ErrorCode = 2
+                };
+            }
+
+            return new Response.Authenticate
+            {
+                ErrorCode = 0,
+                Map = account.Map
             };
         }
 
@@ -77,10 +99,10 @@ namespace db.Controllers
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
             // 동시성 제어 필요
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = _dbContext.Connection(-1);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
-                name = "name"
+                name = request.Name
             }, commandType: CommandType.StoredProcedure);
 
             return new Response.ReserveName
@@ -93,12 +115,12 @@ namespace db.Controllers
         [HttpPost("init-ch")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = _dbContext.Connection(request.Uid);
             var success = await connection.QueryFirstAsync<bool>("USP_CHARACTER_INIT", new
             {
                 id = request.Uid,
                 uname = request.Name,
-                pw = request.Pw,
+                pw = SHA256Hash(request.Pw),
                 base_hp = request.Hp,
                 base_mp = request.Mp,
                 map = request.Map,
@@ -116,7 +138,7 @@ namespace db.Controllers
         [HttpPost("mk-ch")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
-            using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = _dbContext.Connection(request.Uid);
             var affectedRows = await connection.ExecuteAsync("USP_CHARACTER_CREATE_FINISH", new
             {
                 id = request.Uid,
@@ -135,7 +157,7 @@ namespace db.Controllers
         [HttpGet("login/{uid}")]
         public async Task<Response.Login> Login(uint uid)
         {
-            await using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
+            await using var connection = _dbContext.Connection(uid);
             var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
             var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid} AND deleted = 0");
             var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid} AND deleted = 0");
@@ -153,8 +175,7 @@ namespace db.Controllers
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
-            await using var connection = new MySqlConnection(_configuration.GetConnectionString("MySql:-1"));
-            await connection.ExecuteAsync("USP_CHARACTER_SET", _mapper.Map<Db.Model.Character>(request.Character), commandType: CommandType.StoredProcedure);
+            await using var connection = _dbContext.Connection(request.Character.Id);
             var characterSql = $@"
 UPDATE user
 SET look = {request.Character.Look},

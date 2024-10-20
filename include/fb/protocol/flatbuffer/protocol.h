@@ -12,6 +12,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.account_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.changepw_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.initcharacter_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.authenticate_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.makecharacter_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.reservename_generated.h>
@@ -20,7 +21,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.getarticlelist_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.writearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.deletearticle_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.account_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.deletearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getarticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getarticlelist_generated.h>
@@ -28,6 +28,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.changepw_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getuid_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.initcharacter_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.authenticate_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.makecharacter_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.reservename_generated.h>
@@ -474,6 +475,7 @@ enum class FlatBufferProtocolType
     Account,
     ChangePw,
     InitCharacter,
+    Authenticate,
     Login,
     MakeCharacter,
     ReserveName,
@@ -648,6 +650,56 @@ public:
     {
         auto raw = fb::protocol::db::request::raw::GetInitCharacter(bytes);
         return InitCharacter(*raw);
+    }
+};
+class Authenticate
+{
+public:
+    static inline fb::protocol::db::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::request::FlatBufferProtocolType::Authenticate;
+
+public:
+    uint32_t uid = 0;
+    std::string pw = "";
+
+public:
+    Authenticate() = default;
+
+    Authenticate(const Authenticate& x)
+        : uid(x.uid), pw(x.pw)
+    { }
+
+    Authenticate(uint32_t uid, const std::string& pw)
+        : uid(uid), pw(pw)
+    { }
+
+    Authenticate(const fb::protocol::db::request::raw::Authenticate& raw)
+        : uid(raw.uid()), pw(raw.pw()->c_str())
+    {
+    }
+
+
+public:
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
+    {
+        return fb::protocol::db::request::raw::CreateAuthenticate(builder,
+            this->uid,
+            builder.CreateString(this->pw));
+    }
+
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(this->Build(builder));
+        auto size = builder.GetSize();
+        auto result = std::vector<uint8_t>(size);
+        std::memcpy(result.data(), builder.GetBufferPointer(), size);
+        return result;
+    }
+
+    static Authenticate Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::request::raw::GetAuthenticate(bytes);
+        return Authenticate(*raw);
     }
 };
 class Login
@@ -1090,7 +1142,6 @@ namespace fb { namespace protocol { namespace db { namespace response {
 
 enum class FlatBufferProtocolType
 {
-    Account,
     DeleteArticle,
     GetArticle,
     GetArticleList,
@@ -1098,64 +1149,13 @@ enum class FlatBufferProtocolType
     ChangePw,
     GetUid,
     InitCharacter,
+    Authenticate,
     Login,
     MakeCharacter,
     ReserveName,
     Save,
 };
 
-class Account
-{
-public:
-    static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::Account;
-
-public:
-    std::string pw = "";
-    uint32_t map = 0;
-    bool success = false;
-
-public:
-    Account() = default;
-
-    Account(const Account& x)
-        : pw(x.pw), map(x.map), success(x.success)
-    { }
-
-    Account(const std::string& pw, uint32_t map, bool success)
-        : pw(pw), map(map), success(success)
-    { }
-
-    Account(const fb::protocol::db::response::raw::Account& raw)
-        : pw(raw.pw()->c_str()), map(raw.map()), success(raw.success())
-    {
-    }
-
-
-public:
-    auto Build(flatbuffers::FlatBufferBuilder& builder) const
-    {
-        return fb::protocol::db::response::raw::CreateAccount(builder,
-            builder.CreateString(this->pw),
-            this->map,
-            this->success);
-    }
-
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(this->Build(builder));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
-    }
-
-    static Account Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::db::response::raw::GetAccount(bytes);
-        return Account(*raw);
-    }
-};
 class DeleteArticle
 {
 public:
@@ -1509,6 +1509,56 @@ public:
     {
         auto raw = fb::protocol::db::response::raw::GetInitCharacter(bytes);
         return InitCharacter(*raw);
+    }
+};
+class Authenticate
+{
+public:
+    static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::Authenticate;
+
+public:
+    uint32_t map = 0;
+    uint32_t error_code = 0;
+
+public:
+    Authenticate() = default;
+
+    Authenticate(const Authenticate& x)
+        : map(x.map), error_code(x.error_code)
+    { }
+
+    Authenticate(uint32_t map, uint32_t error_code)
+        : map(map), error_code(error_code)
+    { }
+
+    Authenticate(const fb::protocol::db::response::raw::Authenticate& raw)
+        : map(raw.map()), error_code(raw.error_code())
+    {
+    }
+
+
+public:
+    auto Build(flatbuffers::FlatBufferBuilder& builder) const
+    {
+        return fb::protocol::db::response::raw::CreateAuthenticate(builder,
+            this->map,
+            this->error_code);
+    }
+
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(this->Build(builder));
+        auto size = builder.GetSize();
+        auto result = std::vector<uint8_t>(size);
+        std::memcpy(result.data(), builder.GetBufferPointer(), size);
+        return result;
+    }
+
+    static Authenticate Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::response::raw::GetAuthenticate(bytes);
+        return Authenticate(*raw);
     }
 };
 class Login

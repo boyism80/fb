@@ -20,7 +20,7 @@ function setupMySql(namespace, secret, storageClass, i) {
                 type: "DirectoryOrCreate"
             },
         },
-    });
+    }, { dependsOn: [storageClass] });
 
     // Create a StatefulSet for MySQL
     const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${i}`, {
@@ -47,23 +47,29 @@ function setupMySql(namespace, secret, storageClass, i) {
                         {
                             name: "mysql",
                             image: "mysql:8.4.3",
+                            args: [
+                                "--mysql-native-password=ON"
+                            ],
                             ports: [
                                 { containerPort: 3306, name: `mysql-${i}` },
                             ],
                             env: [
                                 {
                                     name: "MYSQL_ROOT_PASSWORD",
-                                    valueFrom: {
-                                        secretKeyRef: {
-                                            name: mysqlSecret.metadata.name,
-                                            key: "MYSQL_ROOT_PASSWORD",
-                                        },
-                                    },
+                                    valueFrom: { secretKeyRef: { name: mysqlSecret.metadata.name, key: "MYSQL_ROOT_PASSWORD" } },
+                                },
+                                {
+                                    name: "MYSQL_USER", 
+                                    valueFrom: { secretKeyRef: { name: mysqlSecret.metadata.name, key: "MYSQL_USER" } }
+                                },
+                                { 
+                                    name: "MYSQL_PASSWORD", 
+                                    valueFrom: { secretKeyRef: { name: mysqlSecret.metadata.name, key: "MYSQL_PASSWORD" } }
                                 },
                             ],
                             volumeMounts: [
                                 {
-                                    name: "mysql-persistent-storage",
+                                    name: `mysql-persistent-storage-${i}`,
                                     mountPath: "/var/lib/mysql",
                                 },
                             ],
@@ -74,7 +80,7 @@ function setupMySql(namespace, secret, storageClass, i) {
             volumeClaimTemplates: [
                 {
                     metadata: {
-                        name: "mysql-persistent-storage",
+                        name: `mysql-persistent-storage-${i}`,
                     },
                     spec: {
                         accessModes: ["ReadWriteOnce"],
@@ -88,7 +94,7 @@ function setupMySql(namespace, secret, storageClass, i) {
                 },
             ],
         },
-    });
+    }, { dependsOn: [pv] });
 }
 
 // Define the Namespace
@@ -105,7 +111,9 @@ const mysqlSecret = new k8s.core.v1.Secret("mysql-secret", {
         namespace: namespace.metadata.name,
     },
     stringData: {
-        MYSQL_ROOT_PASSWORD: "admin"
+        MYSQL_ROOT_PASSWORD: "admin",
+        MYSQL_USER: "fb",
+        MYSQL_PASSWORD: "admin"
     }
 });
 
@@ -116,6 +124,7 @@ const storageClass = new k8s.storage.v1.StorageClass("storage-class", {
     },
     provisioner: "kubernetes.io/no-provisioner",
     volumeBindingMode: "WaitForFirstConsumer",
+    reclaimPolicy: "Retain"
 });
 
 const ports = []

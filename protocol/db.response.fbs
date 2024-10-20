@@ -2,13 +2,6 @@ include "db.fbs";
 
 namespace fb.protocol.db.response;
 
-table Account {
-  pw: string;
-  map: uint;
-  success: bool;
-}
-
-
 table DeleteArticle {
   result: int;
 }
@@ -44,6 +37,12 @@ table GetUid {
 
 table InitCharacter {
   success: bool;
+}
+
+
+table Authenticate {
+  map: uint;
+  error_code: uint;
 }
 
 
