@@ -12,6 +12,500 @@ namespace Google.FlatBuffers
 
 namespace fb.protocol.db
 {
+    public static class FlatBufferBuilderEx
+    {
+        public static T Build<T>(this FlatBufferBuilder builder, T value)
+        {
+            return value;
+        }
+
+        public static StringOffset Build(this FlatBufferBuilder builder, string value)
+        {
+            return builder.CreateString(value);
+        }
+
+        public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ushort.Createnullable_ushort(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_ubyte> Build(this FlatBufferBuilder builder, byte? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<fb.protocol.db.raw.Position> Build(this FlatBufferBuilder builder, fb.protocol.db.Position value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Position.CreatePosition(builder,
+                builder.Build(value.X),
+                builder.Build(value.Y));
+        }
+        public static Offset<fb.protocol.db.raw.Character> Build(this FlatBufferBuilder builder, fb.protocol.db.Character value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Character.CreateCharacter(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.LastLogin),
+                builder.Build(value.Admin),
+                builder.Build(value.Look),
+                builder.Build(value.Color),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature),
+                builder.Build(value.Map),
+                builder.Build(value.Position),
+                builder.Build(value.Direction),
+                builder.Build(value.State),
+                builder.Build(value.ClassType),
+                builder.Build(value.Promotion),
+                builder.Build(value.Exp),
+                builder.Build(value.Money),
+                builder.Build(value.DepositedMoney),
+                builder.Build(value.Disguise),
+                builder.Build(value.Hp),
+                builder.Build(value.BaseHp),
+                builder.Build(value.AdditionalHp),
+                builder.Build(value.Mp),
+                builder.Build(value.BaseMp),
+                builder.Build(value.AdditionalMp),
+                builder.Build(value.WeaponColor),
+                builder.Build(value.HelmetColor),
+                builder.Build(value.ArmorColor),
+                builder.Build(value.ShieldColor),
+                builder.Build(value.RingLeftColor),
+                builder.Build(value.RingRightColor),
+                builder.Build(value.AuxTopColor),
+                builder.Build(value.AuxBotColor),
+                builder.Build(value.Clan));
+        }
+        public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Item.CreateItem(builder,
+                builder.Build(value.User),
+                builder.Build(value.Index),
+                builder.Build(value.Parts),
+                builder.Build(value.Deposited),
+                builder.Build(value.Model),
+                builder.Build(value.Count),
+                builder.Build(value.Durability),
+                builder.Build(value.CustomName));
+        }
+        public static Offset<fb.protocol.db.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol.db.Spell value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Spell.CreateSpell(builder,
+                builder.Build(value.User),
+                builder.Build(value.Slot),
+                builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.raw.Article> Build(this FlatBufferBuilder builder, fb.protocol.db.Article value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Article.CreateArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Account value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Before),
+                builder.Build(value.After),
+                builder.Build(value.Birthday));
+        }
+        public static Offset<fb.protocol.db.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Pw),
+                builder.Build(value.Hp),
+                builder.Build(value.Mp),
+                builder.Build(value.Map),
+                builder.Build(value.X),
+                builder.Build(value.Y),
+                builder.Build(value.Admin));
+        }
+        public static Offset<fb.protocol.db.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Pw));
+        }
+        public static Offset<fb.protocol.db.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Hair),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature));
+        }
+        public static Offset<fb.protocol.db.request.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol.db.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Save.CreateSave(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Article));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Position));
+        }
+        public static Offset<fb.protocol.db.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents));
+        }
+        public static Offset<fb.protocol.db.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User));
+        }
+        public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Result));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Article),
+                builder.Build(value.Next),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.SummaryList));
+        }
+        public static Offset<fb.protocol.db.response.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetUid> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetUid value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Map),
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Map));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.Service),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Service),
+                builder.Build(value.Id));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static Offset<fb.protocol._internal.request.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Success),
+                builder.Build(value.Logon),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Pong.StartPong(builder);
+            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
+        }
+        public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Code),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.Success),
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
+        {
+            return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.TransferResult Build(this FlatBufferBuilder builder, fb.protocol._internal.TransferResult value)
+        {
+            return (fb.protocol._internal.raw.TransferResult)value;
+        }
+    }
+
     public enum FlatBufferProtocolType
     { 
         Position,
@@ -24,6 +518,500 @@ namespace fb.protocol.db
 }
 namespace fb.protocol.db.request
 {
+    public static class FlatBufferBuilderEx
+    {
+        public static T Build<T>(this FlatBufferBuilder builder, T value)
+        {
+            return value;
+        }
+
+        public static StringOffset Build(this FlatBufferBuilder builder, string value)
+        {
+            return builder.CreateString(value);
+        }
+
+        public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ushort.Createnullable_ushort(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_ubyte> Build(this FlatBufferBuilder builder, byte? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<fb.protocol.db.raw.Position> Build(this FlatBufferBuilder builder, fb.protocol.db.Position value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Position.CreatePosition(builder,
+                builder.Build(value.X),
+                builder.Build(value.Y));
+        }
+        public static Offset<fb.protocol.db.raw.Character> Build(this FlatBufferBuilder builder, fb.protocol.db.Character value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Character.CreateCharacter(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.LastLogin),
+                builder.Build(value.Admin),
+                builder.Build(value.Look),
+                builder.Build(value.Color),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature),
+                builder.Build(value.Map),
+                builder.Build(value.Position),
+                builder.Build(value.Direction),
+                builder.Build(value.State),
+                builder.Build(value.ClassType),
+                builder.Build(value.Promotion),
+                builder.Build(value.Exp),
+                builder.Build(value.Money),
+                builder.Build(value.DepositedMoney),
+                builder.Build(value.Disguise),
+                builder.Build(value.Hp),
+                builder.Build(value.BaseHp),
+                builder.Build(value.AdditionalHp),
+                builder.Build(value.Mp),
+                builder.Build(value.BaseMp),
+                builder.Build(value.AdditionalMp),
+                builder.Build(value.WeaponColor),
+                builder.Build(value.HelmetColor),
+                builder.Build(value.ArmorColor),
+                builder.Build(value.ShieldColor),
+                builder.Build(value.RingLeftColor),
+                builder.Build(value.RingRightColor),
+                builder.Build(value.AuxTopColor),
+                builder.Build(value.AuxBotColor),
+                builder.Build(value.Clan));
+        }
+        public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Item.CreateItem(builder,
+                builder.Build(value.User),
+                builder.Build(value.Index),
+                builder.Build(value.Parts),
+                builder.Build(value.Deposited),
+                builder.Build(value.Model),
+                builder.Build(value.Count),
+                builder.Build(value.Durability),
+                builder.Build(value.CustomName));
+        }
+        public static Offset<fb.protocol.db.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol.db.Spell value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Spell.CreateSpell(builder,
+                builder.Build(value.User),
+                builder.Build(value.Slot),
+                builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.raw.Article> Build(this FlatBufferBuilder builder, fb.protocol.db.Article value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Article.CreateArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Account value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Before),
+                builder.Build(value.After),
+                builder.Build(value.Birthday));
+        }
+        public static Offset<fb.protocol.db.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Pw),
+                builder.Build(value.Hp),
+                builder.Build(value.Mp),
+                builder.Build(value.Map),
+                builder.Build(value.X),
+                builder.Build(value.Y),
+                builder.Build(value.Admin));
+        }
+        public static Offset<fb.protocol.db.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Pw));
+        }
+        public static Offset<fb.protocol.db.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Hair),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature));
+        }
+        public static Offset<fb.protocol.db.request.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol.db.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Save.CreateSave(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Article));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Position));
+        }
+        public static Offset<fb.protocol.db.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents));
+        }
+        public static Offset<fb.protocol.db.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User));
+        }
+        public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Result));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Article),
+                builder.Build(value.Next),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.SummaryList));
+        }
+        public static Offset<fb.protocol.db.response.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetUid> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetUid value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Map),
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Map));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.Service),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Service),
+                builder.Build(value.Id));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static Offset<fb.protocol._internal.request.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Success),
+                builder.Build(value.Logon),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Pong.StartPong(builder);
+            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
+        }
+        public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Code),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.Success),
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
+        {
+            return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.TransferResult Build(this FlatBufferBuilder builder, fb.protocol._internal.TransferResult value)
+        {
+            return (fb.protocol._internal.raw.TransferResult)value;
+        }
+    }
+
     public enum FlatBufferProtocolType
     { 
         Account,
@@ -42,6 +1030,500 @@ namespace fb.protocol.db.request
 }
 namespace fb.protocol.db.response
 {
+    public static class FlatBufferBuilderEx
+    {
+        public static T Build<T>(this FlatBufferBuilder builder, T value)
+        {
+            return value;
+        }
+
+        public static StringOffset Build(this FlatBufferBuilder builder, string value)
+        {
+            return builder.CreateString(value);
+        }
+
+        public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ushort.Createnullable_ushort(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_ubyte> Build(this FlatBufferBuilder builder, byte? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<fb.protocol.db.raw.Position> Build(this FlatBufferBuilder builder, fb.protocol.db.Position value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Position.CreatePosition(builder,
+                builder.Build(value.X),
+                builder.Build(value.Y));
+        }
+        public static Offset<fb.protocol.db.raw.Character> Build(this FlatBufferBuilder builder, fb.protocol.db.Character value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Character.CreateCharacter(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.LastLogin),
+                builder.Build(value.Admin),
+                builder.Build(value.Look),
+                builder.Build(value.Color),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature),
+                builder.Build(value.Map),
+                builder.Build(value.Position),
+                builder.Build(value.Direction),
+                builder.Build(value.State),
+                builder.Build(value.ClassType),
+                builder.Build(value.Promotion),
+                builder.Build(value.Exp),
+                builder.Build(value.Money),
+                builder.Build(value.DepositedMoney),
+                builder.Build(value.Disguise),
+                builder.Build(value.Hp),
+                builder.Build(value.BaseHp),
+                builder.Build(value.AdditionalHp),
+                builder.Build(value.Mp),
+                builder.Build(value.BaseMp),
+                builder.Build(value.AdditionalMp),
+                builder.Build(value.WeaponColor),
+                builder.Build(value.HelmetColor),
+                builder.Build(value.ArmorColor),
+                builder.Build(value.ShieldColor),
+                builder.Build(value.RingLeftColor),
+                builder.Build(value.RingRightColor),
+                builder.Build(value.AuxTopColor),
+                builder.Build(value.AuxBotColor),
+                builder.Build(value.Clan));
+        }
+        public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Item.CreateItem(builder,
+                builder.Build(value.User),
+                builder.Build(value.Index),
+                builder.Build(value.Parts),
+                builder.Build(value.Deposited),
+                builder.Build(value.Model),
+                builder.Build(value.Count),
+                builder.Build(value.Durability),
+                builder.Build(value.CustomName));
+        }
+        public static Offset<fb.protocol.db.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol.db.Spell value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Spell.CreateSpell(builder,
+                builder.Build(value.User),
+                builder.Build(value.Slot),
+                builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.raw.Article> Build(this FlatBufferBuilder builder, fb.protocol.db.Article value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Article.CreateArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Account value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Before),
+                builder.Build(value.After),
+                builder.Build(value.Birthday));
+        }
+        public static Offset<fb.protocol.db.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Pw),
+                builder.Build(value.Hp),
+                builder.Build(value.Mp),
+                builder.Build(value.Map),
+                builder.Build(value.X),
+                builder.Build(value.Y),
+                builder.Build(value.Admin));
+        }
+        public static Offset<fb.protocol.db.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Pw));
+        }
+        public static Offset<fb.protocol.db.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Hair),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature));
+        }
+        public static Offset<fb.protocol.db.request.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol.db.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Save.CreateSave(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Article));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Position));
+        }
+        public static Offset<fb.protocol.db.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents));
+        }
+        public static Offset<fb.protocol.db.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User));
+        }
+        public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Result));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Article),
+                builder.Build(value.Next),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.SummaryList));
+        }
+        public static Offset<fb.protocol.db.response.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetUid> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetUid value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Map),
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Map));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.Service),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Service),
+                builder.Build(value.Id));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static Offset<fb.protocol._internal.request.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Success),
+                builder.Build(value.Logon),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Pong.StartPong(builder);
+            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
+        }
+        public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Code),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.Success),
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
+        {
+            return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.TransferResult Build(this FlatBufferBuilder builder, fb.protocol._internal.TransferResult value)
+        {
+            return (fb.protocol._internal.raw.TransferResult)value;
+        }
+    }
+
     public enum FlatBufferProtocolType
     { 
         DeleteArticle,
@@ -60,12 +1542,1000 @@ namespace fb.protocol.db.response
 }
 namespace fb.protocol._internal
 {
+    public static class FlatBufferBuilderEx
+    {
+        public static T Build<T>(this FlatBufferBuilder builder, T value)
+        {
+            return value;
+        }
+
+        public static StringOffset Build(this FlatBufferBuilder builder, string value)
+        {
+            return builder.CreateString(value);
+        }
+
+        public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ushort.Createnullable_ushort(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_ubyte> Build(this FlatBufferBuilder builder, byte? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<fb.protocol.db.raw.Position> Build(this FlatBufferBuilder builder, fb.protocol.db.Position value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Position.CreatePosition(builder,
+                builder.Build(value.X),
+                builder.Build(value.Y));
+        }
+        public static Offset<fb.protocol.db.raw.Character> Build(this FlatBufferBuilder builder, fb.protocol.db.Character value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Character.CreateCharacter(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.LastLogin),
+                builder.Build(value.Admin),
+                builder.Build(value.Look),
+                builder.Build(value.Color),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature),
+                builder.Build(value.Map),
+                builder.Build(value.Position),
+                builder.Build(value.Direction),
+                builder.Build(value.State),
+                builder.Build(value.ClassType),
+                builder.Build(value.Promotion),
+                builder.Build(value.Exp),
+                builder.Build(value.Money),
+                builder.Build(value.DepositedMoney),
+                builder.Build(value.Disguise),
+                builder.Build(value.Hp),
+                builder.Build(value.BaseHp),
+                builder.Build(value.AdditionalHp),
+                builder.Build(value.Mp),
+                builder.Build(value.BaseMp),
+                builder.Build(value.AdditionalMp),
+                builder.Build(value.WeaponColor),
+                builder.Build(value.HelmetColor),
+                builder.Build(value.ArmorColor),
+                builder.Build(value.ShieldColor),
+                builder.Build(value.RingLeftColor),
+                builder.Build(value.RingRightColor),
+                builder.Build(value.AuxTopColor),
+                builder.Build(value.AuxBotColor),
+                builder.Build(value.Clan));
+        }
+        public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Item.CreateItem(builder,
+                builder.Build(value.User),
+                builder.Build(value.Index),
+                builder.Build(value.Parts),
+                builder.Build(value.Deposited),
+                builder.Build(value.Model),
+                builder.Build(value.Count),
+                builder.Build(value.Durability),
+                builder.Build(value.CustomName));
+        }
+        public static Offset<fb.protocol.db.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol.db.Spell value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Spell.CreateSpell(builder,
+                builder.Build(value.User),
+                builder.Build(value.Slot),
+                builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.raw.Article> Build(this FlatBufferBuilder builder, fb.protocol.db.Article value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Article.CreateArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Account value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Before),
+                builder.Build(value.After),
+                builder.Build(value.Birthday));
+        }
+        public static Offset<fb.protocol.db.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Pw),
+                builder.Build(value.Hp),
+                builder.Build(value.Mp),
+                builder.Build(value.Map),
+                builder.Build(value.X),
+                builder.Build(value.Y),
+                builder.Build(value.Admin));
+        }
+        public static Offset<fb.protocol.db.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Pw));
+        }
+        public static Offset<fb.protocol.db.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Hair),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature));
+        }
+        public static Offset<fb.protocol.db.request.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol.db.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Save.CreateSave(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Article));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Position));
+        }
+        public static Offset<fb.protocol.db.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents));
+        }
+        public static Offset<fb.protocol.db.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User));
+        }
+        public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Result));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Article),
+                builder.Build(value.Next),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.SummaryList));
+        }
+        public static Offset<fb.protocol.db.response.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetUid> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetUid value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Map),
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Map));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.Service),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Service),
+                builder.Build(value.Id));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static Offset<fb.protocol._internal.request.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Success),
+                builder.Build(value.Logon),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Pong.StartPong(builder);
+            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
+        }
+        public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Code),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.Success),
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
+        {
+            return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.TransferResult Build(this FlatBufferBuilder builder, fb.protocol._internal.TransferResult value)
+        {
+            return (fb.protocol._internal.raw.TransferResult)value;
+        }
+    }
+
     public enum FlatBufferProtocolType
     { 
     }
 }
 namespace fb.protocol._internal.request
 {
+    public static class FlatBufferBuilderEx
+    {
+        public static T Build<T>(this FlatBufferBuilder builder, T value)
+        {
+            return value;
+        }
+
+        public static StringOffset Build(this FlatBufferBuilder builder, string value)
+        {
+            return builder.CreateString(value);
+        }
+
+        public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ushort.Createnullable_ushort(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_ubyte> Build(this FlatBufferBuilder builder, byte? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<fb.protocol.db.raw.Position> Build(this FlatBufferBuilder builder, fb.protocol.db.Position value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Position.CreatePosition(builder,
+                builder.Build(value.X),
+                builder.Build(value.Y));
+        }
+        public static Offset<fb.protocol.db.raw.Character> Build(this FlatBufferBuilder builder, fb.protocol.db.Character value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Character.CreateCharacter(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.LastLogin),
+                builder.Build(value.Admin),
+                builder.Build(value.Look),
+                builder.Build(value.Color),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature),
+                builder.Build(value.Map),
+                builder.Build(value.Position),
+                builder.Build(value.Direction),
+                builder.Build(value.State),
+                builder.Build(value.ClassType),
+                builder.Build(value.Promotion),
+                builder.Build(value.Exp),
+                builder.Build(value.Money),
+                builder.Build(value.DepositedMoney),
+                builder.Build(value.Disguise),
+                builder.Build(value.Hp),
+                builder.Build(value.BaseHp),
+                builder.Build(value.AdditionalHp),
+                builder.Build(value.Mp),
+                builder.Build(value.BaseMp),
+                builder.Build(value.AdditionalMp),
+                builder.Build(value.WeaponColor),
+                builder.Build(value.HelmetColor),
+                builder.Build(value.ArmorColor),
+                builder.Build(value.ShieldColor),
+                builder.Build(value.RingLeftColor),
+                builder.Build(value.RingRightColor),
+                builder.Build(value.AuxTopColor),
+                builder.Build(value.AuxBotColor),
+                builder.Build(value.Clan));
+        }
+        public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Item.CreateItem(builder,
+                builder.Build(value.User),
+                builder.Build(value.Index),
+                builder.Build(value.Parts),
+                builder.Build(value.Deposited),
+                builder.Build(value.Model),
+                builder.Build(value.Count),
+                builder.Build(value.Durability),
+                builder.Build(value.CustomName));
+        }
+        public static Offset<fb.protocol.db.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol.db.Spell value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Spell.CreateSpell(builder,
+                builder.Build(value.User),
+                builder.Build(value.Slot),
+                builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.raw.Article> Build(this FlatBufferBuilder builder, fb.protocol.db.Article value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Article.CreateArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Account value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Before),
+                builder.Build(value.After),
+                builder.Build(value.Birthday));
+        }
+        public static Offset<fb.protocol.db.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Pw),
+                builder.Build(value.Hp),
+                builder.Build(value.Mp),
+                builder.Build(value.Map),
+                builder.Build(value.X),
+                builder.Build(value.Y),
+                builder.Build(value.Admin));
+        }
+        public static Offset<fb.protocol.db.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Pw));
+        }
+        public static Offset<fb.protocol.db.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Hair),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature));
+        }
+        public static Offset<fb.protocol.db.request.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol.db.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Save.CreateSave(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Article));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Position));
+        }
+        public static Offset<fb.protocol.db.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents));
+        }
+        public static Offset<fb.protocol.db.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User));
+        }
+        public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Result));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Article),
+                builder.Build(value.Next),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.SummaryList));
+        }
+        public static Offset<fb.protocol.db.response.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetUid> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetUid value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Map),
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Map));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.Service),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Service),
+                builder.Build(value.Id));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static Offset<fb.protocol._internal.request.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Success),
+                builder.Build(value.Logon),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Pong.StartPong(builder);
+            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
+        }
+        public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Code),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.Success),
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
+        {
+            return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.TransferResult Build(this FlatBufferBuilder builder, fb.protocol._internal.TransferResult value)
+        {
+            return (fb.protocol._internal.raw.TransferResult)value;
+        }
+    }
+
     public enum FlatBufferProtocolType
     { 
         Login,
@@ -78,6 +2548,500 @@ namespace fb.protocol._internal.request
 }
 namespace fb.protocol._internal.response
 {
+    public static class FlatBufferBuilderEx
+    {
+        public static T Build<T>(this FlatBufferBuilder builder, T value)
+        {
+            return value;
+        }
+
+        public static StringOffset Build(this FlatBufferBuilder builder, string value)
+        {
+            return builder.CreateString(value);
+        }
+
+        public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ushort.Createnullable_ushort(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_ubyte> Build(this FlatBufferBuilder builder, byte? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
+        public static Offset<fb.protocol.db.raw.Position> Build(this FlatBufferBuilder builder, fb.protocol.db.Position value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Position.CreatePosition(builder,
+                builder.Build(value.X),
+                builder.Build(value.Y));
+        }
+        public static Offset<fb.protocol.db.raw.Character> Build(this FlatBufferBuilder builder, fb.protocol.db.Character value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Character.CreateCharacter(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.LastLogin),
+                builder.Build(value.Admin),
+                builder.Build(value.Look),
+                builder.Build(value.Color),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature),
+                builder.Build(value.Map),
+                builder.Build(value.Position),
+                builder.Build(value.Direction),
+                builder.Build(value.State),
+                builder.Build(value.ClassType),
+                builder.Build(value.Promotion),
+                builder.Build(value.Exp),
+                builder.Build(value.Money),
+                builder.Build(value.DepositedMoney),
+                builder.Build(value.Disguise),
+                builder.Build(value.Hp),
+                builder.Build(value.BaseHp),
+                builder.Build(value.AdditionalHp),
+                builder.Build(value.Mp),
+                builder.Build(value.BaseMp),
+                builder.Build(value.AdditionalMp),
+                builder.Build(value.WeaponColor),
+                builder.Build(value.HelmetColor),
+                builder.Build(value.ArmorColor),
+                builder.Build(value.ShieldColor),
+                builder.Build(value.RingLeftColor),
+                builder.Build(value.RingRightColor),
+                builder.Build(value.AuxTopColor),
+                builder.Build(value.AuxBotColor),
+                builder.Build(value.Clan));
+        }
+        public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Item.CreateItem(builder,
+                builder.Build(value.User),
+                builder.Build(value.Index),
+                builder.Build(value.Parts),
+                builder.Build(value.Deposited),
+                builder.Build(value.Model),
+                builder.Build(value.Count),
+                builder.Build(value.Durability),
+                builder.Build(value.CustomName));
+        }
+        public static Offset<fb.protocol.db.raw.Spell> Build(this FlatBufferBuilder builder, fb.protocol.db.Spell value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Spell.CreateSpell(builder,
+                builder.Build(value.User),
+                builder.Build(value.Slot),
+                builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.raw.Article> Build(this FlatBufferBuilder builder, fb.protocol.db.Article value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Article.CreateArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.UserName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol.db.request.raw.Account> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Account value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Before),
+                builder.Build(value.After),
+                builder.Build(value.Birthday));
+        }
+        public static Offset<fb.protocol.db.request.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Pw),
+                builder.Build(value.Hp),
+                builder.Build(value.Mp),
+                builder.Build(value.Map),
+                builder.Build(value.X),
+                builder.Build(value.Y),
+                builder.Build(value.Admin));
+        }
+        public static Offset<fb.protocol.db.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Pw));
+        }
+        public static Offset<fb.protocol.db.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol.db.request.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.request.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Hair),
+                builder.Build(value.Sex),
+                builder.Build(value.Nation),
+                builder.Build(value.Creature));
+        }
+        public static Offset<fb.protocol.db.request.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.request.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol.db.request.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.request.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.Save.CreateSave(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Article));
+        }
+        public static Offset<fb.protocol.db.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.request.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.Section),
+                builder.Build(value.Position));
+        }
+        public static Offset<fb.protocol.db.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Section),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents));
+        }
+        public static Offset<fb.protocol.db.request.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.request.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User));
+        }
+        public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
+                builder.Build(value.Result));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
+                builder.Build(value.Article),
+                builder.Build(value.Next),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetArticleList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
+                builder.Build(value.SummaryList));
+        }
+        public static Offset<fb.protocol.db.response.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.WriteArticle value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ChangePw value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.GetUid> Build(this FlatBufferBuilder builder, fb.protocol.db.response.GetUid value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.InitCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.InitCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Authenticate value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
+                builder.Build(value.Map),
+                builder.Build(value.ErrorCode));
+        }
+        public static Offset<fb.protocol.db.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Character),
+                builder.Build(value.Items),
+                builder.Build(value.Spells));
+        }
+        public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.ReserveName> Build(this FlatBufferBuilder builder, fb.protocol.db.response.ReserveName value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.Save> Build(this FlatBufferBuilder builder, fb.protocol.db.response.Save value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Name),
+                builder.Build(value.Map));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Name));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
+                builder.Build(value.Id),
+                builder.Build(value.Name),
+                builder.Build(value.Service),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Service),
+                builder.Build(value.Id));
+        }
+        public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static Offset<fb.protocol._internal.request.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
+                builder.Build(value.Uid));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Login value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
+                builder.Build(value.Success),
+                builder.Build(value.Logon),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Logout> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Logout value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Pong.StartPong(builder);
+            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
+        }
+        public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
+                builder.Build(value.Code),
+                builder.Build(value.Ip),
+                builder.Build(value.Port));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Whisper value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
+                builder.Build(value.Success),
+                builder.Build(value.From),
+                builder.Build(value.To),
+                builder.Build(value.Message));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
+        {
+            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
+            return default;
+        }
+        public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
+        {
+            return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.TransferResult Build(this FlatBufferBuilder builder, fb.protocol._internal.TransferResult value)
+        {
+            return (fb.protocol._internal.raw.TransferResult)value;
+        }
+    }
+
     public enum FlatBufferProtocolType
     { 
         KickOut,
@@ -95,8 +3059,8 @@ namespace fb.protocol.db
     public class Position : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Position;
-        public ushort X { get; set; }
-        public ushort Y { get; set; }
+        public ushort X { get; set; } = 0;
+        public ushort Y { get; set; } = 0;
 
         public Position()
         { }
@@ -110,17 +3074,10 @@ namespace fb.protocol.db
         public Position(byte[] bytes) : this(fb.protocol.db.raw.Position.GetRootAsPosition(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.raw.Position> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.raw.Position.CreatePosition(builder,
-                X,
-                Y);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -133,40 +3090,40 @@ namespace fb.protocol.db
     public class Character : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Character;
-        public uint Id { get; set; }
-        public string Name { get; set; }
-        public string LastLogin { get; set; }
-        public bool Admin { get; set; }
-        public ushort Look { get; set; }
-        public ushort Color { get; set; }
-        public ushort Sex { get; set; }
-        public ushort Nation { get; set; }
-        public ushort? Creature { get; set; }
-        public uint Map { get; set; }
+        public uint Id { get; set; } = 0;
+        public string Name { get; set; } = string.Empty;
+        public string LastLogin { get; set; } = string.Empty;
+        public bool Admin { get; set; } = false;
+        public ushort Look { get; set; } = 0;
+        public ushort Color { get; set; } = 0;
+        public ushort Sex { get; set; } = 0;
+        public ushort Nation { get; set; } = 0;
+        public ushort? Creature { get; set; } = null;
+        public uint Map { get; set; } = 0;
         public fb.protocol.db.Position Position { get; set; }
-        public byte Direction { get; set; }
-        public byte State { get; set; }
-        public byte ClassType { get; set; }
-        public byte Promotion { get; set; }
-        public uint Exp { get; set; }
-        public uint Money { get; set; }
-        public uint DepositedMoney { get; set; }
-        public ushort? Disguise { get; set; }
-        public uint Hp { get; set; }
-        public uint BaseHp { get; set; }
-        public uint AdditionalHp { get; set; }
-        public uint Mp { get; set; }
-        public uint BaseMp { get; set; }
-        public uint AdditionalMp { get; set; }
-        public byte? WeaponColor { get; set; }
-        public byte? HelmetColor { get; set; }
-        public byte? ArmorColor { get; set; }
-        public byte? ShieldColor { get; set; }
-        public byte? RingLeftColor { get; set; }
-        public byte? RingRightColor { get; set; }
-        public byte? AuxTopColor { get; set; }
-        public byte? AuxBotColor { get; set; }
-        public uint? Clan { get; set; }
+        public byte Direction { get; set; } = 0;
+        public byte State { get; set; } = 0;
+        public byte ClassType { get; set; } = 0;
+        public byte Promotion { get; set; } = 0;
+        public uint Exp { get; set; } = 0;
+        public uint Money { get; set; } = 0;
+        public uint DepositedMoney { get; set; } = 0;
+        public ushort? Disguise { get; set; } = null;
+        public uint Hp { get; set; } = 0;
+        public uint BaseHp { get; set; } = 0;
+        public uint AdditionalHp { get; set; } = 0;
+        public uint Mp { get; set; } = 0;
+        public uint BaseMp { get; set; } = 0;
+        public uint AdditionalMp { get; set; } = 0;
+        public byte? WeaponColor { get; set; } = null;
+        public byte? HelmetColor { get; set; } = null;
+        public byte? ArmorColor { get; set; } = null;
+        public byte? ShieldColor { get; set; } = null;
+        public byte? RingLeftColor { get; set; } = null;
+        public byte? RingRightColor { get; set; } = null;
+        public byte? AuxTopColor { get; set; } = null;
+        public byte? AuxBotColor { get; set; } = null;
+        public uint? Clan { get; set; } = null;
 
         public Character()
         { }
@@ -212,49 +3169,10 @@ namespace fb.protocol.db
         public Character(byte[] bytes) : this(fb.protocol.db.raw.Character.GetRootAsCharacter(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.raw.Character> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.raw.Character.CreateCharacter(builder,
-                Id,
-                builder.CreateString(Name),
-                builder.CreateString(LastLogin),
-                Admin,
-                Look,
-                Color,
-                Sex,
-                Nation,
-                Creature != null ? nullable_ushort.Createnullable_ushort(builder, Creature.Value) : default,
-                Map,
-                Position.Build(builder),
-                Direction,
-                State,
-                ClassType,
-                Promotion,
-                Exp,
-                Money,
-                DepositedMoney,
-                Disguise != null ? nullable_ushort.Createnullable_ushort(builder, Disguise.Value) : default,
-                Hp,
-                BaseHp,
-                AdditionalHp,
-                Mp,
-                BaseMp,
-                AdditionalMp,
-                WeaponColor != null ? nullable_ubyte.Createnullable_ubyte(builder, WeaponColor.Value) : default,
-                HelmetColor != null ? nullable_ubyte.Createnullable_ubyte(builder, HelmetColor.Value) : default,
-                ArmorColor != null ? nullable_ubyte.Createnullable_ubyte(builder, ArmorColor.Value) : default,
-                ShieldColor != null ? nullable_ubyte.Createnullable_ubyte(builder, ShieldColor.Value) : default,
-                RingLeftColor != null ? nullable_ubyte.Createnullable_ubyte(builder, RingLeftColor.Value) : default,
-                RingRightColor != null ? nullable_ubyte.Createnullable_ubyte(builder, RingRightColor.Value) : default,
-                AuxTopColor != null ? nullable_ubyte.Createnullable_ubyte(builder, AuxTopColor.Value) : default,
-                AuxBotColor != null ? nullable_ubyte.Createnullable_ubyte(builder, AuxBotColor.Value) : default,
-                Clan != null ? nullable_uint.Createnullable_uint(builder, Clan.Value) : default);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -267,14 +3185,14 @@ namespace fb.protocol.db
     public class Item : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Item;
-        public uint User { get; set; }
-        public short Index { get; set; }
-        public short Parts { get; set; }
-        public short Deposited { get; set; }
-        public uint Model { get; set; }
-        public ushort Count { get; set; }
-        public uint? Durability { get; set; }
-        public string CustomName { get; set; }
+        public uint User { get; set; } = 0;
+        public short Index { get; set; } = 0;
+        public short Parts { get; set; } = 0;
+        public short Deposited { get; set; } = 0;
+        public uint Model { get; set; } = 0;
+        public ushort Count { get; set; } = 0;
+        public uint? Durability { get; set; } = null;
+        public string CustomName { get; set; } = null;
 
         public Item()
         { }
@@ -294,23 +3212,10 @@ namespace fb.protocol.db
         public Item(byte[] bytes) : this(fb.protocol.db.raw.Item.GetRootAsItem(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.raw.Item> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.raw.Item.CreateItem(builder,
-                User,
-                Index,
-                Parts,
-                Deposited,
-                Model,
-                Count,
-                Durability != null ? nullable_uint.Createnullable_uint(builder, Durability.Value) : default,
-                CustomName != null ? builder.CreateString(CustomName) : default);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -323,9 +3228,9 @@ namespace fb.protocol.db
     public class Spell : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Spell;
-        public uint User { get; set; }
-        public byte Slot { get; set; }
-        public uint Model { get; set; }
+        public uint User { get; set; } = 0;
+        public byte Slot { get; set; } = 0;
+        public uint Model { get; set; } = 0;
 
         public Spell()
         { }
@@ -340,18 +3245,10 @@ namespace fb.protocol.db
         public Spell(byte[] bytes) : this(fb.protocol.db.raw.Spell.GetRootAsSpell(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.raw.Spell> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.raw.Spell.CreateSpell(builder,
-                User,
-                Slot,
-                Model);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -364,11 +3261,11 @@ namespace fb.protocol.db
     public class ArticleSummary : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ArticleSummary;
-        public uint Id { get; set; }
-        public uint User { get; set; }
-        public string UserName { get; set; }
-        public string Title { get; set; }
-        public string CreatedDate { get; set; }
+        public uint Id { get; set; } = 0;
+        public uint User { get; set; } = 0;
+        public string UserName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string CreatedDate { get; set; } = string.Empty;
 
         public ArticleSummary()
         { }
@@ -385,20 +3282,10 @@ namespace fb.protocol.db
         public ArticleSummary(byte[] bytes) : this(fb.protocol.db.raw.ArticleSummary.GetRootAsArticleSummary(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.raw.ArticleSummary> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.raw.ArticleSummary.CreateArticleSummary(builder,
-                Id,
-                User,
-                builder.CreateString(UserName),
-                builder.CreateString(Title),
-                builder.CreateString(CreatedDate));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -411,12 +3298,12 @@ namespace fb.protocol.db
     public class Article : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Article;
-        public uint Id { get; set; }
-        public uint User { get; set; }
-        public string UserName { get; set; }
-        public string Title { get; set; }
-        public string Contents { get; set; }
-        public string CreatedDate { get; set; }
+        public uint Id { get; set; } = 0;
+        public uint User { get; set; } = 0;
+        public string UserName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Contents { get; set; } = string.Empty;
+        public string CreatedDate { get; set; } = string.Empty;
 
         public Article()
         { }
@@ -434,21 +3321,10 @@ namespace fb.protocol.db
         public Article(byte[] bytes) : this(fb.protocol.db.raw.Article.GetRootAsArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.raw.Article> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.raw.Article.CreateArticle(builder,
-                Id,
-                User,
-                builder.CreateString(UserName),
-                builder.CreateString(Title),
-                builder.CreateString(Contents),
-                builder.CreateString(CreatedDate));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -482,7 +3358,7 @@ namespace fb.protocol.db.request
     public class Account : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Account;
-        public uint Uid { get; set; }
+        public uint Uid { get; set; } = 0;
 
         public Account()
         { }
@@ -495,16 +3371,10 @@ namespace fb.protocol.db.request
         public Account(byte[] bytes) : this(fb.protocol.db.request.raw.Account.GetRootAsAccount(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.Account> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.Account.CreateAccount(builder,
-                Uid);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -517,10 +3387,10 @@ namespace fb.protocol.db.request
     public class ChangePw : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ChangePw;
-        public uint Uid { get; set; }
-        public string Before { get; set; }
-        public string After { get; set; }
-        public uint Birthday { get; set; }
+        public uint Uid { get; set; } = 0;
+        public string Before { get; set; } = string.Empty;
+        public string After { get; set; } = string.Empty;
+        public uint Birthday { get; set; } = 0;
 
         public ChangePw()
         { }
@@ -536,19 +3406,10 @@ namespace fb.protocol.db.request
         public ChangePw(byte[] bytes) : this(fb.protocol.db.request.raw.ChangePw.GetRootAsChangePw(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.ChangePw> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.ChangePw.CreateChangePw(builder,
-                Uid,
-                builder.CreateString(Before),
-                builder.CreateString(After),
-                Birthday);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -561,15 +3422,15 @@ namespace fb.protocol.db.request
     public class InitCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.InitCharacter;
-        public uint Uid { get; set; }
-        public string Name { get; set; }
-        public string Pw { get; set; }
-        public uint Hp { get; set; }
-        public uint Mp { get; set; }
-        public ushort Map { get; set; }
-        public ushort X { get; set; }
-        public ushort Y { get; set; }
-        public bool Admin { get; set; }
+        public uint Uid { get; set; } = 0;
+        public string Name { get; set; } = string.Empty;
+        public string Pw { get; set; } = string.Empty;
+        public uint Hp { get; set; } = 0;
+        public uint Mp { get; set; } = 0;
+        public ushort Map { get; set; } = 0;
+        public ushort X { get; set; } = 0;
+        public ushort Y { get; set; } = 0;
+        public bool Admin { get; set; } = false;
 
         public InitCharacter()
         { }
@@ -590,24 +3451,10 @@ namespace fb.protocol.db.request
         public InitCharacter(byte[] bytes) : this(fb.protocol.db.request.raw.InitCharacter.GetRootAsInitCharacter(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.InitCharacter> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.InitCharacter.CreateInitCharacter(builder,
-                Uid,
-                builder.CreateString(Name),
-                builder.CreateString(Pw),
-                Hp,
-                Mp,
-                Map,
-                X,
-                Y,
-                Admin);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -620,8 +3467,8 @@ namespace fb.protocol.db.request
     public class Authenticate : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Authenticate;
-        public uint Uid { get; set; }
-        public string Pw { get; set; }
+        public uint Uid { get; set; } = 0;
+        public string Pw { get; set; } = string.Empty;
 
         public Authenticate()
         { }
@@ -635,17 +3482,10 @@ namespace fb.protocol.db.request
         public Authenticate(byte[] bytes) : this(fb.protocol.db.request.raw.Authenticate.GetRootAsAuthenticate(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.Authenticate> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.Authenticate.CreateAuthenticate(builder,
-                Uid,
-                builder.CreateString(Pw));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -658,7 +3498,7 @@ namespace fb.protocol.db.request
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
-        public uint Uid { get; set; }
+        public uint Uid { get; set; } = 0;
 
         public Login()
         { }
@@ -671,16 +3511,10 @@ namespace fb.protocol.db.request
         public Login(byte[] bytes) : this(fb.protocol.db.request.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.Login> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.Login.CreateLogin(builder,
-                Uid);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -693,11 +3527,11 @@ namespace fb.protocol.db.request
     public class MakeCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.MakeCharacter;
-        public uint Uid { get; set; }
-        public ushort Hair { get; set; }
-        public byte Sex { get; set; }
-        public byte Nation { get; set; }
-        public byte Creature { get; set; }
+        public uint Uid { get; set; } = 0;
+        public ushort Hair { get; set; } = 0;
+        public byte Sex { get; set; } = 0;
+        public byte Nation { get; set; } = 0;
+        public byte Creature { get; set; } = 0;
 
         public MakeCharacter()
         { }
@@ -714,20 +3548,10 @@ namespace fb.protocol.db.request
         public MakeCharacter(byte[] bytes) : this(fb.protocol.db.request.raw.MakeCharacter.GetRootAsMakeCharacter(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.MakeCharacter> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.MakeCharacter.CreateMakeCharacter(builder,
-                Uid,
-                Hair,
-                Sex,
-                Nation,
-                Creature);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -740,7 +3564,7 @@ namespace fb.protocol.db.request
     public class ReserveName : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReserveName;
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public ReserveName()
         { }
@@ -753,16 +3577,10 @@ namespace fb.protocol.db.request
         public ReserveName(byte[] bytes) : this(fb.protocol.db.request.raw.ReserveName.GetRootAsReserveName(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.ReserveName> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.ReserveName.CreateReserveName(builder,
-                builder.CreateString(Name));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -776,8 +3594,8 @@ namespace fb.protocol.db.request
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Save;
         public fb.protocol.db.Character Character { get; set; }
-        public List<fb.protocol.db.Item> Items { get; set; }
-        public List<fb.protocol.db.Spell> Spells { get; set; }
+        public List<fb.protocol.db.Item> Items { get; set; } = new List<fb.protocol.db.Item>();
+        public List<fb.protocol.db.Spell> Spells { get; set; } = new List<fb.protocol.db.Spell>();
 
         public Save()
         { }
@@ -792,18 +3610,10 @@ namespace fb.protocol.db.request
         public Save(byte[] bytes) : this(fb.protocol.db.request.raw.Save.GetRootAsSave(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.Save> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.Save.CreateSave(builder,
-                Character.Build(builder),
-                fb.protocol.db.request.raw.Save.CreateItemsVector(builder, Items.Select(x => x.Build(builder)).ToArray()),
-                fb.protocol.db.request.raw.Save.CreateSpellsVector(builder, Spells.Select(x => x.Build(builder)).ToArray()));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -816,8 +3626,8 @@ namespace fb.protocol.db.request
     public class GetArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetArticle;
-        public uint Section { get; set; }
-        public uint Article { get; set; }
+        public uint Section { get; set; } = 0;
+        public uint Article { get; set; } = 0;
 
         public GetArticle()
         { }
@@ -831,17 +3641,10 @@ namespace fb.protocol.db.request
         public GetArticle(byte[] bytes) : this(fb.protocol.db.request.raw.GetArticle.GetRootAsGetArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.GetArticle> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.GetArticle.CreateGetArticle(builder,
-                Section,
-                Article);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -854,8 +3657,8 @@ namespace fb.protocol.db.request
     public class GetArticleList : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetArticleList;
-        public uint Section { get; set; }
-        public uint Position { get; set; }
+        public uint Section { get; set; } = 0;
+        public uint Position { get; set; } = 0;
 
         public GetArticleList()
         { }
@@ -869,17 +3672,10 @@ namespace fb.protocol.db.request
         public GetArticleList(byte[] bytes) : this(fb.protocol.db.request.raw.GetArticleList.GetRootAsGetArticleList(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.GetArticleList> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.GetArticleList.CreateGetArticleList(builder,
-                Section,
-                Position);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -892,10 +3688,10 @@ namespace fb.protocol.db.request
     public class WriteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteArticle;
-        public uint Section { get; set; }
-        public uint User { get; set; }
-        public string Title { get; set; }
-        public string Contents { get; set; }
+        public uint Section { get; set; } = 0;
+        public uint User { get; set; } = 0;
+        public string Title { get; set; } = string.Empty;
+        public string Contents { get; set; } = string.Empty;
 
         public WriteArticle()
         { }
@@ -911,19 +3707,10 @@ namespace fb.protocol.db.request
         public WriteArticle(byte[] bytes) : this(fb.protocol.db.request.raw.WriteArticle.GetRootAsWriteArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.WriteArticle> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.WriteArticle.CreateWriteArticle(builder,
-                Section,
-                User,
-                builder.CreateString(Title),
-                builder.CreateString(Contents));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -936,8 +3723,8 @@ namespace fb.protocol.db.request
     public class DeleteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteArticle;
-        public uint Id { get; set; }
-        public uint User { get; set; }
+        public uint Id { get; set; } = 0;
+        public uint User { get; set; } = 0;
 
         public DeleteArticle()
         { }
@@ -951,17 +3738,10 @@ namespace fb.protocol.db.request
         public DeleteArticle(byte[] bytes) : this(fb.protocol.db.request.raw.DeleteArticle.GetRootAsDeleteArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.request.raw.DeleteArticle> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.request.raw.DeleteArticle.CreateDeleteArticle(builder,
-                Id,
-                User);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1001,7 +3781,7 @@ namespace fb.protocol.db.response
     public class DeleteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteArticle;
-        public int Result { get; set; }
+        public int Result { get; set; } = 0;
 
         public DeleteArticle()
         { }
@@ -1014,16 +3794,10 @@ namespace fb.protocol.db.response
         public DeleteArticle(byte[] bytes) : this(fb.protocol.db.response.raw.DeleteArticle.GetRootAsDeleteArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.DeleteArticle> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.DeleteArticle.CreateDeleteArticle(builder,
-                Result);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1037,8 +3811,8 @@ namespace fb.protocol.db.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetArticle;
         public fb.protocol.db.Article Article { get; set; }
-        public bool Next { get; set; }
-        public bool Success { get; set; }
+        public bool Next { get; set; } = false;
+        public bool Success { get; set; } = false;
 
         public GetArticle()
         { }
@@ -1053,18 +3827,10 @@ namespace fb.protocol.db.response
         public GetArticle(byte[] bytes) : this(fb.protocol.db.response.raw.GetArticle.GetRootAsGetArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.GetArticle> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.GetArticle.CreateGetArticle(builder,
-                Article.Build(builder),
-                Next,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1077,7 +3843,7 @@ namespace fb.protocol.db.response
     public class GetArticleList : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetArticleList;
-        public List<fb.protocol.db.ArticleSummary> SummaryList { get; set; }
+        public List<fb.protocol.db.ArticleSummary> SummaryList { get; set; } = new List<fb.protocol.db.ArticleSummary>();
 
         public GetArticleList()
         { }
@@ -1090,16 +3856,10 @@ namespace fb.protocol.db.response
         public GetArticleList(byte[] bytes) : this(fb.protocol.db.response.raw.GetArticleList.GetRootAsGetArticleList(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.GetArticleList> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.GetArticleList.CreateGetArticleList(builder,
-                fb.protocol.db.response.raw.GetArticleList.CreateSummaryListVector(builder, SummaryList.Select(x => x.Build(builder)).ToArray()));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1112,7 +3872,7 @@ namespace fb.protocol.db.response
     public class WriteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteArticle;
-        public bool Success { get; set; }
+        public bool Success { get; set; } = false;
 
         public WriteArticle()
         { }
@@ -1125,16 +3885,10 @@ namespace fb.protocol.db.response
         public WriteArticle(byte[] bytes) : this(fb.protocol.db.response.raw.WriteArticle.GetRootAsWriteArticle(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.WriteArticle> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.WriteArticle.CreateWriteArticle(builder,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1147,7 +3901,7 @@ namespace fb.protocol.db.response
     public class ChangePw : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ChangePw;
-        public uint ErrorCode { get; set; }
+        public uint ErrorCode { get; set; } = 0;
 
         public ChangePw()
         { }
@@ -1160,16 +3914,10 @@ namespace fb.protocol.db.response
         public ChangePw(byte[] bytes) : this(fb.protocol.db.response.raw.ChangePw.GetRootAsChangePw(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.ChangePw> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.ChangePw.CreateChangePw(builder,
-                ErrorCode);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1182,8 +3930,8 @@ namespace fb.protocol.db.response
     public class GetUid : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetUid;
-        public uint Uid { get; set; }
-        public bool Success { get; set; }
+        public uint Uid { get; set; } = 0;
+        public bool Success { get; set; } = false;
 
         public GetUid()
         { }
@@ -1197,17 +3945,10 @@ namespace fb.protocol.db.response
         public GetUid(byte[] bytes) : this(fb.protocol.db.response.raw.GetUid.GetRootAsGetUid(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.GetUid> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.GetUid.CreateGetUid(builder,
-                Uid,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1220,7 +3961,7 @@ namespace fb.protocol.db.response
     public class InitCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.InitCharacter;
-        public bool Success { get; set; }
+        public bool Success { get; set; } = false;
 
         public InitCharacter()
         { }
@@ -1233,16 +3974,10 @@ namespace fb.protocol.db.response
         public InitCharacter(byte[] bytes) : this(fb.protocol.db.response.raw.InitCharacter.GetRootAsInitCharacter(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.InitCharacter> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.InitCharacter.CreateInitCharacter(builder,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1255,8 +3990,8 @@ namespace fb.protocol.db.response
     public class Authenticate : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Authenticate;
-        public uint Map { get; set; }
-        public uint ErrorCode { get; set; }
+        public uint Map { get; set; } = 0;
+        public uint ErrorCode { get; set; } = 0;
 
         public Authenticate()
         { }
@@ -1270,17 +4005,10 @@ namespace fb.protocol.db.response
         public Authenticate(byte[] bytes) : this(fb.protocol.db.response.raw.Authenticate.GetRootAsAuthenticate(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.Authenticate> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.Authenticate.CreateAuthenticate(builder,
-                Map,
-                ErrorCode);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1294,8 +4022,8 @@ namespace fb.protocol.db.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
         public fb.protocol.db.Character Character { get; set; }
-        public List<fb.protocol.db.Item> Items { get; set; }
-        public List<fb.protocol.db.Spell> Spells { get; set; }
+        public List<fb.protocol.db.Item> Items { get; set; } = new List<fb.protocol.db.Item>();
+        public List<fb.protocol.db.Spell> Spells { get; set; } = new List<fb.protocol.db.Spell>();
 
         public Login()
         { }
@@ -1310,18 +4038,10 @@ namespace fb.protocol.db.response
         public Login(byte[] bytes) : this(fb.protocol.db.response.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.Login> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.Login.CreateLogin(builder,
-                Character.Build(builder),
-                fb.protocol.db.response.raw.Login.CreateItemsVector(builder, Items.Select(x => x.Build(builder)).ToArray()),
-                fb.protocol.db.response.raw.Login.CreateSpellsVector(builder, Spells.Select(x => x.Build(builder)).ToArray()));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1334,7 +4054,7 @@ namespace fb.protocol.db.response
     public class MakeCharacter : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.MakeCharacter;
-        public bool Success { get; set; }
+        public bool Success { get; set; } = false;
 
         public MakeCharacter()
         { }
@@ -1347,16 +4067,10 @@ namespace fb.protocol.db.response
         public MakeCharacter(byte[] bytes) : this(fb.protocol.db.response.raw.MakeCharacter.GetRootAsMakeCharacter(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.MakeCharacter> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.MakeCharacter.CreateMakeCharacter(builder,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1369,8 +4083,8 @@ namespace fb.protocol.db.response
     public class ReserveName : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ReserveName;
-        public uint Uid { get; set; }
-        public bool Success { get; set; }
+        public uint Uid { get; set; } = 0;
+        public bool Success { get; set; } = false;
 
         public ReserveName()
         { }
@@ -1384,17 +4098,10 @@ namespace fb.protocol.db.response
         public ReserveName(byte[] bytes) : this(fb.protocol.db.response.raw.ReserveName.GetRootAsReserveName(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.ReserveName> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.ReserveName.CreateReserveName(builder,
-                Uid,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1407,7 +4114,7 @@ namespace fb.protocol.db.response
     public class Save : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Save;
-        public bool Success { get; set; }
+        public bool Success { get; set; } = false;
 
         public Save()
         { }
@@ -1420,16 +4127,10 @@ namespace fb.protocol.db.response
         public Save(byte[] bytes) : this(fb.protocol.db.response.raw.Save.GetRootAsSave(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol.db.response.raw.Save> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol.db.response.raw.Save.CreateSave(builder,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1496,9 +4197,9 @@ namespace fb.protocol._internal.request
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
-        public uint Uid { get; set; }
-        public string Name { get; set; }
-        public ushort Map { get; set; }
+        public uint Uid { get; set; } = 0;
+        public string Name { get; set; } = string.Empty;
+        public ushort Map { get; set; } = 0;
 
         public Login()
         { }
@@ -1513,18 +4214,10 @@ namespace fb.protocol._internal.request
         public Login(byte[] bytes) : this(fb.protocol._internal.request.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.request.raw.Login> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.request.raw.Login.CreateLogin(builder,
-                Uid,
-                builder.CreateString(Name),
-                Map);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1537,7 +4230,7 @@ namespace fb.protocol._internal.request
     public class Logout : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Logout;
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public Logout()
         { }
@@ -1550,16 +4243,10 @@ namespace fb.protocol._internal.request
         public Logout(byte[] bytes) : this(fb.protocol._internal.request.raw.Logout.GetRootAsLogout(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.request.raw.Logout> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
-                builder.CreateString(Name));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1572,11 +4259,11 @@ namespace fb.protocol._internal.request
     public class Ping : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Ping;
-        public byte Id { get; set; }
-        public string Name { get; set; }
+        public byte Id { get; set; } = 0;
+        public string Name { get; set; } = string.Empty;
         public fb.protocol._internal.Service Service { get; set; }
-        public string Ip { get; set; }
-        public ushort Port { get; set; }
+        public string Ip { get; set; } = string.Empty;
+        public ushort Port { get; set; } = 0;
 
         public Ping()
         { }
@@ -1593,20 +4280,10 @@ namespace fb.protocol._internal.request
         public Ping(byte[] bytes) : this(fb.protocol._internal.request.raw.Ping.GetRootAsPing(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.request.raw.Ping> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
-                Id,
-                builder.CreateString(Name),
-                (fb.protocol._internal.raw.Service)Service,
-                builder.CreateString(Ip),
-                Port);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1620,7 +4297,7 @@ namespace fb.protocol._internal.request
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Transfer;
         public fb.protocol._internal.Service Service { get; set; }
-        public byte Id { get; set; }
+        public byte Id { get; set; } = 0;
 
         public Transfer()
         { }
@@ -1634,17 +4311,10 @@ namespace fb.protocol._internal.request
         public Transfer(byte[] bytes) : this(fb.protocol._internal.request.raw.Transfer.GetRootAsTransfer(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.request.raw.Transfer> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
-                (fb.protocol._internal.raw.Service)Service,
-                Id);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1657,9 +4327,9 @@ namespace fb.protocol._internal.request
     public class Whisper : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
-        public string From { get; set; }
-        public string To { get; set; }
-        public string Message { get; set; }
+        public string From { get; set; } = string.Empty;
+        public string To { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
 
         public Whisper()
         { }
@@ -1674,18 +4344,10 @@ namespace fb.protocol._internal.request
         public Whisper(byte[] bytes) : this(fb.protocol._internal.request.raw.Whisper.GetRootAsWhisper(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.request.raw.Whisper> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.request.raw.Whisper.CreateWhisper(builder,
-                builder.CreateString(From),
-                builder.CreateString(To),
-                builder.CreateString(Message));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1698,7 +4360,7 @@ namespace fb.protocol._internal.request
     public class KickOut : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickOut;
-        public uint Uid { get; set; }
+        public uint Uid { get; set; } = 0;
 
         public KickOut()
         { }
@@ -1711,16 +4373,10 @@ namespace fb.protocol._internal.request
         public KickOut(byte[] bytes) : this(fb.protocol._internal.request.raw.KickOut.GetRootAsKickOut(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.request.raw.KickOut> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.request.raw.KickOut.CreateKickOut(builder,
-                Uid);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1754,7 +4410,7 @@ namespace fb.protocol._internal.response
     public class KickOut : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickOut;
-        public uint Uid { get; set; }
+        public uint Uid { get; set; } = 0;
 
         public KickOut()
         { }
@@ -1767,16 +4423,10 @@ namespace fb.protocol._internal.response
         public KickOut(byte[] bytes) : this(fb.protocol._internal.response.raw.KickOut.GetRootAsKickOut(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.response.raw.KickOut> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.response.raw.KickOut.CreateKickOut(builder,
-                Uid);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1789,10 +4439,10 @@ namespace fb.protocol._internal.response
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
-        public bool Success { get; set; }
-        public bool Logon { get; set; }
-        public string Ip { get; set; }
-        public ushort Port { get; set; }
+        public bool Success { get; set; } = false;
+        public bool Logon { get; set; } = false;
+        public string Ip { get; set; } = string.Empty;
+        public ushort Port { get; set; } = 0;
 
         public Login()
         { }
@@ -1808,19 +4458,10 @@ namespace fb.protocol._internal.response
         public Login(byte[] bytes) : this(fb.protocol._internal.response.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.response.raw.Login> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.response.raw.Login.CreateLogin(builder,
-                Success,
-                Logon,
-                builder.CreateString(Ip),
-                Port);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1833,7 +4474,7 @@ namespace fb.protocol._internal.response
     public class Logout : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Logout;
-        public bool Success { get; set; }
+        public bool Success { get; set; } = false;
 
         public Logout()
         { }
@@ -1846,16 +4487,10 @@ namespace fb.protocol._internal.response
         public Logout(byte[] bytes) : this(fb.protocol._internal.response.raw.Logout.GetRootAsLogout(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.response.raw.Logout> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
-                Success);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1879,16 +4514,10 @@ namespace fb.protocol._internal.response
         public Pong(byte[] bytes) : this(fb.protocol._internal.response.raw.Pong.GetRootAsPong(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.response.raw.Pong> Build(FlatBufferBuilder builder)
-        {
-            fb.protocol._internal.response.raw.Pong.StartPong(builder);
-            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1902,8 +4531,8 @@ namespace fb.protocol._internal.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Transfer;
         public fb.protocol._internal.TransferResult Code { get; set; }
-        public string Ip { get; set; }
-        public ushort Port { get; set; }
+        public string Ip { get; set; } = string.Empty;
+        public ushort Port { get; set; } = 0;
 
         public Transfer()
         { }
@@ -1918,18 +4547,10 @@ namespace fb.protocol._internal.response
         public Transfer(byte[] bytes) : this(fb.protocol._internal.response.raw.Transfer.GetRootAsTransfer(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.response.raw.Transfer> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.response.raw.Transfer.CreateTransfer(builder,
-                (fb.protocol._internal.raw.TransferResult)Code,
-                builder.CreateString(Ip),
-                Port);
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }
@@ -1942,10 +4563,10 @@ namespace fb.protocol._internal.response
     public class Whisper : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
-        public bool Success { get; set; }
-        public string From { get; set; }
-        public uint To { get; set; }
-        public string Message { get; set; }
+        public bool Success { get; set; } = false;
+        public string From { get; set; } = string.Empty;
+        public uint To { get; set; } = 0;
+        public string Message { get; set; } = string.Empty;
 
         public Whisper()
         { }
@@ -1961,19 +4582,10 @@ namespace fb.protocol._internal.response
         public Whisper(byte[] bytes) : this(fb.protocol._internal.response.raw.Whisper.GetRootAsWhisper(new ByteBuffer(bytes)))
         { }
 
-        public Offset<fb.protocol._internal.response.raw.Whisper> Build(FlatBufferBuilder builder)
-        {
-            return fb.protocol._internal.response.raw.Whisper.CreateWhisper(builder,
-                Success,
-                builder.CreateString(From),
-                To,
-                builder.CreateString(Message));
-        }
-
         public byte[] Serialize()
         {
             var builder = new FlatBufferBuilder(1);
-            var offset = Build(builder);
+            var offset = builder.Build(this);
             builder.Finish(offset.Value);
             return builder.SizedByteArray();
         }

@@ -1456,75 +1456,38 @@ DECLARE_CONST_STRING_EXTENSION
 DECLARE_AFTER_CONST
 #endif
 
-template<class T>
-struct is_optional : std::false_type {};
-
-template<class T>
-struct is_optional<std::optional<T>> : std::true_type {};
-
-template<class T>
-struct is_unique : std::false_type {};
-
-template<class T>
-struct is_unique<std::unique_ptr<T>> : std::true_type {};
-
-template<class T>
-struct is_vector : std::false_type {};
-
-template<class T>
-struct is_vector<std::vector<T>> : std::true_type {};
-
-template <typename T, typename Enabler = void>
-struct is_map : std::false_type {};
-
-template <typename T>
-struct is_map<T, std::void_t<typename T::mapped_type>> : std::true_type{};
-
-template<class T>
-struct is_point : std::false_type {};
-
-template<class T>
-struct is_point<fb::model::point<T>> : std::true_type {};
-
-template<class T>
-struct is_size : std::false_type {};
-
-template<class T>
-struct is_size<fb::model::size<T>> : std::true_type {};
-
-template<class T>
-struct is_range : std::false_type {};
-
-template<class T>
-struct is_range<fb::model::range<T>> : std::true_type {};
-
-template <typename T>
-struct is_default
-{
-    static constexpr bool value =
-        !std::is_enum<T>::value &&
-        !std::is_pointer<T>::value &&
-        !fb::model::is_vector<T>::value &&
-        !fb::model::is_map<T>::value &&
-        !fb::model::is_optional<T>::value &&
-        !fb::model::is_unique<T>::value &&
-        !fb::model::is_point<T>::value &&
-        !fb::model::is_size<T>::value &&
-        !fb::model::is_range<T>::value;
-};
-
 class dsl;
 
-template <typename T> inline static typename std::enable_if<fb::model::is_default<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_vector<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_map<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_optional<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_unique<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json);
+template<typename> constexpr bool is_optional_impl = false;
+template<typename T> constexpr bool is_optional_impl<std::optional<T>> = true;
+template<> constexpr bool is_optional_impl<std::nullopt_t> = true;
+template<typename T>  constexpr bool is_optional = is_optional_impl<std::decay_t<T>>;
+
+template<typename> constexpr bool is_unique_impl = false;
+template<typename T> constexpr bool is_unique_impl<std::unique_ptr<T>> = true;
+template<typename T> constexpr bool is_unique = is_unique_impl<std::decay_t<T>>;
+
+template<typename> constexpr bool is_vector_impl = false;
+template<typename T> constexpr bool is_vector_impl<std::vector<T>> = true;
+template<typename T> constexpr bool is_vector = is_vector_impl<std::decay_t<T>>;
+
+template <typename T, typename Enabler = void> constexpr bool is_map_impl = false;
+template <typename T> constexpr bool is_map_impl<T, std::void_t<typename T::mapped_type>> = true;
+template<typename T>  constexpr bool is_map = is_map_impl<std::decay_t<T>>;
+
+template<typename> constexpr bool is_point_impl = false;
+template<typename T> constexpr bool is_point_impl<fb::model::point<T>> = true;
+template<typename T> constexpr bool is_point = is_point_impl<std::decay_t<T>>;
+
+template<typename> constexpr bool is_size_impl = false;
+template<typename T> constexpr bool is_size_impl<fb::model::size<T>> = true;
+template<typename T> constexpr bool is_size = is_size_impl<std::decay_t<T>>;
+
+template<typename> constexpr bool is_range_impl = false;
+template<typename T> constexpr bool is_range_impl<fb::model::range<T>> = true;
+template<typename T> constexpr bool is_range = is_range_impl<std::decay_t<T>>;
+
+template <typename T> inline static T build(const Json::Value& json);
 template <> int8_t build<int8_t>(const Json::Value& json);
 template <> uint8_t build<uint8_t>(const Json::Value& json);
 template <> int16_t build<int16_t>(const Json::Value& json);
@@ -4091,56 +4054,79 @@ public:
 #pragma endregion
 
 #pragma region build function
-template <typename T> typename std::enable_if<is_default<T>::value, T>::type build(const Json::Value& json)
+template <typename T> T build(const Json::Value& json)
 {
-    return T(json);
-}
-
-template <typename T> typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json)
-{
-    if(json.isString())
-        return T(fb::model::enum_value::enum_parse<T>(build<std::string>(json)));
-    else
-        return T(json.asInt());
-}
-
-template <typename T> typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json)
-{
-    if(json.isNull())
-        return nullptr;
-    else
-        return new typename std::pointer_traits<T>::element_type(json);
-}
-
-template <typename T> typename std::enable_if<is_vector<T>::value, T>::type build(const Json::Value& json)
-{
-    auto result = std::vector<typename T::value_type>();
-    for (auto i = json.begin(); i != json.end(); i++)
+    if constexpr (std::is_enum_v<T>)
     {
-        result.push_back(build<typename T::value_type>(*i));
+        if (json.isString())
+            return T(fb::model::enum_value::enum_parse<T>(build<std::string>(json)));
+        else
+            return T(json.asInt());
     }
-    return result;
-}
+    else if constexpr (std::is_pointer_v<T>)
+    {
+        if (json.isNull())
+            return nullptr;
+        else
+            return new typename std::pointer_traits<T>::element_type(json);
+    }
+    else if constexpr (is_vector<T>)
+    {
+        auto result = std::vector<typename T::value_type>();
+        for (auto i = json.begin(); i != json.end(); i++)
+        {
+            result.push_back(build<typename T::value_type>(*i));
+        }
+        return result;
+    }
+    else if constexpr (is_map<T>)
+    {
+        auto result = std::map<typename T::key_type, typename T::mapped_type>();
+        for(auto i = json.begin(); i != json.end(); i++)
+        {
+            result.insert({ build<typename T::key_type>(i.key()), build<typename T::mapped_type>(*i)});
+        }
+        return result;
+    } 
+    else if constexpr (is_optional<T>)
+    {
+        if (json.isNull())
+            return std::nullopt;
+        else
+            return std::optional<typename T::value_type>(build<typename T::value_type>(json));
+    }
+    else if constexpr (is_unique<T>)
+    {
+        if (json.isNull())
+            return std::unique_ptr<typename std::pointer_traits<T>::element_type>();
+        else
+            return std::unique_ptr<typename std::pointer_traits<T>::element_type>(build<typename std::pointer_traits<T>::element_type*>(json));
+    }
+    else if constexpr (is_point<T>)
+    {
+        auto x = build<typename T::value_type>(json["x"]);
+        auto y = build<typename T::value_type>(json["y"]);
 
-template <typename T> typename std::enable_if<is_map<T>::value, T>::type build(const Json::Value& json)
-{
-    return std::map<typename T::key_type, typename T::mapped_type>();
-}
+        return point(x, y);
+    }
+    else if constexpr (is_size<T>)
+    {
+        auto width = build<typename T::value_type>(json["width"]);
+        auto height = build<typename T::value_type>(json["height"]);
 
-template <typename T> typename std::enable_if<is_optional<T>::value, T>::type build(const Json::Value& json)
-{
-    if (json.isNull())
-        return std::nullopt;
+        return size(width, height);
+    }
+    else if constexpr (is_range<T>)
+    {
+        auto min = build<typename T::value_type>(json["min"]);
+        auto max = build<typename T::value_type>(json["max"]);
+
+        return range(min, max);
+    }
     else
-        return std::optional<typename T::value_type>(build<typename T::value_type>(json));
-}
-
-template <typename T> typename std::enable_if<is_unique<T>::value, T>::type build(const Json::Value& json)
-{
-    if (json.isNull())
-        return std::unique_ptr<typename std::pointer_traits<T>::element_type>();
-    else
-        return std::unique_ptr<typename std::pointer_traits<T>::element_type>(build<typename std::pointer_traits<T>::element_type*>(json));
+    {
+        return T(json);
+    }
 }
 
 template <> int8_t build<int8_t>(const Json::Value& json)
@@ -4245,27 +4231,6 @@ template <> date_range build<date_range>(const Json::Value& json)
     return date_range(build<std::optional<datetime>>(json["Begin"]), build<std::optional<datetime>>(json["End"]));
 }
 
-template <typename T> typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json)
-{
-    auto x = build<typename T::value_type>(json["x"]);
-    auto y = build<typename T::value_type>(json["y"]);
-
-    return point(x, y);
-}
-template <typename T> typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json)
-{
-    auto width = build<typename T::value_type>(json["width"]);
-    auto height = build<typename T::value_type>(json["height"]);
-
-    return size(width, height);
-}
-template <typename T> typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json)
-{
-    auto min = build<typename T::value_type>(json["min"]);
-    auto max = build<typename T::value_type>(json["max"]);
-
-    return range(min, max);
-}
 #pragma endregion
 
 } }
