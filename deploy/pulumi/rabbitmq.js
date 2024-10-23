@@ -49,6 +49,10 @@ module.exports = {
                         }],
                     },
                 },
+                persistentVolumeClaimRetentionPolicy: {
+                    whenDeleted: 'Delete',
+                    whenScaled: 'Delete'
+                },
                 volumeClaimTemplates: [{
                     metadata: { name: "rabbitmq-data" },
                     spec: {

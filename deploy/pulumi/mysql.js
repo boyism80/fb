@@ -1,7 +1,7 @@
 const pulumi = require("@pulumi/pulumi");
 const k8s = require("@pulumi/kubernetes");
 
-function setupMySql(namespace, secret, storageClass, i) {
+function setupMySql(namespace, secret, storageClass, configMap, i) {
     // Define PersistentVolume (this assumes the volume already exists as per previous setup)
     const pv = new k8s.core.v1.PersistentVolume(`mysql-pv-${i}`, {
         metadata: {
@@ -72,10 +72,23 @@ function setupMySql(namespace, secret, storageClass, i) {
                                     name: `mysql-persistent-storage-${i}`,
                                     mountPath: "/var/lib/mysql",
                                 },
+                                {
+                                    name: "init-sql-volume",
+                                    mountPath: "/docker-entrypoint-initdb.d"
+                                }
                             ],
                         },
                     ],
+                    volumes: [
+                    {
+                        name: "init-sql-volume",
+                        configMap: { name: configMap.metadata.name }
+                    }]
                 },
+            },
+            persistentVolumeClaimRetentionPolicy: {
+                whenDeleted: 'Delete',
+                whenScaled: 'Delete'
             },
             volumeClaimTemplates: [
                 {
@@ -111,9 +124,22 @@ module.exports = {
             }
         });
 
+        const configMap = new k8s.core.v1.ConfigMap("init-sql", {
+            metadata: { 
+                name: "init-sql", 
+                namespace: namespace.metadata.name
+            },
+            data: {
+                "init-user.sql": `
+                    GRANT ALL PRIVILEGES ON *.* TO 'fb'@'%' WITH GRANT OPTION;
+                    FLUSH PRIVILEGES;
+                `
+            }
+        });
+
         const ports = []
         for(let i = 0; i < size; i++) {
-            setupMySql(namespace, mysqlSecret, storageClass, i)
+            setupMySql(namespace, mysqlSecret, storageClass, configMap, i)
             ports.push({
                 name: `mysql-${i}`,
                 port: 3306+i,
