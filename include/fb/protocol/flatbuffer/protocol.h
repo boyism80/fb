@@ -56,7 +56,7 @@ namespace fb::protocol::db
     class Spell;
     class ArticleSummary;
     class Article;
-}
+} // end of namespace fb::protocol::db
 namespace fb::protocol::db::request
 {
     class Account;
@@ -71,7 +71,7 @@ namespace fb::protocol::db::request
     class GetArticleList;
     class WriteArticle;
     class DeleteArticle;
-}
+} // end of namespace fb::protocol::db::request
 namespace fb::protocol::db::response
 {
     class DeleteArticle;
@@ -86,12 +86,12 @@ namespace fb::protocol::db::response
     class MakeCharacter;
     class ReserveName;
     class Save;
-}
+} // end of namespace fb::protocol::db::response
 namespace fb::protocol::internal
 {
     enum class Service : int8_t;
     enum class TransferResult : int8_t;
-}
+} // end of namespace fb::protocol::internal
 namespace fb::protocol::internal::request
 {
     class Login;
@@ -100,7 +100,7 @@ namespace fb::protocol::internal::request
     class Transfer;
     class Whisper;
     class KickOut;
-}
+} // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
 {
     class KickOut;
@@ -109,18 +109,18 @@ namespace fb::protocol::internal::response
     class Pong;
     class Transfer;
     class Whisper;
-}
+} // end of namespace fb::protocol::internal::response
 
 
 namespace flatbuffers {
 template<typename>   constexpr bool is_optional_impl = false;
 template<typename T> constexpr bool is_optional_impl<std::optional<T>> = true;
-template<> constexpr bool is_optional_impl<std::nullopt_t> = true;
-template<typename T>  constexpr bool is_optional = is_optional_impl<std::decay_t<T>>;
+template<>           constexpr bool is_optional_impl<std::nullopt_t> = true;
+template<typename T> constexpr bool is_optional = is_optional_impl<std::decay_t<T>>;
 
 template<typename>   constexpr bool is_vector_impl = false;
 template<typename T> constexpr bool is_vector_impl<std::vector<T>> = true;
-template<typename T>  constexpr bool is_vector = is_vector_impl<std::decay_t<T>>;
+template<typename T> constexpr bool is_vector = is_vector_impl<std::decay_t<T>>;
 
 
 template <typename T> struct FlatBufferOffset { typedef T type; };
@@ -265,44 +265,12 @@ template <> inline static
 flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> build<fb::protocol::internal::response::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Whisper& value);
 
 template <typename T> inline static
-std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value)
-{
-    auto result = std::vector<T>();
-    for (int i = 0; i < value->size(); i++)
-    {
-        if constexpr (is_optional<T>)
-        {
-            if (value->Get(i) == nullptr)
-            {
-                result.push_back(std::nullopt);
-            }
-            else if constexpr (std::is_fundamental_v<typename T::value_type>)
-            {
-                result.push_back(value->Get(i)->value());
-            }
-            else
-            {
-                result.push_back(*value->Get(i));
-            }
-        }
-        else
-        {
-            if constexpr (std::is_fundamental_v<T>)
-            {
-                result.push_back(value->Get(i));
-            }
-            else
-            {
-                result.push_back(*value->Get(i));
-            }
-        }
-    }
-    return result;
-}
+std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value);
 
-}
+} // end of namespace flatbuffers
 
-namespace fb { namespace protocol { namespace internal { 
+namespace fb::protocol::internal {
+
 enum class Service : int8_t
 {
     Gateway = fb::protocol::internal::raw::Service::Service_Gateway,
@@ -315,9 +283,10 @@ enum class TransferResult : int8_t
     Failed = fb::protocol::internal::raw::TransferResult::TransferResult_Failed,
     LoggedIn = fb::protocol::internal::raw::TransferResult::TransferResult_LoggedIn,
 };
-} } } 
 
-namespace fb { namespace protocol { namespace db { 
+} // end of namespace fb::protocol::internal
+
+namespace fb::protocol::db {
 
 enum class FlatBufferProtocolType
 {
@@ -358,10 +327,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::Position>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Position Deserialize(const uint8_t* bytes)
@@ -377,8 +345,8 @@ public:
 
 public:
     uint32_t id = 0;
-    std::string name = "";
-    std::string last_login = "";
+    std::string name;
+    std::string last_login;
     bool admin = false;
     uint16_t look = 0;
     uint16_t color = 0;
@@ -431,10 +399,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::Character>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Character Deserialize(const uint8_t* bytes)
@@ -478,10 +445,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::Item>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Item Deserialize(const uint8_t* bytes)
@@ -520,10 +486,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::Spell>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Spell Deserialize(const uint8_t* bytes)
@@ -540,9 +505,9 @@ public:
 public:
     uint32_t id = 0;
     uint32_t user = 0;
-    std::string user_name = "";
-    std::string title = "";
-    std::string created_date = "";
+    std::string user_name;
+    std::string title;
+    std::string created_date;
 
 public:
     ArticleSummary() = default;
@@ -564,10 +529,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::ArticleSummary>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static ArticleSummary Deserialize(const uint8_t* bytes)
@@ -584,10 +548,10 @@ public:
 public:
     uint32_t id = 0;
     uint32_t user = 0;
-    std::string user_name = "";
-    std::string title = "";
-    std::string contents = "";
-    std::string created_date = "";
+    std::string user_name;
+    std::string title;
+    std::string contents;
+    std::string created_date;
 
 public:
     Article() = default;
@@ -609,10 +573,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::Article>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Article Deserialize(const uint8_t* bytes)
@@ -621,8 +584,10 @@ public:
         return Article(*raw);
     }
 };
-} } } 
-namespace fb { namespace protocol { namespace db { namespace request { 
+
+} // end of namespace fb::protocol::db
+
+namespace fb::protocol::db::request {
 
 enum class FlatBufferProtocolType
 {
@@ -668,10 +633,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::Account>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Account Deserialize(const uint8_t* bytes)
@@ -687,8 +651,8 @@ public:
 
 public:
     uint32_t uid = 0;
-    std::string before = "";
-    std::string after = "";
+    std::string before;
+    std::string after;
     uint32_t birthday = 0;
 
 public:
@@ -711,10 +675,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::ChangePw>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static ChangePw Deserialize(const uint8_t* bytes)
@@ -730,8 +693,8 @@ public:
 
 public:
     uint32_t uid = 0;
-    std::string name = "";
-    std::string pw = "";
+    std::string name;
+    std::string pw;
     uint32_t hp = 0;
     uint32_t mp = 0;
     uint16_t map = 0;
@@ -759,10 +722,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::InitCharacter>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static InitCharacter Deserialize(const uint8_t* bytes)
@@ -778,7 +740,7 @@ public:
 
 public:
     uint32_t uid = 0;
-    std::string pw = "";
+    std::string pw;
 
 public:
     Authenticate() = default;
@@ -800,10 +762,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::Authenticate>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Authenticate Deserialize(const uint8_t* bytes)
@@ -840,10 +801,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::Login>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Login Deserialize(const uint8_t* bytes)
@@ -884,10 +844,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::MakeCharacter>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static MakeCharacter Deserialize(const uint8_t* bytes)
@@ -902,7 +861,7 @@ public:
     static inline fb::protocol::db::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::request::FlatBufferProtocolType::ReserveName;
 
 public:
-    std::string name = "";
+    std::string name;
 
 public:
     ReserveName() = default;
@@ -924,10 +883,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::ReserveName>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static ReserveName Deserialize(const uint8_t* bytes)
@@ -966,10 +924,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::Save>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Save Deserialize(const uint8_t* bytes)
@@ -1007,10 +964,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::GetArticle>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static GetArticle Deserialize(const uint8_t* bytes)
@@ -1048,10 +1004,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::GetArticleList>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static GetArticleList Deserialize(const uint8_t* bytes)
@@ -1068,8 +1023,8 @@ public:
 public:
     uint32_t section = 0;
     uint32_t user = 0;
-    std::string title = "";
-    std::string contents = "";
+    std::string title;
+    std::string contents;
 
 public:
     WriteArticle() = default;
@@ -1091,10 +1046,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::WriteArticle>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static WriteArticle Deserialize(const uint8_t* bytes)
@@ -1132,10 +1086,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::request::DeleteArticle>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static DeleteArticle Deserialize(const uint8_t* bytes)
@@ -1144,8 +1097,10 @@ public:
         return DeleteArticle(*raw);
     }
 };
-} } } } 
-namespace fb { namespace protocol { namespace db { namespace response { 
+
+} // end of namespace fb::protocol::db::request
+
+namespace fb::protocol::db::response {
 
 enum class FlatBufferProtocolType
 {
@@ -1191,10 +1146,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::DeleteArticle>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static DeleteArticle Deserialize(const uint8_t* bytes)
@@ -1233,10 +1187,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::GetArticle>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static GetArticle Deserialize(const uint8_t* bytes)
@@ -1273,10 +1226,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::GetArticleList>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static GetArticleList Deserialize(const uint8_t* bytes)
@@ -1313,10 +1265,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::WriteArticle>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static WriteArticle Deserialize(const uint8_t* bytes)
@@ -1353,10 +1304,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::ChangePw>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static ChangePw Deserialize(const uint8_t* bytes)
@@ -1394,10 +1344,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::GetUid>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static GetUid Deserialize(const uint8_t* bytes)
@@ -1434,10 +1383,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::InitCharacter>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static InitCharacter Deserialize(const uint8_t* bytes)
@@ -1475,10 +1423,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::Authenticate>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Authenticate Deserialize(const uint8_t* bytes)
@@ -1517,10 +1464,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::Login>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Login Deserialize(const uint8_t* bytes)
@@ -1557,10 +1503,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::MakeCharacter>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static MakeCharacter Deserialize(const uint8_t* bytes)
@@ -1598,10 +1543,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::ReserveName>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static ReserveName Deserialize(const uint8_t* bytes)
@@ -1638,10 +1582,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::db::response::Save>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Save Deserialize(const uint8_t* bytes)
@@ -1650,15 +1593,19 @@ public:
         return Save(*raw);
     }
 };
-} } } } 
-namespace fb { namespace protocol { namespace internal { 
+
+} // end of namespace fb::protocol::db::response
+
+namespace fb::protocol::internal {
 
 enum class FlatBufferProtocolType
 {
 };
 
-} } } 
-namespace fb { namespace protocol { namespace internal { namespace request { 
+
+} // end of namespace fb::protocol::internal
+
+namespace fb::protocol::internal::request {
 
 enum class FlatBufferProtocolType
 {
@@ -1677,7 +1624,7 @@ public:
 
 public:
     uint32_t uid = 0;
-    std::string name = "";
+    std::string name;
     uint16_t map = 0;
 
 public:
@@ -1700,10 +1647,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::request::Login>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Login Deserialize(const uint8_t* bytes)
@@ -1718,7 +1664,7 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Logout;
 
 public:
-    std::string name = "";
+    std::string name;
 
 public:
     Logout() = default;
@@ -1740,10 +1686,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::request::Logout>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Logout Deserialize(const uint8_t* bytes)
@@ -1759,9 +1704,9 @@ public:
 
 public:
     uint8_t id = 0;
-    std::string name = "";
+    std::string name;
     fb::protocol::internal::Service service;
-    std::string ip = "";
+    std::string ip;
     uint16_t port = 0;
 
 public:
@@ -1784,10 +1729,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::request::Ping>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Ping Deserialize(const uint8_t* bytes)
@@ -1825,10 +1769,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::request::Transfer>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Transfer Deserialize(const uint8_t* bytes)
@@ -1843,9 +1786,9 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Whisper;
 
 public:
-    std::string from = "";
-    std::string to = "";
-    std::string message = "";
+    std::string from;
+    std::string to;
+    std::string message;
 
 public:
     Whisper() = default;
@@ -1867,10 +1810,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::request::Whisper>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Whisper Deserialize(const uint8_t* bytes)
@@ -1907,10 +1849,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::request::KickOut>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static KickOut Deserialize(const uint8_t* bytes)
@@ -1919,8 +1860,10 @@ public:
         return KickOut(*raw);
     }
 };
-} } } } 
-namespace fb { namespace protocol { namespace internal { namespace response { 
+
+} // end of namespace fb::protocol::internal::request
+
+namespace fb::protocol::internal::response {
 
 enum class FlatBufferProtocolType
 {
@@ -1960,10 +1903,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::response::KickOut>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static KickOut Deserialize(const uint8_t* bytes)
@@ -1980,7 +1922,7 @@ public:
 public:
     bool success = false;
     bool logon = false;
-    std::string ip = "";
+    std::string ip;
     uint16_t port = 0;
 
 public:
@@ -2003,10 +1945,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::response::Login>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Login Deserialize(const uint8_t* bytes)
@@ -2043,10 +1984,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::response::Logout>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Logout Deserialize(const uint8_t* bytes)
@@ -2076,10 +2016,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::response::Pong>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Pong Deserialize(const uint8_t* bytes)
@@ -2095,7 +2034,7 @@ public:
 
 public:
     fb::protocol::internal::TransferResult code;
-    std::string ip = "";
+    std::string ip;
     uint16_t port = 0;
 
 public:
@@ -2118,10 +2057,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::response::Transfer>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Transfer Deserialize(const uint8_t* bytes)
@@ -2137,9 +2075,9 @@ public:
 
 public:
     bool success = false;
-    std::string from = "";
+    std::string from;
     uint32_t to = 0;
-    std::string message = "";
+    std::string message;
 
 public:
     Whisper() = default;
@@ -2161,10 +2099,9 @@ public:
     {
         auto builder = flatbuffers::FlatBufferBuilder();
         builder.Finish(build<fb::protocol::internal::response::Whisper>(builder, *this));
-        auto size = builder.GetSize();
-        auto result = std::vector<uint8_t>(size);
-        std::memcpy(result.data(), builder.GetBufferPointer(), size);
-        return result;
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
     }
 
     static Whisper Deserialize(const uint8_t* bytes)
@@ -2173,7 +2110,9 @@ public:
         return Whisper(*raw);
     }
 };
-} } } } 
+
+} // end of namespace fb::protocol::internal::response
+
 
 namespace flatbuffers {
 
@@ -2584,6 +2523,42 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> build<fb::pr
             flatbuffers::build<std::string>(builder, value.from),
             flatbuffers::build<uint32_t>(builder, value.to),
             flatbuffers::build<std::string>(builder, value.message));
+}
+
+template <typename T> inline static
+std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value)
+{
+    auto result = std::vector<T>();
+    for (int i = 0; i < value->size(); i++)
+    {
+        if constexpr (is_optional<T>)
+        {
+            if (value->Get(i) == nullptr)
+            {
+                result.push_back(std::nullopt);
+            }
+            else if constexpr (std::is_fundamental_v<typename T::value_type>)
+            {
+                result.push_back(value->Get(i)->value());
+            }
+            else
+            {
+                result.push_back(*value->Get(i));
+            }
+        }
+        else
+        {
+            if constexpr (std::is_fundamental_v<T>)
+            {
+                result.push_back(value->Get(i));
+            }
+            else
+            {
+                result.push_back(*value->Get(i));
+            }
+        }
+    }
+    return result;
 }
 
 }

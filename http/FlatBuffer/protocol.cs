@@ -483,18 +483,15 @@ namespace fb.protocol.db
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -989,18 +986,15 @@ namespace fb.protocol.db.request
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -1501,18 +1495,15 @@ namespace fb.protocol.db.response
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -2013,18 +2004,15 @@ namespace fb.protocol._internal
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -2513,18 +2501,15 @@ namespace fb.protocol._internal.request
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -3019,18 +3004,15 @@ namespace fb.protocol._internal.response
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Item> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Item>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.Spell> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol.db.ArticleSummary> value)
         {
-            builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
-            return default;
+            return builder.CreateVectorOfTables<fb.protocol.db.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
@@ -3100,7 +3082,7 @@ namespace fb.protocol.db
         public ushort Nation { get; set; } = 0;
         public ushort? Creature { get; set; } = null;
         public uint Map { get; set; } = 0;
-        public fb.protocol.db.Position Position { get; set; }
+        public fb.protocol.db.Position Position { get; set; } = new fb.protocol.db.Position();
         public byte Direction { get; set; } = 0;
         public byte State { get; set; } = 0;
         public byte ClassType { get; set; } = 0;
@@ -3593,7 +3575,7 @@ namespace fb.protocol.db.request
     public class Save : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Save;
-        public fb.protocol.db.Character Character { get; set; }
+        public fb.protocol.db.Character Character { get; set; } = new fb.protocol.db.Character();
         public List<fb.protocol.db.Item> Items { get; set; } = new List<fb.protocol.db.Item>();
         public List<fb.protocol.db.Spell> Spells { get; set; } = new List<fb.protocol.db.Spell>();
 
@@ -3810,7 +3792,7 @@ namespace fb.protocol.db.response
     public class GetArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetArticle;
-        public fb.protocol.db.Article Article { get; set; }
+        public fb.protocol.db.Article Article { get; set; } = new fb.protocol.db.Article();
         public bool Next { get; set; } = false;
         public bool Success { get; set; } = false;
 
@@ -4021,7 +4003,7 @@ namespace fb.protocol.db.response
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
-        public fb.protocol.db.Character Character { get; set; }
+        public fb.protocol.db.Character Character { get; set; } = new fb.protocol.db.Character();
         public List<fb.protocol.db.Item> Items { get; set; } = new List<fb.protocol.db.Item>();
         public List<fb.protocol.db.Spell> Spells { get; set; } = new List<fb.protocol.db.Spell>();
 

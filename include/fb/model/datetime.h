@@ -6,7 +6,7 @@
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
-namespace fb { namespace model {
+namespace fb::model {
 
 class timespan
 {
@@ -434,6 +434,6 @@ public:
     }
 };
 
-} }
+} // end of namespace fb::model
 
 #endif
