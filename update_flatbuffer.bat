@@ -13,11 +13,11 @@ if %ERRORLEVEL% NEQ 0 GOTO END
 del /S /Q http\FlatBuffer
 del /S /Q http\fb\protocol\flatbuffer
 xcopy flatbuffer-ex\bin\output\c#\* http\FlatBuffer\* /S /E
-robocopy flatbuffer-ex\bin\flatbuffer\c# http\fb\protocol\raw /S /E
+robocopy flatbuffer-ex\bin\output\raw\c# http\fb\protocol\raw /S /E
 
 del /S /Q include\fb\protocol\flatbuffer
 xcopy flatbuffer-ex\bin\output\c++\* include\fb\protocol\flatbuffer\* /S /E
-xcopy flatbuffer-ex\bin\flatbuffer\c++\* include\fb\protocol\flatbuffer\raw\* /S /E
+xcopy flatbuffer-ex\bin\output\raw\c++\* include\fb\protocol\flatbuffer\raw\* /S /E
 
 GOTO SKIP_PAUSE
 :END

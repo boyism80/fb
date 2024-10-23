@@ -89,6 +89,8 @@ namespace fb::protocol::db::response
 }
 namespace fb::protocol::internal
 {
+    enum class Service : int8_t;
+    enum class TransferResult : int8_t;
 }
 namespace fb::protocol::internal::request
 {
@@ -122,191 +124,145 @@ template<typename T>  constexpr bool is_vector = is_vector_impl<std::decay_t<T>>
 
 
 template <typename T> struct FlatBufferOffset { typedef T type; };
-template <> struct FlatBufferOffset<std::string> { typedef Offset<String> type; };
-template <> struct FlatBufferOffset<std::optional<uint16_t>> { typedef Offset< nullable::nullable_ushort> type; };
-template <> struct FlatBufferOffset<std::optional<uint8_t>> { typedef Offset< nullable::nullable_ubyte> type; };
-template <> struct FlatBufferOffset<std::optional<uint32_t>> { typedef Offset< nullable::nullable_uint> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::Position> { typedef Offset<fb::protocol::db::raw::Position> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::Character> { typedef Offset<fb::protocol::db::raw::Character> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::Item> { typedef Offset<fb::protocol::db::raw::Item> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::Spell> { typedef Offset<fb::protocol::db::raw::Spell> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::ArticleSummary> { typedef Offset<fb::protocol::db::raw::ArticleSummary> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::Article> { typedef Offset<fb::protocol::db::raw::Article> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::Account> { typedef Offset<fb::protocol::db::request::raw::Account> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::ChangePw> { typedef Offset<fb::protocol::db::request::raw::ChangePw> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::InitCharacter> { typedef Offset<fb::protocol::db::request::raw::InitCharacter> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::Authenticate> { typedef Offset<fb::protocol::db::request::raw::Authenticate> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::Login> { typedef Offset<fb::protocol::db::request::raw::Login> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::MakeCharacter> { typedef Offset<fb::protocol::db::request::raw::MakeCharacter> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::ReserveName> { typedef Offset<fb::protocol::db::request::raw::ReserveName> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::Save> { typedef Offset<fb::protocol::db::request::raw::Save> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticle> { typedef Offset<fb::protocol::db::request::raw::GetArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticleList> { typedef Offset<fb::protocol::db::request::raw::GetArticleList> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::WriteArticle> { typedef Offset<fb::protocol::db::request::raw::WriteArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::request::DeleteArticle> { typedef Offset<fb::protocol::db::request::raw::DeleteArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::DeleteArticle> { typedef Offset<fb::protocol::db::response::raw::DeleteArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticle> { typedef Offset<fb::protocol::db::response::raw::GetArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticleList> { typedef Offset<fb::protocol::db::response::raw::GetArticleList> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::WriteArticle> { typedef Offset<fb::protocol::db::response::raw::WriteArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::ChangePw> { typedef Offset<fb::protocol::db::response::raw::ChangePw> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::GetUid> { typedef Offset<fb::protocol::db::response::raw::GetUid> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::InitCharacter> { typedef Offset<fb::protocol::db::response::raw::InitCharacter> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::Authenticate> { typedef Offset<fb::protocol::db::response::raw::Authenticate> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::Login> { typedef Offset<fb::protocol::db::response::raw::Login> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::MakeCharacter> { typedef Offset<fb::protocol::db::response::raw::MakeCharacter> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::ReserveName> { typedef Offset<fb::protocol::db::response::raw::ReserveName> type; };
-template <> struct FlatBufferOffset<fb::protocol::db::response::Save> { typedef Offset<fb::protocol::db::response::raw::Save> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef Offset<fb::protocol::internal::request::raw::Login> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef Offset<fb::protocol::internal::request::raw::Logout> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef Offset<fb::protocol::internal::request::raw::Ping> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::Transfer> { typedef Offset<fb::protocol::internal::request::raw::Transfer> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::Whisper> { typedef Offset<fb::protocol::internal::request::raw::Whisper> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::KickOut> { typedef Offset<fb::protocol::internal::request::raw::KickOut> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef Offset<fb::protocol::internal::response::raw::KickOut> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef Offset<fb::protocol::internal::response::raw::Login> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::Logout> { typedef Offset<fb::protocol::internal::response::raw::Logout> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::Pong> { typedef Offset<fb::protocol::internal::response::raw::Pong> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::Transfer> { typedef Offset<fb::protocol::internal::response::raw::Transfer> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::Whisper> { typedef Offset<fb::protocol::internal::response::raw::Whisper> type; };
+template <> struct FlatBufferOffset<std::string> { typedef flatbuffers::Offset<flatbuffers::String> type; };
+template <> struct FlatBufferOffset<std::optional<uint16_t>> { typedef flatbuffers::Offset< nullable::nullable_ushort> type; };
+template <> struct FlatBufferOffset<std::optional<uint8_t>> { typedef flatbuffers::Offset< nullable::nullable_ubyte> type; };
+template <> struct FlatBufferOffset<std::optional<uint32_t>> { typedef flatbuffers::Offset< nullable::nullable_uint> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Position> { typedef flatbuffers::Offset<fb::protocol::db::raw::Position> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Character> { typedef flatbuffers::Offset<fb::protocol::db::raw::Character> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Item> { typedef flatbuffers::Offset<fb::protocol::db::raw::Item> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Spell> { typedef flatbuffers::Offset<fb::protocol::db::raw::Spell> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Article> { typedef flatbuffers::Offset<fb::protocol::db::raw::Article> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::Account> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::Account> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::ChangePw> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::ChangePw> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::InitCharacter> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::InitCharacter> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::Authenticate> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::Authenticate> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::Login> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::Login> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::MakeCharacter> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::MakeCharacter> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::ReserveName> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::ReserveName> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::Save> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::Save> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::GetArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::GetArticleList> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::WriteArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::WriteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetArticleList> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::WriteArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::WriteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::ChangePw> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::ChangePw> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::GetUid> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetUid> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::InitCharacter> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::InitCharacter> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::Authenticate> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::Authenticate> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::Login> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::Login> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::MakeCharacter> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::MakeCharacter> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::ReserveName> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::ReserveName> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::Save> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::Save> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Transfer> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Whisper> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::KickOut> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Login> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Pong> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Pong> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Transfer> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Transfer> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Whisper> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::TransferResult> { typedef fb::protocol::internal::raw::TransferResult type; };
 template <typename T> struct FlatBufferOffset<std::optional<T>> { typedef FlatBufferOffset<typename T>::type type; };
 template <typename T> struct FlatBufferOffset<std::vector<T>> { typedef flatbuffers::Offset<flatbuffers::Vector<typename FlatBufferOffset<T>::type>> type; };
 
 template <typename T> inline static
-typename FlatBufferOffset<T>::type build(FlatBufferBuilder& builder, const T& value)
-{
-    if constexpr (is_optional<T>)
-    {
-        if (!value.has_value())
-            return 0;
-        if constexpr (std::is_same_v<T, std::optional<uint16_t>>)
-        {
-            return nullable::Createnullable_ushort(builder, value.value());
-        }
-
-        if constexpr (std::is_same_v<T, std::optional<uint8_t>>)
-        {
-            return nullable::Createnullable_ubyte(builder, value.value());
-        }
-
-        if constexpr (std::is_same_v<T, std::optional<uint32_t>>)
-        {
-            return nullable::Createnullable_uint(builder, value.value());
-        }
-
-        return build<typename T::value_type>(builder, value.value());
-    }
-    else if constexpr (is_vector<T>)
-    {
-        if constexpr (std::is_fundamental_v<typename T::value_type>)
-        {
-            return builder.CreateVector(value);
-        }
-        else
-        {
-            auto buffer = std::vector<typename FlatBufferOffset<typename T::value_type>::type>();
-            for (auto& x : value)
-            {
-                buffer.push_back(build<typename T::value_type>(builder, x));
-            }
-            return builder.CreateVector(buffer);
-        }
-    }
-    else if constexpr (std::is_enum_v<T>)
-    {
-        return static_cast<typename FlatBufferOffset<T>::type>(value);
-    }
-    else
-    {
-        return value;
-    }
-}
-
+typename FlatBufferOffset<T>::type build(FlatBufferBuilder& builder, const T& value);
 template <> inline static
-Offset<String> build<std::string>(FlatBufferBuilder& builder, const std::string& value);
+flatbuffers::Offset<flatbuffers::String> build<std::string>(FlatBufferBuilder& builder, const std::string& value);
 template <> inline static
-Offset<fb::protocol::db::raw::Position> build<fb::protocol::db::Position>(FlatBufferBuilder& builder, const fb::protocol::db::Position& value);
+flatbuffers::Offset<fb::protocol::db::raw::Position> build<fb::protocol::db::Position>(FlatBufferBuilder& builder, const fb::protocol::db::Position& value);
 template <> inline static
-Offset<fb::protocol::db::raw::Character> build<fb::protocol::db::Character>(FlatBufferBuilder& builder, const fb::protocol::db::Character& value);
+flatbuffers::Offset<fb::protocol::db::raw::Character> build<fb::protocol::db::Character>(FlatBufferBuilder& builder, const fb::protocol::db::Character& value);
 template <> inline static
-Offset<fb::protocol::db::raw::Item> build<fb::protocol::db::Item>(FlatBufferBuilder& builder, const fb::protocol::db::Item& value);
+flatbuffers::Offset<fb::protocol::db::raw::Item> build<fb::protocol::db::Item>(FlatBufferBuilder& builder, const fb::protocol::db::Item& value);
 template <> inline static
-Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>(FlatBufferBuilder& builder, const fb::protocol::db::Spell& value);
+flatbuffers::Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>(FlatBufferBuilder& builder, const fb::protocol::db::Spell& value);
 template <> inline static
-Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSummary>(FlatBufferBuilder& builder, const fb::protocol::db::ArticleSummary& value);
+flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSummary>(FlatBufferBuilder& builder, const fb::protocol::db::ArticleSummary& value);
 template <> inline static
-Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBufferBuilder& builder, const fb::protocol::db::Article& value);
+flatbuffers::Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBufferBuilder& builder, const fb::protocol::db::Article& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::Account> build<fb::protocol::db::request::Account>(FlatBufferBuilder& builder, const fb::protocol::db::request::Account& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::Account> build<fb::protocol::db::request::Account>(FlatBufferBuilder& builder, const fb::protocol::db::request::Account& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::ChangePw> build<fb::protocol::db::request::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::request::ChangePw& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::ChangePw> build<fb::protocol::db::request::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::request::ChangePw& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::InitCharacter> build<fb::protocol::db::request::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::InitCharacter& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::InitCharacter> build<fb::protocol::db::request::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::InitCharacter& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::Authenticate> build<fb::protocol::db::request::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::request::Authenticate& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::Authenticate> build<fb::protocol::db::request::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::request::Authenticate& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::Login> build<fb::protocol::db::request::Login>(FlatBufferBuilder& builder, const fb::protocol::db::request::Login& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::Login> build<fb::protocol::db::request::Login>(FlatBufferBuilder& builder, const fb::protocol::db::request::Login& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::MakeCharacter> build<fb::protocol::db::request::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::MakeCharacter& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::MakeCharacter> build<fb::protocol::db::request::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::MakeCharacter& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::ReserveName> build<fb::protocol::db::request::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::request::ReserveName& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::ReserveName> build<fb::protocol::db::request::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::request::ReserveName& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::Save> build<fb::protocol::db::request::Save>(FlatBufferBuilder& builder, const fb::protocol::db::request::Save& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::Save> build<fb::protocol::db::request::Save>(FlatBufferBuilder& builder, const fb::protocol::db::request::Save& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::GetArticle> build<fb::protocol::db::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticle& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::GetArticle> build<fb::protocol::db::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticle& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::GetArticleList> build<fb::protocol::db::request::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticleList& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::GetArticleList> build<fb::protocol::db::request::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticleList& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::WriteArticle> build<fb::protocol::db::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::WriteArticle& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::WriteArticle> build<fb::protocol::db::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::WriteArticle& value);
 template <> inline static
-Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::protocol::db::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::DeleteArticle& value);
+flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::protocol::db::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::DeleteArticle& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::response::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticle& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::response::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticle& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::GetArticleList> build<fb::protocol::db::response::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticleList& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::GetArticleList> build<fb::protocol::db::response::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticleList& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::WriteArticle> build<fb::protocol::db::response::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::WriteArticle& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::WriteArticle> build<fb::protocol::db::response::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::WriteArticle& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::ChangePw> build<fb::protocol::db::response::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::response::ChangePw& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::ChangePw> build<fb::protocol::db::response::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::response::ChangePw& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::GetUid> build<fb::protocol::db::response::GetUid>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetUid& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::GetUid> build<fb::protocol::db::response::GetUid>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetUid& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::InitCharacter> build<fb::protocol::db::response::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::InitCharacter& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::InitCharacter> build<fb::protocol::db::response::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::InitCharacter& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::Authenticate> build<fb::protocol::db::response::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::response::Authenticate& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::Authenticate> build<fb::protocol::db::response::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::response::Authenticate& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::db::response::Login>(FlatBufferBuilder& builder, const fb::protocol::db::response::Login& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::db::response::Login>(FlatBufferBuilder& builder, const fb::protocol::db::response::Login& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::MakeCharacter> build<fb::protocol::db::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::MakeCharacter& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::MakeCharacter> build<fb::protocol::db::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::MakeCharacter& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::ReserveName> build<fb::protocol::db::response::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::response::ReserveName& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::ReserveName> build<fb::protocol::db::response::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::response::ReserveName& value);
 template <> inline static
-Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value);
+flatbuffers::Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value);
 template <> inline static
-Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <> inline static
-Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value);
 template <> inline static
-Offset<fb::protocol::internal::request::raw::Ping> build<fb::protocol::internal::request::Ping>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ping& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> build<fb::protocol::internal::request::Ping>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ping& value);
 template <> inline static
-Offset<fb::protocol::internal::request::raw::Transfer> build<fb::protocol::internal::request::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Transfer& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::protocol::internal::request::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Transfer& value);
 template <> inline static
-Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value);
 template <> inline static
-Offset<fb::protocol::internal::request::raw::KickOut> build<fb::protocol::internal::request::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickOut& value);
+flatbuffers::Offset<fb::protocol::internal::request::raw::KickOut> build<fb::protocol::internal::request::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickOut& value);
 template <> inline static
-Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
 template <> inline static
-Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::internal::response::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Login& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::internal::response::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Login& value);
 template <> inline static
-Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value);
 template <> inline static
-Offset<fb::protocol::internal::response::raw::Pong> build<fb::protocol::internal::response::Pong>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Pong& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::Pong> build<fb::protocol::internal::response::Pong>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Pong& value);
 template <> inline static
-Offset<fb::protocol::internal::response::raw::Transfer> build<fb::protocol::internal::response::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Transfer& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::Transfer> build<fb::protocol::internal::response::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Transfer& value);
 template <> inline static
-Offset<fb::protocol::internal::response::raw::Whisper> build<fb::protocol::internal::response::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Whisper& value);
+flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> build<fb::protocol::internal::response::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Whisper& value);
 
 template <typename T> inline static
 std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value)
@@ -2221,21 +2177,72 @@ public:
 
 namespace flatbuffers {
 
+template <typename T> inline static
+typename FlatBufferOffset<T>::type build(FlatBufferBuilder& builder, const T& value)
+{
+    if constexpr (is_optional<T>)
+    {
+        if (!value.has_value())
+            return 0;
+            
+        if constexpr (std::is_same_v<T, std::optional<uint16_t>>)
+        {
+            return nullable::Createnullable_ushort(builder, value.value());
+        }
+
+        if constexpr (std::is_same_v<T, std::optional<uint8_t>>)
+        {
+            return nullable::Createnullable_ubyte(builder, value.value());
+        }
+
+        if constexpr (std::is_same_v<T, std::optional<uint32_t>>)
+        {
+            return nullable::Createnullable_uint(builder, value.value());
+        }
+
+        return build<typename T::value_type>(builder, value.value());
+    }
+    else if constexpr (is_vector<T>)
+    {
+        if constexpr (std::is_fundamental_v<typename T::value_type>)
+        {
+            return builder.CreateVector(value);
+        }
+        else
+        {
+            auto buffer = std::vector<typename FlatBufferOffset<typename T::value_type>::type>();
+            for (auto& x : value)
+            {
+                buffer.push_back(build<typename T::value_type>(builder, x));
+            }
+            return builder.CreateVector(buffer);
+        }
+    }
+    else if constexpr (std::is_enum_v<T>)
+    {
+        return static_cast<typename FlatBufferOffset<T>::type>(value);
+    }
+    else
+    {
+        return value;
+    }
+}
+
 template <> 
-Offset<String> build<std::string>(FlatBufferBuilder& builder, const std::string& value)
+flatbuffers::Offset<flatbuffers::String> build<std::string>(FlatBufferBuilder& builder, const std::string& value)
 {
     return builder.CreateString(value);
 }
 
 template <>
-Offset<fb::protocol::db::raw::Position> build<fb::protocol::db::Position>(FlatBufferBuilder& builder, const fb::protocol::db::Position& value)
+flatbuffers::Offset<fb::protocol::db::raw::Position> build<fb::protocol::db::Position>(FlatBufferBuilder& builder, const fb::protocol::db::Position& value)
 {
     return fb::protocol::db::raw::CreatePosition(builder,
             flatbuffers::build<uint16_t>(builder, value.x),
             flatbuffers::build<uint16_t>(builder, value.y));
 }
 template <>
-Offset<fb::protocol::db::raw::Character> build<fb::protocol::db::Character>(FlatBufferBuilder& builder, const fb::protocol::db::Character& value)
+flatbuffers::Offset<fb::protocol::db::raw::Character> build<fb::protocol::db::Character>(FlatBufferBuilder& builder, const fb::protocol::db::Character& value)
 {
     return fb::protocol::db::raw::CreateCharacter(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
@@ -2274,7 +2281,7 @@ Offset<fb::protocol::db::raw::Character> build<fb::protocol::db::Character>(Flat
             flatbuffers::build<std::optional<uint32_t>>(builder, value.clan));
 }
 template <>
-Offset<fb::protocol::db::raw::Item> build<fb::protocol::db::Item>(FlatBufferBuilder& builder, const fb::protocol::db::Item& value)
+flatbuffers::Offset<fb::protocol::db::raw::Item> build<fb::protocol::db::Item>(FlatBufferBuilder& builder, const fb::protocol::db::Item& value)
 {
     return fb::protocol::db::raw::CreateItem(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
@@ -2287,7 +2294,7 @@ Offset<fb::protocol::db::raw::Item> build<fb::protocol::db::Item>(FlatBufferBuil
             flatbuffers::build<std::optional<std::string>>(builder, value.custom_name));
 }
 template <>
-Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>(FlatBufferBuilder& builder, const fb::protocol::db::Spell& value)
+flatbuffers::Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>(FlatBufferBuilder& builder, const fb::protocol::db::Spell& value)
 {
     return fb::protocol::db::raw::CreateSpell(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
@@ -2295,7 +2302,7 @@ Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>(FlatBufferBu
             flatbuffers::build<uint32_t>(builder, value.model));
 }
 template <>
-Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSummary>(FlatBufferBuilder& builder, const fb::protocol::db::ArticleSummary& value)
+flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSummary>(FlatBufferBuilder& builder, const fb::protocol::db::ArticleSummary& value)
 {
     return fb::protocol::db::raw::CreateArticleSummary(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
@@ -2305,7 +2312,7 @@ Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSum
             flatbuffers::build<std::string>(builder, value.created_date));
 }
 template <>
-Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBufferBuilder& builder, const fb::protocol::db::Article& value)
+flatbuffers::Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBufferBuilder& builder, const fb::protocol::db::Article& value)
 {
     return fb::protocol::db::raw::CreateArticle(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
@@ -2316,13 +2323,13 @@ Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBuff
             flatbuffers::build<std::string>(builder, value.created_date));
 }
 template <>
-Offset<fb::protocol::db::request::raw::Account> build<fb::protocol::db::request::Account>(FlatBufferBuilder& builder, const fb::protocol::db::request::Account& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::Account> build<fb::protocol::db::request::Account>(FlatBufferBuilder& builder, const fb::protocol::db::request::Account& value)
 {
     return fb::protocol::db::request::raw::CreateAccount(builder,
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
-Offset<fb::protocol::db::request::raw::ChangePw> build<fb::protocol::db::request::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::request::ChangePw& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::ChangePw> build<fb::protocol::db::request::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::request::ChangePw& value)
 {
     return fb::protocol::db::request::raw::CreateChangePw(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
@@ -2331,7 +2338,7 @@ Offset<fb::protocol::db::request::raw::ChangePw> build<fb::protocol::db::request
             flatbuffers::build<uint32_t>(builder, value.birthday));
 }
 template <>
-Offset<fb::protocol::db::request::raw::InitCharacter> build<fb::protocol::db::request::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::InitCharacter& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::InitCharacter> build<fb::protocol::db::request::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::InitCharacter& value)
 {
     return fb::protocol::db::request::raw::CreateInitCharacter(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
@@ -2345,20 +2352,20 @@ Offset<fb::protocol::db::request::raw::InitCharacter> build<fb::protocol::db::re
             flatbuffers::build<bool>(builder, value.admin));
 }
 template <>
-Offset<fb::protocol::db::request::raw::Authenticate> build<fb::protocol::db::request::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::request::Authenticate& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::Authenticate> build<fb::protocol::db::request::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::request::Authenticate& value)
 {
     return fb::protocol::db::request::raw::CreateAuthenticate(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.pw));
 }
 template <>
-Offset<fb::protocol::db::request::raw::Login> build<fb::protocol::db::request::Login>(FlatBufferBuilder& builder, const fb::protocol::db::request::Login& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::Login> build<fb::protocol::db::request::Login>(FlatBufferBuilder& builder, const fb::protocol::db::request::Login& value)
 {
     return fb::protocol::db::request::raw::CreateLogin(builder,
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
-Offset<fb::protocol::db::request::raw::MakeCharacter> build<fb::protocol::db::request::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::MakeCharacter& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::MakeCharacter> build<fb::protocol::db::request::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::request::MakeCharacter& value)
 {
     return fb::protocol::db::request::raw::CreateMakeCharacter(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
@@ -2368,13 +2375,13 @@ Offset<fb::protocol::db::request::raw::MakeCharacter> build<fb::protocol::db::re
             flatbuffers::build<uint8_t>(builder, value.creature));
 }
 template <>
-Offset<fb::protocol::db::request::raw::ReserveName> build<fb::protocol::db::request::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::request::ReserveName& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::ReserveName> build<fb::protocol::db::request::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::request::ReserveName& value)
 {
     return fb::protocol::db::request::raw::CreateReserveName(builder,
             flatbuffers::build<std::string>(builder, value.name));
 }
 template <>
-Offset<fb::protocol::db::request::raw::Save> build<fb::protocol::db::request::Save>(FlatBufferBuilder& builder, const fb::protocol::db::request::Save& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::Save> build<fb::protocol::db::request::Save>(FlatBufferBuilder& builder, const fb::protocol::db::request::Save& value)
 {
     return fb::protocol::db::request::raw::CreateSave(builder,
             flatbuffers::build<fb::protocol::db::Character>(builder, value.character),
@@ -2382,21 +2389,21 @@ Offset<fb::protocol::db::request::raw::Save> build<fb::protocol::db::request::Sa
             flatbuffers::build<std::vector<fb::protocol::db::Spell>>(builder, value.spells));
 }
 template <>
-Offset<fb::protocol::db::request::raw::GetArticle> build<fb::protocol::db::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticle& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::GetArticle> build<fb::protocol::db::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticle& value)
 {
     return fb::protocol::db::request::raw::CreateGetArticle(builder,
             flatbuffers::build<uint32_t>(builder, value.section),
             flatbuffers::build<uint32_t>(builder, value.article));
 }
 template <>
-Offset<fb::protocol::db::request::raw::GetArticleList> build<fb::protocol::db::request::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticleList& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::GetArticleList> build<fb::protocol::db::request::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::request::GetArticleList& value)
 {
     return fb::protocol::db::request::raw::CreateGetArticleList(builder,
             flatbuffers::build<uint32_t>(builder, value.section),
             flatbuffers::build<uint32_t>(builder, value.position));
 }
 template <>
-Offset<fb::protocol::db::request::raw::WriteArticle> build<fb::protocol::db::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::WriteArticle& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::WriteArticle> build<fb::protocol::db::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::WriteArticle& value)
 {
     return fb::protocol::db::request::raw::CreateWriteArticle(builder,
             flatbuffers::build<uint32_t>(builder, value.section),
@@ -2405,20 +2412,20 @@ Offset<fb::protocol::db::request::raw::WriteArticle> build<fb::protocol::db::req
             flatbuffers::build<std::string>(builder, value.contents));
 }
 template <>
-Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::protocol::db::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::DeleteArticle& value)
+flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::protocol::db::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::DeleteArticle& value)
 {
     return fb::protocol::db::request::raw::CreateDeleteArticle(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
             flatbuffers::build<uint32_t>(builder, value.user));
 }
 template <>
-Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value)
 {
     return fb::protocol::db::response::raw::CreateDeleteArticle(builder,
             flatbuffers::build<int>(builder, value.result));
 }
 template <>
-Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::response::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticle& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::response::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticle& value)
 {
     return fb::protocol::db::response::raw::CreateGetArticle(builder,
             flatbuffers::build<fb::protocol::db::Article>(builder, value.article),
@@ -2426,45 +2433,45 @@ Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::resp
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::db::response::raw::GetArticleList> build<fb::protocol::db::response::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticleList& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::GetArticleList> build<fb::protocol::db::response::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticleList& value)
 {
     return fb::protocol::db::response::raw::CreateGetArticleList(builder,
             flatbuffers::build<std::vector<fb::protocol::db::ArticleSummary>>(builder, value.summary_list));
 }
 template <>
-Offset<fb::protocol::db::response::raw::WriteArticle> build<fb::protocol::db::response::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::WriteArticle& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::WriteArticle> build<fb::protocol::db::response::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::WriteArticle& value)
 {
     return fb::protocol::db::response::raw::CreateWriteArticle(builder,
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::db::response::raw::ChangePw> build<fb::protocol::db::response::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::response::ChangePw& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::ChangePw> build<fb::protocol::db::response::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::response::ChangePw& value)
 {
     return fb::protocol::db::response::raw::CreateChangePw(builder,
             flatbuffers::build<uint32_t>(builder, value.error_code));
 }
 template <>
-Offset<fb::protocol::db::response::raw::GetUid> build<fb::protocol::db::response::GetUid>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetUid& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::GetUid> build<fb::protocol::db::response::GetUid>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetUid& value)
 {
     return fb::protocol::db::response::raw::CreateGetUid(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::db::response::raw::InitCharacter> build<fb::protocol::db::response::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::InitCharacter& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::InitCharacter> build<fb::protocol::db::response::InitCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::InitCharacter& value)
 {
     return fb::protocol::db::response::raw::CreateInitCharacter(builder,
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::db::response::raw::Authenticate> build<fb::protocol::db::response::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::response::Authenticate& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::Authenticate> build<fb::protocol::db::response::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::db::response::Authenticate& value)
 {
     return fb::protocol::db::response::raw::CreateAuthenticate(builder,
             flatbuffers::build<uint32_t>(builder, value.map),
             flatbuffers::build<uint32_t>(builder, value.error_code));
 }
 template <>
-Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::db::response::Login>(FlatBufferBuilder& builder, const fb::protocol::db::response::Login& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::db::response::Login>(FlatBufferBuilder& builder, const fb::protocol::db::response::Login& value)
 {
     return fb::protocol::db::response::raw::CreateLogin(builder,
             flatbuffers::build<fb::protocol::db::Character>(builder, value.character),
@@ -2472,26 +2479,26 @@ Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::db::response:
             flatbuffers::build<std::vector<fb::protocol::db::Spell>>(builder, value.spells));
 }
 template <>
-Offset<fb::protocol::db::response::raw::MakeCharacter> build<fb::protocol::db::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::MakeCharacter& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::MakeCharacter> build<fb::protocol::db::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::MakeCharacter& value)
 {
     return fb::protocol::db::response::raw::CreateMakeCharacter(builder,
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::db::response::raw::ReserveName> build<fb::protocol::db::response::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::response::ReserveName& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::ReserveName> build<fb::protocol::db::response::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::response::ReserveName& value)
 {
     return fb::protocol::db::response::raw::CreateReserveName(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value)
+flatbuffers::Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value)
 {
     return fb::protocol::db::response::raw::CreateSave(builder,
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)
 {
     return fb::protocol::internal::request::raw::CreateLogin(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
@@ -2499,30 +2506,30 @@ Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal
             flatbuffers::build<uint16_t>(builder, value.map));
 }
 template <>
-Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value)
 {
     return fb::protocol::internal::request::raw::CreateLogout(builder,
             flatbuffers::build<std::string>(builder, value.name));
 }
 template <>
-Offset<fb::protocol::internal::request::raw::Ping> build<fb::protocol::internal::request::Ping>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ping& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> build<fb::protocol::internal::request::Ping>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Ping& value)
 {
     return fb::protocol::internal::request::raw::CreatePing(builder,
             flatbuffers::build<uint8_t>(builder, value.id),
             flatbuffers::build<std::string>(builder, value.name),
-            (fb::protocol::internal::raw::Service)value.service,
+            flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<std::string>(builder, value.ip),
             flatbuffers::build<uint16_t>(builder, value.port));
 }
 template <>
-Offset<fb::protocol::internal::request::raw::Transfer> build<fb::protocol::internal::request::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Transfer& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::protocol::internal::request::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Transfer& value)
 {
     return fb::protocol::internal::request::raw::CreateTransfer(builder,
-            (fb::protocol::internal::raw::Service)value.service,
+            flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<uint8_t>(builder, value.id));
 }
 template <>
-Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value)
 {
     return fb::protocol::internal::request::raw::CreateWhisper(builder,
             flatbuffers::build<std::string>(builder, value.from),
@@ -2530,19 +2537,19 @@ Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::intern
             flatbuffers::build<std::string>(builder, value.message));
 }
 template <>
-Offset<fb::protocol::internal::request::raw::KickOut> build<fb::protocol::internal::request::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickOut& value)
+flatbuffers::Offset<fb::protocol::internal::request::raw::KickOut> build<fb::protocol::internal::request::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickOut& value)
 {
     return fb::protocol::internal::request::raw::CreateKickOut(builder,
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
-Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value)
 {
     return fb::protocol::internal::response::raw::CreateKickOut(builder,
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>
-Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::internal::response::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Login& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::internal::response::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Login& value)
 {
     return fb::protocol::internal::response::raw::CreateLogin(builder,
             flatbuffers::build<bool>(builder, value.success),
@@ -2551,26 +2558,26 @@ Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::interna
             flatbuffers::build<uint16_t>(builder, value.port));
 }
 template <>
-Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> build<fb::protocol::internal::response::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Logout& value)
 {
     return fb::protocol::internal::response::raw::CreateLogout(builder,
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
-Offset<fb::protocol::internal::response::raw::Pong> build<fb::protocol::internal::response::Pong>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Pong& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::Pong> build<fb::protocol::internal::response::Pong>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Pong& value)
 {
     return fb::protocol::internal::response::raw::CreatePong(builder);
 }
 template <>
-Offset<fb::protocol::internal::response::raw::Transfer> build<fb::protocol::internal::response::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Transfer& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::Transfer> build<fb::protocol::internal::response::Transfer>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Transfer& value)
 {
     return fb::protocol::internal::response::raw::CreateTransfer(builder,
-            (fb::protocol::internal::raw::TransferResult)value.code,
+            flatbuffers::build<fb::protocol::internal::TransferResult>(builder, value.code),
             flatbuffers::build<std::string>(builder, value.ip),
             flatbuffers::build<uint16_t>(builder, value.port));
 }
 template <>
-Offset<fb::protocol::internal::response::raw::Whisper> build<fb::protocol::internal::response::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Whisper& value)
+flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> build<fb::protocol::internal::response::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Whisper& value)
 {
     return fb::protocol::internal::response::raw::CreateWhisper(builder,
             flatbuffers::build<bool>(builder, value.success),
