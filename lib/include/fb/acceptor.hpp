@@ -79,7 +79,8 @@ void fb::acceptor<T>::accept()
 
             this->sockets.push(std::move(socket));
             this->handle_connected(*ptr);
-            ptr->recv();
+
+            boost::asio::co_spawn(*this, ptr->recv(), boost::asio::detached);
             this->accept();
         }
         catch (std::exception& /*e*/)

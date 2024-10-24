@@ -67,58 +67,52 @@ inline void fb::socket<T>::send(const fb::protocol::base::header& response, bool
 }
 
 template <typename T>
-void fb::socket<T>::recv()
+boost::asio::awaitable<void> fb::socket<T>::recv()
 {
-    this->async_read_some(boost::asio::buffer(this->_buffer), [this](const boost::system::error_code& ec, size_t bytes_transferred) {
-        try
+    try
+    {
+        while (true)
         {
-            if (ec)
-                throw boost::system::error_code(ec);
-
+            auto bytes_transferred = co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
             this->in_stream<void>([this, bytes_transferred](auto& in_stream) {
                 this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
             });
-            async::awaitable_get(this->_handle_received(*this));
 
+            async::awaitable_get(this->_handle_received(*this));
             if (this->is_open() == false)
                 throw std::runtime_error("disconnected");
-
-            this->recv();
         }
-        catch (std::exception& e)
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal(e.what());
+    }
+    catch (boost::system::error_code& e)
+    {
+        auto ec = e.value();
+        switch (ec)
         {
-            fb::logger::fatal(e.what());
-            async::awaitable_get(this->_handle_closed(*this));
-        }
-        catch (boost::system::error_code& e)
-        {
-            auto ec = e.value();
-            switch (ec)
-            {
-                case ENOENT:
-                    async::awaitable_get(this->_handle_closed(*this));
-                    break;
+        case ENOENT:
+            break;
 
-                case ECONNABORTED:
+        case ECONNABORTED:
 #ifdef _WIN32
-                case WSA_OPERATION_ABORTED:
+        case WSA_OPERATION_ABORTED:
 #endif
-                    async::awaitable_get(this->_handle_closed(*this));
-                    break;
+            break;
 
-                case ECONNRESET:
-                    fb::logger::info("SYSTEM SHUTDOWN ALERT?");
-                    break;
+        case ECONNRESET:
+            fb::logger::info("SYSTEM SHUTDOWN ALERT?");
+            break;
 
-                default:
-                    break;
-            }
+        default:
+            break;
         }
-        catch (...)
-        {
-            async::awaitable_get(this->_handle_closed(*this));
-        }
-    });
+    }
+    catch (...)
+    { }
+
+    async::awaitable_get(this->_handle_closed(*this));
 }
 
 template <typename T>

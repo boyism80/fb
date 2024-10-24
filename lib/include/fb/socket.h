@@ -51,16 +51,16 @@ protected:
     virtual bool on_wrap(fb::ostream& out);
 
 public:
-    void        send(const ostream& stream, bool encrypt = true, bool wrap = true);
-    void        send(const ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
-    void        send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
-    void        send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
+    void                         send(const ostream& stream, bool encrypt = true, bool wrap = true);
+    void                         send(const ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
+    void                         send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    void                         send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
 
-    void        recv();
-    void        data(T* value);
-    T*          data() const;
-    std::string IP() const;
-    uint32_t    fd();
+    boost::asio::awaitable<void> recv();
+    void                         data(T* value);
+    T*                           data() const;
+    std::string                  IP() const;
+    uint32_t                     fd();
 
 public:
     fb::cryptor& crt();
