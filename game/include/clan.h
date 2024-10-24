@@ -8,10 +8,10 @@ namespace fb { namespace game {
 class clan
 {
 private:
-    character&                    _owner;
-    character::container          _members;
-    std::string                 _name;
-    std::string                 _title;
+    character&           _owner;
+    character::container _members;
+    std::string          _name;
+    std::string          _title;
 
 public:
     clan(const std::string& name, fb::game::character& owner, const character::container& members);
@@ -19,18 +19,18 @@ public:
     ~clan();
 
 public:
-    const character&              owner() const;
-    const character::container&   members() const;
+    const character&            owner() const;
+    const character::container& members() const;
     const std::string&          name() const;
     void                        name(const std::string& value);
     const std::string&          title() const;
     void                        title(const std::string& value);
 
 public:
-    bool                        enter(fb::game::character& session);
-    bool                        leave(fb::game::character& session);
+    bool enter(fb::game::character& session);
+    bool leave(fb::game::character& session);
 };
 
-} }
+}} // namespace fb::game
 
 #endif // !__CLAN_H__

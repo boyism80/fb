@@ -2,20 +2,20 @@
 
 using namespace fb::bot;
 
-base_bot::base_bot(bot_container& owner, uint32_t id): fb::socket<void*>(owner.context(), 
-    std::bind(&base_bot::on_receive, this, std::placeholders::_1),
-    std::bind(&base_bot::on_closed, this, std::placeholders::_1)), _owner(owner), id(id)
-{}
+base_bot::base_bot(bot_container& owner, uint32_t id) :
+    fb::socket<void*>(owner.context(), std::bind(&base_bot::on_receive, this, std::placeholders::_1), std::bind(&base_bot::on_closed, this, std::placeholders::_1)),
+    _owner(owner),
+    id(id)
+{ }
 
 base_bot::~base_bot()
 { }
 
 async::task<void> base_bot::on_receive(fb::socket<>& socket)
 {
-    static constexpr uint8_t    base_size = sizeof(uint8_t) + sizeof(uint16_t);
+    static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
 
-    co_await socket.in_stream<async::task<void>>([this, &socket] (auto& in_stream) -> async::task<void>
-    {
+    co_await socket.in_stream<async::task<void>>([this, &socket](auto& in_stream) -> async::task<void> {
         while (true)
         {
             try
@@ -23,11 +23,11 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket)
                 if (in_stream.readable_size() < base_size)
                     break;
 
-                auto                head = in_stream.read_u8();
+                auto head = in_stream.read_u8();
                 if (head != 0xAA)
                     throw std::runtime_error("header mismatch");
 
-                auto                size = in_stream.read_u16(buffer::endian::BIG);
+                auto size = in_stream.read_u16(buffer::endian::BIG);
                 if (size > in_stream.capacity())
                     throw std::runtime_error("limit packet size");
 
@@ -42,8 +42,7 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket)
 
                 if (this->_handler.contains(cmd))
                 {
-                    co_await this->_handler[cmd]([&in_stream, size]
-                    {
+                    co_await this->_handler[cmd]([&in_stream, size] {
                         in_stream.reset();
                         in_stream.shift(base_size + size);
                         in_stream.flush();
@@ -68,8 +67,7 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket)
 
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
-    this->async_connect(endpoint, [&](const auto& e) 
-    {
+    this->async_connect(endpoint, [&](const auto& e) {
         this->recv();
         this->on_connected();
     });
@@ -100,12 +98,12 @@ bool base_bot::on_wrap(fb::ostream& out)
 
 bool base_bot::decrypt_policy(int cmd) const
 {
-    switch(cmd)
+    switch (cmd)
     {
-        case 0x03:
+    case 0x03:
         return false;
 
-        default:
+    default:
         return true;
     }
 }

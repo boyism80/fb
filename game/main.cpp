@@ -8,20 +8,20 @@ using namespace fb::model::enum_value;
 
 int main(int argc, const char** argv)
 {
-    auto& c = fb::console::get();
+    auto& c      = fb::console::get();
     auto& config = fb::config::get();
 
-    auto height = 9;
-    c.box(c.width()-1, height);
+    auto  height = 9;
+    c.box(c.width() - 1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.cursor((c.width()-1 - strlen(header)) / 2, 3).render(header);
+    c.cursor((c.width() - 1 - strlen(header)) / 2, 3).render(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.cursor(c.width()-1 - strlen(github) - 3, 5).render(github);
+    c.cursor(c.width() - 1 - strlen(github) - 3, 5).render(github);
 
     auto madeby = "made by cshyeon";
-    c.cursor(c.width()-1 - strlen(madeby) - 3, 6).render(madeby);
+    c.cursor(c.width() - 1 - strlen(madeby) - 3, 6).render(madeby);
 
     c.cursor(0, height + 1);
 
@@ -36,18 +36,16 @@ int main(int argc, const char** argv)
 #endif
 
         boost::asio::io_context io_context;
-        auto& config = fb::config::get();
-        auto context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
-        context->model.mob_spawn.hook.built = [&context](const fb::model::array_container<fb::model::mob_spawn>& model) 
-        {
+        auto&                   config      = fb::config::get();
+        auto                    context     = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
+        context->model.mob_spawn.hook.built = [&context](const fb::model::array_container<fb::model::mob_spawn>& model) {
             for (auto& spawn : model)
             {
                 context->rezen.push_back(fb::game::rezen(*context.get(), spawn));
             }
         };
 
-        context->model.item.hook.build = [](const Json::Value& json) ->fb::model::item*
-        {
+        context->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)
             {
@@ -83,7 +81,7 @@ int main(int argc, const char** argv)
 
         context->run();
     }
-    catch(std::exception& e)
+    catch (std::exception& e)
     {
         fb::logger::fatal(e.what());
     }

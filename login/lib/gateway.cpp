@@ -1,10 +1,13 @@
 #include <gateway.h>
 
-fb::login::gateway::gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) : 
-    _name(name), _desc(desc), _ip(ip), _port(port)
+fb::login::gateway::gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port) :
+    _name(name),
+    _desc(desc),
+    _ip(ip),
+    _port(port)
 { }
 
-fb::login::gateway::gateway(const std::string & name, const std::string & desc, const std::string & ip, uint16_t port) : 
+fb::login::gateway::gateway(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port) :
     gateway(name, desc, inet_addr(ip.c_str()), port)
 { }
 

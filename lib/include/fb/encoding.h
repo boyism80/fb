@@ -23,17 +23,17 @@ enum class PLATFORM
     Both
 };
 
-std::string                 cp949(const std::string& utf8);
-std::string                 utf8(const std::string& cp949);
-std::string                 CP949(const std::string& utf8, PLATFORM p = PLATFORM::Linux);
-std::string                 UTF8(const std::string& cp949, PLATFORM p = PLATFORM::Linux);
+std::string  cp949(const std::string& utf8);
+std::string  utf8(const std::string& cp949);
+std::string  CP949(const std::string& utf8, PLATFORM p = PLATFORM::Linux);
+std::string  UTF8(const std::string& cp949, PLATFORM p = PLATFORM::Linux);
 
-std::wstring                W(const std::string& m);
-std::string                 M(const std::wstring& w);
+std::wstring W(const std::string& m);
+std::string  M(const std::wstring& w);
 
-std::string                 name_with(const std::string& name);
-std::string                 name_with(const std::string& name, const std::pair<std::string, std::string>& postfix);
+std::string  name_with(const std::string& name);
+std::string  name_with(const std::string& name, const std::pair<std::string, std::string>& postfix);
 
-bool                        assert_korean(const std::string& str);
+bool         assert_korean(const std::string& str);
 
 #endif

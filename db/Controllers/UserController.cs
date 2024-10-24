@@ -33,7 +33,7 @@ namespace db.Controllers
         public async Task<Response.GetUid> Uid(string name)
         {
             await using var connection = _dbContext.Connection(-1);
-            var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new 
+            var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new
             {
                 n = name
             }, commandType: CommandType.StoredProcedure);
@@ -49,7 +49,7 @@ namespace db.Controllers
             else
             {
                 return new Response.GetUid
-                { 
+                {
                     Success = false
                 };
             }
@@ -106,7 +106,7 @@ namespace db.Controllers
             }, commandType: CommandType.StoredProcedure);
 
             return new Response.ReserveName
-            { 
+            {
                 Uid = result.Uid,
                 Success = result.Result
             };
@@ -130,7 +130,7 @@ namespace db.Controllers
             }, commandType: CommandType.StoredProcedure);
 
             return new Response.InitCharacter
-            { 
+            {
                 Success = success
             };
         }
@@ -149,14 +149,14 @@ namespace db.Controllers
             }, commandType: CommandType.StoredProcedure);
 
             return new Response.MakeCharacter
-            { 
+            {
                 Success = (affectedRows != 0)
             };
         }
 
         [HttpPost("change-pw")]
         public async Task<Response.ChangePw> ChangePassword(Request.ChangePw request)
-        { 
+        {
             await using var connection = _dbContext.Connection(request.Uid);
             using (var reader = await connection.ExecuteReaderAsync($"SELECT pw, birth FROM user WHERE id = {request.Uid}"))
             {
@@ -186,8 +186,8 @@ namespace db.Controllers
                     };
                 }
             }
-            
-            await connection.ExecuteAsync($"UPDATE user SET pw = @pw WHERE id = @id LIMIT 1", new 
+
+            await connection.ExecuteAsync($"UPDATE user SET pw = @pw WHERE id = @id LIMIT 1", new
             {
                 id = request.Uid,
                 pw = SHA256Hash(request.After)
@@ -206,7 +206,7 @@ namespace db.Controllers
             var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
             var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid} AND deleted = 0");
             var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid} AND deleted = 0");
-            
+
             var response = new Response.Login
             {
                 Character = _mapper.Map<fb.protocol.db.Character>(character),
@@ -298,7 +298,7 @@ ON DUPLICATE KEY UPDATE model=VALUES(model), deleted=0;
             }
 
             return new Response.Save
-            { 
+            {
                 Success = true
             };
         }

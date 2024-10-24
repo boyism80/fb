@@ -2,28 +2,28 @@
 
 std::string cp949(const std::string& utf8)
 {
-    if(utf8.empty())
+    if (utf8.empty())
         return std::string();
 
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), nullptr, 0) + 1;
-    auto wide = std::vector<wchar_t>(wide_size);
+    auto wide      = std::vector<wchar_t>(wide_size);
     memset(wide.data(), 0, wide_size * sizeof(wchar_t));
     MultiByteToWideChar(CP_UTF8, 0, utf8.c_str(), utf8.length(), wide.data(), wide_size);
 
     auto mbs_size = WideCharToMultiByte(CP_ACP, 0, wide.data(), -1, nullptr, 0, nullptr, nullptr);
-    auto mbs = std::vector<char>(mbs_size);
+    auto mbs      = std::vector<char>(mbs_size);
     memset(mbs.data(), 0, mbs_size);
     WideCharToMultiByte(CP_ACP, 0, wide.data(), -1, mbs.data(), mbs_size, nullptr, nullptr);
 
     return std::string(mbs.data());
 #else
     size_t src_size = utf8.length();
-    char* src = const_cast<char*>(utf8.data());
+    char*  src      = const_cast<char*>(utf8.data());
 
     size_t dst_size = src_size * 2;
-    char* dst = new char[dst_size];
-    char* dst_head = dst;
+    char*  dst      = new char[dst_size];
+    char*  dst_head = dst;
     std::memset(dst, 0, dst_size);
 
     iconv_t cd = iconv_open("CP949", "UTF-8");
@@ -38,28 +38,28 @@ std::string cp949(const std::string& utf8)
 
 std::string utf8(const std::string& cp949)
 {
-    if(cp949.empty())
+    if (cp949.empty())
         return std::string();
 
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), nullptr, 0) + 1;
-    auto wide = std::vector<wchar_t>(wide_size);
+    auto wide      = std::vector<wchar_t>(wide_size);
     memset(wide.data(), 0, wide_size * sizeof(wchar_t));
     MultiByteToWideChar(CP_ACP, 0, cp949.c_str(), cp949.length(), wide.data(), wide_size);
 
     auto mbs_size = WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, nullptr, 0, nullptr, nullptr);
-    auto mbs = std::vector<char>(mbs_size);
+    auto mbs      = std::vector<char>(mbs_size);
     memset(mbs.data(), 0, mbs_size);
-    WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, mbs.data(), mbs_size, nullptr, nullptr); 
+    WideCharToMultiByte(CP_UTF8, 0, wide.data(), -1, mbs.data(), mbs_size, nullptr, nullptr);
 
     return std::string(mbs.data());
 #else
     size_t src_size = cp949.length();
-    char* src = const_cast<char*>(cp949.data());
+    char*  src      = const_cast<char*>(cp949.data());
 
     size_t dst_size = src_size * 2;
-    char* dst = new char[dst_size];
-    char* dst_head = dst;
+    char*  dst      = new char[dst_size];
+    char*  dst_head = dst;
     std::memset(dst, 0, dst_size);
 
     iconv_t cd = iconv_open("UTF-8", "CP949");
@@ -74,7 +74,7 @@ std::string utf8(const std::string& cp949)
 
 std::string CP949(const std::string& utf8, PLATFORM p)
 {
-    switch(p)
+    switch (p)
     {
     case PLATFORM::Both:
         return cp949(utf8);
@@ -100,7 +100,7 @@ std::string CP949(const std::string& utf8, PLATFORM p)
 
 std::string UTF8(const std::string& cp949, PLATFORM p)
 {
-    switch(p)
+    switch (p)
     {
     case PLATFORM::Both:
         return utf8(cp949);
@@ -128,7 +128,7 @@ std::wstring W(const std::string& m)
 {
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), nullptr, 0) + 1;
-    auto wide = std::vector<wchar_t>(wide_size);
+    auto wide      = std::vector<wchar_t>(wide_size);
     memset(wide.data(), 0, wide_size * sizeof(wchar_t));
     MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), wide.data(), wide_size);
 
@@ -143,10 +143,10 @@ std::string M(const std::wstring& w)
 {
 #ifdef _WIN32
     auto mbs_size = WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    auto mbs = std::vector<char>(mbs_size);
+    auto mbs      = std::vector<char>(mbs_size);
     memset(mbs.data(), 0, mbs_size);
     WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, mbs.data(), mbs_size, nullptr, nullptr);
-    
+
     return std::string(mbs.data());
 #else
     std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;

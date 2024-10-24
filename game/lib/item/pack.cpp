@@ -1,22 +1,21 @@
 #include <algorithm>
-#include <item.h>
 #include <context.h>
+#include <item.h>
 #include <model.h>
 
-fb::game::pack::pack(fb::game::context& context, const fb::model::pack& model) : 
+fb::game::pack::pack(fb::game::context& context, const fb::model::pack& model) :
     fb::game::item(context, model)
 {
     this->_durability = model.durability;
 }
 
-fb::game::pack::pack(const pack& right) : 
+fb::game::pack::pack(const pack& right) :
     item(right),
     _durability(right._durability)
 { }
 
 fb::game::pack::~pack()
 { }
-
 
 std::optional<uint32_t> fb::game::pack::durability() const
 {
@@ -25,36 +24,33 @@ std::optional<uint32_t> fb::game::pack::durability() const
 
 void fb::game::pack::durability(uint32_t value)
 {
-    auto& model = this->based<fb::model::pack>();
+    auto& model       = this->based<fb::model::pack>();
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
 std::string fb::game::pack::inven_name() const
 {
-    auto& model = this->based<fb::model::pack>();
-    auto sstream = std::stringstream();
-    sstream << model.name
-            << " [" 
-            << this->_durability 
-            << " 잔]";
+    auto& model   = this->based<fb::model::pack>();
+    auto  sstream = std::stringstream();
+    sstream << model.name << " [" << this->_durability << " 잔]";
 
     return sstream.str();
 }
 
 bool fb::game::pack::active()
 {
-    if(this->_durability <= 0)
+    if (this->_durability <= 0)
         return false;
 
     this->_durability--;
-    if(this->_durability <= 0)
+    if (this->_durability <= 0)
         this->count(0);
-    
+
     auto listener = this->_owner->get_listener<fb::game::character>();
-    if(listener != nullptr)
+    if (listener != nullptr)
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
-    if(this->empty())
+    if (this->empty())
         this->_owner->items.remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 
     return true;

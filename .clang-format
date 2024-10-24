@@ -1,0 +1,72 @@
+# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#configurable-format-style-options
+---
+Language: Cpp
+BasedOnStyle: LLVM
+IndentWidth: 4
+AccessModifierOffset: -4
+SortIncludes: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+BreakConstructorInitializers: AfterColon
+PackConstructorInitializers: Never
+AlignArrayOfStructures: Left
+AlignAfterOpenBracket: Align
+AlignConsecutiveMacros: AcrossEmptyLines
+AllowShortLambdasOnASingleLine: false
+AlignConsecutiveAssignments:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+  PadOperators: true
+AlignConsecutiveShortCaseStatements:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: true
+  AlignCaseColons: false
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+AlignEscapedNewlines: Left
+CompactNamespaces: true
+BinPackArguments: false
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: true
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterObjCDeclaration: true
+  AfterStruct: true
+  AfterUnion: true
+  AfterExternBlock: true
+  BeforeCatch: true
+  BeforeElse: true
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+  BeforeLambdaBody: false
+AlwaysBreakTemplateDeclarations: Yes
+IndentCaseLabels: false
+IndentPPDirectives: None
+IndentRequiresClause: false
+InsertTrailingCommas: Wrapped
+ContinuationIndentWidth: 4
+EmptyLineBeforeAccessModifier: Always
+BreakArrays: false
+SpacesInContainerLiterals: true
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterControlStatements: true
+  AfterFunctionDefinitionName: false
+  AfterOverloadedOperator: true
+SpaceInEmptyBlock: true
+PointerAlignment: Left
+ReferenceAlignment: Left
+AllowAllParametersOfDeclarationOnNextLine: false
+BinPackParameters: false
+ColumnLimit: 180

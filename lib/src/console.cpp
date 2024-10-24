@@ -4,11 +4,11 @@
 bool SetConsoleIcon(int id)
 {
     auto hwnd = ::GetConsoleWindow();
-    if(hwnd == nullptr)
+    if (hwnd == nullptr)
         return false;
 
     auto icon = ::LoadIcon(::GetModuleHandle(NULL), MAKEINTRESOURCE(id));
-    if(icon == nullptr)
+    if (icon == nullptr)
         return false;
 
     ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
@@ -19,14 +19,18 @@ bool SetConsoleIcon(int id)
 
 bool fb::console::line(uint16_t width, char content, char side)
 {
-    if(width < 3)
+    if (width < 3)
         return false;
 
-    int  offset = 0;
-    char buffer[256] = {0,};
+    int  offset      = 0;
+    char buffer[256] = {
+        0,
+    };
 
-    buffer[offset] = side;                          offset++;
-    std::memset(buffer+offset, content, width-1);   offset += (width-1);
+    buffer[offset] = side;
+    offset++;
+    std::memset(buffer + offset, content, width - 1);
+    offset += (width - 1);
     buffer[offset] = side;
 
     uint16_t before_x, before_y;
@@ -53,17 +57,20 @@ fb::console& fb::console::trim()
 
 bool fb::console::box(uint16_t width, uint16_t height)
 {
-    if(height < 3)
+    if (height < 3)
         return false;
 
-    auto rows = 0;
+    auto rows  = 0;
     auto pivot = this->y();
-    this->y(pivot + rows++);  this->line(width, '-', '+');
-    while(rows < height - 1)
+    this->y(pivot + rows++);
+    this->line(width, '-', '+');
+    while (rows < height - 1)
     {
-        this->y(pivot + rows++); this->line(width, ' ', '+');
+        this->y(pivot + rows++);
+        this->line(width, ' ', '+');
     }
-    this->y(pivot + rows++); this->line(width, '-', '+');
+    this->y(pivot + rows++);
+    this->line(width, '-', '+');
 
     this->y(pivot);
     return true;
@@ -135,6 +142,8 @@ fb::console& fb::console::get()
 {
     static std::unique_ptr<console> ist;
     static std::once_flag           flag;
-    std::call_once(flag, [] { ist.reset(new console()); });
+    std::call_once(flag, [] {
+        ist.reset(new console());
+    });
     return *ist;
 }

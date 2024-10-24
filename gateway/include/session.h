@@ -12,6 +12,6 @@ public:
     ~session();
 };
 
-} }
+}} // namespace fb::gateway
 
 #endif // !__SESSION_GATEWAY_H__

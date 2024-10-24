@@ -1,10 +1,10 @@
 #include <character.h>
+#include <context.h>
+#include <fb/thread.h>
 #include <map.h>
 #include <mob.h>
-#include <fb/thread.h>
-#include <context.h>
 
-fb::game::rezen::rezen(fb::game::context& context, const fb::model::mob_spawn& model) : 
+fb::game::rezen::rezen(fb::game::context& context, const fb::model::mob_spawn& model) :
     _context(context),
     _model(model)
 {
@@ -34,34 +34,30 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
         return;
 
     auto now = datetime();
-    if(!this->_respawn_time.has_value())
+    if (!this->_respawn_time.has_value())
         return;
 
     if (now < this->_respawn_time)
         return;
 
     auto spawn_count = this->_model.count - this->_count;
-    if(spawn_count < 1)
+    if (spawn_count < 1)
         return;
 
     for (int i = 0; i < spawn_count; i++)
     {
-        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob], fb::game::mob::config
-            {
-                .alive = true,
-                .rezen = this
-            });
+        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob], fb::game::mob::config{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->hp_up(mob->base_hp());
 
         while (true)
         {
-            auto width = this->_model.end.x - this->_model.begin.x;
-            auto height = this->_model.end.y - this->_model.begin.y;
-            auto position = point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0), this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
+            auto  width    = this->_model.end.x - this->_model.begin.x;
+            auto  height   = this->_model.end.y - this->_model.begin.y;
+            auto& map      = this->_context.maps[this->_model.parent];
+            auto  position = fb::model::point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0), this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
 
-            auto& map = this->_context.maps[this->_model.parent];
             if (position.x > map.width() - 1 || position.y > map.height() - 1)
                 continue;
 
@@ -80,12 +76,12 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     this->_respawn_time.reset();
 }
 
-fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) : 
+fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) :
     life(context, model, config),
     _rezen(config.rezen)
 {
     this->visible(config.alive);
-    if(config.alive)
+    if (config.alive)
     {
         this->hp_up(this->base_hp());
         this->mp_up(this->base_mp());
@@ -100,7 +96,7 @@ fb::game::mob::mob(const fb::game::mob& right) :
 
 fb::game::mob::~mob()
 {
-    if(this->_rezen != nullptr)
+    if (this->_rezen != nullptr)
         this->_rezen->decrease();
 }
 
@@ -109,29 +105,27 @@ bool fb::game::mob::action()
     this->fix();
 
     auto& model = this->based<fb::model::mob>();
-    if(model.attack_script.empty())
+    if (model.attack_script.empty())
         return false;
 
-    if(this->_attack_thread == nullptr)
+    if (this->_attack_thread == nullptr)
     {
         this->_attack_thread = fb::game::lua::get();
-        if(this->_attack_thread == nullptr)
+        if (this->_attack_thread == nullptr)
             return false;
 
-        this->_attack_thread->from(model.attack_script.c_str())
-            .func("on_attack")
-            .pushobject(this);
+        this->_attack_thread->from(model.attack_script.c_str()).func("on_attack").pushobject(this);
 
-        if(this->_target != nullptr)
+        if (this->_target != nullptr)
             this->_attack_thread->pushobject(this->_target);
         else
             this->_attack_thread->pushnil();
-        
+
         this->_attack_thread->resume(2);
     }
 
     auto stop = false;
-    switch(this->_attack_thread->state())
+    switch (this->_attack_thread->state())
     {
     case LUA_PENDING:
     case LUA_YIELD:
@@ -139,11 +133,11 @@ bool fb::game::mob::action()
         break;
 
     default:
-        stop = this->_attack_thread->toboolean(-1);
+        stop                 = this->_attack_thread->toboolean(-1);
         this->_attack_thread = nullptr;
         break;
     }
-    
+
     return stop;
 }
 
@@ -171,19 +165,19 @@ fb::game::life* fb::game::mob::fix()
 {
     try
     {
-        if(this->_target == nullptr)
+        if (this->_target == nullptr)
             throw nullptr;
 
-        if(this->_target->alive() == false)
+        if (this->_target->alive() == false)
             throw nullptr;
 
-        if(this->sight(*this->_target) == false)
+        if (this->sight(*this->_target) == false)
             throw nullptr;
     }
-    catch(...)
+    catch (...)
     {
         auto& model = this->based<fb::model::mob>();
-        if(model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
+        if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
             this->_target = this->find_target();
         else
             this->_target = nullptr;
@@ -194,19 +188,19 @@ fb::game::life* fb::game::mob::fix()
 
 fb::game::life* fb::game::mob::find_target()
 {
-    auto                    map = this->_map;
-    if(map == nullptr)
+    auto map = this->_map;
+    if (map == nullptr)
         return nullptr;
 
-    auto                    min_distance_sqrt = 0xFFFFFFFF;
-    for(auto x : this->showings(OBJECT_TYPE::CHARACTER))
+    auto min_distance_sqrt = 0xFFFFFFFF;
+    for (auto x : this->showings(OBJECT_TYPE::CHARACTER))
     {
-        auto                life = static_cast<fb::game::life*>(x);
-        if(life->alive() == false)
+        auto life = static_cast<fb::game::life*>(x);
+        if (life->alive() == false)
             continue;
 
-        auto                distance_sqrt = (uint32_t)std::abs(x->x() - this->x()) * std::abs(x->y() - this->y());
-        if(distance_sqrt > min_distance_sqrt)
+        auto distance_sqrt = (uint32_t)std::abs(x->x() - this->x()) * std::abs(x->y() - this->y());
+        if (distance_sqrt > min_distance_sqrt)
             continue;
 
         this->_target = life;
@@ -217,10 +211,10 @@ fb::game::life* fb::game::mob::find_target()
 
 bool fb::game::mob::near_target(DIRECTION& out) const
 {
-    for(int i = 0; i < 4; i++)
+    for (int i = 0; i < 4; i++)
     {
-        auto                direction = DIRECTION(i);
-        if(this->side(direction, OBJECT_TYPE::CHARACTER) != this->_target)
+        auto direction = DIRECTION(i);
+        if (this->side(direction, OBJECT_TYPE::CHARACTER) != this->_target)
             continue;
 
         out = direction;
@@ -235,60 +229,65 @@ void fb::game::mob::AI(const datetime& now)
     try
     {
         auto& model = this->based<fb::model::mob>();
-        if(now < this->_action_time + model.speed)
+        if (now < this->_action_time + model.speed)
             return;
 
         // 유효한 타겟이 없으면 고쳐준다.
         auto direction = DIRECTION::BOTTOM;
-        if(this->fix() == nullptr)
+        if (this->fix() == nullptr)
         {
             this->move(DIRECTION(std::rand() % 4));
         }
-        else if(this->near_target(direction))
+        else if (this->near_target(direction))
         {
             this->direction(direction);
             this->attack();
         }
         else
         {
-            auto                    x_axis = bool(std::rand()%2);
-            if(x_axis)
+            auto x_axis = bool(std::rand() % 2);
+            if (x_axis)
             {
-                if(this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))   throw nullptr;
-                if(this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))  throw nullptr;
-                if(this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))    throw nullptr;
-                if(this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM)) throw nullptr;
+                if (this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))
+                    throw nullptr;
+                if (this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))
+                    throw nullptr;
+                if (this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))
+                    throw nullptr;
+                if (this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM))
+                    throw nullptr;
             }
             else
             {
-                if(this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))    throw nullptr;
-                if(this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM)) throw nullptr;
-                if(this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))   throw nullptr;
-                if(this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))  throw nullptr;
+                if (this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))
+                    throw nullptr;
+                if (this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM))
+                    throw nullptr;
+                if (this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))
+                    throw nullptr;
+                if (this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))
+                    throw nullptr;
             }
 
-
             // 이동할 수 있는 방향으로 일단 이동한다.
-            auto                    random_direction = std::rand() % 4;
-            for(int i = 0; i < 4; i++)
+            auto random_direction = std::rand() % 4;
+            for (int i = 0; i < 4; i++)
             {
-                if(this->move(DIRECTION((random_direction + i) % 4)))
+                if (this->move(DIRECTION((random_direction + i) % 4)))
                     throw nullptr;
             }
         }
     }
-    catch(...)
-    {
-        
-    }
+    catch (...)
+    { }
 
     this->_action_time = now;
 }
 
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
-    auto& model = this->based<fb::model::mob>();
-    auto difference = model.damage.max - model.damage.min;
+    auto& model      = this->based<fb::model::mob>();
+    auto  difference = model.damage.max - model.damage.min;
     return model.damage.min + (std::rand() % difference);
 }
 
@@ -297,7 +296,7 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
     fb::game::life::on_damaged(from, damage, critical);
 
     auto& model = this->based<fb::model::mob>();
-    if(model.attack_type != MOB_ATTACK_TYPE::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
+    if (model.attack_type != MOB_ATTACK_TYPE::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
     {
         this->target(static_cast<fb::game::life*>(from));
     }
@@ -315,7 +314,7 @@ void fb::game::mob::on_die(fb::game::object* from)
 
     // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();
-    auto& drop = this->context.model.drop[model.drop];
+    auto& drop  = this->context.model.drop[model.drop];
 
     for (auto& dsl : drop.dsl)
     {
@@ -331,7 +330,7 @@ void fb::game::mob::on_die(fb::game::object* from)
             auto item = this->context.model.item[params.id].make(this->context);
             async::awaitable_get(item->map(this->map(), this->position()));
         }
-            break;
+        break;
         }
     }
 

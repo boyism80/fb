@@ -27,45 +27,45 @@ template <typename T>
 class queue : private pqueue<T>
 {
 private:
-    std::recursive_mutex                            _mutex;
+    std::recursive_mutex _mutex;
 
 public:
-    queue() = default;
-    ~queue() = default;
+    queue()                         = default;
+    ~queue()                        = default;
 
-    queue(const queue&) = delete;
-    queue(queue&&) = delete;
+    queue(const queue&)             = delete;
+    queue(queue&&)                  = delete;
 
-    queue& operator = (queue&) = delete;
-    queue& operator = (const queue&) = delete;
+    queue& operator= (queue&)       = delete;
+    queue& operator= (const queue&) = delete;
 
 public:
-    bool                                            empty()
+    bool empty()
     {
         auto _ = std::lock_guard(this->_mutex);
         return pqueue<T>::empty();
     }
-    void                                            enqueue(T&& ref, uint32_t priority = 0)
+    void enqueue(T&& ref, uint32_t priority = 0)
     {
         auto _ = std::lock_guard(this->_mutex);
         pqueue<T>::push({priority, std::move(ref)});
     }
 
-    bool                                dequeue(const std::function<void(T&&)>& fn)
+    bool dequeue(const std::function<void(T&&)>& fn)
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto _     = std::lock_guard(this->_mutex);
         auto empty = pqueue<T>::empty();
         if (empty)
             return false;
 
         auto& top = const_cast<T&>(this->top().second);
-        auto x = std::move(top);
+        auto  x   = std::move(top);
         this->pop();
         fn(std::move(x));
         return true;
     }
 };
 
-}
+} // namespace fb
 
 #endif

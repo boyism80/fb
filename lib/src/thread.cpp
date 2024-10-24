@@ -1,9 +1,8 @@
 #include <fb/thread.h>
 
-
-fb::thread::thread(uint8_t index) : 
+fb::thread::thread(uint8_t index) :
     _index(index)
-{ 
+{
     this->_thread = std::thread(std::bind(&fb::thread::handle_thread, this, std::placeholders::_1), index);
 }
 
@@ -16,18 +15,15 @@ void fb::thread::handle_thread(uint8_t index)
 {
     constexpr auto term = 100ms;
 
-    while(!this->_exit)
+    while (!this->_exit)
     {
-        auto completed = false;
-        completed = this->_queue.dequeue([this](auto&& x) mutable
-        {
-            async::awaitable_then(x.func(), [callback = x.callback](async::awaitable_result<void> result) 
-            {
+        auto completed = this->_queue.dequeue([this](auto&& x) mutable {
+            async::awaitable_then(x.func(), [callback = x.callback](async::awaitable_result<void> result) {
                 if (callback != nullptr)
                     callback();
             });
         });
-        if(completed)
+        if (completed)
             continue;
 
         auto begin = fb::model::datetime();
@@ -41,14 +37,14 @@ void fb::thread::handle_thread(uint8_t index)
 
 void fb::thread::handle_idle()
 {
-    auto _ = std::lock_guard(this->_mutex_timer);
+    auto _       = std::lock_guard(this->_mutex_timer);
 
     auto indices = std::vector<uint32_t>();
-    auto now = fb::model::datetime();
-    for(int i = this->_timers.size() - 1; i >= 0; i--)
+    auto now     = fb::model::datetime();
+    for (int i = this->_timers.size() - 1; i >= 0; i--)
     {
-        auto& timer = this->_timers[i];
-        auto elapsed = fb::model::datetime() - timer->begin;
+        auto& timer   = this->_timers[i];
+        auto  elapsed = fb::model::datetime() - timer->begin;
         if (timer->duration > elapsed)
             continue;
 
@@ -67,9 +63,9 @@ void fb::thread::exit()
     if (this->_thread.joinable())
         this->_thread.join();
 
-this->_mutex_timer.lock();
+    this->_mutex_timer.lock();
     this->_timers.clear();
-this->_mutex_timer.unlock();
+    this->_mutex_timer.unlock();
 }
 
 async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay, uint32_t priority)
@@ -77,20 +73,24 @@ async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>&
     auto promise = std::make_shared<async::task_completion_source<void>>();
     if (delay > 0s)
     {
-        this->settimer([this, priority, promise, fn](auto time, auto id) mutable
-        {
-            this->_queue.enqueue(fb::thread::task(fn, [promise]() 
-            {
-                promise->set_value();
-            }), priority);
-        }, delay, true);
+        this->settimer(
+            [this, priority, promise, fn](auto time, auto id) mutable {
+                this->_queue.enqueue(fb::thread::task(fn,
+                                                      [promise]() {
+                                                          promise->set_value();
+                                                      }),
+                                     priority);
+            },
+            delay,
+            true);
     }
     else
     {
-        this->_queue.enqueue(fb::thread::task(fn, [promise]() 
-        {
-            promise->set_value();
-        }), priority);
+        this->_queue.enqueue(fb::thread::task(fn,
+                                              [promise]() {
+                                                  promise->set_value();
+                                              }),
+                             priority);
     }
 
     return promise->task();
@@ -100,10 +100,12 @@ void fb::thread::post(const std::function<async::task<void>()>& fn, const fb::mo
 {
     if (delay > 0s)
     {
-        this->settimer([this, priority, fn](auto time, auto id) mutable
-        {
-            this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
-        }, delay, true);
+        this->settimer(
+            [this, priority, fn](auto time, auto id) mutable {
+                this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
+            },
+            delay,
+            true);
     }
     else
     {
@@ -113,49 +115,56 @@ void fb::thread::post(const std::function<async::task<void>()>& fn, const fb::mo
 
 async::task<void> fb::thread::dispatch(uint32_t priority)
 {
-    co_await this->dispatch([] () -> async::task<void>
-    {
-        co_return;
-    }, 0s, priority);
+    co_await this->dispatch(
+        []() -> async::task<void> {
+            co_return;
+        },
+        0s,
+        priority);
 }
 
 void fb::thread::settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable)
 {
-    auto _ = std::lock_guard(this->_mutex_timer);
+    auto _     = std::lock_guard(this->_mutex_timer);
 
-    auto timer = new fb::timer([this, fn](const fb::model::datetime&, std::thread::id)
-    {
-        fn(fb::model::datetime(), this->_thread.get_id());
-    }, duration, disposable);
+    auto timer = new fb::timer(
+        [this, fn](const fb::model::datetime&, std::thread::id) {
+            fn(fb::model::datetime(), this->_thread.get_id());
+        },
+        duration,
+        disposable);
     this->_timers.push_back(std::unique_ptr<fb::timer>(timer));
 }
 
 async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
 {
-    co_await this->dispatch([] () -> async::task<void>
-    {
-        co_return;
-    }, delay);
+    co_await this->dispatch(
+        []() -> async::task<void> {
+            co_return;
+        },
+        delay);
 }
 
-fb::thread::task::task(const fb::thread::task::func_type& func) : func(func)
-{}
+fb::thread::task::task(const fb::thread::task::func_type& func) :
+    func(func)
+{ }
 
-fb::thread::task::task(const fb::thread::task::func_type& func, const fb::thread::task::callback_type& callback) : func(func), callback(callback)
-{}
+fb::thread::task::task(const fb::thread::task::func_type& func, const fb::thread::task::callback_type& callback) :
+    func(func),
+    callback(callback)
+{ }
 
-fb::thread::task::task(fb::thread::task&& r) noexcept : func(std::move(r.func)), callback(std::move(r.callback))
-{
-    
-}
+fb::thread::task::task(fb::thread::task&& r) noexcept :
+    func(std::move(r.func)),
+    callback(std::move(r.callback))
+{ }
 
 fb::thread::task::~task()
-{
-}
+{ }
 
-void fb::thread::task::operator = (fb::thread::task&& r) noexcept
+void fb::thread::task::operator= (fb::thread::task&& r) noexcept
 {
-    this->func = std::move(r.func);
+    this->func     = std::move(r.func);
     this->callback = std::move(r.callback);
 }
 
@@ -169,17 +178,17 @@ uint8_t fb::thread::index() const
     return this->_index;
 }
 
-fb::threads::threads(boost::asio::io_context& context) : 
+fb::threads::threads(boost::asio::io_context& context) :
     _context(context)
 {
     auto count = fb::config::get()["thread"]["logic"].asUInt();
-    if(count > 0)
+    if (count > 0)
         this->_keys = std::make_unique<std::thread::id[]>(count);
 
-    for(int i = 0; i < count; i++)
+    for (int i = 0; i < count; i++)
     {
-        auto ptr = std::make_unique<fb::thread>(i);
-        auto id = ptr->id();
+        auto ptr       = std::make_unique<fb::thread>(i);
+        auto id        = ptr->id();
         this->_keys[i] = id;
         this->_threads.insert(std::make_pair(id, std::move(ptr)));
     }
@@ -190,7 +199,7 @@ fb::thread* fb::threads::at(uint8_t index) const
     if (this->_threads.size() == 0)
         return nullptr;
 
-    if(index > this->_threads.size() - 1)
+    if (index > this->_threads.size() - 1)
         return nullptr;
 
     auto& id = this->_keys[index];
@@ -200,7 +209,7 @@ fb::thread* fb::threads::at(uint8_t index) const
 fb::thread* fb::threads::at(std::thread::id id) const
 {
     auto found = this->_threads.find(id);
-    if(found == this->_threads.end())
+    if (found == this->_threads.end())
         return nullptr;
     else
         return found->second.get();
@@ -208,9 +217,9 @@ fb::thread* fb::threads::at(std::thread::id id) const
 
 fb::thread* fb::threads::current()
 {
-    auto id = std::this_thread::get_id();
+    auto id    = std::this_thread::get_id();
     auto found = this->_threads.find(id);
-    if(found == this->_threads.end())
+    if (found == this->_threads.end())
         return nullptr;
     else
         return found->second.get();
@@ -218,9 +227,9 @@ fb::thread* fb::threads::current()
 
 const fb::thread* fb::threads::current() const
 {
-    auto id = std::this_thread::get_id();
+    auto id    = std::this_thread::get_id();
     auto found = this->_threads.find(id);
-    if(found == this->_threads.end())
+    if (found == this->_threads.end())
         return nullptr;
     else
         return found->second.get();
@@ -244,7 +253,7 @@ bool fb::threads::valid(uint8_t index) const
 
 bool fb::threads::valid(fb::thread* thread) const
 {
-    if(thread == nullptr)
+    if (thread == nullptr)
         return this->empty();
 
     return this->valid(*thread);
@@ -272,13 +281,13 @@ async::task<void> fb::threads::dispatch(const std::function<async::task<void>()>
 
 void fb::threads::settimer(const fb::timer_callback& fn, const fb::model::timespan& duration)
 {
-    if(this->_threads.empty())
+    if (this->_threads.empty())
     {
         throw std::runtime_error("cannot set timer. logic thread does not exists");
     }
     else
     {
-        for(auto& [key, value] : this->_threads)
+        for (auto& [key, value] : this->_threads)
         {
             value->settimer(fn, duration);
         }
@@ -296,12 +305,12 @@ void fb::threads::exit()
     this->_threads.clear();
 }
 
-fb::thread* fb::threads::operator[](uint8_t index) const
+fb::thread* fb::threads::operator[] (uint8_t index) const
 {
     return this->at(index);
 }
 
-fb::thread* fb::threads::operator[](std::thread::id id) const
+fb::thread* fb::threads::operator[] (std::thread::id id) const
 {
     return this->at(id);
 }

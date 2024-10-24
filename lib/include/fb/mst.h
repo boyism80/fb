@@ -17,17 +17,17 @@ template <typename T>
 class mst
 {
 public:
-    using node_list = std::vector<mst<T>*>;
+    using node_list  = std::vector<mst<T>*>;
     using node_route = std::list<std::reference_wrapper<const mst<T>>>;
-    using init_fn = std::function<const T&()>;
+    using init_fn    = std::function<const T&()>;
 
 private:
     std::vector<std::unique_ptr<fb::mst<T>>> _allocated;
-    node_list                   _nodes;
+    node_list                                _nodes;
 
 public:
-    const T                     data;
-    const fb::mst<T>*           parent = nullptr;
+    const T           data;
+    const fb::mst<T>* parent = nullptr;
 
 protected:
     mst(const mst<T>&) = delete;
@@ -37,30 +37,32 @@ public:
     virtual ~mst() = default;
 
 protected:
-    bool                        contains(const fb::mst<T>& node) const;
-    bool                        subtree(const fb::mst<T>& sub) const;
-    void                        travel(const std::function<bool(const node_route&)>& fn) const;
+    bool contains(const fb::mst<T>& node) const;
+    bool subtree(const fb::mst<T>& sub) const;
+    void travel(const std::function<bool(const node_route&)>& fn) const;
 
 public:
     template <typename R, typename... Args>
-    R&                          add(Args&&... args);
+    R& add(Args&&... args);
     template <typename R>
-    R&                          add(R& node);
-    const mst<T>&               root() const;
-    fb::mst<T>*                 search(const fb::mst<T>& node) const;
+    R&            add(R& node);
+    const mst<T>& root() const;
+    fb::mst<T>*   search(const fb::mst<T>& node) const;
 
 public:
-    node_list::iterator         begin();
-    node_list::iterator         end();
-    node_list::const_iterator   begin() const;
-    node_list::const_iterator   end() const;
-    virtual bool                compare(const T&) const = 0;
+    node_list::iterator       begin();
+    node_list::iterator       end();
+    node_list::const_iterator begin() const;
+    node_list::const_iterator end() const;
+    virtual bool              compare(const T&) const = 0;
 };
 
-}
+} // namespace fb
 
 template <typename T>
-fb::mst<T>::mst(const T& data, const mst<T>* parent) : data(data), parent(parent)
+fb::mst<T>::mst(const T& data, const mst<T>* parent) :
+    data(data),
+    parent(parent)
 { }
 
 template <typename T>
@@ -69,16 +71,16 @@ bool fb::mst<T>::contains(const fb::mst<T>& node) const
     if (this->data != node.data)
         return false;
 
-    if(this->_nodes.size() < node._nodes.size())
+    if (this->_nodes.size() < node._nodes.size())
         return false;
 
     if (node._nodes.size() == 0)
         return true;
 
-    for(auto i1 = this->_nodes.cbegin(); i1 != this->_nodes.cend(); i1++)
+    for (auto i1 = this->_nodes.cbegin(); i1 != this->_nodes.cend(); i1++)
     {
         auto match = true;
-        for(auto i2 = node._nodes.cbegin(); i2 != node._nodes.cend(); i2++)
+        for (auto i2 = node._nodes.cbegin(); i2 != node._nodes.cend(); i2++)
         {
             match = match && (*i1)->contains(i2->get());
             if (!match)
@@ -98,7 +100,7 @@ bool fb::mst<T>::subtree(const fb::mst<T>& sub) const
     if (this->contains(sub))
         return true;
 
-    for(auto i1 = this->_nodes.cbegin(); i1 != this->_nodes.cend(); i1++)
+    for (auto i1 = this->_nodes.cbegin(); i1 != this->_nodes.cend(); i1++)
     {
         if ((*i1)->subtree(sub))
             return true;
@@ -114,11 +116,11 @@ void fb::mst<T>::travel(const std::function<bool(const node_route&)>& fn) const
     if (this->data.empty())
     {
         for (auto& node : this->_nodes)
-            queue.push({ *node });
+            queue.push({*node});
     }
     else
     {
-        queue.push({ *this });
+        queue.push({*this});
     }
 
     while (queue.empty() == false)
@@ -129,7 +131,7 @@ void fb::mst<T>::travel(const std::function<bool(const node_route&)>& fn) const
         auto& back = nodes.back().get();
         if (back._nodes.empty())
         {
-            if(fn(nodes) == true)
+            if (fn(nodes) == true)
                 break;
         }
         else
@@ -148,7 +150,7 @@ template <typename T>
 template <typename R, typename... Args>
 R& fb::mst<T>::add(Args&&... args)
 {
-    auto ptr = std::unique_ptr<fb::mst<T>>(new R(std::forward<Args>(args)...));
+    auto ptr  = std::unique_ptr<fb::mst<T>>(new R(std::forward<Args>(args)...));
     auto node = ptr.get();
     this->_allocated.push_back(std::move(ptr));
 
@@ -179,7 +181,7 @@ const fb::mst<T>& fb::mst<T>::root() const
 template <typename T>
 fb::mst<T>* fb::mst<T>::search(const fb::mst<T>& node) const
 {
-    if(this->compare(node.data))
+    if (this->compare(node.data))
         return const_cast<fb::mst<T>*>(this);
 
     for (auto i = this->_nodes.cbegin(); i != this->_nodes.cend(); i++)

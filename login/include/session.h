@@ -8,14 +8,14 @@ namespace fb { namespace login {
 class session
 {
 public:
-    uint32_t                pk = -1;
-    std::string             name;
+    uint32_t    pk = -1;
+    std::string name;
 
 public:
     session();
     ~session();
 };
 
-} }
+}} // namespace fb::login
 
 #endif // !__SESSION_LOGIN_H__

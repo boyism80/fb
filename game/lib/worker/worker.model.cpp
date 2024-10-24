@@ -1,14 +1,14 @@
-#include <worker.h>
 #include <context.h>
+#include <worker.h>
 
-fb::game::model_loader::model_loader(fb::game::context& context) : _context(context)
+fb::game::model_loader::model_loader(fb::game::context& context) :
+    _context(context)
 { }
 
 fb::generator<fb::game::model_loader::input_type> fb::game::model_loader::on_ready()
 {
     auto buffer = std::vector<std::reference_wrapper<fb::model::container>>();
-    this->_context.model.foreach([&, this] (auto& container)
-    {
+    this->_context.model.foreach ([&, this](auto& container) {
         buffer.push_back(container);
     });
 

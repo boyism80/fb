@@ -5,7 +5,6 @@
 
 namespace fb { namespace protocol { namespace request {
 
-
-} } }
+}}} // namespace fb::protocol::request
 
 #endif // !__PROTOCOL_REQUEST_COMMON_H__

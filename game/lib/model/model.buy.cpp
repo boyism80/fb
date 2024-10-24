@@ -16,8 +16,8 @@ const fb::model::buy* fb::model::__buy::find(uint32_t pursuit, const fb::model::
 
 const fb::model::buy* fb::model::__buy::find(const fb::model::npc& npc, const fb::model::item& item) const
 {
-	if(npc.buy.has_value() == false)
-		return nullptr;
+    if (npc.buy.has_value() == false)
+        return nullptr;
 
-	return this->find(npc.buy.value(), item);
+    return this->find(npc.buy.value(), item);
 }

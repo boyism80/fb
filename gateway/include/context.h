@@ -34,27 +34,32 @@ public:
     ~context();
 
 private:
-    bool                        load_entries();
+    bool load_entries();
 
 private:
-    fb::ostream                 make_crt_stream(const fb::cryptor& crt);
+    fb::ostream make_crt_stream(const fb::cryptor& crt);
 
     // override
+
 protected:
-    bool                        decrypt_policy(uint8_t) const final;
-    fb::gateway::session*       handle_accepted(fb::socket<fb::gateway::session>& socket) final;
-    bool                        handle_connected(fb::socket<fb::gateway::session>& session) final;
-    async::task<bool>           handle_disconnected(fb::socket<fb::gateway::session>& session) final;
-    
+    bool                  decrypt_policy(uint8_t) const final;
+    fb::gateway::session* handle_accepted(fb::socket<fb::gateway::session>& socket) final;
+    bool                  handle_connected(fb::socket<fb::gateway::session>& session) final;
+    async::task<bool>     handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+
     // for heart-beat
+
 protected:
-    Service                     service() const final { return Service::Gateway; }
+    Service service() const final
+    {
+        return Service::Gateway;
+    }
 
 public:
-    async::task<bool>           handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
-    async::task<bool>           handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
+    async::task<bool> handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
+    async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
 };
 
-} }
+}} // namespace fb::gateway
 
 #endif // !__FB_GATEWAY_H__

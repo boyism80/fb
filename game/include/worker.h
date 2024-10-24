@@ -21,11 +21,11 @@ public:
     ~model_loader() = default;
 
 protected:
-    fb::generator<input_type>   on_ready();
-    void                        on_work(const input_type& value);
-    void                        on_worked(const input_type& input, double percent);
-    void                        on_error(const input_type& input, std::exception& e);
-    void                        on_finish();
+    fb::generator<input_type> on_ready();
+    void                      on_work(const input_type& value);
+    void                      on_worked(const input_type& input, double percent);
+    void                      on_error(const input_type& input, std::exception& e);
+    void                      on_finish();
 };
 
 class map_loader : public fb::parallel_worker<std::reference_wrapper<fb::model::map>>
@@ -41,11 +41,11 @@ public:
     ~map_loader() = default;
 
 protected:
-    fb::generator<input_type>   on_ready();
-    void                        on_work(const input_type& value);
-    void                        on_worked(const input_type& input, double percent);
-    void                        on_error(const input_type& input, std::exception& e);
-    void                        on_finish();
+    fb::generator<input_type> on_ready();
+    void                      on_work(const input_type& value);
+    void                      on_worked(const input_type& input, double percent);
+    void                      on_error(const input_type& input, std::exception& e);
+    void                      on_finish();
 };
 
 class npc_spawner : public fb::parallel_worker<std::reference_wrapper<fb::model::npc_spawn>>
@@ -61,13 +61,13 @@ public:
     ~npc_spawner() = default;
 
 protected:
-    fb::generator<input_type>   on_ready();
-    void                        on_work(const input_type& value);
-    void                        on_worked(const input_type& input, double percent);
-    void                        on_error(const input_type& input, std::exception& e);
-    void                        on_finish();
+    fb::generator<input_type> on_ready();
+    void                      on_work(const input_type& value);
+    void                      on_worked(const input_type& input, double percent);
+    void                      on_error(const input_type& input, std::exception& e);
+    void                      on_finish();
 };
 
-} }
+}} // namespace fb::game
 
 #endif

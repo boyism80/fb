@@ -1,5 +1,5 @@
-#include <map.h>
 #include <context.h>
+#include <map.h>
 
 fb::game::map::map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size) :
     context(context),
@@ -14,28 +14,27 @@ fb::game::map::map(const fb::game::context& context, const fb::model::map& model
 
     fb::istream istream((uint8_t*)data, size);
     this->_size.width = istream.read_u16();
-    if(this->_size.width == 0)
+    if (this->_size.width == 0)
         throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
 
     this->_size.height = istream.read_u16();
-    if(this->_size.height == 0)
+    if (this->_size.height == 0)
         throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
 
     uint32_t map_size = this->_size.width * this->_size.height;
-    this->_tiles = std::make_unique<tile[]>(map_size);
-    if(this->_tiles == nullptr)
+    this->_tiles      = std::make_unique<tile[]>(map_size);
+    if (this->_tiles == nullptr)
         throw std::runtime_error("맵 타일 메모리를 할당할 수 없습니다.");
 
-    for(uint32_t i = 0; i < map_size; i++)
+    for (uint32_t i = 0; i < map_size; i++)
     {
-        this->_tiles[i].id = istream.read_u16();
+        this->_tiles[i].id     = istream.read_u16();
         this->_tiles[i].object = istream.read_u16();
     }
 
-
     // compare linear doors
     point16_t position;
-    for(auto& [id, door] : context.model.door)
+    for (auto& [id, door] : context.model.door)
     {
         position.x = position.y = 0;
         while (door.find(*this, position, true))
@@ -74,10 +73,10 @@ point16_t fb::game::map::point(uint64_t i) const
 
 bool fb::game::map::blocked(uint16_t x, uint16_t y) const
 {
-    if(x >= this->_size.width)
+    if (x >= this->_size.width)
         return true;
 
-    if(y >= this->_size.height)
+    if (y >= this->_size.height)
         return true;
 
     return this->_tiles[y * this->_size.width + x].blocked;
@@ -85,13 +84,13 @@ bool fb::game::map::blocked(uint16_t x, uint16_t y) const
 
 bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
 {
-    if(this->_tiles == nullptr)
+    if (this->_tiles == nullptr)
         return false;
 
-    if(x >= this->_size.width)
+    if (x >= this->_size.width)
         return false;
 
-    if(y >= this->_size.height)
+    if (y >= this->_size.height)
         return false;
 
     this->_tiles[y * this->_size.width + x].blocked = option;
@@ -140,21 +139,21 @@ bool fb::game::map::existable(const point16_t position) const
 
 bool fb::game::map::movable(const point16_t position) const
 {
-    if(this->existable(position) == false)
+    if (this->existable(position) == false)
         return false;
 
-    if((*this)(position.x, position.y)->blocked)
+    if ((*this)(position.x, position.y)->blocked)
         return false;
 
-    for(const auto& [key, value] : this->objects)
+    for (const auto& [key, value] : this->objects)
     {
-        if(value.visible() == false)
+        if (value.visible() == false)
             continue;
 
-        if(value.is(OBJECT_TYPE::ITEM))
+        if (value.is(OBJECT_TYPE::ITEM))
             continue;
 
-        if(value.position() == position)
+        if (value.position() == position)
             return false;
     }
 
@@ -163,9 +162,9 @@ bool fb::game::map::movable(const point16_t position) const
 
 bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction) const
 {
-    point16_t               position = object.position();
+    point16_t position = object.position();
 
-    switch(direction)
+    switch (direction)
     {
     case DIRECTION::BOTTOM:
         position.y++;
@@ -184,7 +183,7 @@ bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction)
         break;
     }
 
-    if(this->movable(position) == false)
+    if (this->movable(position) == false)
         return false;
 
     return true;
@@ -212,11 +211,11 @@ const fb::model::warp* fb::game::map::warpable(const point16_t& position) const
 
 bool fb::game::map::update(fb::game::object& object)
 {
-    if(this->_sectors == nullptr)
+    if (this->_sectors == nullptr)
         return false;
 
     auto sector = this->_sectors->at(object.position());
-    if(sector == nullptr)
+    if (sector == nullptr)
         return false;
 
     return object.sector(sector);
@@ -224,7 +223,7 @@ bool fb::game::map::update(fb::game::object& object)
 
 bool fb::game::map::activated() const
 {
-    if(this->_sectors == nullptr)
+    if (this->_sectors == nullptr)
         return false;
 
     return this->_sectors->activated();
@@ -232,8 +231,8 @@ bool fb::game::map::activated() const
 
 std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, OBJECT_TYPE type) const
 {
-    if(this->_sectors == nullptr)
-        return std::vector<fb::game::object*> { };
+    if (this->_sectors == nullptr)
+        return std::vector<fb::game::object*>{};
     else
         return this->_sectors->objects(pivot, type);
 }
@@ -243,22 +242,15 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, OBJ
     auto objects = std::vector<fb::game::object*>();
     try
     {
-        if(this->_sectors == nullptr)
+        if (this->_sectors == nullptr)
             throw std::exception();
 
         auto sector = this->_sectors->at(pivot);
-        std::copy_if
-        (
-            sector->begin(), sector->end(), std::back_inserter(objects),
-            [type, &pivot] (auto x)
-            {
-                return 
-                    (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && 
-                    x->position() == pivot;
-            }
-        );
+        std::copy_if(sector->begin(), sector->end(), std::back_inserter(objects), [type, &pivot](auto x) {
+            return (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && x->position() == pivot;
+        });
     }
-    catch(std::exception&)
+    catch (std::exception&)
     { }
 
     return std::move(objects);
@@ -266,39 +258,37 @@ std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, OBJ
 
 std::vector<fb::game::object*> fb::game::map::activateds(OBJECT_TYPE type)
 {
-    if(this->_sectors == nullptr)
-        return std::vector<fb::game::object*> { };
+    if (this->_sectors == nullptr)
+        return std::vector<fb::game::object*>{};
     else
         return this->_sectors->activated_objects(type);
 }
 
 void fb::game::map::on_timer(uint64_t elapsed_milliseconds)
-{
-    
-}
+{ }
 
-fb::game::map::tile* fb::game::map::operator()(uint16_t x, uint16_t y) const
+fb::game::map::tile* fb::game::map::operator() (uint16_t x, uint16_t y) const
 {
-    if(x > this->_size.width)
+    if (x > this->_size.width)
         return nullptr;
 
-    if(y > this->_size.height)
+    if (y > this->_size.height)
         return nullptr;
 
-    auto i = this->index(fb::model:: point16_t(x, y));
+    auto i = this->index(fb::model::point16_t(x, y));
     return &this->_tiles[i];
 }
 
 int fb::game::map::builtin_width(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
-    
+
     thread->pushinteger(map->width());
     return 1;
 }
@@ -306,13 +296,12 @@ int fb::game::map::builtin_width(lua_State* lua)
 int fb::game::map::builtin_height(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
-    
 
     thread->pushinteger(map->height());
     return 1;
@@ -321,13 +310,12 @@ int fb::game::map::builtin_height(lua_State* lua)
 int fb::game::map::builtin_area(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
-    
 
     thread->pushinteger(map->width());
     thread->pushinteger(map->height());
@@ -337,21 +325,20 @@ int fb::game::map::builtin_area(lua_State* lua)
 int fb::game::map::builtin_objects(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
-    
 
     thread->new_table();
     const auto& objects = map->objects;
 
-    for(int i = 0; i < objects.size(); i++)
+    for (int i = 0; i < objects.size(); i++)
     {
         thread->pushobject(map->objects[i]);
-        lua_rawseti(lua, -2, i+1);
+        lua_rawseti(lua, -2, i + 1);
     }
 
     return 1;
@@ -360,16 +347,16 @@ int fb::game::map::builtin_objects(lua_State* lua)
 int fb::game::map::builtin_movable(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
-    
+
     auto position = point16_t();
 
-    if(lua_istable(lua, 2))
+    if (lua_istable(lua, 2))
     {
         lua_rawgeti(lua, 2, 1);
         position.x = (uint16_t)thread->tointeger(-1);
@@ -379,7 +366,7 @@ int fb::game::map::builtin_movable(lua_State* lua)
         position.y = (uint16_t)thread->tointeger(-1);
         lua_remove(lua, -1);
     }
-    else if(lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
+    else if (lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
     {
         position.x = (uint16_t)thread->tointeger(2);
         position.y = (uint16_t)thread->tointeger(3);
@@ -397,21 +384,20 @@ int fb::game::map::builtin_movable(lua_State* lua)
 int fb::game::map::builtin_door(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
-        return 0;
-    
-    auto context = thread->env<fb::game::context>("context");
-    auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
-        return 0;
-    
-    auto session = thread->touserdata<fb::game::character>(2);
-    if(session == nullptr)
+    if (thread == nullptr)
         return 0;
 
+    auto context = thread->env<fb::game::context>("context");
+    auto map     = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto session = thread->touserdata<fb::game::character>(2);
+    if (session == nullptr)
+        return 0;
 
     auto door = map->doors.find(*session);
-    if(door == nullptr)
+    if (door == nullptr)
         thread->pushnil();
     else
         thread->pushobject(door);
@@ -422,32 +408,31 @@ int fb::game::map::builtin_door(lua_State* lua)
 int fb::game::map::builtin_doors(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
-    
 
     thread->new_table();
 
     auto i = 0;
-    for(const auto& door : map->doors)
+    for (const auto& door : map->doors)
     {
         thread->pushobject(door.second);
-        lua_rawseti(lua, -2, i+1);
+        lua_rawseti(lua, -2, i + 1);
     }
-    
+
     return 1;
 }
 
 int fb::game::map::builtin_contains(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
@@ -455,7 +440,7 @@ int fb::game::map::builtin_contains(lua_State* lua)
     auto you = thread->touserdata<fb::game::object>(1);
     if (you == nullptr)
         return 0;
-    
+
     for (auto& [fd, obj] : map->objects)
     {
         if (obj == *you)
@@ -464,12 +449,14 @@ int fb::game::map::builtin_contains(lua_State* lua)
             return 1;
         }
     }
-    
+
     thread->pushboolean(false);
     return 1;
 }
 
-fb::game::maps::maps(const fb::game::context& context, uint32_t host) : context(context), host(host)
+fb::game::maps::maps(const fb::game::context& context, uint32_t host) :
+    context(context),
+    host(host)
 { }
 
 fb::game::maps::~maps()
@@ -477,12 +464,12 @@ fb::game::maps::~maps()
 
 bool fb::game::maps::load_data(uint32_t id, std::vector<char>& buffer)
 {
-    auto                    fname = std::format("maps/{:06}.map", id);
-    auto                    file = std::ifstream(fname, std::ios::binary);
-    if(file.is_open() == false)
+    auto fname = std::format("maps/{:06}.map", id);
+    auto file  = std::ifstream(fname, std::ios::binary);
+    if (file.is_open() == false)
         return false;
 
-    buffer = std::vector<char>(std::istreambuf_iterator<char>(file), { });
+    buffer = std::vector<char>(std::istreambuf_iterator<char>(file), {});
     file.close();
 
     return true;
@@ -490,13 +477,13 @@ bool fb::game::maps::load_data(uint32_t id, std::vector<char>& buffer)
 
 bool fb::game::maps::load_block(uint32_t id, Json::Value& buffer)
 {
-    auto                    fname = std::format("maps/{:06}.block", id);
-    std::ifstream           file(fname);
-    if(file.is_open() == false)
+    auto          fname = std::format("maps/{:06}.block", id);
+    std::ifstream file(fname);
+    if (file.is_open() == false)
         return false;
 
     Json::Reader reader;
-    if(reader.parse(file, buffer) == false)
+    if (reader.parse(file, buffer) == false)
         return false;
 
     file.close();
@@ -505,15 +492,15 @@ bool fb::game::maps::load_block(uint32_t id, Json::Value& buffer)
 
 void fb::game::maps::load(const fb::model::map& model)
 {
-    auto                active = (model.host == this->host);
-    auto                binary = std::vector<char>();
-    auto                blocks = Json::Value();
-    if(active)
+    auto active = (model.host == this->host);
+    auto binary = std::vector<char>();
+    auto blocks = Json::Value();
+    if (active)
     {
-        if(load_data(model.id, binary) == false)
+        if (load_data(model.id, binary) == false)
             throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA);
 
-        if(load_block(model.id, blocks) == false)
+        if (load_block(model.id, blocks) == false)
             throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK);
     }
 
@@ -531,10 +518,10 @@ void fb::game::maps::load(const fb::model::map& model)
 
 fb::game::map* fb::game::maps::name2map(const std::string& name) const
 {
-    for(const auto& [id, map] : *this)
+    for (const auto& [id, map] : *this)
     {
-       if (map.model.name == name)
-           return &map;
+        if (map.model.name == name)
+            return &map;
     }
 
     return nullptr;

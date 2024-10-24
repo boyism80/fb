@@ -11,11 +11,11 @@ namespace Internal.Service
         public RabbitMqService(IConfiguration configuration)
         {
             var section = configuration.GetSection("RabbitMQ");
-            _factory = new ConnectionFactory() 
+            _factory = new ConnectionFactory()
             {
-                HostName = section.GetValue<string>("Host"), 
-                Port = section.GetValue<int>("Port"), 
-                UserName = section.GetValue<string>("Uid"), 
+                HostName = section.GetValue<string>("Host"),
+                Port = section.GetValue<int>("Port"),
+                UserName = section.GetValue<string>("Uid"),
                 Password = section.GetValue<string>("Pwd")
             };
         }

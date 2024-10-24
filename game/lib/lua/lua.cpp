@@ -1,7 +1,7 @@
-#include <lua.h>
-#include <object.h>
 #include <item.h>
+#include <lua.h>
 #include <mob.h>
+#include <object.h>
 using namespace fb::game::lua;
 
 context* fb::game::lua::get()
@@ -19,11 +19,10 @@ context* fb::game::lua::get(lua_State* ctx)
 void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
 {
     auto& ist = container::ist();
-    ist.init_fn([name, fn] (main& m)
-    {
+    ist.init_fn([name, fn](main& m) {
         m.bind_function(name, fn);
     });
-    //lua_register(main::get(), name.c_str(), fn);
+    // lua_register(main::get(), name.c_str(), fn);
 }
 
 void fb::game::lua::load(const std::string& path)
@@ -37,15 +36,15 @@ void luable::to_lua(lua_State* ctx) const
     if (const auto context = fb::game::lua::get(ctx); context == nullptr)
         return;
 
-    const auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**)));     // [val]
-    *allocated = (void*)this;
+    const auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**))); // [val]
+    *allocated           = (void*)this;
 
     {
         auto& metaname = this->metaname();
-        luaL_getmetatable(ctx, metaname.c_str());                                   // [val, mt]
-        lua_pushcfunction(ctx, luable::builtin_gc);                                 // [val, mt, gc]
-        lua_setfield(ctx, -2, "__gc");                                              // [val, mt]
-        lua_setmetatable(ctx, -2);                                                  // [val]
+        luaL_getmetatable(ctx, metaname.c_str());   // [val, mt]
+        lua_pushcfunction(ctx, luable::builtin_gc); // [val, mt, gc]
+        lua_setfield(ctx, -2, "__gc");              // [val, mt]
+        lua_setmetatable(ctx, -2);                  // [val]
     }
 }
 
@@ -60,15 +59,19 @@ luable::~luable()
 
 int luable::builtin_gc(lua_State* ctx)
 {
-    if(const auto allocated = static_cast<void**>(lua_touserdata(ctx, 1)); allocated != nullptr)
+    if (const auto allocated = static_cast<void**>(lua_touserdata(ctx, 1)); allocated != nullptr)
         *allocated = nullptr;
     return 0;
 }
 
-context::context(lua_State* ctx) : _ctx(ctx), owner(nullptr)
+context::context(lua_State* ctx) :
+    _ctx(ctx),
+    owner(nullptr)
 { }
 
-context::context(lua_State* ctx, context& owner) : _ctx(ctx), owner(&owner)
+context::context(lua_State* ctx, context& owner) :
+    _ctx(ctx),
+    owner(&owner)
 { }
 
 context& context::pushstring(const std::string& value)
@@ -128,10 +131,10 @@ context& context::pop(int offset)
 std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);
-    if(x == nullptr)
+    if (x == nullptr)
         return std::string();
 
-    return CP949(x, PLATFORM::Windows); 
+    return CP949(x, PLATFORM::Windows);
 }
 
 context::operator lua_State* () const
@@ -157,16 +160,15 @@ bool context::resume(int argc, bool auto_release)
         return false;
     }
 
-    if(this->_state == LUA_PENDING)
+    if (this->_state == LUA_PENDING)
         return *this;
 
     auto state = lua_resume(*this, nullptr, argc);
 
-    if(this->_state != LUA_PENDING)
+    if (this->_state != LUA_PENDING)
         this->_state = state;
 
-    
-    switch(this->_state)
+    switch (this->_state)
     {
     case LUA_PENDING:
     case LUA_YIELD:
@@ -180,7 +182,7 @@ bool context::resume(int argc, bool auto_release)
         return false;
 
     default:
-        if(auto_release)
+        if (auto_release)
             main->release(*this);
         return true;
     }
@@ -194,7 +196,7 @@ int context::state() const
 void context::release()
 {
     auto main = static_cast<fb::game::lua::main*>(this->owner);
-    switch(this->_state)
+    switch (this->_state)
     {
     case LUA_OK:
         main->release(*this);
@@ -216,7 +218,8 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-main::main() : context(::luaL_newstate())
+main::main() :
+    context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 
@@ -241,12 +244,10 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, OBJECT_TYPE::OBJECT);
     lua_setglobal(*this, "OBJECT");
 
-
     lua_pushinteger(*this, NATION::GOGURYEO);
     lua_setglobal(*this, "NATION_GOGURYEO");
     lua_pushinteger(*this, NATION::BUYEO);
     lua_setglobal(*this, "NATION_BUYEO");
-
 
     lua_pushinteger(*this, CREATURE::PHOENIX);
     lua_setglobal(*this, "CREATURE_PHOENIX");
@@ -257,7 +258,6 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, CREATURE::DRAGON);
     lua_setglobal(*this, "CREATURE_DRAGON");
 
-
     lua_pushinteger(*this, DIRECTION::TOP);
     lua_setglobal(*this, "DIRECTION_TOP");
     lua_pushinteger(*this, DIRECTION::RIGHT);
@@ -266,7 +266,6 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "DIRECTION_BOTTOM");
     lua_pushinteger(*this, DIRECTION::LEFT);
     lua_setglobal(*this, "DIRECTION_LEFT");
-
 
     lua_pushinteger(*this, CONDITION::NONE);
     lua_setglobal(*this, "CONDITION_NONE");
@@ -280,7 +279,6 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "CONDITION_ORAL");
     lua_pushinteger(*this, CONDITION::MAP);
     lua_setglobal(*this, "CONDITION_MAP");
-
 
     lua_pushinteger(*this, SEX::MAN);
     lua_setglobal(*this, "SEX_MAN");
@@ -304,7 +302,6 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, ACTION::EAT);
     lua_setglobal(*this, "ACTION_EAT");
 
-
     lua_pushinteger(*this, STATE::NORMAL);
     lua_setglobal(*this, "STATE_NORMAL");
     lua_pushinteger(*this, STATE::GHOST);
@@ -320,14 +317,12 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, STATE::CLOACK);
     lua_setglobal(*this, "STATE_CLOACK");
 
-
     lua_pushinteger(*this, DEATH_PENALTY::NONE);
     lua_setglobal(*this, "DEATH_PENALTY_NONE");
     lua_pushinteger(*this, DEATH_PENALTY::DROP);
     lua_setglobal(*this, "DEATH_PENALTY_DROP");
     lua_pushinteger(*this, DEATH_PENALTY::DESTROY);
     lua_setglobal(*this, "DEATH_PENALTY_DESTROY");
-
 
     lua_pushinteger(*this, ITEM_DELETE_TYPE::REMOVED);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_REMOVED");
@@ -355,7 +350,6 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "ITEM_DELETE_ATTR_NONE");
     lua_pushinteger(*this, ITEM_DELETE_TYPE::DESTROY);
     lua_setglobal(*this, "ITEM_DELETE_ATTR_DESTROY");
-
 
     lua_pushinteger(*this, ITEM_ATTRIBUTE::NONE);
     lua_setglobal(*this, "ITEM_ATTR_NONE");
@@ -386,7 +380,6 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, ITEM_ATTRIBUTE::ARROW);
     lua_setglobal(*this, "ITEM_ATTR_ARROW");
 
-
     lua_pushinteger(*this, EQUIPMENT_POSITION::LEFT);
     lua_setglobal(*this, "POSITION_LEFT");
     lua_pushinteger(*this, EQUIPMENT_POSITION::RIGHT);
@@ -411,7 +404,6 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, EQUIPMENT_PARTS::RIGHT_AUX);
     lua_setglobal(*this, "EQUIPMENT_PARTS_RIGHT_AUX");
 
-
     lua_pushinteger(*this, WEAPON_TYPE::NORMAL);
     lua_setglobal(*this, "WEAPON_TYPE_NORMAL");
     lua_pushinteger(*this, WEAPON_TYPE::SPEAR);
@@ -423,7 +415,6 @@ main::main() : context(::luaL_newstate())
     lua_pushinteger(*this, WEAPON_TYPE::UNKNOWN);
     lua_setglobal(*this, "WEAPON_TYPE_UNKNOWN");
 
-
     lua_pushinteger(*this, MOB_ATTACK_TYPE::CONTAINMENT);
     lua_setglobal(*this, "OFFENSIVE_CONTAINMENT");
     lua_pushinteger(*this, MOB_ATTACK_TYPE::COUNTER);
@@ -434,7 +425,6 @@ main::main() : context(::luaL_newstate())
     lua_setglobal(*this, "NO_MOVE");
     lua_pushinteger(*this, MOB_ATTACK_TYPE::RUN_AWAY);
     lua_setglobal(*this, "OFFENSIVE_RUN_AWAY");
-
 
     lua_pushinteger(*this, MOB_SIZE::SMALL);
     lua_setglobal(*this, "MOB_SIZE_SMALL");
@@ -470,7 +460,7 @@ main::~main()
 context* main::get(lua_State& ctx)
 {
     auto found = this->busy.find(&ctx);
-    if(found == this->busy.end())
+    if (found == this->busy.end())
         return nullptr;
 
     return found->second.get();
@@ -478,20 +468,19 @@ context* main::get(lua_State& ctx)
 
 bool main::load_file(const std::string& path)
 {
-    if(path.empty())
+    if (path.empty())
         return true;
 
-    if(_bytecodes.contains(path))
+    if (_bytecodes.contains(path))
         return true;
 
     luaL_loadfile(*this, path.c_str());
-    void* params[] = {this, (void*)path.c_str()};
-    const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* params)
-    {
+    void*      params[] = {this, (void*)path.c_str()};
+    const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* params) {
         auto casted = (void**)(params);
-        auto ist = (main*)casted[0];
-        auto path = (const char*)casted[1];
-        if(ist->_bytecodes.contains(path) == false)
+        auto ist    = (main*)casted[0];
+        auto path   = (const char*)casted[1];
+        if (ist->_bytecodes.contains(path) == false)
             ist->_bytecodes[path] = std::vector<char>();
 
         for (int i = 0; i < size; i++)
@@ -506,7 +495,7 @@ bool main::load_file(const std::string& path)
 
 context* main::pop()
 {
-    if(this->idle.empty() == false)
+    if (this->idle.empty() == false)
     {
         auto& ctx = this->idle.begin()->second;
         auto  key = (lua_State*)*ctx;
@@ -514,12 +503,12 @@ context* main::pop()
         this->idle.erase(key);
         return this->busy[key].get();
     }
-    else if(this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
+    else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
         auto ptr = std::make_unique<thread>(*this);
         auto key = (lua_State*)*ptr.get();
 
-        if(this->idle.contains(key) || this->busy.contains(key))
+        if (this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
 
         this->busy.insert(std::make_pair(key, std::move(ptr)));
@@ -536,10 +525,10 @@ context& main::release(context& ctx)
     if (this->busy.contains(ctx) == false)
         return ctx;
 
-    if(this->idle.contains(ctx))
+    if (this->idle.contains(ctx))
         return ctx;
 
-    if(ctx.state() != LUA_OK)
+    if (ctx.state() != LUA_OK)
         throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
     lua_pop(ctx, -1);
@@ -554,18 +543,18 @@ context& main::release(context& ctx)
 void main::revoke(context& ctx)
 {
     auto i = this->busy.find(ctx);
-    if(i == this->busy.end())
+    if (i == this->busy.end())
         return;
-    
+
     this->busy.erase(i);
 }
 
-thread::thread(context& owner) : 
+thread::thread(context& owner) :
     context(::lua_newthread(owner), owner),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
 { }
 
-thread::thread(thread&& ctx) : 
+thread::thread(thread&& ctx) :
     context(ctx._ctx),
     ref(ctx.ref)
 { }
@@ -577,9 +566,8 @@ thread::~thread()
 
 fb::game::lua::container::container()
 {
-    this->init_fn([this] (main& m)
-    {
-        for(auto& path : this->_scripts)
+    this->init_fn([this](main& m) {
+        for (auto& path : this->_scripts)
             m.load_file(path);
     });
 }
@@ -591,8 +579,8 @@ main& fb::game::lua::container::get()
 {
     std::lock_guard gd(this->_mutex);
 
-    auto id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
-    if(this->_mains.contains(id) == false)
+    auto            id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
+    if (this->_mains.contains(id) == false)
     {
         auto ptr = std::unique_ptr<main>(new main());
         for (auto& fn : this->_init_funcs)
@@ -613,8 +601,8 @@ void fb::game::lua::container::init_fn(init_func&& fn)
 void fb::game::lua::container::load(const std::string& path)
 {
     std::lock_guard gd(this->_mutex);
-    
-    if(path.empty())
+
+    if (path.empty())
         return;
 
     this->_scripts.push_back(path);
@@ -622,9 +610,11 @@ void fb::game::lua::container::load(const std::string& path)
 
 fb::game::lua::container& fb::game::lua::container::ist()
 {
-    static std::once_flag               _flag;
-    static std::unique_ptr<container>   _ist;
+    static std::once_flag             _flag;
+    static std::unique_ptr<container> _ist;
 
-    std::call_once(_flag, [] { _ist = std::unique_ptr<container>(new container()); });
+    std::call_once(_flag, [] {
+        _ist = std::unique_ptr<container>(new container());
+    });
     return *_ist;
 }

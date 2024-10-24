@@ -1,6 +1,6 @@
 #include <model.h>
 
-const fb::model::promotion* fb::model::__promotion::operator () (fb::model::enum_value::CLASS cls, uint8_t promotion) const
+const fb::model::promotion* fb::model::__promotion::operator() (fb::model::enum_value::CLASS cls, uint8_t promotion) const
 {
     try
     {
@@ -21,7 +21,7 @@ bool fb::model::__promotion::name2class(const std::string& name, fb::model::enum
         {
             if (v2.name == name)
             {
-                cls = k1;
+                cls       = k1;
                 promotion = v2.step;
                 return true;
             }

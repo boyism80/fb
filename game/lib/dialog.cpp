@@ -1,5 +1,5 @@
-#include <dialog.h>
 #include <character.h>
+#include <dialog.h>
 
 fb::game::dialog::dialog(fb::game::character& owner) :
     _owner(owner)
@@ -40,8 +40,8 @@ fb::game::dialog& fb::game::dialog::resume(int argc)
         return *this;
     }
 
-    auto prev = ctx;
-    auto current = this->current();
+    auto prev        = ctx;
+    auto current     = this->current();
     auto return_size = lua_gettop(*ctx);
     if (current != nullptr)
     {
@@ -174,8 +174,7 @@ fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable& obje
     return *this;
 }
 
-
-// new 
+// new
 void fb::game::dialog::show(const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
@@ -197,7 +196,11 @@ void fb::game::dialog::show(const fb::model::npc& npc, const std::string& messag
         listener->on_dialog(this->_owner, npc, message, item_slots, interaction);
 }
 
-void fb::game::dialog::show(const fb::model::npc& npc, const std::string& message, const fb::game::dialog::item_pairs& pairs, uint16_t pursuit, fb::game::dialog::interaction interaction)
+void fb::game::dialog::show(const fb::model::npc&               npc,
+                            const std::string&                  message,
+                            const fb::game::dialog::item_pairs& pairs,
+                            uint16_t                            pursuit,
+                            fb::game::dialog::interaction       interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -211,7 +214,13 @@ void fb::game::dialog::input(const fb::model::npc& npc, const std::string& messa
         listener->on_dialog(this->_owner, npc, message, interaction);
 }
 
-void fb::game::dialog::input(const fb::model::npc& npc, const std::string& message, const std::string& top, const std::string& bottom, int maxlen, bool prev, fb::game::dialog::interaction interaction)
+void fb::game::dialog::input(const fb::model::npc&         npc,
+                             const std::string&            message,
+                             const std::string&            top,
+                             const std::string&            bottom,
+                             int                           maxlen,
+                             bool                          prev,
+                             fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)

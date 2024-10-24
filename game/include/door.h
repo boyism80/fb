@@ -22,14 +22,14 @@ public:
     class model;
 
 private:
-    bool                        _opened = false;
-    bool                        _locked = false;
+    bool _opened = false;
+    bool _locked = false;
 
 public:
-    const fb::game::map&        map;
-    const fb::model::door&      model;
-    const point16_t             position;
-    const uint16_t              width;
+    const fb::game::map&   map;
+    const fb::model::door& model;
+    const point16_t        position;
+    const uint16_t         width;
 
 public:
     door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened);
@@ -37,18 +37,18 @@ public:
     ~door();
 
 public:
-    //const door::model&          based() const;
-    bool                        toggle();
-    bool                        opened() const;
-    bool                        locked() const;
-    void                        lock(bool value);
+    // const door::model&          based() const;
+    bool toggle();
+    bool opened() const;
+    bool locked() const;
+    void lock(bool value);
 
 public:
-    static int                  builtin_toggle(lua_State* lua);
-    static int                  builtin_locked(lua_State* lua);
-    static int                  builtin_lock(lua_State* lua);
-    static int                  builtin_opened(lua_State* lua);
-    static int                  builtin_update(lua_State* lua);
+    static int builtin_toggle(lua_State* lua);
+    static int builtin_locked(lua_State* lua);
+    static int builtin_lock(lua_State* lua);
+    static int builtin_opened(lua_State* lua);
+    static int builtin_update(lua_State* lua);
 };
 
 class doors : private std::unordered_map<uint64_t, std::unique_ptr<door>>
@@ -61,7 +61,7 @@ public:
     friend class const_iterator;
 
 public:
-    const fb::game::map&        map;
+    const fb::game::map& map;
 
 public:
     using unordered_map<uint64_t, std::unique_ptr<door>>::begin;
@@ -76,13 +76,13 @@ public:
     ~doors();
 
 public:
-    iterator                    begin();
-    iterator                    end();
-    const_iterator              begin() const;
-    const_iterator              end() const;
-    void                        add(const point16_t& position, const fb::model::door& model, bool opened);
-    door*                       find(const point16_t position) const;
-    door*                       find(const character& session) const;
+    iterator       begin();
+    iterator       end();
+    const_iterator begin() const;
+    const_iterator end() const;
+    void           add(const point16_t& position, const fb::model::door& model, bool opened);
+    door*          find(const point16_t position) const;
+    door*          find(const character& session) const;
 };
 
 class doors::iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator
@@ -95,7 +95,7 @@ public:
     ~iterator() = default;
 
 public:
-    std::pair<point16_t, door&> operator * ();
+    std::pair<point16_t, door&> operator* ();
 };
 
 class doors::const_iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator
@@ -108,9 +108,9 @@ public:
     ~const_iterator() = default;
 
 public:
-    const std::pair<point16_t, door&> operator * () const;
+    const std::pair<point16_t, door&> operator* () const;
 };
 
-} }
+}} // namespace fb::game
 
 #endif // !__DOOR_H__

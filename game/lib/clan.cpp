@@ -1,11 +1,16 @@
 #include <clan.h>
 
-fb::game::clan::clan(const std::string& name, fb::game::character& owner, const character::container& members) : 
-    _name(name), _owner(owner), _members(members)
+fb::game::clan::clan(const std::string& name, fb::game::character& owner, const character::container& members) :
+    _name(name),
+    _owner(owner),
+    _members(members)
 { }
 
-fb::game::clan::clan(const std::string& name, const std::string& title, fb::game::character& owner, const character::container& members) : 
-    _name(name), _title(title), _owner(owner), _members(members)
+fb::game::clan::clan(const std::string& name, const std::string& title, fb::game::character& owner, const character::container& members) :
+    _name(name),
+    _title(title),
+    _owner(owner),
+    _members(members)
 { }
 
 fb::game::clan::~clan()
@@ -43,7 +48,7 @@ void fb::game::clan::title(const std::string& value)
 
 bool fb::game::clan::enter(fb::game::character& session)
 {
-    if(this->_members.contains(session))
+    if (this->_members.contains(session))
         return false;
 
     this->_members.push(session);
@@ -53,7 +58,7 @@ bool fb::game::clan::enter(fb::game::character& session)
 
 bool fb::game::clan::leave(fb::game::character& session)
 {
-    if(this->_members.contains(session) == false)
+    if (this->_members.contains(session) == false)
         return false;
 
     this->_members.erase(session);

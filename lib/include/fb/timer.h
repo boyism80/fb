@@ -18,24 +18,27 @@ public:
     friend class fb::thread;
 
 public:
-    const fb::timer_callback                        fn;
-    const fb::model::datetime                       begin;
-    const fb::model::timespan                       duration;
-    const bool                                      disposable = false;
+    const fb::timer_callback  fn;
+    const fb::model::datetime begin;
+    const fb::model::timespan duration;
+    const bool                disposable = false;
 
 private:
-    timer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable) : fn(fn), duration(duration), disposable(disposable)
-    {}
-    timer(const timer&) = delete;
-    timer(timer&&) = delete;
+    timer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable) :
+        fn(fn),
+        duration(duration),
+        disposable(disposable)
+    { }
+    timer(const timer&)             = delete;
+    timer(timer&&)                  = delete;
 
-    timer& operator = (timer&) = delete;
-    timer& operator = (const timer&) = delete;
+    timer& operator= (timer&)       = delete;
+    timer& operator= (const timer&) = delete;
 
 public:
     ~timer() = default;
 };
 
-}
+} // namespace fb
 
 #endif

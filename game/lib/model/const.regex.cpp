@@ -3,7 +3,7 @@
 bool fb::model::const_value::regex::match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -36,7 +36,7 @@ bool fb::model::const_value::regex::match_sell_message(const std::string& messag
 bool fb::model::const_value::regex::match_buy_message(const std::string& message, std::string& item, uint16_t& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -65,7 +65,7 @@ bool fb::model::const_value::regex::match_buy_message(const std::string& message
 bool fb::model::const_value::regex::match_repair_message(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::REPAIR);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -85,7 +85,7 @@ bool fb::model::const_value::regex::match_repair_message(const std::string& mess
 bool fb::model::const_value::regex::match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSIT_MONEY);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -114,7 +114,7 @@ bool fb::model::const_value::regex::match_deposit_money_message(const std::strin
 bool fb::model::const_value::regex::match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::WITHDRAW_MONEY);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -143,7 +143,7 @@ bool fb::model::const_value::regex::match_withdraw_money_message(const std::stri
 bool fb::model::const_value::regex::match_deposit_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSIT_ITEM);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -178,7 +178,7 @@ bool fb::model::const_value::regex::match_deposit_item_message(const std::string
 bool fb::model::const_value::regex::match_withdraw_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::WITHDRAW_ITEM);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -213,7 +213,7 @@ bool fb::model::const_value::regex::match_withdraw_item_message(const std::strin
 bool fb::model::const_value::regex::match_sell_list(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL_LIST);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -223,7 +223,7 @@ bool fb::model::const_value::regex::match_sell_list(const std::string& message)
 bool fb::model::const_value::regex::match_buy_list(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY_LIST);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -233,7 +233,7 @@ bool fb::model::const_value::regex::match_buy_list(const std::string& message)
 bool fb::model::const_value::regex::match_sell_price(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::SELL_PRICE);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -244,7 +244,7 @@ bool fb::model::const_value::regex::match_sell_price(const std::string& message,
 bool fb::model::const_value::regex::match_buy_price(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::BUY_PRICE);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -255,7 +255,7 @@ bool fb::model::const_value::regex::match_buy_price(const std::string& message, 
 bool fb::model::const_value::regex::match_deposited_money(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSITED_MONEY);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -265,19 +265,19 @@ bool fb::model::const_value::regex::match_deposited_money(const std::string& mes
 bool fb::model::const_value::regex::match_rename_weapon(const std::string& message, std::string& weapon, std::string& name)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::RENAME_WEAPON);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
     weapon = what["weapon"].str();
-    name = what["name"].str();
+    name   = what["name"].str();
     return true;
 }
 
 bool fb::model::const_value::regex::match_hold_item_list(const std::string& message)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::HOLD_ITEM_LIST);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 
@@ -287,7 +287,7 @@ bool fb::model::const_value::regex::match_hold_item_list(const std::string& mess
 bool fb::model::const_value::regex::match_hold_item_count(const std::string& message, std::string& item)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::HOLD_ITEM_COUNT);
-    auto what = boost::xpressive::smatch();
+    auto              what  = boost::xpressive::smatch();
     if (boost::xpressive::regex_search(message, what, regex) == false)
         return false;
 

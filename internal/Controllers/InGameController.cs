@@ -44,10 +44,10 @@ namespace Internal.Controllers
             var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = map.Host }.Key);
             if (config == null)
             {
-                return new Response.Login 
+                return new Response.Login
                 {
-                    Success = false, 
-                    Logon = false ,
+                    Success = false,
+                    Logon = false,
                     Ip = string.Empty,
                     Port = 0
                 };
