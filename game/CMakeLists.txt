@@ -23,8 +23,6 @@ include_directories("${PROJECT_SOURCE_DIR}/../lib/include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
 include_directories("/usr/include/mysql")
 
-add_compile_definitions(ENABLE_MYSQL)
-
 file(GLOB_RECURSE CORE_FILES "${PROJECT_SOURCE_DIR}/../core/*.cpp")
 file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
 
