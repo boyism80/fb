@@ -1,4 +1,4 @@
-git submodule update --recursive --remote
+git submodule update --init --recursive
 
 PUSHD jsoncpp
 git checkout 1.9.6
