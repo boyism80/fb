@@ -443,7 +443,7 @@ protected:
 
 protected:
     template <typename X, typename R>
-    void bind(async::task<bool> (__thiscall X::*fn)(fb::socket<T>&, const R&))
+    void bind(async::task<bool> (X::*fn)(fb::socket<T>&, const R&))
     {
         auto bound_func = std::bind(fn, static_cast<X*>(this), std::placeholders::_1, std::placeholders::_2);
         this->_handler.insert({R().__id, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
