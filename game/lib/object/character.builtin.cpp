@@ -1,8 +1,6 @@
 #include <character.h>
 #include <context.h>
 
-namespace response = fb::protocol::game::response;
-
 int fb::game::character::builtin_look(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
@@ -495,8 +493,10 @@ int fb::game::character::builtin_class(lua_State* lua)
         else
         {
             auto context = thread->env<fb::game::context>("context");
-            context->send(*session, response::session::id(*session), context::scope::SELF);
-            context->send(*session, response::session::state(*session, STATE_LEVEL::LEVEL_MAX), context::scope::SELF);
+            context->send(*session, fb::protocol::game::response::session::id(*session), context::scope::SELF);
+            context->send(*session,
+                          fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
+                          context::scope::SELF);
             thread->pushboolean(true);
         }
     }
@@ -527,7 +527,9 @@ int fb::game::character::builtin_level(lua_State* lua)
         session->level(level);
 
         auto context = thread->env<fb::game::context>("context");
-        context->send(*session, response::session::state(*session, STATE_LEVEL::LEVEL_MAX), context::scope::SELF);
+        context->send(*session,
+                      fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
+                      context::scope::SELF);
         return 0;
     }
 }

@@ -15,3 +15,5 @@ deploy/ssh
 external-tool
 obj
 bin
+dependency/include
+dependency/lib

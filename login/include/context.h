@@ -9,7 +9,6 @@
 #include <regex>
 #include <ctime>
 #include <zlib.h>
-#include <openssl/sha.h>
 #include <fb/socket.h>
 #include <session.h>
 #include <gateway.h>
@@ -20,10 +19,10 @@
 
 #define MAX_NXCLUB_SIZE 14
 
-using namespace fb::protocol::internal;
+using namespace fb::protocol::login;
 
 namespace db       = fb::protocol::db;
-namespace protocol = fb::protocol::login;
+namespace internal = fb::protocol::internal;
 
 namespace fb { namespace login {
 
@@ -108,9 +107,9 @@ protected:
     // for heart-beat
 
 protected:
-    Service service() const final
+    fb::protocol::internal::Service service() const final
     {
-        return Service::Login;
+        return fb::protocol::internal::Service::Login;
     };
 
 public:

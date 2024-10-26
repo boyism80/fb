@@ -4,3 +4,48 @@
 [submodule "flatbuffer-ex"]
 	path = flatbuffer-ex
 	url = https://github.com/boyism80/flatbuffer-ex.git
+[submodule "resources/data-converter"]
+	path = resources/data-converter
+	url = https://github.com/boyism80/data-converter
+[submodule "resources/flatbuffer-ex"]
+	path = resources/flatbuffer-ex
+	url = https://github.com/boyism80/flatbuffer-ex
+[submodule "tools/flatbuffer-ex"]
+	path = tools/flatbuffer-ex
+	url = https://github.com/boyism80/flatbuffer-ex
+[submodule "tools/data-converter"]
+	path = tools/data-converter
+	url = https://github.com/boyism80/data-converter
+[submodule "dependency/jsoncpp"]
+	path = dependency/jsoncpp
+	url = https://github.com/open-source-parsers/jsoncpp
+[submodule "dependency/cpp-terminal"]
+	path = dependency/cpp-terminal
+	url = https://github.com/jupyter-xeus/cpp-terminal
+[submodule "dependency/rabbitmq-c"]
+	path = dependency/rabbitmq-c
+	url = https://github.com/alanxz/rabbitmq-c
+[submodule "zlib"]
+	path = zlib
+	url = https://github.com/intel/zlib
+[submodule "dependency/zlib"]
+	path = dependency/zlib
+	url = https://github.com/intel/zlib
+[submodule "dependency/flatbuffers"]
+	path = dependency/flatbuffers
+	url = https://github.com/boyism80/flatbuffers
+[submodule "dependency/cpp-async"]
+	path = dependency/cpp-async
+	url = https://github.com/microsoft/cpp-async
+[submodule "dependency/openssl"]
+	path = dependency/openssl
+	url = https://github.com/openssl/openssl
+[submodule "dependency/cpp-httplib"]
+	path = dependency/cpp-httplib
+	url = https://github.com/yhirose/cpp-httplib
+[submodule "dependency/dependency/cpp_redis"]
+	path = dependency/dependency/cpp_redis
+	url = https://github.com/cpp-redis/cpp_redis
+[submodule "dependency/cpp_redis"]
+	path = dependency/cpp_redis
+	url = https://github.com/cpp-redis/cpp_redis

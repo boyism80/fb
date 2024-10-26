@@ -44,10 +44,15 @@ public:
     };
 
 public:
-    struct command_config;
+    struct command_config
+    {
+        using func_type = std::function<async::task<bool>(fb::game::character&, Json::Value&)>;
+
+        func_type fn;
+        bool      admin;
+    };
 
 public:
-    using command_fn         = std::function<async::task<bool>(fb::game::character&, Json::Value&)>;
     using object_set         = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param     = fb::protocol::game::request::login::transfer_param;
     using rezen_container    = std::vector<fb::game::rezen>;
@@ -366,13 +371,6 @@ public:
     static int builtin_name_with(lua_State* lua);
     static int builtin_assert_korean(lua_State* lua);
     static int builtin_cp949(lua_State* lua);
-};
-
-struct context::command_config
-{
-public:
-    context::command_fn fn;
-    bool                admin;
 };
 
 }} // namespace fb::game

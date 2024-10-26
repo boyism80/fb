@@ -45,14 +45,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\dependency\lib;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\dependency\include;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -69,7 +69,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib\x64\zlibd.lib;lua5.3\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp-terminal\x64\cpp-terminal_d.lib;cpp-terminal\x64\cpp-terminal-private_d.lib;fb\fbd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncppd.lib;cpp-terminald.lib;cpp-terminal-privated.lib;librabbitmq.4d.lib;luad.lib;zlibd.lib;flatbuffersd.lib;fbd.lib;tacopied.lib;cpp_redisd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -90,7 +90,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib\x64\zlib.lib;lua5.3\x64\lua5.3.5-static.lib;%(AdditionalDependencies);openssl/libcryptoMT.lib;openssl/libsslMT.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp-terminal\x64\cpp-terminal.lib;cpp-terminal\x64\cpp-terminal-private.lib;fb\fb.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp.lib;cpp-terminal.lib;cpp-terminal-private.lib;librabbitmq.4.lib;lua.lib;zlib.lib;flatbuffers.lib;fb.lib;tacopie.lib;cpp_redis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

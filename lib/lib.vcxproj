@@ -44,11 +44,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(IncludePath)</IncludePath>
     <TargetName>fb</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(IncludePath)</IncludePath>
     <TargetName>fb</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -67,7 +67,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)plugin\windows\fb\fbd.lib* /y</Command>
+      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)dependency\lib\fbd.lib* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -90,7 +90,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)plugin\windows\fb\fb.lib* /y</Command>
+      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)dependency\lib\fb.lib* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

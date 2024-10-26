@@ -80,8 +80,8 @@ async::task<bool> fb::login::context::handle_disconnected(fb::socket<fb::login::
     co_return false;
 }
 
-async::task<bool> fb::login::context::handle_agreement(fb::socket<fb::login::session>&     socket,
-                                                       const protocol::request::agreement& request)
+async::task<bool> fb::login::context::handle_agreement(fb::socket<fb::login::session>& socket,
+                                                       const request::agreement&       request)
 {
     try
     {
@@ -98,8 +98,8 @@ async::task<bool> fb::login::context::handle_agreement(fb::socket<fb::login::ses
     }
 }
 
-async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::session>&           socket,
-                                                            const protocol::request::account::create& request)
+async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login::session>& socket,
+                                                            const request::account::create& request)
 {
     // 여기는 task handler
     auto fd = socket.fd();
@@ -146,7 +146,7 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         if (response2.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        this->send(socket, protocol::response::message("", 0x00));
+        this->send(socket, response::message("", 0x00));
         auto session  = socket.data();
         session->pk   = uid;
         session->name = name;
@@ -156,20 +156,20 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), e.type()));
+        socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), 0x0E));
+        socket.send(response::message(e.what(), 0x0E));
     }
     co_return true;
 }
 
-async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::login::session>&             socket,
-                                                              const protocol::request::account::complete& request)
+async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::login::session>&   socket,
+                                                              const request::account::complete& request)
 {
     auto fd = socket.fd();
 
@@ -189,7 +189,7 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
         if (response.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        socket.send(protocol::response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
+        socket.send(response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
         session->pk = -1;
         session->name.clear();
         co_return true;
@@ -199,7 +199,7 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), e.type()));
+        socket.send(response::message(e.what(), e.type()));
         co_return true;
     }
     catch (std::exception&)
@@ -209,7 +209,7 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
 }
 
 async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& socket,
-                                                   const protocol::request::login& request)
+                                                   const request::login&           request)
 {
     auto delay = fb::config::get()["transfer delay"].asInt();
     auto name  = std::string(request.id);
@@ -243,12 +243,9 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw pw_exception(fb::login::message::account::INVALID_PASSWORD);
         }
 
-        auto   map = response2.map;
-        auto&& response3 =
-            co_await this->post<fb::protocol::internal::request::Login, fb::protocol::internal::response::Login>(
-                "internal",
-                "/in-game/login",
-                fb::protocol::internal::request::Login{uid, UTF8(name, PLATFORM::Windows), (uint16_t)map});
+        auto   map       = response2.map;
+        auto&& response3 = co_await this->post<internal::request::Login, internal::response::Login>(
+            "internal", "/in-game/login", internal::request::Login{uid, UTF8(name, PLATFORM::Windows), (uint16_t)map});
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -260,19 +257,19 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
                 throw id_exception("비바람이 휘몰아치고 있습니다.");
         }
 
-        socket.send(protocol::response::message("", 0x00));
+        socket.send(response::message("", 0x00));
         fb::ostream parameter;
         parameter.write_u32(uid);
         parameter.write(name);
         parameter.write_u8(0);
-        this->transfer(socket, response3.ip, response3.port, fb::protocol::internal::services::LOGIN, parameter);
+        this->transfer(socket, response3.ip, response3.port, internal::services::LOGIN, parameter);
     }
     catch (login_exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), e.type()));
+        socket.send(response::message(e.what(), e.type()));
     }
     catch (boost::system::error_code& e)
     {
@@ -281,21 +278,21 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
 
         auto sstream = std::stringstream();
         sstream << e.message() << "(" << e.value() << ")";
-        socket.send(protocol::response::message(sstream.str(), 0x0E));
+        socket.send(response::message(sstream.str(), 0x0E));
     }
     catch (std::exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), 0x0E));
+        socket.send(response::message(e.what(), 0x0E));
     }
 
     co_return true;
 }
 
-async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::session>&              socket,
-                                                             const protocol::request::account::change_pw& request)
+async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::session>&    socket,
+                                                             const request::account::change_pw& request)
 {
     auto fd = socket.fd();
     try
@@ -360,21 +357,21 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
             throw pw_exception(fb::login::message::account::INVALID_BIRTHDAY);
         }
 
-        socket.send(protocol::response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+        socket.send(response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
     }
     catch (login_exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), e.type()));
+        socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        socket.send(protocol::response::message(e.what(), 0x0E));
+        socket.send(response::message(e.what(), 0x0E));
     }
 
     co_return true;

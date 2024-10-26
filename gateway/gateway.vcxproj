@@ -44,13 +44,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\dependency\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(ProjectDir);$(SolutionDir)\plugin\windows\x64;$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
+    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\dependency\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -66,7 +66,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib/x64/zlibd.lib;cpp-terminal\x64\cpp-terminal_d.lib;cpp-terminal\x64\cpp-terminal-private_d.lib;fb\fbd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncppd.lib;cpp-terminald.lib;cpp-terminal-privated.lib;librabbitmq.4d.lib;zlibd.lib;flatbuffersd.lib;fbd.lib;tacopied.lib;cpp_redisd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -87,7 +87,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib/x64/zlib.lib;cpp-terminal\x64\cpp-terminal.lib;cpp-terminal\x64\cpp-terminal-private.lib;fb\fb.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp.lib;cpp-terminal.lib;cpp-terminal-private.lib;librabbitmq.4.lib;zlib.lib;flatbuffers.lib;fb.lib;tacopie.lib;cpp_redis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
