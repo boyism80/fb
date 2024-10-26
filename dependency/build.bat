@@ -67,7 +67,7 @@ XCOPY lua\build\Release\lua.lib lib\lua.* /K /D /H /Y
 ROBOCOPY lua\upstream\ include\lua\ *.h*
 
 PUSHD zlib
-git checkout v1.3.1
+git checkout v1.2.9
 git add .
 if not exist build mkdir build
 PUSHD build
