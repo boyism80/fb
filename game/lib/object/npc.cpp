@@ -14,7 +14,10 @@ fb::game::npc::npc(const npc& right) :
 fb::game::npc::~npc()
 { }
 
-bool fb::game::npc::buy(fb::game::character& session, const fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
+bool fb::game::npc::buy(fb::game::character&    session,
+                        const fb::model::item*  item_model,
+                        std::optional<uint16_t> count,
+                        bool                    bought)
 {
     try
     {
@@ -56,7 +59,8 @@ bool fb::game::npc::buy(fb::game::character& session, const fb::model::item* ite
                 if (count == 1)
                     this->chat(std::format("{} {}전에 샀습니다.", name_with(item_model->name), price));
                 else
-                    this->chat(std::format("{} {}개를 {}전에 샀습니다.", item_model->name, count.value(), price * count.value()));
+                    this->chat(std::format(
+                        "{} {}개를 {}전에 샀습니다.", item_model->name, count.value(), price * count.value()));
             }
         }
         else
@@ -228,8 +232,9 @@ bool fb::game::npc::repair(fb::game::character& session, const fb::model::item* 
         auto price = 0;
         for (auto equipment : equipments)
         {
-            auto& equipment_model = equipment->based<fb::model::equipment>();
-            price += (uint32_t)(equipment_model.repair.value() * (equipment_model.durability - equipment->durability().value()));
+            auto& equipment_model  = equipment->based<fb::model::equipment>();
+            price                 += (uint32_t)(equipment_model.repair.value() *
+                                (equipment_model.durability - equipment->durability().value()));
         }
 
         if (session.money() < price)
@@ -382,7 +387,9 @@ bool fb::game::npc::hold_item(fb::game::character& session, const fb::model::ite
     }
 }
 
-async::task<bool> fb::game::npc::return_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count)
+async::task<bool> fb::game::npc::return_item(fb::game::character&    session,
+                                             const fb::model::item*  item,
+                                             std::optional<uint16_t> count)
 {
     try
     {
@@ -585,7 +592,8 @@ bool fb::game::npc::rename_weapon(fb::game::character& session, const fb::model:
 
         auto money = session.money();
         if (weapon_model.rename.value() > money)
-            throw std::runtime_error(std::format("돈이 모자랍니다. {}에 별칭을 부여하려면 {}전이 필요합니다.", item->name, weapon_model.rename.value()));
+            throw std::runtime_error(std::format(
+                "돈이 모자랍니다. {}에 별칭을 부여하려면 {}전이 필요합니다.", item->name, weapon_model.rename.value()));
 
         auto cp949 = CP949(name);
         if (cp949.size() < 4)

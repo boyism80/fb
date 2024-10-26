@@ -80,7 +80,11 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u32(this->me.sequence()).write_u8(this->critical).write_u8(this->percentage).write_u32(this->damage).write_u8(0x00);
+        out_stream.write_u32(this->me.sequence())
+            .write_u8(this->critical)
+            .write_u8(this->percentage)
+            .write_u32(this->damage)
+            .write_u8(0x00);
     }
 };
 

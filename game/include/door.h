@@ -104,7 +104,8 @@ public:
     const std::optional<std::pair<point16_t, door&>> pair;
 
 public:
-    const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i, const doors& container);
+    const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i,
+                   const doors&                                                               container);
     ~const_iterator() = default;
 
 public:

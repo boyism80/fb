@@ -183,20 +183,20 @@ public:                                                                         
     {                                                                                                    \
         switch (this->look / 10000)                                                                      \
         {                                                                                                \
-            case 0:                                                                                      \
-                return enum_value::WEAPON_TYPE::NORMAL;                                                  \
+        case 0:                                                                                          \
+            return enum_value::WEAPON_TYPE::NORMAL;                                                      \
                                                                                                          \
-            case 1:                                                                                      \
-                return enum_value::WEAPON_TYPE::SPEAR;                                                   \
+        case 1:                                                                                          \
+            return enum_value::WEAPON_TYPE::SPEAR;                                                       \
                                                                                                          \
-            case 2:                                                                                      \
-                return enum_value::WEAPON_TYPE::BOW;                                                     \
+        case 2:                                                                                          \
+            return enum_value::WEAPON_TYPE::BOW;                                                         \
                                                                                                          \
-            case 3:                                                                                      \
-                return enum_value::WEAPON_TYPE::FAN;                                                     \
+        case 3:                                                                                          \
+            return enum_value::WEAPON_TYPE::FAN;                                                         \
                                                                                                          \
-            default:                                                                                     \
-                return enum_value::WEAPON_TYPE::UNKNOWN;                                                 \
+        default:                                                                                         \
+            return enum_value::WEAPON_TYPE::UNKNOWN;                                                     \
         }                                                                                                \
     }
 
@@ -356,23 +356,25 @@ public:                                                                         
     const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const; \
     bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const;
 
-#define DECLARE_CONST_REGEX_EXTENSION                                                                                       \
-                                                                                                                            \
-public:                                                                                                                     \
-    static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);          \
-    static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                          \
-    static bool match_repair_message(const std::string& message, std::string& item);                                        \
-    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);                    \
-    static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);                   \
-    static bool match_deposit_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count);  \
-    static bool match_withdraw_item_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
-    static bool match_sell_list(const std::string& message);                                                                \
-    static bool match_buy_list(const std::string& message);                                                                 \
-    static bool match_sell_price(const std::string& message, std::string& item);                                            \
-    static bool match_buy_price(const std::string& message, std::string& item);                                             \
-    static bool match_deposited_money(const std::string& message);                                                          \
-    static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);                    \
-    static bool match_hold_item_list(const std::string& message);                                                           \
+#define DECLARE_CONST_REGEX_EXTENSION                                                                              \
+                                                                                                                   \
+public:                                                                                                            \
+    static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
+    static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                 \
+    static bool match_repair_message(const std::string& message, std::string& item);                               \
+    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);           \
+    static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);          \
+    static bool match_deposit_item_message(                                                                        \
+        const std::string& message, std::string& item, std::optional<uint16_t>& count);                            \
+    static bool match_withdraw_item_message(                                                                       \
+        const std::string& message, std::string& item, std::optional<uint16_t>& count);                            \
+    static bool match_sell_list(const std::string& message);                                                       \
+    static bool match_buy_list(const std::string& message);                                                        \
+    static bool match_sell_price(const std::string& message, std::string& item);                                   \
+    static bool match_buy_price(const std::string& message, std::string& item);                                    \
+    static bool match_deposited_money(const std::string& message);                                                 \
+    static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);           \
+    static bool match_hold_item_list(const std::string& message);                                                  \
     static bool match_hold_item_count(const std::string& message, std::string& item);
 
 #define DECLARE_SELL_CONTAINER_EXTENSION                                              \
@@ -387,14 +389,17 @@ public:                                                                         
     const fb::model::buy* find(uint32_t pursuit, const fb::model::item& item) const; \
     const fb::model::buy* find(const fb::model::npc& npc, const fb::model::item& item) const;
 
-#define DECLARE_RECIPE_EXTENSION                                                                                                                               \
-                                                                                                                                                               \
-public:                                                                                                                                                        \
-    recipe(const std::vector<fb::model::dsl>& source, const std::vector<fb::model::dsl>& success, const std::vector<fb::model::dsl>& failed, double percent) : \
-        source(source),                                                                                                                                        \
-        success(success),                                                                                                                                      \
-        failed(failed),                                                                                                                                        \
-        percent(percent)                                                                                                                                       \
+#define DECLARE_RECIPE_EXTENSION                       \
+                                                       \
+public:                                                \
+    recipe(const std::vector<fb::model::dsl>& source,  \
+           const std::vector<fb::model::dsl>& success, \
+           const std::vector<fb::model::dsl>& failed,  \
+           double                             percent) :                           \
+        source(source),                                \
+        success(success),                              \
+        failed(failed),                                \
+        percent(percent)                               \
     { }
 
 #define DECLARE_RECIPE_CONTAINER_CUSTOM_CONSTRUCTOR \
@@ -416,21 +421,21 @@ public:                                    \
     {                                                                                       \
         switch (direction)                                                                  \
         {                                                                                   \
-            case fb::model::enum_value::DIRECTION::TOP:                                     \
-                this->y -= step;                                                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::TOP:                                         \
+            this->y -= step;                                                                \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::BOTTOM:                                  \
-                this->y += step;                                                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                      \
+            this->y += step;                                                                \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::LEFT:                                    \
-                this->x -= step;                                                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::LEFT:                                        \
+            this->x -= step;                                                                \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::RIGHT:                                   \
-                this->x += step;                                                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                       \
+            this->x += step;                                                                \
+            break;                                                                          \
         }                                                                                   \
                                                                                             \
         return *this;                                                                       \
@@ -448,21 +453,21 @@ public:                                    \
         auto newdir = direction;                                                            \
         switch (direction)                                                                  \
         {                                                                                   \
-            case fb::model::enum_value::DIRECTION::TOP:                                     \
-                newdir = fb::model::enum_value::DIRECTION::BOTTOM;                          \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::TOP:                                         \
+            newdir = fb::model::enum_value::DIRECTION::BOTTOM;                              \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::BOTTOM:                                  \
-                newdir = fb::model::enum_value::DIRECTION::TOP;                             \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                      \
+            newdir = fb::model::enum_value::DIRECTION::TOP;                                 \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::LEFT:                                    \
-                newdir = fb::model::enum_value::DIRECTION::RIGHT;                           \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::LEFT:                                        \
+            newdir = fb::model::enum_value::DIRECTION::RIGHT;                               \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::RIGHT:                                   \
-                newdir = fb::model::enum_value::DIRECTION::LEFT;                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                       \
+            newdir = fb::model::enum_value::DIRECTION::LEFT;                                \
+            break;                                                                          \
         }                                                                                   \
                                                                                             \
         return this->move(newdir, step);                                                    \
@@ -474,21 +479,21 @@ public:                                    \
         auto newdir = direction;                                                            \
         switch (direction)                                                                  \
         {                                                                                   \
-            case fb::model::enum_value::DIRECTION::TOP:                                     \
-                newdir = fb::model::enum_value::DIRECTION::LEFT;                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::TOP:                                         \
+            newdir = fb::model::enum_value::DIRECTION::LEFT;                                \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::BOTTOM:                                  \
-                newdir = fb::model::enum_value::DIRECTION::RIGHT;                           \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                      \
+            newdir = fb::model::enum_value::DIRECTION::RIGHT;                               \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::LEFT:                                    \
-                newdir = fb::model::enum_value::DIRECTION::BOTTOM;                          \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::LEFT:                                        \
+            newdir = fb::model::enum_value::DIRECTION::BOTTOM;                              \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::RIGHT:                                   \
-                newdir = fb::model::enum_value::DIRECTION::TOP;                             \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                       \
+            newdir = fb::model::enum_value::DIRECTION::TOP;                                 \
+            break;                                                                          \
         }                                                                                   \
                                                                                             \
         return this->move(newdir, step);                                                    \
@@ -500,21 +505,21 @@ public:                                    \
         auto newdir = direction;                                                            \
         switch (direction)                                                                  \
         {                                                                                   \
-            case fb::model::enum_value::DIRECTION::TOP:                                     \
-                newdir = fb::model::enum_value::DIRECTION::RIGHT;                           \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::TOP:                                         \
+            newdir = fb::model::enum_value::DIRECTION::RIGHT;                               \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::BOTTOM:                                  \
-                newdir = fb::model::enum_value::DIRECTION::LEFT;                            \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::BOTTOM:                                      \
+            newdir = fb::model::enum_value::DIRECTION::LEFT;                                \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::LEFT:                                    \
-                newdir = fb::model::enum_value::DIRECTION::TOP;                             \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::LEFT:                                        \
+            newdir = fb::model::enum_value::DIRECTION::TOP;                                 \
+            break;                                                                          \
                                                                                             \
-            case fb::model::enum_value::DIRECTION::RIGHT:                                   \
-                newdir = fb::model::enum_value::DIRECTION::BOTTOM;                          \
-                break;                                                                      \
+        case fb::model::enum_value::DIRECTION::RIGHT:                                       \
+            newdir = fb::model::enum_value::DIRECTION::BOTTOM;                              \
+            break;                                                                          \
         }                                                                                   \
                                                                                             \
         return this->move(newdir, step);                                                    \

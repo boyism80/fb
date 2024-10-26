@@ -34,7 +34,10 @@ constexpr T operator|= (T& flag1, const T& flag2)
     return flag1;
 }
 
-template <typename T1, typename T2, typename = typename std::enable_if<std::is_enum<T1>::value, T1>::type, typename = typename std::enable_if<std::is_enum<T2>::value, T2>::type>
+template <typename T1,
+          typename T2,
+          typename = typename std::enable_if<std::is_enum<T1>::value, T1>::type,
+          typename = typename std::enable_if<std::is_enum<T2>::value, T2>::type>
 constexpr bool operator&& (const T1& flag1, const T2& flag2)
 {
     return static_cast<int>(flag1) && static_cast<int>(flag2);
@@ -128,7 +131,12 @@ public:
     uint32_t base_hp, base_mp, exp;
 
 public:
-    ability(uint8_t strength, uint8_t intelligence, uint8_t dexteritry, uint32_t base_hp, uint32_t base_mp, uint32_t exp);
+    ability(uint8_t  strength,
+            uint8_t  intelligence,
+            uint8_t  dexteritry,
+            uint32_t base_hp,
+            uint32_t base_mp,
+            uint32_t exp);
     ability(const ability& right);
     ~ability();
 };

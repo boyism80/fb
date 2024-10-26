@@ -6,7 +6,9 @@
 using namespace fb::model::enum_value;
 
 // fb::game::object
-fb::game::object::object(fb::game::context& context, const fb::model::object& model, const fb::game::object::config& c) :
+fb::game::object::object(fb::game::context&              context,
+                         const fb::model::object&        model,
+                         const fb::game::object::config& c) :
     luable(c.id),
     context(context),
     _listener(&context),
@@ -22,7 +24,12 @@ fb::game::object::object(fb::game::context& context, const fb::model::object& mo
 }
 
 fb::game::object::object(const object& right) :
-    object(right.context, right._model, fb::game::object::config{.id = right._sequence, .position = right._position, .direction = right._direction, .map = right._map})
+    object(right.context,
+           right._model,
+           fb::game::object::config{.id        = right._sequence,
+                                    .position  = right._position,
+                                    .direction = right._direction,
+                                    .map       = right._map})
 { }
 
 fb::game::object::~object()
@@ -111,13 +118,15 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
         // 내가 이동한 뒤 내 시야에서 사라진 오브젝트들
         auto hides = std::vector<fb::game::object*>();
-        std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
+        std::set_difference(
+            befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
         for (auto x : hides)
             this->_listener->on_hide(*x, *this);
 
         // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
-        std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
+        std::set_difference(
+            afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for (auto x : shows)
             this->_listener->on_show(*x, *this, false);
 
@@ -125,7 +134,8 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         {
             // 내가 이동한 뒤 내 시야에 여전히 남은 오브젝트들
             auto stay = std::vector<fb::game::object*>();
-            std::set_difference(afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
+            std::set_difference(
+                afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
             for (auto x : stay)
                 this->_listener->on_show(*x, *this, false);
         }
@@ -145,13 +155,15 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
         // 내가 이동한 뒤 자기 시야에서 내가 사라진 오브젝트들
         auto hides = std::vector<fb::game::object*>();
-        std::set_difference(befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
+        std::set_difference(
+            befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
         for (auto x : hides)
             this->_listener->on_hide(*this, *x);
 
         // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
-        std::set_difference(afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
+        std::set_difference(
+            afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
         for (auto x : shows)
             this->_listener->on_show(*this, *x, false);
 
@@ -159,7 +171,8 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         {
             // 내가 이동한 뒤 자기 시야에 여전히 내가 포함된 시야를 가진 오브젝트들
             auto stay = std::vector<fb::game::object*>();
-            std::set_difference(afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
+            std::set_difference(
+                afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
             for (auto x : stay)
                 this->_listener->on_show(*this, *x, false);
         }
@@ -418,9 +431,12 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         }
         this->_map_lock = true;
 
-        auto thread     = this->context.thread(map);
-        if (thread != nullptr && thread != this->context.current_thread())
-            co_await thread->dispatch(uint32_t(-1));
+        if (map != nullptr)
+        {
+            auto thread = this->context.thread(*map);
+            if (thread != nullptr && thread != this->context.current_thread())
+                co_await thread->dispatch(uint32_t(-1));
+        }
 
         this->_map      = map;
         this->_position = position_x;
@@ -558,7 +574,9 @@ std::vector<fb::game::object*> fb::game::object::showns(OBJECT_TYPE type) const
     return this->showns(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object*>& source,
+                                                        const point16_t&            position,
+                                                        OBJECT_TYPE                 type) const
 {
     auto objects = std::vector<fb::game::object*>();
     if (this->_map == nullptr)
@@ -588,7 +606,9 @@ std::vector<fb::game::object*> fb::game::object::showings(OBJECT_TYPE type) cons
         return this->showings(this->_map->nears(this->_position), this->_position, type);
 }
 
-std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::object::showings(const std::vector<object*>& source,
+                                                          const point16_t&            position,
+                                                          OBJECT_TYPE                 type) const
 {
     auto objects = std::vector<fb::game::object*>();
     if (this->_map == nullptr)
@@ -630,7 +650,8 @@ double fb::game::object::distance(const object& right) const
 
 uint32_t fb::game::object::distance_sqrt(const object& right) const
 {
-    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) + (uint32_t)std::pow(this->_position.y - right._position.y, 2);
+    return (uint32_t)std::pow(this->_position.x - right._position.x, 2) +
+           (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 bool fb::game::object::condition(const std::vector<fb::model::dsl>& conditions) const
@@ -791,7 +812,8 @@ int fb::game::object::builtin_position(lua_State* lua)
         context->send(
             *object,
             [object](const auto& to) {
-                return std::unique_ptr<fb::protocol::base::header>(new fb::protocol::game::response::session::show(static_cast<fb::game::character&>(*object), to));
+                return std::unique_ptr<fb::protocol::base::header>(
+                    new fb::protocol::game::response::session::show(static_cast<fb::game::character&>(*object), to));
             },
             context::scope::PIVOT);
     }
@@ -866,7 +888,8 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    context->send(*object, fb::protocol::game::response::object::chat(*object, type, sstream.str()), context::scope::PIVOT);
+    context->send(
+        *object, fb::protocol::game::response::object::chat(*object, type, sstream.str()), context::scope::PIVOT);
     return 0;
 }
 
@@ -886,7 +909,8 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto type    = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
 
     if (object->is(OBJECT_TYPE::CHARACTER))
-        context->send(*object, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
+        context->send(
+            *object, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
 
     return 0;
 }

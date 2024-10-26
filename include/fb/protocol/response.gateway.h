@@ -83,7 +83,12 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u8(0x00).write_u32(this->entry_crc).write_u8(this->cryptor.type()).write_u8(0x09).write(this->cryptor.key(), 0x09).write_u8(0x00);
+        out_stream.write_u8(0x00)
+            .write_u32(this->entry_crc)
+            .write_u8(this->cryptor.type())
+            .write_u8(0x09)
+            .write(this->cryptor.key(), 0x09)
+            .write_u8(0x00);
     }
 #else
     void deserialize(fb::istream& in_stream)

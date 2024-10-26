@@ -77,7 +77,9 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         fb::protocol::base::header::serialize(out_stream);
-        out_stream.write_u8(this->enc_type).write_u8(this->enc_key_size).write((const void*)this->enc_key, this->enc_key_size);
+        out_stream.write_u8(this->enc_type)
+            .write_u8(this->enc_key_size)
+            .write((const void*)this->enc_key, this->enc_key_size);
     }
 #else
     void deserialize(fb::istream& in_stream)

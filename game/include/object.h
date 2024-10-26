@@ -116,7 +116,9 @@ public:
     DIRECTION                  direction() const;
     bool                       direction(DIRECTION value);
 
-    virtual async::task<bool>  map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    virtual async::task<bool>  map(fb::game::map*   map,
+                                   const point16_t& position,
+                                   DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT);
     virtual async::task<bool>  map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     fb::game::map*             map() const;
 
@@ -133,11 +135,15 @@ public:
 
     // 내 시야에서 보여지는 오브젝트들
     std::vector<object*> showings(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object*> showings(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> showings(const std::vector<object*>& source,
+                                  const point16_t&            position,
+                                  OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
 
     // 자기 시야에 내가 있는 오브젝트들
     std::vector<object*> showns(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    std::vector<object*> showns(const std::vector<object*>& source, const point16_t& position, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> showns(const std::vector<object*>& source,
+                                const point16_t&            position,
+                                OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
 
     bool                 visible() const;
     void                 visible(bool value);
@@ -193,17 +199,18 @@ public:
 
 interface object::listener
 {
-    virtual void on_chat(fb::game::object & me, const std::string& message, bool shout)                                    = 0;
-    virtual void on_direction(fb::game::object & me)                                                                       = 0;
-    virtual void on_show(fb::game::object & me, bool light)                                                                = 0;
-    virtual void on_show(fb::game::object & me, fb::game::object & you, bool light)                                        = 0;
-    virtual void on_hide(fb::game::object & me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)                         = 0;
-    virtual void on_hide(fb::game::object & me, fb::game::object & you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
-    virtual void on_move(fb::game::object & me, const point16_t& before)                                                   = 0;
-    virtual void on_unbuff(fb::game::object & me, fb::game::buff & buff)                                                   = 0;
-    virtual void on_map_changed(fb::game::object & me, fb::game::map * before, fb::game::map * after)                      = 0;
-    virtual void on_create(fb::game::object & me)                                                                          = 0;
-    virtual void on_destroy(fb::game::object & me)                                                                         = 0;
+    virtual void on_chat(fb::game::object & me, const std::string& message, bool shout)            = 0;
+    virtual void on_direction(fb::game::object & me)                                               = 0;
+    virtual void on_show(fb::game::object & me, bool light)                                        = 0;
+    virtual void on_show(fb::game::object & me, fb::game::object & you, bool light)                = 0;
+    virtual void on_hide(fb::game::object & me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
+    virtual void on_hide(
+        fb::game::object & me, fb::game::object & you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
+    virtual void on_move(fb::game::object & me, const point16_t& before)                                  = 0;
+    virtual void on_unbuff(fb::game::object & me, fb::game::buff & buff)                                  = 0;
+    virtual void on_map_changed(fb::game::object & me, fb::game::map * before, fb::game::map * after)     = 0;
+    virtual void on_create(fb::game::object & me)                                                         = 0;
+    virtual void on_destroy(fb::game::object & me)                                                        = 0;
 };
 
 struct object::config

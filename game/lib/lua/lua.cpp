@@ -16,11 +16,11 @@ context* fb::game::lua::get(lua_State* ctx)
     return main.get(*ctx);
 }
 
-void fb::game::lua::bind_function(const std::string& name, lua_CFunction fn)
+void fb::game::lua::build(const std::string& name, lua_CFunction fn)
 {
     auto& ist = container::ist();
     ist.init_fn([name, fn](main& m) {
-        m.bind_function(name, fn);
+        m.build(name, fn);
     });
     // lua_register(main::get(), name.c_str(), fn);
 }

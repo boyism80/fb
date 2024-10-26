@@ -68,7 +68,9 @@ void fb::thread::exit()
     this->_mutex_timer.unlock();
 }
 
-async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay, uint32_t priority)
+async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn,
+                                       const fb::model::timespan&                delay,
+                                       uint32_t                                  priority)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     if (delay > 0s)

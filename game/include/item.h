@@ -51,7 +51,9 @@ protected:
     nullable_time _dropped_time = std::nullopt;
 
 public:
-    item(fb::game::context& context, const fb::model::item& model, const fb::game::item::config& config = fb::game::item::config{.count = 1});
+    item(fb::game::context&            context,
+         const fb::model::item&        model,
+         const fb::game::item::config& config = fb::game::item::config{.count = 1});
     item(const item& right);
     virtual ~item();
 
@@ -335,12 +337,12 @@ public:
     async::task<void>                 pickup(bool boost);
     async::task<bool>                 throws(uint8_t index);
 
-    fb::game::item*                   remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
-    fb::game::item*                   remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    fb::game::item* remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
 
-    std::map<EQUIPMENT_PARTS, item*>  equipments() const;
+    std::map<EQUIPMENT_PARTS, item*> equipments() const;
 
-    bool                              swap(uint8_t src, uint8_t dst) override;
+    bool                             swap(uint8_t src, uint8_t dst) override;
 };
 
 }} // namespace fb::game

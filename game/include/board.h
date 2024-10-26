@@ -46,7 +46,14 @@ public:
     const std::string contents;
 
 public:
-    article(uint32_t id, uint32_t section, uint32_t user, const std::string& uname, const std::string& title, uint8_t month, uint8_t day, const std::string& contents = "") :
+    article(uint32_t           id,
+            uint32_t           section,
+            uint32_t           user,
+            const std::string& uname,
+            const std::string& title,
+            uint8_t            month,
+            uint8_t            day,
+            const std::string& contents = "") :
         id(id),
         section(section),
         user(user),

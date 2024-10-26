@@ -32,7 +32,9 @@ public:
     {
         auto compressed = fb::buffer((uint8_t*)this->contents.data(), this->contents.size()).compress();
         base::header::serialize(out_stream);
-        out_stream.write_u8(0x01).write_u16((uint16_t)compressed.size()).write(compressed.data(), (uint16_t)compressed.size());
+        out_stream.write_u8(0x01)
+            .write_u16((uint16_t)compressed.size())
+            .write(compressed.data(), (uint16_t)compressed.size());
     }
 #else
     void deserialize(fb::istream& in_stream)

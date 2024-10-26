@@ -21,6 +21,10 @@
 #include <fb/amqp.h>
 
 using namespace fb::protocol::internal;
+namespace fb_reqs  = fb::protocol::game::request;
+namespace fb_resp  = fb::protocol::game::response;
+namespace db       = fb::protocol::db;
+namespace internal = fb::protocol::internal;
 
 namespace fb { namespace game {
 
@@ -40,20 +44,20 @@ public:
     };
 
 public:
-    struct command;
+    struct command_config;
 
 public:
-    using command_fn      = std::function<async::task<bool>(fb::game::character&, Json::Value&)>;
-    using commands        = std::map<std::string, command>;
-    using object_set      = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using transfer_param  = fb::protocol::game::request::login::transfer_param;
-    using rezen_container = std::vector<fb::game::rezen>;
+    using command_fn         = std::function<async::task<bool>(fb::game::character&, Json::Value&)>;
+    using object_set         = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using transfer_param     = fb::protocol::game::request::login::transfer_param;
+    using rezen_container    = std::vector<fb::game::rezen>;
+    using protocol_generator = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
 
 private:
-    commands                          _commands;
-    datetime                          _time;
-    std::unique_ptr<fb::amqp::socket> _amqp;
-    std::unique_ptr<std::thread>      _amqp_thread;
+    std::map<std::string, command_config> _commands;
+    datetime                              _time;
+    std::unique_ptr<fb::amqp::socket>     _amqp;
+    std::unique_ptr<std::thread>          _amqp_thread;
 
 public:
     fb::model::model model;
@@ -68,11 +72,29 @@ public:
 private:
     std::string          elapsed_message(const std::string& datetime);
     fb::game::character* find(const std::string& name);
-    void                 bind_timer(const std::function<void(const datetime&, std::thread::id)>& fn, const std::chrono::steady_clock::duration& duration);
-    void                 bind_command(const std::string& cmd, const command& param);
-    bool                 init_ch(const fb::protocol::db::Character& response, fb::game::character& session, const std::optional<transfer_param>& transfer);
+    bool                 init_ch(const fb::protocol::db::Character&   response,
+                                 fb::game::character&                 session,
+                                 const std::optional<transfer_param>& transfer);
     void                 init_items(const std::vector<fb::protocol::db::Item>& response, fb::game::character& session);
-    void                 init_spells(const std::vector<fb::protocol::db::Spell>& response, fb::game::character& session);
+    void init_spells(const std::vector<fb::protocol::db::Spell>& response, fb::game::character& session);
+
+private:
+    template <typename Func>
+    void timer(Func&& func, const std::chrono::steady_clock::duration& duration)
+    {
+        auto& threads = this->threads();
+        threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
+    }
+
+private:
+    template <typename Func>
+    void command(const std::string& cmd, Func&& func, bool admin)
+    {
+        this->_commands.insert({
+            cmd,
+            command_config{.fn = std::bind(func, this, std::placeholders::_1, std::placeholders::_2), .admin = admin}
+        });
+    }
 
 public:
     template <typename T, typename... Args>
@@ -80,6 +102,8 @@ public:
     {
         return new T(*this, std::forward<Args>(args)...);
     }
+
+public:
     template <typename T>
     async::task<void> destroy(T& obj, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)
     {
@@ -92,32 +116,33 @@ public:
     }
 
 public:
-    void              send(fb::game::object& object, const fb::protocol::base::header& header, context::scope scope, bool exclude_self = false, bool encrypt = true);
-    void              send(fb::game::object&                                                                          object,
-                           const std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>& fn,
-                           context::scope                                                                             scope,
-                           bool                                                                                       exclude_self = false,
-                           bool                                                                                       encrypt      = true);
+    void              send(fb::game::object&                 object,
+                           const fb::protocol::base::header& header,
+                           context::scope                    scope,
+                           bool                              exclude_self = false,
+                           bool                              encrypt      = true);
+    void              send(fb::game::object&         object,
+                           const protocol_generator& fn,
+                           context::scope            scope,
+                           bool                      exclude_self = false,
+                           bool                      encrypt      = true);
     void              send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     void              send(const fb::protocol::base::header& header, bool encrypt = true);
     async::task<void> save(fb::game::character& session);
 
 public:
-    fb::thread*       thread(const fb::game::map* map) const;
-    uint8_t           thread_index(const fb::game::map* map) const;
-    fb::thread*       thread(const fb::game::object& obj) const;
-    uint8_t           thread_index(const fb::game::object& obj) const;
+    virtual uint32_t  thread_id(const fb::socket<fb::game::character>& socket) const;
+    fb::thread*       thread(const fb::game::map& map);
     const fb::thread* current_thread() const;
     void              amqp_thread();
 
 protected:
     bool                 decrypt_policy(uint8_t cmd) const final;
     async::task<void>    handle_start() final;
-    bool                 handle_connected(fb::socket<fb::game::character>& session) final;
+    async::task<bool>    handle_connected(fb::socket<fb::game::character>& session) final;
     async::task<bool>    handle_disconnected(fb::socket<fb::game::character>& session) final;
     fb::game::character* handle_accepted(fb::socket<fb::game::character>& socket) final;
     // async::task<void>       handle_internal_connected() final;
-    uint8_t handle_thread_index(fb::socket<fb::game::character>& socket) const final;
 
     // for heart-beat
 
@@ -147,21 +172,30 @@ public:
     async::task<bool> handle_direction(fb::socket<fb::game::character>&, const fb::protocol::game::request::direction&);
     async::task<bool> handle_logout(fb::socket<fb::game::character>&, const fb::protocol::game::request::exit&);
     async::task<bool> handle_move(fb::socket<fb::game::character>&, const fb::protocol::game::request::move&);
-    async::task<bool> handle_update_move(fb::socket<fb::game::character>&, const fb::protocol::game::request::update_move&);
+    async::task<bool> handle_update_move(fb::socket<fb::game::character>&,
+                                         const fb::protocol::game::request::update_move&);
     async::task<bool> handle_attack(fb::socket<fb::game::character>&, const fb::protocol::game::request::attack&);
     async::task<bool> handle_pickup(fb::socket<fb::game::character>&, const fb::protocol::game::request::pick_up&);
     async::task<bool> handle_emotion(fb::socket<fb::game::character>&, const fb::protocol::game::request::emotion&);
-    async::task<bool> handle_update_map(fb::socket<fb::game::character>&, const fb::protocol::game::request::map::update&);
+    async::task<bool> handle_update_map(fb::socket<fb::game::character>&,
+                                        const fb::protocol::game::request::map::update&);
     async::task<bool> handle_refresh(fb::socket<fb::game::character>&, const fb::protocol::game::request::refresh&);
-    async::task<bool> handle_active_item(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::active&);
-    async::task<bool> handle_inactive_item(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::inactive&);
-    async::task<bool> handle_drop_item(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::drop&);
-    async::task<bool> handle_drop_cash(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::drop_cash&);
-    async::task<bool> handle_front_info(fb::socket<fb::game::character>&, const fb::protocol::game::request::front_info&);
+    async::task<bool> handle_active_item(fb::socket<fb::game::character>&,
+                                         const fb::protocol::game::request::item::active&);
+    async::task<bool> handle_inactive_item(fb::socket<fb::game::character>&,
+                                           const fb::protocol::game::request::item::inactive&);
+    async::task<bool> handle_drop_item(fb::socket<fb::game::character>&,
+                                       const fb::protocol::game::request::item::drop&);
+    async::task<bool> handle_drop_cash(fb::socket<fb::game::character>&,
+                                       const fb::protocol::game::request::item::drop_cash&);
+    async::task<bool> handle_front_info(fb::socket<fb::game::character>&,
+                                        const fb::protocol::game::request::front_info&);
     async::task<bool> handle_self_info(fb::socket<fb::game::character>&, const fb::protocol::game::request::self_info&);
-    async::task<bool> handle_option_changed(fb::socket<fb::game::character>&, const fb::protocol::game::request::change_option&);
+    async::task<bool> handle_option_changed(fb::socket<fb::game::character>&,
+                                            const fb::protocol::game::request::change_option&);
     async::task<bool> handle_click_object(fb::socket<fb::game::character>&, const fb::protocol::game::request::click&);
-    async::task<bool> handle_item_info(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::info&);
+    async::task<bool> handle_item_info(fb::socket<fb::game::character>&,
+                                       const fb::protocol::game::request::item::info&);
     async::task<bool> handle_itemmix(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::mix&);
     async::task<bool> handle_trade(fb::socket<fb::game::character>&, const fb::protocol::game::request::trade&);
     async::task<bool> handle_group(fb::socket<fb::game::character>&, const fb::protocol::game::request::group&);
@@ -170,9 +204,11 @@ public:
     async::task<bool> handle_board(fb::socket<fb::game::character>&, const fb::protocol::game::request::board::board&);
     async::task<bool> handle_swap(fb::socket<fb::game::character>&, const fb::protocol::game::request::swap&);
     async::task<bool> handle_dialog(fb::socket<fb::game::character>&, const fb::protocol::game::request::dialog&);
-    // async::task<bool>       handle_dialog_1(fb::socket<fb::game::character>&, const fb::protocol::game::request::dialog1&);
-    // async::task<bool>       handle_dialog_2(fb::socket<fb::game::character>&, const fb::protocol::game::request::dialog2&);
-    async::task<bool> handle_throw_item(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::throws&);
+    // async::task<bool>       handle_dialog_1(fb::socket<fb::game::character>&, const
+    // fb::protocol::game::request::dialog1&); async::task<bool>       handle_dialog_2(fb::socket<fb::game::character>&,
+    // const fb::protocol::game::request::dialog2&);
+    async::task<bool> handle_throw_item(fb::socket<fb::game::character>&,
+                                        const fb::protocol::game::request::item::throws&);
     async::task<bool> handle_spell(fb::socket<fb::game::character>&, const fb::protocol::game::request::spell::use&);
     async::task<bool> handle_door(fb::socket<fb::game::character>&, const fb::protocol::game::request::door&);
     async::task<bool> handle_whisper(fb::socket<fb::game::character>&, const fb::protocol::game::request::whisper&);
@@ -301,7 +337,10 @@ public:
                    const fb::game::dialog::item_pairs& pairs,
                    uint16_t                            pursuit     = 0xFFFF,
                    fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::NORMAL) final;
-    void on_dialog(character& me, const fb::model::npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                    me,
+                   const fb::model::npc&         npc,
+                   const std::string&            message,
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     void on_dialog(character&                    me,
                    const fb::model::npc&         npc,
                    const std::string&            message,
@@ -329,7 +368,7 @@ public:
     static int builtin_cp949(lua_State* lua);
 };
 
-struct context::command
+struct context::command_config
 {
 public:
     context::command_fn fn;

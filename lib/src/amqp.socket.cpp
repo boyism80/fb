@@ -15,7 +15,11 @@ socket::~socket()
     }
 }
 
-bool socket::connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost)
+bool socket::connect(const std::string& hostname,
+                     uint16_t           port,
+                     const std::string& id,
+                     const std::string& pw,
+                     const std::string& vhost)
 {
     this->_conn   = amqp_new_connection();
     this->_socket = amqp_tcp_socket_new(this->_conn);
@@ -26,7 +30,8 @@ bool socket::connect(const std::string& hostname, uint16_t port, const std::stri
     if (status)
         return false;
 
-    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str()).reply_type != AMQP_RESPONSE_NORMAL)
+    if (amqp_login(this->_conn, vhost.c_str(), 0, 131072, 0, AMQP_SASL_METHOD_PLAIN, id.c_str(), pw.c_str())
+            .reply_type != AMQP_RESPONSE_NORMAL)
         return false;
 
     amqp_channel_open(this->_conn, 1);
@@ -65,12 +70,14 @@ bool socket::select(const timeval* timeout)
     auto            ret = amqp_consume_message(this->_conn, &envelope, timeout, 0);
     if (ret.reply_type == AMQP_RESPONSE_NORMAL)
     {
-        auto consumer_tag = std::string((const char*)envelope.consumer_tag.bytes, (const char*)envelope.consumer_tag.bytes + envelope.consumer_tag.len);
+        auto consumer_tag = std::string((const char*)envelope.consumer_tag.bytes,
+                                        (const char*)envelope.consumer_tag.bytes + envelope.consumer_tag.len);
         for (auto& queue : this->_queues)
         {
             if (queue->consumer_tag() == consumer_tag)
             {
-                auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes, (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
+                auto message = std::vector<uint8_t>((uint8_t*)envelope.message.body.bytes,
+                                                    (uint8_t*)envelope.message.body.bytes + envelope.message.body.len);
                 async::awaitable_then(queue->invoke(message), [](async::awaitable_result<void> result) {
                     // work done
                 });

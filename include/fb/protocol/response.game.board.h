@@ -72,7 +72,9 @@ public:
 
 public:
 #ifndef BOT
-    articles(const fb::model::board& board, const std::list<fb::game::board::article>& article_list, BOARD_BUTTON_ENABLE button_flags) :
+    articles(const fb::model::board&                    board,
+             const std::list<fb::game::board::article>& article_list,
+             BOARD_BUTTON_ENABLE                        button_flags) :
         fb::protocol::base::header(0x31),
         board(board),
         article_list(article_list),
@@ -94,7 +96,12 @@ public:
 
         for (auto& article : this->article_list)
         {
-            out_stream.write_u8(0x00).write_u16(article.id).write(article.uname).write_u8(article.month).write_u8(article.day).write(article.title);
+            out_stream.write_u8(0x00)
+                .write_u16(article.id)
+                .write(article.uname)
+                .write_u8(article.month)
+                .write_u8(article.day)
+                .write(article.title);
         }
 
         out_stream.write_u8(0x00);

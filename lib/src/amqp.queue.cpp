@@ -18,12 +18,18 @@ queue::~queue()
 
 bool queue::bind(const std::string& exchange, const std::string& binding_key)
 {
-    amqp_queue_bind(this->_owner, 1, this->_raw_name, amqp_cstring_bytes(exchange.c_str()), amqp_cstring_bytes(binding_key.c_str()), amqp_empty_table);
+    amqp_queue_bind(this->_owner,
+                    1,
+                    this->_raw_name,
+                    amqp_cstring_bytes(exchange.c_str()),
+                    amqp_cstring_bytes(binding_key.c_str()),
+                    amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
         return false;
-    this->_name = std::string((const char*)this->_raw_name.bytes, (const char*)this->_raw_name.bytes + this->_raw_name.len);
+    this->_name =
+        std::string((const char*)this->_raw_name.bytes, (const char*)this->_raw_name.bytes + this->_raw_name.len);
 
-    auto r      = amqp_basic_consume(this->_owner, 1, this->_raw_name, amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
+    auto r = amqp_basic_consume(this->_owner, 1, this->_raw_name, amqp_empty_bytes, 0, 1, 0, amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
         return false;
 

@@ -17,8 +17,10 @@ std::string fb::game::weapon::mid_message() const
     std::stringstream sstream;
     auto&             model = this->based<fb::model::weapon>();
 
-    sstream << "파괴력: 　　 S:　" << std::to_string(model.damage_small.min) << 'm' << std::to_string(model.damage_small.max) << std::endl;
-    sstream << "　　　  　 　L:　" << std::to_string(model.damage_large.min) << 'm' << std::to_string(model.damage_large.max) << std::endl;
+    sstream << "파괴력: 　　 S:　" << std::to_string(model.damage_small.min) << 'm'
+            << std::to_string(model.damage_small.max) << std::endl;
+    sstream << "　　　  　 　L:　" << std::to_string(model.damage_large.min) << 'm'
+            << std::to_string(model.damage_large.max) << std::endl;
     return sstream.str();
 }
 
@@ -34,7 +36,8 @@ std::string fb::game::weapon::trade_name() const
     auto& model      = this->based<fb::model::equipment>();
     float percentage = this->_durability / float(model.durability) * 100;
 
-    sstream << this->_custom_name.value_or(model.name) << '(' << std::fixed << std::setprecision(1) << percentage << "%)";
+    sstream << this->_custom_name.value_or(model.name) << '(' << std::fixed << std::setprecision(1) << percentage
+            << "%)";
 
     return sstream.str();
 }

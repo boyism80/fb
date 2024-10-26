@@ -128,7 +128,10 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         fb::protocol::base::header::serialize(out_stream);
-        out_stream.writestr_u8(this->name).writestr_u8(this->pw).writestr_u8(this->new_pw).write_u32(this->birthday, buffer::endian::BIG);
+        out_stream.writestr_u8(this->name)
+            .writestr_u8(this->pw)
+            .writestr_u8(this->new_pw)
+            .write_u32(this->birthday, buffer::endian::BIG);
     }
 #else
     void deserialize(fb::istream& in_stream)

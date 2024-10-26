@@ -134,13 +134,9 @@ std::string fb::socket<T>::IP() const
 }
 
 template <typename T>
-uint32_t fb::socket<T>::fd()
+uint32_t fb::socket<T>::fd() const
 {
-    if (this->_fd != 0xFFFFFFFF)
-        return this->_fd;
-
-    this->_fd = (uint32_t)this->native_handle();
-    return this->_fd;
+    return (uint32_t) const_cast<fb::socket<T>*>(this)->native_handle();
 }
 
 template <typename T>

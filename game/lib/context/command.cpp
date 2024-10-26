@@ -2,7 +2,7 @@
 #include <fb/redis.h>
 using namespace fb::game;
 
-async::task<bool> fb::game::context::handle_command_map(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_map(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -31,7 +31,7 @@ async::task<bool> fb::game::context::handle_command_map(fb::game::character& ses
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_sound(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_sound(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -40,11 +40,11 @@ async::task<bool> fb::game::context::handle_command_sound(fb::game::character& s
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::object::sound(session, SOUND(value)), scope::PIVOT);
+    this->send(session, fb_resp::object::sound(session, SOUND(value)), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_action(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_action(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -53,11 +53,11 @@ async::task<bool> fb::game::context::handle_command_action(fb::game::character& 
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb_resp::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_weather(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_weather(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -66,11 +66,11 @@ async::task<bool> fb::game::context::handle_command_weather(fb::game::character&
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::weather(WEATHER_TYPE(value)), scope::PIVOT);
+    this->send(session, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_bright(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_bright(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -79,11 +79,11 @@ async::task<bool> fb::game::context::handle_command_bright(fb::game::character& 
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::bright(value), scope::PIVOT);
+    this->send(session, fb_resp::bright(value), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_timer(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_timer(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -92,11 +92,11 @@ async::task<bool> fb::game::context::handle_command_timer(fb::game::character& s
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::timer(value), scope::PIVOT);
+    this->send(session, fb_resp::timer(value), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_effect(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_effect(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -105,11 +105,11 @@ async::task<bool> fb::game::context::handle_command_effect(fb::game::character& 
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb::protocol::game::response::object::effect(session, value), scope::PIVOT);
+    this->send(session, fb_resp::object::effect(session, value), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_disguise(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_disguise(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -123,19 +123,19 @@ async::task<bool> fb::game::context::handle_command_disguise(fb::game::character
         co_return true;
 
     session.disguise(mob->look);
-    this->send(session, fb::protocol::game::response::object::effect(session, 0x03), scope::PIVOT);
-    this->send(session, fb::protocol::game::response::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    this->send(session, fb::protocol::game::response::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
+    this->send(session, fb_resp::object::effect(session, 0x03), scope::PIVOT);
+    this->send(session, fb_resp::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb_resp::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_undisguise(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_undisguise(character& session, Json::Value& parameters)
 {
     session.undisguise();
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_mob(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_mob(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -148,13 +148,13 @@ async::task<bool> fb::game::context::handle_command_mob(fb::game::character& ses
     if (model == nullptr)
         co_return true;
 
-    auto mob = model->make<fb::game::mob>(*this, fb::game::mob::config{.alive = true});
+    auto mob = model->make<fb::game::mob>(*this, mob::config{.alive = true});
     auto map = session.map();
     co_await mob->map(map, session.position());
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_class(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_class(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -170,12 +170,12 @@ async::task<bool> fb::game::context::handle_command_class(fb::game::character& s
 
     session.cls(class_type);
     session.promotion(promotion);
-    this->send(session, fb::protocol::game::response::session::id(session), scope::SELF);
-    this->send(session, fb::protocol::game::response::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(session, fb_resp::session::id(session), scope::SELF);
+    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_level(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_level(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -185,11 +185,11 @@ async::task<bool> fb::game::context::handle_command_level(fb::game::character& s
 
     auto level = parameters[0].asInt();
     session.level(level);
-    this->send(session, fb::protocol::game::response::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_spell(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_spell(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -209,7 +209,7 @@ async::task<bool> fb::game::context::handle_command_spell(fb::game::character& s
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_item(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_item(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -229,7 +229,7 @@ async::task<bool> fb::game::context::handle_command_item(fb::game::character& se
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_world(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_world(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -244,7 +244,7 @@ async::task<bool> fb::game::context::handle_command_world(fb::game::character& s
         {
             if (point.name == name)
             {
-                session.send(fb::protocol::game::response::map::worlds(this->model, id, index));
+                session.send(fb_resp::map::worlds(this->model, id, index));
                 co_return true;
             }
         }
@@ -253,14 +253,14 @@ async::task<bool> fb::game::context::handle_command_world(fb::game::character& s
     co_return false;
 }
 
-async::task<bool> fb::game::context::handle_command_script(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_script(character& session, Json::Value& parameters)
 {
     session.dialog.from("scripts/script.lua").func("func").pushobject(session).resume(1);
 
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_hair(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_hair(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -273,7 +273,7 @@ async::task<bool> fb::game::context::handle_command_hair(fb::game::character& se
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_hair_color(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_hair_color(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -286,7 +286,7 @@ async::task<bool> fb::game::context::handle_command_hair_color(fb::game::charact
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_armor_color(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_armor_color(character& session, Json::Value& parameters)
 {
     if (parameters.size() == 0)
     {
@@ -305,15 +305,15 @@ async::task<bool> fb::game::context::handle_command_armor_color(fb::game::charac
     }
 }
 
-async::task<bool> fb::game::context::handle_command_exit(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_exit(character& session, Json::Value& parameters)
 {
     // this->_internal->send(fb::protocol::internal::request::shutdown());
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_tile(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_tile(character& session, Json::Value& parameters)
 {
-    auto listener = session.get_listener<fb::game::character>();
+    auto listener = session.get_listener<character>();
     auto map      = session.map();
     if (map == nullptr)
         co_return false;
@@ -335,13 +335,13 @@ async::task<bool> fb::game::context::handle_command_tile(fb::game::character& se
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_save(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_save(character& session, Json::Value& parameters)
 {
     co_await this->save(session);
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_mapobj(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_mapobj(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -359,10 +359,10 @@ async::task<bool> fb::game::context::handle_command_mapobj(fb::game::character& 
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_randmap(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_randmap(character& session, Json::Value& parameters)
 {
-    static std::vector<fb::game::map*> maps;
-    static std::once_flag              flag;
+    static std::vector<map*> maps;
+    static std::once_flag    flag;
     std::call_once(flag, [this] {
         std::srand(static_cast<uint32_t>(std::time(nullptr)));
         for (auto& [id, map] : this->maps)
@@ -380,7 +380,7 @@ async::task<bool> fb::game::context::handle_command_randmap(fb::game::character&
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_npc(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_npc(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -400,7 +400,7 @@ async::task<bool> fb::game::context::handle_command_npc(fb::game::character& ses
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_durability(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_durability(character& session, Json::Value& parameters)
 {
     if (parameters.size() < 1)
         co_return false;
@@ -409,7 +409,7 @@ async::task<bool> fb::game::context::handle_command_durability(fb::game::charact
         co_return false;
 
     auto percent    = std::max(0, std::min(100, (int)parameters[0].asUInt()));
-    auto equipments = std::vector<fb::game::equipment*>();
+    auto equipments = std::vector<equipment*>();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = session.items[i];
@@ -442,7 +442,7 @@ async::task<bool> fb::game::context::handle_command_durability(fb::game::charact
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_concurrency(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_concurrency(character& session, Json::Value& parameters)
 {
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     auto key     = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
@@ -470,7 +470,7 @@ async::task<bool> fb::game::context::handle_command_concurrency(fb::game::charac
     co_return true;
 }
 
-async::task<bool> fb::game::context::handle_command_sleep(fb::game::character& session, Json::Value& parameters)
+async::task<bool> context::handle_command_sleep(character& session, Json::Value& parameters)
 {
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     co_await this->sleep(std::chrono::seconds{seconds});

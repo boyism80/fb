@@ -15,7 +15,10 @@ private:
 
 public:
     clan(const std::string& name, fb::game::character& owner, const character::container& members);
-    clan(const std::string& name, const std::string& title, fb::game::character& owner, const character::container& members);
+    clan(const std::string&          name,
+         const std::string&          title,
+         fb::game::character&        owner,
+         const character::container& members);
     ~clan();
 
 public:

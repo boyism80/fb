@@ -31,7 +31,12 @@ public:
 
 public:
 #ifdef BOT
-    board(BOARD_ACTION action, uint16_t section = 0, uint16_t article = 0, uint16_t offset = 0, const std::string& title = "", const std::string& contents = "") :
+    board(BOARD_ACTION       action,
+          uint16_t           section  = 0,
+          uint16_t           article  = 0,
+          uint16_t           offset   = 0,
+          const std::string& title    = "",
+          const std::string& contents = "") :
         fb::protocol::base::header(0x3B),
         action(action),
         section(section),

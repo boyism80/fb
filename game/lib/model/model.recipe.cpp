@@ -25,8 +25,8 @@ const fb::model::recipe* fb::model::__recipe::find(const std::vector<fb::model::
         auto  count  = 0;
         for (auto& source : recipe.source)
         {
-            auto params = fb::model::dsl::item(source.params);
-            count += params.count;
+            auto params  = fb::model::dsl::item(source.params);
+            count       += params.count;
         }
 
         if (count > source_count)

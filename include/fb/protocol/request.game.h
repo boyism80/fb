@@ -1,11 +1,11 @@
 #ifndef __PROTOCOL_REQUEST_GAME_H__
 #define __PROTOCOL_REQUEST_GAME_H__
 
+#include <dialog.h>
 #include <fb/protocol/protocol.h>
 #include <mmo.h>
-#include <trade.h>
-#include <dialog.h>
 #include <optional>
+#include <trade.h>
 
 using namespace fb::game;
 
@@ -49,17 +49,19 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         fb::protocol::base::header::serialize(out_stream);
-        out_stream.write_u8(this->enc_type)
-            .write_u8(this->key_size)
-            .write((void*)this->enc_key, this->key_size)
-            .write_u8(this->from)
-            .write_u32(this->id)
-            .writestr_u8(this->name)
-            .write_u8(this->transfer.has_value());
+        out_stream.write_u8(this->enc_type);
+        out_stream.write_u8(this->key_size);
+        out_stream.write((void*)this->enc_key, this->key_size);
+        out_stream.write_u8(this->from);
+        out_stream.write_u32(this->id);
+        out_stream.writestr_u8(this->name);
+        out_stream.write_u8(this->transfer.has_value());
 
         if (transfer.has_value())
         {
-            out_stream.write_u16(this->transfer.value().map).write_u16(this->transfer.value().position.x).write_u16(this->transfer.value().position.y);
+            out_stream.write_u16(this->transfer.value().map);
+            out_stream.write_u16(this->transfer.value().position.x);
+            out_stream.write_u16(this->transfer.value().position.y);
         }
     }
 #endif
@@ -81,7 +83,6 @@ public:
             auto map       = in_stream.read_u16();
             auto x         = in_stream.read_u16();
             auto y         = in_stream.read_u16();
-
             this->transfer = transfer_param{.map = map, .position = point16_t(x, y)};
         }
     }
@@ -397,17 +398,17 @@ public:
         this->fd     = in_stream.read_u32();
         switch (static_cast<fb::game::trade::state>(this->action))
         {
-            case fb::game::trade::state::UP_ITEM:
-                this->parameter.index = in_stream.read_u8();
-                break;
+        case fb::game::trade::state::UP_ITEM:
+            this->parameter.index = in_stream.read_u8();
+            break;
 
-            case fb::game::trade::state::ITEM_COUNT:
-                this->parameter.count = in_stream.read_u16();
-                break;
+        case fb::game::trade::state::ITEM_COUNT:
+            this->parameter.count = in_stream.read_u16();
+            break;
 
-            case fb::game::trade::state::UP_MONEY:
-                this->parameter.money = in_stream.read_u32();
-                break;
+        case fb::game::trade::state::UP_MONEY:
+            this->parameter.money = in_stream.read_u32();
+            break;
         }
     }
 };
@@ -514,9 +515,9 @@ public:
     uint16_t                      pursuit; // SELL
     std::string                   name;    // SELL
 
-protected:
-    dialog(int id) :
-        fb::protocol::base::header(id)
+public:
+    dialog() :
+        fb::protocol::base::header(0x3A)
     { }
 
 public:
@@ -525,73 +526,57 @@ public:
         this->interaction = static_cast<fb::game::dialog::interaction>(in_stream.read_u8());
         switch (static_cast<fb::game::dialog::interaction>(this->interaction))
         {
-            case fb::game::dialog::interaction::NORMAL: // 일반 다이얼로그
-            {
-                in_stream.read(nullptr, 0x07); // 7바이트 무시
-                this->action = in_stream.read_u8();
-                break;
-            }
+        case fb::game::dialog::interaction::NORMAL: // 일반 다이얼로그
+        {
+            in_stream.read(nullptr, 0x07); // 7바이트 무시
+            this->action = in_stream.read_u8();
+            break;
+        }
 
-            case fb::game::dialog::interaction::INPUT:
-            {
-                auto unknown1 = in_stream.read_u16();
-                auto unknown2 = in_stream.read_u32();
-                this->message = in_stream.readstr_u16();
-                break;
-            }
+        case fb::game::dialog::interaction::INPUT:
+        {
+            auto unknown1 = in_stream.read_u16();
+            auto unknown2 = in_stream.read_u32();
+            this->message = in_stream.readstr_u16();
+            break;
+        }
 
-            case fb::game::dialog::interaction::INPUT_EX:
+        case fb::game::dialog::interaction::INPUT_EX:
+        {
+            in_stream.read(nullptr, 0x07); // 7바이트 무시
+            this->action = in_stream.read_u8();
+            if (this->action == 0x02) // OK button
             {
-                in_stream.read(nullptr, 0x07); // 7바이트 무시
-                this->action = in_stream.read_u8();
-                if (this->action == 0x02) // OK button
-                {
-                    auto unknown1 = in_stream.read_u8();
-                    this->message = in_stream.readstr_u8();
-                }
-                break;
+                auto unknown1 = in_stream.read_u8();
+                this->message = in_stream.readstr_u8();
             }
+            break;
+        }
 
-            case fb::game::dialog::interaction::MENU:
-            {
-                auto unknown = in_stream.read_u32();
-                this->index  = in_stream.read_u16();
-                break;
-            }
+        case fb::game::dialog::interaction::MENU:
+        {
+            auto unknown = in_stream.read_u32();
+            this->index  = in_stream.read_u16();
+            break;
+        }
 
-            case fb::game::dialog::interaction::ITEM:
-            {
-                auto unknown  = in_stream.read_u32();
-                this->pursuit = in_stream.read_u16();
-                this->name    = in_stream.readstr_u8();
-                break;
-            }
+        case fb::game::dialog::interaction::ITEM:
+        {
+            auto unknown  = in_stream.read_u32();
+            this->pursuit = in_stream.read_u16();
+            this->name    = in_stream.readstr_u8();
+            break;
+        }
 
-            case fb::game::dialog::interaction::SLOT:
-            {
-                auto unknown  = in_stream.read_u32();
-                this->pursuit = in_stream.read_u16();
-                this->index   = in_stream.read_u8();
-                break;
-            }
+        case fb::game::dialog::interaction::SLOT:
+        {
+            auto unknown  = in_stream.read_u32();
+            this->pursuit = in_stream.read_u16();
+            this->index   = in_stream.read_u8();
+            break;
+        }
         }
     }
-};
-
-class dialog1 : public dialog
-{
-public:
-    dialog1() :
-        dialog(0x3A)
-    { }
-};
-
-class dialog2 : public dialog
-{
-public:
-    dialog2() :
-        dialog(0x39)
-    { }
 };
 
 class door : public fb::protocol::base::header

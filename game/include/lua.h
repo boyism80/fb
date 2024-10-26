@@ -50,7 +50,7 @@ class thread;
 
 context* get();
 context* get(lua_State* ctx);
-void     bind_function(const std::string& name, lua_CFunction fn);
+void     build(const std::string& name, lua_CFunction fn);
 void     load(const std::string& path);
 
 class luable
@@ -279,7 +279,7 @@ public:
 
 public:
     template <typename T>
-    void bind_class()
+    void build()
     {
         luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str()); // [mt]
         lua_pushvalue(*this, -1);                                // [mt, mt]
@@ -290,7 +290,7 @@ public:
     }
 
     template <typename T, typename B>
-    void bind_class()
+    void build()
     {
         luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str()); // [mt]
         luaL_getmetatable(*this, B::LUA_METATABLE_NAME.c_str()); // [mt, bt]
@@ -303,7 +303,7 @@ public:
         luaL_setfuncs(*this, T::LUA_METHODS, 0);                 // []
     }
 
-    void bind_function(const std::string& name, lua_CFunction fn)
+    void build(const std::string& name, lua_CFunction fn)
     {
         lua_register(*this, name.c_str(), fn);
     }
@@ -349,20 +349,20 @@ public:
 };
 
 template <typename T>
-void bind_class()
+void build()
 {
     auto& ist = container::ist();
     ist.init_fn([](main& m) {
-        m.bind_class<T>();
+        m.build<T>();
     });
 }
 
 template <typename T, typename B>
-void bind_class()
+void build()
 {
     auto& ist = container::ist();
     ist.init_fn([](main& m) {
-        m.bind_class<T, B>();
+        m.build<T, B>();
     });
 }
 

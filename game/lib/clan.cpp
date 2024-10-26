@@ -6,7 +6,10 @@ fb::game::clan::clan(const std::string& name, fb::game::character& owner, const 
     _members(members)
 { }
 
-fb::game::clan::clan(const std::string& name, const std::string& title, fb::game::character& owner, const character::container& members) :
+fb::game::clan::clan(const std::string&          name,
+                     const std::string&          title,
+                     fb::game::character&        owner,
+                     const character::container& members) :
     _name(name),
     _title(title),
     _owner(owner),

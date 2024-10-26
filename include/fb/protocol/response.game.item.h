@@ -81,40 +81,40 @@ public:
 
         switch (parts)
         {
-            case EQUIPMENT_PARTS::WEAPON:
-                item = this->me.items.weapon();
-                break;
+        case EQUIPMENT_PARTS::WEAPON:
+            item = this->me.items.weapon();
+            break;
 
-            case EQUIPMENT_PARTS::ARMOR:
-                item = this->me.items.armor();
-                break;
+        case EQUIPMENT_PARTS::ARMOR:
+            item = this->me.items.armor();
+            break;
 
-            case EQUIPMENT_PARTS::SHIELD:
-                item = this->me.items.shield();
-                break;
+        case EQUIPMENT_PARTS::SHIELD:
+            item = this->me.items.shield();
+            break;
 
-            case EQUIPMENT_PARTS::HELMET:
-                item = this->me.items.helmet();
-                break;
+        case EQUIPMENT_PARTS::HELMET:
+            item = this->me.items.helmet();
+            break;
 
-            case EQUIPMENT_PARTS::LEFT_HAND:
-                item = this->me.items.ring(EQUIPMENT_POSITION::LEFT);
-                break;
+        case EQUIPMENT_PARTS::LEFT_HAND:
+            item = this->me.items.ring(EQUIPMENT_POSITION::LEFT);
+            break;
 
-            case EQUIPMENT_PARTS::RIGHT_HAND:
-                item = this->me.items.ring(EQUIPMENT_POSITION::RIGHT);
-                break;
+        case EQUIPMENT_PARTS::RIGHT_HAND:
+            item = this->me.items.ring(EQUIPMENT_POSITION::RIGHT);
+            break;
 
-            case EQUIPMENT_PARTS::LEFT_AUX:
-                item = this->me.items.auxiliary(EQUIPMENT_POSITION::LEFT);
-                break;
+        case EQUIPMENT_PARTS::LEFT_AUX:
+            item = this->me.items.auxiliary(EQUIPMENT_POSITION::LEFT);
+            break;
 
-            case EQUIPMENT_PARTS::RIGHT_AUX:
-                item = this->me.items.auxiliary(EQUIPMENT_POSITION::RIGHT);
-                break;
+        case EQUIPMENT_PARTS::RIGHT_AUX:
+            item = this->me.items.auxiliary(EQUIPMENT_POSITION::RIGHT);
+            break;
 
-            default:
-                return;
+        default:
+            return;
         }
 
         if (item == nullptr)

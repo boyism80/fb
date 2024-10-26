@@ -79,7 +79,8 @@ doors::const_iterator doors::end() const
 void fb::game::doors::add(const point16_t& position, const fb::model::door& model, bool opened)
 {
     auto index = this->map.index(position);
-    std::unordered_map<uint64_t, std::unique_ptr<door>>::insert({index, std::make_unique<fb::game::door>(this->map, model, position, opened)});
+    std::unordered_map<uint64_t, std::unique_ptr<door>>::insert(
+        {index, std::make_unique<fb::game::door>(this->map, model, position, opened)});
 }
 
 fb::game::door* fb::game::doors::find(const point16_t position) const
@@ -115,9 +116,12 @@ fb::game::door* fb::game::doors::find(const fb::game::character& session) const
     return this->find(position);
 }
 
-fb::game::doors::iterator::iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator& i, const doors& container) :
+fb::game::doors::iterator::iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator& i,
+                                    const doors&                                                         container) :
     std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator(i),
-    pair(i != container.end() ? std::make_optional<std::pair<point16_t, door&>>(container.map.point(i->first), *i->second.get()) : std::nullopt)
+    pair(i != container.end()
+             ? std::make_optional<std::pair<point16_t, door&>>(container.map.point(i->first), *i->second.get())
+             : std::nullopt)
 { }
 
 std::pair<point16_t, fb::game::door&> fb::game::doors::iterator::operator* ()
@@ -125,9 +129,13 @@ std::pair<point16_t, fb::game::door&> fb::game::doors::iterator::operator* ()
     return this->pair.value();
 }
 
-fb::game::doors::const_iterator::const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i, const doors& container) :
+fb::game::doors::const_iterator::const_iterator(
+    const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i,
+    const doors&                                                               container) :
     std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator(i),
-    pair(i != container.end() ? std::make_optional<std::pair<point16_t, door&>>(container.map.point(i->first), *i->second.get()) : std::nullopt)
+    pair(i != container.end()
+             ? std::make_optional<std::pair<point16_t, door&>>(container.map.point(i->first), *i->second.get())
+             : std::nullopt)
 { }
 
 const std::pair<point16_t, fb::game::door&> fb::game::doors::const_iterator::operator* () const

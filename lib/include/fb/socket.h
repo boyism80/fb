@@ -60,7 +60,7 @@ public:
     void                         data(T* value);
     T*                           data() const;
     std::string                  IP() const;
-    uint32_t                     fd();
+    uint32_t                     fd() const;
 
 public:
     fb::cryptor& crt();

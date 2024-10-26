@@ -196,7 +196,11 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u32(this->id).write_u16(this->position.x).write_u16(this->position.y).write_u8(this->direction).write_u8(0x00);
+        out_stream.write_u32(this->id)
+            .write_u16(this->position.x)
+            .write_u16(this->position.y)
+            .write_u8(this->direction)
+            .write_u8(0x00);
     }
 #else
     void deserialize(fb::istream& in_stream)

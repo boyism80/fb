@@ -90,7 +90,8 @@ private:
     fb::game::clan*    _clan  = nullptr;
 
 private:
-    std::vector<std::function<async::task<bool>(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
+    std::vector<std::function<async::task<bool>(const std::string&, const std::vector<fb::game::npc*>&)>>
+        inline_interaction_funcs;
 
 public:
     fb::game::trade  trade  = fb::game::trade(*this);
@@ -117,7 +118,9 @@ public:
     void              send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
     void              send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
     OBJECT_TYPE       what() const final;
-    async::task<bool> map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
+    async::task<bool> map(fb::game::map*   map,
+                          const point16_t& position,
+                          DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) final;
     async::task<bool> map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
 
 public:
@@ -348,17 +351,17 @@ interface character::listener : public virtual fb::game::life::listener,
                                 public virtual fb::game::equipment::listener
 {
 public:
-    virtual void              on_hold(character & me)                                                                        = 0;
-    virtual void              on_action(character & me, ACTION action, DURATION duration, uint8_t sound)                     = 0;
-    virtual void              on_updated(character & me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN)                         = 0;
-    virtual void              on_money_changed(character & me, uint32_t value)                                               = 0;
-    virtual void              on_notify(character & me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
-    virtual void              on_option(character & me, CUSTOM_SETTING option, bool enabled)                                 = 0;
-    virtual void              on_level_up(character & me)                                                                    = 0;
-    virtual async::task<bool> on_transfer(character & me, fb::game::map & map, const point16_t& position)                    = 0;
-    virtual void              on_item_get(character & me, const std::map<uint8_t, fb::game::item*>& items)                   = 0;
-    virtual void              on_item_changed(character & me, const std::map<uint8_t, fb::game::item*>& items)               = 0;
-    virtual void              on_item_lost(character & me, const std::vector<uint8_t>& slots)                                = 0;
+    virtual void on_notify(character & me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
+    virtual void on_option(character & me, CUSTOM_SETTING option, bool enabled)                                 = 0;
+    virtual void on_level_up(character & me)                                                                    = 0;
+    virtual void on_item_get(character & me, const std::map<uint8_t, fb::game::item*>& items)                   = 0;
+    virtual void on_item_changed(character & me, const std::map<uint8_t, fb::game::item*>& items)               = 0;
+    virtual void on_item_lost(character & me, const std::vector<uint8_t>& slots)                                = 0;
+    virtual void on_hold(character & me)                                                                        = 0;
+    virtual void on_action(character & me, ACTION action, DURATION duration, uint8_t sound)                     = 0;
+    virtual void on_updated(character & me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN)                         = 0;
+    virtual void on_money_changed(character & me, uint32_t value)                                               = 0;
+    virtual async::task<bool> on_transfer(character & me, fb::game::map & map, const point16_t& position)       = 0;
 };
 
 }} // namespace fb::game

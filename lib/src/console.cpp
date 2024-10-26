@@ -30,8 +30,8 @@ bool fb::console::line(uint16_t width, char content, char side)
     buffer[offset] = side;
     offset++;
     std::memset(buffer + offset, content, width - 1);
-    offset += (width - 1);
-    buffer[offset] = side;
+    offset         += (width - 1);
+    buffer[offset]  = side;
 
     uint16_t before_x, before_y;
     this->cursor(&before_x, &before_y);

@@ -78,10 +78,14 @@ public:
     void            exit();
 
 public:
-    async::task<void> dispatch(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
-    void              post(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
+    async::task<void> dispatch(const std::function<async::task<void>()>& fn,
+                               const fb::model::timespan&                delay    = 0s,
+                               uint32_t                                  priority = 0);
+    void              post(const std::function<async::task<void>()>& fn,
+                           const fb::model::timespan&                delay    = 0s,
+                           uint32_t                                  priority = 0);
     async::task<void> dispatch(uint32_t priority = 0);
-    void              settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable = false);
+    void settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable = false);
     async::task<void> sleep(const fb::model::timespan& duration);
 };
 

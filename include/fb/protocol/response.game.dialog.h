@@ -16,7 +16,11 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    common(const fb::model::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) :
+    common(const fb::model::object&      object,
+           const std::string&            message,
+           bool                          button_prev,
+           bool                          button_next,
+           fb::game::dialog::interaction interaction) :
         fb::protocol::base::header(0x30),
         object(object),
         message(message),
@@ -25,7 +29,11 @@ public:
         interaction(interaction)
     { }
 
-    common(const fb::game::object& object, const std::string& message, bool button_prev, bool button_next, fb::game::dialog::interaction interaction) :
+    common(const fb::game::object&       object,
+           const std::string&            message,
+           bool                          button_prev,
+           bool                          button_next,
+           fb::game::dialog::interaction interaction) :
         common(object.based(), message, button_prev, button_next, interaction)
     { }
 
@@ -207,7 +215,9 @@ public:
     const fb::game::dialog::interaction interaction;
 
 public:
-    input(const fb::model::npc& npc, const std::string& message, fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) :
+    input(const fb::model::npc&         npc,
+          const std::string&            message,
+          fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) :
         fb::protocol::base::header(0x2F),
         npc(npc),
         message(message),

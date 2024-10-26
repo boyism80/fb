@@ -98,6 +98,32 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\board.h" />
+    <ClInclude Include="include\character.h" />
+    <ClInclude Include="include\clan.h" />
+    <ClInclude Include="include\context.h" />
+    <ClInclude Include="include\dialog.h" />
+    <ClInclude Include="include\door.h" />
+    <ClInclude Include="include\group.h" />
+    <ClInclude Include="include\inventory.h" />
+    <ClInclude Include="include\inventory.hpp" />
+    <ClInclude Include="include\item.h" />
+    <ClInclude Include="include\life.h" />
+    <ClInclude Include="include\listener.h" />
+    <ClInclude Include="include\lua.h" />
+    <ClInclude Include="include\map.h" />
+    <ClInclude Include="include\mmo.h" />
+    <ClInclude Include="include\mob.h" />
+    <ClInclude Include="include\model.h" />
+    <ClInclude Include="include\model.preprocessor.h" />
+    <ClInclude Include="include\mst.recipe.h" />
+    <ClInclude Include="include\npc.h" />
+    <ClInclude Include="include\object.h" />
+    <ClInclude Include="include\regex.h" />
+    <ClInclude Include="include\sector.h" />
+    <ClInclude Include="include\spell.h" />
+    <ClInclude Include="include\trade.h" />
+    <ClInclude Include="include\worker.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

@@ -9,8 +9,8 @@ fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
     this->load_entries();
 
     // Register event handler
-    this->bind<fb::protocol::gateway::request::assert_version>(std::bind(&context::handle_check_version, this, std::placeholders::_1, std::placeholders::_2));
-    this->bind<fb::protocol::gateway::request::entry_list>(std::bind(&context::handle_entry_list, this, std::placeholders::_1, std::placeholders::_2));
+    this->bind(&context::handle_check_version);
+    this->bind(&context::handle_entry_list);
 }
 
 fb::gateway::context::~context()
@@ -24,7 +24,10 @@ bool fb::gateway::context::load_entries()
         auto& entrypoints = fb::config::get()["entrypoints"];
         for (auto i = entrypoints.begin(); i != entrypoints.end(); i++)
         {
-            this->_entrypoints.push_back(entry(cp949((*i)["name"].asCString()), cp949((*i)["desc"].asCString()), (*i)["ip"].asCString(), (*i)["port"].asInt()));
+            this->_entrypoints.push_back(entry(cp949((*i)["name"].asCString()),
+                                               cp949((*i)["desc"].asCString()),
+                                               (*i)["ip"].asCString(),
+                                               (*i)["port"].asInt()));
         }
 
         fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(this->_entry_stream_cache);
@@ -72,12 +75,12 @@ fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gatew
     return ptr;
 }
 
-bool fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& socket)
+async::task<bool> fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& socket)
 {
     socket.send(this->_connection_cache, false);
 
     fb::logger::info("{}님이 접속했습니다.", socket.IP());
-    return true;
+    co_return true;
 }
 
 async::task<bool> fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
@@ -86,7 +89,9 @@ async::task<bool> fb::gateway::context::handle_disconnected(fb::socket<fb::gatew
     co_return false;
 }
 
-async::task<bool> fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::assert_version& request)
+async::task<bool>
+fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>&                     socket,
+                                           const fb::protocol::gateway::request::assert_version& request)
 {
     try
     {
@@ -104,7 +109,8 @@ async::task<bool> fb::gateway::context::handle_check_version(fb::socket<fb::gate
     }
 }
 
-async::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>& socket, const fb::protocol::gateway::request::entry_list& request)
+async::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>&                 socket,
+                                                          const fb::protocol::gateway::request::entry_list& request)
 {
     switch (request.action)
     {
@@ -117,7 +123,7 @@ async::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway
 
     case 0x01:
     {
-        this->send_stream(socket, this->_entry_stream_cache);
+        this->send(socket, this->_entry_stream_cache);
         co_return true;
     }
 

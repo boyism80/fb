@@ -37,7 +37,10 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         base::header::serialize(out_stream);
-        out_stream.write_u32(this->ip).write_u16(this->port).write_u8(static_cast<uint8_t>(this->parameter.size())).write(this->parameter);
+        out_stream.write_u32(this->ip)
+            .write_u16(this->port)
+            .write_u8(static_cast<uint8_t>(this->parameter.size()))
+            .write(this->parameter);
     }
 #else
     void deserialize(fb::istream& in_stream)

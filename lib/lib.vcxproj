@@ -96,6 +96,9 @@
   <ItemGroup>
     <ClCompile Include="src\*.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\fb\protocol\**\*.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

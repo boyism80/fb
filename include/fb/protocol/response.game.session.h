@@ -94,19 +94,19 @@ public:
 
         switch (this->session.state())
         {
-            case STATE::HALF_CLOACK:
-            {
-                if (this->clock_visible())
-                    out_stream.write_8(STATE::HALF_CLOACK);
-                else
-                    out_stream.write_8(STATE::CLOACK);
-            }
-            break;
-            default:
-            {
-                out_stream.write_u8(this->session.state());
-            }
-            break;
+        case STATE::HALF_CLOACK:
+        {
+            if (this->clock_visible())
+                out_stream.write_8(STATE::HALF_CLOACK);
+            else
+                out_stream.write_8(STATE::CLOACK);
+        }
+        break;
+        default:
+        {
+            out_stream.write_u8(this->session.state());
+        }
+        break;
         }
 
         if (this->session.state() == STATE::DISGUISE)
@@ -122,7 +122,8 @@ public:
             auto armor = this->session.items.armor();
             if (armor != nullptr)
             {
-                out_stream.write_u8((uint8_t)armor->based<fb::model::armor>().dress).write_u8(session.current_armor_color());
+                out_stream.write_u8((uint8_t)armor->based<fb::model::armor>().dress)
+                    .write_u8(session.current_armor_color());
             }
             else
             {
@@ -538,29 +539,37 @@ public:
         {
             out_stream.write_u16(this->session.look()).write_u8(this->session.color());
 
-            out_stream.write_u8(armor != nullptr ? armor->based<fb::model::armor>().dress : 0xFF).write_u8(this->session.current_armor_color());
+            out_stream.write_u8(armor != nullptr ? armor->based<fb::model::armor>().dress : 0xFF)
+                .write_u8(this->session.current_armor_color());
 
-            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF).write_u8(weapon != nullptr ? weapon->color() : 0x00);
+            out_stream.write_u16(weapon != nullptr ? weapon->based<fb::model::weapon>().dress : 0xFFFF)
+                .write_u8(weapon != nullptr ? weapon->color() : 0x00);
 
-            out_stream.write_u8(shield != nullptr ? shield->based<fb::model::shield>().dress : 0xFF).write_u8(shield != nullptr ? shield->color() : 0x00);
+            out_stream.write_u8(shield != nullptr ? shield->based<fb::model::shield>().dress : 0xFF)
+                .write_u8(shield != nullptr ? shield->color() : 0x00);
         }
 
         // 장비정보
         std::stringstream sstream;
         auto              helmet = this->session.items.helmet(); // 투구
-        out_stream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF).write_u8(helmet != nullptr ? helmet->color() : 0x00);
+        out_stream.write_u16(helmet != nullptr ? helmet->look() : 0xFFFF)
+            .write_u8(helmet != nullptr ? helmet->color() : 0x00);
 
         auto ring_l = this->session.items.ring(EQUIPMENT_POSITION::LEFT); // 왼손
-        out_stream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF).write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
+        out_stream.write_u16(ring_l != nullptr ? ring_l->look() : 0xFFFF)
+            .write_u8(ring_l != nullptr ? ring_l->color() : 0x00);
 
         auto ring_r = this->session.items.ring(EQUIPMENT_POSITION::RIGHT); // 오른손
-        out_stream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF).write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
+        out_stream.write_u16(ring_r != nullptr ? ring_r->look() : 0xFFFF)
+            .write_u8(ring_r != nullptr ? ring_r->color() : 0x00);
 
         auto aux_l = this->session.items.auxiliary(EQUIPMENT_POSITION::LEFT); // 보조1
-        out_stream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF).write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
+        out_stream.write_u16(aux_l != nullptr ? aux_l->look() : 0xFFFF)
+            .write_u8(aux_l != nullptr ? aux_l->color() : 0x00);
 
         auto aux_r = this->session.items.auxiliary(EQUIPMENT_POSITION::RIGHT); // 보조2
-        out_stream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF).write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
+        out_stream.write_u16(aux_r != nullptr ? aux_r->look() : 0xFFFF)
+            .write_u8(aux_r != nullptr ? aux_r->color() : 0x00);
 
         // 장비정보 텍스트
         sstream << " w:무기  :" << (weapon != nullptr ? weapon->name() : "없음") << std::endl;

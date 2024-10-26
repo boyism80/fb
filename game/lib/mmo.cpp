@@ -2,7 +2,12 @@
 
 using namespace fb::game;
 
-fb::game::ability::ability(uint8_t strength, uint8_t intelligence, uint8_t dexteritry, uint32_t base_hp, uint32_t base_mp, uint32_t exp) :
+fb::game::ability::ability(uint8_t  strength,
+                           uint8_t  intelligence,
+                           uint8_t  dexteritry,
+                           uint32_t base_hp,
+                           uint32_t base_mp,
+                           uint32_t exp) :
     strength(strength),
     intelligence(intelligence),
     dexteritry(dexteritry),

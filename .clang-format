@@ -18,19 +18,19 @@ AlignConsecutiveAssignments:
   Enabled: true
   AcrossEmptyLines: true
   AcrossComments: false
+  AlignCompound: true
   PadOperators: true
 AlignConsecutiveShortCaseStatements:
   Enabled: true
   AcrossEmptyLines: true
-  AcrossComments: true
-  AlignCaseColons: false
+  AcrossComments: false
+  AlignCaseColons: true
 AlignConsecutiveDeclarations:
   Enabled: true
   AcrossEmptyLines: true
   AcrossComments: false
 AlignEscapedNewlines: Left
 CompactNamespaces: true
-BinPackArguments: false
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterCaseLabel: true
@@ -54,7 +54,6 @@ AlwaysBreakTemplateDeclarations: Yes
 IndentCaseLabels: false
 IndentPPDirectives: None
 IndentRequiresClause: false
-InsertTrailingCommas: Wrapped
 ContinuationIndentWidth: 4
 EmptyLineBeforeAccessModifier: Always
 BreakArrays: false
@@ -68,5 +67,10 @@ SpaceInEmptyBlock: true
 PointerAlignment: Left
 ReferenceAlignment: Left
 AllowAllParametersOfDeclarationOnNextLine: false
+AllowAllArgumentsOnNextLine: true
 BinPackParameters: false
-ColumnLimit: 180
+BinPackArguments: false
+ColumnLimit: 120
+BreakBeforeConceptDeclarations: Always
+AlwaysBreakAfterReturnType: None
+PenaltyReturnTypeOnItsOwnLine: 80

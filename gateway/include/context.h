@@ -44,7 +44,7 @@ private:
 protected:
     bool                  decrypt_policy(uint8_t) const final;
     fb::gateway::session* handle_accepted(fb::socket<fb::gateway::session>& socket) final;
-    bool                  handle_connected(fb::socket<fb::gateway::session>& session) final;
+    async::task<bool>     handle_connected(fb::socket<fb::gateway::session>& session) final;
     async::task<bool>     handle_disconnected(fb::socket<fb::gateway::session>& session) final;
 
     // for heart-beat

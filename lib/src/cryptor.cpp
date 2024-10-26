@@ -45,14 +45,14 @@ void fb::cryptor::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const u
 
     for (uint32_t i = 0; i < num_loop; i++)
     {
-        unsigned int* uint_dst = (unsigned int*)current_dst;
-        unsigned int* uint_src = (unsigned int*)current_src;
-        unsigned int* uint_key = (unsigned int*)key + (i % ksize);
+        unsigned int* uint_dst  = (unsigned int*)current_dst;
+        unsigned int* uint_src  = (unsigned int*)current_src;
+        unsigned int* uint_key  = (unsigned int*)key + (i % ksize);
 
-        *uint_dst              = *uint_src ^ *uint_key;
+        *uint_dst               = *uint_src ^ *uint_key;
 
-        current_src += sizeof(uint32_t);
-        current_dst += sizeof(uint32_t);
+        current_src            += sizeof(uint32_t);
+        current_dst            += sizeof(uint32_t);
     }
 
     uint32_t unset_size = size & 3;
@@ -106,7 +106,11 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
 
             this->crypt(offset, offset, KEY_SIZE, ((const uint8_t*)HEX_TABLE[this->_type]) + i * 4, 1);
         }
-        this->crypt(buffer_dst + 2, buffer_dst + 2, size - 1, ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4, 1);
+        this->crypt(buffer_dst + 2,
+                    buffer_dst + 2,
+                    size - 1,
+                    ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4,
+                    1);
     }
     catch (...)
     {
@@ -147,7 +151,8 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         if (size <= 2)
             throw nullptr;
 
-        this->crypt(buffer_src + 2, buffer_dst + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
+        this->crypt(
+            buffer_src + 2, buffer_dst + 1, size - 2, ((const uint8_t*)HEX_TABLE[this->_type]) + sequence * 4, 1);
         for (int i = 0, loop = (size - 3) / KEY_SIZE + 1; i < loop; i++)
         {
             uint8_t* offset = buffer_dst + (KEY_SIZE * i) + 1;

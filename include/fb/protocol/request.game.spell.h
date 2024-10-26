@@ -33,19 +33,19 @@ public:
     {
         switch (type)
         {
-            case SPELL_TYPE::INPUT:
-            {
-                this->message = _in_stream.readstr();
-                break;
-            }
+        case SPELL_TYPE::INPUT:
+        {
+            this->message = _in_stream.readstr();
+            break;
+        }
 
-            case SPELL_TYPE::TARGET:
-            {
-                this->fd         = this->_in_stream.read_u32();
-                this->position.x = this->_in_stream.read_u16();
-                this->position.y = this->_in_stream.read_u16();
-                break;
-            }
+        case SPELL_TYPE::TARGET:
+        {
+            this->fd         = this->_in_stream.read_u32();
+            this->position.x = this->_in_stream.read_u16();
+            this->position.y = this->_in_stream.read_u16();
+            break;
+        }
         }
     }
 };

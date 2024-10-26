@@ -29,7 +29,7 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     if (map.activated() == false)
         return;
 
-    auto thread = this->_context.thread(&map);
+    auto thread = this->_context.thread(map);
     if (thread == nullptr || thread->id() != thread_id)
         return;
 
@@ -46,7 +46,8 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
 
     for (int i = 0; i < spawn_count; i++)
     {
-        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob], fb::game::mob::config{.alive = true, .rezen = this});
+        auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
+                                                      fb::game::mob::config{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->hp_up(mob->base_hp());
@@ -56,7 +57,8 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
             auto  width    = this->_model.end.x - this->_model.begin.x;
             auto  height   = this->_model.end.y - this->_model.begin.y;
             auto& map      = this->_context.maps[this->_model.parent];
-            auto  position = fb::model::point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0), this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
+            auto  position = fb::model::point16_t(this->_model.begin.x + (width > 0 ? std::rand() % width : 0),
+                                                 this->_model.begin.y + (height > 0 ? std::rand() % height : 0));
 
             if (position.x > map.width() - 1 || position.y > map.height() - 1)
                 continue;

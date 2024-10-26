@@ -1,7 +1,11 @@
 #include <context.h>
 #include <map.h>
 
-fb::game::map::map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size) :
+fb::game::map::map(const fb::game::context& context,
+                   const fb::model::map&    model,
+                   bool                     active,
+                   const void*              data,
+                   size_t                   size) :
     context(context),
     model(model),
     active(active),

@@ -22,6 +22,9 @@
 
 using namespace fb::protocol::internal;
 
+namespace db       = fb::protocol::db;
+namespace protocol = fb::protocol::login;
+
 namespace fb { namespace login {
 
 class login_exception : public std::runtime_error
@@ -80,7 +83,8 @@ public:
     using unique_session = std::unique_ptr<fb::login::session>;
 
 private:
-    fb::protocol::login::response::agreement _agreement = CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
+    fb::protocol::login::response::agreement _agreement =
+        CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
     std::vector<std::string>                 _forbiddens;
     std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
@@ -98,7 +102,7 @@ private:
 protected:
     bool                decrypt_policy(uint8_t) const final;
     fb::login::session* handle_accepted(fb::socket<fb::login::session>&) final;
-    bool                handle_connected(fb::socket<fb::login::session>&) final;
+    async::task<bool>   handle_connected(fb::socket<fb::login::session>&) final;
     async::task<bool>   handle_disconnected(fb::socket<fb::login::session>&) final;
 
     // for heart-beat
@@ -111,10 +115,13 @@ protected:
 
 public:
     async::task<bool> handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
-    async::task<bool> handle_create_account(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::create&);
-    async::task<bool> handle_account_complete(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::complete&);
+    async::task<bool> handle_create_account(fb::socket<fb::login::session>&,
+                                            const fb::protocol::login::request::account::create&);
+    async::task<bool> handle_account_complete(fb::socket<fb::login::session>&,
+                                              const fb::protocol::login::request::account::complete&);
     async::task<bool> handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
-    async::task<bool> handle_change_password(fb::socket<fb::login::session>&, const fb::protocol::login::request::account::change_pw&);
+    async::task<bool> handle_change_password(fb::socket<fb::login::session>&,
+                                             const fb::protocol::login::request::account::change_pw&);
 };
 
 }} // namespace fb::login
