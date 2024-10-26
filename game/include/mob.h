@@ -36,7 +36,7 @@ public:
     LUA_PROTOTYPE
 
 public:
-    interface listener;
+    struct listener;
 
 public:
     struct config : fb::game::life::config
@@ -88,7 +88,8 @@ public:
     uint32_t on_exp() const final;
 };
 
-interface mob::listener : public virtual fb::game::life::listener{};
+struct mob::listener : public virtual fb::game::life::listener
+{ };
 
 }} // namespace fb::game
 

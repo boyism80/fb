@@ -7,7 +7,8 @@
 
 namespace fb { namespace game {
 
-interface listener : public virtual character::listener, public virtual mob::listener{};
+struct listener : public virtual character::listener, public virtual mob::listener
+{ };
 
 }} // namespace fb::game
 

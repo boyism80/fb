@@ -340,7 +340,7 @@ public:                                   \
 #define DECLARE_SPELL_EXTENSION              \
                                              \
 public:                                      \
-    interface listener;                      \
+    struct listener;                      \
                                              \
 public:                                      \
     LUA_PROTOTYPE                            \

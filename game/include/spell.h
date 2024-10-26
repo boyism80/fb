@@ -15,7 +15,7 @@ class life;
 class spells : public fb::game::inventory<const fb::model::spell>
 {
 public:
-    interface listener;
+    struct listener;
 
 public:
     spells(life& owner);
@@ -30,10 +30,10 @@ public:
     bool                 swap(uint8_t src, uint8_t dst);
 };
 
-interface spells::listener
+struct spells::listener
 {
-    virtual void on_spell_update(life & me, uint8_t index) = 0;
-    virtual void on_spell_remove(life & me, uint8_t index) = 0;
+    virtual void on_spell_update(life& me, uint8_t index) = 0;
+    virtual void on_spell_remove(life& me, uint8_t index) = 0;
 };
 
 class buff

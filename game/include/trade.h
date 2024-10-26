@@ -15,7 +15,7 @@ public:
     enum class state : uint8_t;
 
 public:
-    interface listener;
+    struct listener;
 
 private:
     character&                   _owner;
@@ -66,16 +66,16 @@ enum class trade::state : uint8_t
     LOCK       = 0x05,
 };
 
-interface trade::listener
+struct trade::listener
 {
-    virtual void on_trade_begin(character & me, character & you)                = 0;
-    virtual void on_trade_bundle(character & me)                                = 0;
-    virtual void on_trade_item(character & me, character & from, uint8_t index) = 0;
-    virtual void on_trade_money(character & me, character & from)               = 0;
-    virtual void on_trade_cancel(character & me, character & from)              = 0;
-    virtual void on_trade_lock(character & me, bool mine)                       = 0;
-    virtual void on_trade_failed(character & me)                                = 0;
-    virtual void on_trade_success(character & me)                               = 0;
+    virtual void on_trade_begin(character& me, character& you)                = 0;
+    virtual void on_trade_bundle(character& me)                               = 0;
+    virtual void on_trade_item(character& me, character& from, uint8_t index) = 0;
+    virtual void on_trade_money(character& me, character& from)               = 0;
+    virtual void on_trade_cancel(character& me, character& from)              = 0;
+    virtual void on_trade_lock(character& me, bool mine)                      = 0;
+    virtual void on_trade_failed(character& me)                               = 0;
+    virtual void on_trade_success(character& me)                              = 0;
 };
 
 }} // namespace fb::game

@@ -11,7 +11,7 @@ public:
     LUA_PROTOTYPE
 
 public:
-    interface listener;
+    struct listener;
 
     struct config : public fb::game::object::config
     {
@@ -103,18 +103,18 @@ public:
     static int builtin_cast(lua_State* lua);
 };
 
-interface life::listener : public virtual fb::game::object::listener, public virtual fb::game::spells::listener
+struct life::listener : public virtual fb::game::object::listener, public virtual fb::game::spells::listener
 {
-    virtual void on_attack(life & me, object * you)                                  = 0;
-    virtual void on_hit(life & me, life & you, uint32_t damage, bool critical)       = 0;
-    virtual void on_kill(life & me, life & you)                                      = 0;
-    virtual void on_damaged(life & me, object * you, uint32_t damage, bool critical) = 0;
-    virtual void on_die(life & me, object * you)                                     = 0;
+    virtual void on_attack(life& me, object* you)                                  = 0;
+    virtual void on_hit(life& me, life& you, uint32_t damage, bool critical)       = 0;
+    virtual void on_kill(life& me, life& you)                                      = 0;
+    virtual void on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_die(life& me, object* you)                                     = 0;
 
-    virtual void on_heal_hp(life & me, uint32_t value, fb::game::object * from)      = 0;
-    virtual void on_heal_mp(life & me, uint32_t value, fb::game::object * from)      = 0;
-    virtual void on_hp(life & me, uint32_t before, uint32_t current)                 = 0;
-    virtual void on_mp(life & me, uint32_t before, uint32_t current)                 = 0;
+    virtual void on_heal_hp(life& me, uint32_t value, fb::game::object* from)      = 0;
+    virtual void on_heal_mp(life& me, uint32_t value, fb::game::object* from)      = 0;
+    virtual void on_hp(life& me, uint32_t before, uint32_t current)                = 0;
+    virtual void on_mp(life& me, uint32_t before, uint32_t current)                = 0;
 };
 
 }} // namespace fb::game

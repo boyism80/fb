@@ -24,7 +24,7 @@ class sectors;
 class object : public lua::luable
 {
 public:
-    interface listener;
+    struct listener;
 
 public:
     struct config;
@@ -197,20 +197,21 @@ public:
     static int builtin_is(lua_State* lua);
 };
 
-interface object::listener
+struct object::listener
 {
-    virtual void on_chat(fb::game::object & me, const std::string& message, bool shout)            = 0;
-    virtual void on_direction(fb::game::object & me)                                               = 0;
-    virtual void on_show(fb::game::object & me, bool light)                                        = 0;
-    virtual void on_show(fb::game::object & me, fb::game::object & you, bool light)                = 0;
-    virtual void on_hide(fb::game::object & me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
-    virtual void on_hide(
-        fb::game::object & me, fb::game::object & you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
-    virtual void on_move(fb::game::object & me, const point16_t& before)                                  = 0;
-    virtual void on_unbuff(fb::game::object & me, fb::game::buff & buff)                                  = 0;
-    virtual void on_map_changed(fb::game::object & me, fb::game::map * before, fb::game::map * after)     = 0;
-    virtual void on_create(fb::game::object & me)                                                         = 0;
-    virtual void on_destroy(fb::game::object & me)                                                        = 0;
+    virtual void on_chat(fb::game::object& me, const std::string& message, bool shout)             = 0;
+    virtual void on_direction(fb::game::object& me)                                                = 0;
+    virtual void on_show(fb::game::object& me, bool light)                                         = 0;
+    virtual void on_show(fb::game::object& me, fb::game::object& you, bool light)                  = 0;
+    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)  = 0;
+    virtual void on_hide(fb::game::object& me,
+                         fb::game::object& you,
+                         DESTROY_TYPE      destroy_type = DESTROY_TYPE::DEFAULT)                        = 0;
+    virtual void on_move(fb::game::object& me, const point16_t& before)                            = 0;
+    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff)                             = 0;
+    virtual void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
+    virtual void on_create(fb::game::object& me)                                                   = 0;
+    virtual void on_destroy(fb::game::object& me)                                                  = 0;
 };
 
 struct object::config
