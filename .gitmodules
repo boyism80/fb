@@ -49,3 +49,6 @@
 [submodule "dependency/cpp_redis"]
 	path = dependency/cpp_redis
 	url = https://github.com/cpp-redis/cpp_redis
+[submodule "dependency/lua"]
+	path = dependency/lua
+	url = https://github.com/boyism80/lua
