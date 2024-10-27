@@ -1,6 +1,6 @@
 @echo off
 
-git submodule update --recursive --remote
+git submodule update --recursive --remote flatbuffer-ex
 PUSHD flatbuffer-ex
 CALL dotnet publish -c Release -o "bin"
 CALL bin\FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#" --include="fb/protocol/flatbuffer/raw"
