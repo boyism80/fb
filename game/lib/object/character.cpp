@@ -798,7 +798,7 @@ bool character::deposit_item(item& item)
     {
         auto found =
             std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto* deposited_item) {
-                auto& model = deposited_item->based<fb::model::item>();
+                auto& model = deposited_item->template based<fb::model::item>();
                 return item.based<fb::model::item>() == model;
             });
 
@@ -858,7 +858,7 @@ fb::game::item* character::deposited_item(const fb::model::item& item) const
 {
     auto found =
         std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](auto* deposited_item) {
-            return deposited_item->based<fb::model::item>() == item;
+            return deposited_item->template based<fb::model::item>() == item;
         });
 
     if (found == this->_deposited_items.cend())
@@ -924,7 +924,7 @@ async::task<fb::game::item*> character::withdraw_item(const std::string& name, u
 {
     auto found =
         std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](auto* deposited_item) {
-            auto& model = deposited_item->based<fb::model::item>();
+            auto& model = deposited_item->template based<fb::model::item>();
             return model.name == name;
         });
 
@@ -939,7 +939,7 @@ async::task<fb::game::item*> character::withdraw_item(const fb::model::item& ite
 {
     auto found =
         std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto* deposited_item) {
-            auto& model = deposited_item->based<fb::model::item>();
+            auto& model = deposited_item->template based<fb::model::item>();
             return model == item;
         });
 
