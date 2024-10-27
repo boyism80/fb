@@ -4,12 +4,6 @@
 [submodule "flatbuffer-ex"]
 	path = flatbuffer-ex
 	url = https://github.com/boyism80/flatbuffer-ex.git
-[submodule "resources/data-converter"]
-	path = resources/data-converter
-	url = https://github.com/boyism80/data-converter
-[submodule "resources/flatbuffer-ex"]
-	path = resources/flatbuffer-ex
-	url = https://github.com/boyism80/flatbuffer-ex
 [submodule "tools/flatbuffer-ex"]
 	path = tools/flatbuffer-ex
 	url = https://github.com/boyism80/flatbuffer-ex
@@ -43,9 +37,6 @@
 [submodule "dependency/cpp-httplib"]
 	path = dependency/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib
-[submodule "dependency/dependency/cpp_redis"]
-	path = dependency/dependency/cpp_redis
-	url = https://github.com/cpp-redis/cpp_redis
 [submodule "dependency/cpp_redis"]
 	path = dependency/cpp_redis
 	url = https://github.com/cpp-redis/cpp_redis
