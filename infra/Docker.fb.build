@@ -16,9 +16,7 @@ RUN rm -rf boost_1_84_0
 # fb.lib
 WORKDIR /app
 COPY include ./include
-COPY plugin/linux ./plugin/linux
 COPY lib ./lib
-
 WORKDIR /app/lib/build
 RUN cmake ..
 RUN cmake --build . --config Release --parallel 4

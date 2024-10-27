@@ -3,7 +3,6 @@ FROM cshyeon/fb:build AS build
 WORKDIR /app
 COPY include ./include
 COPY lib/include ./lib/include
-COPY plugin/linux ./plugin/linux
 COPY gateway ./gateway
 
 WORKDIR /app/gateway/build

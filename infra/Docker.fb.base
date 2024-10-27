@@ -36,6 +36,7 @@ WORKDIR /app/dependency/cpp-httplib/build
 RUN cmake .. 
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+COPY dependency/cpp-async/include/async /usr/local/include/async
 
 WORKDIR /
 RUN rm -rf /app
