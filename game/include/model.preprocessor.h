@@ -340,7 +340,7 @@ public:                                   \
 #define DECLARE_SPELL_EXTENSION              \
                                              \
 public:                                      \
-    struct listener;                      \
+    struct listener;                         \
                                              \
 public:                                      \
     LUA_PROTOTYPE                            \
@@ -364,10 +364,12 @@ public:                                                                         
     static bool match_repair_message(const std::string& message, std::string& item);                               \
     static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);           \
     static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);          \
-    static bool match_deposit_item_message(                                                                        \
-        const std::string& message, std::string& item, std::optional<uint16_t>& count);                            \
-    static bool match_withdraw_item_message(                                                                       \
-        const std::string& message, std::string& item, std::optional<uint16_t>& count);                            \
+    static bool match_deposit_item_message(const std::string&       message,                                       \
+                                           std::string&             item,                                          \
+                                           std::optional<uint16_t>& count);                                        \
+    static bool match_withdraw_item_message(const std::string&       message,                                      \
+                                            std::string&             item,                                         \
+                                            std::optional<uint16_t>& count);                                       \
     static bool match_sell_list(const std::string& message);                                                       \
     static bool match_buy_list(const std::string& message);                                                        \
     static bool match_sell_price(const std::string& message, std::string& item);                                   \

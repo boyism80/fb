@@ -670,10 +670,11 @@ int fb::game::character::builtin_deposited_item(lua_State* lua)
             else if (thread->is_str(2))
             {
                 auto name  = thread->tostring(2);
-                auto found = std::find_if(
-                    deposited_items.cbegin(), deposited_items.cend(), [&name](fb::game::item* deposited_item) {
-                        return deposited_item->based<fb::model::item>().name == name;
-                    });
+                auto found = std::find_if(deposited_items.cbegin(),
+                                          deposited_items.cend(),
+                                          [&name](fb::game::item* deposited_item) {
+                                              return deposited_item->based<fb::model::item>().name == name;
+                                          });
 
                 if (found == deposited_items.cend())
                     throw std::exception();
@@ -683,10 +684,11 @@ int fb::game::character::builtin_deposited_item(lua_State* lua)
             else if (thread->is_obj(2))
             {
                 auto model = thread->touserdata<fb::model::item>(2);
-                auto found = std::find_if(
-                    deposited_items.cbegin(), deposited_items.cend(), [model](fb::game::item* deposited_item) {
-                        return deposited_item->based<fb::model::item>() == *model;
-                    });
+                auto found = std::find_if(deposited_items.cbegin(),
+                                          deposited_items.cend(),
+                                          [model](fb::game::item* deposited_item) {
+                                              return deposited_item->based<fb::model::item>() == *model;
+                                          });
 
                 if (found == deposited_items.cend())
                     throw std::exception();

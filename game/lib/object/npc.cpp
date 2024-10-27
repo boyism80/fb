@@ -59,8 +59,10 @@ bool fb::game::npc::buy(fb::game::character&    session,
                 if (count == 1)
                     this->chat(std::format("{} {}전에 샀습니다.", name_with(item_model->name), price));
                 else
-                    this->chat(std::format(
-                        "{} {}개를 {}전에 샀습니다.", item_model->name, count.value(), price * count.value()));
+                    this->chat(std::format("{} {}개를 {}전에 샀습니다.",
+                                           item_model->name,
+                                           count.value(),
+                                           price * count.value()));
             }
         }
         else
@@ -592,8 +594,9 @@ bool fb::game::npc::rename_weapon(fb::game::character& session, const fb::model:
 
         auto money = session.money();
         if (weapon_model.rename.value() > money)
-            throw std::runtime_error(std::format(
-                "돈이 모자랍니다. {}에 별칭을 부여하려면 {}전이 필요합니다.", item->name, weapon_model.rename.value()));
+            throw std::runtime_error(std::format("돈이 모자랍니다. {}에 별칭을 부여하려면 {}전이 필요합니다.",
+                                                 item->name,
+                                                 weapon_model.rename.value()));
 
         auto cp949 = CP949(name);
         if (cp949.size() < 4)

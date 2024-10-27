@@ -67,7 +67,7 @@ SpaceInEmptyBlock: true
 PointerAlignment: Left
 ReferenceAlignment: Left
 AllowAllParametersOfDeclarationOnNextLine: false
-AllowAllArgumentsOnNextLine: true
+AllowAllArgumentsOnNextLine: false
 BinPackParameters: false
 BinPackArguments: false
 ColumnLimit: 120

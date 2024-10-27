@@ -275,10 +275,8 @@ size_t fb::threads::size() const
 async::task<void> fb::threads::dispatch(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay)
 {
     auto current = this->current();
-    if (current == nullptr)
-        throw std::runtime_error("therad not exists");
-
-    co_await current->dispatch(fn, delay);
+    if (current != nullptr)
+        co_await current->dispatch(fn, delay);
 }
 
 void fb::threads::settimer(const fb::timer_callback& fn, const fb::model::timespan& duration)

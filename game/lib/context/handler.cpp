@@ -113,8 +113,9 @@ void context::on_attack(life& me, object* you)
     {
     case OBJECT_TYPE::CHARACTER:
     {
-        this->send(
-            me, fb_resp::session::action(static_cast<character&>(me), ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
+        this->send(me,
+                   fb_resp::session::action(static_cast<character&>(me), ACTION::ATTACK, DURATION::ATTACK),
+                   scope::PIVOT);
         auto* weapon = static_cast<character&>(me).items.weapon();
         if (weapon != nullptr)
         {

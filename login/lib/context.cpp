@@ -112,7 +112,9 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         this->assert_account(name, pw);
 
         auto&& response1 = co_await this->post<db::request::ReserveName, db::response::ReserveName>(
-            "db", "/user/reserve-name", db::request::ReserveName{UTF8(name, PLATFORM::Windows)});
+            "db",
+            "/user/reserve-name",
+            db::request::ReserveName{UTF8(name, PLATFORM::Windows)});
 
         if (this->sockets.contains(fd) == false)
             co_return false;
@@ -230,7 +232,9 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
 
         auto   uid       = response.uid;
         auto&& response2 = co_await this->post<db::request::Authenticate, db::response::Authenticate>(
-            "db", "/user/authenticate", db::request::Authenticate{uid, pw});
+            "db",
+            "/user/authenticate",
+            db::request::Authenticate{uid, pw});
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -245,7 +249,9 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
 
         auto   map       = response2.map;
         auto&& response3 = co_await this->post<internal::request::Login, internal::response::Login>(
-            "internal", "/in-game/login", internal::request::Login{uid, UTF8(name, PLATFORM::Windows), (uint16_t)map});
+            "internal",
+            "/in-game/login",
+            internal::request::Login{uid, UTF8(name, PLATFORM::Windows), (uint16_t)map});
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -340,7 +346,9 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         auto   uid       = response.uid;
 
         auto&& response2 = co_await this->post<db::request::ChangePw, db::response::ChangePw>(
-            "db", "/user/change-pw", db::request::ChangePw{uid, pw, new_pw, birthday});
+            "db",
+            "/user/change-pw",
+            db::request::ChangePw{uid, pw, new_pw, birthday});
 
         if (this->sockets.contains(fd) == false)
             co_return false;

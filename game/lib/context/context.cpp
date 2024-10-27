@@ -329,7 +329,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
     co_await this->save(*session);
     co_await this->post<internal::request::Logout, internal::response::Logout>(
-        "internal", "/in-game/logout", internal::request::Logout{UTF8(session->name(), PLATFORM::Windows)});
+        "internal",
+        "/in-game/logout",
+        internal::request::Logout{UTF8(session->name(), PLATFORM::Windows)});
     co_await session->destroy();
     socket.data(nullptr);
     co_return true;
@@ -643,7 +645,9 @@ async::task<void> context::save(character& session)
     }
 
     auto&& response = co_await this->post<db::request::Save, db::response::Save>(
-        "db", "/user/save", db::request::Save{session.to_protocol(), items, spells});
+        "db",
+        "/user/save",
+        db::request::Save{session.to_protocol(), items, spells});
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const
@@ -1114,8 +1118,9 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
         switch (you->what())
         {
         case OBJECT_TYPE::CHARACTER:
-            this->send(
-                *session, fb_resp::session::external_info(static_cast<character&>(*you), this->model), scope::SELF);
+            this->send(*session,
+                       fb_resp::session::external_info(static_cast<character&>(*you), this->model),
+                       scope::SELF);
             break;
 
         case OBJECT_TYPE::MOB:
@@ -1442,7 +1447,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto   offset   = request.offset;
 
             auto&& response = co_await this->get<db::response::GetArticleList>(
-                "db", std::format("/board/{}&offset={}", section->id, offset));
+                "db",
+                std::format("/board/{}&offset={}", section->id, offset));
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1478,16 +1484,18 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (this->model.board.contains(request.section) == false)
                 throw std::runtime_error(message::board::SECTION_NOT_EXIST);
 
-            auto   section  = &this->model.board[request.section]; // 코루틴땜시 포인터로
-            auto&& response = co_await this->get<db::response::GetArticle>(
-                "db", std::format("/board/{}/{}", section->id, request.article));
+            auto   section = &this->model.board[request.section]; // 코루틴땜시 포인터로
+            auto&& response =
+                co_await this->get<db::response::GetArticle>("db",
+                                                             std::format("/board/{}/{}", section->id, request.article));
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
             if (response.success == false)
             {
-                this->send(
-                    *session, fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false), scope::SELF);
+                this->send(*session,
+                           fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false),
+                           scope::SELF);
                 co_return true;
             }
 
@@ -1565,7 +1573,9 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(message::board::NOT_AUTH);
 
             auto&& response = co_await this->post<db::request::DeleteArticle, db::response::DeleteArticle>(
-                "db", "/board/delete", db::request::DeleteArticle{request.article, session->id()});
+                "db",
+                "/board/delete",
+                db::request::DeleteArticle{request.article, session->id()});
 
             if (this->sockets.contains(fd) == false)
                 co_return false;
@@ -1767,8 +1777,9 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         auto&& response = co_await this->post<internal::request::Whisper, internal::response::Whisper>(
             "internal",
             "/in-game/whisper",
-            internal::request::Whisper{
-                UTF8(from, PLATFORM::Windows), UTF8(to, PLATFORM::Windows), UTF8(message, PLATFORM::Windows)});
+            internal::request::Whisper{UTF8(from, PLATFORM::Windows),
+                                       UTF8(to, PLATFORM::Windows),
+                                       UTF8(message, PLATFORM::Windows)});
         if (this->sockets.contains(fd) == false)
             co_return false;
 

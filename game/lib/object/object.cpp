@@ -118,15 +118,21 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
         // 내가 이동한 뒤 내 시야에서 사라진 오브젝트들
         auto hides = std::vector<fb::game::object*>();
-        std::set_difference(
-            befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
+        std::set_difference(befores.begin(),
+                            befores.end(),
+                            afters.begin(),
+                            afters.end(),
+                            std::inserter(hides, hides.begin()));
         for (auto x : hides)
             this->_listener->on_hide(*x, *this);
 
         // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
-        std::set_difference(
-            afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
+        std::set_difference(afters.begin(),
+                            afters.end(),
+                            befores.begin(),
+                            befores.end(),
+                            std::inserter(shows, shows.begin()));
         for (auto x : shows)
             this->_listener->on_show(*x, *this, false);
 
@@ -134,8 +140,11 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         {
             // 내가 이동한 뒤 내 시야에 여전히 남은 오브젝트들
             auto stay = std::vector<fb::game::object*>();
-            std::set_difference(
-                afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
+            std::set_difference(afters.begin(),
+                                afters.end(),
+                                shows.begin(),
+                                shows.end(),
+                                std::inserter(stay, stay.begin()));
             for (auto x : stay)
                 this->_listener->on_show(*x, *this, false);
         }
@@ -155,15 +164,21 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
         // 내가 이동한 뒤 자기 시야에서 내가 사라진 오브젝트들
         auto hides = std::vector<fb::game::object*>();
-        std::set_difference(
-            befores.begin(), befores.end(), afters.begin(), afters.end(), std::inserter(hides, hides.begin()));
+        std::set_difference(befores.begin(),
+                            befores.end(),
+                            afters.begin(),
+                            afters.end(),
+                            std::inserter(hides, hides.begin()));
         for (auto x : hides)
             this->_listener->on_hide(*this, *x);
 
         // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
-        std::set_difference(
-            afters.begin(), afters.end(), befores.begin(), befores.end(), std::inserter(shows, shows.begin()));
+        std::set_difference(afters.begin(),
+                            afters.end(),
+                            befores.begin(),
+                            befores.end(),
+                            std::inserter(shows, shows.begin()));
         for (auto x : shows)
             this->_listener->on_show(*this, *x, false);
 
@@ -171,8 +186,11 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         {
             // 내가 이동한 뒤 자기 시야에 여전히 내가 포함된 시야를 가진 오브젝트들
             auto stay = std::vector<fb::game::object*>();
-            std::set_difference(
-                afters.begin(), afters.end(), shows.begin(), shows.end(), std::inserter(stay, stay.begin()));
+            std::set_difference(afters.begin(),
+                                afters.end(),
+                                shows.begin(),
+                                shows.end(),
+                                std::inserter(stay, stay.begin()));
             for (auto x : stay)
                 this->_listener->on_show(*this, *x, false);
         }
@@ -888,8 +906,9 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    context->send(
-        *object, fb::protocol::game::response::object::chat(*object, type, sstream.str()), context::scope::PIVOT);
+    context->send(*object,
+                  fb::protocol::game::response::object::chat(*object, type, sstream.str()),
+                  context::scope::PIVOT);
     return 0;
 }
 
@@ -909,8 +928,9 @@ int fb::game::object::builtin_message(lua_State* lua)
     auto type    = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
 
     if (object->is(OBJECT_TYPE::CHARACTER))
-        context->send(
-            *object, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
+        context->send(*object,
+                      fb::protocol::game::response::message(message, MESSAGE_TYPE(type)),
+                      context::scope::SELF);
 
     return 0;
 }
