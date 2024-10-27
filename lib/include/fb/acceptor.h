@@ -56,15 +56,25 @@ protected:
         icontext(context, port),
         _context(context),
         _threads(context),
-        _redis(*this, fb::config::get()["redis"]["default"]["ip"].asString(), fb::config::get()["redis"]["default"]["port"].asUInt()),
+        _redis(*this,
+               fb::config::get()["redis"]["default"]["ip"].asString(),
+               fb::config::get()["redis"]["default"]["port"].asUInt()),
         _mutex(*this)
     {
         this->accept();
 
         this->bind_timer(
             [this]() -> async::task<void> {
-                auto&  config   = fb::config::get();
-                auto&& response = co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>("internal", "/in-game/ping", fb::protocol::internal::request::Ping{this->id(), this->name(), this->service(), config["ip"].asString(), (uint16_t)config["port"].asUInt()});
+                auto&  config = fb::config::get();
+                auto&& response =
+                    co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
+                        "internal",
+                        "/in-game/ping",
+                        fb::protocol::internal::request::Ping{this->id(),
+                                                              this->name(),
+                                                              this->service(),
+                                                              config["ip"].asString(),
+                                                              (uint16_t)config["port"].asUInt()});
             },
             1s);
     }
@@ -76,7 +86,9 @@ public:
     }
 
 private:
-    async::task<httplib::Result> get_internal(const std::string& host, const std::string& path, httplib::Headers headers)
+    async::task<httplib::Result> get_internal(const std::string& host,
+                                              const std::string& path,
+                                              httplib::Headers   headers)
     {
         headers.insert({"Content-Type", "application/octet-stream"});
 
@@ -118,14 +130,22 @@ public:
     }
 
 private:
-    async::task<httplib::Result> post_internal(const std::string& host, const std::string& path, httplib::Headers headers, const void* bytes, size_t size)
+    async::task<httplib::Result> post_internal(const std::string& host,
+                                               const std::string& path,
+                                               httplib::Headers   headers,
+                                               const void*        bytes,
+                                               size_t             size)
     {
         auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
         auto buffer  = std::vector<uint8_t>(size);
         std::memcpy(buffer.data(), bytes, size);
         co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
             auto client = httplib::Client(host);
-            co_return client.Post(UTF8(path, PLATFORM::Windows), headers, (const char*)buffer.data(), buffer.size(), "application/octet-stream");
+            co_return client.Post(UTF8(path, PLATFORM::Windows),
+                                  headers,
+                                  (const char*)buffer.data(),
+                                  buffer.size(),
+                                  "application/octet-stream");
         });
     }
 
@@ -264,9 +284,10 @@ private:
         if (this->_running == false)
             co_return;
 
-        auto switched = co_await socket.template in_stream<async::task<bool>>([this, &socket](auto& in_stream) -> async::task<bool> {
-            co_return co_await this->execute_bound_handler(socket, in_stream);
-        });
+        auto switched = co_await socket.template in_stream<async::task<bool>>(
+            [this, &socket](auto& in_stream) -> async::task<bool> {
+                co_return co_await this->execute_bound_handler(socket, in_stream);
+            });
 
         if (switched == false)
             co_return;
@@ -353,11 +374,19 @@ public:
     }
 
 public:
-    void transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from, const fb::ostream& parameter)
+    void transfer(fb::socket<T>&                   socket,
+                  uint32_t                         ip,
+                  uint16_t                         port,
+                  fb::protocol::internal::services from,
+                  const fb::ostream&               parameter)
     {
         auto&       crt = socket.crt();
         fb::ostream data;
-        data.write_u8(crt.type()).write_u8(cryptor::KEY_SIZE).write(crt.key(), cryptor::KEY_SIZE).write_u8(from).write(parameter.data(), parameter.size());
+        data.write_u8(crt.type())
+            .write_u8(cryptor::KEY_SIZE)
+            .write(crt.key(), cryptor::KEY_SIZE)
+            .write_u8(from)
+            .write(parameter.data(), parameter.size());
 
         fb::ostream out_stream;
         fb::protocol::response::transfer(ip, port, data).serialize(out_stream);
@@ -367,7 +396,11 @@ public:
     }
 
 public:
-    void transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from, const fb::ostream& parameter)
+    void transfer(fb::socket<T>&                   socket,
+                  const std::string&               ip,
+                  uint16_t                         port,
+                  fb::protocol::internal::services from,
+                  const fb::ostream&               parameter)
     {
         this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
     }
@@ -446,24 +479,28 @@ protected:
     void bind(async::task<bool> (X::*fn)(fb::socket<T>&, const R&))
     {
         auto bound_func = std::bind(fn, static_cast<X*>(this), std::placeholders::_1, std::placeholders::_2);
-        this->_handler.insert({R().__id, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
-                                   return socket.template in_stream<async::task<bool>>([this, &bound_func, &socket, &callback](auto& in_stream) {
-                                       R header;
-                                       header.deserialize(in_stream);
-                                       callback();
-                                       return bound_func(socket, header);
-                                   });
-                               }});
+        this->_handler.insert(
+            {R().__id, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
+                 return socket.template in_stream<async::task<bool>>(
+                     [this, &bound_func, &socket, &callback](auto& in_stream) {
+                         R header;
+                         header.deserialize(in_stream);
+                         callback();
+                         return bound_func(socket, header);
+                     });
+             }});
     }
 
 protected:
     void bind_timer(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& duration)
     {
-        auto timer        = std::make_shared<boost::asio::deadline_timer>(this->_context, boost::posix_time::seconds(1));
+        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_context, boost::posix_time::seconds(1));
         auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
         auto callback     = [=](const boost::system::error_code&) {
             async::awaitable_then(fn(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
-                timer->expires_at(timer->expires_at() + boost::posix_time::milliseconds(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
+                timer->expires_at(timer->expires_at() +
+                                  boost::posix_time::milliseconds(
+                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
                 timer->async_wait(*callback_ptr.get());
             });
         };

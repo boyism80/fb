@@ -56,7 +56,10 @@ private:
     }
 
     template <typename T>
-    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise, const async_peek_func<T>& fn, const std::string key, std::mutex& mutex)
+    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
+                                    const async_peek_func<T>&                         fn,
+                                    const std::string                                 key,
+                                    std::mutex&                                       mutex)
     {
         if (mutex.try_lock())
         {
@@ -79,7 +82,10 @@ private:
     }
 
     template <typename T>
-    T handle_locked(const sync_wait_func<T>& fn, fb::dead_lock_detector& current, const std::string key, std::mutex& mutex)
+    T handle_locked(const sync_wait_func<T>& fn,
+                    fb::dead_lock_detector&  current,
+                    const std::string        key,
+                    std::mutex&              mutex)
     {
         auto _      = std::lock_guard(mutex);
 
@@ -112,7 +118,11 @@ private:
     }
 
     template <typename T>
-    bool lock(const std::string& key, std::shared_ptr<async::task_completion_source<T>> promise, const async_wait_func<T>& fn, fb::thread* thread, fb::dead_lock_detector& trans)
+    bool lock(const std::string&                                key,
+              std::shared_ptr<async::task_completion_source<T>> promise,
+              const async_wait_func<T>&                         fn,
+              fb::thread*                                       thread,
+              fb::dead_lock_detector&                           trans)
     {
         std::mutex* mutex = nullptr;
         {
@@ -150,7 +160,10 @@ private:
     }
 
     template <typename T>
-    void try_lock(const std::string& key, std::shared_ptr<async::task_completion_source<T>> promise, const async_peek_func<T>& fn, fb::thread* thread)
+    void try_lock(const std::string&                                key,
+                  std::shared_ptr<async::task_completion_source<T>> promise,
+                  const async_peek_func<T>&                         fn,
+                  fb::thread*                                       thread)
     {
         std::mutex* mutex = nullptr;
         {

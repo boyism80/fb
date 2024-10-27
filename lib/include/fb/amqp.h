@@ -34,7 +34,11 @@ public:
     ~socket();
 
 public:
-    bool   connect(const std::string& hostname, uint16_t port, const std::string& id, const std::string& pw, const std::string& vhost);
+    bool   connect(const std::string& hostname,
+                   uint16_t           port,
+                   const std::string& id,
+                   const std::string& pw,
+                   const std::string& vhost);
     queue& declare_queue();
     operator amqp_connection_state_t ();
     bool select(const timeval* timeout = nullptr);

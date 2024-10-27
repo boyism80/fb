@@ -56,8 +56,10 @@ protected:
     }
 
 public:
-    async::task<bool> handle_check_version(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::assert_version&);
-    async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>& session, const fb::protocol::gateway::request::entry_list&);
+    async::task<bool> handle_check_version(fb::socket<fb::gateway::session>& session,
+                                           const fb::protocol::gateway::request::assert_version&);
+    async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>& session,
+                                        const fb::protocol::gateway::request::entry_list&);
 };
 
 }} // namespace fb::gateway

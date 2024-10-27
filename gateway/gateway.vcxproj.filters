@@ -4,10 +4,25 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{4c83f9bc-379d-47b5-af8b-b8739d918e2e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{ab4a9169-1423-4553-8c1e-d653d66e307e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{2b25ef46-55be-4410-9f0e-6c4cc62161ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\context.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\util.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -255,47 +270,6 @@
     <ClCompile Include="..\core\time.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
     <ClCompile Include="..\core\console.cpp" />
     <ClCompile Include="..\core\cryptor.cpp" />
     <ClCompile Include="..\core\dead_lock.cpp" />
@@ -339,10 +313,10 @@
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
+    <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="lib\util.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="main.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
     <ClCompile Include="..\core\**\*.cpp" />
@@ -402,7 +376,6 @@
     <ClCompile Include="..\core\time.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\amqp.queue.cpp" />
     <ClCompile Include="..\core\console.cpp" />
     <ClCompile Include="..\core\cryptor.cpp" />
     <ClCompile Include="..\core\dead_lock.cpp" />
@@ -436,5 +409,18 @@
     <ClCompile Include="..\core\thread.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="lib\util.cpp" />
+    <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="lib\util.cpp" />
+    <ClCompile Include="lib\context.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

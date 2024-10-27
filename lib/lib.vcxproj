@@ -97,7 +97,31 @@
     <ClCompile Include="src\*.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\fb\protocol\**\*.h" />
+    <ClInclude Include="include\fb\abstract.h" />
+    <ClInclude Include="include\fb\acceptor.h" />
+    <ClInclude Include="include\fb\amqp.h" />
+    <ClInclude Include="include\fb\concurrent.h" />
+    <ClInclude Include="include\fb\config.h" />
+    <ClInclude Include="include\fb\console.h" />
+    <ClInclude Include="include\fb\container.h" />
+    <ClInclude Include="include\fb\cryptor.h" />
+    <ClInclude Include="include\fb\dead_lock.h" />
+    <ClInclude Include="include\fb\encoding.h" />
+    <ClInclude Include="include\fb\generator.h" />
+    <ClInclude Include="include\fb\leak.h" />
+    <ClInclude Include="include\fb\logger.h" />
+    <ClInclude Include="include\fb\mst.h" />
+    <ClInclude Include="include\fb\mutex.h" />
+    <ClInclude Include="include\fb\parallel_worker.h" />
+    <ClInclude Include="include\fb\pqueue.h" />
+    <ClInclude Include="include\fb\redis.h" />
+    <ClInclude Include="include\fb\socket.h" />
+    <ClInclude Include="include\fb\socket.hpp" />
+    <ClInclude Include="include\fb\stream.h" />
+    <ClInclude Include="include\fb\string.h" />
+    <ClInclude Include="include\fb\table.h" />
+    <ClInclude Include="include\fb\thread.h" />
+    <ClInclude Include="include\fb\timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

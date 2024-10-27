@@ -1,7 +1,7 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
-#ifdef  _WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
 bool SetConsoleIcon(int id);
@@ -78,7 +78,8 @@ fb::console& fb::console::put(const std::string& fmt, Args&&... args)
     auto _       = std::lock_guard(this->_mutex);
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ') << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
+    Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
+               << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
     return *this;
 }
 
@@ -88,7 +89,8 @@ fb::console& fb::console::puts(const std::string& fmt, Args&&... args)
     auto _       = std::lock_guard(this->_mutex);
 
     auto message = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ') << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
+    Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
+               << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
 
     this->next();
     return *this;
@@ -111,8 +113,9 @@ fb::console& fb::console::comment(const std::string& fmt, Args&&... args)
     auto _            = std::lock_guard(this->_mutex);
     auto additional_y = ++this->_additional_y;
     auto message      = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y + additional_y, 0) << std::string(this->width(), ' ') << Term::cursor_move(this->_y + additional_y, this->_x)
-               << UTF8(message, PLATFORM::Windows) << std::flush;
+    Term::cout << Term::cursor_move(this->_y + additional_y, 0) << std::string(this->width(), ' ')
+               << Term::cursor_move(this->_y + additional_y, this->_x) << UTF8(message, PLATFORM::Windows)
+               << std::flush;
     this->clear(message.size(), this->_y + additional_y);
 
     return *this;

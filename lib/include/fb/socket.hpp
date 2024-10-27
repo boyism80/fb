@@ -2,14 +2,19 @@
 #include <fb/logger.h>
 
 template <typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) :
+fb::socket<T>::socket(boost::asio::io_context& context,
+                      const handler_event&     handle_received,
+                      const handler_event&     handle_closed) :
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed)
 { }
 
 template <typename T>
-fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, const handler_event& handle_received, const handler_event& handle_closed) :
+fb::socket<T>::socket(boost::asio::io_context& context,
+                      const fb::cryptor&       crt,
+                      const handler_event&     handle_received,
+                      const handler_event&     handle_closed) :
     boost::asio::ip::tcp::socket(context),
     _handle_received(handle_received),
     _handle_closed(handle_closed),
@@ -19,13 +24,12 @@ fb::socket<T>::socket(boost::asio::io_context& context, const fb::cryptor& crt, 
 template <typename T>
 fb::socket<T>::~socket()
 {
-    auto _1 = std::lock_guard(this->_boost_mutex);
-    auto _2 = std::lock_guard(this->_instream_mutex);
+    auto _ = std::lock_guard(this->_boost_mutex);
     this->close();
 }
 
 template <typename T>
-inline void fb::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback)
+inline void fb::socket<T>::send(const fb::ostream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
 {
     auto clone = fb::ostream(stream);
     if (encrypt && this->on_encrypt(clone) == false)
@@ -59,7 +63,10 @@ inline void fb::socket<T>::send(const fb::protocol::base::header& response, bool
 }
 
 template <typename T>
-inline void fb::socket<T>::send(const fb::protocol::base::header& response, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback)
+inline void fb::socket<T>::send(const fb::protocol::base::header& response,
+                                bool                              encrypt,
+                                bool                              wrap,
+                                const boost_send_callback&        callback)
 {
     fb::ostream out_stream;
     response.serialize(out_stream);
@@ -73,9 +80,12 @@ boost::asio::awaitable<void> fb::socket<T>::recv()
     {
         while (true)
         {
-            auto bytes_transferred = co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
+            auto bytes_transferred =
+                co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
             this->in_stream<void>([this, bytes_transferred](auto& in_stream) {
-                this->_instream.insert(this->_instream.end(), this->_buffer.begin(), this->_buffer.begin() + bytes_transferred);
+                this->_instream.insert(this->_instream.end(),
+                                       this->_buffer.begin(),
+                                       this->_buffer.begin() + bytes_transferred);
             });
 
             async::awaitable_get(this->_handle_received(*this));
@@ -189,7 +199,8 @@ void fb::socket_container<T>::push(std::unique_ptr<fb::socket<T>>&& session)
     auto _  = std::lock_guard(this->mutex);
 
     auto fd = session->fd();
-    std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::insert(std::pair<uint32_t, std::unique_ptr<fb::socket<T>>>(fd, std::move(session)));
+    std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::insert(
+        std::pair<uint32_t, std::unique_ptr<fb::socket<T>>>(fd, std::move(session)));
 }
 
 template <typename T>

@@ -22,28 +22,27 @@ template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket
 {
 public:
-    using handler_event = std::function<async::task<void>(fb::socket<T>&)>;
+    using handler_event       = std::function<async::task<void>(fb::socket<T>&)>;
+    using boost_send_callback = std::function<void(const boost::system::error_code&, size_t)>;
 
 private:
-    fb::cryptor          _crt;
-    handler_event        _handle_received;
-    handler_event        _handle_closed;
-    uint32_t             _fd = 0xFFFFFFFF;
-    istream              _instream;
-    std::recursive_mutex _instream_mutex;
+    fb::cryptor   _crt;
+    handler_event _handle_received;
+    handler_event _handle_closed;
+    uint32_t      _fd = 0xFFFFFFFF;
+    istream       _instream;
 
 protected:
-    std::array<char, 256>          _buffer;
-    T*                             _data;
-    std::recursive_mutex           _boost_mutex, _task_mutex;
-    std::vector<async::task<bool>> _unfinished_tasks;
-    //
-    // public:
-    //    std::mutex              stream_mutex;
+    std::array<char, 256> _buffer;
+    T*                    _data;
+    std::recursive_mutex  _boost_mutex;
 
 public:
     socket(boost::asio::io_context& context, const handler_event& handle_receive, const handler_event& handle_closed);
-    socket(boost::asio::io_context& context, const fb::cryptor& crt, const handler_event& handle_receive, const handler_event& handle_closed);
+    socket(boost::asio::io_context& context,
+           const fb::cryptor&       crt,
+           const handler_event&     handle_receive,
+           const handler_event&     handle_closed);
     ~socket();
 
 protected:
@@ -51,10 +50,10 @@ protected:
     virtual bool on_wrap(fb::ostream& out);
 
 public:
-    void                         send(const ostream& stream, bool encrypt = true, bool wrap = true);
-    void                         send(const ostream& stream, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
-    void                         send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
-    void                         send(const fb::protocol::base::header& header, bool encrypt, bool wrap, std::function<void(const boost::system::error_code&, size_t)> callback);
+    void send(const ostream& stream, bool encrypt = true, bool wrap = true);
+    void send(const ostream& stream, bool encrypt, bool wrap, const boost_send_callback& callback);
+    void send(const fb::protocol::base::header& header, bool encrypt = true, bool wrap = true);
+    void send(const fb::protocol::base::header& header, bool encrypt, bool wrap, const boost_send_callback& callback);
 
     boost::asio::awaitable<void> recv();
     void                         data(T* value);

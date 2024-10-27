@@ -91,10 +91,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="include\context.h" />
+    <ClInclude Include="include\session.h" />
+    <ClInclude Include="include\util.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +101,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\baram.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\context.cpp" />
+    <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="lib\util.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
