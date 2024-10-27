@@ -16,6 +16,7 @@ set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-g)
 add_definitions(-DREDISCPP_HEADER_ONLY)
 
+include(GNUInstallDirs)
 include_directories("${PROJECT_SOURCE_DIR}/..")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
@@ -26,4 +27,4 @@ ADD_LIBRARY(fb ${SOURCE_FILES})
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-install(TARGETS fb DESTINATION /usr/local/lib)
+install(TARGETS fb DESTINATION ${CMAKE_INSTALL_LIBDIR})
