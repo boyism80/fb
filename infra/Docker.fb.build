@@ -1,17 +1,12 @@
 FROM cshyeon/fb:base
 
-RUN apt-get install libssl-dev python3-pip default-jre -y
-
-# boost
-RUN wget -O boost_1_84_0.tar.gz https://archives.boost.io/release/1.84.0/source/boost_1_84_0.tar.gz
-RUN tar xvf boost_1_84_0.tar.gz
-WORKDIR /boost_1_84_0
+COPY dependency/boost /app/dependency/boost
+WORKDIR /app/dependency/boost
 RUN ./bootstrap.sh --prefix=/usr/
 RUN ./b2 --with-program_options
 RUN ./b2 install
 WORKDIR /
-RUN rm -f boost_1_84_0.tar.gz
-RUN rm -rf boost_1_84_0
+RUN rm -rf /app/boost
 
 # fb.lib
 WORKDIR /app

@@ -6,9 +6,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DJSONCPP_STATIC_WINDOWS_RUNTIME=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --target jsoncpp_static --config Debug
+cmake --build . --target jsoncpp_static --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DJSONCPP_STATIC_WINDOWS_RUNTIME=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --target jsoncpp_static --config Release
+cmake --build . --target jsoncpp_static --config Release --parallel 12
 POPD
 POPD
 XCOPY jsoncpp\build\lib\Debug\jsoncpp_static.lib lib\jsoncppd.* /K /D /H /Y
@@ -20,9 +20,9 @@ PUSHD cpp-terminal
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-cmake --build . --config Debug
+cmake --build . --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-cmake --build . --config Release
+cmake --build . --config Release --parallel 12
 POPD
 POPD 
 XCOPY cpp-terminal\build\cpp-terminal\Release\cpp-terminal.lib lib\ /K /D /H /Y
@@ -38,9 +38,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DENABLE_SSL_SUPPORT=OFF
-cmake --build . --target rabbitmq-static --config Debug
+cmake --build . --target rabbitmq-static --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DENABLE_SSL_SUPPORT=OFF
-cmake --build . --target rabbitmq-static --config Release
+cmake --build . --target rabbitmq-static --config Release --parallel 12
 POPD
 POPD
 XCOPY rabbitmq-c\build\librabbitmq\Debug\librabbitmq.4.lib lib\librabbitmq.4d.* /K /D /H /Y
@@ -57,9 +57,9 @@ POPD
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --config Debug
+cmake --build . --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --config Release
+cmake --build . --config Release --parallel 12
 POPD
 POPD
 XCOPY lua\build\Debug\lua.lib lib\luad.* /K /D /H /Y
@@ -72,9 +72,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --config Debug
+cmake --build . --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --config Release
+cmake --build . --config Release --parallel 12
 POPD
 POPD
 XCOPY zlib\build\Debug\zlibd.lib lib\zlibd.* /K /D /H /Y
@@ -87,9 +87,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF -DFLATBUFFERS_INSTALL=OFF
-cmake --build . --config Debug
+cmake --build . --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF -DFLATBUFFERS_INSTALL=OFF
-cmake --build . --config Release
+cmake --build . --config Release --parallel 12
 POPD
 POPD
 XCOPY flatbuffers\build\Debug\flatbuffers.lib lib\flatbuffersd.* /K /D /H /Y
@@ -113,9 +113,9 @@ POPD
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --config Debug
+cmake --build . --config Debug --parallel 12
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --config Release
+cmake --build . --config Release --parallel 12
 POPD
 POPD
 COPY cpp_redis\build\lib\Debug\tacopie.lib lib\tacopied.lib /Y
@@ -124,4 +124,11 @@ COPY cpp_redis\build\lib\Release\tacopie.lib lib\tacopie.lib /Y
 COPY cpp_redis\build\lib\Release\cpp_redis.lib lib\cpp_redis.lib /Y
 ROBOCOPY cpp_redis\includes\ include\ /E
 ROBOCOPY cpp_redis\tacopie\includes\ include\ /E
+
+PUSHD boost
+git checkout boost-1.84.0
+git add .
+bootstrap.bat
+b2 -j4 -a variant=debug,release link=static runtime-link=static threading=multi address-model=64 stage
+POPD
 PAUSE
