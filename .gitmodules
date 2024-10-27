@@ -43,3 +43,6 @@
 [submodule "dependency/lua"]
 	path = dependency/lua
 	url = https://github.com/boyism80/lua
+[submodule "dependency/boost"]
+	path = dependency/boost
+	url = https://github.com/boostorg/boost

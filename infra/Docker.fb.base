@@ -5,37 +5,49 @@ RUN apt-get upgrade -y
 RUN apt-get install git gcc-14 g++-14 gdb make cmake libssl-dev libjsoncpp-dev libstdc++-14-dev libboost-program-options-dev wget -y
 RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g++
 
-WORKDIR /app
-COPY dependency ./dependency
 
+COPY dependency/jsoncpp /app/dependency/jsoncpp
 WORKDIR /app/dependency/jsoncpp/build
 RUN cmake .. 
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
+COPY dependency/cpp-terminal /app/dependency/cpp-terminal
 WORKDIR /app/dependency/cpp-terminal/build
 RUN cmake .. -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
+COPY dependency/rabbitmq-c /app/dependency/rabbitmq-c
 WORKDIR /app/dependency/rabbitmq-c/build
 RUN cmake .. -DENABLE_SSL_SUPPORT=OFF
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
+COPY dependency/lua /app/dependency/lua
 WORKDIR /app/dependency/lua/build
 RUN cmake .. 
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
+COPY dependency/zlib /app/dependency/zlib
 WORKDIR /app/dependency/zlib/build
 RUN cmake .. 
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
+COPY dependency/flatbuffers /app/dependency/flatbuffers
 WORKDIR /app/dependency/flatbuffers/build
 RUN cmake .. -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
+COPY dependency/cpp-httplib /app/dependency/cpp-httplib
 WORKDIR /app/dependency/cpp-httplib/build
 RUN cmake .. 
 RUN cmake --build . --config Release --parallel 4
 RUN make install
+
 COPY dependency/cpp-async/include/async /usr/local/include/async
 
 WORKDIR /
