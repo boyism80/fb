@@ -2,30 +2,54 @@
     "mysql": {
         "section-1": {
             "-1": {
-                "port": 30100
+                "port": {
+                    "cluster": 3306,
+                    "node": 30100
+                }
             },
             "0": {
-                "port": 30101
+                "port": {
+                    "cluster": 3307,
+                    "node": 30101
+                }
             },
             "1": {
-                "port": 30102
+                "port": {
+                    "cluster": 3308,
+                    "node": 30102
+                }
             },
             "2": {
-                "port": 30103
+                "port": {
+                    "cluster": 3309,
+                    "node": 30103
+                }
             }
         },
         "section-2": {
             "-1": {
-                "port": 30104
+                "port": {
+                    "cluster": 3310,
+                    "node": 30104
+                }
             },
             "0": {
-                "port": 30105
+                "port": {
+                    "cluster": 3311,
+                    "node": 30105
+                }
             },
             "1": {
-                "port": 30106
+                "port": {
+                    "cluster": 3312,
+                    "node": 30106
+                }
             },
             "2": {
-                "port": 30107
+                "port": {
+                    "cluster": 3313,
+                    "node": 30107
+                }
             }
         }
     },
