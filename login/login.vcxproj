@@ -46,12 +46,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\dependency\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\dependency\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -113,6 +113,7 @@
     <ClCompile Include="lib\context.cpp" />
     <ClCompile Include="lib\gateway.cpp" />
     <ClCompile Include="lib\session.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

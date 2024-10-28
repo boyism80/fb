@@ -128,7 +128,15 @@ ROBOCOPY cpp_redis\tacopie\includes\ include\ /E
 PUSHD boost
 git checkout boost-1.84.0
 git add .
-bootstrap.bat
-b2 -j4 -a variant=debug,release link=static runtime-link=static threading=multi address-model=64 stage
+if not exist build mkdir build
+PUSHD build
+cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_C_FLAGS="/utf-8"
+cmake --build . --config Debug --parallel 12
+cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_C_FLAGS="/utf-8"
+cmake --build . --config Release --parallel 12
 POPD
+POPD
+ROBOCOPY boost\boost\ include\boost\ /E
+ROBOCOPY boost\build\stage\lib\Debug lib\boost\
+ROBOCOPY boost\build\stage\lib\Release lib\boost\
 PAUSE
