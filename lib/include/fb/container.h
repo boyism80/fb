@@ -28,6 +28,7 @@ public:
         return this->_pairs.find(k) != this->_pairs.cend();
     }
 
+public:
     V* find(const K& k) const
     {
         auto i = this->_pairs.find(k);
@@ -37,17 +38,20 @@ public:
         return &i->second;
     }
 
+public:
     void push(K key, V* value)
     {
         this->_ptrs.push_back(std::unique_ptr<V>(value));
         this->_pairs.insert({key, *value});
     }
 
+public:
     uint32_t size() const
     {
         return static_cast<uint32_t>(this->_pairs.size());
     }
 
+public:
     V& operator[] (const K& k)
     {
         auto found = this->find(k);
@@ -57,20 +61,25 @@ public:
         return *found;
     }
 
+public:
     iterator begin()
     {
         return this->_pairs.begin();
     }
 
+public:
     iterator end()
     {
         return this->_pairs.end();
     }
 
+public:
     const const_iterator begin() const
     {
         return this->_pairs.begin();
     }
+
+public:
     const const_iterator end() const
     {
         return this->_pairs.end();
@@ -96,6 +105,7 @@ public:
         std::vector<std::unique_ptr<T>>::push_back(std::unique_ptr<T>(value));
     }
 
+public:
     T* find(uint32_t i) const
     {
         if (i > std::vector<std::unique_ptr<T>>::size() - 1)
@@ -104,6 +114,7 @@ public:
         return &std::vector<std::unique_ptr<T>>::at(i);
     }
 
+public:
     T& operator[] (uint32_t i) const
     {
         auto found = this->find(i);

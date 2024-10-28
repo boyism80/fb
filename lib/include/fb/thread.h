@@ -24,19 +24,19 @@ using queue_callback = std::function<void(uint8_t)>;
 class thread
 {
 public:
+    using async_func_type = std::function<async::task<void>()>;
+    using func_type       = std::function<void()>;
+
+public:
     class task
     {
     public:
-        using func_type     = std::function<async::task<void>()>;
-        using callback_type = std::function<void()>;
+        fb::thread::async_func_type func;
+        fb::thread::func_type       callback;
 
     public:
-        func_type     func;
-        callback_type callback;
-
-    public:
-        task(const func_type& func);
-        task(const func_type& func, const callback_type& callback);
+        task(const fb::thread::async_func_type& func);
+        task(const fb::thread::async_func_type& func, const fb::thread::func_type& callback);
         task(const task&) = delete;
         task(task&&) noexcept;
         ~task();
@@ -78,12 +78,8 @@ public:
     void            exit();
 
 public:
-    async::task<void> dispatch(const std::function<async::task<void>()>& fn,
-                               const fb::model::timespan&                delay    = 0s,
-                               uint32_t                                  priority = 0);
-    void              post(const std::function<async::task<void>()>& fn,
-                           const fb::model::timespan&                delay    = 0s,
-                           uint32_t                                  priority = 0);
+    async::task<void> dispatch(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
+    void              post(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
     async::task<void> dispatch(uint32_t priority = 0);
     void settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable = false);
     async::task<void> sleep(const fb::model::timespan& duration);
@@ -124,7 +120,7 @@ public:
     size_t            size() const;
 
 public:
-    async::task<void> dispatch(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay);
+    async::task<void> dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay);
     void              settimer(const fb::timer_callback& fn, const fb::model::timespan& duration);
     void              exit();
 

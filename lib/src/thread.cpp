@@ -68,9 +68,9 @@ void fb::thread::exit()
     this->_mutex_timer.unlock();
 }
 
-async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn,
-                                       const fb::model::timespan&                delay,
-                                       uint32_t                                  priority)
+async::task<void> fb::thread::dispatch(const fb::thread::async_func_type& fn,
+                                       const fb::model::timespan&         delay,
+                                       uint32_t                           priority)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     if (delay > 0s)
@@ -98,7 +98,7 @@ async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>&
     return promise->task();
 }
 
-void fb::thread::post(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay, uint32_t priority)
+void fb::thread::post(const fb::thread::async_func_type& fn, const fb::model::timespan& delay, uint32_t priority)
 {
     if (delay > 0s)
     {
@@ -147,11 +147,11 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
         delay);
 }
 
-fb::thread::task::task(const fb::thread::task::func_type& func) :
+fb::thread::task::task(const fb::thread::async_func_type& func) :
     func(func)
 { }
 
-fb::thread::task::task(const fb::thread::task::func_type& func, const fb::thread::task::callback_type& callback) :
+fb::thread::task::task(const fb::thread::async_func_type& func, const fb::thread::func_type& callback) :
     func(func),
     callback(callback)
 { }
@@ -272,7 +272,7 @@ size_t fb::threads::size() const
     return this->_threads.size();
 }
 
-async::task<void> fb::threads::dispatch(const std::function<async::task<void>()>& fn, const fb::model::timespan& delay)
+async::task<void> fb::threads::dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay)
 {
     auto current = this->current();
     if (current != nullptr)

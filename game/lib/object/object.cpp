@@ -74,6 +74,22 @@ async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
     co_await this->context.destroy(*this, destroy_type);
 }
 
+void fb::game::object::send(const fb::ostream& stream, bool encrypt, bool wrap)
+{ }
+
+void fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
+{ }
+
+uint32_t fb::game::object::sequence() const
+{
+    return this->_sequence;
+}
+
+void fb::game::object::sequence(uint32_t value)
+{
+    this->_sequence = value;
+}
+
 void fb::game::object::chat(const std::string& message, bool shout)
 {
     if (this->_listener != nullptr)
@@ -676,6 +692,23 @@ bool fb::game::object::condition(const std::vector<fb::model::dsl>& conditions) 
 {
     return true;
 }
+
+bool fb::game::object::available() const
+{
+    return true;
+}
+
+void fb::game::object::on_timer(uint64_t elapsed_milliseconds)
+{ }
+
+void fb::game::object::on_kill(fb::game::life& you)
+{ }
+
+void fb::game::object::on_hold()
+{ }
+
+void fb::game::object::on_map_changed(fb::game::map*)
+{ }
 
 bool fb::game::object::operator== (const object& right) const
 {

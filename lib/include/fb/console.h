@@ -43,13 +43,58 @@ public:
 
 public:
     template <class... Args>
-    fb::console& put(const std::string& fmt, Args&&... args);
+    fb::console& put(const std::string& fmt, Args&&... args)
+    {
+        auto _       = std::lock_guard(this->_mutex);
+
+        auto message = std::vformat(fmt, std::make_format_args(args...));
+        Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
+                   << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
+        return *this;
+    }
+
+public:
     template <class... Args>
-    fb::console& puts(const std::string& fmt, Args&&... args);
+    fb::console& puts(const std::string& fmt, Args&&... args)
+    {
+        auto _       = std::lock_guard(this->_mutex);
+
+        auto message = std::vformat(fmt, std::make_format_args(args...));
+        Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
+                   << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
+
+        this->next();
+        return *this;
+    }
+
+public:
     template <class... Args>
-    fb::console& render(const std::string& fmt, Args&&... args);
+    fb::console& render(const std::string& fmt, Args&&... args)
+    {
+        auto _       = std::lock_guard(this->_mutex);
+
+        auto message = std::vformat(fmt, std::make_format_args(args...));
+        Term::cout << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
+
+        return *this;
+    }
+
+public:
     template <class... Args>
-    fb::console& comment(const std::string& fmt, Args&&... args);
+    fb::console& comment(const std::string& fmt, Args&&... args)
+    {
+        auto _            = std::lock_guard(this->_mutex);
+        auto additional_y = ++this->_additional_y;
+        auto message      = std::vformat(fmt, std::make_format_args(args...));
+        Term::cout << Term::cursor_move(this->_y + additional_y, 0) << std::string(this->width(), ' ')
+                   << Term::cursor_move(this->_y + additional_y, this->_x) << UTF8(message, PLATFORM::Windows)
+                   << std::flush;
+        this->clear(message.size(), this->_y + additional_y);
+
+        return *this;
+    }
+
+public:
     fb::console& clear(uint16_t x, uint16_t y);
     fb::console& trim();
     bool         line(uint16_t width, char content, char side = '+');
@@ -71,54 +116,5 @@ public:
 };
 
 } // namespace fb
-
-template <class... Args>
-fb::console& fb::console::put(const std::string& fmt, Args&&... args)
-{
-    auto _       = std::lock_guard(this->_mutex);
-
-    auto message = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
-               << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
-    return *this;
-}
-
-template <class... Args>
-fb::console& fb::console::puts(const std::string& fmt, Args&&... args)
-{
-    auto _       = std::lock_guard(this->_mutex);
-
-    auto message = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
-               << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
-
-    this->next();
-    return *this;
-}
-
-template <class... Args>
-fb::console& fb::console::render(const std::string& fmt, Args&&... args)
-{
-    auto _       = std::lock_guard(this->_mutex);
-
-    auto message = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
-
-    return *this;
-}
-
-template <class... Args>
-fb::console& fb::console::comment(const std::string& fmt, Args&&... args)
-{
-    auto _            = std::lock_guard(this->_mutex);
-    auto additional_y = ++this->_additional_y;
-    auto message      = std::vformat(fmt, std::make_format_args(args...));
-    Term::cout << Term::cursor_move(this->_y + additional_y, 0) << std::string(this->width(), ' ')
-               << Term::cursor_move(this->_y + additional_y, this->_x) << UTF8(message, PLATFORM::Windows)
-               << std::flush;
-    this->clear(message.size(), this->_y + additional_y);
-
-    return *this;
-}
 
 #endif // !__CONSOLE_H__

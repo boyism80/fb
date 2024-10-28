@@ -40,8 +40,10 @@ public:
                    const std::string& pw,
                    const std::string& vhost);
     queue& declare_queue();
+    bool   select(const timeval* timeout = nullptr);
+
+public:
     operator amqp_connection_state_t ();
-    bool select(const timeval* timeout = nullptr);
 };
 
 class queue
