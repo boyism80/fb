@@ -323,7 +323,7 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
 {
     fb::game::weapon* before = this->_weapon;
 
-    this->_weapon            = weapon;
+    this->_weapon = weapon;
     weapon->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::character>();
@@ -342,7 +342,7 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
 {
     fb::game::armor* before = this->_armor;
 
-    this->_armor            = armor;
+    this->_armor = armor;
     armor->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::character>();
@@ -361,7 +361,7 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
 {
     fb::game::shield* before = this->_shield;
 
-    this->_shield            = shield;
+    this->_shield = shield;
     shield->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::character>();
@@ -380,7 +380,7 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
 {
     fb::game::helmet* before = this->_helmet;
 
-    this->_helmet            = helmet;
+    this->_helmet = helmet;
     helmet->owner(&this->_owner);
 
     auto listener = this->_owner.get_listener<fb::game::character>();
@@ -421,7 +421,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, EQUIPMENT_POSITION p
     auto before                              = this->_rings[static_cast<int>(position)];
     this->_rings[static_cast<int>(position)] = ring;
 
-    auto listener                            = this->_owner.get_listener<fb::game::character>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
         listener->on_show(this->_owner, true);
 
@@ -459,7 +459,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
 
-    auto listener                                  = this->_owner.get_listener<fb::game::character>();
+    auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
         listener->on_show(this->_owner, true);
 

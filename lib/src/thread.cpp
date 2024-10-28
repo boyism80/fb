@@ -37,7 +37,7 @@ void fb::thread::handle_thread(uint8_t index)
 
 void fb::thread::handle_idle()
 {
-    auto _       = std::lock_guard(this->_mutex_timer);
+    auto _ = std::lock_guard(this->_mutex_timer);
 
     auto indices = std::vector<uint32_t>();
     auto now     = fb::model::datetime();
@@ -127,7 +127,7 @@ async::task<void> fb::thread::dispatch(uint32_t priority)
 
 void fb::thread::settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable)
 {
-    auto _     = std::lock_guard(this->_mutex_timer);
+    auto _ = std::lock_guard(this->_mutex_timer);
 
     auto timer = new fb::timer(
         [this, fn](const fb::model::datetime&, std::thread::id) {

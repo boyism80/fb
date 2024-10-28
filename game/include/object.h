@@ -44,7 +44,6 @@ protected:
     uint32_t                 _sequence = 0;
     const fb::model::object& _model;
     bool                     _map_lock  = false;
-
     point16_t                _position  = point16_t(0, 0);
     DIRECTION                _direction = DIRECTION::BOTTOM;
     fb::game::map*           _map       = nullptr;
@@ -81,18 +80,14 @@ public:
     virtual async::task<void>  destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     virtual void               send(const fb::ostream& stream, bool encrypt = true, bool wrap = true);
     virtual void               send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
-
     uint32_t                   sequence() const;
     void                       sequence(uint32_t value);
-
     const fb::model::object&   based() const;
     bool                       is(OBJECT_TYPE type) const;
-
     virtual const std::string& name() const;
     virtual uint16_t           look() const;
     virtual uint8_t            color() const;
     virtual OBJECT_TYPE        what() const;
-
     void                       chat(const std::string& message, bool shout = false);
     const point16_t&           position() const;
     const point16_t            position_forward() const;
@@ -101,32 +96,31 @@ public:
     virtual bool               position(const point16_t position, bool refresh = false);
     bool                       move();
     bool                       move(DIRECTION direction);
-
     uint16_t                   x() const;
     bool                       x(uint16_t value);
-
     uint16_t                   y() const;
     bool                       y(uint16_t value);
-
     DIRECTION                  direction() const;
     bool                       direction(DIRECTION value);
-
     virtual async::task<bool>  map(fb::game::map*   map,
                                    const point16_t& position,
                                    DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT);
     virtual async::task<bool>  map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     fb::game::map*             map() const;
-
     bool                       sector(fb::game::sector* sector);
     fb::game::sector*          sector();
-
     bool                       sight(const point16_t& position) const;
     bool                       sight(const fb::game::object& object) const;
-
     object*                    side(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<object*>       sides(DIRECTION direction, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     object*                    forward(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<object*>       forwards(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    bool                       visible() const;
+    void                       visible(bool value);
+    double                     distance(const object& right) const;
+    uint32_t                   distance_sqrt(const object& right) const;
+    virtual bool               condition(const std::vector<fb::model::dsl>& conditions) const;
+    virtual bool               available() const;
 
     // The objects that I can see.
     std::vector<object*> showings(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
@@ -139,14 +133,6 @@ public:
     std::vector<object*> showns(const std::vector<object*>& source,
                                 const point16_t&            position,
                                 OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
-
-    bool                 visible() const;
-    void                 visible(bool value);
-
-    double               distance(const object& right) const;
-    uint32_t             distance_sqrt(const object& right) const;
-    virtual bool         condition(const std::vector<fb::model::dsl>& conditions) const;
-    virtual bool         available() const;
 
 public:
     virtual void on_timer(uint64_t elapsed_milliseconds);
@@ -190,9 +176,7 @@ struct object::listener
     virtual void on_show(fb::game::object& me, bool light)                                         = 0;
     virtual void on_show(fb::game::object& me, fb::game::object& you, bool light)                  = 0;
     virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)  = 0;
-    virtual void on_hide(fb::game::object& me,
-                         fb::game::object& you,
-                         DESTROY_TYPE      destroy_type = DESTROY_TYPE::DEFAULT)                        = 0;
+    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type)   = 0;
     virtual void on_move(fb::game::object& me, const point16_t& before)                            = 0;
     virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff)                             = 0;
     virtual void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;

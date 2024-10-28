@@ -11,7 +11,7 @@ int main(int argc, const char** argv)
     auto& c      = fb::console::get();
     auto& config = fb::config::get();
 
-    auto  height = 9;
+    auto height = 9;
     c.box(c.width() - 1, height);
 
     auto header = "The Kingdom of the wind [GAME]";

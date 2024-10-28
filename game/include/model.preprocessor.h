@@ -43,10 +43,10 @@
     using point32_t = point<uint32_t>; \
     using point64_t = point<uint64_t>; \
                                        \
-    using size8_t   = size<uint8_t>;   \
-    using size16_t  = size<uint16_t>;  \
-    using size32_t  = size<uint32_t>;  \
-    using size64_t  = size<uint64_t>;  \
+    using size8_t  = size<uint8_t>;    \
+    using size16_t = size<uint16_t>;   \
+    using size32_t = size<uint32_t>;   \
+    using size64_t = size<uint64_t>;   \
                                        \
     using range8_t  = range<uint8_t>;  \
     using range16_t = range<uint16_t>; \
@@ -131,14 +131,14 @@ public:                                                                         
     static int builtin_rename_price(lua_State* lua);                                    \
     static int builtin_deposit_price(lua_State* lua);
 
-#define DECLARE_CASH_EXTENSION                                                                           \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-                                                                                                         \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::CASH;                                                         \
+#define DECLARE_CASH_EXTENSION                                                        \
+                                                                                      \
+public:                                                                               \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final; \
+                                                                                      \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                   \
+    {                                                                                 \
+        return enum_value::ITEM_ATTRIBUTE::CASH;                                      \
     }
 
 #define DECLARE_CONSUME_EXTENSION                                                                        \

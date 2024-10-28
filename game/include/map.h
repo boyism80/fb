@@ -103,23 +103,19 @@ public:
 public:
     uint64_t               index(const point16_t& p) const;
     point16_t              point(uint64_t i) const;
-
     bool                   blocked(uint16_t x, uint16_t y) const;
     bool                   block(uint16_t x, uint16_t y, bool option);
     uint16_t               width() const;
     uint16_t               height() const;
     size16_t               size() const;
     bool                   loaded() const;
-
     bool                   existable(const point16_t position) const;
     bool                   movable(const point16_t position) const;
     bool                   movable(const fb::game::object& object, DIRECTION direction) const;
     bool                   movable_forward(const fb::game::object& object, uint16_t step = 1) const;
     const fb::model::warp* warpable(const point16_t& position) const;
-
     bool                   update(fb::game::object& object);
     bool                   activated() const;
-
     std::vector<object*>   nears(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<object*>   belows(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     std::vector<object*>   activateds(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN);

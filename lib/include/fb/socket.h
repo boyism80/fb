@@ -259,7 +259,7 @@ public:
 private:
     void push(std::unique_ptr<fb::socket<T>>&& session)
     {
-        auto _  = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->mutex);
 
         auto fd = session->fd();
         std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::insert(
@@ -339,7 +339,7 @@ public:
 public:
     fb::socket<T>* operator[] (uint32_t fd)
     {
-        auto        _     = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->mutex);
 
         const auto& found = std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::find(fd);
         if (found == this->cend())

@@ -9,7 +9,7 @@ int fb::game::context::builtin_seed(lua_State* lua)
     static std::mt19937       gen(random());
     static auto               distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
 
-    auto                      thread       = fb::game::lua::get(lua);
+    auto thread = fb::game::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

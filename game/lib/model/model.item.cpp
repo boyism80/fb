@@ -36,7 +36,7 @@ int fb::model::item::builtin_make(lua_State* lua)
     auto model   = thread->touserdata<fb::model::item>(1);
     auto object  = model->make(*context);
 
-    auto map     = thread->touserdata<fb::game::map>(2);
+    auto map = thread->touserdata<fb::game::map>(2);
     async::awaitable_get(object->map(map));
 
     if (lua_istable(lua, 3))

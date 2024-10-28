@@ -310,7 +310,7 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         auto new_pw   = std::string(request.new_pw);
         auto birthday = request.birthday;
 
-        auto delay    = fb::config::get()["transfer delay"].asInt();
+        auto delay = fb::config::get()["transfer delay"].asInt();
         co_await this->sleep(std::chrono::seconds(delay));
 
         const auto& config = fb::config::get();
@@ -343,7 +343,7 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         if (response.success == false)
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
-        auto   uid       = response.uid;
+        auto uid = response.uid;
 
         auto&& response2 = co_await this->post<db::request::ChangePw, db::response::ChangePw>(
             "db",

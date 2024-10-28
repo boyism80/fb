@@ -579,7 +579,7 @@ main& fb::game::lua::container::get()
 {
     std::lock_guard gd(this->_mutex);
 
-    auto            id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
+    auto id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
     if (this->_mains.contains(id) == false)
     {
         auto ptr = std::unique_ptr<main>(new main());

@@ -20,7 +20,7 @@ struct generator
     {
         INPUT& ret_;
 
-        bool   await_ready()
+        bool await_ready()
         {
             return true;
         }
@@ -37,7 +37,7 @@ struct generator
         std::optional<OUTPUT> current_value;
         INPUT                 input_value;
 
-        auto                  get_return_object()
+        auto get_return_object()
         {
             return generator{coro_handle::from_promise(*this)};
         }

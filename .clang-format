@@ -15,7 +15,7 @@ AlignConsecutiveMacros: AcrossEmptyLines
 AllowShortLambdasOnASingleLine: false
 AlignConsecutiveAssignments:
   Enabled: true
-  AcrossEmptyLines: true
+  AcrossEmptyLines: false
   AcrossComments: false
   AlignCompound: true
   PadOperators: true
@@ -26,7 +26,7 @@ AlignConsecutiveShortCaseStatements:
   AlignCaseColons: true
 AlignConsecutiveDeclarations:
   Enabled: true
-  AcrossEmptyLines: true
+  AcrossEmptyLines: false
   AcrossComments: false
 AlignEscapedNewlines: Left
 CompactNamespaces: true

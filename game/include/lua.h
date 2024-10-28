@@ -389,7 +389,7 @@ inline void to_lua(lua_State* ctx, const T* self)
     auto allocated = (void**)lua_newuserdata(ctx, sizeof(void**));
     *allocated     = (const void*)self;
 
-    auto metaname  = self->metaname();
+    auto metaname = self->metaname();
     luaL_getmetatable(ctx, metaname.c_str());
     lua_setmetatable(ctx, -2);
 }

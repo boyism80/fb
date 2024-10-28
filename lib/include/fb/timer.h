@@ -29,8 +29,8 @@ private:
         duration(duration),
         disposable(disposable)
     { }
-    timer(const timer&)             = delete;
-    timer(timer&&)                  = delete;
+    timer(const timer&) = delete;
+    timer(timer&&)      = delete;
 
     timer& operator= (timer&)       = delete;
     timer& operator= (const timer&) = delete;

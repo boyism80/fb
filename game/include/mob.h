@@ -50,7 +50,6 @@ private:
     listener*        _listener = nullptr;
     datetime         _action_time;
     fb::game::rezen* _rezen         = nullptr;
-
     fb::game::life*  _target        = nullptr;
     lua::context*    _attack_thread = nullptr;
 
@@ -67,17 +66,11 @@ public:
     bool            action();
     const datetime& action_time() const;
     void            action_time(const datetime& dt);
-
     fb::game::life* target() const;
     void            target(fb::game::life* value);
-
     fb::game::life* fix();
     void            AI(const datetime& now);
-
-    virtual bool    available() const
-    {
-        return this->alive();
-    }
+    virtual bool    available() const;
 
 protected:
     uint32_t on_calculate_damage(bool critical) const final;

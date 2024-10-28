@@ -264,7 +264,7 @@ uint16_t character::look() const
 
 void character::look(uint16_t value)
 {
-    this->_look   = value;
+    this->_look = value;
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
@@ -278,7 +278,7 @@ uint8_t character::color() const
 
 void character::color(uint8_t value)
 {
-    this->_color  = value;
+    this->_color = value;
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
@@ -294,7 +294,7 @@ void character::armor_color(std::optional<uint8_t> value)
 {
     this->_armor_color = value;
 
-    auto listener      = this->get_listener<character>();
+    auto listener = this->get_listener<character>();
     if (listener != nullptr)
         listener->on_show(*this, false);
 }
@@ -421,7 +421,7 @@ void character::level(uint8_t value)
 {
     auto listener = this->get_listener<character>();
 
-    this->_level  = value;
+    this->_level = value;
     if (listener != nullptr)
         listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
 }
@@ -476,7 +476,7 @@ void character::state(STATE value)
     if (this->_state == value)
         return;
 
-    this->_state  = value;
+    this->_state = value;
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
@@ -560,7 +560,7 @@ void character::experience(uint32_t value)
 
     this->_experience = value;
 
-    auto listener     = this->get_listener<character>();
+    auto listener = this->get_listener<character>();
     if (listener != nullptr)
         listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
 }
@@ -679,7 +679,7 @@ uint32_t character::money() const
 
 void character::money(uint32_t value)
 {
-    this->_money  = value;
+    this->_money = value;
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)

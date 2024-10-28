@@ -224,7 +224,7 @@ async::task<bool> context::handle_command_item(character& session, Json::Value& 
 
     auto count = parameters.size() > 1 && parameters[1].isInt() ? parameters[1].asInt() : 1;
 
-    auto item  = model->make(*this, count);
+    auto item = model->make(*this, count);
     co_await item->map(session.map(), session.position());
     co_return true;
 }
@@ -351,7 +351,7 @@ async::task<bool> context::handle_command_mapobj(character& session, Json::Value
 
     auto value = parameters[0].asInt();
 
-    auto map   = session.map();
+    auto map = session.map();
     if (map == nullptr)
         co_return false;
 
@@ -388,7 +388,7 @@ async::task<bool> context::handle_command_npc(character& session, Json::Value& p
     if (parameters[0].isString() == false)
         co_return false;
 
-    auto name  = parameters[0].asString();
+    auto name = parameters[0].asString();
 
     auto model = this->model.npc.name2npc(name);
     if (model == nullptr)

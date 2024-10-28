@@ -62,8 +62,8 @@ public:
     thread(uint8_t index);
     ~thread();
 
-    thread(const thread&)             = delete;
-    thread(thread&&)                  = delete;
+    thread(const thread&) = delete;
+    thread(thread&&)      = delete;
 
     thread& operator= (thread&)       = delete;
     thread& operator= (const thread&) = delete;
@@ -99,10 +99,10 @@ private:
 
 public:
     threads(boost::asio::io_context& context);
-    ~threads()                          = default;
+    ~threads() = default;
 
-    threads(const threads&)             = delete;
-    threads(threads&&)                  = delete;
+    threads(const threads&) = delete;
+    threads(threads&&)      = delete;
 
     threads& operator= (threads&)       = delete;
     threads& operator= (const threads&) = delete;

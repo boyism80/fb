@@ -110,9 +110,9 @@ private:
         if (res->status != 200)
             throw std::runtime_error("http error");
 
-        auto ptr           = (const uint8_t*)res->body.c_str();
-        auto size          = std::stoi(res->get_header_value("Content-Length"));
-        auto in_stream     = fb::istream(ptr, size);
+        auto ptr       = (const uint8_t*)res->body.c_str();
+        auto size      = std::stoi(res->get_header_value("Content-Length"));
+        auto in_stream = fb::istream(ptr, size);
 
         auto protocol_type = in_stream.read_u32();
         auto protocol_size = in_stream.read_u32();
@@ -167,9 +167,9 @@ private:
         if (res->status != 200)
             throw std::runtime_error("http error");
 
-        auto ptr           = (const uint8_t*)res->body.c_str();
-        auto size          = std::stoi(res->get_header_value("Content-Length"));
-        auto in_stream     = fb::istream(ptr, size);
+        auto ptr       = (const uint8_t*)res->body.c_str();
+        auto size      = std::stoi(res->get_header_value("Content-Length"));
+        auto in_stream = fb::istream(ptr, size);
 
         auto protocol_type = in_stream.read_u32();
         auto protocol_size = in_stream.read_u32();
@@ -604,8 +604,8 @@ protected:
 public:
     void run()
     {
-        auto& config   = fb::config::get();
-        auto  threads  = std::vector<std::thread>();
+        auto& config  = fb::config::get();
+        auto  threads = std::vector<std::thread>();
 
         this->_running = true;
         for (int i = 0; i < config["thread"]["io"].asUInt(); i++)

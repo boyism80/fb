@@ -19,7 +19,7 @@ int fb::model::npc::builtin_input(lua_State* lua)
 
     auto message = thread->tostring(3);
 
-    auto argc    = thread->argc();
+    auto argc = thread->argc();
     if (argc > 3)
     {
         auto message_top = thread->tostring(4);
@@ -85,7 +85,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
 
     auto message = thread->tostring(3);
 
-    auto items   = fb::game::dialog::item_pairs();
+    auto items = fb::game::dialog::item_pairs();
     thread->pushnil();
     while (thread->next(4))
     {

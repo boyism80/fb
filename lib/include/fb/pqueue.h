@@ -30,11 +30,11 @@ private:
     std::recursive_mutex _mutex;
 
 public:
-    queue()                         = default;
-    ~queue()                        = default;
+    queue()  = default;
+    ~queue() = default;
 
-    queue(const queue&)             = delete;
-    queue(queue&&)                  = delete;
+    queue(const queue&) = delete;
+    queue(queue&&)      = delete;
 
     queue& operator= (queue&)       = delete;
     queue& operator= (const queue&) = delete;

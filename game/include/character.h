@@ -47,47 +47,42 @@ public:
     struct listener;
 
 private:
-    bool                   _init = false;
-    uint32_t               _id   = 0xFFFFFFFF;
-    fb::socket<character>& _socket;
-    bool                   _admin = false;
-    std::string            _name;
-    datetime               _last_login;
-    uint16_t               _look        = 0;
-    uint8_t                _color       = 0;
-    std::optional<uint8_t> _armor_color = 0;
-
-    defensive              _defensive;
-    uint32_t               _base_hp    = 0;
-    uint32_t               _base_mp    = 0;
-    uint32_t               _experience = 0;
-
-private:
-    uint8_t                 _strength          = 0;
-    uint8_t                 _intelligence      = 0;
-    uint8_t                 _dexteritry        = 0;
-    uint8_t                 _damage            = 0; // 공격수정
-    uint8_t                 _hit               = 0; // 명중수정
-    uint8_t                 _regenerative      = 0; // 재생력
-
-    NATION                  _nation            = NATION::GOGURYEO;
-    CREATURE                _creature          = CREATURE::DRAGON;
-    SEX                     _sex               = SEX::ALL;
-    STATE                   _state             = STATE::NORMAL;
-    uint8_t                 _level             = 1;
-    CLASS                   _class             = CLASS::NONE;
-    uint8_t                 _promotion         = 0;
-    uint32_t                _money             = 0;
-    std::optional<uint16_t> _disguise          = 0;
+    bool                    _init = false;
+    uint32_t                _id   = 0xFFFFFFFF;
+    fb::socket<character>&  _socket;
+    bool                    _admin = false;
+    std::string             _name;
+    datetime                _last_login;
+    uint16_t                _look            = 0;
+    uint8_t                 _color           = 0;
+    std::optional<uint8_t>  _armor_color     = 0;
+    defensive               _defensive       = {};
+    uint32_t                _base_hp         = 0;
+    uint32_t                _base_mp         = 0;
+    uint32_t                _experience      = 0;
+    uint8_t                 _strength        = 0;
+    uint8_t                 _intelligence    = 0;
+    uint8_t                 _dexteritry      = 0;
+    uint8_t                 _damage          = 0; // 공격수정
+    uint8_t                 _hit             = 0; // 명중수정
+    uint8_t                 _regenerative    = 0; // 재생력
+    NATION                  _nation          = NATION::GOGURYEO;
+    CREATURE                _creature        = CREATURE::DRAGON;
+    SEX                     _sex             = SEX::ALL;
+    STATE                   _state           = STATE::NORMAL;
+    uint8_t                 _level           = 1;
+    CLASS                   _class           = CLASS::NONE;
+    uint8_t                 _promotion       = 0;
+    uint32_t                _money           = 0;
+    std::optional<uint16_t> _disguise        = 0;
+    uint32_t                _deposited_money = 0;
+    std::vector<item*>      _deposited_items;
+    std::string             _title;
+    fb::game::group*        _group             = nullptr;
+    fb::game::clan*         _clan              = nullptr;
     bool                    _options[0x0B + 1] = {
         0,
     };
-    uint32_t           _deposited_money = 0;
-    std::vector<item*> _deposited_items;
-    std::string        _title;
-
-    fb::game::group*   _group = nullptr;
-    fb::game::clan*    _clan  = nullptr;
 
 private:
     std::vector<std::function<async::task<bool>(const std::string&, const std::vector<fb::game::npc*>&)>>
@@ -132,103 +127,75 @@ public:
     uint32_t                     id() const;
     void                         id(uint32_t id);
     uint32_t                     fd();
-
     bool                         admin() const;
     void                         admin(bool value);
-
     bool                         transferring() const;
-
     void                         attack();
     void                         action(ACTION action, DURATION duration, uint8_t sound = 0x00);
-
     const std::string&           name() const final;
     void                         name(const std::string& value);
-
     const datetime&              last_login() const;
     void                         last_login(const datetime& value);
-
     uint16_t                     look() const final;
     void                         look(uint16_t value);
-
     uint8_t                      color() const final;
     void                         color(uint8_t value);
-
     std::optional<uint8_t>       armor_color() const;
     void                         armor_color(std::optional<uint8_t> value);
     uint8_t                      current_armor_color() const;
-
     std::optional<uint16_t>      disguise() const;
     void                         disguise(uint16_t value);
     void                         undisguise();
-
     uint32_t                     defensive_physical() const;
     void                         defensive_physical(uint8_t value);
-
     uint32_t                     defensive_magical() const;
     void                         defensive_magical(uint8_t value);
-
     void                         base_hp_up(uint32_t value);
     void                         base_mp_up(uint32_t value);
-
     void                         base_hp(uint32_t value);
     void                         base_mp(uint32_t value);
-
     uint32_t                     base_hp() const;
     uint32_t                     base_mp() const;
-
     NATION                       nation() const;
     bool                         nation(NATION value);
-
     CREATURE                     creature() const;
     bool                         creature(CREATURE value);
-
     uint8_t                      level() const;
     void                         level(uint8_t value);
     bool                         level_up();
     bool                         max_level() const;
-
     SEX                          sex() const;
     void                         sex(SEX value);
-
     STATE                        state() const;
     void                         state(STATE value);
-
     CLASS                        cls() const;
     void                         cls(CLASS value);
-
     uint8_t                      promotion() const;
     void                         promotion(uint8_t value);
-
     uint8_t                      strength() const;
     void                         strength(uint8_t value);
     void                         strength_up(uint8_t value);
-
     uint8_t                      intelligence() const;
     void                         intelligence(uint8_t value);
     void                         intelligence_up(uint8_t value);
-
     uint8_t                      dexteritry() const;
     void                         dexteritry(uint8_t value);
     void                         dexteritry_up(uint8_t value);
-
     uint32_t                     experience() const;
     void                         experience(uint32_t value);
     uint32_t                     experience_add(uint32_t value, bool notify = false);
     uint32_t                     experience_reduce(uint32_t value);
     uint32_t                     experience_remained() const;
     float                        experience_percent() const;
-
     uint32_t                     money() const;
     void                         money(uint32_t value);
     uint32_t                     money_add(uint32_t value);
     uint32_t                     money_reduce(uint32_t value);
     async::task<uint32_t>        money_drop(uint32_t value);
-
     uint32_t                     deposited_money() const;
     void                         deposited_money(uint32_t value);
     uint32_t                     deposit_money(uint32_t value);
     uint32_t                     withdraw_money(uint32_t value);
-
     bool                         deposit_item(fb::game::item& item);
     bool                         deposit_item(uint8_t index, uint16_t count);
     bool                         deposit_item(const std::string& name, uint16_t count);
@@ -237,32 +204,23 @@ public:
     async::task<fb::game::item*> withdraw_item(uint8_t index, uint16_t count);
     async::task<fb::game::item*> withdraw_item(const std::string& name, uint16_t count);
     async::task<fb::game::item*> withdraw_item(const fb::model::item& item, uint16_t count);
-
     uint32_t                     damage() const;
     void                         damage(uint8_t value);
-
     uint32_t                     hit() const;
     void                         hit(uint8_t value);
-
     uint32_t                     regenerative() const;
     void                         regenerative(uint8_t value);
-
     bool                         option(CUSTOM_SETTING key) const;
     void                         option(CUSTOM_SETTING key, bool value);
     bool                         option_toggle(CUSTOM_SETTING key);
-
     const std::string&           title() const;
     void                         title(const std::string& value);
-
     fb::game::group*             group() const;
     fb::game::clan*              clan() const;
-
     void                         assert_state(STATE value) const;
     void                         assert_state(const std::vector<STATE>& values) const;
-
     bool                         move(const point16_t& before);
     bool                         move(DIRECTION direction, const point16_t& before);
-
     async::task<void>            ride(fb::game::mob& horse);
     async::task<void>            ride();
     async::task<void>            unride();

@@ -286,6 +286,11 @@ void fb::game::mob::AI(const datetime& now)
     this->_action_time = now;
 }
 
+bool fb::game::mob::available() const
+{
+    return this->alive();
+}
+
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
     auto& model      = this->based<fb::model::mob>();

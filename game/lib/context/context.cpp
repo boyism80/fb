@@ -1443,8 +1443,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (this->model.board.contains(request.section) == false)
                 throw std::runtime_error(message::board::SECTION_NOT_EXIST);
 
-            auto   section  = &this->model.board[request.section];
-            auto   offset   = request.offset;
+            auto section = &this->model.board[request.section];
+            auto offset  = request.offset;
 
             auto&& response = co_await this->get<db::response::GetArticleList>(
                 "db",

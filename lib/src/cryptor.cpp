@@ -45,14 +45,13 @@ void fb::cryptor::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const u
 
     for (uint32_t i = 0; i < num_loop; i++)
     {
-        unsigned int* uint_dst  = (unsigned int*)current_dst;
-        unsigned int* uint_src  = (unsigned int*)current_src;
-        unsigned int* uint_key  = (unsigned int*)key + (i % ksize);
+        unsigned int* uint_dst = (unsigned int*)current_dst;
+        unsigned int* uint_src = (unsigned int*)current_src;
+        unsigned int* uint_key = (unsigned int*)key + (i % ksize);
 
-        *uint_dst               = *uint_src ^ *uint_key;
-
-        current_src            += sizeof(uint32_t);
-        current_dst            += sizeof(uint32_t);
+        *uint_dst    = *uint_src ^ *uint_key;
+        current_src += sizeof(uint32_t);
+        current_dst += sizeof(uint32_t);
     }
 
     uint32_t unset_size = size & 3;
@@ -117,7 +116,7 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
         // DO NOTHING
     }
 
-    uint32_t new_size    = size + 1;
+    uint32_t new_size = size + 1;
 
     buffer_dst[new_size] = 0;
     data.erase(data.begin() + offset, data.begin() + offset + size);
@@ -170,7 +169,7 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
     catch (...)
     { }
 
-    uint32_t new_size    = size - 1;
+    uint32_t new_size = size - 1;
 
     buffer_dst[new_size] = 0;
     data.erase(data.begin() + offset, data.begin() + offset + size);

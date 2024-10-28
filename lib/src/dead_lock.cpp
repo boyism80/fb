@@ -78,7 +78,7 @@ void fb::dead_lock_detector::assert_dead_lock(const fb::dead_lock_detector& node
                 auto& begin = (*i1).get();
                 auto& end   = (*i2).get();
 
-                auto  found = this->search(end);
+                auto found = this->search(end);
                 if (found != nullptr && found->search(begin) != nullptr)
                 {
                     auto sstream = std::stringstream();

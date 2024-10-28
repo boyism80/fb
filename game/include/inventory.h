@@ -40,15 +40,12 @@ public:
     virtual async::task<uint8_t> add(T& element, uint8_t index);
     virtual bool                 remove(uint8_t index);
     virtual bool                 swap(uint8_t src, uint8_t dst);
-
     bool                         free() const;
     uint8_t                      free_size() const;
-
-public:
-    iterator       begin();
-    iterator       end();
-    const_iterator cbegin() const;
-    const_iterator cend() const;
+    iterator                     begin();
+    iterator                     end();
+    const_iterator               cbegin() const;
+    const_iterator               cend() const;
 
 public:
     T*       operator[] (int index);

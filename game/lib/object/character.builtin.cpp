@@ -294,7 +294,7 @@ int fb::game::character::builtin_item_drop(lua_State* lua)
     auto index    = (uint8_t)thread->tointeger(2);
     auto drop_all = thread->toboolean(3);
 
-    auto dropped  = async::awaitable_get(session->items.drop(index - 1, drop_all ? 1 : -1));
+    auto dropped = async::awaitable_get(session->items.drop(index - 1, drop_all ? 1 : -1));
     if (dropped != nullptr)
         thread->pushobject(dropped);
     else
@@ -468,8 +468,8 @@ int fb::game::character::builtin_class(lua_State* lua)
 
     if (argc == 1)
     {
-        auto cls         = session->_class;
-        auto promotion   = session->_promotion;
+        auto cls       = session->_class;
+        auto promotion = session->_promotion;
 
         auto promo_model = context->model.promotion(cls, promotion);
         if (promo_model == nullptr)

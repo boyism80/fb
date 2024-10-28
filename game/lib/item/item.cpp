@@ -65,10 +65,10 @@ std::string fb::game::item::trade_name() const
 uint16_t fb::game::item::fill(uint16_t count)
 {
     // 추가하고 남은 갯수 리턴
-    auto space     = this->free_space();
-    auto addition  = std::min(space, count);
+    auto space    = this->free_space();
+    auto addition = std::min(space, count);
 
-    this->_count  += addition;
+    this->_count += addition;
     return std::max(0, count - space);
 }
 

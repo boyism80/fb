@@ -121,8 +121,8 @@ public:
     async::task<fb::game::cash*> replace(uint32_t value);
     uint32_t                     reduce(uint32_t value);
 
-    bool                         empty() const;
-    std::string                  inven_name() const override;
+    bool        empty() const;
+    std::string inven_name() const override;
 };
 
 class consume : public item
@@ -307,42 +307,32 @@ public:
     uint8_t                           index(const fb::model::item& item) const;
     uint8_t                           index(const fb::game::item& item) const;
     std::vector<uint8_t>              index_all(const fb::model::item& item) const;
-
     fb::game::equipment*              wear(EQUIPMENT_PARTS parts, fb::game::equipment* item);
-
     fb::game::weapon*                 weapon() const;
     fb::game::weapon*                 weapon(fb::game::weapon* weapon);
-
     fb::game::armor*                  armor() const;
     fb::game::armor*                  armor(fb::game::armor* armor);
-
     fb::game::shield*                 shield() const;
     fb::game::shield*                 shield(fb::game::shield* shield);
-
     fb::game::helmet*                 helmet() const;
     fb::game::helmet*                 helmet(fb::game::helmet* helmet);
-
     fb::game::ring*                   ring(EQUIPMENT_POSITION position) const;
     fb::game::ring*                   ring(fb::game::ring* ring);
     fb::game::ring*                   ring(fb::game::ring* ring, EQUIPMENT_POSITION position);
-
     fb::game::auxiliary*              auxiliary(EQUIPMENT_POSITION position) const;
     fb::game::auxiliary*              auxiliary(fb::game::auxiliary* auxiliary);
     fb::game::auxiliary*              auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position);
-
     fb::game::item*                   find(const std::string& name) const;
     fb::game::item*                   find(const fb::model::item& model) const;
     fb::game::item*                   find_bundle(const fb::model::item& model) const;
     async::task<fb::game::item*>      drop(uint8_t index, uint8_t count);
     async::task<void>                 pickup(bool boost);
     async::task<bool>                 throws(uint8_t index);
+    std::map<EQUIPMENT_PARTS, item*>  equipments() const;
+    bool                              swap(uint8_t src, uint8_t dst) override;
 
-    fb::game::item* remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    fb::game::item*  remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
     fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
-
-    std::map<EQUIPMENT_PARTS, item*> equipments() const;
-
-    bool                             swap(uint8_t src, uint8_t dst) override;
 };
 
 }} // namespace fb::game

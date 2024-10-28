@@ -39,19 +39,14 @@ private:
 
 public:
     character*                          you() const;
-
     bool                                begin(character& you);
     bool                                trading() const;
-
     bool                                up(fb::game::item& item);
     bool                                up(uint8_t money);
     uint32_t                            money() const;
-
     bool                                count(uint16_t count);
-
     bool                                cancel();
     bool                                lock();
-
     const std::vector<fb::game::item*>& items() const;
     const fb::game::item*               item(uint8_t index) const;
 };

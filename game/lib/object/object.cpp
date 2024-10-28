@@ -140,7 +140,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             afters.end(),
                             std::inserter(hides, hides.begin()));
         for (auto x : hides)
-            this->_listener->on_hide(*x, *this);
+            this->_listener->on_hide(*x, *this, DESTROY_TYPE::DEFAULT);
 
         // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
@@ -186,7 +186,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             afters.end(),
                             std::inserter(hides, hides.begin()));
         for (auto x : hides)
-            this->_listener->on_hide(*this, *x);
+            this->_listener->on_hide(*this, *x, DESTROY_TYPE::DEFAULT);
 
         // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
@@ -922,9 +922,9 @@ int fb::game::object::builtin_chat(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    auto              message  = thread->tostring(2);
-    auto              type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
-    auto              decorate = argc < 4 ? true : thread->toboolean(4);
+    auto message  = thread->tostring(2);
+    auto type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
+    auto decorate = argc < 4 ? true : thread->toboolean(4);
 
     std::stringstream sstream;
     if (decorate)
@@ -1167,7 +1167,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    auto name  = thread->tostring(2);
+    auto name = thread->tostring(2);
 
     auto model = context->model.item.name2item(name);
     if (model == nullptr)

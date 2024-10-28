@@ -62,13 +62,13 @@ int fb::game::door::builtin_update(lua_State* lua)
     if (thread == nullptr)
         return 0;
 
-    auto       argc    = thread->argc();
-    auto       door    = thread->touserdata<fb::game::door>(1);
+    auto argc = thread->argc();
+    auto door = thread->touserdata<fb::game::door>(1);
 
-    auto&      model   = door->model;
-    auto       context = thread->env<fb::game::context>("context");
+    auto& model   = door->model;
+    auto  context = thread->env<fb::game::context>("context");
 
-    const auto size    = size8_t((uint8_t)model.pairs.size(), 1);
+    const auto size = size8_t((uint8_t)model.pairs.size(), 1);
 
     context->send(fb::protocol::game::response::map::update(door->map, door->position, size), door->map);
     return 0;

@@ -87,7 +87,7 @@ private:
                     const std::string        key,
                     std::mutex&              mutex)
     {
-        auto _      = std::lock_guard(mutex);
+        auto _ = std::lock_guard(mutex);
 
         auto result = fn(current);
         concurrent::add(current);

@@ -45,7 +45,7 @@ public:
     template <class... Args>
     fb::console& put(const std::string& fmt, Args&&... args)
     {
-        auto _       = std::lock_guard(this->_mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
         Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
@@ -57,7 +57,7 @@ public:
     template <class... Args>
     fb::console& puts(const std::string& fmt, Args&&... args)
     {
-        auto _       = std::lock_guard(this->_mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
         Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
@@ -71,7 +71,7 @@ public:
     template <class... Args>
     fb::console& render(const std::string& fmt, Args&&... args)
     {
-        auto _       = std::lock_guard(this->_mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
         Term::cout << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;

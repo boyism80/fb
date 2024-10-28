@@ -26,7 +26,7 @@ uint32_t fb::game::life::hp_up(uint32_t value, fb::game::object* from)
 {
     auto listener = this->get_listener<fb::game::life>();
 
-    value         = std::min(value, this->base_hp() - this->_hp);
+    value = std::min(value, this->base_hp() - this->_hp);
     this->hp(this->_hp + value);
     if (listener != nullptr)
         listener->on_heal_hp(*this, value, from);
@@ -38,7 +38,7 @@ uint32_t fb::game::life::hp_down(uint32_t value, fb::game::object* from, bool cr
 {
     auto listener = this->get_listener<fb::game::life>();
 
-    value         = std::min(value, this->_hp);
+    value = std::min(value, this->_hp);
     this->hp(this->_hp - value);
 
     this->on_damaged(from, value, critical);
@@ -56,7 +56,7 @@ uint32_t fb::game::life::mp_up(uint32_t value, fb::game::object* from)
 {
     auto listener = this->get_listener<fb::game::life>();
 
-    value         = std::min(value, this->base_mp() - this->_mp);
+    value = std::min(value, this->base_mp() - this->_mp);
     this->mp(this->_mp + value);
     if (listener != nullptr)
         listener->on_heal_mp(*this, value, from);
@@ -188,7 +188,7 @@ bool fb::game::life::alive() const
 
 void fb::game::life::kill()
 {
-    this->_hp     = 0;
+    this->_hp = 0;
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
@@ -262,6 +262,9 @@ bool fb::game::life::active(const fb::model::spell& spell)
     return true;
 }
 
+void fb::game::life::on_update()
+{ }
+
 bool fb::game::life::on_calculate_critical(fb::game::life& you) const
 {
 #if defined DEBUG | defined _DEBUG
@@ -306,6 +309,11 @@ void fb::game::life::on_die(fb::game::object* from)
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
         listener->on_die(*this, from);
+}
+
+uint32_t fb::game::life::on_exp() const
+{
+    return 0;
 }
 
 void fb::game::life::on_kill(fb::game::life& you)
