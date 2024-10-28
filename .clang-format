@@ -1,4 +1,3 @@
-# https://clang.llvm.org/docs/ClangFormatStyleOptions.html#configurable-format-style-options
 ---
 Language: Cpp
 BasedOnStyle: LLVM
@@ -6,7 +5,7 @@ IndentWidth: 4
 AccessModifierOffset: -4
 SortIncludes: false
 AllowShortBlocksOnASingleLine: Never
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
 BreakConstructorInitializers: AfterColon
 PackConstructorInitializers: Never
@@ -50,7 +49,7 @@ BraceWrapping:
   SplitEmptyRecord: false
   SplitEmptyNamespace: false
   BeforeLambdaBody: false
-AlwaysBreakTemplateDeclarations: Yes
+AlwaysBreakTemplateDeclarations: Leave
 IndentCaseLabels: false
 IndentPPDirectives: None
 IndentRequiresClause: false
