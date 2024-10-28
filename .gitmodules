@@ -1,9 +1,3 @@
-[submodule "data-converter"]
-	path = data-converter
-	url = https://github.com/boyism80/data-converter
-[submodule "flatbuffer-ex"]
-	path = flatbuffer-ex
-	url = https://github.com/boyism80/flatbuffer-ex.git
 [submodule "tools/flatbuffer-ex"]
 	path = tools/flatbuffer-ex
 	url = https://github.com/boyism80/flatbuffer-ex
@@ -31,9 +25,6 @@
 [submodule "dependency/cpp-async"]
 	path = dependency/cpp-async
 	url = https://github.com/microsoft/cpp-async
-[submodule "dependency/openssl"]
-	path = dependency/openssl
-	url = https://github.com/openssl/openssl
 [submodule "dependency/cpp-httplib"]
 	path = dependency/cpp-httplib
 	url = https://github.com/yhirose/cpp-httplib
