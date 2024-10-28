@@ -186,6 +186,7 @@
     <ClCompile Include="lib\worker\worker.map.cpp" />
     <ClCompile Include="lib\worker\worker.model.cpp" />
     <ClCompile Include="lib\worker\worker.npc.spawn.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
