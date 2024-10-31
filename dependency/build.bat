@@ -6,9 +6,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DJSONCPP_STATIC_WINDOWS_RUNTIME=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --target jsoncpp_static --config Debug --parallel 12
+cmake --build . --target jsoncpp_static --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DJSONCPP_STATIC_WINDOWS_RUNTIME=ON -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --target jsoncpp_static --config Release --parallel 12
+cmake --build . --target jsoncpp_static --config Release --parallel
 POPD
 POPD
 XCOPY jsoncpp\build\lib\Debug\jsoncpp_static.lib lib\jsoncppd.* /K /D /H /Y
@@ -20,9 +20,9 @@ PUSHD cpp-terminal
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-cmake --build . --config Debug --parallel 12
+cmake --build . --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-cmake --build . --config Release --parallel 12
+cmake --build . --config Release --parallel
 POPD
 POPD 
 XCOPY cpp-terminal\build\cpp-terminal\Release\cpp-terminal.lib lib\ /K /D /H /Y
@@ -38,9 +38,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DENABLE_SSL_SUPPORT=OFF
-cmake --build . --target rabbitmq-static --config Debug --parallel 12
+cmake --build . --target rabbitmq-static --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DENABLE_SSL_SUPPORT=OFF
-cmake --build . --target rabbitmq-static --config Release --parallel 12
+cmake --build . --target rabbitmq-static --config Release --parallel
 POPD
 POPD
 XCOPY rabbitmq-c\build\librabbitmq\Debug\librabbitmq.4.lib lib\librabbitmq.4d.* /K /D /H /Y
@@ -57,9 +57,9 @@ POPD
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --config Debug --parallel 12
+cmake --build . --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --config Release --parallel 12
+cmake --build . --config Release --parallel
 POPD
 POPD
 XCOPY lua\build\Debug\lua.lib lib\luad.* /K /D /H /Y
@@ -72,9 +72,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --config Debug --parallel 12
+cmake --build . --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --config Release --parallel 12
+cmake --build . --config Release --parallel
 POPD
 POPD
 XCOPY zlib\build\Debug\zlibd.lib lib\zlibd.* /K /D /H /Y
@@ -87,9 +87,9 @@ git add .
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF -DFLATBUFFERS_INSTALL=OFF
-cmake --build . --config Debug --parallel 12
+cmake --build . --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DFLATBUFFERS_BUILD_FLATC=OFF -DFLATBUFFERS_BUILD_TESTS=OFF -DFLATBUFFERS_INSTALL=OFF
-cmake --build . --config Release --parallel 12
+cmake --build . --config Release --parallel
 POPD
 POPD
 XCOPY flatbuffers\build\Debug\flatbuffers.lib lib\flatbuffersd.* /K /D /H /Y
@@ -113,9 +113,9 @@ POPD
 if not exist build mkdir build
 PUSHD build
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
-cmake --build . --config Debug --parallel 12
+cmake --build . --config Debug --parallel
 cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
-cmake --build . --config Release --parallel 12
+cmake --build . --config Release --parallel
 POPD
 POPD
 COPY cpp_redis\build\lib\Debug\tacopie.lib lib\tacopied.lib /Y
@@ -128,15 +128,20 @@ ROBOCOPY cpp_redis\tacopie\includes\ include\ /E
 PUSHD boost
 git checkout boost-1.84.0
 git add .
+CALL bootstrap.bat
+CALL b2.exe headers
 if not exist build mkdir build
 PUSHD build
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_C_FLAGS="/utf-8"
-cmake --build . --config Debug --parallel 12
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_C_FLAGS="/utf-8"
-cmake --build . --config Release --parallel 12
+cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_CXX_FLAGS="/EHsc"
+cmake --build . --config Debug --parallel
+cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCMAKE_CXX_FLAGS="/utf-8" -DCMAKE_CXX_FLAGS="/EHsc"
+cmake --build . --config Release --parallel
 POPD
 POPD
 ROBOCOPY boost\boost\ include\boost\ /E
-ROBOCOPY boost\build\stage\lib\Debug lib\boost\
-ROBOCOPY boost\build\stage\lib\Release lib\boost\
+ROBOCOPY boost\build\stage\lib\Debug\ lib\boost\ /E *.lib
+ROBOCOPY boost\build\stage\lib\Release\ lib\boost\ /E *.lib
+
+git submodule foreach git reset --hard
+git submodule foreach git clean -fxd
 PAUSE
