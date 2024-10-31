@@ -52,6 +52,12 @@ public:
     fb::socket_container<T> sockets;
 
 protected:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      context  The context
+     * @param[in]  port     The port
+     */
     acceptor(boost::asio::io_context& context, uint16_t port) :
         icontext(context, port),
         _context(context),
@@ -80,12 +86,24 @@ protected:
     }
 
 public:
+    /**
+     * @brief      Destroys the object.
+     */
     virtual ~acceptor()
     {
         this->exit();
     }
 
 private:
+    /**
+     * @brief      Gets the internal.
+     *
+     * @param[in]  host     The host
+     * @param[in]  path     The path
+     * @param[in]  headers  The headers
+     *
+     * @return     The internal.
+     */
     async::task<httplib::Result> get_internal(const std::string& host,
                                               const std::string& path,
                                               httplib::Headers   headers)
@@ -99,6 +117,16 @@ private:
     }
 
 private:
+    /**
+     * @brief      Gets the internal.
+     *
+     * @param[in]  host      The host
+     * @param[in]  path      The path
+     *
+     * @tparam     Response  { description }
+     *
+     * @return     The internal.
+     */
     template <typename Response>
     async::task<Response> get_internal(const std::string& host, const std::string& path)
     {
@@ -121,6 +149,16 @@ private:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  route     The route
+     * @param[in]  path      The path
+     *
+     * @tparam     Response  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <typename Response>
     async::task<Response> get(const std::string& route, const std::string& path)
     {
@@ -130,6 +168,17 @@ public:
     }
 
 private:
+    /**
+     * @brief      Posts an internal.
+     *
+     * @param[in]  host     The host
+     * @param[in]  path     The path
+     * @param[in]  headers  The headers
+     * @param[in]  bytes    The bytes
+     * @param[in]  size     The size
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<httplib::Result> post_internal(const std::string& host,
                                                const std::string& path,
                                                httplib::Headers   headers,
@@ -150,6 +199,18 @@ private:
     }
 
 private:
+    /**
+     * @brief      Posts an internal.
+     *
+     * @param[in]  host      The host
+     * @param[in]  path      The path
+     * @param[in]  body      The body
+     *
+     * @tparam     Request   { description }
+     * @tparam     Response  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <typename Request, typename Response>
     async::task<Response> post_internal(const std::string& host, const std::string& path, const Request& body)
     {
@@ -177,6 +238,18 @@ private:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  route     The route
+     * @param[in]  path      The path
+     * @param[in]  body      The body
+     *
+     * @tparam     Request   { description }
+     * @tparam     Response  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <typename Request, typename Response>
     async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
     {
@@ -187,6 +260,15 @@ public:
 
 public:
     using dispatch_callback = std::function<async::task<void>(void)>;
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket    The socket
+     * @param[in]  fn        The function
+     * @param[in]  priority  The priority
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<void> dispatch(fb::socket<T>& socket, const dispatch_callback& fn, uint32_t priority = 0)
     {
         auto id     = this->thread_id(socket);
@@ -199,6 +281,14 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket    The socket
+     * @param[in]  priority  The priority
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<void> dispatch(fb::socket<T>& socket, uint32_t priority = 0)
     {
         auto id     = this->thread_id(socket);
@@ -209,6 +299,14 @@ public:
     }
 
 private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket     The socket
+     * @param      in_stream  The stream to read data from
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<bool> execute_bound_handler(fb::socket<T>& socket, fb::istream& in_stream)
     {
         static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
@@ -279,6 +377,13 @@ private:
     }
 
 private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<void> handle_work(fb::socket<T>& socket)
     {
         if (this->_running == false)
@@ -297,6 +402,9 @@ private:
     }
 
 private:
+    /**
+     * @brief      { function_description }
+     */
     void accept()
     {
         auto callback_received = [this](fb::socket<T>& socket) -> async::task<void> {
@@ -354,6 +462,14 @@ private:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket  The socket
+     * @param[in]  ip      { parameter_description }
+     * @param[in]  port    The port
+     * @param[in]  from    The from
+     */
     void transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
     {
         auto&       crt = socket.crt();
@@ -374,6 +490,15 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket     The socket
+     * @param[in]  ip         { parameter_description }
+     * @param[in]  port       The port
+     * @param[in]  from       The from
+     * @param[in]  parameter  The parameter
+     */
     void transfer(fb::socket<T>&                   socket,
                   uint32_t                         ip,
                   uint16_t                         port,
@@ -396,6 +521,15 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket     The socket
+     * @param[in]  ip         { parameter_description }
+     * @param[in]  port       The port
+     * @param[in]  from       The from
+     * @param[in]  parameter  The parameter
+     */
     void transfer(fb::socket<T>&                   socket,
                   const std::string&               ip,
                   uint16_t                         port,
@@ -406,39 +540,86 @@ public:
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  cmd   The command
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual bool decrypt_policy(uint8_t cmd) const
     {
         return true;
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual T* handle_accepted(fb::socket<T>& socket) = 0;
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual async::task<void> handle_start()
     {
         co_return;
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      session  The session
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual async::task<bool> handle_connected(fb::socket<T>& session)
     {
         co_return true;
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      session  The session
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual async::task<bool> handle_disconnected(fb::socket<T>& session)
     {
         co_return true;
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual uint32_t thread_id(const fb::socket<T>& socket) const
     {
         return socket.fd();
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
     fb::thread* thread(const fb::socket<T>& socket) const
     {
         auto count = this->_threads.count();
@@ -449,32 +630,68 @@ protected:
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual async::task<void> handle_exit()
     {
         co_return;
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual uint8_t id() const
     {
         return (uint8_t)fb::config::get()["id"].asUInt();
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual std::string name() const
     {
         return fb::config::get()["name"].asString();
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual fb::protocol::internal::Service service() const = 0;
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  cmd   The command
+     * @param[in]  fn    The function
+     *
+     * @tparam     R     { description }
+     */
     template <typename R>
     void bind(int cmd, const std::function<async::task<bool>(fb::socket<T>&, const R&)>& fn)
     { }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @tparam     X          { description }
+     * @tparam     R          { description }
+     */
     template <typename X, typename R>
     void bind(async::task<bool> (X::*fn)(fb::socket<T>&, const R&))
     {
@@ -492,6 +709,12 @@ protected:
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn        The function
+     * @param[in]  duration  The duration
+     */
     void bind_timer(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& duration)
     {
         auto timer = std::make_shared<boost::asio::deadline_timer>(this->_context, boost::posix_time::seconds(1));
@@ -509,6 +732,14 @@ protected:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket   The socket
+     * @param[in]  stream   The stream
+     * @param[in]  encrypt  The encrypt
+     * @param[in]  wrap     The wrap
+     */
     void send(fb::socket<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true)
     {
         if (stream.empty())
@@ -518,6 +749,14 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket    The socket
+     * @param[in]  response  The response
+     * @param[in]  encrypt   The encrypt
+     * @param[in]  wrap      The wrap
+     */
     void send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         fb::ostream out_stream;
@@ -529,24 +768,42 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     fb::threads& threads()
     {
         return this->_threads;
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     const fb::threads& threads() const
     {
         return this->_threads;
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     fb::thread* current_thread()
     {
         return this->_threads.current();
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     */
     virtual void handle_background()
     {
         while (this->_running)
@@ -568,6 +825,15 @@ protected:
         }
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  func  The function
+     *
+     * @tparam     R     { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <typename R>
     async::task<R> background(const std::function<async::task<R>()>& func)
     {
@@ -602,6 +868,9 @@ protected:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     */
     void run()
     {
         auto& config  = fb::config::get();
@@ -630,12 +899,24 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     bool running() const
     {
         return this->_running;
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  duration  The duration
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<void> sleep(const fb::model::timespan& duration)
     {
         auto thread = this->_threads.current();
@@ -644,6 +925,9 @@ protected:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     */
     void exit()
     {
         auto _ = std::lock_guard(this->_mutex_exit);

@@ -5,6 +5,9 @@
 
 namespace fb { namespace login {
 
+/**
+ * @brief      This class describes a session.
+ */
 class session
 {
 public:
@@ -12,7 +15,13 @@ public:
     std::string name;
 
 public:
+    /**
+     * @brief      Constructs a new instance.
+     */
     session();
+    /**
+     * @brief      Destroys the object.
+     */
     ~session();
 };
 

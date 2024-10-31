@@ -7,6 +7,9 @@
 
 namespace fb { namespace game {
 
+/**
+ * @brief      { struct_description }
+ */
 struct listener : public virtual character::listener, public virtual mob::listener
 { };
 

@@ -6,6 +6,11 @@
 
 namespace fb { namespace gateway { namespace util {
 
+/**
+ * @brief      { function_description }
+ *
+ * @param[in]  request  The request
+ */
 void assert_client(const fb::protocol::gateway::request::assert_version& request);
 
 }}} // namespace fb::gateway::util
