@@ -17,3 +17,4 @@ obj
 bin
 dependency/include
 dependency/lib
+sftp-config.json
