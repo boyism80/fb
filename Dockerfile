@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS data-builder
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS data-build
 WORKDIR /
 COPY resources/table /app/resources/table
 COPY tools/data-converter /app/tools/data-converter
@@ -98,4 +98,4 @@ WORKDIR /
 RUN rm -rf /app
 
 WORKDIR /fb/data
-COPY --from=data-builder /output .
+COPY --from=data-build /output .
