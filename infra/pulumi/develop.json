@@ -55,18 +55,42 @@
     },
     "redis": {
         "section-1": {
-            "port": 30110
+            "port": {
+                "cluster": 6379,
+                "node": 30110
+            }
         },
         "section-2": {
-            "port": 30111
+            "port": {
+                "cluster": 6380,
+                "node": 30111
+            }
         }
     },
     "rabbitmq": {
         "section-1": {
-            "port": 30120
+            "port": {
+                "amqp": {
+                    "cluster": 5672,
+                    "node": 30120
+                },
+                "management": {
+                    "cluster": 15672,
+                    "node": 30130
+                }
+            }
         },
-        "section-1": {
-            "port": 30121
+        "section-2": {
+            "port": {
+                "amqp": {
+                    "cluster": 5673,
+                    "node": 30121
+                },
+                "management": {
+                    "cluster": 15673,
+                    "node": 30131
+                }
+            }
         }
     },
     "gateway": {

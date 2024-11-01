@@ -25,23 +25,33 @@ const storageClass = new k8s.storage.v1.StorageClass("storage-class", {
 const filePath = path.join(__dirname, 'develop.json')
 const content = fs.readFileSync(filePath, 'utf-8')
 const json = JSON.parse(content)
-const serviceArgs = []
-let index = 0
-mysql.init(namespace, storageClass)
+
+const mysqlConfigs = []
 for(const [section, v] of Object.entries(json.mysql)) {
     for(const [id, config] of Object.entries(v)) {
-        const name = `mysql-${section}-${id}`
-        mysql.create(name, index)
-        serviceArgs.push({
-            name: name,
-            clusterPort: config.port.cluster,
-            nodePort: config.port.node,
-            index: index
+        mysqlConfigs.push({
+            port: config.port
         })
-        index++
     }
 }
-mysql.setup(serviceArgs)
+mysql.setup(namespace, storageClass, mysqlConfigs)
 
-// rabbitmq.setup(namespace, storageClass)
+
+const redisConfigs = []
+for(const [section, config] of Object.entries(json.redis)) {
+    redisConfigs.push({
+        port: config.port
+    })
+}
+redis.setup(namespace, storageClass, redisConfigs)
+
+
+const rabbitmqConfigs = []
+for(const [section, config] of Object.entries(json.rabbitmq)) {
+    rabbitmqConfigs.push({
+        port: config.port
+    })
+}
+exports.rabbitmq = rabbitmq.setup(namespace, storageClass, rabbitmqConfigs)
+
 // redis.setup(namespace, storageClass)
