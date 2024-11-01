@@ -52,6 +52,3 @@ for(const [section, config] of Object.entries(json.rabbitmq)) {
         port: config.port
     })
 }
-exports.rabbitmq = rabbitmq.setup(namespace, storageClass, rabbitmqConfigs)
-
-// redis.setup(namespace, storageClass)

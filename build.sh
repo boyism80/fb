@@ -1,6 +1,3 @@
-docker build --tag cshyeon/fb:base -f infra/Docker.fb.base .
-docker push cshyeon/fb:base
-
 docker build --tag cshyeon/fb:build -f infra/Docker.fb.build .
 docker push cshyeon/fb:build
 

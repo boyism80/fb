@@ -7,12 +7,11 @@ COPY login ./login
 
 WORKDIR /app/login/build
 RUN cmake ..
-RUN cmake --build . --config Release --parallel 4
+RUN cmake --build . --config Release --parallel
 
-FROM cshyeon/fb:base
+FROM cshyeon/fb:build
 WORKDIR /app
 COPY --from=build /app/login/build/app .
-COPY --from=build /app/login/config/* ./config/
 
 WORKDIR /app
 ENTRYPOINT ./app

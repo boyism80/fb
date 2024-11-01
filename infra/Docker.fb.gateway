@@ -7,12 +7,11 @@ COPY gateway ./gateway
 
 WORKDIR /app/gateway/build
 RUN cmake ..
-RUN cmake --build . --config Release --parallel 4
+RUN cmake --build . --config Release --parallel
 
-FROM cshyeon/fb:base
+FROM cshyeon/fb:build
 WORKDIR /app
 COPY --from=build /app/gateway/build/app .
-COPY --from=build /app/gateway/config/* ./config/
 
 WORKDIR /app
 ENTRYPOINT ./app
