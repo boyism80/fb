@@ -13,6 +13,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 ARG SERVICE
 ENV SERVICE=$SERVICE
 COPY --from=build /app/dist/${SERVICE} /app
-COPY --from=build /fb/data/json/server/ /app/json/
+COPY --from=data-build /fb/data/json/server/ /app/json/
 WORKDIR /app
 ENTRYPOINT dotnet ${SERVICE}.dll
