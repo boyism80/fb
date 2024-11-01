@@ -26,6 +26,11 @@ using namespace std::chrono_literals;
 
 namespace fb {
 
+/**
+ * @brief      This class describes an acceptor.
+ *
+ * @tparam     T     { description }
+ */
 template <typename T>
 class acceptor : public icontext
 {
@@ -484,6 +489,14 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket  The socket
+     * @param[in]  ip      { parameter_description }
+     * @param[in]  port    The port
+     * @param[in]  from    The from
+     */
     void transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
     {
         this->transfer(socket, inet_addr(ip.c_str()), port, from);
