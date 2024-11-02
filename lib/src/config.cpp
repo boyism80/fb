@@ -5,26 +5,17 @@ fb::config::config(const char* env)
     std::ifstream ifstream;
     try
     {
-        std::stringstream sstream;
-        if (env == nullptr)
-            sstream << "config/config.json";
-        else
-            sstream << "config/config." << env << ".json";
-
-        ifstream.open(sstream.str());
+        auto path = env != nullptr ? std::format("config/config.{}.json", env) : "config/config.json";
+        ifstream.open(path);
         if (ifstream.is_open() == false)
         {
-            sstream.str("");
-            sstream << "cannot load config." << env << " file.";
-            throw std::runtime_error(sstream.str());
+            throw std::runtime_error(std::format("cannot load file {}", path));
         }
 
         Json::Reader reader;
         if (reader.parse(ifstream, this->_json) == false)
         {
-            sstream.str("");
-            sstream << "cannot parse config." << env << " file.";
-            throw std::runtime_error(sstream.str());
+            throw std::runtime_error(std::format("cannot parse json file {}", path));
         }
 
         ifstream.close();
@@ -34,6 +25,7 @@ fb::config::config(const char* env)
         if (ifstream.is_open())
             ifstream.close();
 
+        fb::console::get().puts(e.what());
         throw e;
     }
 }
@@ -45,8 +37,10 @@ const Json::Value& fb::config::get()
 
     std::call_once(flag, [] {
         const char* env = std::getenv("KINGDOM_OF_WIND_ENVIRONMENT");
+#if defined DEBUG || defined _DEBUG
         if (env == nullptr)
             env = "dev";
+#endif
 
         ist = std::unique_ptr<fb::config>(new fb::config(env));
     });

@@ -8,6 +8,8 @@
 #include <jsoncpp/json/json.h>
 #include <sstream>
 #include <mutex>
+#include <format>
+#include <fb/console.h>
 
 namespace fb {
 

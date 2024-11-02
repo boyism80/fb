@@ -1,0 +1,98 @@
+const pulumi = require("@pulumi/pulumi");
+const k8s = require("@pulumi/kubernetes");
+
+module.exports = function () {
+
+    return {
+        setup: function (namespace, conf) {
+
+            for(const [section, sectionConf] of Object.entries(conf.game)) {
+                for(const [i, container] of Object.entries(sectionConf.containers)) {
+                    const config = {
+                        id: i,
+                        name: `game-${i}`,
+                        delay: 5,
+                        ip: sectionConf.ip,
+                        port: container.port.node,
+                        thread: {
+                            logic: 12,
+                            io: 12,
+                            background: 8
+                        },
+                        save: 600,
+                        internal: { ip: "internal", port: conf.internal[sectionConf.internal].port.cluster },
+                        db: { ip: "db", port: conf.internal[sectionConf.db].port.cluster },
+                        login: { ip: conf.login[sectionConf.login].ip, port: conf.login[sectionConf.login].port.cluster },
+                        redis: {
+                            default: 
+                            {
+                                ip: "redis",
+                                port: conf.redis[sectionConf.redis].port.cluster,
+                                db: 0
+                            }
+                        },
+                        amqp: {
+                            ip: "rabbitmq",
+                            port: conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
+                            uid: "fb",
+                            pwd: "admin"
+                        },
+                        log: ["debug", "info", "warn", "fatal"]
+                    }
+
+                    const configMap = new k8s.core.v1.ConfigMap(`game-${i}`, {
+                        metadata: { name: `game-${i}`, namespace: namespace.metadata.name },
+                        data: {
+                            "config.json": JSON.stringify(config),
+                        },
+                    })
+
+                    const statefulSet = new k8s.apps.v1.StatefulSet(`game-${i}`, {
+                        metadata: {
+                            name: `game-${i}`,
+                            namespace: namespace.metadata.name,
+                        },
+                        spec: {
+                            serviceName: "game",
+                            replicas: 1,
+                            selector: {
+                                matchLabels: {
+                                    app: "game",
+                                },
+                            },
+                            template: {
+                                metadata: {
+                                    labels: {
+                                        app: "game",
+                                    },
+                                },
+                                spec: {
+                                    containers: [
+                                        {
+                                            name: "game",
+                                            image: "cshyeon/fb:game",
+                                            ports: [
+                                                { containerPort: 3000, name: `game-${i}` },
+                                            ],
+                                            volumeMounts: [{
+                                                name: "config-volume",
+                                                mountPath: "/app/config/config.json",
+                                                subPath: "config.json"
+                                            }],
+                                        },
+                                    ],
+                                    volumes: [{
+                                        name: "config-volume",
+                                        configMap: {
+                                            name: configMap.metadata.name,
+                                        },
+                                    }],
+                                },
+                            },
+                        },
+                    });
+                }
+            }
+        }
+    }
+}()

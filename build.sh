@@ -1,4 +1,4 @@
-docker build --tag cshyeon/fb:build -f Dockerfile.fb.build .
+docker build --tag cshyeon/fb:build -f Dockerfile .
 docker push cshyeon/fb:build
 
 docker build --tag cshyeon/fb:gateway -f gateway/Dockerfile .

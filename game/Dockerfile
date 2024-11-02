@@ -22,4 +22,4 @@ RUN rm -f maps.zip
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-# ENTRYPOINT ./app
+ENTRYPOINT ./app

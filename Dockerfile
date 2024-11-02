@@ -94,8 +94,8 @@ RUN cmake ..
 RUN cmake --build . --config Release --parallel
 RUN make install
 
-WORKDIR /
 RUN rm -rf /app
-
 WORKDIR /fb/data
 COPY --from=data-build /output .
+WORKDIR /
+RUN ldconfig

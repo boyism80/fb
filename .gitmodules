@@ -7,9 +7,6 @@
 [submodule "dependency/jsoncpp"]
 	path = dependency/jsoncpp
 	url = https://github.com/open-source-parsers/jsoncpp
-[submodule "dependency/cpp-terminal"]
-	path = dependency/cpp-terminal
-	url = https://github.com/jupyter-xeus/cpp-terminal
 [submodule "dependency/rabbitmq-c"]
 	path = dependency/rabbitmq-c
 	url = https://github.com/alanxz/rabbitmq-c
@@ -37,3 +34,6 @@
 [submodule "dependency/boost"]
 	path = dependency/boost
 	url = https://github.com/boostorg/boost
+[submodule "dependency/cpp-terminal"]
+	path = dependency/cpp-terminal
+	url = https://github.com/boyism80/cpp-terminal

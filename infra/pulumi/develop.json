@@ -108,7 +108,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30010
+            "port": {
+                "cluster": 3010,
+                "node": 30010
+            }
         },
         "section-2": {
             "name": "무휼",
@@ -116,7 +119,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30011
+            "port": {
+                "cluster": 3011,
+                "node": 30011
+            }
         },
         "section-3": {
             "name": "세류",
@@ -124,7 +130,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30012
+            "port": {
+                "cluster": 3012,
+                "node": 30012
+            }
         },
         "section-4": {
             "name": "유리",
@@ -132,7 +141,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30013
+            "port": {
+                "cluster": 3013,
+                "node": 30013
+            }
         },
         "section-5": {
             "name": "해명",
@@ -140,7 +152,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30014
+            "port": {
+                "cluster": 3014,
+                "node": 30014
+            }
         },
         "section-6": {
             "name": "배극",
@@ -148,7 +163,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30015
+            "port": {
+                "cluster": 3015,
+                "node": 30015
+            }
         },
         "section-7": {
             "name": "하자",
@@ -156,7 +174,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30016
+            "port": {
+                "cluster": 3016,
+                "node": 30016
+            }
         },
         "section-8": {
             "name": "호동",
@@ -164,7 +185,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30017
+            "port": {
+                "cluster": 3017,
+                "node": 30017
+            }
         },
         "section-9": {
             "name": "주몽",
@@ -172,7 +196,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30018
+            "port": {
+                "cluster": 3018,
+                "node": 30018
+            }
         },
         "section-10": {
             "name": "낙랑",
@@ -180,7 +207,10 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30019
+            "port": {
+                "cluster": 3019,
+                "node": 30019
+            }
         },
         "section-11": {
             "name": "괴유",
@@ -188,81 +218,122 @@
             "internal": "section-1",
             "db": "section-1",
             "ip": "192.168.0.180",
-            "port": 30020
+            "port": {
+                "cluster": 3020,
+                "node": 30020
+            }
         }
     },
     "game": {
         "section-1": {
+            "ip": "192.168.0.180",
             "internal" :"section-1",
+            "login": "section-1",
             "db": "section-1",
+            "redis": "section-1",
+            "rabbitmq": "section-1",
             "containers": {
                 "0": {
-                    "ip": "192.168.0.180",
-                    "port": 30030
+                    "port": {
+                        "cluster": 3030,
+                        "node": 30030
+                    }
                 },
                 "1": {
-                    "ip": "192.168.0.180",
-                    "port": 30031
+                    "port": {
+                        "cluster": 3031,
+                        "node": 30031
+                    }
                 },
                 "2": {
-                    "ip": "192.168.0.180",
-                    "port": 30032
+                    "port": {
+                        "cluster": 3032,
+                        "node": 30032
+                    }
                 },
                 "3": {
-                    "ip": "192.168.0.180",
-                    "port": 30033
+                    "port": {
+                        "cluster": 3033,
+                        "node": 30033
+                    }
                 },
                 "4": {
-                    "ip": "192.168.0.180",
-                    "port": 30034
+                    "port": {
+                        "cluster": 3034,
+                        "node": 30034
+                    }
                 },
                 "5": {
-                    "ip": "192.168.0.180",
-                    "port": 30035
+                    "port": {
+                        "cluster": 3035,
+                        "node": 30035
+                    }
                 },
                 "6": {
-                    "ip": "192.168.0.180",
-                    "port": 30036
+                    "port": {
+                        "cluster": 3036,
+                        "node": 30036
+                    }
                 },
                 "7": {
-                    "ip": "192.168.0.180",
-                    "port": 30037
+                    "port": {
+                        "cluster": 3037,
+                        "node": 30037
+                    }
                 },
                 "8": {
-                    "ip": "192.168.0.180",
-                    "port": 30038
+                    "port": {
+                        "cluster": 3038,
+                        "node": 30038
+                    }
                 },
                 "9": {
-                    "ip": "192.168.0.180",
-                    "port": 30039
+                    "port": {
+                        "cluster": 3039,
+                        "node": 30039
+                    }
                 },
                 "10": {
-                    "ip": "192.168.0.180",
-                    "port": 30040
+                    "port": {
+                        "cluster": 3040,
+                        "node": 30040
+                    }
                 },
                 "11": {
-                    "ip": "192.168.0.180",
-                    "port": 30041
+                    "port": {
+                        "cluster": 3041,
+                        "node": 30041
+                    }
                 },
                 "12": {
-                    "ip": "192.168.0.180",
-                    "port": 30042
+                    "port": {
+                        "cluster": 3042,
+                        "node": 30042
+                    }
                 },
                 "13": {
-                    "ip": "192.168.0.180",
-                    "port": 30043
+                    "port": {
+                        "cluster": 3043,
+                        "node": 30043
+                    }
                 },
                 "14": {
-                    "ip": "192.168.0.180",
-                    "port": 30044
+                    "port": {
+                        "cluster": 3044,
+                        "node": 30044
+                    }
                 },
                 "15": {
-                    "ip": "192.168.0.180",
-                    "port": 30045
+                    "port": {
+                        "cluster": 3045,
+                        "node": 30045
+                    }
                 },
                 "16": {
-                    "ip": "192.168.0.180",
-                    "port": 30046
+                    "port": {
+                        "cluster": 3046,
+                        "node": 30046
+                    }
                 }
             }
         }
