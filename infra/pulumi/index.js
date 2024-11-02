@@ -3,6 +3,8 @@ const k8s = require("@pulumi/kubernetes");
 const mysql = require('./mysql')
 const rabbitmq = require('./rabbitmq')
 const redis = require('./redis')
+const internal = require('./internal')
+const db = require('./db')
 const fs = require('fs');
 const path = require('path')
 
@@ -52,3 +54,25 @@ for(const [section, config] of Object.entries(json.rabbitmq)) {
         port: config.port
     })
 }
+rabbitmq.setup(namespace, storageClass, rabbitmqConfigs)
+
+const httpInternalConfigs = []
+for(const [section, config] of Object.entries(json.internal)) {
+    httpInternalConfigs.push({
+        rabbitmq: json.rabbitmq[config.rabbitmq],
+        redis: json.redis[config.redis],
+        port: config.port
+    })
+}
+internal.setup(namespace, httpInternalConfigs)
+
+
+const httpDbConfigs = []
+for(const [section, config] of Object.entries(json.db)) {
+    httpDbConfigs.push({
+        mysql: json.mysql[config.mysql],
+        redis: json.redis[config.redis],
+        port: config.port
+    })
+}
+db.setup(namespace, httpDbConfigs)

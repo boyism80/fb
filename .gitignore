@@ -21,3 +21,4 @@ sftp-config.json
 game/json
 internal/json
 db/json
+.vscode

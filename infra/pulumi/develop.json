@@ -270,27 +270,37 @@
     "internal": {
         "section-1": {
             "ip": "192.168.0.180",
-            "port": 30050,
+            "port": {
+                "cluster": 80,
+                "node": 30050
+            },
             "redis": "section-1",
             "rabbitmq": "section-1"
         },
         "section-2": {
             "ip": "192.168.0.180",
-            "port": 30051,
+            "port": {
+                "cluster": 81,
+                "node": 30051
+            },
             "redis": "section-2",
-            "rabbitmq": "section-1"
+            "rabbitmq": "section-2"
         }
     },
     "db": {
         "section-1": {
-            "ip": "192.168.0.180",
-            "port": 30060,
+            "port": {
+                "cluster": 80,
+                "node": 30060
+            },
             "mysql": "section-1",
             "redis": "section-1"
         },
         "section-2": {
-            "ip": "192.168.0.180",
-            "port": 30061,
+            "port": {
+                "cluster": 81,
+                "node": 30061
+            },
             "mysql": "section-2",
             "redis": "section-2"
         }
