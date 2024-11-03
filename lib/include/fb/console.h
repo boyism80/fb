@@ -16,6 +16,7 @@
 #include <mutex>
 #include <format>
 #include <fb/encoding.h>
+#include <iostream>
 #include <cpp-terminal/iostream.hpp>
 #include <cpp-terminal/screen.hpp>
 #include <cpp-terminal/cursor.hpp>
@@ -156,10 +157,10 @@ public:
         auto position = console::position();
 
         console::position(0, position.y);
-        Term::cout << std::string(console::width(), ' ');
+        std::cout << std::string(console::width(), ' ');
 
         console::position(position.x, position.y);
-        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         return ist;
     }
 
@@ -184,10 +185,10 @@ public:
         auto position = console::position();
 
         console::position(0, position.y);
-        Term::cout << std::string(console::width(), ' ');
+        std::cout << std::string(console::width(), ' ');
 
         console::position(position.x, position.y);
-        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         console::next();
         return ist;
     }
@@ -210,7 +211,7 @@ public:
         auto  _   = std::lock_guard(ist._mutex);
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
-        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         return ist;
     }
 
@@ -236,10 +237,10 @@ public:
         auto position     = console::position();
 
         console::position(position.y + additional_y, 0);
-        Term::cout << std::string(console::width(), ' ');
+        std::cout << std::string(console::width(), ' ');
 
         console::position(position.y + additional_y, position.x);
-        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         console::clear(message.size(), position.y + additional_y);
         return ist;
     }
@@ -254,7 +255,7 @@ public:
      */
     static fb::console& clear(const position_t& position)
     {
-        Term::cout << Term::cursor_move(position.y, position.x - 1)
+        std::cout << Term::cursor_move(position.y, position.x - 1)
                    << std::string(console::width() - position.x + 1, ' ') << std::flush;
         return console::get();
     }
@@ -355,7 +356,7 @@ public:
     {
         auto& ist     = console::get();
         ist._position = position;
-        Term::cout << Term::cursor_move(position.y, position.x);
+        std::cout << Term::cursor_move(position.y, position.x);
     }
 
     /**
