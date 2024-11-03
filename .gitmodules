@@ -34,3 +34,6 @@
 [submodule "dependency/boost"]
 	path = dependency/boost
 	url = https://github.com/boostorg/boost
+[submodule "dependency/cpp-terminal"]
+	path = dependency/cpp-terminal
+	url = https://github.com/jupyter-xeus/cpp-terminal

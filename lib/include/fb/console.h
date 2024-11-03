@@ -8,14 +8,17 @@
 #include <sys/ioctl.h>
 #endif
 #include <stdarg.h>
-#include <iostream>
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <optional>
 #include <memory>
 #include <mutex>
 #include <format>
 #include <fb/encoding.h>
+#include <cpp-terminal/iostream.hpp>
+#include <cpp-terminal/screen.hpp>
+#include <cpp-terminal/cursor.hpp>
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
@@ -42,49 +45,6 @@ namespace fb {
  */
 class console
 {
-public:
-    /**
-     * @brief      This class describes a size_t.
-     */
-    class size_t
-    {
-    public:
-        uint32_t width  = 0;
-        uint32_t height = 0;
-
-    public:
-        /**
-         * @brief      Constructs a new instance.
-         */
-        size_t() = default;
-
-        /**
-         * @brief      Constructs a new instance.
-         *
-         * @param[in]  width   The width
-         * @param[in]  height  The height
-         */
-        size_t(uint32_t width, uint32_t height) :
-            width(width),
-            height(height)
-        { }
-
-        /**
-         * @brief      Constructs a new instance.
-         *
-         * @param[in]  r     { parameter_description }
-         */
-        size_t(const size_t& r) :
-            width(r.width),
-            height(r.height)
-        { }
-
-        /**
-         * @brief      Destroys the object.
-         */
-        ~size_t() = default;
-    };
-
 public:
     /**
      * @brief      This class describes a position_t.
@@ -194,13 +154,12 @@ public:
 
         auto message  = std::vformat(fmt, std::make_format_args(args...));
         auto position = console::position();
-        auto size     = console::size();
 
         console::position(0, position.y);
-        std::cout << std::string(size.width, ' ');
+        Term::cout << std::string(console::width(), ' ');
 
         console::position(position.x, position.y);
-        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         return ist;
     }
 
@@ -223,13 +182,12 @@ public:
 
         auto message  = std::vformat(fmt, std::make_format_args(args...));
         auto position = console::position();
-        auto size     = console::size();
 
         console::position(0, position.y);
-        std::cout << std::string(size.width, ' ');
+        Term::cout << std::string(console::width(), ' ');
 
         console::position(position.x, position.y);
-        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         console::next();
         return ist;
     }
@@ -252,7 +210,7 @@ public:
         auto  _   = std::lock_guard(ist._mutex);
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
-        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         return ist;
     }
 
@@ -276,13 +234,12 @@ public:
         auto additional_y = ++ist._additional_y;
         auto message      = std::vformat(fmt, std::make_format_args(args...));
         auto position     = console::position();
-        auto size         = console::size();
 
         console::position(position.y + additional_y, 0);
-        std::cout << std::string(size.width, ' ');
+        Term::cout << std::string(console::width(), ' ');
 
         console::position(position.y + additional_y, position.x);
-        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        Term::cout << UTF8(message, PLATFORM::Windows) << std::flush;
         console::clear(message.size(), position.y + additional_y);
         return ist;
     }
@@ -297,8 +254,8 @@ public:
      */
     static fb::console& clear(const position_t& position)
     {
-        std::cout << std::format("\u001b[{};{}H", position.y, position.x - 1)
-                  << std::string(console::width() - position.x + 1, ' ') << std::flush;
+        Term::cout << Term::cursor_move(position.y, position.x - 1)
+                   << std::string(console::width() - position.x + 1, ' ') << std::flush;
         return console::get();
     }
 
@@ -398,7 +355,7 @@ public:
     {
         auto& ist     = console::get();
         ist._position = position;
-        std::cout << std::format("\033[{};{}H", position.y, position.x);
+        Term::cout << Term::cursor_move(position.y, position.x);
     }
 
     /**
@@ -417,33 +374,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static console::size_t size()
-    {
-#ifdef _WIN32
-        CONSOLE_SCREEN_BUFFER_INFO inf;
-        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &inf))
-        {
-            return console::size_t(static_cast<std::size_t>(inf.srWindow.Right - inf.srWindow.Left + 1),
-                                   static_cast<std::size_t>(inf.srWindow.Bottom - inf.srWindow.Top + 1));
-        }
-        return console::size_t();
-#else
-        console::size_t ret;
-        struct winsize  window{0, 0, 0, 0};
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &window) != -1)
-            ret = {window.ws_col, window.ws_row};
-        return ret;
-#endif
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
     static uint32_t width()
     {
-        return console::size().width;
+        return Term::screen_size().columns();
     }
 
     /**
