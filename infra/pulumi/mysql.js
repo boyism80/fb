@@ -4,7 +4,7 @@ const k8s = require("@pulumi/kubernetes");
 module.exports = function () {
 
     return {
-        setup: function (namespace, storageClass, args) {
+        setup: function (namespace, storageClass, conf) {
 
             secret = new k8s.core.v1.Secret("mysql-secret", {
                 metadata: {
@@ -29,121 +29,125 @@ module.exports = function () {
                     `
                 }
             })
-            
-            const ports = []
-            for(let i = 0; i < args.length; i++) {
-                const arg = args[i]
-                const pv = new k8s.core.v1.PersistentVolume(`mysql-${i}`, {
-                    metadata: {
-                        name: `mysql-${i}`,
-                        namespace: namespace.metadata.name, 
-                    },
-                    spec: {
-                        capacity: {
-                            storage: "1Gi",
-                        },
-                        accessModes: ["ReadWriteOnce"],
-                        persistentVolumeReclaimPolicy: "Retain",
-                        storageClassName: storageClass.metadata.name,
-                        hostPath: {
-                            path: `/mnt/fb/mysql/${i}`,
-                            type: "DirectoryOrCreate"
-                        },
-                    },
-                }, { dependsOn: [storageClass] });
 
-                const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${i}`, {
-                    metadata: {
-                        name: `mysql-${i}`,
-                        namespace: namespace.metadata.name,
-                    },
-                    spec: {
-                        serviceName: "mysql",
-                        replicas: 1,
-                        selector: {
-                            matchLabels: {
-                                app: "mysql",
+            let index = 0
+            const ports = []
+            for(const [section, sectionConfs] of Object.entries(conf.mysql)) {
+                for(const [id, sectionConf] of Object.entries(sectionConfs)) {
+                    const pv = new k8s.core.v1.PersistentVolume(`mysql-${section}-${id}`, {
+                        metadata: {
+                            name: `mysql-${section}-${id}`,
+                            namespace: namespace.metadata.name, 
+                        },
+                        spec: {
+                            capacity: {
+                                storage: "1Gi",
+                            },
+                            accessModes: ["ReadWriteOnce"],
+                            persistentVolumeReclaimPolicy: "Retain",
+                            storageClassName: storageClass.metadata.name,
+                            hostPath: {
+                                path: `/mnt/fb/mysql/${id}`,
+                                type: "DirectoryOrCreate"
                             },
                         },
-                        template: {
-                            metadata: {
-                                labels: {
+                    }, { dependsOn: [storageClass] });
+
+                    const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}-${id}`, {
+                        metadata: {
+                            name: `mysql-${section}-${id}`,
+                            namespace: namespace.metadata.name,
+                        },
+                        spec: {
+                            serviceName: "mysql",
+                            replicas: 1,
+                            selector: {
+                                matchLabels: {
                                     app: "mysql",
                                 },
                             },
-                            spec: {
-                                containers: [
-                                    {
-                                        name: "mysql",
-                                        image: "mysql:8.4.3",
-                                        args: [
-                                            "--mysql-native-password=ON"
-                                        ],
-                                        ports: [
-                                            { containerPort: 3306, name: `mysql-${i}` },
-                                        ],
-                                        env: [
-                                            {
-                                                name: "MYSQL_ROOT_PASSWORD",
-                                                valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_ROOT_PASSWORD" } },
-                                            },
-                                            {
-                                                name: "MYSQL_USER", 
-                                                valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_USER" } }
-                                            },
-                                            { 
-                                                name: "MYSQL_PASSWORD", 
-                                                valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_PASSWORD" } }
-                                            },
-                                        ],
-                                        volumeMounts: [
-                                            {
-                                                name: `mysql-${i}`,
-                                                mountPath: "/var/lib/mysql",
-                                            },
-                                            {
-                                                name: "init-sql-volume",
-                                                mountPath: "/docker-entrypoint-initdb.d"
-                                            }
-                                        ],
-                                    },
-                                ],
-                                volumes: [
-                                {
-                                    name: "init-sql-volume",
-                                    configMap: { name: configMap.metadata.name }
-                                }]
-                            },
-                        },
-                        persistentVolumeClaimRetentionPolicy: {
-                            whenDeleted: 'Delete',
-                            whenScaled: 'Delete'
-                        },
-                        volumeClaimTemplates: [
-                            {
+                            template: {
                                 metadata: {
-                                    name: `mysql-${i}`,
+                                    labels: {
+                                        app: "mysql",
+                                    },
                                 },
                                 spec: {
-                                    accessModes: ["ReadWriteOnce"],
-                                    resources: {
-                                        requests: {
-                                            storage: "1Gi",
+                                    containers: [
+                                        {
+                                            name: "mysql",
+                                            image: "mysql:8.4.3",
+                                            conf: [
+                                                "--mysql-native-password=ON"
+                                            ],
+                                            ports: [
+                                                { containerPort: 3306, name: `mysql-${index}` },
+                                            ],
+                                            env: [
+                                                {
+                                                    name: "MYSQL_ROOT_PASSWORD",
+                                                    valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_ROOT_PASSWORD" } },
+                                                },
+                                                {
+                                                    name: "MYSQL_USER", 
+                                                    valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_USER" } }
+                                                },
+                                                { 
+                                                    name: "MYSQL_PASSWORD", 
+                                                    valueFrom: { secretKeyRef: { name: secret.metadata.name, key: "MYSQL_PASSWORD" } }
+                                                },
+                                            ],
+                                            volumeMounts: [
+                                                {
+                                                    name: `mysql-${section}-${id}`,
+                                                    mountPath: "/var/lib/mysql",
+                                                },
+                                                {
+                                                    name: "init-sql-volume",
+                                                    mountPath: "/docker-entrypoint-initdb.d"
+                                                }
+                                            ],
                                         },
-                                    },
-                                    storageClassName: storageClass.metadata.name,
+                                    ],
+                                    volumes: [
+                                    {
+                                        name: "init-sql-volume",
+                                        configMap: { name: configMap.metadata.name }
+                                    }]
                                 },
                             },
-                        ],
-                    },
-                }, { dependsOn: [pv] });
+                            persistentVolumeClaimRetentionPolicy: {
+                                whenDeleted: 'Delete',
+                                whenScaled: 'Delete'
+                            },
+                            volumeClaimTemplates: [
+                                {
+                                    metadata: {
+                                        name: `mysql-${section}-${id}`,
+                                    },
+                                    spec: {
+                                        accessModes: ["ReadWriteOnce"],
+                                        resources: {
+                                            requests: {
+                                                storage: "1Gi",
+                                            },
+                                        },
+                                        storageClassName: storageClass.metadata.name,
+                                    },
+                                },
+                            ],
+                        },
+                    }, { dependsOn: [pv] });
 
-                ports.push({
-                    name: `mysql-${i}`,
-                    port: arg.port.cluster,
-                    targetPort: `mysql-${i}`,
-                    nodePort: arg.port.node, 
-                })
+                    ports.push({
+                        name: `mysql-${section}-${id}`,
+                        port: sectionConf.port.cluster,
+                        targetPort: `mysql-${index}`,
+                        nodePort: sectionConf.port.node, 
+                    })
+
+                    index++
+                }
             }
 
             return new k8s.core.v1.Service('mysql', {

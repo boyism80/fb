@@ -2,11 +2,12 @@ const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
 
 module.exports = {
-    setup: function (namespace, args) {
+    setup: function (namespace, conf) {
 
+        let index = 0
         const ports = []
         const appLabels = { app: "internal" }
-        for(const [i, arg] of Object.entries(args)) {
+        for(const [section, sectionConf] of Object.entries(conf.internal)) {
             const config = {
                 "Logging": {
                     "LogLevel": {
@@ -22,27 +23,27 @@ module.exports = {
                     "Hosts": [
                         {
                             "Host": "redis",
-                            "Port": arg.redis.port.cluster
+                            "Port": conf.redis[sectionConf.redis].port.cluster
                         }
                     ]
                 },
                 "RabbitMQ": {
                     "Host": "rabbitmq",
-                    "Port": arg.rabbitmq.port.amqp.cluster,
+                    "Port": conf.rabbitmq[sectionConf.redis].port.amqp.cluster,
                     "Uid": "fb",
                     "Pwd": "admin"
                 }
             }
 
-            const configMap = new k8s.core.v1.ConfigMap(`internal-${i}`, {
-                metadata: { name: `internal-${i}`, namespace: namespace.metadata.name },
+            const configMap = new k8s.core.v1.ConfigMap(`internal-${section}`, {
+                metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
                 data: {
                     "appsettings.k8s.json": JSON.stringify(config),
                 },
             })
 
-            const deployment = new k8s.apps.v1.Deployment(`internal-${i}`, {
-                metadata: { name: `internal-${i}`, namespace: namespace.metadata.name },
+            const deployment = new k8s.apps.v1.Deployment(`internal-${section}`, {
+                metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
                     replicas: 1,
@@ -52,7 +53,7 @@ module.exports = {
                             containers: [{
                                 name: "internal",
                                 image: "cshyeon/fb:internal",
-                                ports: [{ containerPort: 80, name: `internal-${i}` }],
+                                ports: [{ containerPort: 80, name: `internal-${index}` }],
                                 env: [
                                 {
                                     name: 'ASPNETCORE_ENVIRONMENT',
@@ -80,12 +81,14 @@ module.exports = {
             })
 
             ports.push({ 
-                name: `internal-${i}`,
-                port: arg.port.cluster,
-                targetPort: `internal-${i}`,
+                name: `internal-${section}`,
+                port: sectionConf.port.cluster,
+                targetPort: `internal-${index}`,
                 protocol: "TCP",
-                nodePort: arg.port.node 
+                nodePort: sectionConf.port.node 
             })
+
+            index++
         }
 
         const service = new k8s.core.v1.Service("internal", {

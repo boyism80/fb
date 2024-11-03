@@ -5,6 +5,8 @@ const rabbitmq = require('./rabbitmq')
 const redis = require('./redis')
 const internal = require('./internal')
 const db = require('./db')
+const gateway = require('./gateway')
+const login = require('./login')
 const game = require('./game')
 const fs = require('fs');
 const path = require('path')
@@ -29,53 +31,11 @@ const filePath = path.join(__dirname, 'develop.json')
 const content = fs.readFileSync(filePath, 'utf-8')
 const conf = JSON.parse(content)
 
-const mysqlConfigs = []
-for(const [section, v] of Object.entries(conf.mysql)) {
-    for(const [id, config] of Object.entries(v)) {
-        mysqlConfigs.push({
-            port: config.port
-        })
-    }
-}
-mysql.setup(namespace, storageClass, mysqlConfigs)
-
-
-const redisConfigs = []
-for(const [section, config] of Object.entries(conf.redis)) {
-    redisConfigs.push({
-        port: config.port
-    })
-}
-redis.setup(namespace, storageClass, redisConfigs)
-
-
-const rabbitmqConfigs = []
-for(const [section, config] of Object.entries(conf.rabbitmq)) {
-    rabbitmqConfigs.push({
-        port: config.port
-    })
-}
-rabbitmq.setup(namespace, storageClass, rabbitmqConfigs)
-
-const httpInternalConfigs = []
-for(const [section, config] of Object.entries(conf.internal)) {
-    httpInternalConfigs.push({
-        rabbitmq: conf.rabbitmq[config.rabbitmq],
-        redis: conf.redis[config.redis],
-        port: config.port
-    })
-}
-internal.setup(namespace, httpInternalConfigs)
-
-
-const httpDbConfigs = []
-for(const [section, config] of Object.entries(conf.db)) {
-    httpDbConfigs.push({
-        mysql: conf.mysql[config.mysql],
-        redis: conf.redis[config.redis],
-        port: config.port
-    })
-}
-db.setup(namespace, httpDbConfigs)
-
+mysql.setup(namespace, storageClass, conf)
+redis.setup(namespace, storageClass, conf)
+rabbitmq.setup(namespace, storageClass, conf)
+internal.setup(namespace, conf)
+db.setup(namespace, conf)
+gateway.setup(namespace, conf)
+login.setup(namespace, conf)
 game.setup(namespace, conf)

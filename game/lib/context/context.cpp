@@ -173,7 +173,22 @@ END_LUA_EXTENSION
 context::context(boost::asio::io_context& context, uint16_t port) : // clang-format on
     fb::acceptor<character>(context, port),
     maps(*this, fb::config::get()["id"].asUInt())
-{ }
+{
+    this->bind_timer(
+        [this]() -> async::task<void> {
+            auto&  config = fb::config::get();
+            auto&& response =
+                co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
+                    "internal",
+                    "/in-game/ping",
+                    fb::protocol::internal::request::Ping{this->id(),
+                                                          this->name(),
+                                                          this->service(),
+                                                          config["ip"].asString(),
+                                                          (uint16_t)config["port"].asUInt()});
+        },
+        1s);
+}
 
 context::~context()
 { }

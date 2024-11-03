@@ -4,14 +4,6 @@
     "ip":  "192.168.0.180",
     "port": 2001,
     "thread": null,
-    "internal": {
-        "ip": "192.168.0.180",
-        "port": 5126
-    },
-    "db": {
-        "ip": "192.168.0.180",
-        "port": 5086
-    },
     "log": ["info", "fatal"],
     "redis": {
         "default": 

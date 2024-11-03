@@ -6,23 +6,30 @@ module.exports = function () {
     return {
         setup: function (namespace, conf) {
 
+            let index = 0
             for(const [section, sectionConf] of Object.entries(conf.game)) {
                 for(const [i, container] of Object.entries(sectionConf.containers)) {
                     const config = {
                         id: parseInt(i),
-                        name: `game-${i}`,
+                        name: `game-${section}-${i}`,
                         delay: 5,
-                        ip: sectionConf.ip,
-                        port: container.port.node,
+                        ip: conf.host,
+                        port: container.port,
                         thread: {
                             logic: 12,
                             io: 12,
                             background: 8
                         },
                         save: 600,
-                        internal: { ip: "internal", port: conf.internal[sectionConf.internal].port.cluster },
-                        db: { ip: "db", port: conf.internal[sectionConf.db].port.cluster },
-                        login: { ip: conf.login[sectionConf.login].ip, port: conf.login[sectionConf.login].port.cluster },
+                        internal: {
+                            ip: "internal", 
+                            port: conf.internal[sectionConf.internal].port.cluster
+                        },
+                        db: { 
+                            ip: "db", 
+                            port: conf.internal[sectionConf.db].port.cluster
+                        },
+                        login: { ip: conf.host, port: conf.login[sectionConf.login].port.node },
                         redis: {
                             default: 
                             {
@@ -40,16 +47,16 @@ module.exports = function () {
                         log: ["debug", "info", "warn", "fatal"]
                     }
 
-                    const configMap = new k8s.core.v1.ConfigMap(`game-${i}`, {
-                        metadata: { name: `game-${i}`, namespace: namespace.metadata.name },
+                    const configMap = new k8s.core.v1.ConfigMap(`game-${section}-${i}`, {
+                        metadata: { name: `game-${section}-${i}`, namespace: namespace.metadata.name },
                         data: {
                             "config.json": JSON.stringify(config),
                         },
                     })
 
-                    const statefulSet = new k8s.apps.v1.StatefulSet(`game-${i}`, {
+                    const statefulSet = new k8s.apps.v1.StatefulSet(`game-${section}-${i}`, {
                         metadata: {
-                            name: `game-${i}`,
+                            name: `game-${section}-${i}`,
                             namespace: namespace.metadata.name,
                         },
                         spec: {
@@ -72,7 +79,7 @@ module.exports = function () {
                                             name: "game",
                                             image: "cshyeon/fb:game",
                                             ports: [
-                                                { containerPort: 3000, name: `game-${i}` },
+                                                { containerPort: container.port, name: `game-${index}` },
                                             ],
                                             volumeMounts: [{
                                                 name: "config-volume",
@@ -91,6 +98,8 @@ module.exports = function () {
                             },
                         },
                     });
+
+                    index++
                 }
             }
         }

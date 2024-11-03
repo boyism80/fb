@@ -1,4 +1,5 @@
 {
+    "host": "172.26.192.45",
     "mysql": {
         "section-1": {
             "-1": {
@@ -93,140 +94,106 @@
             }
         }
     },
-    "gateway": {
-        "1": {
-            "ip": "172.26.192.45",
-            "port": 30000,
-            "internal": "section-1",
-            "db": "section-1"
+    "gateway": [
+        {
+            "port": 30000
+        },
+        {
+            "port": 30001
         }
-    },
+    ],
     "login": {
         "section-1": {
             "name": "연",
             "desc": "1996년 4월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3010,
-                "node": 30010
-            }
+            "redis": "section-1",
+            "port": 30010
         },
         "section-2": {
             "name": "무휼",
             "desc": "2000년 2월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3011,
-                "node": 30011
-            }
+            "redis": "section-1",
+            "port": 30011
         },
         "section-3": {
             "name": "세류",
             "desc": "2000년 7월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3012,
-                "node": 30012
-            }
+            "redis": "section-1",
+            "port": 30012
         },
         "section-4": {
             "name": "유리",
             "desc": "2000년 7월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3013,
-                "node": 30013
-            }
+            "redis": "section-1",
+            "port": 30013
         },
         "section-5": {
             "name": "해명",
             "desc": "2000년 12월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3014,
-                "node": 30014
-            }
+            "redis": "section-1",
+            "port": 30014
         },
         "section-6": {
             "name": "배극",
             "desc": "2000년 12월 서비스 시작(PK서버)", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3015,
-                "node": 30015
-            }
+            "redis": "section-1",
+            "port": 30015
         },
         "section-7": {
             "name": "하자",
             "desc": "10대들을 위한 전용 서버", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3016,
-                "node": 30016
-            }
+            "redis": "section-1",
+            "port": 30016
         },
         "section-8": {
             "name": "호동",
             "desc": "2001년 2월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3017,
-                "node": 30017
-            }
+            "redis": "section-1",
+            "port": 30017
         },
         "section-9": {
             "name": "주몽",
             "desc": "2002년 2월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3018,
-                "node": 30018
-            }
+            "redis": "section-1",
+            "port": 30018
         },
         "section-10": {
             "name": "낙랑",
             "desc": "2002년 8월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3019,
-                "node": 30019
-            }
+            "redis": "section-1",
+            "port": 30019
         },
         "section-11": {
             "name": "괴유",
             "desc": "2002년 2월 서비스 시작(무료테스트 서버)", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "172.26.192.45",
-            "port": {
-                "cluster": 3020,
-                "node": 30020
-            }
+            "redis": "section-1",
+            "port": 30020
         }
     },
     "game": {
         "section-1": {
-            "ip": "172.26.192.45",
             "internal" :"section-1",
             "login": "section-1",
             "db": "section-1",
@@ -234,113 +201,61 @@
             "rabbitmq": "section-1",
             "containers": {
                 "0": {
-                    "port": {
-                        "cluster": 3030,
-                        "node": 30030
-                    }
+                    "port": 30030
                 },
                 "1": {
-                    "port": {
-                        "cluster": 3031,
-                        "node": 30031
-                    }
+                    "port": 30031
                 },
                 "2": {
-                    "port": {
-                        "cluster": 3032,
-                        "node": 30032
-                    }
+                    "port": 30032
                 },
                 "3": {
-                    "port": {
-                        "cluster": 3033,
-                        "node": 30033
-                    }
+                    "port": 30033
                 },
                 "4": {
-                    "port": {
-                        "cluster": 3034,
-                        "node": 30034
-                    }
+                    "port": 30034
                 },
                 "5": {
-                    "port": {
-                        "cluster": 3035,
-                        "node": 30035
-                    }
+                    "port": 30035
                 },
                 "6": {
-                    "port": {
-                        "cluster": 3036,
-                        "node": 30036
-                    }
+                    "port": 30036
                 },
                 "7": {
-                    "port": {
-                        "cluster": 3037,
-                        "node": 30037
-                    }
+                    "port": 30037
                 },
                 "8": {
-                    "port": {
-                        "cluster": 3038,
-                        "node": 30038
-                    }
+                    "port": 30038
                 },
                 "9": {
-                    "port": {
-                        "cluster": 3039,
-                        "node": 30039
-                    }
+                    "port": 30039
                 },
                 "10": {
-                    "port": {
-                        "cluster": 3040,
-                        "node": 30040
-                    }
+                    "port": 30040
                 },
                 "11": {
-                    "port": {
-                        "cluster": 3041,
-                        "node": 30041
-                    }
+                    "port": 30041
                 },
                 "12": {
-                    "port": {
-                        "cluster": 3042,
-                        "node": 30042
-                    }
+                    "port": 30042
                 },
                 "13": {
-                    "port": {
-                        "cluster": 3043,
-                        "node": 30043
-                    }
+                    "port": 30043
                 },
                 "14": {
-                    "port": {
-                        "cluster": 3044,
-                        "node": 30044
-                    }
+                    "port": 30044
                 },
                 "15": {
-                    "port": {
-                        "cluster": 3045,
-                        "node": 30045
-                    }
+                    "port": 30045
                 },
                 "16": {
-                    "port": {
-                        "cluster": 3046,
-                        "node": 30046
-                    }
+                    "port": 30046
                 }
             }
         }
     },
     "internal": {
         "section-1": {
-            "ip": "172.26.192.45",
             "port": {
                 "cluster": 80,
                 "node": 30050
@@ -349,7 +264,6 @@
             "rabbitmq": "section-1"
         },
         "section-2": {
-            "ip": "172.26.192.45",
             "port": {
                 "cluster": 81,
                 "node": 30051

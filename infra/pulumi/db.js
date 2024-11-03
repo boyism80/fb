@@ -2,11 +2,12 @@ const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
 
 module.exports = {
-    setup: function (namespace, args) {
-
+    setup: function (namespace, conf) {
+        let index = 0
         const ports = []
         const appLabels = { app: "db" }
-        for(const [i, arg] of Object.entries(args)) {
+
+        for(const [section, sectionConf] of Object.entries(conf.db)) {
             const config = {
                 "Logging": {
                     "LogLevel": {
@@ -25,25 +26,25 @@ module.exports = {
                     "Hosts": [
                         {
                             "Host": "redis",
-                            "Port": arg.redis.port.cluster
+                            "Port": conf.redis[sectionConf.redis].port.cluster
                         }
                     ]
                 }
             }
 
-            for(const [key, mysqlConfig] of Object.entries(arg.mysql)) {
-                config.ConnectionStrings.MySql[key] = `Server=mysql;Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql])) {
+                config.ConnectionStrings.MySql[id] = `Server=mysql;Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
 
-            const configMap = new k8s.core.v1.ConfigMap(`db-${i}`, {
-                metadata: { name: `db-${i}`, namespace: namespace.metadata.name },
+            const configMap = new k8s.core.v1.ConfigMap(`db-${section}`, {
+                metadata: { name: `db-${section}`, namespace: namespace.metadata.name },
                 data: {
                     "appsettings.k8s.json": JSON.stringify(config),
                 },
             })
 
-            const deployment = new k8s.apps.v1.Deployment(`db-${i}`, {
-                metadata: { name: `db-${i}`, namespace: namespace.metadata.name },
+            const deployment = new k8s.apps.v1.Deployment(`db-${section}`, {
+                metadata: { name: `db-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
                     replicas: 1,
@@ -53,7 +54,7 @@ module.exports = {
                             containers: [{
                                 name: "db",
                                 image: "cshyeon/fb:db",
-                                ports: [{ containerPort: 80, name: `db-${i}` }],
+                                ports: [{ containerPort: 80, name: `db-${index}` }],
                                 env: [
                                 {
                                     name: 'ASPNETCORE_ENVIRONMENT',
@@ -81,12 +82,14 @@ module.exports = {
             })
 
             ports.push({ 
-                name: `db-${i}`,
-                port: arg.port.cluster,
-                targetPort: `db-${i}`,
+                name: `db-${section}`,
+                port: sectionConf.port.cluster,
+                targetPort: `db-${section}`,
                 protocol: "TCP",
-                nodePort: arg.port.node
+                nodePort: sectionConf.port.node
             })
+
+            index++
         }
 
         const service = new k8s.core.v1.Service("db", {

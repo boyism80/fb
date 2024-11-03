@@ -3,14 +3,15 @@ const k8s = require("@pulumi/kubernetes")
 
 
 module.exports = {
-    setup: function (namespace, storageClass, args) {
+    setup: function (namespace, storageClass, conf) {
+
+        let index = 0
         const ports = []
-        for(let i = 0; i < args.length; i++) {
-            arg = args[i]
-            const pv = new k8s.core.v1.PersistentVolume(`redis-${i}`, {
+        for(const [section, sectionConf] of Object.entries(conf.redis)) {
+            const pv = new k8s.core.v1.PersistentVolume(`redis-${section}`, {
                 metadata: {
-                    name: `redis-${i}`,
-                    namespace: namespace.metadata.name, // Set namespace to 'fb'
+                    name: `redis-${section}`,
+                    namespace: namespace.metadata.name,
                 },
                 spec: {
                     capacity: {
@@ -20,15 +21,15 @@ module.exports = {
                     persistentVolumeReclaimPolicy: "Retain",
                     storageClassName: storageClass.metadata.name,
                     hostPath: {
-                        path: `/mnt/fb/redis`,
+                        path: `/mnt/fb/redis/${section}`,
                         type: "DirectoryOrCreate"
                     },
                 },
             }, { dependsOn: [storageClass] });
 
-            const statefulSet = new k8s.apps.v1.StatefulSet(`redis-${i}`, {
+            const statefulSet = new k8s.apps.v1.StatefulSet(`redis-${section}`, {
                 metadata: {
-                    name: `redis-${i}`,
+                    name: `redis-${section}`,
                     namespace: namespace.metadata.name,
                 },
                 spec: {
@@ -53,7 +54,7 @@ module.exports = {
                                     ports: [
                                         {
                                             containerPort: 6379,
-                                            name: `redis-${i}`,
+                                            name: `redis-${index}`,
                                         },
                                     ],
                                     volumeMounts: [
@@ -90,13 +91,14 @@ module.exports = {
             })
 
             ports.push({
-                name: `redis-${i}`,
-                port: arg.port.cluster,
-                targetPort: `redis-${i}`,
-                nodePort: arg.port.node,
+                name: `redis-${section}`,
+                port: sectionConf.port.cluster,
+                targetPort: `redis-${index}`,
+                nodePort: sectionConf.port.node,
             })
-        }
 
+            index++
+        }
         
         new k8s.core.v1.Service("redis", {
             metadata: {

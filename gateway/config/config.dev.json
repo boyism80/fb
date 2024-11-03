@@ -8,10 +8,6 @@
         "io": 12,
         "background": 8
     },
-    "internal": {
-        "ip": "127.0.0.1",
-        "port": 5126
-    },
     "log": ["debug", "info", "warn", "fatal"],
     "redis": {
         "default": 
