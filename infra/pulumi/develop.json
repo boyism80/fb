@@ -95,7 +95,7 @@
     },
     "gateway": {
         "1": {
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": 30000,
             "internal": "section-1",
             "db": "section-1"
@@ -107,7 +107,7 @@
             "desc": "1996년 4월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3010,
                 "node": 30010
@@ -118,7 +118,7 @@
             "desc": "2000년 2월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3011,
                 "node": 30011
@@ -129,7 +129,7 @@
             "desc": "2000년 7월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3012,
                 "node": 30012
@@ -140,7 +140,7 @@
             "desc": "2000년 7월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3013,
                 "node": 30013
@@ -151,7 +151,7 @@
             "desc": "2000년 12월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3014,
                 "node": 30014
@@ -162,7 +162,7 @@
             "desc": "2000년 12월 서비스 시작(PK서버)", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3015,
                 "node": 30015
@@ -173,7 +173,7 @@
             "desc": "10대들을 위한 전용 서버", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3016,
                 "node": 30016
@@ -184,7 +184,7 @@
             "desc": "2001년 2월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3017,
                 "node": 30017
@@ -195,7 +195,7 @@
             "desc": "2002년 2월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3018,
                 "node": 30018
@@ -206,7 +206,7 @@
             "desc": "2002년 8월 서비스 시작", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3019,
                 "node": 30019
@@ -217,7 +217,7 @@
             "desc": "2002년 2월 서비스 시작(무료테스트 서버)", 
             "internal": "section-1",
             "db": "section-1",
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 3020,
                 "node": 30020
@@ -226,7 +226,7 @@
     },
     "game": {
         "section-1": {
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "internal" :"section-1",
             "login": "section-1",
             "db": "section-1",
@@ -340,7 +340,7 @@
     },
     "internal": {
         "section-1": {
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 80,
                 "node": 30050
@@ -349,7 +349,7 @@
             "rabbitmq": "section-1"
         },
         "section-2": {
-            "ip": "192.168.0.180",
+            "ip": "172.26.192.45",
             "port": {
                 "cluster": 81,
                 "node": 30051

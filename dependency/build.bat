@@ -77,8 +77,8 @@ cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiTh
 cmake --build . --config Release --parallel
 POPD
 POPD
-XCOPY zlib\build\Debug\zlibd.lib lib\zlibd.* /K /D /H /Y
-XCOPY zlib\build\Release\zlib.lib lib\zlib.* /K /D /H /Y
+XCOPY zlib\build\Debug\zlibstaticd.lib lib\zlibd.* /K /D /H /Y
+XCOPY zlib\build\Release\zlibstatic.lib lib\zlib.* /K /D /H /Y
 COPY zlib\zconf.h.included include\zlib\zconf.h /Y
 ROBOCOPY zlib\ include\zlib\ *.h
 
