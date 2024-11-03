@@ -4,26 +4,29 @@
 #include <fb/mst.h>
 #include <worker.h>
 
+using namespace fb;
 using namespace fb::model::enum_value;
 
 int main(int argc, const char** argv)
 {
-    auto& c      = fb::console::get();
     auto& config = fb::config::get();
 
     auto height = 9;
-    c.box(c.width() - 1, height);
+    console::box(console::width() - 1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    c.cursor((c.width() - 1 - strlen(header)) / 2, 3).render(header);
+    console::position((console::width() - 1 - strlen(header)) / 2, 3);
+    console::render(header);
 
     auto github = "https://github.com/boyism80/fb";
-    c.cursor(c.width() - 1 - strlen(github) - 3, 5).render(github);
+    console::position(console::width() - 1 - strlen(github) - 3, 5);
+    console::render(github);
 
     auto madeby = "made by cshyeon";
-    c.cursor(c.width() - 1 - strlen(madeby) - 3, 6).render(madeby);
+    console::position(console::width() - 1 - strlen(madeby) - 3, 6);
+    console::render(madeby);
 
-    c.cursor(0, height + 1);
+    console::position(0, height + 1);
 
     try
     {
@@ -35,9 +38,9 @@ int main(int argc, const char** argv)
         ::SetConsoleTitle(CONSOLE_TITLE);
 #endif
 
-        boost::asio::io_context io_context;
-        auto&                   config  = fb::config::get();
-        auto                    context = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
+        auto  io_context = boost::asio::io_context{};
+        auto& config     = fb::config::get();
+        auto  context    = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
         context->model.mob_spawn.hook.built =
             [&context](const fb::model::array_container<fb::model::mob_spawn>& model) {
                 for (auto& spawn : model)

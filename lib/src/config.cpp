@@ -25,7 +25,7 @@ fb::config::config(const char* env)
         if (ifstream.is_open())
             ifstream.close();
 
-        fb::console::get().puts(e.what());
+        fb::console::puts(e.what());
         throw e;
     }
 }

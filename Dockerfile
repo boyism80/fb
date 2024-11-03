@@ -23,12 +23,6 @@ RUN cmake ..
 RUN cmake --build . --config Release --parallel
 RUN make install
 
-COPY dependency/cpp-terminal /app/dependency/cpp-terminal
-WORKDIR /app/dependency/cpp-terminal/build
-RUN cmake .. -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-RUN cmake --build . --config Release --parallel
-RUN make install
-
 COPY dependency/rabbitmq-c /app/dependency/rabbitmq-c
 WORKDIR /app/dependency/rabbitmq-c/build
 RUN cmake .. -DENABLE_SSL_SUPPORT=OFF

@@ -1897,8 +1897,6 @@ void context::handle_buff_timer(const datetime& now, std::thread::id id)
 
 void context::handle_save_timer(const datetime& now, std::thread::id id)
 {
-    auto& c = console::get();
-
     for (auto& [_, map] : this->maps)
     {
         if (map.active == false)

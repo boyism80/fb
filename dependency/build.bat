@@ -15,23 +15,6 @@ XCOPY jsoncpp\build\lib\Debug\jsoncpp_static.lib lib\jsoncppd.* /K /D /H /Y
 XCOPY jsoncpp\build\lib\Release\jsoncpp_static.lib lib\ /K /D /H /Y
 ROBOCOPY jsoncpp\include\json\ include\jsoncpp\json\
 
-
-PUSHD cpp-terminal
-if not exist build mkdir build
-PUSHD build
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-cmake --build . --config Debug --parallel
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-cmake --build . --config Release --parallel
-POPD
-POPD 
-XCOPY cpp-terminal\build\cpp-terminal\Release\cpp-terminal.lib lib\ /K /D /H /Y
-XCOPY cpp-terminal\build\cpp-terminal\Debug\cpp-terminal.lib lib\cpp-terminald.* /K /D /H /Y
-XCOPY cpp-terminal\build\cpp-terminal\private\Release\cpp-terminal-private.lib lib\ /K /D /H /Y
-XCOPY cpp-terminal\build\cpp-terminal\private\Debug\cpp-terminal-private.lib lib\cpp-terminal-privated.* /K /D /H /Y
-ROBOCOPY cpp-terminal\cpp-terminal\ include\cpp-terminal\ *.h*
-ROBOCOPY cpp-terminal\cpp-terminal\private\ include\cpp-terminal\private\ *.h*
-
 PUSHD rabbitmq-c
 git checkout v0.14.0
 git add .

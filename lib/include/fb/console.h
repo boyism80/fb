@@ -3,12 +3,12 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
-bool SetConsoleIcon(int id);
 #else
 #include <locale.h>
+#include <sys/ioctl.h>
 #endif
 #include <stdarg.h>
+#include <iostream>
 #include <string>
 #include <cstring>
 #include <optional>
@@ -16,103 +16,473 @@ bool SetConsoleIcon(int id);
 #include <mutex>
 #include <format>
 #include <fb/encoding.h>
-#include <cpp-terminal/iostream.hpp>
-#include <cpp-terminal/screen.hpp>
-#include <cpp-terminal/cursor.hpp>
+
+#ifdef _WIN32
+#define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
+inline static bool SetConsoleIcon(int id)
+{
+    auto hwnd = ::GetConsoleWindow();
+    if (hwnd == nullptr)
+        return false;
+
+    auto icon = ::LoadIcon(::GetModuleHandle(NULL), MAKEINTRESOURCE(id));
+    if (icon == nullptr)
+        return false;
+
+    ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+    ::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
+    return true;
+}
+#endif
 
 namespace fb {
 
+/**
+ * @brief      This class describes a console.
+ */
 class console
 {
+public:
+    /**
+     * @brief      This class describes a size_t.
+     */
+    class size_t
+    {
+    public:
+        uint32_t width  = 0;
+        uint32_t height = 0;
+
+    public:
+        /**
+         * @brief      Constructs a new instance.
+         */
+        size_t() = default;
+
+        /**
+         * @brief      Constructs a new instance.
+         *
+         * @param[in]  width   The width
+         * @param[in]  height  The height
+         */
+        size_t(uint32_t width, uint32_t height) :
+            width(width),
+            height(height)
+        { }
+
+        /**
+         * @brief      Constructs a new instance.
+         *
+         * @param[in]  r     { parameter_description }
+         */
+        size_t(const size_t& r) :
+            width(r.width),
+            height(r.height)
+        { }
+
+        /**
+         * @brief      Destroys the object.
+         */
+        ~size_t() = default;
+    };
+
+public:
+    /**
+     * @brief      This class describes a position_t.
+     */
+    class position_t
+    {
+    public:
+        uint32_t x = 0;
+        uint32_t y = 1;
+
+    public:
+        /**
+         * @brief      Constructs a new instance.
+         */
+        position_t() = default;
+
+        /**
+         * @brief      Constructs a new instance.
+         *
+         * @param[in]  x     { parameter_description }
+         * @param[in]  y     { parameter_description }
+         */
+        position_t(uint32_t x, uint32_t y) :
+            x(x),
+            y(y)
+        { }
+
+        /**
+         * @brief      Constructs a new instance.
+         *
+         * @param[in]  r     { parameter_description }
+         */
+        position_t(const position_t& r) :
+            x(r.x),
+            y(r.y)
+        { }
+
+        /**
+         * @brief      Destroys the object.
+         */
+        ~position_t() = default;
+    };
+
 private:
-    uint32_t   _x = 0, _y = 1;
+    position_t _position;
     uint32_t   _additional_y = 0;
     std::mutex _mutex;
 
 private:
+    /**
+     * @brief      Constructs a new instance.
+     */
     console() = default;
 
 public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     */
     console(const console&) = delete;
-    console(console&&)      = delete;
-    ~console()              = default;
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      <unnamed>  { parameter_description }
+     */
+    console(console&&) = delete;
+    /**
+     * @brief      Destroys the object.
+     */
+    ~console() = default;
 
 public:
-    console& operator= (console&)       = delete;
+    /**
+     * @brief      Assignment operator.
+     *
+     * @param      <unnamed>  { parameter_description }
+     *
+     * @return     The result of the assignment
+     */
+    console& operator= (console&) = delete;
+    /**
+     * @brief      Assignment operator.
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @return     The result of the assignment
+     */
     console& operator= (const console&) = delete;
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fmt   The format
+     * @param      args  The arguments
+     *
+     * @tparam     Args  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <class... Args>
-    fb::console& put(const std::string& fmt, Args&&... args)
+    static fb::console& put(const std::string& fmt, Args&&... args)
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto& ist = console::get();
+        auto  _   = std::lock_guard(ist._mutex);
 
-        auto message = std::vformat(fmt, std::make_format_args(args...));
-        Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
-                   << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
-        return *this;
+        auto message  = std::vformat(fmt, std::make_format_args(args...));
+        auto position = console::position();
+        auto size     = console::size();
+
+        console::position(0, position.y);
+        std::cout << std::string(size.width, ' ');
+
+        console::position(position.x, position.y);
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        return ist;
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fmt   The format
+     * @param      args  The arguments
+     *
+     * @tparam     Args  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <class... Args>
-    fb::console& puts(const std::string& fmt, Args&&... args)
+    static fb::console& puts(const std::string& fmt, Args&&... args)
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto& ist = console::get();
+        auto  _   = std::lock_guard(ist._mutex);
 
-        auto message = std::vformat(fmt, std::make_format_args(args...));
-        Term::cout << Term::cursor_move(this->_y, 0) << std::string(this->width(), ' ')
-                   << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
+        auto message  = std::vformat(fmt, std::make_format_args(args...));
+        auto position = console::position();
+        auto size     = console::size();
 
-        this->next();
-        return *this;
+        console::position(0, position.y);
+        std::cout << std::string(size.width, ' ');
+
+        console::position(position.x, position.y);
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        console::next();
+        return ist;
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fmt   The format
+     * @param      args  The arguments
+     *
+     * @tparam     Args  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <class... Args>
-    fb::console& render(const std::string& fmt, Args&&... args)
+    static fb::console& render(const std::string& fmt, Args&&... args)
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto& ist = console::get();
+        auto  _   = std::lock_guard(ist._mutex);
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
-        Term::cout << Term::cursor_move(this->_y, this->_x) << UTF8(message, PLATFORM::Windows) << std::flush;
-
-        return *this;
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        return ist;
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fmt   The format
+     * @param      args  The arguments
+     *
+     * @tparam     Args  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     template <class... Args>
-    fb::console& comment(const std::string& fmt, Args&&... args)
+    static fb::console& comment(const std::string& fmt, Args&&... args)
     {
-        auto _            = std::lock_guard(this->_mutex);
-        auto additional_y = ++this->_additional_y;
+        auto& ist = console::get();
+        auto  _   = std::lock_guard(ist._mutex);
+
+        auto additional_y = ++ist._additional_y;
         auto message      = std::vformat(fmt, std::make_format_args(args...));
-        Term::cout << Term::cursor_move(this->_y + additional_y, 0) << std::string(this->width(), ' ')
-                   << Term::cursor_move(this->_y + additional_y, this->_x) << UTF8(message, PLATFORM::Windows)
-                   << std::flush;
-        this->clear(message.size(), this->_y + additional_y);
+        auto position     = console::position();
+        auto size         = console::size();
 
-        return *this;
+        console::position(position.y + additional_y, 0);
+        std::cout << std::string(size.width, ' ');
+
+        console::position(position.y + additional_y, position.x);
+        std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+        console::clear(message.size(), position.y + additional_y);
+        return ist;
     }
 
 public:
-    fb::console& clear(uint16_t x, uint16_t y);
-    fb::console& trim();
-    bool         line(uint16_t width, char content, char side = '+');
-    bool         box(uint16_t width, uint16_t height);
-    uint16_t     x() const;
-    void         x(uint16_t val);
-    uint16_t     y() const;
-    void         y(uint16_t val);
-    void         reset_x();
-    void         reset_y();
-    uint16_t     width() const;
-    uint16_t     height() const;
-    fb::console& next();
-    fb::console& cursor(uint16_t x, uint16_t y);
-    void         cursor(uint16_t* x, uint16_t* y) const;
+    /**
+     * @brief      Clears the given position.
+     *
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static fb::console& clear(const position_t& position)
+    {
+        std::cout << std::format("\u001b[{};{}H", position.y, position.x - 1)
+                  << std::string(console::width() - position.x + 1, ' ') << std::flush;
+        return console::get();
+    }
 
-public:
-    static console& get();
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  x     { parameter_description }
+     * @param[in]  y     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static fb::console& clear(uint32_t x, uint32_t y)
+    {
+        return console::clear(console::position_t{x, y});
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static fb::console& trim()
+    {
+        auto position = console::position();
+        return console::clear(position);
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  width    The width
+     * @param[in]  content  The content
+     * @param[in]  side     The side
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static bool line(uint16_t width, char content, char side = '+')
+    {
+        if (width < 3)
+            return false;
+
+        int  offset      = 0;
+        char buffer[256] = {
+            0,
+        };
+
+        buffer[offset] = side;
+        offset++;
+        std::memset(buffer + offset, content, width - 1);
+        offset         += (width - 1);
+        buffer[offset]  = side;
+
+        auto before = console::position();
+        console::put(buffer);
+        console::position(before);
+        return true;
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  width   The width
+     * @param[in]  height  The height
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static bool box(uint16_t width, uint16_t height)
+    {
+        if (height < 3)
+            return false;
+
+        auto position = console::position();
+        auto rows     = 0;
+        auto pivot    = position.y;
+        console::position(position.x, pivot + rows++);
+        console::line(width, '-', '+');
+        while (rows < height - 1)
+        {
+            console::position(position.x, pivot + rows++);
+            console::line(width, ' ', '+');
+        }
+        console::position(position.x, pivot + rows++);
+        console::line(width, '-', '+');
+        console::position(position.x, pivot);
+        return true;
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static console::position_t position()
+    {
+        auto& ist = console::get();
+        return ist._position;
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  position  The position
+     */
+    static void position(const console::position_t& position)
+    {
+        auto& ist     = console::get();
+        ist._position = position;
+        std::cout << std::format("\033[{};{}H", position.y, position.x);
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  x     { parameter_description }
+     * @param[in]  y     { parameter_description }
+     */
+    static void position(uint32_t x, uint32_t y)
+    {
+        console::position(console::position_t(x, y));
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static console::size_t size()
+    {
+#ifdef _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO inf;
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &inf))
+        {
+            return console::size_t(static_cast<std::size_t>(inf.srWindow.Right - inf.srWindow.Left + 1),
+                                   static_cast<std::size_t>(inf.srWindow.Bottom - inf.srWindow.Top + 1));
+        }
+        return console::size_t();
+#else
+        console::size_t ret;
+        struct winsize  window{0, 0, 0, 0};
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &window) != -1)
+            ret = {window.ws_col, window.ws_row};
+        return ret;
+#endif
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static uint32_t width()
+    {
+        return console::size().width;
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static fb::console& next()
+    {
+        auto& ist      = console::get();
+        auto  position = console::position();
+        console::position(0, position.y + ist._additional_y + 1);
+        ist._additional_y = 0;
+        return ist;
+    }
+
+private:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static console& get()
+    {
+        static std::unique_ptr<console> ist;
+        static std::once_flag           flag;
+        std::call_once(flag, [] {
+            ist.reset(new console());
+        });
+        return *ist;
+    }
 };
 
 } // namespace fb
