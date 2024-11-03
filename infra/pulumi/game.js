@@ -9,7 +9,7 @@ module.exports = function () {
             for(const [section, sectionConf] of Object.entries(conf.game)) {
                 for(const [i, container] of Object.entries(sectionConf.containers)) {
                     const config = {
-                        id: i,
+                        id: parseInt(i),
                         name: `game-${i}`,
                         delay: 5,
                         ip: sectionConf.ip,

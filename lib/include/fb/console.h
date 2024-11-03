@@ -340,19 +340,11 @@ public:
         if (width < 3)
             return false;
 
-        int  offset      = 0;
-        char buffer[256] = {
-            0,
-        };
-
-        buffer[offset] = side;
-        offset++;
-        std::memset(buffer + offset, content, width - 1);
-        offset         += (width - 1);
-        buffer[offset]  = side;
+        auto sstream = std::stringstream();
+        sstream << side << std::string(width - 2, content) << side;
 
         auto before = console::position();
-        console::put(buffer);
+        console::put(sstream.str());
         console::position(before);
         return true;
     }

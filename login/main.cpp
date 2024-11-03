@@ -19,7 +19,7 @@ int main(int argc, const char** argv)
 #endif
 
         auto height = 9;
-        fb::console::box(console::width() - 1, height);
+        console::box(console::width() - 1, height);
 
         auto header = "The Kingdom of the wind [LOGIN]";
         console::position((console::width() - 1 - strlen(header)) / 2, 3);
