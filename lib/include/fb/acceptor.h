@@ -120,13 +120,13 @@ private:
     template <typename Response>
     async::task<Response> get_internal(const std::string& host, const std::string& path)
     {
-        httplib::Headers headers;
-        auto&&           res = co_await this->get_internal(host, path, headers);
+        auto   headers = httplib::Headers();
+        auto&& res     = co_await this->get_internal(host, path, headers);
         if (!res)
-            throw std::runtime_error("http error");
+            throw std::runtime_error(std::format("cannot request to http server : {}", host));
 
         if (res->status != 200)
-            throw std::runtime_error("http error");
+            throw std::runtime_error(std::format("http server response status code {}", res->status));
 
         auto ptr       = (const uint8_t*)res->body.c_str();
         auto size      = std::stoi(res->get_header_value("Content-Length"));
@@ -213,10 +213,10 @@ private:
 
         auto&& res = co_await this->post_internal(host, path, headers, out_stream.data(), out_stream.size());
         if (!res)
-            throw std::runtime_error("http error");
+            throw std::runtime_error(std::format("cannot request to http server : {}", host));
 
         if (res->status != 200)
-            throw std::runtime_error("http error");
+            throw std::runtime_error(std::format("http server response status code {}", res->status));
 
         auto ptr       = (const uint8_t*)res->body.c_str();
         auto size      = std::stoi(res->get_header_value("Content-Length"));

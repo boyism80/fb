@@ -4,7 +4,7 @@ const k8s = require("@pulumi/kubernetes");
 module.exports = function () {
 
     return {
-        setup: function (namespace, conf) {
+        setup: function (namespace, conf, dependsOn) {
 
             let index = 0
             const ports = []
@@ -101,6 +101,11 @@ module.exports = function () {
                                         ports: [
                                             { containerPort: sectionConf.port, name: `login-${index}` },
                                         ],
+                                        env: [
+                                        {
+                                            name: "KUBERNETES",
+                                            value: "enabled"
+                                        }],
                                         volumeMounts: [{
                                             name: "config-volume",
                                             mountPath: "/app/config/config.json",
@@ -117,7 +122,7 @@ module.exports = function () {
                             },
                         },
                     },
-                })
+                }, { dependsOn: dependsOn })
 
                 ports.push({
                     port: sectionConf.port,
@@ -128,7 +133,7 @@ module.exports = function () {
                 index++
             }
 
-            new k8s.core.v1.Service('login', {
+            return new k8s.core.v1.Service('login', {
                 metadata: {
                     name: 'login',
                     namespace: namespace.metadata.name,
@@ -140,7 +145,7 @@ module.exports = function () {
                         app: "login",
                     }
                 },
-            })
+            }, { dependsOn: dependsOn })
         }
     }
 }()

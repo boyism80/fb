@@ -103,7 +103,7 @@
     "gateway": {
         "port": 30000,
         "redis": "gateway",
-        "replicas": 1
+        "replicas": 3
     },
     "login": {
         "section-1": {

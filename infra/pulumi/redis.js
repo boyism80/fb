@@ -100,7 +100,7 @@ module.exports = {
             index++
         }
         
-        new k8s.core.v1.Service("redis", {
+        return new k8s.core.v1.Service("redis", {
             metadata: {
                 namespace: namespace.metadata.name,
                 name: "redis",

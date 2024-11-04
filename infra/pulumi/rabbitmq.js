@@ -83,7 +83,7 @@ module.exports = {
             index++
         }
 
-        const service = new k8s.core.v1.Service("rabbitmq", {
+        return new k8s.core.v1.Service("rabbitmq", {
             metadata: { name: "rabbitmq", namespace: namespace.metadata.name },
             spec: {
                 type: "NodePort",
@@ -91,7 +91,5 @@ module.exports = {
                 ports: ports,
             },
         });
-
-        return ports
     }
 }

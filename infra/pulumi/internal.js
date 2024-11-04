@@ -2,7 +2,7 @@ const pulumi = require("@pulumi/pulumi")
 const k8s = require("@pulumi/kubernetes")
 
 module.exports = {
-    setup: function (namespace, conf) {
+    setup: function (namespace, conf, dependsOn) {
 
         let index = 0
         const ports = []
@@ -78,7 +78,7 @@ module.exports = {
                         },
                     },
                 },
-            })
+            }, { dependsOn: dependsOn })
 
             ports.push({ 
                 name: `internal-${section}`,
@@ -91,15 +91,13 @@ module.exports = {
             index++
         }
 
-        const service = new k8s.core.v1.Service("internal", {
+        return new k8s.core.v1.Service("internal", {
             metadata: { name: "internal", namespace: namespace.metadata.name },
             spec: {
                 type: "NodePort",
                 ports: ports,
                 selector: appLabels,
             },
-        })
-
-        return ports
+        }, { dependsOn: dependsOn })
     }
 }

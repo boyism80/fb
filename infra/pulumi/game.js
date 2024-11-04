@@ -4,9 +4,10 @@ const k8s = require("@pulumi/kubernetes");
 module.exports = function () {
 
     return {
-        setup: function (namespace, conf) {
+        setup: function (namespace, conf, dependsOn) {
 
             let index = 0
+            const ports = []
             for(const [section, sectionConf] of Object.entries(conf.game)) {
                 for(const [i, container] of Object.entries(sectionConf.containers)) {
                     const config = {
@@ -81,6 +82,11 @@ module.exports = function () {
                                             ports: [
                                                 { containerPort: container.port, name: `game-${index}` },
                                             ],
+                                            env: [
+                                            {
+                                                name: "KUBERNETES",
+                                                value: "enabled"
+                                            }],
                                             volumeMounts: [{
                                                 name: "config-volume",
                                                 mountPath: "/app/config/config.json",
@@ -97,11 +103,31 @@ module.exports = function () {
                                 },
                             },
                         },
-                    });
+                    }, { dependsOn: dependsOn })
+
+                    ports.push({
+                        port: container.port,
+                        targetPort: `game-${index}`,
+                        nodePort: container.port 
+                    })
 
                     index++
                 }
             }
+
+            return new k8s.core.v1.Service('game', {
+                metadata: {
+                    name: 'game',
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    type: "NodePort",
+                    ports: ports,
+                    selector: {
+                        app: "game",
+                    }
+                },
+            }, { dependsOn: dependsOn })
         }
     }
 }()

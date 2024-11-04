@@ -47,7 +47,7 @@ module.exports = function () {
                             persistentVolumeReclaimPolicy: "Retain",
                             storageClassName: storageClass.metadata.name,
                             hostPath: {
-                                path: `/mnt/fb/mysql/${id}`,
+                                path: `/mnt/fb/mysql/${section}/${id}`,
                                 type: "DirectoryOrCreate"
                             },
                         },

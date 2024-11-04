@@ -141,6 +141,22 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @return     { description_of_the_return_value }
+     */
+    static bool kubernetes()
+    {
+        static auto env = std::getenv("KUBERNETES");
+        if (env == nullptr)
+            return false;
+
+        static auto enabled = (std::strcmp(env, "enabled") == 0);
+        return enabled;
+    }
+
+public:
+    /**
+     * @brief      { function_description }
+     *
      * @param[in]  fmt   The format
      * @param      args  The arguments
      *
@@ -162,6 +178,11 @@ public:
 
         console::position(position.x, position.y);
         std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+
+        if (kubernetes())
+        {
+            std::cout << std::endl;
+        }
         return ist;
     }
 
@@ -213,6 +234,10 @@ public:
 
         auto message = std::vformat(fmt, std::make_format_args(args...));
         std::cout << UTF8(message, PLATFORM::Windows) << std::flush;
+
+        if (kubernetes())
+            std::cout << std::endl;
+
         return ist;
     }
 
@@ -256,8 +281,11 @@ public:
      */
     static fb::console& clear(const position_t& position)
     {
-        std::cout << Term::cursor_move(position.y, position.x - 1)
-                  << std::string(console::width() - position.x + 1, ' ') << std::flush;
+        if (!kubernetes())
+        {
+            std::cout << Term::cursor_move(position.y, position.x - 1)
+                      << std::string(console::width() - position.x + 1, ' ') << std::flush;
+        }
         return console::get();
     }
 
@@ -318,6 +346,9 @@ public:
      */
     static bool box(uint16_t width, uint16_t height)
     {
+        if (kubernetes())
+            return false;
+
         if (height < 3)
             return false;
 
@@ -355,6 +386,9 @@ public:
      */
     static void position(const console::position_t& position)
     {
+        if (kubernetes())
+            return;
+
         auto& ist     = console::get();
         ist._position = position;
         std::cout << Term::cursor_move(position.y, position.x);
@@ -378,7 +412,14 @@ public:
      */
     static uint32_t width()
     {
-        return std::min<uint32_t>(Term::screen_size().columns(), 80);
+        if (kubernetes())
+        {
+            return 80;
+        }
+        else
+        {
+            return Term::screen_size().columns();
+        }
     }
 
     /**
@@ -390,8 +431,15 @@ public:
     {
         auto& ist      = console::get();
         auto  position = console::position();
-        console::position(0, position.y + ist._additional_y + 1);
-        ist._additional_y = 0;
+        if (!kubernetes())
+        {
+            console::position(0, position.y + ist._additional_y + 1);
+            ist._additional_y = 0;
+        }
+        else
+        {
+            std::cout << std::endl;
+        }
         return ist;
     }
 
