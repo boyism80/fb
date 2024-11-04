@@ -6,83 +6,106 @@ module.exports = function () {
     return {
         setup: function (namespace, conf) {
 
-            for(let i = 0; i < conf.gateway.length; i++) {
-                const containerConf = conf.gateway[i]
-                const config = {
-                    id: i,
-                    name: `gateway-${i}`,
-                    ip:  conf.host,
-                    port: containerConf.port,
-                    thread: {
-                        logic: 12,
-                        io: 12,
-                        background: 8
-                    },
-                    log: ["info", "fatal"],
-                    entrypoints: []
-                }
+            const config = {
+                id: 0,
+                name: `gateway`,
+                ip:  conf.host,
+                port: conf.gateway.port,
+                thread: {
+                    logic: 12,
+                    io: 12,
+                    background: 8
+                },
+                redis: {
+                    default: 
+                    {
+                        ip: "redis",
+                        port: conf.redis[conf.gateway.redis].port.cluster,
+                        db: 0
+                    }
+                },
+                log: ["info", "fatal"],
+                entrypoints: []
+            }
 
-                for(const [section, loginContainerConf] of Object.entries(conf.login)) {
-                    config.entrypoints.push({
-                        name: loginContainerConf.name,
-                        desc: loginContainerConf.desc,
-                        ip: conf.host,
-                        port: loginContainerConf.port.node
-                    })
-                }
-
-                const configMap = new k8s.core.v1.ConfigMap(`gateway-${i}`, {
-                    metadata: { name: `gateway-${i}`, namespace: namespace.metadata.name },
-                    data: {
-                        "config.json": JSON.stringify(config),
-                    },
+            for(const [section, loginContainerConf] of Object.entries(conf.login)) {
+                config.entrypoints.push({
+                    name: loginContainerConf.name,
+                    desc: loginContainerConf.desc,
+                    ip: conf.host,
+                    port: loginContainerConf.port
                 })
+            }
 
-                const statefulSet = new k8s.apps.v1.StatefulSet(`gateway-${i}`, {
-                    metadata: {
-                        name: `gateway-${i}`,
-                        namespace: namespace.metadata.name,
+            const configMap = new k8s.core.v1.ConfigMap(`gateway`, {
+                metadata: { name: `gateway`, namespace: namespace.metadata.name },
+                data: {
+                    "config.json": JSON.stringify(config),
+                },
+            })
+
+            const statefulSet = new k8s.apps.v1.StatefulSet(`gateway`, {
+                metadata: {
+                    name: `gateway`,
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    serviceName: "gateway",
+                    replicas: conf.gateway.replicas,
+                    selector: {
+                        matchLabels: {
+                            app: "gateway",
+                        },
                     },
-                    spec: {
-                        serviceName: "gateway",
-                        replicas: 1,
-                        selector: {
-                            matchLabels: {
+                    template: {
+                        metadata: {
+                            labels: {
                                 app: "gateway",
                             },
                         },
-                        template: {
-                            metadata: {
-                                labels: {
-                                    app: "gateway",
+                        spec: {
+                            containers: [
+                                {
+                                    name: "gateway",
+                                    image: "cshyeon/fb:gateway",
+                                    ports: [
+                                        { containerPort: conf.gateway.port, name: `gateway` },
+                                    ],
+                                    volumeMounts: [{
+                                        name: "config-volume",
+                                        mountPath: "/app/config/config.json",
+                                        subPath: "config.json"
+                                    }],
                                 },
-                            },
-                            spec: {
-                                containers: [
-                                    {
-                                        name: "gateway",
-                                        image: "cshyeon/fb:gateway",
-                                        ports: [
-                                            { containerPort: containerConf.port, name: `gateway-${i}` },
-                                        ],
-                                        volumeMounts: [{
-                                            name: "config-volume",
-                                            mountPath: "/app/config/config.json",
-                                            subPath: "config.json"
-                                        }],
-                                    },
-                                ],
-                                volumes: [{
-                                    name: "config-volume",
-                                    configMap: {
-                                        name: configMap.metadata.name,
-                                    },
-                                }],
-                            },
+                            ],
+                            volumes: [{
+                                name: "config-volume",
+                                configMap: {
+                                    name: configMap.metadata.name,
+                                },
+                            }],
                         },
                     },
-                });
-            }
+                },
+            })
+
+            new k8s.core.v1.Service('gateway', {
+                metadata: {
+                    name: 'gateway',
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    type: "NodePort",
+                    ports: [{
+                        port: conf.gateway.port,
+                        targetPort: `gateway`,
+                        nodePort: conf.gateway.port 
+                    }],
+                    selector: {
+                        app: "gateway",
+                    }
+                },
+            })
         }
     }
 }()

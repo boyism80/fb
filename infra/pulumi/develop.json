@@ -66,6 +66,12 @@
                 "cluster": 6380,
                 "node": 30111
             }
+        },
+        "gateway": {
+            "port": {
+                "cluster": 6381,
+                "node": 30112
+            }
         }
     },
     "rabbitmq": {
@@ -94,14 +100,11 @@
             }
         }
     },
-    "gateway": [
-        {
-            "port": 30000
-        },
-        {
-            "port": 30001
-        }
-    ],
+    "gateway": {
+        "port": 30000,
+        "redis": "gateway",
+        "replicas": 1
+    },
     "login": {
         "section-1": {
             "name": "연",

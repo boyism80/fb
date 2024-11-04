@@ -7,6 +7,7 @@ module.exports = function () {
         setup: function (namespace, conf) {
 
             let index = 0
+            const ports = []
             for(const [section, sectionConf] of Object.entries(conf.login)) {
                 const config = {
                     id: 0,
@@ -80,7 +81,7 @@ module.exports = function () {
                     },
                     spec: {
                         serviceName: "login",
-                        replicas: 1,
+                        replicas: sectionConf.replicas,
                         selector: {
                             matchLabels: {
                                 app: "login",
@@ -116,10 +117,30 @@ module.exports = function () {
                             },
                         },
                     },
-                });
+                })
+
+                ports.push({
+                    port: sectionConf.port,
+                    targetPort: `login-${index}`,
+                    nodePort: sectionConf.port 
+                })
 
                 index++
             }
+
+            new k8s.core.v1.Service('login', {
+                metadata: {
+                    name: 'login',
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    type: "NodePort",
+                    ports: ports,
+                    selector: {
+                        app: "login",
+                    }
+                },
+            })
         }
     }
 }()

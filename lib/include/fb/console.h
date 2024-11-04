@@ -17,6 +17,7 @@
 #include <format>
 #include <fb/encoding.h>
 #include <iostream>
+#include <algorithm>
 #include <cpp-terminal/iostream.hpp>
 #include <cpp-terminal/screen.hpp>
 #include <cpp-terminal/cursor.hpp>
@@ -256,7 +257,7 @@ public:
     static fb::console& clear(const position_t& position)
     {
         std::cout << Term::cursor_move(position.y, position.x - 1)
-                   << std::string(console::width() - position.x + 1, ' ') << std::flush;
+                  << std::string(console::width() - position.x + 1, ' ') << std::flush;
         return console::get();
     }
 
@@ -377,7 +378,7 @@ public:
      */
     static uint32_t width()
     {
-        return Term::screen_size().columns();
+        return std::min<uint32_t>(Term::screen_size().columns(), 80);
     }
 
     /**
