@@ -980,6 +980,7 @@ fb::game::lua::context& fb::game::lua::context::from(const std::string& fmt, Arg
     luaL_dofile(*this, fname.c_str());
 #else
     auto main = static_cast<fb::game::lua::main*>(this->owner);
+    main->load_file(fname);
     if (main->_bytecodes.contains(fname) == false)
     {
         fb::logger::fatal("cannot find script {}", fname);

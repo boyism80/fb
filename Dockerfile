@@ -99,3 +99,6 @@ WORKDIR /fb/data
 COPY --from=data-build /output .
 WORKDIR /
 RUN ldconfig
+
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
