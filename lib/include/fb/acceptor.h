@@ -330,7 +330,7 @@ private:
                 // Call function that matched by command byte
                 if (this->_handler.contains(cmd) == false)
                 {
-                    fb::logger::warn("Á¤ÀÇµÇÁö ¾ÊÀº ¿äÃ»ÀÔ´Ï´Ù. [{:#x}]", cmd);
+                    fb::logger::warn("ì •ì˜ë˜ì§€ ì•Šì€ ìš”ì²­ì…ë‹ˆë‹¤. [0x%2X]", cmd);
                     in_stream.reset();
                     in_stream.shift(base_size + size);
                     in_stream.flush();
@@ -345,7 +345,7 @@ private:
                 });
                 auto after  = this->thread_id(socket);
 
-                // Äİ¹é Á¶°ÇÀÌ ¸¸Á·ÇÏÁö ¸øÇÏ´Â °æ¿ì Áï½Ã Á¾·á
+                // ì½œë°± ì¡°ê±´ì´ ë§Œì¡±í•˜ì§€ ëª»í•˜ëŠ” ê²½ìš° ì¦‰ì‹œ ì¢…ë£Œ
                 if (before != after)
                     co_return true;
             }
