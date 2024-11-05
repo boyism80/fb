@@ -3,6 +3,7 @@
 
 #include <string>
 #include <chrono>
+#include <format>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -22,7 +23,7 @@ public:
         static const auto regex = boost::xpressive::sregex::compile("((?P<day>\\d+).)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
         auto what = boost::xpressive::smatch();
         if (boost::xpressive::regex_match(f, what, regex) == false)
-            throw std::runtime_error("cannot parse timespan");
+            throw std::runtime_error(std::format("cannot parse timespan. value : {}", f));
 
         auto day = what["day"].matched ? std::stoi(what["day"].str()) : 0;
         auto hours = std::stoi(what["hour"].str());
