@@ -30,7 +30,7 @@ module.exports = function () {
                             ip: "db", 
                             port: conf.internal[sectionConf.db].port.cluster
                         },
-                        login: { ip: conf.host, port: conf.login[sectionConf.login].port.node },
+                        login: { ip: conf.host, port: conf.login[sectionConf.login].port },
                         redis: {
                             default: 
                             {

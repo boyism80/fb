@@ -4,7 +4,7 @@ const k8s = require("@pulumi/kubernetes");
 module.exports = function () {
 
     return {
-        setup: function (namespace, storageClass, conf) {
+        setup: function (namespace, conf) {
 
             secret = new k8s.core.v1.Secret("mysql-secret", {
                 metadata: {
@@ -34,25 +34,6 @@ module.exports = function () {
             const ports = []
             for(const [section, sectionConfs] of Object.entries(conf.mysql)) {
                 for(const [id, sectionConf] of Object.entries(sectionConfs)) {
-                    const pv = new k8s.core.v1.PersistentVolume(`mysql-${section}-${id}`, {
-                        metadata: {
-                            name: `mysql-${section}-${id}`,
-                            namespace: namespace.metadata.name, 
-                        },
-                        spec: {
-                            capacity: {
-                                storage: "1Gi",
-                            },
-                            accessModes: ["ReadWriteOnce"],
-                            persistentVolumeReclaimPolicy: "Retain",
-                            storageClassName: storageClass.metadata.name,
-                            hostPath: {
-                                path: `/mnt/fb/mysql/${section}/${id}`,
-                                type: "DirectoryOrCreate"
-                            },
-                        },
-                    }, { dependsOn: [storageClass] });
-
                     const statefulSet = new k8s.apps.v1.StatefulSet(`mysql-${section}-${id}`, {
                         metadata: {
                             name: `mysql-${section}-${id}`,
@@ -99,7 +80,7 @@ module.exports = function () {
                                             ],
                                             volumeMounts: [
                                                 {
-                                                    name: `mysql-${section}-${id}`,
+                                                    name: `data-volume-${section}-${id}`,
                                                     mountPath: "/var/lib/mysql",
                                                 },
                                                 {
@@ -111,33 +92,20 @@ module.exports = function () {
                                     ],
                                     volumes: [
                                     {
+                                        name: `data-volume-${section}-${id}`,
+                                        hostPath: {
+                                            path: `/mnt/fb/mysql/${section}/${id}`,
+                                            type: "DirectoryOrCreate"
+                                        }
+                                    },
+                                    {
                                         name: "init-sql-volume",
                                         configMap: { name: configMap.metadata.name }
                                     }]
                                 },
-                            },
-                            persistentVolumeClaimRetentionPolicy: {
-                                whenDeleted: 'Delete',
-                                whenScaled: 'Delete'
-                            },
-                            volumeClaimTemplates: [
-                                {
-                                    metadata: {
-                                        name: `mysql-${section}-${id}`,
-                                    },
-                                    spec: {
-                                        accessModes: ["ReadWriteOnce"],
-                                        resources: {
-                                            requests: {
-                                                storage: "1Gi",
-                                            },
-                                        },
-                                        storageClassName: storageClass.metadata.name,
-                                    },
-                                },
-                            ],
+                            }
                         },
-                    }, { dependsOn: [pv] });
+                    }, { dependsOn: [secret] });
 
                     ports.push({
                         name: `mysql-${section}-${id}`,

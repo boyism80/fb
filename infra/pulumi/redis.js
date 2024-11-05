@@ -3,30 +3,11 @@ const k8s = require("@pulumi/kubernetes")
 
 
 module.exports = {
-    setup: function (namespace, storageClass, conf) {
+    setup: function (namespace, conf) {
 
         let index = 0
         const ports = []
         for(const [section, sectionConf] of Object.entries(conf.redis)) {
-            const pv = new k8s.core.v1.PersistentVolume(`redis-${section}`, {
-                metadata: {
-                    name: `redis-${section}`,
-                    namespace: namespace.metadata.name,
-                },
-                spec: {
-                    capacity: {
-                        storage: "1Gi",
-                    },
-                    accessModes: ["ReadWriteOnce"],
-                    persistentVolumeReclaimPolicy: "Retain",
-                    storageClassName: storageClass.metadata.name,
-                    hostPath: {
-                        path: `/mnt/fb/redis/${section}`,
-                        type: "DirectoryOrCreate"
-                    },
-                },
-            }, { dependsOn: [storageClass] });
-
             const statefulSet = new k8s.apps.v1.StatefulSet(`redis-${section}`, {
                 metadata: {
                     name: `redis-${section}`,
@@ -59,35 +40,23 @@ module.exports = {
                                     ],
                                     volumeMounts: [
                                         {
-                                            name: "redis-data",
+                                            name: `data-volume-${section}`,
                                             mountPath: "/data",
                                         },
                                     ],
                                 },
                             ],
+                            volumes: [
+                            {
+                                name: `data-volume-${section}`,
+                                hostPath: {
+                                    path: `/mnt/fb/redis/${section}`,
+                                    type: "DirectoryOrCreate"
+                                }
+                            }]
                         },
-                    },
-                    persistentVolumeClaimRetentionPolicy: {
-                        whenDeleted: 'Delete',
-                        whenScaled: 'Delete'
-                    },
-                    volumeClaimTemplates: [
-                        {
-                            metadata: {
-                                name: "redis-data",
-                            },
-                            spec: {
-                                accessModes: ["ReadWriteOnce"],
-                                storageClassName: storageClass.metadata.name,
-                                resources: {
-                                    requests: {
-                                        storage: "1Gi",
-                                    },
-                                },
-                            },
-                        },
-                    ],
-                },
+                    }
+                }
             })
 
             ports.push({

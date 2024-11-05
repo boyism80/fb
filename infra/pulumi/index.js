@@ -17,23 +17,13 @@ const namespace = new k8s.core.v1.Namespace("fb-namespace", {
     }
 });
 
-const storageClass = new k8s.storage.v1.StorageClass("storage-class", {
-    metadata: {
-        name: "storage-class",
-        namespace: namespace.metadata.name, 
-    },
-    provisioner: "kubernetes.io/no-provisioner",
-    volumeBindingMode: "WaitForFirstConsumer",
-    reclaimPolicy: "Retain"
-});
-
 const filePath = path.join(__dirname, 'develop.json')
 const content = fs.readFileSync(filePath, 'utf-8')
 const conf = JSON.parse(content)
 
-const mysqlService = mysql.setup(namespace, storageClass, conf)
-const redisService = redis.setup(namespace, storageClass, conf)
-const rabbitmqService = rabbitmq.setup(namespace, storageClass, conf)
+const mysqlService = mysql.setup(namespace, conf)
+const redisService = redis.setup(namespace, conf)
+const rabbitmqService = rabbitmq.setup(namespace, conf)
 const internalService = internal.setup(namespace, conf, [redisService, rabbitmqService])
 const dbService = db.setup(namespace, conf, [mysqlService, redisService])
 gateway.setup(namespace, conf, [internalService, dbService])

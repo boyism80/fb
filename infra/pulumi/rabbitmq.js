@@ -2,30 +2,11 @@ const pulumi = require("@pulumi/pulumi");
 const k8s = require("@pulumi/kubernetes");
 
 module.exports = {
-    setup: function (namespace, storageClass, conf) {
+    setup: function (namespace, conf) {
         let index = 0
         const ports = []
 
         for(const [section, sectionConf] of Object.entries(conf.rabbitmq)) {
-            const pv = new k8s.core.v1.PersistentVolume(`rabbitmq-${section}`, {
-                metadata: {
-                    name: `rabbitmq-${section}`,
-                    namespace: namespace.metadata.name, // Set namespace to 'fb'
-                },
-                spec: {
-                    capacity: {
-                        storage: "1Gi",
-                    },
-                    accessModes: ["ReadWriteOnce"],
-                    persistentVolumeReclaimPolicy: "Retain",
-                    storageClassName: storageClass.metadata.name,
-                    hostPath: {
-                        path: `/mnt/fb/rabbitmq/${section}`,
-                        type: "DirectoryOrCreate"
-                    },
-                },
-            }, { dependsOn: [storageClass] })
-
             const statefulSet = new k8s.apps.v1.StatefulSet(`rabbitmq-${section}`, {
                 metadata: { name: `rabbitmq-${section}`, namespace: namespace.metadata.name, },
                 spec: {
@@ -48,24 +29,23 @@ module.exports = {
                                     { name: "RABBITMQ_ERLANG_COOKIE", value: "secret-cookie" },
                                     { name: "K8S_SERVICE_NAME", value: "rabbitmq" },
                                 ],
-                                volumeMounts: [{ name: `rabbitmq-${section}`, mountPath: "/var/lib/rabbitmq" }],
+                                volumeMounts: [{ 
+                                    name: `data-volume-${section}`, 
+                                    mountPath: "/var/lib/rabbitmq" 
+                                }],
                             }],
+                            volumes: [
+                            {
+                                name: `data-volume-${section}`,
+                                hostPath: {
+                                    path: `/mnt/fb/rabbitmq/${section}`,
+                                    type: "DirectoryOrCreate"
+                                },
+                            }]
                         },
-                    },
-                    persistentVolumeClaimRetentionPolicy: {
-                        whenDeleted: 'Delete',
-                        whenScaled: 'Delete'
-                    },
-                    volumeClaimTemplates: [{
-                        metadata: { name: `rabbitmq-${section}` },
-                        spec: {
-                            accessModes: ["ReadWriteOnce"],
-                            resources: { requests: { storage: "1Gi" } },
-                            storageClassName: storageClass.metadata.name,
-                        },
-                    }],
+                    }
                 },
-            }, { dependsOn: [pv] })
+            })
 
             ports.push({
                 name: `amqp-${section}`,
