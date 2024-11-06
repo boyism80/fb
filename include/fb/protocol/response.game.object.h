@@ -11,6 +11,9 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class direction : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x11;
+    
+public:
 #ifndef BOT
     const uint32_t  sequence;
     const DIRECTION value;
@@ -25,21 +28,18 @@ public:
         direction(object.sequence(), object.direction())
     { }
     direction(uint32_t sequence, DIRECTION value) :
-        fb::protocol::base::header(0x11),
         sequence(sequence),
         value(value)
     { }
 #else
-    direction() :
-        fb::protocol::base::header(0x11)
-    { }
+    direction()  = default;
 #endif
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->sequence).write_u8(this->value).write_u8(0x00);
     }
 #else
@@ -53,19 +53,20 @@ public:
 
 class show : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x07;
+    
 private:
     const fb::game::object*               object;
     const std::vector<fb::game::object*>* objects;
 
 public:
     show(const fb::game::object& object) :
-        fb::protocol::base::header(0x07),
         object(&object),
         objects(nullptr)
     { }
 
     show(const std::vector<fb::game::object*>& objects) :
-        fb::protocol::base::header(0x07),
         object(nullptr),
         objects(&objects)
     { }
@@ -73,7 +74,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         if (this->object != nullptr)
         {
             auto map = this->object->map();
@@ -119,6 +120,9 @@ public:
 class hide : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x0E;
+    
+public:
     const uint32_t id;
 
 public:
@@ -126,14 +130,13 @@ public:
         hide(object.sequence())
     { }
     hide(uint32_t id) :
-        fb::protocol::base::header(0x0E),
         id(id)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->id).write_u8(0x00);
     }
 };
@@ -141,13 +144,15 @@ public:
 class chat : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x0D;
+    
+public:
     const fb::game::object& me;
     const CHAT_TYPE         type;
     const std::string       message;
 
 public:
     chat(const fb::game::object& me, const CHAT_TYPE type, const std::string message) :
-        fb::protocol::base::header(0x0D),
         me(me),
         type(type),
         message(message)
@@ -156,13 +161,16 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->type).write_u32(this->me.sequence()).write(this->message);
     }
 };
 
 class move : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x0C;
+    
 public:
 #ifndef BOT
     const uint32_t  id;
@@ -180,22 +188,19 @@ public:
         move(object.sequence(), object.direction(), position)
     { }
     move(const uint32_t id, DIRECTION direction, const point16_t& position) :
-        fb::protocol::base::header(0x0C),
         id(id),
         direction(direction),
         position(position)
     { }
 #else
-    move() :
-        fb::protocol::base::header(0x0C)
-    { }
+    move() = default;
 #endif
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->id)
             .write_u16(this->position.x)
             .write_u16(this->position.y)
@@ -216,12 +221,14 @@ public:
 class sound : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x19;
+    
+public:
     const fb::game::object& me;
     const SOUND             value;
 
 public:
     sound(const fb::game::object& me, SOUND value) :
-        fb::protocol::base::header(0x19),
         me(me),
         value(value)
     { }
@@ -229,7 +236,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x00)
             .write_u8(0x03)
             .write_u16(this->value) // sound
@@ -246,12 +253,14 @@ public:
 class effect : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x29;
+    
+public:
     const fb::game::object& me;
     const uint8_t           value;
 
 public:
     effect(const fb::game::object& me, uint8_t value) :
-        fb::protocol::base::header(0x29),
         me(me),
         value(value)
     { }
@@ -259,7 +268,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->me.sequence()).write_u8(this->value).write_u8(0x00);
     }
 };

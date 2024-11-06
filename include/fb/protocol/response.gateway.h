@@ -45,9 +45,10 @@ namespace fb { namespace protocol { namespace gateway { namespace response {
 class welcome : public fb::protocol::base::header
 {
 public:
-    welcome() :
-        fb::protocol::base::header(0x7E)
-    { }
+    inline static uint8_t header = 0x7E;
+
+public:
+    welcome() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -56,6 +57,9 @@ public:
 
 class crt : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x00;
+
 public:
 #ifdef BOT
     fb::cryptor cryptor;
@@ -67,12 +71,9 @@ public:
 
 public:
 #ifdef BOT
-    crt() :
-        fb::protocol::base::header(0x00)
-    { }
+    crt() = default;
 #else
     crt(const fb::cryptor& cryptor, uint32_t entry_crc) :
-        fb::protocol::base::header(0x00),
         cryptor(cryptor),
         entry_crc(entry_crc)
     { }
@@ -82,7 +83,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x00)
             .write_u32(this->entry_crc)
             .write_u8(this->cryptor.type())
@@ -109,6 +110,9 @@ public:
 class hosts : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x56;
+
+public:
 #ifdef BOT
     std::vector<entry> entries;
 #else
@@ -117,12 +121,9 @@ public:
 
 public:
 #ifdef BOT
-    hosts() :
-        fb::protocol::base::header(0x56)
-    { }
+    hosts() = default;
 #else
     hosts(const std::vector<entry>& entries) :
-        fb::protocol::base::header(0x56),
         entries(entries)
     { }
 #endif
@@ -146,7 +147,7 @@ public:
         auto compressed = formats.compress();
 
         // 패킷 형식으로 저장
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u16(compressed.size()).write(compressed.data(), compressed.size() + 1);
     }
 #else

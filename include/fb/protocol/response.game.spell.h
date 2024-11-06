@@ -10,17 +10,18 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class buff : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x3A;
+
+public:
     const std::string               name;
     const std::chrono::milliseconds time;
 
 public:
     buff(const std::string& name, uint32_t time) :
-        fb::protocol::base::header(0x3A),
         name(name),
         time(time)
     { }
     buff(const fb::game::buff& buff) :
-        fb::protocol::base::header(0x3A),
         name(buff.model.name),
         time(buff.time())
     { }
@@ -28,7 +29,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write(this->name).write_u32(static_cast<uint32_t>(this->time.count() / 1000));
     }
 };
@@ -36,24 +37,29 @@ public:
 class unbuff : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x3A;
+
+public:
     const fb::game::buff& buff;
 
 public:
     unbuff(const fb::game::buff& buff) :
-        fb::protocol::base::header(0x3A),
         buff(buff)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write(this->buff.model.name).write_u32(0x00);
     }
 };
 
 class update : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x17;
+
 public:
 #ifdef BOT
     uint8_t     index;
@@ -67,12 +73,9 @@ public:
 
 public:
 #ifdef BOT
-    update() :
-        fb::protocol::base::header(0x17)
-    { }
+    update() = default;
 #else
     update(const fb::game::life& me, uint8_t index) :
-        fb::protocol::base::header(0x17),
         me(me),
         index(index)
     { }
@@ -86,7 +89,7 @@ public:
         if (spell == nullptr)
             return;
 
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->index + 1).write_u8(spell->type).write(spell->name);
 
         if (static_cast<int>(spell->type) < 3)
@@ -107,12 +110,14 @@ public:
 class remove : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x18;
+
+public:
     const fb::game::life& me;
     const uint8_t         index;
 
 public:
     remove(const fb::game::life& me, uint8_t index) :
-        fb::protocol::base::header(0x18),
         me(me),
         index(index)
     { }
@@ -124,7 +129,7 @@ public:
         if (spell != nullptr)
             return;
 
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->index + 1).write_u8(0x00);
     }
 };

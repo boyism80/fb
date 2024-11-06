@@ -12,6 +12,9 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class sections : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x31;
+
+public:
 #ifdef BOT
     std::vector<fb::bot::board> boards;
 #else
@@ -20,11 +23,9 @@ public:
 
 public:
 #ifdef BOT
-    sections() :
-        fb::protocol::base::header(0x31)
+    sections() = default;
 #else
     sections(const fb::model::model& model) :
-        fb::protocol::base::header(0x31),
         model(model)
 #endif
     { }
@@ -35,7 +36,7 @@ public:
     {
         auto size = this->model.board.size();
 
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x01).write_u16(size);
 
         for (const auto& [k, v] : this->model.board)
@@ -62,6 +63,9 @@ public:
 class articles : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x31;
+
+public:
 #ifndef BOT
     const fb::model::board&                    board;
     const std::list<fb::game::board::article>& article_list;
@@ -75,7 +79,6 @@ public:
     articles(const fb::model::board&                    board,
              const std::list<fb::game::board::article>& article_list,
              BOARD_BUTTON_ENABLE                        button_flags) :
-        fb::protocol::base::header(0x31),
         board(board),
         article_list(article_list),
         button_flags(button_flags)
@@ -88,7 +91,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x02).write_u8(button_flags).write_u16(board.id).write(board.name);
 
         auto count = this->article_list.size();
@@ -114,6 +117,9 @@ public:
 class article : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x31;
+
+public:
 #ifndef BOT
     const fb::game::board::article& value;
     const BOARD_BUTTON_ENABLE       button_flags;
@@ -124,7 +130,6 @@ public:
 public:
 #ifndef BOT
     article(const fb::game::board::article& value, BOARD_BUTTON_ENABLE button_flags) :
-        fb::protocol::base::header(0x31),
         value(value),
         button_flags(button_flags)
     { }
@@ -136,7 +141,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x03)
             .write_u8(button_flags)
             .write_u8(0x00)
@@ -156,13 +161,15 @@ public:
 class message : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x31;
+
+public:
     const std::string text;
     const bool        deleted;
     const bool        refresh;
 
 public:
     message(const std::string& text, bool deleted, bool refresh = false) :
-        fb::protocol::base::header(0x31),
         text(text),
         deleted(deleted),
         refresh(refresh)
@@ -171,7 +178,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream
             .write_u8(this->refresh ? 0x06 : 0x07) // mail 관련 0x06인 것 같다. 확인 필요
             .write_u8(this->deleted)

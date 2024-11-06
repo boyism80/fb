@@ -12,12 +12,14 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class tip : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x59;
+    
+public:
     const uint16_t    position;
     const std::string message;
 
 public:
     tip(uint16_t position, const std::string& message) :
-        fb::protocol::base::header(0x59),
         position(position),
         message(message)
     { }
@@ -25,7 +27,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u16(this->position).write(this->message, true).write_u8(0x00);
     }
 };
@@ -33,12 +35,14 @@ public:
 class update : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x0F;
+    
+public:
     const fb::game::character& me;
     const uint8_t              index;
 
 public:
     update(const fb::game::character& me, uint8_t index) :
-        fb::protocol::base::header(0x0F),
         me(me),
         index(index)
     { }
@@ -50,7 +54,7 @@ public:
         if (item == nullptr)
             return;
 
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->index + 1)
             .write_u16(item->look())
             .write_u8(item->color())
@@ -64,12 +68,14 @@ public:
 class update_slot : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x37;
+    
+public:
     const fb::game::character& me;
     const EQUIPMENT_PARTS      parts;
 
 public:
     update_slot(const fb::game::character& me, EQUIPMENT_PARTS parts) :
-        fb::protocol::base::header(0x37),
         me(me),
         parts(parts)
     { }
@@ -120,7 +126,7 @@ public:
         if (item == nullptr)
             return;
 
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u16(item->look()).write_u8(item->color()).write(item->name(), false);
     }
 };
@@ -128,13 +134,15 @@ public:
 class remove : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x10;
+    
+public:
     const ITEM_DELETE_TYPE type;
     const uint32_t         index;
     const uint16_t         count;
 
 public:
     remove(ITEM_DELETE_TYPE type, uint32_t index, uint16_t count = 0) :
-        fb::protocol::base::header(0x10),
         type(type),
         index(index),
         count(count)
@@ -143,7 +151,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->index + 1).write_u8(this->type).write_u16(this->count);
     }
 };
@@ -151,18 +159,20 @@ public:
 class unequip : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x38;
+    
+public:
     const EQUIPMENT_PARTS parts;
 
 public:
     unequip(EQUIPMENT_PARTS parts) :
-        fb::protocol::base::header(0x38),
         parts(parts)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->parts).write_u8(0x00);
     }
 };

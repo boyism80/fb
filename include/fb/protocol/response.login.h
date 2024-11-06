@@ -8,6 +8,9 @@ namespace fb { namespace protocol { namespace login { namespace response {
 class agreement : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x60;
+
+public:
 #ifdef BOT
     std::string contents;
 #else
@@ -16,12 +19,9 @@ public:
 
 public:
 #ifdef BOT
-    agreement() :
-        fb::protocol::base::header(0x60)
-    { }
+    agreement() = default;
 #else
     agreement(const std::string& contents) :
-        fb::protocol::base::header(0x60),
         contents(contents)
     { }
 #endif
@@ -31,7 +31,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         auto compressed = fb::buffer((uint8_t*)this->contents.data(), this->contents.size()).compress();
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x01)
             .write_u16((uint16_t)compressed.size())
             .write(compressed.data(), (uint16_t)compressed.size());
@@ -56,6 +56,9 @@ public:
 class message : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x02;
+
+public:
 #ifdef BOT
     std::string text;
     uint8_t     type;
@@ -66,12 +69,9 @@ public:
 
 public:
 #ifdef BOT
-    message() :
-        fb::protocol::base::header(0x02)
-    { }
+    message() = default;
 #else
     message(const std::string& text, uint8_t type) :
-        fb::protocol::base::header(0x02),
         text(text),
         type(type)
     { }
@@ -81,7 +81,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->type).writestr_u8(this->text);
     }
 #else

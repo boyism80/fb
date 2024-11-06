@@ -14,12 +14,13 @@ namespace fb { namespace protocol { namespace game { namespace request { namespa
 class active : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x1C;
+    
+public:
     uint8_t index;
 
 public:
-    active() :
-        fb::protocol::base::header(0x1C)
-    { }
+    active() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -31,12 +32,13 @@ public:
 class inactive : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x1F;
+    
+public:
     EQUIPMENT_PARTS parts;
 
 public:
-    inactive() :
-        fb::protocol::base::header(0x1F)
-    { }
+    inactive() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -48,13 +50,14 @@ public:
 class drop : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x08;
+    
+public:
     uint8_t index;
     bool    all;
 
 public:
-    drop() :
-        fb::protocol::base::header(0x08)
-    { }
+    drop() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -67,12 +70,13 @@ public:
 class drop_cash : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x24;
+    
+public:
     uint32_t chunk;
 
 public:
-    drop_cash() :
-        fb::protocol::base::header(0x24)
-    { }
+    drop_cash() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -84,12 +88,13 @@ public:
 class mix : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x6B;
+    
+public:
     std::vector<uint8_t> indices;
 
 public:
-    mix() :
-        fb::protocol::base::header(0x6B)
-    { }
+    mix() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -103,13 +108,14 @@ public:
 class throws : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x17;
+    
+public:
     bool    all;
     uint8_t index;
 
 public:
-    throws() :
-        fb::protocol::base::header(0x17)
-    { }
+    throws() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -122,13 +128,14 @@ public:
 class info : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x66;
+    
+public:
     uint16_t position;
     uint8_t  slot;
 
 public:
-    info() :
-        fb::protocol::base::header(0x66)
-    { }
+    info() = default;
 
 public:
     void deserialize(fb::istream& in_stream)

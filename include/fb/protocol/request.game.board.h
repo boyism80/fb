@@ -13,6 +13,9 @@ namespace fb { namespace protocol { namespace game { namespace request { namespa
 class board : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x3B;
+
+public:
 #if BOT
     const BOARD_ACTION action;
     const uint16_t     section;
@@ -37,7 +40,6 @@ public:
           uint16_t           offset   = 0,
           const std::string& title    = "",
           const std::string& contents = "") :
-        fb::protocol::base::header(0x3B),
         action(action),
         section(section),
         article(article),
@@ -46,16 +48,14 @@ public:
         contents(contents)
     { }
 #else
-    board() :
-        fb::protocol::base::header(0x3B)
-    { }
+    board() = default;
 #endif
 
 public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8((uint8_t)this->action);
         switch (this->action)
         {

@@ -14,12 +14,14 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class message : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x0A;
+
+public:
     const std::string  text;
     const MESSAGE_TYPE type;
 
 public:
     message(const std::string& text, MESSAGE_TYPE type) :
-        fb::protocol::base::header(0x0A),
         text(text),
         type(type)
     { }
@@ -27,7 +29,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->type).write(this->text, true);
     }
 };
@@ -41,7 +43,6 @@ public:
 
 public:
     show(const fb::game::character& session, const fb::game::object& to, bool light = false) :
-        fb::protocol::base::header(light ? 0x1D : 0x33),
         session(session),
         to(to),
         light(light)
@@ -79,13 +80,17 @@ public:
         if (map == nullptr)
             return;
 
-        base::header::serialize(out_stream);
         if (this->light == false)
         {
             out_stream
+                .write_u8(0x33)                       // id
                 .write_u16(this->session.x())         // x
                 .write_u16(this->session.y())         // y
                 .write_u8(this->session.direction()); // side
+        }
+        else
+        {
+            out_stream.write_u8(0x1D); // id
         }
 
         out_stream.write_u32(this->session.sequence())
@@ -164,6 +169,9 @@ public:
 class id : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x05;
+
+public:
 #ifndef BOT
     const fb::game::character& session;
 #else
@@ -175,20 +183,17 @@ public:
 public:
 #ifndef BOT
     id(const fb::game::character& session) :
-        fb::protocol::base::header(0x05),
         session(session)
     { }
 #else
-    id() :
-        fb::protocol::base::header(0x05)
-    { }
+    id() = default;
 #endif
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->session.sequence())
             .write_u32(this->session.direction()) // side
             .write_u8(this->session.cls())        // class
@@ -207,6 +212,9 @@ public:
 
 class state : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x08;
+
 public:
 #ifdef BOT
     STATE_LEVEL STATE_LEVEL;
@@ -232,12 +240,9 @@ public:
 
 public:
 #ifdef BOT
-    state() :
-        fb::protocol::base::header(0x08)
-    { }
+    state() = default;
 #else
     state(const fb::game::character& session, STATE_LEVEL level) :
-        fb::protocol::base::header(0x08),
         session(session),
         level(level)
     { }
@@ -247,7 +252,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->level);
 
         if (enum_in(this->level, STATE_LEVEL::BASED))
@@ -356,6 +361,9 @@ public:
 class position : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x04;
+
+public:
 #ifndef BOT
     const fb::game::character& session;
 #else
@@ -366,20 +374,17 @@ public:
 public:
 #ifndef BOT
     position(const fb::game::character& session) :
-        fb::protocol::base::header(0x04),
         session(session)
     { }
 #else
-    position() :
-        fb::protocol::base::header(0x04)
-    { }
+    position() = default;
 #endif
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream
             .write_u16(this->session.x())  // 실제 x 좌표
             .write_u16(this->session.y()); // 실제 y 좌표
@@ -420,12 +425,14 @@ public:
 class internal_info : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x39;
+
+public:
     const fb::game::character& session;
     const fb::model::model&    model;
 
 public:
     internal_info(const fb::game::character& session, const fb::model::model& model) :
-        fb::protocol::base::header(0x39),
         session(session),
         model(model)
     { }
@@ -434,7 +441,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         auto clan = this->session.clan();
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8((uint8_t)this->session.defensive_physical())
             .write_u8(this->session.damage())
             .write_u8(this->session.hit())
@@ -503,12 +510,14 @@ public:
 class external_info : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x34;
+
+public:
     const fb::game::character& session;
     const fb::model::model&    model;
 
 public:
     external_info(const fb::game::character& session, const fb::model::model& model) :
-        fb::protocol::base::header(0x34),
         session(session),
         model(model)
     { }
@@ -516,7 +525,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write(this->session.title()).write("클랜 이름").write("클랜 타이틀");
 
         // 클래스 이름
@@ -600,6 +609,9 @@ public:
 class option : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x23;
+
+public:
 #ifdef BOT
     bool weather_effect = false;
     bool magic_effect   = false;
@@ -612,12 +624,9 @@ public:
 
 public:
 #ifdef BOT
-    option() :
-        fb::protocol::base::header(0x23)
-    { }
+    option() = default;
 #else
     option(const fb::game::character& session) :
-        fb::protocol::base::header(0x23),
         session(session)
     { }
 #endif
@@ -626,7 +635,7 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream
             .write_u8(this->session.option(CUSTOM_SETTING::WEATHER_EFFECT)) // weather
             .write_u8(this->session.option(CUSTOM_SETTING::MAGIC_EFFECT))   // magic effect
@@ -651,13 +660,15 @@ public:
 class throws : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x16;
+
+public:
     const fb::game::character& session;
     const fb::game::item&      item;
     const point16_t            to;
 
 public:
     throws(const fb::game::character& session, const fb::game::item& item, const point16_t& to) :
-        fb::protocol::base::header(0x16),
         session(session),
         item(item),
         to(to)
@@ -666,7 +677,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->session.sequence())
             .write_u16(this->item.look())
             .write_u8(this->item.color())
@@ -684,6 +695,9 @@ public:
 class action : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x1A;
+
+public:
     const fb::game::character& me;
     const ACTION               value;
     const DURATION             duration;
@@ -691,7 +705,6 @@ public:
 
 public:
     action(const fb::game::character& me, ACTION value, DURATION duration, uint8_t sound = 0x00) :
-        fb::protocol::base::header(0x1A),
         me(me),
         value(value),
         duration(duration),
@@ -701,7 +714,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->me.sequence())
             .write_u8(this->value)     // type
             .write_u16(this->duration) // duration

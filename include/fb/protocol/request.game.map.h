@@ -8,14 +8,15 @@ namespace fb { namespace protocol { namespace game { namespace request { namespa
 class update : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x05;
+    
+public:
     point16_t position;
     size8_t   size;
     uint16_t  crc;
 
 public:
-    update() :
-        fb::protocol::base::header(0x05)
-    { }
+    update() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -31,14 +32,15 @@ public:
 class world : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x3F;
+    
+public:
     uint16_t value;
     uint16_t before;
     uint16_t after;
 
 public:
-    world() :
-        fb::protocol::base::header(0x3F)
-    { }
+    world() = default;
 
 public:
     void deserialize(fb::istream& in_stream)

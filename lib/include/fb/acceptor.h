@@ -686,24 +686,40 @@ protected:
      * @brief      { function_description }
      *
      * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  header     The header
      *
-     * @tparam     X          { description }
-     * @tparam     R          { description }
+     * @tparam     Class      { description }
+     * @tparam     Request    { description }
      */
-    template <typename X, typename R>
-    void bind(async::task<bool> (X::*fn)(fb::socket<T>&, const R&))
+    template <typename Class, typename Request>
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&), uint8_t header)
     {
-        auto bound_func = std::bind(fn, static_cast<X*>(this), std::placeholders::_1, std::placeholders::_2);
+        auto bound_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
         this->_handler.insert(
-            {R().__id, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
+            {header, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
                  return socket.template in_stream<async::task<bool>>(
                      [this, &bound_func, &socket, &callback](auto& in_stream) {
-                         R header;
-                         header.deserialize(in_stream);
+                         Request protocol;
+                         protocol.deserialize(in_stream);
                          callback();
-                         return bound_func(socket, header);
+                         return bound_func(socket, protocol);
                      });
              }});
+    }
+
+protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @tparam     Class      { description }
+     * @tparam     Request    { description }
+     */
+    template <typename Class, typename Request>
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&))
+    {
+        this->bind(fn, Request::header);
     }
 
 protected:

@@ -8,16 +8,16 @@ namespace fb { namespace protocol { namespace gateway { namespace request {
 class assert_version : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x00;
+    
+public:
     uint16_t version;
     uint8_t  national_key;
 
 public:
-    assert_version() :
-        fb::protocol::base::header(0x00)
-    { }
+    assert_version() = default;
 #ifdef BOT
     assert_version(uint16_t version, uint8_t national_key) :
-        fb::protocol::base::header(0x00),
         version(version),
         national_key(national_key)
     { }
@@ -27,7 +27,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u16(this->version).write_u8(this->national_key);
     }
 #else
@@ -42,17 +42,17 @@ public:
 class entry_list : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x57;
+    
+public:
     uint8_t action;
     uint8_t index;
 
 public:
 #ifndef BOT
-    entry_list() :
-        fb::protocol::base::header(0x57)
-    { }
+    entry_list() = default;
 #else
     entry_list(uint8_t action, uint8_t index) :
-        fb::protocol::base::header(0x57),
         action(action),
         index(index)
     { }
@@ -62,7 +62,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->action);
 
         if (this->action == 0x00)

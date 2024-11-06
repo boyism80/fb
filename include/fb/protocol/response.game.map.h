@@ -31,6 +31,9 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class update : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x06;
+
+public:
     const fb::game::map& map;
     const point16_t      position;
     const size8_t        size;
@@ -38,7 +41,6 @@ public:
 
 public:
     update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) :
-        fb::protocol::base::header(0x06),
         map(map),
         position(position),
         size(size),
@@ -48,7 +50,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
 
         if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
             out_stream.write_u8(0x00);
@@ -86,12 +88,14 @@ public:
 class bgm : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x19;
+
+public:
     const fb::game::map& map;
     const uint8_t        volume;
 
 public:
     bgm(const fb::game::map& map, uint8_t volume = 100) :
-        fb::protocol::base::header(0x19),
         map(map),
         volume(volume)
     { }
@@ -99,7 +103,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
 
         out_stream.write_u8(0x01)
             .write_u8(0x05)
@@ -117,6 +121,9 @@ public:
 class config : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x15;
+
+public:
 #ifndef BOT
     const fb::game::map& map;
 #else
@@ -129,20 +136,17 @@ public:
 public:
 #ifndef BOT
     config(const fb::game::map& map) :
-        fb::protocol::base::header(0x15),
         map(map)
     { }
 #else
-    config() :
-        fb::protocol::base::header(0x15)
-    { }
+    config() = default;
 #endif
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
 
         out_stream
             .write_u16(this->map.model.id) // id
@@ -167,13 +171,15 @@ public:
 class worlds : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x2E;
+
+public:
     const fb::model::model& model;
     const uint32_t          id;
     const uint16_t          index;
 
 public:
     worlds(const fb::model::model& model, uint32_t id, uint16_t index) :
-        fb::protocol::base::header(0x2E),
         model(model),
         id(id),
         index(index)
@@ -183,7 +189,7 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         // TODO: 코드 분석 후 다시 구현
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
 
         auto& attr   = this->model.world_attribute[this->id];
         auto& points = this->model.world[this->id];

@@ -8,6 +8,9 @@ namespace fb { namespace protocol { namespace login { namespace request {
 class login : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x03;
+
+public:
 #ifdef BOT
     const std::string id;
     const std::string pw;
@@ -18,12 +21,9 @@ public:
 
 public:
 #ifndef BOT
-    login() :
-        fb::protocol::base::header(0x03)
-    { }
+    login() = default;
 #else
     login(const std::string& id, const std::string& pw) :
-        fb::protocol::base::header(0x03),
         id(id),
         pw(pw)
     { }
@@ -33,7 +33,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.writestr_u8(this->id).writestr_u8(this->pw);
     }
 #else
@@ -48,6 +48,9 @@ public:
 class agreement : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x10;
+
+public:
 #ifdef BOT
     const uint8_t enc_type;
     const uint8_t enc_key_size;
@@ -59,12 +62,9 @@ public:
 
 public:
 #ifndef BOT
-    agreement() :
-        fb::protocol::base::header(0x10)
-    { }
+    agreement() = default;
 #else
     agreement(uint8_t type, uint8_t ksize, const uint8_t* key) :
-        fb::protocol::base::header(0x10),
         enc_type(type),
         enc_key_size(ksize)
     {
@@ -76,7 +76,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->enc_type)
             .write_u8(this->enc_key_size)
             .write((const void*)this->enc_key, this->enc_key_size);

@@ -14,6 +14,9 @@ namespace fb { namespace protocol { namespace game { namespace request {
 class login : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x10;
+
+public:
     struct transfer_param
     {
     public:
@@ -32,12 +35,9 @@ public:
 
 public:
 #ifndef BOT
-    login() :
-        fb::protocol::base::header(0x10)
-    { }
+    login() = default;
 #else
-    login(const fb::buffer& params) :
-        fb::protocol::base::header(0x10)
+    login(const fb::buffer& params)
     {
         auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
         this->deserialize(in_stream);
@@ -48,7 +48,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->enc_type);
         out_stream.write_u8(this->key_size);
         out_stream.write((void*)this->enc_key, this->key_size);
@@ -74,8 +74,8 @@ public:
         this->from = (fb::protocol::internal::services)in_stream.read_u8();
 
         // additional parameters
-        this->id      = in_stream.read_u32();
-        this->name    = in_stream.readstr_u8();
+        this->id   = in_stream.read_u32();
+        this->name = in_stream.readstr_u8();
 
         auto transfer = in_stream.read_8();
         if (transfer == 1)
@@ -91,6 +91,9 @@ public:
 class direction : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x11;
+
+public:
 #ifndef BOT
     DIRECTION value;
 #else
@@ -99,12 +102,9 @@ public:
 
 public:
 #ifndef BOT
-    direction() :
-        fb::protocol::base::header(0x11)
-    { }
+    direction() = default;
 #else
     direction(DIRECTION value) :
-        fb::protocol::base::header(0x11),
         value(value)
     { }
 #endif
@@ -113,7 +113,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8((uint8_t)this->value);
     }
 #else
@@ -127,9 +127,10 @@ public:
 class exit : public fb::protocol::base::header
 {
 public:
-    exit() :
-        fb::protocol::base::header(0x0B)
-    { }
+    inline static uint8_t header = 0x0B;
+
+public:
+    exit() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -139,23 +140,18 @@ public:
 class move : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x32;
+
+public:
     DIRECTION direction;
     uint8_t   sequence;
     point16_t position;
 
-protected:
-    move(int id) :
-        fb::protocol::base::header(id)
-    { }
-
 public:
 #ifndef BOT
-    move() :
-        fb::protocol::base::header(0x32)
-    { }
+    move() = default;
 #else
     move(DIRECTION direction, uint32_t sequence, point16_t position) :
-        fb::protocol::base::header(0x32),
         direction(direction),
         sequence(sequence),
         position(position)
@@ -166,7 +162,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->direction);
         out_stream.write_u8(this->sequence);
         out_stream.write_u16(this->position.x);
@@ -186,14 +182,15 @@ public:
 class update_move : public move
 {
 public:
+    inline static uint8_t header = 0x06;
+
+public:
     point16_t begin;
     size8_t   size;
     uint16_t  crc;
 
 public:
-    update_move() :
-        move(0x06)
-    { }
+    update_move() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -211,15 +208,16 @@ public:
 class attack : public fb::protocol::base::header
 {
 public:
-    attack() :
-        fb::protocol::base::header(0x13)
-    { }
+    inline static uint8_t header = 0x13;
+
+public:
+    attack() = default;
 
 public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
     }
 #else
     void deserialize(fb::istream& in_stream)
@@ -230,6 +228,9 @@ public:
 class pick_up : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x07;
+
+public:
 #ifndef BOT
     bool boost;
 #else
@@ -238,12 +239,9 @@ public:
 
 public:
 #ifndef BOT
-    pick_up() :
-        fb::protocol::base::header(0x07)
-    { }
+    pick_up() = default;
 #else
     pick_up(bool boost) :
-        fb::protocol::base::header(0x07),
         boost(boost)
     { }
 #endif
@@ -252,7 +250,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->boost);
     }
 #else
@@ -266,6 +264,9 @@ public:
 class emotion : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x1D;
+
+public:
 #ifndef BOT
     uint8_t value;
 #else
@@ -274,12 +275,9 @@ public:
 
 public:
 #ifndef BOT
-    emotion() :
-        fb::protocol::base::header(0x1D)
-    { }
+    emotion() = default;
 #else
     emotion(uint8_t value) :
-        fb::protocol::base::header(0x1D),
         value(value)
     { }
 #endif
@@ -288,7 +286,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->value);
     }
 #else
@@ -302,9 +300,10 @@ public:
 class refresh : public fb::protocol::base::header
 {
 public:
-    refresh() :
-        fb::protocol::base::header(0x38)
-    { }
+    inline static uint8_t header = 0x38;
+
+public:
+    refresh() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -314,9 +313,10 @@ public:
 class front_info : public fb::protocol::base::header
 {
 public:
-    front_info() :
-        fb::protocol::base::header(0x09)
-    { }
+    inline static uint8_t header = 0x09;
+
+public:
+    front_info() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -326,9 +326,10 @@ public:
 class self_info : public fb::protocol::base::header
 {
 public:
-    self_info() :
-        fb::protocol::base::header(0x2D)
-    { }
+    inline static uint8_t header = 0x2D;
+
+public:
+    self_info() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -338,12 +339,13 @@ public:
 class change_option : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x1B;
+
+public:
     CUSTOM_SETTING option;
 
 public:
-    change_option() :
-        fb::protocol::base::header(0x1B)
-    { }
+    change_option() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -355,12 +357,13 @@ public:
 class click : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x43;
+
+public:
     uint32_t fd;
 
 public:
-    click() :
-        fb::protocol::base::header(0x43)
-    { }
+    click() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -372,6 +375,9 @@ public:
 
 class trade : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x4A;
+
 public:
     typedef union
     {
@@ -387,9 +393,7 @@ public:
     params   parameter;
 
 public:
-    trade() :
-        fb::protocol::base::header(0x4A)
-    { }
+    trade() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -416,12 +420,13 @@ public:
 class group : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x2E;
+
+public:
     std::string name;
 
 public:
-    group() :
-        fb::protocol::base::header(0x2E)
-    { }
+    group() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -433,9 +438,10 @@ public:
 class user_list : public fb::protocol::base::header
 {
 public:
-    user_list() :
-        fb::protocol::base::header(0x18)
-    { }
+    inline static uint8_t header = 0x18;
+
+public:
+    user_list() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -447,6 +453,9 @@ public:
 class chat : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x0E;
+
+public:
 #ifndef BOT
     bool        shout;
     std::string message;
@@ -457,9 +466,7 @@ public:
 
 public:
 #ifndef BOT
-    chat() :
-        fb::protocol::base::header(0x0E)
-    { }
+    chat() = default;
 #else
     chat(bool shout, const std::string& message) :
         fb::protocol::base::header(0x0E),
@@ -472,7 +479,7 @@ public:
 #ifdef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        fb::protocol::base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(this->shout).writestr_u8(this->message);
     }
 #else
@@ -487,14 +494,15 @@ public:
 class swap : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x30;
+
+public:
     SWAP_TYPE type;
     uint8_t   src;
     uint8_t   dst;
 
 public:
-    swap() :
-        fb::protocol::base::header(0x30)
-    { }
+    swap() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -508,6 +516,9 @@ public:
 class dialog : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x3A;
+
+public:
     fb::game::dialog::interaction interaction;
     uint8_t                       action;  // NORMAL
     std::string                   message; // INPUT
@@ -516,9 +527,7 @@ public:
     std::string                   name;    // SELL
 
 public:
-    dialog() :
-        fb::protocol::base::header(0x3A)
-    { }
+    dialog() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -582,9 +591,10 @@ public:
 class door : public fb::protocol::base::header
 {
 public:
-    door() :
-        fb::protocol::base::header(0x20)
-    { }
+    inline static uint8_t header = 0x20;
+
+public:
+    door() = default;
 
 public:
     void deserialize(fb::istream& in_stream)
@@ -594,13 +604,14 @@ public:
 class whisper : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x19;
+
+public:
     std::string name;
     std::string message;
 
 public:
-    whisper() :
-        fb::protocol::base::header(0x19)
-    { }
+    whisper() = default;
 
 public:
     void deserialize(fb::istream& in_stream)

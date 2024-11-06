@@ -8,6 +8,9 @@ namespace fb { namespace protocol { namespace game { namespace request { namespa
 
 class use : public fb::protocol::base::header
 {
+public:
+    inline static uint8_t header = 0x0F;
+
 private:
     mutable fb::istream _in_stream;
 
@@ -18,9 +21,7 @@ public:
     mutable point16_t   position;
 
 public:
-    use() :
-        fb::protocol::base::header(0x0F)
-    { }
+    use() = default;
 
 public:
     void deserialize(fb::istream& in_stream)

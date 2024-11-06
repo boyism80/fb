@@ -11,6 +11,9 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class action : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x1A;
+
+public:
 #ifndef BOT
     const fb::game::life& me;
     const ACTION          value;
@@ -26,23 +29,20 @@ public:
 public:
 #ifndef BOT
     action(const fb::game::life& me, ACTION value, DURATION duration, uint8_t sound = 0x00) :
-        fb::protocol::base::header(0x1A),
         me(me),
         value(value),
         duration(duration),
         sound(sound)
     { }
 #else
-    action() :
-        fb::protocol::base::header(0x1A)
-    { }
+    action() = default;
 #endif
 
 public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->me.sequence())
             .write_u8(this->value)     // type
             .write_u16(this->duration) // duration
@@ -62,6 +62,9 @@ public:
 class show_hp : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x13;
+
+public:
     const fb::game::life& me;
     const uint32_t        damage;
     const bool            critical;
@@ -69,7 +72,6 @@ public:
 
 public:
     show_hp(const fb::game::life& me, uint32_t damage, bool critical) :
-        fb::protocol::base::header(0x13),
         me(me),
         damage(damage),
         critical(critical),
@@ -79,7 +81,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->me.sequence())
             .write_u8(this->critical)
             .write_u8(this->percentage)
@@ -91,6 +93,9 @@ public:
 class die : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x5F;
+
+public:
     const uint32_t id;
 
 public:
@@ -98,14 +103,13 @@ public:
         die(life.sequence())
     { }
     die(uint32_t id) :
-        fb::protocol::base::header(0x5F),
         id(id)
     { }
 
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u32(this->id).write_u8(0x00);
     }
 };

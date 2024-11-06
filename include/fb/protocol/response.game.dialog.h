@@ -9,6 +9,9 @@ namespace fb { namespace protocol { namespace game { namespace response { namesp
 class common : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x30;
+
+public:
     const fb::model::object&            object;
     const std::string                   message;
     const bool                          button_prev;
@@ -21,7 +24,6 @@ public:
            bool                          button_prev,
            bool                          button_next,
            fb::game::dialog::interaction interaction) :
-        fb::protocol::base::header(0x30),
         object(object),
         message(message),
         button_prev(button_prev),
@@ -40,7 +42,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream
             .write_u8(0x00)              // unknown
             .write_u8(this->interaction) // interaction
@@ -62,6 +64,9 @@ public:
 class menu : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x2F;
+
+public:
     const fb::model::npc&               npc;
     const std::vector<std::string>      menus;
     const std::string                   message;
@@ -72,7 +77,6 @@ public:
          const std::vector<std::string>& menus,
          const std::string&              message,
          fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::MENU) :
-        fb::protocol::base::header(0x2F),
         npc(npc),
         menus(menus),
         message(message),
@@ -82,7 +86,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x01)
             .write_u8(interaction)
             .write_u32(0x01)
@@ -115,6 +119,9 @@ public:
 class slot : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x2F;
+
+public:
     const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
@@ -125,7 +132,6 @@ public:
          const std::vector<uint8_t>&   slots,
          const std::string&            message,
          fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT) :
-        fb::protocol::base::header(0x2F),
         npc(npc),
         slots(slots),
         message(message),
@@ -135,7 +141,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x05)
             .write_u8(this->interaction)
             .write_u32(0x01)
@@ -159,6 +165,9 @@ public:
 class item : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x2F;
+
+public:
     const fb::model::npc&               npc;
     const fb::game::dialog::item_pairs& items;
     const std::string                   message;
@@ -171,7 +180,6 @@ public:
          const std::string&                  message,
          uint16_t                            pursuit     = 0xFFFF,
          fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM) :
-        fb::protocol::base::header(0x2F),
         npc(npc),
         items(items),
         message(message),
@@ -182,7 +190,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x04)
             .write_u8(interaction)
             .write_u32(0x01)
@@ -209,6 +217,9 @@ public:
 class input : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x2F;
+
+public:
     const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
@@ -218,7 +229,6 @@ public:
     input(const fb::model::npc&         npc,
           const std::string&            message,
           fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) :
-        fb::protocol::base::header(0x2F),
         npc(npc),
         message(message),
         interaction(interaction)
@@ -227,7 +237,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x03)
             .write_u8(this->interaction)
             .write_u32(0x01)
@@ -246,6 +256,9 @@ public:
 class input_ext : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x30;
+
+public:
     const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
@@ -262,7 +275,6 @@ public:
               int                           maxlen      = 0xFF,
               bool                          button_prev = false,
               fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT_EX) :
-        fb::protocol::base::header(0x30),
         npc(npc),
         message(message),
         top(top),
@@ -275,7 +287,7 @@ public:
 public:
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x04)
             .write_u8(this->interaction)
             .write_u32(0x01)
