@@ -34,6 +34,9 @@ module.exports = {
                                     mountPath: "/var/lib/rabbitmq" 
                                 }],
                             }],
+                            nodeSelector: {
+                                role: 'master'
+                            },
                             volumes: [
                             {
                                 name: `data-volume-${section}`,
