@@ -125,6 +125,7 @@ module.exports = function () {
                 }, { dependsOn: dependsOn })
 
                 ports.push({
+                    name: `login-${section}`,
                     port: sectionConf.port,
                     targetPort: `login-${index}`,
                     nodePort: sectionConf.port 

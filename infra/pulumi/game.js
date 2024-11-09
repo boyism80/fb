@@ -106,6 +106,7 @@ module.exports = function () {
                     }, { dependsOn: dependsOn })
 
                     ports.push({
+                        name: `game-${section}-${i}`,
                         port: container.port,
                         targetPort: `game-${index}`,
                         nodePort: container.port 
