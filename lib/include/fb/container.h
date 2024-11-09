@@ -55,8 +55,20 @@ public:
     V& operator[] (const K& k)
     {
         auto found = this->find(k);
-        if (found == nullptr)
-            throw std::runtime_error("does not exists");
+        if(found == nullptr)
+        {
+            auto sstream = std::stringstream();
+            if constexpr (std::is_enum_v<K>)
+            {
+                sstream << static_cast<int>(k);
+            }
+            else
+            {
+                sstream << k;
+            }
+            sstream << " does not exists";
+            throw std::runtime_error(sstream.str());
+        }
 
         return *found;
     }

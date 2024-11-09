@@ -4,6 +4,7 @@
 #define __MODEL_H__
 
 #include <string>
+#include <format>
 #include <map>
 #include <vector>
 #include <queue>
@@ -175,6 +176,12 @@ inline T enum_parse(const std::string k)
     throw std::runtime_error("cannot parse enum value");
 }
 
+template <typename T>
+inline const char* enum_tostring(T k)
+{
+    throw std::runtime_error("cannot convert to string from enum value");
+}
+
 enum class ACTION
 {
     ATTACK = 0x01, 
@@ -198,6 +205,27 @@ inline ACTION enum_parse<ACTION>(const std::string k)
         { "CAST_SPELL", ACTION::CAST_SPELL }, 
         { "EAT", ACTION::EAT }, 
         { "EMOTION", ACTION::EMOTION }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<ACTION>(ACTION k)
+{
+    static const std::unordered_map<ACTION, const char*> enums
+    {
+        { ACTION::ATTACK, "ATTACK" }, 
+        { ACTION::ARROW, "ARROW" }, 
+        { ACTION::PICKUP, "PICKUP" }, 
+        { ACTION::PICKUP_SILENT, "PICKUP_SILENT" }, 
+        { ACTION::CAST_SPELL, "CAST_SPELL" }, 
+        { ACTION::EAT, "EAT" }, 
+        { ACTION::EMOTION, "EMOTION" }
     };
 
     auto i = enums.find(k);
@@ -237,6 +265,26 @@ inline BOARD_ACTION enum_parse<BOARD_ACTION>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<BOARD_ACTION>(BOARD_ACTION k)
+{
+    static const std::unordered_map<BOARD_ACTION, const char*> enums
+    {
+        { BOARD_ACTION::NONE, "NONE" }, 
+        { BOARD_ACTION::SECTIONS, "SECTIONS" }, 
+        { BOARD_ACTION::ARTICLES, "ARTICLES" }, 
+        { BOARD_ACTION::ARTICLE, "ARTICLE" }, 
+        { BOARD_ACTION::WRITE, "WRITE" }, 
+        { BOARD_ACTION::DELETE, "DELETE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class BOARD_BUTTON_ENABLE
 {
     NONE = 0x00, 
@@ -263,6 +311,24 @@ inline BOARD_BUTTON_ENABLE enum_parse<BOARD_BUTTON_ENABLE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<BOARD_BUTTON_ENABLE>(BOARD_BUTTON_ENABLE k)
+{
+    static const std::unordered_map<BOARD_BUTTON_ENABLE, const char*> enums
+    {
+        { BOARD_BUTTON_ENABLE::NONE, "NONE" }, 
+        { BOARD_BUTTON_ENABLE::NEXT, "NEXT" }, 
+        { BOARD_BUTTON_ENABLE::UP, "UP" }, 
+        { BOARD_BUTTON_ENABLE::WRITE, "WRITE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class BUNDLE_TYPE
 {
     NONE = 0, 
@@ -278,6 +344,23 @@ inline BUNDLE_TYPE enum_parse<BUNDLE_TYPE>(const std::string k)
         { "NONE", BUNDLE_TYPE::NONE }, 
         { "BUNDLE", BUNDLE_TYPE::BUNDLE }, 
         { "PACKAGE", BUNDLE_TYPE::PACKAGE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<BUNDLE_TYPE>(BUNDLE_TYPE k)
+{
+    static const std::unordered_map<BUNDLE_TYPE, const char*> enums
+    {
+        { BUNDLE_TYPE::NONE, "NONE" }, 
+        { BUNDLE_TYPE::BUNDLE, "BUNDLE" }, 
+        { BUNDLE_TYPE::PACKAGE, "PACKAGE" }
     };
 
     auto i = enums.find(k);
@@ -313,6 +396,24 @@ inline CHAT_TYPE enum_parse<CHAT_TYPE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<CHAT_TYPE>(CHAT_TYPE k)
+{
+    static const std::unordered_map<CHAT_TYPE, const char*> enums
+    {
+        { CHAT_TYPE::NORMAL, "NORMAL" }, 
+        { CHAT_TYPE::SHOUT, "SHOUT" }, 
+        { CHAT_TYPE::BLUE, "BLUE" }, 
+        { CHAT_TYPE::LIGHT_BLUE, "LIGHT_BLUE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class CLASS
 {
     NONE = 0, 
@@ -332,6 +433,25 @@ inline CLASS enum_parse<CLASS>(const std::string k)
         { "THIEF", CLASS::THIEF }, 
         { "MAGICION", CLASS::MAGICION }, 
         { "ASCETIC", CLASS::ASCETIC }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CLASS>(CLASS k)
+{
+    static const std::unordered_map<CLASS, const char*> enums
+    {
+        { CLASS::NONE, "NONE" }, 
+        { CLASS::WARRIOR, "WARRIOR" }, 
+        { CLASS::THIEF, "THIEF" }, 
+        { CLASS::MAGICION, "MAGICION" }, 
+        { CLASS::ASCETIC, "ASCETIC" }
     };
 
     auto i = enums.find(k);
@@ -371,6 +491,26 @@ inline CONDITION enum_parse<CONDITION>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<CONDITION>(CONDITION k)
+{
+    static const std::unordered_map<CONDITION, const char*> enums
+    {
+        { CONDITION::NONE, "NONE" }, 
+        { CONDITION::MOVE, "MOVE" }, 
+        { CONDITION::SIGHT, "SIGHT" }, 
+        { CONDITION::HEAR, "HEAR" }, 
+        { CONDITION::ORAL, "ORAL" }, 
+        { CONDITION::MAP, "MAP" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class CREATURE
 {
     PHOENIX = 0x00, 
@@ -388,6 +528,24 @@ inline CREATURE enum_parse<CREATURE>(const std::string k)
         { "TIGER", CREATURE::TIGER }, 
         { "TURTLE", CREATURE::TURTLE }, 
         { "DRAGON", CREATURE::DRAGON }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CREATURE>(CREATURE k)
+{
+    static const std::unordered_map<CREATURE, const char*> enums
+    {
+        { CREATURE::PHOENIX, "PHOENIX" }, 
+        { CREATURE::TIGER, "TIGER" }, 
+        { CREATURE::TURTLE, "TURTLE" }, 
+        { CREATURE::DRAGON, "DRAGON" }
     };
 
     auto i = enums.find(k);
@@ -439,6 +597,32 @@ inline CUSTOM_SETTING enum_parse<CUSTOM_SETTING>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<CUSTOM_SETTING>(CUSTOM_SETTING k)
+{
+    static const std::unordered_map<CUSTOM_SETTING, const char*> enums
+    {
+        { CUSTOM_SETTING::RIDE, "RIDE" }, 
+        { CUSTOM_SETTING::WHISPER, "WHISPER" }, 
+        { CUSTOM_SETTING::GROUP, "GROUP" }, 
+        { CUSTOM_SETTING::ROAR, "ROAR" }, 
+        { CUSTOM_SETTING::ROAR_WORLDS, "ROAR_WORLDS" }, 
+        { CUSTOM_SETTING::MAGIC_EFFECT, "MAGIC_EFFECT" }, 
+        { CUSTOM_SETTING::WEATHER_EFFECT, "WEATHER_EFFECT" }, 
+        { CUSTOM_SETTING::FIXED_MOVE, "FIXED_MOVE" }, 
+        { CUSTOM_SETTING::TRADE, "TRADE" }, 
+        { CUSTOM_SETTING::FAST_MOVE, "FAST_MOVE" }, 
+        { CUSTOM_SETTING::EFFECT_SOUND, "EFFECT_SOUND" }, 
+        { CUSTOM_SETTING::PK, "PK" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class DEATH_PENALTY
 {
     NONE = 0, 
@@ -454,6 +638,23 @@ inline DEATH_PENALTY enum_parse<DEATH_PENALTY>(const std::string k)
         { "NONE", DEATH_PENALTY::NONE }, 
         { "DROP", DEATH_PENALTY::DROP }, 
         { "DESTROY", DEATH_PENALTY::DESTROY }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<DEATH_PENALTY>(DEATH_PENALTY k)
+{
+    static const std::unordered_map<DEATH_PENALTY, const char*> enums
+    {
+        { DEATH_PENALTY::NONE, "NONE" }, 
+        { DEATH_PENALTY::DROP, "DROP" }, 
+        { DEATH_PENALTY::DESTROY, "DESTROY" }
     };
 
     auto i = enums.find(k);
@@ -485,6 +686,22 @@ inline DESTROY_TYPE enum_parse<DESTROY_TYPE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<DESTROY_TYPE>(DESTROY_TYPE k)
+{
+    static const std::unordered_map<DESTROY_TYPE, const char*> enums
+    {
+        { DESTROY_TYPE::DEFAULT, "DEFAULT" }, 
+        { DESTROY_TYPE::DEAD, "DEAD" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class DIRECTION
 {
     TOP = 0, 
@@ -502,6 +719,24 @@ inline DIRECTION enum_parse<DIRECTION>(const std::string k)
         { "RIGHT", DIRECTION::RIGHT }, 
         { "BOTTOM", DIRECTION::BOTTOM }, 
         { "LEFT", DIRECTION::LEFT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<DIRECTION>(DIRECTION k)
+{
+    static const std::unordered_map<DIRECTION, const char*> enums
+    {
+        { DIRECTION::TOP, "TOP" }, 
+        { DIRECTION::RIGHT, "RIGHT" }, 
+        { DIRECTION::BOTTOM, "BOTTOM" }, 
+        { DIRECTION::LEFT, "LEFT" }
     };
 
     auto i = enums.find(k);
@@ -551,6 +786,31 @@ inline DSL enum_parse<DSL>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<DSL>(DSL k)
+{
+    static const std::unordered_map<DSL, const char*> enums
+    {
+        { DSL::item, "item" }, 
+        { DSL::level, "level" }, 
+        { DSL::sex, "sex" }, 
+        { DSL::strength, "strength" }, 
+        { DSL::intelligence, "intelligence" }, 
+        { DSL::dexteritry, "dexteritry" }, 
+        { DSL::promotion, "promotion" }, 
+        { DSL::class_t, "class_t" }, 
+        { DSL::admin, "admin" }, 
+        { DSL::world, "world" }, 
+        { DSL::map, "map" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class DURATION
 {
     FAST = 0x0F, 
@@ -574,6 +834,27 @@ inline DURATION enum_parse<DURATION>(const std::string k)
         { "THROW", DURATION::THROW }, 
         { "PICKUP", DURATION::PICKUP }, 
         { "EMOTION", DURATION::EMOTION }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<DURATION>(DURATION k)
+{
+    static const std::unordered_map<DURATION, const char*> enums
+    {
+        { DURATION::FAST, "FAST" }, 
+        { DURATION::ATTACK, "ATTACK" }, 
+        { DURATION::SPELL, "SPELL" }, 
+        { DURATION::EAT, "EAT" }, 
+        { DURATION::THROW, "THROW" }, 
+        { DURATION::PICKUP, "PICKUP" }, 
+        { DURATION::EMOTION, "EMOTION" }
     };
 
     auto i = enums.find(k);
@@ -619,6 +900,29 @@ inline EQUIPMENT_PARTS enum_parse<EQUIPMENT_PARTS>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<EQUIPMENT_PARTS>(EQUIPMENT_PARTS k)
+{
+    static const std::unordered_map<EQUIPMENT_PARTS, const char*> enums
+    {
+        { EQUIPMENT_PARTS::UNKNOWN, "UNKNOWN" }, 
+        { EQUIPMENT_PARTS::WEAPON, "WEAPON" }, 
+        { EQUIPMENT_PARTS::ARMOR, "ARMOR" }, 
+        { EQUIPMENT_PARTS::SHIELD, "SHIELD" }, 
+        { EQUIPMENT_PARTS::HELMET, "HELMET" }, 
+        { EQUIPMENT_PARTS::LEFT_HAND, "LEFT_HAND" }, 
+        { EQUIPMENT_PARTS::RIGHT_HAND, "RIGHT_HAND" }, 
+        { EQUIPMENT_PARTS::LEFT_AUX, "LEFT_AUX" }, 
+        { EQUIPMENT_PARTS::RIGHT_AUX, "RIGHT_AUX" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class EQUIPMENT_POSITION
 {
     LEFT = 0, 
@@ -632,6 +936,22 @@ inline EQUIPMENT_POSITION enum_parse<EQUIPMENT_POSITION>(const std::string k)
     {
         { "LEFT", EQUIPMENT_POSITION::LEFT }, 
         { "RIGHT", EQUIPMENT_POSITION::RIGHT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<EQUIPMENT_POSITION>(EQUIPMENT_POSITION k)
+{
+    static const std::unordered_map<EQUIPMENT_POSITION, const char*> enums
+    {
+        { EQUIPMENT_POSITION::LEFT, "LEFT" }, 
+        { EQUIPMENT_POSITION::RIGHT, "RIGHT" }
     };
 
     auto i = enums.find(k);
@@ -687,6 +1007,34 @@ inline ITEM_ATTRIBUTE enum_parse<ITEM_ATTRIBUTE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<ITEM_ATTRIBUTE>(ITEM_ATTRIBUTE k)
+{
+    static const std::unordered_map<ITEM_ATTRIBUTE, const char*> enums
+    {
+        { ITEM_ATTRIBUTE::NONE, "NONE" }, 
+        { ITEM_ATTRIBUTE::CONSUME, "CONSUME" }, 
+        { ITEM_ATTRIBUTE::BUNDLE, "BUNDLE" }, 
+        { ITEM_ATTRIBUTE::SCRIPT, "SCRIPT" }, 
+        { ITEM_ATTRIBUTE::CASH, "CASH" }, 
+        { ITEM_ATTRIBUTE::EQUIPMENT, "EQUIPMENT" }, 
+        { ITEM_ATTRIBUTE::PACK, "PACK" }, 
+        { ITEM_ATTRIBUTE::WEAPON, "WEAPON" }, 
+        { ITEM_ATTRIBUTE::ARMOR, "ARMOR" }, 
+        { ITEM_ATTRIBUTE::SHIELD, "SHIELD" }, 
+        { ITEM_ATTRIBUTE::HELMET, "HELMET" }, 
+        { ITEM_ATTRIBUTE::RING, "RING" }, 
+        { ITEM_ATTRIBUTE::AUXILIARY, "AUXILIARY" }, 
+        { ITEM_ATTRIBUTE::ARROW, "ARROW" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class ITEM_DELETE_TYPE
 {
     REMOVED = 0x00, 
@@ -722,6 +1070,33 @@ inline ITEM_DELETE_TYPE enum_parse<ITEM_DELETE_TYPE>(const std::string k)
         { "SELL", ITEM_DELETE_TYPE::SELL }, 
         { "NONE", ITEM_DELETE_TYPE::NONE }, 
         { "DESTROY", ITEM_DELETE_TYPE::DESTROY }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<ITEM_DELETE_TYPE>(ITEM_DELETE_TYPE k)
+{
+    static const std::unordered_map<ITEM_DELETE_TYPE, const char*> enums
+    {
+        { ITEM_DELETE_TYPE::REMOVED, "REMOVED" }, 
+        { ITEM_DELETE_TYPE::DROP, "DROP" }, 
+        { ITEM_DELETE_TYPE::EAT, "EAT" }, 
+        { ITEM_DELETE_TYPE::SMOKE, "SMOKE" }, 
+        { ITEM_DELETE_TYPE::THROW, "THROW" }, 
+        { ITEM_DELETE_TYPE::SHOOT, "SHOOT" }, 
+        { ITEM_DELETE_TYPE::REDUCE, "REDUCE" }, 
+        { ITEM_DELETE_TYPE::STICK, "STICK" }, 
+        { ITEM_DELETE_TYPE::DECAY, "DECAY" }, 
+        { ITEM_DELETE_TYPE::GIVE, "GIVE" }, 
+        { ITEM_DELETE_TYPE::SELL, "SELL" }, 
+        { ITEM_DELETE_TYPE::NONE, "NONE" }, 
+        { ITEM_DELETE_TYPE::DESTROY, "DESTROY" }
     };
 
     auto i = enums.find(k);
@@ -771,6 +1146,31 @@ inline ITEM_TYPE enum_parse<ITEM_TYPE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<ITEM_TYPE>(ITEM_TYPE k)
+{
+    static const std::unordered_map<ITEM_TYPE, const char*> enums
+    {
+        { ITEM_TYPE::STUFF, "STUFF" }, 
+        { ITEM_TYPE::CASH, "CASH" }, 
+        { ITEM_TYPE::CONSUME, "CONSUME" }, 
+        { ITEM_TYPE::WEAPON, "WEAPON" }, 
+        { ITEM_TYPE::ARMOR, "ARMOR" }, 
+        { ITEM_TYPE::HELMET, "HELMET" }, 
+        { ITEM_TYPE::RING, "RING" }, 
+        { ITEM_TYPE::SHIELD, "SHIELD" }, 
+        { ITEM_TYPE::AUXILIARY, "AUXILIARY" }, 
+        { ITEM_TYPE::BOW, "BOW" }, 
+        { ITEM_TYPE::PACKAGE, "PACKAGE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class MAP_EFFECT_TYPE
 {
     NONE = 0x00, 
@@ -786,6 +1186,23 @@ inline MAP_EFFECT_TYPE enum_parse<MAP_EFFECT_TYPE>(const std::string k)
         { "NONE", MAP_EFFECT_TYPE::NONE }, 
         { "FIRE", MAP_EFFECT_TYPE::FIRE }, 
         { "WATER", MAP_EFFECT_TYPE::WATER }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<MAP_EFFECT_TYPE>(MAP_EFFECT_TYPE k)
+{
+    static const std::unordered_map<MAP_EFFECT_TYPE, const char*> enums
+    {
+        { MAP_EFFECT_TYPE::NONE, "NONE" }, 
+        { MAP_EFFECT_TYPE::FIRE, "FIRE" }, 
+        { MAP_EFFECT_TYPE::WATER, "WATER" }
     };
 
     auto i = enums.find(k);
@@ -829,6 +1246,28 @@ inline MAP_OPTION enum_parse<MAP_OPTION>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<MAP_OPTION>(MAP_OPTION k)
+{
+    static const std::unordered_map<MAP_OPTION, const char*> enums
+    {
+        { MAP_OPTION::NONE, "NONE" }, 
+        { MAP_OPTION::BUILD_IN, "BUILD_IN" }, 
+        { MAP_OPTION::DISABLE_TALK, "DISABLE_TALK" }, 
+        { MAP_OPTION::DISABLE_WHISPER, "DISABLE_WHISPER" }, 
+        { MAP_OPTION::DISABLE_SPELL, "DISABLE_SPELL" }, 
+        { MAP_OPTION::HUNTING_GROUND, "HUNTING_GROUND" }, 
+        { MAP_OPTION::ENABLE_PK, "ENABLE_PK" }, 
+        { MAP_OPTION::DISABLE_DIE_PENALTY, "DISABLE_DIE_PENALTY" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class MESSAGE_TYPE
 {
     NOTIFY = 0x00, 
@@ -854,6 +1293,28 @@ inline MESSAGE_TYPE enum_parse<MESSAGE_TYPE>(const std::string k)
         { "POPUP", MESSAGE_TYPE::POPUP }, 
         { "YELLOW", MESSAGE_TYPE::YELLOW }, 
         { "BROWN", MESSAGE_TYPE::BROWN }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<MESSAGE_TYPE>(MESSAGE_TYPE k)
+{
+    static const std::unordered_map<MESSAGE_TYPE, const char*> enums
+    {
+        { MESSAGE_TYPE::NOTIFY, "NOTIFY" }, 
+        { MESSAGE_TYPE::BLUE, "BLUE" }, 
+        { MESSAGE_TYPE::STATE, "STATE" }, 
+        { MESSAGE_TYPE::SHOUT, "SHOUT" }, 
+        { MESSAGE_TYPE::WORLD, "WORLD" }, 
+        { MESSAGE_TYPE::POPUP, "POPUP" }, 
+        { MESSAGE_TYPE::YELLOW, "YELLOW" }, 
+        { MESSAGE_TYPE::BROWN, "BROWN" }
     };
 
     auto i = enums.find(k);
@@ -891,6 +1352,25 @@ inline MOB_ATTACK_TYPE enum_parse<MOB_ATTACK_TYPE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<MOB_ATTACK_TYPE>(MOB_ATTACK_TYPE k)
+{
+    static const std::unordered_map<MOB_ATTACK_TYPE, const char*> enums
+    {
+        { MOB_ATTACK_TYPE::NONE, "NONE" }, 
+        { MOB_ATTACK_TYPE::COUNTER, "COUNTER" }, 
+        { MOB_ATTACK_TYPE::CONTAINMENT, "CONTAINMENT" }, 
+        { MOB_ATTACK_TYPE::RUN_AWAY, "RUN_AWAY" }, 
+        { MOB_ATTACK_TYPE::NO_MOVE, "NO_MOVE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class MOB_SIZE
 {
     SMALL = 1, 
@@ -915,6 +1395,23 @@ inline MOB_SIZE enum_parse<MOB_SIZE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<MOB_SIZE>(MOB_SIZE k)
+{
+    static const std::unordered_map<MOB_SIZE, const char*> enums
+    {
+        { MOB_SIZE::SMALL, "SMALL" }, 
+        { MOB_SIZE::LARGE, "LARGE" }, 
+        { MOB_SIZE::ALL, "ALL" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class NATION
 {
     GOGURYEO = 0x01, 
@@ -928,6 +1425,22 @@ inline NATION enum_parse<NATION>(const std::string k)
     {
         { "GOGURYEO", NATION::GOGURYEO }, 
         { "BUYEO", NATION::BUYEO }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<NATION>(NATION k)
+{
+    static const std::unordered_map<NATION, const char*> enums
+    {
+        { NATION::GOGURYEO, "GOGURYEO" }, 
+        { NATION::BUYEO, "BUYEO" }
     };
 
     auto i = enums.find(k);
@@ -960,6 +1473,27 @@ inline OBJECT_TYPE enum_parse<OBJECT_TYPE>(const std::string k)
         { "CHARACTER", OBJECT_TYPE::CHARACTER }, 
         { "OBJECT", OBJECT_TYPE::OBJECT }, 
         { "LIFE", OBJECT_TYPE::LIFE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<OBJECT_TYPE>(OBJECT_TYPE k)
+{
+    static const std::unordered_map<OBJECT_TYPE, const char*> enums
+    {
+        { OBJECT_TYPE::UNKNOWN, "UNKNOWN" }, 
+        { OBJECT_TYPE::ITEM, "ITEM" }, 
+        { OBJECT_TYPE::NPC, "NPC" }, 
+        { OBJECT_TYPE::MOB, "MOB" }, 
+        { OBJECT_TYPE::CHARACTER, "CHARACTER" }, 
+        { OBJECT_TYPE::OBJECT, "OBJECT" }, 
+        { OBJECT_TYPE::LIFE, "LIFE" }
     };
 
     auto i = enums.find(k);
@@ -1017,6 +1551,35 @@ inline REGEX enum_parse<REGEX>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<REGEX>(REGEX k)
+{
+    static const std::unordered_map<REGEX, const char*> enums
+    {
+        { REGEX::SELL, "SELL" }, 
+        { REGEX::BUY, "BUY" }, 
+        { REGEX::REPAIR, "REPAIR" }, 
+        { REGEX::DEPOSIT_MONEY, "DEPOSIT_MONEY" }, 
+        { REGEX::WITHDRAW_MONEY, "WITHDRAW_MONEY" }, 
+        { REGEX::DEPOSIT_ITEM, "DEPOSIT_ITEM" }, 
+        { REGEX::WITHDRAW_ITEM, "WITHDRAW_ITEM" }, 
+        { REGEX::SELL_LIST, "SELL_LIST" }, 
+        { REGEX::BUY_LIST, "BUY_LIST" }, 
+        { REGEX::SELL_PRICE, "SELL_PRICE" }, 
+        { REGEX::BUY_PRICE, "BUY_PRICE" }, 
+        { REGEX::DEPOSITED_MONEY, "DEPOSITED_MONEY" }, 
+        { REGEX::RENAME_WEAPON, "RENAME_WEAPON" }, 
+        { REGEX::HOLD_ITEM_LIST, "HOLD_ITEM_LIST" }, 
+        { REGEX::HOLD_ITEM_COUNT, "HOLD_ITEM_COUNT" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class SEX
 {
     MAN = 1, 
@@ -1032,6 +1595,23 @@ inline SEX enum_parse<SEX>(const std::string k)
         { "MAN", SEX::MAN }, 
         { "WOMAN", SEX::WOMAN }, 
         { "ALL", SEX::ALL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<SEX>(SEX k)
+{
+    static const std::unordered_map<SEX, const char*> enums
+    {
+        { SEX::MAN, "MAN" }, 
+        { SEX::WOMAN, "WOMAN" }, 
+        { SEX::ALL, "ALL" }
     };
 
     auto i = enums.find(k);
@@ -1071,6 +1651,26 @@ inline SOUND enum_parse<SOUND>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<SOUND>(SOUND k)
+{
+    static const std::unordered_map<SOUND, const char*> enums
+    {
+        { SOUND::EAT, "EAT" }, 
+        { SOUND::DISGUISE, "DISGUISE" }, 
+        { SOUND::SWING, "SWING" }, 
+        { SOUND::DAMAGE, "DAMAGE" }, 
+        { SOUND::EQUIPMENT_OFF, "EQUIPMENT_OFF" }, 
+        { SOUND::EQUIPMENT_ON, "EQUIPMENT_ON" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class SPELL_TYPE
 {
     INPUT = 0x01, 
@@ -1092,6 +1692,26 @@ inline SPELL_TYPE enum_parse<SPELL_TYPE>(const std::string k)
         { "UNKNOWN1", SPELL_TYPE::UNKNOWN1 }, 
         { "UNKNOWN2", SPELL_TYPE::UNKNOWN2 }, 
         { "UNKNOWN3", SPELL_TYPE::UNKNOWN3 }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<SPELL_TYPE>(SPELL_TYPE k)
+{
+    static const std::unordered_map<SPELL_TYPE, const char*> enums
+    {
+        { SPELL_TYPE::INPUT, "INPUT" }, 
+        { SPELL_TYPE::TARGET, "TARGET" }, 
+        { SPELL_TYPE::NORMAL, "NORMAL" }, 
+        { SPELL_TYPE::UNKNOWN1, "UNKNOWN1" }, 
+        { SPELL_TYPE::UNKNOWN2, "UNKNOWN2" }, 
+        { SPELL_TYPE::UNKNOWN3, "UNKNOWN3" }
     };
 
     auto i = enums.find(k);
@@ -1133,6 +1753,27 @@ inline STATE enum_parse<STATE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<STATE>(STATE k)
+{
+    static const std::unordered_map<STATE, const char*> enums
+    {
+        { STATE::NORMAL, "NORMAL" }, 
+        { STATE::GHOST, "GHOST" }, 
+        { STATE::TRANSLUCENCY, "TRANSLUCENCY" }, 
+        { STATE::RIDING, "RIDING" }, 
+        { STATE::DISGUISE, "DISGUISE" }, 
+        { STATE::HALF_CLOACK, "HALF_CLOACK" }, 
+        { STATE::CLOACK, "CLOACK" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class STATE_LEVEL
 {
     CONDITION = 0x08, 
@@ -1165,6 +1806,27 @@ inline STATE_LEVEL enum_parse<STATE_LEVEL>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<STATE_LEVEL>(STATE_LEVEL k)
+{
+    static const std::unordered_map<STATE_LEVEL, const char*> enums
+    {
+        { STATE_LEVEL::CONDITION, "CONDITION" }, 
+        { STATE_LEVEL::EXP_MONEY, "EXP_MONEY" }, 
+        { STATE_LEVEL::HP_MP, "HP_MP" }, 
+        { STATE_LEVEL::BASED, "BASED" }, 
+        { STATE_LEVEL::LEVEL_MAX, "LEVEL_MAX" }, 
+        { STATE_LEVEL::LEVEL_MIN, "LEVEL_MIN" }, 
+        { STATE_LEVEL::LEVEL_MIDDLE, "LEVEL_MIDDLE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class SWAP_TYPE
 {
     ITEM = 0x00, 
@@ -1187,6 +1849,22 @@ inline SWAP_TYPE enum_parse<SWAP_TYPE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<SWAP_TYPE>(SWAP_TYPE k)
+{
+    static const std::unordered_map<SWAP_TYPE, const char*> enums
+    {
+        { SWAP_TYPE::ITEM, "ITEM" }, 
+        { SWAP_TYPE::SPELL, "SPELL" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class TIMER_TYPE
 {
     INCREASE = 0x01, 
@@ -1200,6 +1878,22 @@ inline TIMER_TYPE enum_parse<TIMER_TYPE>(const std::string k)
     {
         { "INCREASE", TIMER_TYPE::INCREASE }, 
         { "DECREASE", TIMER_TYPE::DECREASE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<TIMER_TYPE>(TIMER_TYPE k)
+{
+    static const std::unordered_map<TIMER_TYPE, const char*> enums
+    {
+        { TIMER_TYPE::INCREASE, "INCREASE" }, 
+        { TIMER_TYPE::DECREASE, "DECREASE" }
     };
 
     auto i = enums.find(k);
@@ -1237,6 +1931,25 @@ inline WEAPON_TYPE enum_parse<WEAPON_TYPE>(const std::string k)
     return i->second;
 }
 
+template <>
+inline const char* enum_tostring<WEAPON_TYPE>(WEAPON_TYPE k)
+{
+    static const std::unordered_map<WEAPON_TYPE, const char*> enums
+    {
+        { WEAPON_TYPE::NORMAL, "NORMAL" }, 
+        { WEAPON_TYPE::SPEAR, "SPEAR" }, 
+        { WEAPON_TYPE::BOW, "BOW" }, 
+        { WEAPON_TYPE::FAN, "FAN" }, 
+        { WEAPON_TYPE::UNKNOWN, "UNKNOWN" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class WEATHER_TYPE
 {
     NORMAL = 0x00, 
@@ -1254,6 +1967,24 @@ inline WEATHER_TYPE enum_parse<WEATHER_TYPE>(const std::string k)
         { "RAIN", WEATHER_TYPE::RAIN }, 
         { "SNOW", WEATHER_TYPE::SNOW }, 
         { "BIRD", WEATHER_TYPE::BIRD }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<WEATHER_TYPE>(WEATHER_TYPE k)
+{
+    static const std::unordered_map<WEATHER_TYPE, const char*> enums
+    {
+        { WEATHER_TYPE::NORMAL, "NORMAL" }, 
+        { WEATHER_TYPE::RAIN, "RAIN" }, 
+        { WEATHER_TYPE::SNOW, "SNOW" }, 
+        { WEATHER_TYPE::BIRD, "BIRD" }
     };
 
     auto i = enums.find(k);
@@ -3306,7 +4037,19 @@ public:
     {
         auto found = this->find(k);
         if(found == nullptr)
-            throw std::runtime_error("does not exists");
+        {
+            auto sstream = std::stringstream();
+            if constexpr (std::is_enum_v<K>)
+            {
+                sstream << enum_tostring<K>(k);
+            }
+            else
+            {
+                sstream << k;
+            }
+            sstream << " does not exists in file " << this->_fname;
+            throw std::runtime_error(sstream.str());
+        }
 
         return *found;
     }
