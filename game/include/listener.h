@@ -7,11 +7,12 @@
 
 namespace fb { namespace game {
 
-interface listener : public virtual character::listener,
-    public virtual mob::listener
+/**
+ * @brief      { struct_description }
+ */
+struct listener : public virtual character::listener, public virtual mob::listener
 { };
 
-
-} }
+}} // namespace fb::game
 
 #endif // !__LISTENER_H__

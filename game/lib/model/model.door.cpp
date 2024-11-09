@@ -1,6 +1,6 @@
-#include <model.h>
-#include <map.h>
 #include <context.h>
+#include <map.h>
+#include <model.h>
 
 bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool is_open) const
 {
@@ -10,8 +10,8 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
         if (tile == nullptr)
             return false;
 
-        auto& pair = map.context.model.door_pair[this->pairs[i]];
-        auto value = is_open ? pair.open : pair.close;
+        auto& pair  = map.context.model.door_pair[this->pairs[i]];
+        auto  value = is_open ? pair.open : pair.close;
         if (tile->object != value)
             return false;
     }
@@ -20,10 +20,10 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
 
 bool fb::model::door::find(const fb::game::map& map, point16_t& position, bool is_open) const
 {
-    auto x = position.x / map.width();
-    auto y = position.y + (position.x % map.width());
+    auto x     = position.x / map.width();
+    auto y     = position.y + (position.x % map.width());
     auto begin = point16_t(x, y);
-    auto end = point16_t(map.width() - 1, map.height() - 1);
+    auto end   = point16_t(map.width() - 1, map.height() - 1);
     for (uint64_t i = map.index(begin), n = map.index(end); i <= n; i++)
     {
         if (this->matched(map, map.point(i), is_open))

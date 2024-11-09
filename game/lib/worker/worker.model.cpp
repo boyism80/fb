@@ -1,14 +1,14 @@
-#include <worker.h>
 #include <context.h>
+#include <worker.h>
 
-fb::game::model_loader::model_loader(fb::game::context& context) : _context(context)
+fb::game::model_loader::model_loader(fb::game::context& context) :
+    _context(context)
 { }
 
 fb::generator<fb::game::model_loader::input_type> fb::game::model_loader::on_ready()
 {
     auto buffer = std::vector<std::reference_wrapper<fb::model::container>>();
-    this->_context.model.foreach([&, this] (auto& container)
-    {
+    this->_context.model.foreach ([&, this](auto& container) {
         buffer.push_back(container);
     });
 
@@ -25,18 +25,15 @@ void fb::game::model_loader::on_work(const fb::game::model_loader::input_type& v
 
 void fb::game::model_loader::on_worked(const fb::game::model_loader::input_type& input, double percent)
 {
-    auto& c = fb::console::get();
-    c.put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
+    fb::console::put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
 }
 
 void fb::game::model_loader::on_error(const fb::game::model_loader::input_type& input, std::exception& e)
 {
-    auto& c = fb::console::get();
-    c.comment("    - {}", e.what());
+    fb::console::comment("    - {}", e.what());
 }
 
 void fb::game::model_loader::on_finish()
 {
-    auto& c = fb::console::get();
-    c.next();
+    fb::console::next();
 }

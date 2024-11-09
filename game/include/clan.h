@@ -5,32 +5,100 @@
 
 namespace fb { namespace game {
 
+/**
+ * @brief      This class describes a clan.
+ */
 class clan
 {
 private:
-    character&                    _owner;
-    character::container          _members;
-    std::string                 _name;
-    std::string                 _title;
+    character&           _owner;
+    character::container _members;
+    std::string          _name;
+    std::string          _title;
 
 public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  name     The name
+     * @param      owner    The owner
+     * @param[in]  members  The members
+     */
     clan(const std::string& name, fb::game::character& owner, const character::container& members);
-    clan(const std::string& name, const std::string& title, fb::game::character& owner, const character::container& members);
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  name     The name
+     * @param[in]  title    The title
+     * @param      owner    The owner
+     * @param[in]  members  The members
+     */
+    clan(const std::string&          name,
+         const std::string&          title,
+         fb::game::character&        owner,
+         const character::container& members);
+    /**
+     * @brief      Destroys the object.
+     */
     ~clan();
 
 public:
-    const character&              owner() const;
-    const character::container&   members() const;
-    const std::string&          name() const;
-    void                        name(const std::string& value);
-    const std::string&          title() const;
-    void                        title(const std::string& value);
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const character& owner() const;
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const character::container& members() const;
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::string& name() const;
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void name(const std::string& value);
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::string& title() const;
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void title(const std::string& value);
 
 public:
-    bool                        enter(fb::game::character& session);
-    bool                        leave(fb::game::character& session);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      session  The session
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool enter(fb::game::character& session);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      session  The session
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool leave(fb::game::character& session);
 };
 
-} }
+}} // namespace fb::game
 
 #endif // !__CLAN_H__

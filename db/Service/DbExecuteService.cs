@@ -14,8 +14,8 @@ namespace Db.Service
         private const string RedisBufferKey = "exec-buffer";
         private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
 
-        public DbExecuteService(RedisService redisService, 
-            IConfiguration configuration, 
+        public DbExecuteService(RedisService redisService,
+            IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger<DbExecuteService> logger)
         {
@@ -28,7 +28,7 @@ namespace Db.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var section = _configuration.GetSection("ConnectionStrings:MySql");
-            var threads = section.GetChildren().Select(x => new Thread(() => 
+            var threads = section.GetChildren().Select(x => new Thread(() =>
             {
                 var task = OnWork(int.Parse(x.Key), stoppingToken);
                 task.Wait(stoppingToken);

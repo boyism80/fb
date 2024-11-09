@@ -8,13 +8,13 @@ namespace fb {
 class cryptor
 {
 public:
-    static uint32_t             HEX_TABLE[10][0x100];
-    static constexpr uint32_t   KEY_SIZE = 0x09;
+    static uint32_t           HEX_TABLE[10][0x100];
+    static constexpr uint32_t KEY_SIZE = 0x09;
 
 private:
-    uint8_t                 _type     = 0;
-    uint8_t*                _key      = nullptr;
-    uint8_t                 _sequence = 0;
+    uint8_t  _type     = 0;
+    uint8_t* _key      = nullptr;
+    uint8_t  _sequence = 0;
 
 public:
     cryptor();
@@ -23,30 +23,30 @@ public:
     ~cryptor();
 
 private:
-    void                    crypt(const uint8_t *source, uint8_t *dest, uint32_t size, const uint8_t *key, uint32_t ksize);
+    void crypt(const uint8_t* source, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize);
 
 public:
-    uint32_t                encrypt(buffer& data, uint32_t offset, uint32_t size);
-    uint32_t                encrypt(buffer& data);
-    uint32_t                decrypt(buffer& data, uint32_t offset, uint32_t size);
-    uint32_t                decrypt(buffer& data);
-    uint32_t                wrap(buffer& data, uint32_t offset) const;
-    uint32_t                wrap(buffer& data) const;
-    uint32_t                unwrap(buffer& data, uint32_t offset) const;
-    uint32_t                unwrap(buffer& data) const;
+    uint32_t encrypt(buffer& data, uint32_t offset, uint32_t size);
+    uint32_t encrypt(buffer& data);
+    uint32_t decrypt(buffer& data, uint32_t offset, uint32_t size);
+    uint32_t decrypt(buffer& data);
+    uint32_t wrap(buffer& data, uint32_t offset) const;
+    uint32_t wrap(buffer& data) const;
+    uint32_t unwrap(buffer& data, uint32_t offset) const;
+    uint32_t unwrap(buffer& data) const;
 
 public:
-    uint8_t                 type() const;
-    uint8_t*                key() const;
+    uint8_t  type() const;
+    uint8_t* key() const;
 
 public:
-    cryptor&                operator = (const cryptor& crt);
+    cryptor& operator= (const cryptor& crt);
 
 public:
-    static cryptor          generate();
-    static bool             validate(uint8_t type, const uint8_t* key, uint8_t ksize);
+    static cryptor generate();
+    static bool    validate(uint8_t type, const uint8_t* key, uint8_t ksize);
 };
 
-}
+} // namespace fb
 
 #endif // !__FB_CRYPTOR_H__

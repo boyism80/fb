@@ -78,8 +78,8 @@ namespace http.Worker
         protected override void OnWorked(Container input, int percent)
         {
             var attr = input.GetType().GetCustomAttributes(typeof(TableAttribute), true).FirstOrDefault() as TableAttribute;
-            if(attr != null)
-                _logger.LogInformation($"[{percent, 3}%] {attr.Path} 로드 완료 완료");
+            if (attr != null)
+                _logger.LogInformation($"[{percent,3}%] {attr.Path} 로드 완료 완료");
             base.OnWorked(input, percent);
         }
     }

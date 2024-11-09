@@ -8,18 +8,20 @@ namespace fb { namespace protocol { namespace login { namespace response {
 class agreement : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x60;
+
+public:
 #ifdef BOT
-    std::string             contents;
+    std::string contents;
 #else
-    const std::string       contents;
+    const std::string contents;
 #endif
 
 public:
 #ifdef BOT
-    agreement() : fb::protocol::base::header(0x60)
-    { }
+    agreement() = default;
 #else
-    agreement(const std::string& contents) : fb::protocol::base::header(0x60),
+    agreement(const std::string& contents) :
         contents(contents)
     { }
 #endif
@@ -29,16 +31,16 @@ public:
     void serialize(fb::ostream& out_stream) const
     {
         auto compressed = fb::buffer((uint8_t*)this->contents.data(), this->contents.size()).compress();
-        base::header::serialize(out_stream);
+        out_stream.write_u8(header);
         out_stream.write_u8(0x01)
-                  .write_u16((uint16_t)compressed.size())
-                  .write(compressed.data(), (uint16_t)compressed.size());
+            .write_u16((uint16_t)compressed.size())
+            .write(compressed.data(), (uint16_t)compressed.size());
     }
 #else
     void deserialize(fb::istream& in_stream)
     {
         in_stream.read_u8();
-        auto size = in_stream.read_u16();
+        auto size   = in_stream.read_u16();
         auto buffer = new uint8_t[size];
         in_stream.read(buffer, size);
 
@@ -54,21 +56,24 @@ public:
 class message : public fb::protocol::base::header
 {
 public:
+    inline static uint8_t header = 0x02;
+
+public:
 #ifdef BOT
-    std::string             text;
-    uint8_t                 type;
+    std::string text;
+    uint8_t     type;
 #else
-    const std::string       text;
-    const uint8_t           type;
+    const std::string text;
+    const uint8_t     type;
 #endif
 
 public:
 #ifdef BOT
-    message() : fb::protocol::base::header(0x02)
-    { }
+    message() = default;
 #else
-    message(const std::string& text, uint8_t type) : fb::protocol::base::header(0x02),
-        text(text), type(type)
+    message(const std::string& text, uint8_t type) :
+        text(text),
+        type(type)
     { }
 #endif
 
@@ -76,9 +81,8 @@ public:
 #ifndef BOT
     void serialize(fb::ostream& out_stream) const
     {
-        base::header::serialize(out_stream);
-        out_stream.write_u8(this->type)
-                  .writestr_u8(this->text);
+        out_stream.write_u8(header);
+        out_stream.write_u8(this->type).writestr_u8(this->text);
     }
 #else
     void deserialize(fb::istream& in_stream)
@@ -89,6 +93,6 @@ public:
 #endif
 };
 
-} } } }
+}}}} // namespace fb::protocol::login::response
 
 #endif // !__PROTOCOL_RESPONSE_LOGIN_H__

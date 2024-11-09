@@ -14,7 +14,7 @@ public class Program
         // Add services to the container.
 
         builder.Services.AddControllers();
-        builder.Services.AddMvc(opt => 
+        builder.Services.AddMvc(opt =>
         {
             opt.InputFormatters.Insert(0, new FlatBufferInputFormatter());
             opt.OutputFormatters.Insert(0, new FlatBufferOutputFormatter());

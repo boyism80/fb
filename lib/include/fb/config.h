@@ -8,13 +8,15 @@
 #include <jsoncpp/json/json.h>
 #include <sstream>
 #include <mutex>
+#include <format>
+#include <fb/console.h>
 
 namespace fb {
 
 class config
 {
 private:
-    Json::Value             _json;
+    Json::Value _json;
 
 private:
     config(const char* env = nullptr);
@@ -23,6 +25,6 @@ public:
     static const Json::Value& get();
 };
 
-}
+} // namespace fb
 
 #endif // !__CONFIG_H__

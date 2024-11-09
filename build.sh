@@ -1,20 +1,17 @@
-docker build --tag cshyeon/fb:base -f deploy/Docker.fb.base .
-docker push cshyeon/fb:base
-
-docker build --tag cshyeon/fb:build -f deploy/Docker.fb.build .
+docker build --tag cshyeon/fb:build -f Dockerfile .
 docker push cshyeon/fb:build
 
-docker build --tag cshyeon/fb:gateway -f deploy/Docker.fb.gateway .
+docker build --tag cshyeon/fb:gateway -f gateway/Dockerfile .
 docker push cshyeon/fb:gateway
 
-docker build --tag cshyeon/fb:login -f deploy/Docker.fb.login .
+docker build --tag cshyeon/fb:login -f login/Dockerfile .
 docker push cshyeon/fb:login
 
-docker build --tag cshyeon/fb:game -f deploy/Docker.fb.game .
+docker build --tag cshyeon/fb:game -f game/Dockerfile .
 docker push cshyeon/fb:game
 
-docker build --tag cshyeon/fb:internal -f deploy/Docker.fb.dotnet --build-arg SERVICE=internal .
+docker build --tag cshyeon/fb:internal -f http/Dockerfile --build-arg SERVICE=internal .
 docker push cshyeon/fb:internal
 
-docker build --tag cshyeon/fb:db -f deploy/Docker.fb.dotnet --build-arg SERVICE=db .
+docker build --tag cshyeon/fb:db -f http/Dockerfile --build-arg SERVICE=db .
 docker push cshyeon/fb:db

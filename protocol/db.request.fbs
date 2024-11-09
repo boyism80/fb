@@ -27,6 +27,11 @@ table InitCharacter {
   admin: bool;
 }
 
+table Authenticate {
+  uid: uint;
+  pw: string;
+}
+
 
 table Login {
   uid: uint;

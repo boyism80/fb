@@ -13,7 +13,7 @@ namespace db
         {
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
-            var config = new MapperConfiguration(cfg => 
+            var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Db.Model.Character, fb.protocol.db.Character>()
                 .ForMember(x => x.LastLogin, x => x.MapFrom(u => u.LastLogin.ToString("yyyy-MM-dd HH:mm:ss")))

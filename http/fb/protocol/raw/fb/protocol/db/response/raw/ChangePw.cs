@@ -20,17 +20,17 @@ public struct ChangePw : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public ChangePw __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int Result { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public uint ErrorCode { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol.db.response.raw.ChangePw> CreateChangePw(FlatBufferBuilder builder,
-      int result = 0) {
+      uint error_code = 0) {
     builder.StartTable(1);
-    ChangePw.AddResult(builder, result);
+    ChangePw.AddErrorCode(builder, error_code);
     return ChangePw.EndChangePw(builder);
   }
 
   public static void StartChangePw(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddResult(FlatBufferBuilder builder, int result) { builder.AddInt(0, result, 0); }
+  public static void AddErrorCode(FlatBufferBuilder builder, uint errorCode) { builder.AddUint(0, errorCode, 0); }
   public static Offset<fb.protocol.db.response.raw.ChangePw> EndChangePw(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.db.response.raw.ChangePw>(o);
@@ -45,7 +45,7 @@ static public class ChangePwVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Result*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*ErrorCode*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

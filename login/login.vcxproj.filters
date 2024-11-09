@@ -4,10 +4,25 @@
     <Filter Include="Resources">
       <UniqueIdentifier>{de1c61f1-ec66-4b00-97cd-dd8ac3284651}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{e97c49f9-417f-415f-81e2-98bcabf35863}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{99a378d0-2162-41ec-bc00-928b3371dc35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gateway.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\context.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -21,379 +36,17 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="lib\gateway.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="lib\session.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="lib\context.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>source</Filter>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\console.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\cryptor.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\db.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\dead_lock.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\encoding.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\format.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\logger.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\mst.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\query.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\stream.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\table.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\thread.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\time.cpp">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\format.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="lib\gateway.cpp" />
-    <ClCompile Include="lib\session.cpp" />
-    <ClCompile Include="lib\gateway.cpp" />
-    <ClCompile Include="lib\session.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\**\*.cpp" />
-    <ClCompile Include="..\core\amqp.socket.cpp" />
-    <ClCompile Include="..\core\config.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\format.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="..\core\time.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\amqp.queue.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="lib\context.cpp" />
-    <ClCompile Include="..\core\console.cpp" />
-    <ClCompile Include="..\core\cryptor.cpp" />
-    <ClCompile Include="..\core\dead_lock.cpp" />
-    <ClCompile Include="..\core\encoding.cpp" />
-    <ClCompile Include="..\core\logger.cpp" />
-    <ClCompile Include="..\core\mst.cpp" />
-    <ClCompile Include="..\core\stream.cpp" />
-    <ClCompile Include="..\core\table.cpp" />
-    <ClCompile Include="..\core\thread.cpp" />
   </ItemGroup>
 </Project>

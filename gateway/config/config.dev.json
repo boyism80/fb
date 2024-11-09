@@ -8,16 +8,12 @@
         "io": 12,
         "background": 8
     },
-    "internal": {
-        "ip": "127.0.0.1",
-        "port": 5126
-    },
     "log": ["debug", "info", "warn", "fatal"],
     "redis": {
         "default": 
         {
-            "ip": "127.0.0.1",
-            "port": 6379,
+            "ip": "172.26.192.45",
+            "port": 30110,
             "db": 0
         }
     },

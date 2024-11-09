@@ -1,11 +1,10 @@
-#include <item.h>
 #include <context.h>
+#include <item.h>
 
-fb::game::cash::cash(fb::game::context& context, uint32_t value) : 
-    fb::game::item(context, match_model(context, value)), value(value)
-{
-    
-}
+fb::game::cash::cash(fb::game::context& context, uint32_t value) :
+    fb::game::item(context, match_model(context, value)),
+    value(value)
+{ }
 
 fb::game::cash::~cash()
 { }
@@ -15,7 +14,7 @@ const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, u
     if (value == 0)
         throw std::runtime_error("money cannot be zero");
 
-    if(value == 1)
+    if (value == 1)
         return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::BRONZE]);
 
     if (value < 50)
@@ -29,26 +28,23 @@ const fb::model::cash& fb::game::cash::match_model(fb::game::context& context, u
 
     if (value < 1000)
         return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::SILVER_BUNDLE]);
-    
+
     return static_cast<const fb::model::cash&>(context.model.item[fb::model::const_value::item::GOLD_BUNDLE]);
 }
 
 std::string fb::game::cash::inven_name() const
 {
-    auto& model = this->based<fb::model::cash>();
-    auto sstream = std::stringstream();
-    sstream << model.name 
-            << ' ' 
-            << this->value 
-            << "전";
+    auto& model   = this->based<fb::model::cash>();
+    auto  sstream = std::stringstream();
+    sstream << model.name << ' ' << this->value << "전";
 
     return sstream.str();
 }
 
-async::task< fb::game::cash*> fb::game::cash::replace(uint32_t value)
+async::task<fb::game::cash*> fb::game::cash::replace(uint32_t value)
 {
     fb::game::cash* result = nullptr;
-    if(this->empty())
+    if (this->empty())
     {
         result = nullptr;
     }

@@ -1,0 +1,134 @@
+const pulumi = require("@pulumi/pulumi");
+const k8s = require("@pulumi/kubernetes");
+
+module.exports = function () {
+
+    return {
+        setup: function (namespace, conf, dependsOn) {
+
+            let index = 0
+            const ports = []
+            for(const [section, sectionConf] of Object.entries(conf.game)) {
+                for(const [i, container] of Object.entries(sectionConf.containers)) {
+                    const config = {
+                        id: parseInt(i),
+                        name: `game-${section}-${i}`,
+                        delay: 5,
+                        ip: conf.host,
+                        port: container.port,
+                        thread: {
+                            logic: 12,
+                            io: 12,
+                            background: 8
+                        },
+                        save: 600,
+                        internal: {
+                            ip: "internal", 
+                            port: conf.internal[sectionConf.internal].port.cluster
+                        },
+                        db: { 
+                            ip: "db", 
+                            port: conf.internal[sectionConf.db].port.cluster
+                        },
+                        login: { ip: conf.host, port: conf.login[sectionConf.login].port },
+                        redis: {
+                            default: 
+                            {
+                                ip: "redis",
+                                port: conf.redis[sectionConf.redis].port.cluster,
+                                db: 0
+                            }
+                        },
+                        amqp: {
+                            ip: "rabbitmq",
+                            port: conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
+                            uid: "fb",
+                            pwd: "admin"
+                        },
+                        log: ["debug", "info", "warn", "fatal"]
+                    }
+
+                    const configMap = new k8s.core.v1.ConfigMap(`game-${section}-${i}`, {
+                        metadata: { name: `game-${section}-${i}`, namespace: namespace.metadata.name },
+                        data: {
+                            "config.json": JSON.stringify(config),
+                        },
+                    })
+
+                    const statefulSet = new k8s.apps.v1.StatefulSet(`game-${section}-${i}`, {
+                        metadata: {
+                            name: `game-${section}-${i}`,
+                            namespace: namespace.metadata.name,
+                        },
+                        spec: {
+                            serviceName: "game",
+                            replicas: 1,
+                            selector: {
+                                matchLabels: {
+                                    app: "game",
+                                },
+                            },
+                            template: {
+                                metadata: {
+                                    labels: {
+                                        app: "game",
+                                    },
+                                },
+                                spec: {
+                                    containers: [
+                                        {
+                                            name: "game",
+                                            image: "cshyeon/fb:game",
+                                            ports: [
+                                                { containerPort: container.port, name: `game-${index}` },
+                                            ],
+                                            env: [
+                                            {
+                                                name: "KUBERNETES",
+                                                value: "enabled"
+                                            }],
+                                            volumeMounts: [{
+                                                name: "config-volume",
+                                                mountPath: "/app/config/config.json",
+                                                subPath: "config.json"
+                                            }],
+                                        },
+                                    ],
+                                    volumes: [{
+                                        name: "config-volume",
+                                        configMap: {
+                                            name: configMap.metadata.name,
+                                        },
+                                    }],
+                                },
+                            },
+                        },
+                    }, { dependsOn: dependsOn })
+
+                    ports.push({
+                        name: `game-${section}-${i}`,
+                        port: container.port,
+                        targetPort: `game-${index}`,
+                        nodePort: container.port 
+                    })
+
+                    index++
+                }
+            }
+
+            return new k8s.core.v1.Service('game', {
+                metadata: {
+                    name: 'game',
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    type: "NodePort",
+                    ports: ports,
+                    selector: {
+                        app: "game",
+                    }
+                },
+            }, { dependsOn: dependsOn })
+        }
+    }
+}()

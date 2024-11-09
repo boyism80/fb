@@ -8,21 +8,22 @@ namespace fb {
 class lock_error : public std::runtime_error
 {
 public:
-    lock_error() : std::runtime_error("lock failed")
-    {}
+    lock_error() :
+        std::runtime_error("lock failed")
+    { }
     ~lock_error() = default;
 };
 
 class concurrent
 {
 protected:
-    fb::dead_lock_detector            root;
+    fb::dead_lock_detector root;
 
 protected:
     concurrent()
-    {}
+    { }
     ~concurrent()
-    {}
+    { }
 
 protected:
     void add(fb::dead_lock_detector& node)
@@ -39,6 +40,6 @@ protected:
     }
 };
 
-}
+} // namespace fb
 
 #endif

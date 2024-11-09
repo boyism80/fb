@@ -2,16 +2,16 @@
 
 bool fb::game::board::section::writable(uint8_t level, bool admin) const
 {
-    if(admin)
+    if (admin)
         return true;
 
-    if(this->admin)
+    if (this->admin)
         return false;
 
-    if(this->min_level != std::nullopt && level < this->min_level.value())
+    if (this->min_level != std::nullopt && level < this->min_level.value())
         return false;
 
-    if(this->max_level != std::nullopt && level > this->max_level.value())
+    if (this->max_level != std::nullopt && level > this->max_level.value())
         return false;
 
     return true;

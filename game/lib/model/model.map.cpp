@@ -3,11 +3,11 @@
 int fb::model::map::builtin_name(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);
-    if(thread == nullptr)
+    if (thread == nullptr)
         return 0;
-    
+
     auto map = thread->touserdata<fb::model::map>(1);
-    if(map == nullptr)
+    if (map == nullptr)
         return 0;
 
     thread->pushstring(map->name);

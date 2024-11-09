@@ -44,11 +44,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(IncludePath)</IncludePath>
     <TargetName>fb</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(IncludePath)</IncludePath>
     <TargetName>fb</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -67,7 +67,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)plugin\windows\fb\fbd.lib* /y</Command>
+      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)dependency\lib\fbd.lib* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -90,11 +90,38 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)plugin\windows\fb\fb.lib* /y</Command>
+      <Command>XCOPY /s /i $(OutputPath)fb.lib $(SolutionDir)dependency\lib\fb.lib* /y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\*.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\fb\abstract.h" />
+    <ClInclude Include="include\fb\acceptor.h" />
+    <ClInclude Include="include\fb\amqp.h" />
+    <ClInclude Include="include\fb\concurrent.h" />
+    <ClInclude Include="include\fb\config.h" />
+    <ClInclude Include="include\fb\console.h" />
+    <ClInclude Include="include\fb\container.h" />
+    <ClInclude Include="include\fb\cryptor.h" />
+    <ClInclude Include="include\fb\dead_lock.h" />
+    <ClInclude Include="include\fb\encoding.h" />
+    <ClInclude Include="include\fb\generator.h" />
+    <ClInclude Include="include\fb\leak.h" />
+    <ClInclude Include="include\fb\logger.h" />
+    <ClInclude Include="include\fb\mst.h" />
+    <ClInclude Include="include\fb\mutex.h" />
+    <ClInclude Include="include\fb\parallel_worker.h" />
+    <ClInclude Include="include\fb\pqueue.h" />
+    <ClInclude Include="include\fb\redis.h" />
+    <ClInclude Include="include\fb\socket.h" />
+    <ClInclude Include="include\fb\socket.hpp" />
+    <ClInclude Include="include\fb\stream.h" />
+    <ClInclude Include="include\fb\string.h" />
+    <ClInclude Include="include\fb\table.h" />
+    <ClInclude Include="include\fb\thread.h" />
+    <ClInclude Include="include\fb\timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

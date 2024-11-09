@@ -45,14 +45,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir);$(IncludePath);$(SolutionDir)\plugin\windows\x64;$(SolutionDir)\include;$(SolutionDir)\lib\include</IncludePath>
-    <LibraryPath>$(BOOST_SDK)\stage\lib;$(SolutionDir)\plugin\windows;$(SolutionDir)\plugin\windows\zlib;$(SolutionDir)\plugin\windows\x64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -69,7 +69,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmtd.lib;cpp_redis\x64\cpp_redis_d.lib;cpp_redis\x64\tacopie_d.lib;zlib\x64\zlibd.lib;lua5.3\x64\lua5.3.5-static-d.lib;%(AdditionalDependencies);openssl/libcryptoMTd.lib;openssl/libsslMTd.lib;rabbitmq-c\x64\librabbitmq.4_d.lib;cpp-terminal\x64\cpp-terminal_d.lib;cpp-terminal\x64\cpp-terminal-private_d.lib;fb\fbd.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncppd.lib;cpp-terminald.lib;librabbitmq.4d.lib;luad.lib;zlibd.lib;flatbuffersd.lib;fbd.lib;tacopied.lib;cpp_redisd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -90,14 +90,36 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp\json\x64\json_vc71_libmt.lib;cpp_redis\x64\cpp_redis.lib;cpp_redis\x64\tacopie.lib;zlib\x64\zlib.lib;lua5.3\x64\lua5.3.5-static.lib;%(AdditionalDependencies);openssl/libcryptoMT.lib;openssl/libsslMT.lib;rabbitmq-c\x64\librabbitmq.4.lib;cpp-terminal\x64\cpp-terminal.lib;cpp-terminal\x64\cpp-terminal-private.lib;fb\fb.lib</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp.lib;cpp-terminal.lib;librabbitmq.4.lib;lua.lib;zlib.lib;flatbuffers.lib;fb.lib;tacopie.lib;cpp_redis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="lib\**\*.cpp" />
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="include\board.h" />
+    <ClInclude Include="include\character.h" />
+    <ClInclude Include="include\clan.h" />
+    <ClInclude Include="include\context.h" />
+    <ClInclude Include="include\dialog.h" />
+    <ClInclude Include="include\door.h" />
+    <ClInclude Include="include\group.h" />
+    <ClInclude Include="include\inventory.h" />
+    <ClInclude Include="include\inventory.hpp" />
+    <ClInclude Include="include\item.h" />
+    <ClInclude Include="include\life.h" />
+    <ClInclude Include="include\listener.h" />
+    <ClInclude Include="include\lua.h" />
+    <ClInclude Include="include\map.h" />
+    <ClInclude Include="include\mmo.h" />
+    <ClInclude Include="include\mob.h" />
+    <ClInclude Include="include\model.h" />
+    <ClInclude Include="include\model.preprocessor.h" />
+    <ClInclude Include="include\mst.recipe.h" />
+    <ClInclude Include="include\npc.h" />
+    <ClInclude Include="include\object.h" />
+    <ClInclude Include="include\regex.h" />
+    <ClInclude Include="include\sector.h" />
+    <ClInclude Include="include\spell.h" />
+    <ClInclude Include="include\trade.h" />
+    <ClInclude Include="include\worker.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +127,66 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Desktop\baram.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="lib\board.cpp" />
+    <ClCompile Include="lib\clan.cpp" />
+    <ClCompile Include="lib\context\command.cpp" />
+    <ClCompile Include="lib\context\context.cpp" />
+    <ClCompile Include="lib\context\handler.cpp" />
+    <ClCompile Include="lib\dialog.cpp" />
+    <ClCompile Include="lib\door.builtin.cpp" />
+    <ClCompile Include="lib\door.cpp" />
+    <ClCompile Include="lib\group.cpp" />
+    <ClCompile Include="lib\item\armor.cpp" />
+    <ClCompile Include="lib\item\auxiliary.cpp" />
+    <ClCompile Include="lib\item\bow.cpp" />
+    <ClCompile Include="lib\item\cash.cpp" />
+    <ClCompile Include="lib\item\consume.cpp" />
+    <ClCompile Include="lib\item\equipment.cpp" />
+    <ClCompile Include="lib\item\helmet.cpp" />
+    <ClCompile Include="lib\item\item.builtin.cpp" />
+    <ClCompile Include="lib\item\item.cpp" />
+    <ClCompile Include="lib\item\items.cpp" />
+    <ClCompile Include="lib\item\pack.cpp" />
+    <ClCompile Include="lib\item\ring.cpp" />
+    <ClCompile Include="lib\item\shield.cpp" />
+    <ClCompile Include="lib\item\weapon.cpp" />
+    <ClCompile Include="lib\listener.cpp" />
+    <ClCompile Include="lib\lua\builtin.cpp" />
+    <ClCompile Include="lib\lua\lua.cpp" />
+    <ClCompile Include="lib\map\map.cpp" />
+    <ClCompile Include="lib\map\map.objects.cpp" />
+    <ClCompile Include="lib\map\sector.cpp" />
+    <ClCompile Include="lib\mmo.cpp" />
+    <ClCompile Include="lib\model\const.regex.cpp" />
+    <ClCompile Include="lib\model\model.buy.cpp" />
+    <ClCompile Include="lib\model\model.door.cpp" />
+    <ClCompile Include="lib\model\model.item.cpp" />
+    <ClCompile Include="lib\model\model.life.cpp" />
+    <ClCompile Include="lib\model\model.map.cpp" />
+    <ClCompile Include="lib\model\model.mob.cpp" />
+    <ClCompile Include="lib\model\model.npc.cpp" />
+    <ClCompile Include="lib\model\model.object.cpp" />
+    <ClCompile Include="lib\model\model.promotion.cpp" />
+    <ClCompile Include="lib\model\model.recipe.cpp" />
+    <ClCompile Include="lib\model\model.sell.cpp" />
+    <ClCompile Include="lib\model\model.spell.cpp" />
+    <ClCompile Include="lib\model\mst.recipe.cpp" />
+    <ClCompile Include="lib\object\character.builtin.cpp" />
+    <ClCompile Include="lib\object\character.cpp" />
+    <ClCompile Include="lib\object\life.builtin.cpp" />
+    <ClCompile Include="lib\object\life.cpp" />
+    <ClCompile Include="lib\object\mob.cpp" />
+    <ClCompile Include="lib\object\npc.cpp" />
+    <ClCompile Include="lib\object\object.cpp" />
+    <ClCompile Include="lib\spell.builtin.cpp" />
+    <ClCompile Include="lib\spell.cpp" />
+    <ClCompile Include="lib\trade.cpp" />
+    <ClCompile Include="lib\worker\worker.map.cpp" />
+    <ClCompile Include="lib\worker\worker.model.cpp" />
+    <ClCompile Include="lib\worker\worker.npc.spawn.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

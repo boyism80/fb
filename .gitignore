@@ -15,3 +15,10 @@ deploy/ssh
 external-tool
 obj
 bin
+dependency/include
+dependency/lib
+sftp-config.json
+game/json
+internal/json
+db/json
+.vscode

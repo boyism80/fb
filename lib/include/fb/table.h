@@ -13,13 +13,16 @@
 
 namespace fb { namespace table {
 
-using handle_callback       = std::function<void(const std::string&, double)>;
-using handle_error          = std::function<void(const std::string&, const std::string&)>;
-using handle_complete       = std::function<void(uint32_t)>;
+using handle_callback = std::function<void(const std::string&, double)>;
+using handle_error    = std::function<void(const std::string&, const std::string&)>;
+using handle_complete = std::function<void(uint32_t)>;
 
-bool                        load(const std::string& path, Json::Value& json);
-uint32_t                    load(const std::string& path, const std::function<void(Json::Value&, Json::Value&, double)>& callback, const std::function<void(Json::Value&, Json::Value&, const std::string& error)> error, bool async = true);
+bool     load(const std::string& path, Json::Value& json);
+uint32_t load(const std::string&                                                              path,
+              const std::function<void(Json::Value&, Json::Value&, double)>&                  callback,
+              const std::function<void(Json::Value&, Json::Value&, const std::string& error)> error,
+              bool                                                                            async = true);
 
-} }
+}} // namespace fb::table
 
 #endif // !__FB_TABLE_H__

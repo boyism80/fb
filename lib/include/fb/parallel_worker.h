@@ -16,21 +16,21 @@ template <typename T, typename R = void>
 class parallel_worker
 {
 protected:
-    virtual fb::generator<T> on_ready() = 0;
+    virtual fb::generator<T> on_ready()              = 0;
     virtual fb::generator<R> on_work(const T& value) = 0;
-    virtual void on_worked(const T& input, const R& output, double percent)
-    {}
+    virtual void             on_worked(const T& input, const R& output, double percent)
+    { }
     virtual void on_error(const T& input, std::exception& e)
-    {}
+    { }
     virtual void on_finish(const std::vector<R>& result)
-    {}
+    { }
 
 public:
     void run(std::vector<R>& result)
     {
-        auto queue = std::queue<T>();
-        auto indices = std::unordered_map<T*, int>();
-        auto buffer = std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>();
+        auto queue     = std::queue<T>();
+        auto indices   = std::unordered_map<T*, int>();
+        auto buffer    = std::unordered_map<uint32_t, std::unique_ptr<std::vector<R>>>();
         auto processed = std::atomic<int>(0);
 
         std::mutex mutex_queue, mutex_buffer;
@@ -46,8 +46,7 @@ public:
         }
 
         auto count = double(queue.size());
-        auto fn = [&, this]()
-        {
+        auto fn    = [&, this]() {
             while (true)
             {
                 T* input = nullptr;
@@ -121,22 +120,22 @@ template <typename T>
 class parallel_worker<T, void>
 {
 protected:
-    virtual fb::generator<T> on_ready() = 0;
-    virtual void on_work(const T& value) = 0;
-    virtual void on_worked(const T& input, double percent)
-    {}
+    virtual fb::generator<T> on_ready()              = 0;
+    virtual void             on_work(const T& value) = 0;
+    virtual void             on_worked(const T& input, double percent)
+    { }
     virtual void on_error(const T& input, std::exception& e)
-    {}
+    { }
     virtual void on_finish()
-    {}
+    { }
 
 public:
     void run()
     {
-        auto queue = std::queue<T>();
-        auto mutex_queue = std::mutex();
+        auto queue         = std::queue<T>();
+        auto mutex_queue   = std::mutex();
         auto mutex_percent = std::mutex();
-        auto processed = 0;
+        auto processed     = 0;
 
         auto gen = this->on_ready();
         while (gen.next())
@@ -145,8 +144,7 @@ public:
         }
 
         auto count = double(queue.size());
-        auto fn = [&, this]() 
-        {
+        auto fn    = [&, this]() {
             while (true)
             {
                 T* input = nullptr;
@@ -193,6 +191,6 @@ public:
     }
 };
 
-}
+} // namespace fb
 
 #endif

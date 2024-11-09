@@ -1,3 +1,5 @@
+// clang-format off
+
 #ifndef __MODEL_H__
 #define __MODEL_H__
 
@@ -18,7 +20,7 @@
 BEGIN_PREPROCESSOR
 #endif
 
-namespace fb { namespace model {
+namespace fb::model {
 
 class option
 {
@@ -26,7 +28,7 @@ public:
     using encoding_func_type = std::function<std::string(const std::string&)>;
 
 public:
-    encoding_func_type                      encoding_func;
+    encoding_func_type encoding_func;
 
 private:
     option() = default;
@@ -37,8 +39,8 @@ public:
 public:
     static option& get()
     {
-        static std::once_flag               flag;
-        static std::unique_ptr<option>      ist;
+        static std::once_flag flag;
+        static std::unique_ptr<option> ist;
 
         std::call_once(flag, [] 
         {
@@ -96,7 +98,7 @@ public:
 #ifdef DECLARE_POINT_EXTENSION
 DECLARE_POINT_EXTENSION
 #endif
-};
+}; // end of struct point
 
 template <typename T>
 struct size
@@ -126,7 +128,7 @@ public:
 #ifdef DECLARE_SIZE_EXTENSION
 DECLARE_SIZE_EXTENSION
 #endif
-};
+}; // end of struct size
 
 template <typename T>
 struct range
@@ -156,7 +158,7 @@ public:
 #ifdef DECLARE_RANGE_EXTENSION
 DECLARE_RANGE_EXTENSION
 #endif
-};
+}; // end of struct range
 
 #pragma endregion
 
@@ -182,7 +184,7 @@ enum class ACTION
     CAST_SPELL = 0x06, 
     EAT = 0x08, 
     EMOTION = 0x0B
-};
+}; // end of enum 'ACTION'
 
 template <>
 inline ACTION enum_parse<ACTION>(const std::string k)
@@ -213,7 +215,7 @@ enum class BOARD_ACTION
     ARTICLE = 0x03, 
     WRITE = 0x04, 
     DELETE = 0x05
-};
+}; // end of enum 'BOARD_ACTION'
 
 template <>
 inline BOARD_ACTION enum_parse<BOARD_ACTION>(const std::string k)
@@ -241,7 +243,7 @@ enum class BOARD_BUTTON_ENABLE
     NEXT = 0x01, 
     UP = 0x01, 
     WRITE = 0x02
-};
+}; // end of enum 'BOARD_BUTTON_ENABLE'
 
 template <>
 inline BOARD_BUTTON_ENABLE enum_parse<BOARD_BUTTON_ENABLE>(const std::string k)
@@ -266,7 +268,7 @@ enum class BUNDLE_TYPE
     NONE = 0, 
     BUNDLE = 1, 
     PACKAGE = 2
-};
+}; // end of enum 'BUNDLE_TYPE'
 
 template <>
 inline BUNDLE_TYPE enum_parse<BUNDLE_TYPE>(const std::string k)
@@ -291,7 +293,7 @@ enum class CHAT_TYPE
     SHOUT = 0x01, 
     BLUE = 0x02, 
     LIGHT_BLUE = 0x03
-};
+}; // end of enum 'CHAT_TYPE'
 
 template <>
 inline CHAT_TYPE enum_parse<CHAT_TYPE>(const std::string k)
@@ -318,7 +320,7 @@ enum class CLASS
     THIEF = 2, 
     MAGICION = 3, 
     ASCETIC = 4
-};
+}; // end of enum 'CLASS'
 
 template <>
 inline CLASS enum_parse<CLASS>(const std::string k)
@@ -347,7 +349,7 @@ enum class CONDITION
     HEAR = 0x04, 
     ORAL = 0x08, 
     MAP = 0x10
-};
+}; // end of enum 'CONDITION'
 
 template <>
 inline CONDITION enum_parse<CONDITION>(const std::string k)
@@ -375,7 +377,7 @@ enum class CREATURE
     TIGER = 0x01, 
     TURTLE = 0x02, 
     DRAGON = 0x03
-};
+}; // end of enum 'CREATURE'
 
 template <>
 inline CREATURE enum_parse<CREATURE>(const std::string k)
@@ -409,7 +411,7 @@ enum class CUSTOM_SETTING
     FAST_MOVE = 0x09, 
     EFFECT_SOUND = 0x0A, 
     PK = 0x0B
-};
+}; // end of enum 'CUSTOM_SETTING'
 
 template <>
 inline CUSTOM_SETTING enum_parse<CUSTOM_SETTING>(const std::string k)
@@ -442,7 +444,7 @@ enum class DEATH_PENALTY
     NONE = 0, 
     DROP = 1, 
     DESTROY = 2
-};
+}; // end of enum 'DEATH_PENALTY'
 
 template <>
 inline DEATH_PENALTY enum_parse<DEATH_PENALTY>(const std::string k)
@@ -465,7 +467,7 @@ enum class DESTROY_TYPE
 {
     DEFAULT = 0, 
     DEAD = 1
-};
+}; // end of enum 'DESTROY_TYPE'
 
 template <>
 inline DESTROY_TYPE enum_parse<DESTROY_TYPE>(const std::string k)
@@ -489,7 +491,7 @@ enum class DIRECTION
     RIGHT = 1, 
     BOTTOM = 2, 
     LEFT = 3
-};
+}; // end of enum 'DIRECTION'
 
 template <>
 inline DIRECTION enum_parse<DIRECTION>(const std::string k)
@@ -522,7 +524,7 @@ enum class DSL
     admin = 8, 
     world = 9, 
     map = 10
-};
+}; // end of enum 'DSL'
 
 template <>
 inline DSL enum_parse<DSL>(const std::string k)
@@ -558,7 +560,7 @@ enum class DURATION
     THROW = 0x28, 
     PICKUP = 0x32, 
     EMOTION = 0x4E
-};
+}; // end of enum 'DURATION'
 
 template <>
 inline DURATION enum_parse<DURATION>(const std::string k)
@@ -592,7 +594,7 @@ enum class EQUIPMENT_PARTS
     RIGHT_HAND = 8, 
     LEFT_AUX = 20, 
     RIGHT_AUX = 21
-};
+}; // end of enum 'EQUIPMENT_PARTS'
 
 template <>
 inline EQUIPMENT_PARTS enum_parse<EQUIPMENT_PARTS>(const std::string k)
@@ -621,7 +623,7 @@ enum class EQUIPMENT_POSITION
 {
     LEFT = 0, 
     RIGHT = 1
-};
+}; // end of enum 'EQUIPMENT_POSITION'
 
 template <>
 inline EQUIPMENT_POSITION enum_parse<EQUIPMENT_POSITION>(const std::string k)
@@ -655,7 +657,7 @@ enum class ITEM_ATTRIBUTE
     RING = EQUIPMENT | 0x00001000, 
     AUXILIARY = EQUIPMENT | 0x00002000, 
     ARROW = EQUIPMENT | 0x00004000
-};
+}; // end of enum 'ITEM_ATTRIBUTE'
 
 template <>
 inline ITEM_ATTRIBUTE enum_parse<ITEM_ATTRIBUTE>(const std::string k)
@@ -700,7 +702,7 @@ enum class ITEM_DELETE_TYPE
     SELL = 0x0A, 
     NONE = 0x0C, 
     DESTROY = 0x0D
-};
+}; // end of enum 'ITEM_DELETE_TYPE'
 
 template <>
 inline ITEM_DELETE_TYPE enum_parse<ITEM_DELETE_TYPE>(const std::string k)
@@ -742,7 +744,7 @@ enum class ITEM_TYPE
     AUXILIARY = 9, 
     BOW = 10, 
     PACKAGE = 11
-};
+}; // end of enum 'ITEM_TYPE'
 
 template <>
 inline ITEM_TYPE enum_parse<ITEM_TYPE>(const std::string k)
@@ -774,7 +776,7 @@ enum class MAP_EFFECT_TYPE
     NONE = 0x00, 
     FIRE = 0x01, 
     WATER = 0x02
-};
+}; // end of enum 'MAP_EFFECT_TYPE'
 
 template <>
 inline MAP_EFFECT_TYPE enum_parse<MAP_EFFECT_TYPE>(const std::string k)
@@ -803,7 +805,7 @@ enum class MAP_OPTION
     HUNTING_GROUND = 0x10, 
     ENABLE_PK = 0x20, 
     DISABLE_DIE_PENALTY = 0x30
-};
+}; // end of enum 'MAP_OPTION'
 
 template <>
 inline MAP_OPTION enum_parse<MAP_OPTION>(const std::string k)
@@ -837,7 +839,7 @@ enum class MESSAGE_TYPE
     POPUP = 0x08, 
     YELLOW = 0x0B, 
     BROWN = 0x0C
-};
+}; // end of enum 'MESSAGE_TYPE'
 
 template <>
 inline MESSAGE_TYPE enum_parse<MESSAGE_TYPE>(const std::string k)
@@ -868,7 +870,7 @@ enum class MOB_ATTACK_TYPE
     CONTAINMENT = 2, 
     RUN_AWAY = 3, 
     NO_MOVE = 4
-};
+}; // end of enum 'MOB_ATTACK_TYPE'
 
 template <>
 inline MOB_ATTACK_TYPE enum_parse<MOB_ATTACK_TYPE>(const std::string k)
@@ -894,7 +896,7 @@ enum class MOB_SIZE
     SMALL = 1, 
     LARGE = 2, 
     ALL = SMALL | LARGE
-};
+}; // end of enum 'MOB_SIZE'
 
 template <>
 inline MOB_SIZE enum_parse<MOB_SIZE>(const std::string k)
@@ -917,7 +919,7 @@ enum class NATION
 {
     GOGURYEO = 0x01, 
     BUYEO = 0x02
-};
+}; // end of enum 'NATION'
 
 template <>
 inline NATION enum_parse<NATION>(const std::string k)
@@ -944,7 +946,7 @@ enum class OBJECT_TYPE
     CHARACTER = 0x08, 
     OBJECT = ITEM | NPC | MOB, 
     LIFE = MOB | CHARACTER
-};
+}; // end of enum 'OBJECT_TYPE'
 
 template <>
 inline OBJECT_TYPE enum_parse<OBJECT_TYPE>(const std::string k)
@@ -984,7 +986,7 @@ enum class REGEX
     RENAME_WEAPON = 12, 
     HOLD_ITEM_LIST = 13, 
     HOLD_ITEM_COUNT = 14
-};
+}; // end of enum 'REGEX'
 
 template <>
 inline REGEX enum_parse<REGEX>(const std::string k)
@@ -1020,7 +1022,7 @@ enum class SEX
     MAN = 1, 
     WOMAN = 2, 
     ALL = MAN | WOMAN
-};
+}; // end of enum 'SEX'
 
 template <>
 inline SEX enum_parse<SEX>(const std::string k)
@@ -1047,7 +1049,7 @@ enum class SOUND
     DAMAGE = 0x015D, 
     EQUIPMENT_OFF = 0x019A, 
     EQUIPMENT_ON = 0x019B
-};
+}; // end of enum 'SOUND'
 
 template <>
 inline SOUND enum_parse<SOUND>(const std::string k)
@@ -1077,7 +1079,7 @@ enum class SPELL_TYPE
     UNKNOWN1 = 8, 
     UNKNOWN2 = 9, 
     UNKNOWN3 = 12
-};
+}; // end of enum 'SPELL_TYPE'
 
 template <>
 inline SPELL_TYPE enum_parse<SPELL_TYPE>(const std::string k)
@@ -1108,7 +1110,7 @@ enum class STATE
     DISGUISE = 0x04, 
     HALF_CLOACK = 0x05, 
     CLOACK = 0x06
-};
+}; // end of enum 'STATE'
 
 template <>
 inline STATE enum_parse<STATE>(const std::string k)
@@ -1140,7 +1142,7 @@ enum class STATE_LEVEL
     LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CONDITION, 
     LEVEL_MIN = EXP_MONEY | CONDITION, 
     LEVEL_MIDDLE = HP_MP | EXP_MONEY | CONDITION
-};
+}; // end of enum 'STATE_LEVEL'
 
 template <>
 inline STATE_LEVEL enum_parse<STATE_LEVEL>(const std::string k)
@@ -1167,7 +1169,7 @@ enum class SWAP_TYPE
 {
     ITEM = 0x00, 
     SPELL = 0x01
-};
+}; // end of enum 'SWAP_TYPE'
 
 template <>
 inline SWAP_TYPE enum_parse<SWAP_TYPE>(const std::string k)
@@ -1189,7 +1191,7 @@ enum class TIMER_TYPE
 {
     INCREASE = 0x01, 
     DECREASE = 0x02
-};
+}; // end of enum 'TIMER_TYPE'
 
 template <>
 inline TIMER_TYPE enum_parse<TIMER_TYPE>(const std::string k)
@@ -1214,7 +1216,7 @@ enum class WEAPON_TYPE
     BOW = 2, 
     FAN = 3, 
     UNKNOWN = 4
-};
+}; // end of enum 'WEAPON_TYPE'
 
 template <>
 inline WEAPON_TYPE enum_parse<WEAPON_TYPE>(const std::string k)
@@ -1241,7 +1243,7 @@ enum class WEATHER_TYPE
     RAIN = 0x01, 
     SNOW = 0x02, 
     BIRD = 0x03
-};
+}; // end of enum 'WEATHER_TYPE'
 
 template <>
 inline WEATHER_TYPE enum_parse<WEATHER_TYPE>(const std::string k)
@@ -1261,7 +1263,7 @@ inline WEATHER_TYPE enum_parse<WEATHER_TYPE>(const std::string k)
     return i->second;
 }
 
-}
+} // end of namespace enum_value
 #pragma endregion
 
 #ifdef DECLARE_AFTER_ENUM
@@ -1287,7 +1289,7 @@ private:
 #ifdef DECLARE_CONST_ITEM_EXTENSION
 DECLARE_CONST_ITEM_EXTENSION
 #endif
-};
+}; // end of const 'item'
 class mob
 {
 public:
@@ -1299,7 +1301,7 @@ private:
 #ifdef DECLARE_CONST_MOB_EXTENSION
 DECLARE_CONST_MOB_EXTENSION
 #endif
-};
+}; // end of const 'mob'
 class regex
 {
 public:
@@ -1325,7 +1327,7 @@ private:
 #ifdef DECLARE_CONST_REGEX_EXTENSION
 DECLARE_CONST_REGEX_EXTENSION
 #endif
-};
+}; // end of const 'regex'
 class string
 {
 public:
@@ -1447,84 +1449,47 @@ private:
 #ifdef DECLARE_CONST_STRING_EXTENSION
 DECLARE_CONST_STRING_EXTENSION
 #endif
-};
+}; // end of const 'string'
 
-}
+} // end of namespace const_value
 #pragma endregion
 
 #ifdef DECLARE_AFTER_CONST
 DECLARE_AFTER_CONST
 #endif
 
-template<class T>
-struct is_optional : std::false_type {};
-
-template<class T>
-struct is_optional<std::optional<T>> : std::true_type {};
-
-template<class T>
-struct is_unique : std::false_type {};
-
-template<class T>
-struct is_unique<std::unique_ptr<T>> : std::true_type {};
-
-template<class T>
-struct is_vector : std::false_type {};
-
-template<class T>
-struct is_vector<std::vector<T>> : std::true_type {};
-
-template <typename T, typename Enabler = void>
-struct is_map : std::false_type {};
-
-template <typename T>
-struct is_map<T, std::void_t<typename T::mapped_type>> : std::true_type{};
-
-template<class T>
-struct is_point : std::false_type {};
-
-template<class T>
-struct is_point<fb::model::point<T>> : std::true_type {};
-
-template<class T>
-struct is_size : std::false_type {};
-
-template<class T>
-struct is_size<fb::model::size<T>> : std::true_type {};
-
-template<class T>
-struct is_range : std::false_type {};
-
-template<class T>
-struct is_range<fb::model::range<T>> : std::true_type {};
-
-template <typename T>
-struct is_default
-{
-    static constexpr bool value =
-        !std::is_enum<T>::value &&
-        !std::is_pointer<T>::value &&
-        !fb::model::is_vector<T>::value &&
-        !fb::model::is_map<T>::value &&
-        !fb::model::is_optional<T>::value &&
-        !fb::model::is_unique<T>::value &&
-        !fb::model::is_point<T>::value &&
-        !fb::model::is_size<T>::value &&
-        !fb::model::is_range<T>::value;
-};
-
 class dsl;
 
-template <typename T> inline static typename std::enable_if<fb::model::is_default<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_vector<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_map<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_optional<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_unique<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json);
-template <typename T> inline static typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json);
+template <typename>   constexpr bool is_optional_impl = false;
+template <typename T> constexpr bool is_optional_impl<std::optional<T>> = true;
+template<>            constexpr bool is_optional_impl<std::nullopt_t> = true;
+template <typename T> constexpr bool is_optional = is_optional_impl<std::decay_t<T>>;
+
+template <typename>   constexpr bool is_unique_impl = false;
+template <typename T> constexpr bool is_unique_impl<std::unique_ptr<T>> = true;
+template <typename T> constexpr bool is_unique = is_unique_impl<std::decay_t<T>>;
+
+template <typename>   constexpr bool is_vector_impl = false;
+template <typename T> constexpr bool is_vector_impl<std::vector<T>> = true;
+template <typename T> constexpr bool is_vector = is_vector_impl<std::decay_t<T>>;
+
+template <typename T, typename Enabler = void> constexpr bool is_map_impl = false;
+template <typename T> constexpr bool is_map_impl<T, std::void_t<typename T::mapped_type>> = true;
+template <typename T>  constexpr bool is_map = is_map_impl<std::decay_t<T>>;
+
+template <typename>   constexpr bool is_point_impl = false;
+template <typename T> constexpr bool is_point_impl<fb::model::point<T>> = true;
+template <typename T> constexpr bool is_point = is_point_impl<std::decay_t<T>>;
+
+template <typename>   constexpr bool is_size_impl = false;
+template <typename T> constexpr bool is_size_impl<fb::model::size<T>> = true;
+template <typename T> constexpr bool is_size = is_size_impl<std::decay_t<T>>;
+
+template <typename>   constexpr bool is_range_impl = false;
+template <typename T> constexpr bool is_range_impl<fb::model::range<T>> = true;
+template <typename T> constexpr bool is_range = is_range_impl<std::decay_t<T>>;
+
+template <typename T> inline static T build(const Json::Value& json);
 template <> int8_t build<int8_t>(const Json::Value& json);
 template <> uint8_t build<uint8_t>(const Json::Value& json);
 template <> int16_t build<int16_t>(const Json::Value& json);
@@ -1934,7 +1899,7 @@ DECLARE_ABILITY_INITIALIZER
 #ifdef DECLARE_ABILITY_EXTENSION
 DECLARE_ABILITY_EXTENSION
 #endif
-};
+}; // end of class 'ability'
 class ability_attribute
 #ifdef DECLARE_ABILITY_ATTRIBUTE_INHERIT
 DECLARE_ABILITY_ATTRIBUTE_INHERIT
@@ -1966,7 +1931,7 @@ DECLARE_ABILITY_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_ABILITY_ATTRIBUTE_EXTENSION
 DECLARE_ABILITY_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'ability_attribute'
 class board
 #ifdef DECLARE_BOARD_INHERIT
 DECLARE_BOARD_INHERIT
@@ -2002,7 +1967,7 @@ DECLARE_BOARD_INITIALIZER
 #ifdef DECLARE_BOARD_EXTENSION
 DECLARE_BOARD_EXTENSION
 #endif
-};
+}; // end of class 'board'
 class buy
 #ifdef DECLARE_BUY_INHERIT
 DECLARE_BUY_INHERIT
@@ -2038,7 +2003,7 @@ DECLARE_BUY_INITIALIZER
 #ifdef DECLARE_BUY_EXTENSION
 DECLARE_BUY_EXTENSION
 #endif
-};
+}; // end of class 'buy'
 class buy_attribute
 #ifdef DECLARE_BUY_ATTRIBUTE_INHERIT
 DECLARE_BUY_ATTRIBUTE_INHERIT
@@ -2070,7 +2035,7 @@ DECLARE_BUY_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_BUY_ATTRIBUTE_EXTENSION
 DECLARE_BUY_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'buy_attribute'
 class door
 #ifdef DECLARE_DOOR_INHERIT
 DECLARE_DOOR_INHERIT
@@ -2104,7 +2069,7 @@ DECLARE_DOOR_INITIALIZER
 #ifdef DECLARE_DOOR_EXTENSION
 DECLARE_DOOR_EXTENSION
 #endif
-};
+}; // end of class 'door'
 class door_pair
 #ifdef DECLARE_DOOR_PAIR_INHERIT
 DECLARE_DOOR_PAIR_INHERIT
@@ -2140,7 +2105,7 @@ DECLARE_DOOR_PAIR_INITIALIZER
 #ifdef DECLARE_DOOR_PAIR_EXTENSION
 DECLARE_DOOR_PAIR_EXTENSION
 #endif
-};
+}; // end of class 'door_pair'
 class drop
 #ifdef DECLARE_DROP_INHERIT
 DECLARE_DROP_INHERIT
@@ -2174,7 +2139,7 @@ DECLARE_DROP_INITIALIZER
 #ifdef DECLARE_DROP_EXTENSION
 DECLARE_DROP_EXTENSION
 #endif
-};
+}; // end of class 'drop'
 class map
 #ifdef DECLARE_MAP_INHERIT
 DECLARE_MAP_INHERIT
@@ -2218,7 +2183,7 @@ DECLARE_MAP_INITIALIZER
 #ifdef DECLARE_MAP_EXTENSION
 DECLARE_MAP_EXTENSION
 #endif
-};
+}; // end of class 'map'
 class mob_spawn
 #ifdef DECLARE_MOB_SPAWN_INHERIT
 DECLARE_MOB_SPAWN_INHERIT
@@ -2260,7 +2225,7 @@ DECLARE_MOB_SPAWN_INITIALIZER
 #ifdef DECLARE_MOB_SPAWN_EXTENSION
 DECLARE_MOB_SPAWN_EXTENSION
 #endif
-};
+}; // end of class 'mob_spawn'
 class mob_spawn_attribute
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_INHERIT
 DECLARE_MOB_SPAWN_ATTRIBUTE_INHERIT
@@ -2292,7 +2257,7 @@ DECLARE_MOB_SPAWN_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
 DECLARE_MOB_SPAWN_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'mob_spawn_attribute'
 class npc_spawn
 #ifdef DECLARE_NPC_SPAWN_INHERIT
 DECLARE_NPC_SPAWN_INHERIT
@@ -2330,7 +2295,7 @@ DECLARE_NPC_SPAWN_INITIALIZER
 #ifdef DECLARE_NPC_SPAWN_EXTENSION
 DECLARE_NPC_SPAWN_EXTENSION
 #endif
-};
+}; // end of class 'npc_spawn'
 class npc_spawn_attribute
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_INHERIT
 DECLARE_NPC_SPAWN_ATTRIBUTE_INHERIT
@@ -2362,7 +2327,7 @@ DECLARE_NPC_SPAWN_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
 DECLARE_NPC_SPAWN_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'npc_spawn_attribute'
 class object
 #ifdef DECLARE_OBJECT_INHERIT
 DECLARE_OBJECT_INHERIT
@@ -2398,7 +2363,7 @@ DECLARE_OBJECT_INITIALIZER
 #ifdef DECLARE_OBJECT_EXTENSION
 DECLARE_OBJECT_EXTENSION
 #endif
-};
+}; // end of class 'object'
 class promotion
 #ifdef DECLARE_PROMOTION_INHERIT
 DECLARE_PROMOTION_INHERIT
@@ -2434,7 +2399,7 @@ DECLARE_PROMOTION_INITIALIZER
 #ifdef DECLARE_PROMOTION_EXTENSION
 DECLARE_PROMOTION_EXTENSION
 #endif
-};
+}; // end of class 'promotion'
 class promotion_attribute
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_INHERIT
 DECLARE_PROMOTION_ATTRIBUTE_INHERIT
@@ -2466,7 +2431,7 @@ DECLARE_PROMOTION_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
 DECLARE_PROMOTION_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'promotion_attribute'
 class recipe
 #ifdef DECLARE_RECIPE_INHERIT
 DECLARE_RECIPE_INHERIT
@@ -2504,7 +2469,7 @@ DECLARE_RECIPE_INITIALIZER
 #ifdef DECLARE_RECIPE_EXTENSION
 DECLARE_RECIPE_EXTENSION
 #endif
-};
+}; // end of class 'recipe'
 class reward
 #ifdef DECLARE_REWARD_INHERIT
 DECLARE_REWARD_INHERIT
@@ -2538,7 +2503,7 @@ DECLARE_REWARD_INITIALIZER
 #ifdef DECLARE_REWARD_EXTENSION
 DECLARE_REWARD_EXTENSION
 #endif
-};
+}; // end of class 'reward'
 class sell
 #ifdef DECLARE_SELL_INHERIT
 DECLARE_SELL_INHERIT
@@ -2574,7 +2539,7 @@ DECLARE_SELL_INITIALIZER
 #ifdef DECLARE_SELL_EXTENSION
 DECLARE_SELL_EXTENSION
 #endif
-};
+}; // end of class 'sell'
 class sell_attribute
 #ifdef DECLARE_SELL_ATTRIBUTE_INHERIT
 DECLARE_SELL_ATTRIBUTE_INHERIT
@@ -2608,7 +2573,7 @@ DECLARE_SELL_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_SELL_ATTRIBUTE_EXTENSION
 DECLARE_SELL_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'sell_attribute'
 class spell
 #ifdef DECLARE_SPELL_INHERIT
 DECLARE_SPELL_INHERIT
@@ -2652,7 +2617,7 @@ DECLARE_SPELL_INITIALIZER
 #ifdef DECLARE_SPELL_EXTENSION
 DECLARE_SPELL_EXTENSION
 #endif
-};
+}; // end of class 'spell'
 class warp
 #ifdef DECLARE_WARP_INHERIT
 DECLARE_WARP_INHERIT
@@ -2690,7 +2655,7 @@ DECLARE_WARP_INITIALIZER
 #ifdef DECLARE_WARP_EXTENSION
 DECLARE_WARP_EXTENSION
 #endif
-};
+}; // end of class 'warp'
 class warp_attribute
 #ifdef DECLARE_WARP_ATTRIBUTE_INHERIT
 DECLARE_WARP_ATTRIBUTE_INHERIT
@@ -2722,7 +2687,7 @@ DECLARE_WARP_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_WARP_ATTRIBUTE_EXTENSION
 DECLARE_WARP_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'warp_attribute'
 class world
 #ifdef DECLARE_WORLD_INHERIT
 DECLARE_WORLD_INHERIT
@@ -2766,7 +2731,7 @@ DECLARE_WORLD_INITIALIZER
 #ifdef DECLARE_WORLD_EXTENSION
 DECLARE_WORLD_EXTENSION
 #endif
-};
+}; // end of class 'world'
 class world_attribute
 #ifdef DECLARE_WORLD_ATTRIBUTE_INHERIT
 DECLARE_WORLD_ATTRIBUTE_INHERIT
@@ -2800,7 +2765,7 @@ DECLARE_WORLD_ATTRIBUTE_INITIALIZER
 #ifdef DECLARE_WORLD_ATTRIBUTE_EXTENSION
 DECLARE_WORLD_ATTRIBUTE_EXTENSION
 #endif
-};
+}; // end of class 'world_attribute'
 class item : public fb::model::object
 {
 #ifdef DECLARE_ITEM_FIELDS
@@ -2844,7 +2809,7 @@ DECLARE_ITEM_INITIALIZER
 #ifdef DECLARE_ITEM_EXTENSION
 DECLARE_ITEM_EXTENSION
 #endif
-};
+}; // end of class 'item'
 class life : public fb::model::object
 {
 #ifdef DECLARE_LIFE_FIELDS
@@ -2878,7 +2843,7 @@ DECLARE_LIFE_INITIALIZER
 #ifdef DECLARE_LIFE_EXTENSION
 DECLARE_LIFE_EXTENSION
 #endif
-};
+}; // end of class 'life'
 class npc : public fb::model::object
 {
 #ifdef DECLARE_NPC_FIELDS
@@ -2918,7 +2883,7 @@ DECLARE_NPC_INITIALIZER
 #ifdef DECLARE_NPC_EXTENSION
 DECLARE_NPC_EXTENSION
 #endif
-};
+}; // end of class 'npc'
 class cash : public fb::model::item
 {
 #ifdef DECLARE_CASH_CUSTOM_CONSTRUCTOR
@@ -2936,7 +2901,7 @@ DECLARE_CASH_INITIALIZER
 #ifdef DECLARE_CASH_EXTENSION
 DECLARE_CASH_EXTENSION
 #endif
-};
+}; // end of class 'cash'
 class consume : public fb::model::item
 {
 #ifdef DECLARE_CONSUME_CUSTOM_CONSTRUCTOR
@@ -2954,7 +2919,7 @@ DECLARE_CONSUME_INITIALIZER
 #ifdef DECLARE_CONSUME_EXTENSION
 DECLARE_CONSUME_EXTENSION
 #endif
-};
+}; // end of class 'consume'
 class equipment : public fb::model::item
 {
 #ifdef DECLARE_EQUIPMENT_FIELDS
@@ -3012,7 +2977,7 @@ DECLARE_EQUIPMENT_INITIALIZER
 #ifdef DECLARE_EQUIPMENT_EXTENSION
 DECLARE_EQUIPMENT_EXTENSION
 #endif
-};
+}; // end of class 'equipment'
 class mob : public fb::model::life
 {
 #ifdef DECLARE_MOB_FIELDS
@@ -3052,7 +3017,7 @@ DECLARE_MOB_INITIALIZER
 #ifdef DECLARE_MOB_EXTENSION
 DECLARE_MOB_EXTENSION
 #endif
-};
+}; // end of class 'mob'
 class pack : public fb::model::item
 {
 #ifdef DECLARE_PACK_FIELDS
@@ -3078,7 +3043,7 @@ DECLARE_PACK_INITIALIZER
 #ifdef DECLARE_PACK_EXTENSION
 DECLARE_PACK_EXTENSION
 #endif
-};
+}; // end of class 'pack'
 class armor : public fb::model::equipment
 {
 #ifdef DECLARE_ARMOR_CUSTOM_CONSTRUCTOR
@@ -3096,7 +3061,7 @@ DECLARE_ARMOR_INITIALIZER
 #ifdef DECLARE_ARMOR_EXTENSION
 DECLARE_ARMOR_EXTENSION
 #endif
-};
+}; // end of class 'armor'
 class auxiliary : public fb::model::equipment
 {
 #ifdef DECLARE_AUXILIARY_CUSTOM_CONSTRUCTOR
@@ -3114,7 +3079,7 @@ DECLARE_AUXILIARY_INITIALIZER
 #ifdef DECLARE_AUXILIARY_EXTENSION
 DECLARE_AUXILIARY_EXTENSION
 #endif
-};
+}; // end of class 'auxiliary'
 class bow : public fb::model::equipment
 {
 #ifdef DECLARE_BOW_CUSTOM_CONSTRUCTOR
@@ -3132,7 +3097,7 @@ DECLARE_BOW_INITIALIZER
 #ifdef DECLARE_BOW_EXTENSION
 DECLARE_BOW_EXTENSION
 #endif
-};
+}; // end of class 'bow'
 class helmet : public fb::model::equipment
 {
 #ifdef DECLARE_HELMET_CUSTOM_CONSTRUCTOR
@@ -3150,7 +3115,7 @@ DECLARE_HELMET_INITIALIZER
 #ifdef DECLARE_HELMET_EXTENSION
 DECLARE_HELMET_EXTENSION
 #endif
-};
+}; // end of class 'helmet'
 class ring : public fb::model::equipment
 {
 #ifdef DECLARE_RING_CUSTOM_CONSTRUCTOR
@@ -3168,7 +3133,7 @@ DECLARE_RING_INITIALIZER
 #ifdef DECLARE_RING_EXTENSION
 DECLARE_RING_EXTENSION
 #endif
-};
+}; // end of class 'ring'
 class shield : public fb::model::equipment
 {
 #ifdef DECLARE_SHIELD_CUSTOM_CONSTRUCTOR
@@ -3186,7 +3151,7 @@ DECLARE_SHIELD_INITIALIZER
 #ifdef DECLARE_SHIELD_EXTENSION
 DECLARE_SHIELD_EXTENSION
 #endif
-};
+}; // end of class 'shield'
 class weapon : public fb::model::equipment
 {
 #ifdef DECLARE_WEAPON_FIELDS
@@ -3220,7 +3185,7 @@ DECLARE_WEAPON_INITIALIZER
 #ifdef DECLARE_WEAPON_EXTENSION
 DECLARE_WEAPON_EXTENSION
 #endif
-};
+}; // end of class 'weapon'
 
 #pragma endregion
 
@@ -4091,56 +4056,79 @@ public:
 #pragma endregion
 
 #pragma region build function
-template <typename T> typename std::enable_if<is_default<T>::value, T>::type build(const Json::Value& json)
+template <typename T> T build(const Json::Value& json)
 {
-    return T(json);
-}
-
-template <typename T> typename std::enable_if<std::is_enum<T>::value, T>::type build(const Json::Value& json)
-{
-    if(json.isString())
-        return T(fb::model::enum_value::enum_parse<T>(build<std::string>(json)));
-    else
-        return T(json.asInt());
-}
-
-template <typename T> typename std::enable_if<std::is_pointer<T>::value, T>::type build(const Json::Value& json)
-{
-    if(json.isNull())
-        return nullptr;
-    else
-        return new typename std::pointer_traits<T>::element_type(json);
-}
-
-template <typename T> typename std::enable_if<is_vector<T>::value, T>::type build(const Json::Value& json)
-{
-    auto result = std::vector<typename T::value_type>();
-    for (auto i = json.begin(); i != json.end(); i++)
+    if constexpr (std::is_enum_v<T>)
     {
-        result.push_back(build<typename T::value_type>(*i));
+        if (json.isString())
+            return T(fb::model::enum_value::enum_parse<T>(build<std::string>(json)));
+        else
+            return T(json.asInt());
     }
-    return result;
-}
+    else if constexpr (std::is_pointer_v<T>)
+    {
+        if (json.isNull())
+            return nullptr;
+        else
+            return new typename std::pointer_traits<T>::element_type(json);
+    }
+    else if constexpr (is_vector<T>)
+    {
+        auto result = std::vector<typename T::value_type>();
+        for (auto i = json.begin(); i != json.end(); i++)
+        {
+            result.push_back(build<typename T::value_type>(*i));
+        }
+        return result;
+    }
+    else if constexpr (is_map<T>)
+    {
+        auto result = std::map<typename T::key_type, typename T::mapped_type>();
+        for(auto i = json.begin(); i != json.end(); i++)
+        {
+            result.insert({ build<typename T::key_type>(i.key()), build<typename T::mapped_type>(*i)});
+        }
+        return result;
+    } 
+    else if constexpr (is_optional<T>)
+    {
+        if (json.isNull())
+            return std::nullopt;
+        else
+            return std::optional<typename T::value_type>(build<typename T::value_type>(json));
+    }
+    else if constexpr (is_unique<T>)
+    {
+        if (json.isNull())
+            return std::unique_ptr<typename std::pointer_traits<T>::element_type>();
+        else
+            return std::unique_ptr<typename std::pointer_traits<T>::element_type>(build<typename std::pointer_traits<T>::element_type*>(json));
+    }
+    else if constexpr (is_point<T>)
+    {
+        auto x = build<typename T::value_type>(json["x"]);
+        auto y = build<typename T::value_type>(json["y"]);
 
-template <typename T> typename std::enable_if<is_map<T>::value, T>::type build(const Json::Value& json)
-{
-    return std::map<typename T::key_type, typename T::mapped_type>();
-}
+        return point(x, y);
+    }
+    else if constexpr (is_size<T>)
+    {
+        auto width = build<typename T::value_type>(json["width"]);
+        auto height = build<typename T::value_type>(json["height"]);
 
-template <typename T> typename std::enable_if<is_optional<T>::value, T>::type build(const Json::Value& json)
-{
-    if (json.isNull())
-        return std::nullopt;
+        return size(width, height);
+    }
+    else if constexpr (is_range<T>)
+    {
+        auto min = build<typename T::value_type>(json["min"]);
+        auto max = build<typename T::value_type>(json["max"]);
+
+        return range(min, max);
+    }
     else
-        return std::optional<typename T::value_type>(build<typename T::value_type>(json));
-}
-
-template <typename T> typename std::enable_if<is_unique<T>::value, T>::type build(const Json::Value& json)
-{
-    if (json.isNull())
-        return std::unique_ptr<typename std::pointer_traits<T>::element_type>();
-    else
-        return std::unique_ptr<typename std::pointer_traits<T>::element_type>(build<typename std::pointer_traits<T>::element_type*>(json));
+    {
+        return T(json);
+    }
 }
 
 template <> int8_t build<int8_t>(const Json::Value& json)
@@ -4245,30 +4233,9 @@ template <> date_range build<date_range>(const Json::Value& json)
     return date_range(build<std::optional<datetime>>(json["Begin"]), build<std::optional<datetime>>(json["End"]));
 }
 
-template <typename T> typename std::enable_if<fb::model::is_point<T>::value, T>::type build(const Json::Value& json)
-{
-    auto x = build<typename T::value_type>(json["x"]);
-    auto y = build<typename T::value_type>(json["y"]);
-
-    return point(x, y);
-}
-template <typename T> typename std::enable_if<fb::model::is_size<T>::value, T>::type build(const Json::Value& json)
-{
-    auto width = build<typename T::value_type>(json["width"]);
-    auto height = build<typename T::value_type>(json["height"]);
-
-    return size(width, height);
-}
-template <typename T> typename std::enable_if<fb::model::is_range<T>::value, T>::type build(const Json::Value& json)
-{
-    auto min = build<typename T::value_type>(json["min"]);
-    auto max = build<typename T::value_type>(json["max"]);
-
-    return range(min, max);
-}
 #pragma endregion
 
-} }
+} // end of namespace fb::model
 
 #ifdef END_PREPROCESSOR
 END_PREPROCESSOR

@@ -4,9 +4,14 @@
 #include <string>
 #include <fb/protocol/gateway.h>
 
-namespace fb { namespace gateway { namespace util { 
+namespace fb { namespace gateway { namespace util {
 
-void                        assert_client(const fb::protocol::gateway::request::assert_version& request);
+/**
+ * @brief      { function_description }
+ *
+ * @param[in]  request  The request
+ */
+void assert_client(const fb::protocol::gateway::request::assert_version& request);
 
-} } }
+}}} // namespace fb::gateway::util
 #endif // !__SERVICE_GATEWAY_H__
