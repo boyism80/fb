@@ -90,9 +90,6 @@ module.exports = function () {
                                             ],
                                         },
                                     ],
-                                    nodeSelector: {
-                                        role: 'master'
-                                    },
                                     volumes: [
                                     {
                                         name: `data-volume-${section}-${id}`,

@@ -46,9 +46,6 @@ module.exports = {
                                     ],
                                 },
                             ],
-                            nodeSelector: {
-                                role: 'master'
-                            },
                             volumes: [
                             {
                                 name: `data-volume-${section}`,
