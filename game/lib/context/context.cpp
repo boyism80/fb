@@ -904,6 +904,8 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             // 메시지 보냄
             session->message("감히 접근할 수 없습니다.");
+            this->send(*session, fb_resp::session::position(*session), scope::SELF);
+            co_return true;
         }
 
         switch (warp->dest.header)
