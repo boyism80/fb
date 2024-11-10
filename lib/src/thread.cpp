@@ -48,7 +48,14 @@ void fb::thread::handle_idle()
         if (timer->duration > elapsed)
             continue;
 
-        timer->fn(now, this->_thread.get_id());
+        try
+        {
+            timer->fn(now, this->_thread.get_id());
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
         if (timer->disposable)
             this->_timers.erase(this->_timers.begin() + i);
     }

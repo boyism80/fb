@@ -22,6 +22,9 @@ void fb::game::rezen::decrease()
 
 void fb::game::rezen::spawn(std::thread::id thread_id)
 {
+    if (this->_context.maps.contains(this->_model.parent) == false)
+        return;
+
     auto& map = this->_context.maps[this->_model.parent];
     if (map.active == false)
         return;
