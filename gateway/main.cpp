@@ -4,10 +4,13 @@
 #include <iomanip>
 #include <iostream>
 #include <stdio.h>
-// #include <fb/leak.h>
+#include <fb/leak.h>
 #include <fb/config.h>
 #include <fb/console.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#ifndef _WIN32
+#include <execinfo.h>
+#endif
 
 using namespace fb;
 
@@ -48,6 +51,12 @@ int main(int argc, const char** argv)
     catch (std::exception& e)
     {
         fb::logger::fatal(e.what());
+#ifndef _WIN32
+        void*  array[10];
+        size_t size;
+        size = backtrace(array, 10);
+        backtrace_symbols_fd(array, size, STDERR_FILENO);
+#endif
     }
 
     // Clean up

@@ -14,6 +14,7 @@ project(fb,
 set(CMAKE_CXX_STANDARD 20)
 
 add_compile_options(-g)
+add_compile_options(-rdynamic)
 add_definitions(-DREDISCPP_HEADER_ONLY)
 
 include_directories("${PROJECT_SOURCE_DIR}/..")
