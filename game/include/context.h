@@ -989,6 +989,16 @@ public:
      */
     async::task<bool> handle_command_sleep(fb::game::character& session, Json::Value& parameters);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      session     The session
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> handle_map_tile(character& session, Json::Value& parameters);
+
 public:
     // listener : object
     //

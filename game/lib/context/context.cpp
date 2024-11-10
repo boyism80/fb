@@ -315,6 +315,7 @@ async::task<void> context::handle_start()
     this->command("내구도", &context::handle_command_durability, true);
     this->command("동시성테스트", &context::handle_command_concurrency, true);
     this->command("sleep", &context::handle_command_sleep, true);
+    this->command("맵타일", &context::handle_map_tile, true);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const

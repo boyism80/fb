@@ -18,19 +18,21 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
     return true;
 }
 
-bool fb::model::door::find(const fb::game::map& map, point16_t& position, bool is_open) const
+bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool* opened) const
 {
-    auto x     = position.x / map.width();
-    auto y     = position.y + (position.x % map.width());
-    auto begin = point16_t(x, y);
-    auto end   = point16_t(map.width() - 1, map.height() - 1);
-    for (uint64_t i = map.index(begin), n = map.index(end); i <= n; i++)
+    if (this->matched(map, position, true))
     {
-        if (this->matched(map, map.point(i), is_open))
-        {
-            position = map.point(i);
-            return true;
-        }
+        if (opened != nullptr)
+            *opened = true;
+        return true;
     }
+
+    if (this->matched(map, position, false))
+    {
+        if (opened != nullptr)
+            *opened = false;
+        return true;
+    }
+
     return false;
 }

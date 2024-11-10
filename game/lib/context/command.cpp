@@ -476,3 +476,18 @@ async::task<bool> context::handle_command_sleep(character& session, Json::Value&
     co_await this->sleep(std::chrono::seconds{seconds});
     co_return true;
 }
+
+async::task<bool> context::handle_map_tile(character& session, Json::Value& parameters)
+{
+    auto map = session.map();
+    if (map == nullptr)
+        co_return false;
+
+    auto& position = session.position();
+    auto  tile     = (*map)(position.x, position.y);
+    if (tile == nullptr)
+        co_return false;
+
+    session.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
+    co_return true;
+}

@@ -246,6 +246,12 @@ public:
      */
     ~map();
 
+private:
+    /**
+     * @brief      Loads a door.
+     */
+    void update_door();
+
 public:
     /**
      * @brief      { function_description }

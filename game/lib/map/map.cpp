@@ -36,31 +36,45 @@ fb::game::map::map(const fb::game::context& context,
         this->_tiles[i].object = istream.read_u16();
     }
 
-    // compare linear doors
-    point16_t position;
-    for (auto& [id, door] : context.model.door)
-    {
-        position.x = position.y = 0;
-        while (door.find(*this, position, true))
-        {
-            this->doors.add(position, door, true);
-            position.x += (uint16_t)door.width;
-        }
-
-        position.x = position.y = 0;
-        while (door.find(*this, position, false))
-        {
-            this->doors.add(position, door, true);
-            position.x += (uint16_t)door.width;
-        }
-    }
-
-    // sectors
     this->_sectors = std::make_unique<fb::game::sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->update_door();
 }
 
 fb::game::map::~map()
 { }
+
+void fb::game::map::update_door()
+{
+    auto pivot = point16_t{0, 0};
+    while (pivot.y < this->_size.height)
+    {
+        pivot.x = 0;
+        while (pivot.x < this->_size.width)
+        {
+            auto found  = false;
+            auto opened = false;
+            for (auto& [id, door] : this->context.model.door)
+            {
+                if (door.matched(*this, pivot, &opened))
+                {
+                    for (uint16_t i = 0; i < door.width; i++)
+                    {
+                        this->doors.add(point16_t{uint16_t(pivot.x + i), uint16_t(pivot.y)}, pivot, door, opened);
+                    }
+                    found    = true;
+                    pivot.x += door.width;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                pivot.x++;
+            }
+        }
+        pivot.y++;
+    }
+}
 
 uint64_t fb::game::map::index(const point16_t& p) const
 {

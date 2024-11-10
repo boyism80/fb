@@ -328,7 +328,7 @@ public:                                                                         
                                                                                            \
 public:                                                                                    \
     bool matched(const fb::game::map& map, const point16_t& position, bool is_open) const; \
-    bool find(const fb::game::map& map, point16_t& position, bool is_open) const;
+    bool matched(const fb::game::map& map, const point16_t& position, bool* opened) const;
 
 #define DECLARE_DOOR_INITIALIZER , width(static_cast<uint16_t>(this->pairs.size()))
 

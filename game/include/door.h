@@ -40,7 +40,7 @@ private:
 public:
     const fb::game::map&   map;
     const fb::model::door& model;
-    const point16_t        position;
+    const point16_t        position, pivot;
     const uint16_t         width;
 
 public:
@@ -52,7 +52,11 @@ public:
      * @param[in]  position  The position
      * @param[in]  opened    Indicates if opened
      */
-    door(const fb::game::map& map, const fb::model::door& model, const point16_t& position, bool opened);
+    door(const fb::game::map&   map,
+         const fb::model::door& model,
+         const point16_t&       position,
+         const point16_t&       pivot,
+         bool                   opened);
     /**
      * @brief      Constructs a new instance.
      *
@@ -147,6 +151,9 @@ public:
      */
     class const_iterator;
 
+    using base_iterator       = std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator;
+    using const_base_iterator = std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator;
+
     friend class iterator;
     friend class const_iterator;
 
@@ -210,15 +217,8 @@ public:
      * @param[in]  model     The model
      * @param[in]  opened    Indicates if opened
      */
-    void add(const point16_t& position, const fb::model::door& model, bool opened);
-    /**
-     * @brief      Searches for the first match.
-     *
-     * @param[in]  position  The position
-     *
-     * @return     { description_of_the_return_value }
-     */
-    door* find(const point16_t position) const;
+    void add(const point16_t& position, const point16_t& pivot, const fb::model::door& model, bool opened);
+
     /**
      * @brief      Searches for the first match.
      *
@@ -232,7 +232,7 @@ public:
 /**
  * @brief      This class describes an iterator.
  */
-class doors::iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator
+class doors::iterator : public doors::base_iterator
 {
 public:
     std::optional<std::pair<point16_t, door&>> pair;
@@ -244,7 +244,7 @@ public:
      * @param[in]  i          { parameter_description }
      * @param[in]  container  The container
      */
-    iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator& i, const doors& container);
+    iterator(const doors::base_iterator& i, const doors& container);
     /**
      * @brief      Destroys the object.
      */
@@ -262,7 +262,7 @@ public:
 /**
  * @brief      This class describes a constant iterator.
  */
-class doors::const_iterator : public std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator
+class doors::const_iterator : public doors::const_base_iterator
 {
 public:
     const std::optional<std::pair<point16_t, door&>> pair;
@@ -274,8 +274,7 @@ public:
      * @param[in]  i          { parameter_description }
      * @param[in]  container  The container
      */
-    const_iterator(const std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator& i,
-                   const doors&                                                               container);
+    const_iterator(const doors::const_base_iterator& i, const doors& container);
     /**
      * @brief      Destroys the object.
      */
