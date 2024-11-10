@@ -18,15 +18,15 @@ int main(int argc, const char** argv)
     console::box(console::width() - 1, height);
 
     auto header = "The Kingdom of the wind [GAME]";
-    console::position((console::width() - 1 - strlen(header)) / 2, 3);
+    console::cursor((console::width() - 1 - strlen(header)) / 2, 3);
     console::render(header);
 
     auto github = "https://github.com/boyism80/fb";
-    console::position(console::width() - 1 - strlen(github) - 3, 5);
+    console::cursor(console::width() - 1 - strlen(github) - 3, 5);
     console::render(github);
 
     auto madeby = "made by cshyeon";
-    console::position(console::width() - 1 - strlen(madeby) - 3, 6);
+    console::cursor(console::width() - 1 - strlen(madeby) - 3, 6);
     console::render(madeby);
 
     console::position(0, height + 1);
