@@ -19,16 +19,16 @@ fb::game::map::map(const fb::game::context& context,
     fb::istream istream((uint8_t*)data, size);
     this->_size.width = istream.read_u16();
     if (this->_size.width == 0)
-        throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
+        throw std::runtime_error(std::format("맵 데이터가 올바르지 않습니다. ({})", model.name));
 
     this->_size.height = istream.read_u16();
     if (this->_size.height == 0)
-        throw std::runtime_error("맵 데이터가 올바르지 않습니다.");
+        throw std::runtime_error(std::format("맵 데이터가 올바르지 않습니다. ({})", model.name));
 
     uint32_t map_size = this->_size.width * this->_size.height;
     this->_tiles      = std::make_unique<tile[]>(map_size);
     if (this->_tiles == nullptr)
-        throw std::runtime_error("맵 타일 메모리를 할당할 수 없습니다.");
+        throw std::runtime_error(std::format("맵 타일 메모리를 할당할 수 없습니다. ({})", model.name));
 
     for (uint32_t i = 0; i < map_size; i++)
     {
