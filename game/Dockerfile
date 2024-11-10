@@ -7,7 +7,7 @@ COPY game ./game
 
 WORKDIR /app/game/build
 RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Release --parallel 8
 
 FROM cshyeon/fb:build
 RUN apt-get install zip unzip -y
