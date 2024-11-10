@@ -162,7 +162,6 @@ IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
 {"lock",                fb::game::door::builtin_lock},
 {"locked",              fb::game::door::builtin_locked},
 {"opened",              fb::game::door::builtin_opened},
-{"update",              fb::game::door::builtin_update},
 END_LUA_EXTENSION
 
 IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")

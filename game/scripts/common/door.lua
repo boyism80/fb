@@ -18,5 +18,4 @@ function on_door(session)
 	else
 		session:message('문을 닫았습니다.')
 	end
-	door:update()
 end
