@@ -11,12 +11,12 @@ if %ERRORLEVEL% NEQ 0 GOTO END
 PUSHD ..
 del /S /Q http\FlatBuffer
 del /S /Q http\fb\protocol\flatbuffer
-xcopy tools\flatbuffer-ex\bin\output\c#\* http\FlatBuffer\* /S /E
-robocopy tools\flatbuffer-ex\bin\output\raw\c# http\fb\protocol\raw /S /E
+xcopy tools\flatbuffer-ex\output\c#\* http\FlatBuffer\* /S /E
+robocopy tools\flatbuffer-ex\output\raw\c# http\fb\protocol\raw /S /E
 
 del /S /Q include\fb\protocol\flatbuffer
-xcopy tools\flatbuffer-ex\bin\output\c++\* include\fb\protocol\flatbuffer\* /S /E
-xcopy tools\flatbuffer-ex\bin\output\raw\c++\* include\fb\protocol\flatbuffer\raw\* /S /E
+xcopy tools\flatbuffer-ex\output\c++\* include\fb\protocol\flatbuffer\* /S /E
+xcopy tools\flatbuffer-ex\output\raw\c++\* include\fb\protocol\flatbuffer\raw\* /S /E
 POPD
 
 GOTO SKIP_PAUSE

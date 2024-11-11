@@ -347,7 +347,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     co_await this->post<internal::request::Logout, internal::response::Logout>(
         "internal",
         "/in-game/logout",
-        internal::request::Logout{UTF8(session->name(), PLATFORM::Windows)});
+        internal::request::Logout{session->name()});
     co_await session->destroy();
     socket.data(nullptr);
     co_return true;
@@ -404,7 +404,7 @@ bool context::init_ch(const fb::protocol::db::Character&   response,
 {
     auto map = response.map;
     session.id(response.id);
-    session.name(CP949(response.name, PLATFORM::Windows));
+    session.name(response.name);
     session.last_login(datetime(response.last_login));
     session.admin(response.admin);
     session.color(response.color);
@@ -737,10 +737,7 @@ void context::amqp_thread()
                 if (session == nullptr)
                     co_return;
 
-                session->message(std::format("{}> {}",
-                                             CP949(response.from, PLATFORM::Windows),
-                                             CP949(response.message, PLATFORM::Windows)),
-                                 MESSAGE_TYPE::NOTIFY);
+                session->message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
             });
 
             auto& queue2 = this->_amqp->declare_queue();
@@ -1785,9 +1782,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         auto&& response = co_await this->post<internal::request::Whisper, internal::response::Whisper>(
             "internal",
             "/in-game/whisper",
-            internal::request::Whisper{UTF8(from, PLATFORM::Windows),
-                                       UTF8(to, PLATFORM::Windows),
-                                       UTF8(message, PLATFORM::Windows)});
+            internal::request::Whisper{from, to, message});
         if (this->sockets.contains(fd) == false)
             co_return false;
 

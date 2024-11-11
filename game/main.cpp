@@ -36,9 +36,11 @@ int main(int argc, const char** argv)
         //_CrtSetBreakAlloc(7997394);
 
 #ifdef _WIN32
-        fb::model::option::encoding(cp949);
         ::SetConsoleIcon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
+        fb::model::option::decoding(cp949);
+        flatbuffers::option::encoding(utf8);
+        flatbuffers::option::decoding(cp949);
 #endif
 
         auto  io_context = boost::asio::io_context{};

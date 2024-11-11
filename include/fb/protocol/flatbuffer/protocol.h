@@ -115,6 +115,78 @@ namespace fb::protocol::internal::response
 
 
 namespace flatbuffers {
+
+class option
+{
+public:
+    using encoding_func_type = std::function<std::string(const std::string&)>;
+
+private:
+    encoding_func_type encoding_func;
+    encoding_func_type decoding_func;
+
+private:
+    option() = default;
+
+public:
+    ~option() = default;
+
+private:
+    static option& get()
+    {
+        static std::once_flag flag;
+        static std::unique_ptr<option> ist;
+
+        std::call_once(flag, [] 
+        {
+            ist = std::unique_ptr<option>(new option());
+        });
+        return *ist;
+    }
+
+public:
+    static void encoding(const encoding_func_type& fn)
+    {
+        auto& ist = get();
+        ist.encoding_func = fn;
+    }
+
+public:
+    static void decoding(const encoding_func_type& fn)
+    {
+        auto& ist = get();
+        ist.decoding_func = fn;
+    }
+
+public:
+    static std::string encode(const std::string& value)
+    {
+        auto& ist = get();
+        if (ist.encoding_func)
+        {
+            return ist.encoding_func(value);
+        }
+        else
+        {
+            return value;
+        }
+    }
+
+public:
+    static std::string decode(const std::string& value)
+    {
+        auto& ist = get();
+        if (ist.decoding_func)
+        {
+            return ist.decoding_func(value);
+        }
+        else
+        {
+            return value;
+        }
+    }
+};
+
 template<typename>   constexpr bool is_optional_impl = false;
 template<typename T> constexpr bool is_optional_impl<std::optional<T>> = true;
 template<>           constexpr bool is_optional_impl<std::nullopt_t> = true;
@@ -393,7 +465,7 @@ public:
     { }
 
     Character(const fb::protocol::db::raw::Character& raw)
-        : id(raw.id()), name(raw.name()->c_str()), last_login(raw.last_login()->c_str()), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>())
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), last_login(flatbuffers::option::decode(raw.last_login()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>())
     { }
 
 public:
@@ -439,7 +511,7 @@ public:
     { }
 
     Item(const fb::protocol::db::raw::Item& raw)
-        : user(raw.user()), index(raw.index()), parts(raw.parts()), deposited(raw.deposited()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? raw.custom_name()->c_str() : std::optional<std::string>())
+        : user(raw.user()), index(raw.index()), parts(raw.parts()), deposited(raw.deposited()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -523,7 +595,7 @@ public:
     { }
 
     ArticleSummary(const fb::protocol::db::raw::ArticleSummary& raw)
-        : id(raw.id()), user(raw.user()), user_name(raw.user_name()->c_str()), title(raw.title()->c_str()), created_date(raw.created_date()->c_str())
+        : id(raw.id()), user(raw.user()), user_name(flatbuffers::option::decode(raw.user_name()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
     { }
 
 public:
@@ -567,7 +639,7 @@ public:
     { }
 
     Article(const fb::protocol::db::raw::Article& raw)
-        : id(raw.id()), user(raw.user()), user_name(raw.user_name()->c_str()), title(raw.title()->c_str()), contents(raw.contents()->c_str()), created_date(raw.created_date()->c_str())
+        : id(raw.id()), user(raw.user()), user_name(flatbuffers::option::decode(raw.user_name()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
     { }
 
 public:
@@ -669,7 +741,7 @@ public:
     { }
 
     ChangePw(const fb::protocol::db::request::raw::ChangePw& raw)
-        : uid(raw.uid()), before(raw.before()->c_str()), after(raw.after()->c_str()), birthday(raw.birthday())
+        : uid(raw.uid()), before(flatbuffers::option::decode(raw.before()->c_str())), after(flatbuffers::option::decode(raw.after()->c_str())), birthday(raw.birthday())
     { }
 
 public:
@@ -716,7 +788,7 @@ public:
     { }
 
     InitCharacter(const fb::protocol::db::request::raw::InitCharacter& raw)
-        : uid(raw.uid()), name(raw.name()->c_str()), pw(raw.pw()->c_str()), hp(raw.hp()), mp(raw.mp()), map(raw.map()), x(raw.x()), y(raw.y()), admin(raw.admin())
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), hp(raw.hp()), mp(raw.mp()), map(raw.map()), x(raw.x()), y(raw.y()), admin(raw.admin())
     { }
 
 public:
@@ -756,7 +828,7 @@ public:
     { }
 
     Authenticate(const fb::protocol::db::request::raw::Authenticate& raw)
-        : uid(raw.uid()), pw(raw.pw()->c_str())
+        : uid(raw.uid()), pw(flatbuffers::option::decode(raw.pw()->c_str()))
     { }
 
 public:
@@ -877,7 +949,7 @@ public:
     { }
 
     ReserveName(const fb::protocol::db::request::raw::ReserveName& raw)
-        : name(raw.name()->c_str())
+        : name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -1040,7 +1112,7 @@ public:
     { }
 
     WriteArticle(const fb::protocol::db::request::raw::WriteArticle& raw)
-        : section(raw.section()), user(raw.user()), title(raw.title()->c_str()), contents(raw.contents()->c_str())
+        : section(raw.section()), user(raw.user()), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str()))
     { }
 
 public:
@@ -1641,7 +1713,7 @@ public:
     { }
 
     Login(const fb::protocol::internal::request::raw::Login& raw)
-        : uid(raw.uid()), name(raw.name()->c_str()), map(raw.map())
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), map(raw.map())
     { }
 
 public:
@@ -1680,7 +1752,7 @@ public:
     { }
 
     Logout(const fb::protocol::internal::request::raw::Logout& raw)
-        : name(raw.name()->c_str())
+        : name(flatbuffers::option::decode(raw.name()->c_str()))
     { }
 
 public:
@@ -1723,7 +1795,7 @@ public:
     { }
 
     Ping(const fb::protocol::internal::request::raw::Ping& raw)
-        : id(raw.id()), name(raw.name()->c_str()), service((fb::protocol::internal::Service)raw.service()), ip(raw.ip()->c_str()), port(raw.port())
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), service((fb::protocol::internal::Service)raw.service()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
     { }
 
 public:
@@ -1804,7 +1876,7 @@ public:
     { }
 
     Whisper(const fb::protocol::internal::request::raw::Whisper& raw)
-        : from(raw.from()->c_str()), to(raw.to()->c_str()), message(raw.message()->c_str())
+        : from(flatbuffers::option::decode(raw.from()->c_str())), to(flatbuffers::option::decode(raw.to()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str()))
     { }
 
 public:
@@ -1939,7 +2011,7 @@ public:
     { }
 
     Login(const fb::protocol::internal::response::raw::Login& raw)
-        : success(raw.success()), logon(raw.logon()), ip(raw.ip()->c_str()), port(raw.port())
+        : success(raw.success()), logon(raw.logon()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
     { }
 
 public:
@@ -2051,7 +2123,7 @@ public:
     { }
 
     Transfer(const fb::protocol::internal::response::raw::Transfer& raw)
-        : code((fb::protocol::internal::TransferResult)raw.code()), ip(raw.ip()->c_str()), port(raw.port())
+        : code((fb::protocol::internal::TransferResult)raw.code()), ip(flatbuffers::option::decode(raw.ip()->c_str())), port(raw.port())
     { }
 
 public:
@@ -2093,7 +2165,7 @@ public:
     { }
 
     Whisper(const fb::protocol::internal::response::raw::Whisper& raw)
-        : success(raw.success()), from(raw.from()->c_str()), to(raw.to()), message(raw.message()->c_str())
+        : success(raw.success()), from(flatbuffers::option::decode(raw.from()->c_str())), to(raw.to()), message(flatbuffers::option::decode(raw.message()->c_str()))
     { }
 
 public:
@@ -2172,7 +2244,7 @@ typename FlatBufferOffset<T>::type build(FlatBufferBuilder& builder, const T& va
 template <> 
 flatbuffers::Offset<flatbuffers::String> build<std::string>(FlatBufferBuilder& builder, const std::string& value)
 {
-    return builder.CreateString(value);
+    return builder.CreateString(flatbuffers::option::encode(value));
 }
 
 template <>

@@ -23,6 +23,8 @@ int main(int argc, const char** argv)
 #ifdef _WIN32
         ::SetConsoleIcon(IDI_BARAM);
         ::SetConsoleTitle(CONSOLE_TITLE);
+        flatbuffers::option::encoding(utf8);
+        flatbuffers::option::decoding(cp949);
 #endif
 
         auto height = 9;

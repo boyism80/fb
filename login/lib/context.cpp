@@ -126,10 +126,10 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
 
         this->assert_account(name, pw);
 
-        auto&& response1 = co_await this->post<db::request::ReserveName, db::response::ReserveName>(
-            "db",
-            "/user/reserve-name",
-            db::request::ReserveName{UTF8(name, PLATFORM::Windows)});
+        auto&& response1 =
+            co_await this->post<db::request::ReserveName, db::response::ReserveName>("db",
+                                                                                     "/user/reserve-name",
+                                                                                     db::request::ReserveName{name});
 
         if (this->sockets.contains(fd) == false)
             co_return false;
@@ -146,7 +146,7 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
             "/user/init-ch",
             db::request::InitCharacter{
                 uid,
-                UTF8(name, PLATFORM::Windows),
+                name,
                 pw,
                 config["init"]["hp"]["base"].asUInt() + std::rand() % config["init"]["hp"]["range"].asUInt(), // hp
                 config["init"]["mp"]["base"].asUInt() + std::rand() % config["init"]["mp"]["range"].asUInt(), // mp
@@ -266,7 +266,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         auto&& response3 = co_await this->post<internal::request::Login, internal::response::Login>(
             "internal",
             "/in-game/login",
-            internal::request::Login{uid, UTF8(name, PLATFORM::Windows), (uint16_t)map});
+            internal::request::Login{uid, name, (uint16_t)map});
         if (this->sockets.contains(fd) == false)
             co_return false;
 

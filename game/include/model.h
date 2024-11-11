@@ -28,8 +28,8 @@ class option
 public:
     using encoding_func_type = std::function<std::string(const std::string&)>;
 
-public:
-    encoding_func_type encoding_func;
+private:
+    encoding_func_type decoding_func;
 
 private:
     option() = default;
@@ -37,7 +37,7 @@ private:
 public:
     ~option() = default;
 
-public:
+private:
     static option& get()
     {
         static std::once_flag flag;
@@ -50,10 +50,25 @@ public:
         return *ist;
     }
 
-    static void encoding(const encoding_func_type& fn)
+public:
+    static void decoding(const encoding_func_type& fn)
     {
         auto& ist = get();
-        ist.encoding_func = fn;
+        ist.decoding_func = fn;
+    }
+
+public:
+    static std::string decode(const std::string& value)
+    {
+        auto& ist = get();
+        if (ist.decoding_func)
+        {
+            return ist.decoding_func(value);
+        }
+        else
+        {
+            return value;
+        }
     }
 };
 
@@ -4924,14 +4939,10 @@ template <> uint64_t build<uint64_t>(const Json::Value& json)
 
 template <> std::string build<std::string>(const Json::Value& json)
 {
-    auto& encoding_func = fb::model::option::get().encoding_func;
-
     if (json.isNull())
         return "";
-    else if (encoding_func != nullptr)
-        return encoding_func(json.asString());
     else
-        return json.asString();
+        return fb::model::option::decode(json.asString());
 }
 
 template <> float build<float>(const Json::Value& json)
