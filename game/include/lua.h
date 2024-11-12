@@ -13,6 +13,7 @@ extern "C"
 #include <map>
 #include <list>
 #include <random>
+#include <model.h>
 #include <fb/socket.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>

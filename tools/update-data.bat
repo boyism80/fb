@@ -1,6 +1,6 @@
 @ECHO OFF
 
-git submodule update --recursive --remote data-converter
+rem git submodule update --recursive --remote data-converter
 SET SOURCE=D:\Users\CSHYEON\Data\git\game\c++\fb
 PUSHD data-converter
 CALL dotnet publish -c Release -o "bin"
@@ -16,8 +16,8 @@ PUSHD ..
 DEL /s /q "game\include\model.h"
 DEL /s /q "include\fb\model\datetime.h"
 RMDIR /s /q "game\json"
-XCOPY "tools\data-converter\bin\output\C++\server\*.h" "game\include\*.h"
-XCOPY "tools\data-converter\bin\output\C++\*.h" "include\fb\model\*.h"
+COPY "tools\data-converter\bin\output\C++\server\model.h" "game\include\model.h"
+COPY "tools\data-converter\bin\output\C++\datetime.h" "include\fb\model\datetime.h"
 XCOPY "tools\data-converter\bin\output\json\server\*.json" "game\json\*.json"
 
 DEL /s /q "http\Model\Model.cs"

@@ -16,6 +16,14 @@
 #include <lua.h>
 #include <fb/model/datetime.h>
 #include <model.preprocessor.h>
+#ifdef LUA
+extern "C"
+{
+#include <lua/lua.h>
+#include <lua/lualib.h>
+#include <lua/lauxlib.h>
+}
+#endif
 
 #ifdef BEGIN_PREPROCESSOR
 BEGIN_PREPROCESSOR
@@ -708,6 +716,47 @@ inline const char* enum_tostring<DESTROY_TYPE>(DESTROY_TYPE k)
     {
         { DESTROY_TYPE::DEFAULT, "DEFAULT" }, 
         { DESTROY_TYPE::DEAD, "DEAD" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class DIALOG_RESULT
+{
+    PREV = 0, 
+    QUIT = 1, 
+    NEXT = 2
+}; // end of enum 'DIALOG_RESULT'
+
+template <>
+inline DIALOG_RESULT enum_parse<DIALOG_RESULT>(const std::string k)
+{
+    static const std::unordered_map<std::string, DIALOG_RESULT> enums
+    {
+        { "PREV", DIALOG_RESULT::PREV }, 
+        { "QUIT", DIALOG_RESULT::QUIT }, 
+        { "NEXT", DIALOG_RESULT::NEXT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<DIALOG_RESULT>(DIALOG_RESULT k)
+{
+    static const std::unordered_map<DIALOG_RESULT, const char*> enums
+    {
+        { DIALOG_RESULT::PREV, "PREV" }, 
+        { DIALOG_RESULT::QUIT, "QUIT" }, 
+        { DIALOG_RESULT::NEXT, "NEXT" }
     };
 
     auto i = enums.find(k);
@@ -2198,6 +2247,463 @@ DECLARE_CONST_STRING_EXTENSION
 }; // end of const 'string'
 
 } // end of namespace const_value
+#pragma endregion
+
+#pragma region lua
+#ifdef LUA
+namespace lua {
+void map_enum(lua_State* lua)
+{
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::ATTACK);
+    lua_setglobal(lua, "ACTION_ATTACK");
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::ARROW);
+    lua_setglobal(lua, "ACTION_ARROW");
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::PICKUP);
+    lua_setglobal(lua, "ACTION_PICKUP");
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::PICKUP_SILENT);
+    lua_setglobal(lua, "ACTION_PICKUP_SILENT");
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::CAST_SPELL);
+    lua_setglobal(lua, "ACTION_CAST_SPELL");
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::EAT);
+    lua_setglobal(lua, "ACTION_EAT");
+    lua_pushinteger(lua, fb::model::enum_value::ACTION::EMOTION);
+    lua_setglobal(lua, "ACTION_EMOTION");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_ACTION::NONE);
+    lua_setglobal(lua, "BOARD_ACTION_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_ACTION::SECTIONS);
+    lua_setglobal(lua, "BOARD_ACTION_SECTIONS");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_ACTION::ARTICLES);
+    lua_setglobal(lua, "BOARD_ACTION_ARTICLES");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_ACTION::ARTICLE);
+    lua_setglobal(lua, "BOARD_ACTION_ARTICLE");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_ACTION::WRITE);
+    lua_setglobal(lua, "BOARD_ACTION_WRITE");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_ACTION::DELETE);
+    lua_setglobal(lua, "BOARD_ACTION_DELETE");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_BUTTON_ENABLE::NONE);
+    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_BUTTON_ENABLE::NEXT);
+    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_NEXT");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_BUTTON_ENABLE::UP);
+    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_UP");
+    lua_pushinteger(lua, fb::model::enum_value::BOARD_BUTTON_ENABLE::WRITE);
+    lua_setglobal(lua, "BOARD_BUTTON_ENABLE_WRITE");
+    lua_pushinteger(lua, fb::model::enum_value::BUNDLE_TYPE::NONE);
+    lua_setglobal(lua, "BUNDLE_TYPE_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::BUNDLE_TYPE::BUNDLE);
+    lua_setglobal(lua, "BUNDLE_TYPE_BUNDLE");
+    lua_pushinteger(lua, fb::model::enum_value::BUNDLE_TYPE::PACKAGE);
+    lua_setglobal(lua, "BUNDLE_TYPE_PACKAGE");
+    lua_pushinteger(lua, fb::model::enum_value::CHAT_TYPE::NORMAL);
+    lua_setglobal(lua, "CHAT_TYPE_NORMAL");
+    lua_pushinteger(lua, fb::model::enum_value::CHAT_TYPE::SHOUT);
+    lua_setglobal(lua, "CHAT_TYPE_SHOUT");
+    lua_pushinteger(lua, fb::model::enum_value::CHAT_TYPE::BLUE);
+    lua_setglobal(lua, "CHAT_TYPE_BLUE");
+    lua_pushinteger(lua, fb::model::enum_value::CHAT_TYPE::LIGHT_BLUE);
+    lua_setglobal(lua, "CHAT_TYPE_LIGHT_BLUE");
+    lua_pushinteger(lua, fb::model::enum_value::CLASS::NONE);
+    lua_setglobal(lua, "CLASS_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::CLASS::WARRIOR);
+    lua_setglobal(lua, "CLASS_WARRIOR");
+    lua_pushinteger(lua, fb::model::enum_value::CLASS::THIEF);
+    lua_setglobal(lua, "CLASS_THIEF");
+    lua_pushinteger(lua, fb::model::enum_value::CLASS::MAGICION);
+    lua_setglobal(lua, "CLASS_MAGICION");
+    lua_pushinteger(lua, fb::model::enum_value::CLASS::ASCETIC);
+    lua_setglobal(lua, "CLASS_ASCETIC");
+    lua_pushinteger(lua, fb::model::enum_value::CONDITION::NONE);
+    lua_setglobal(lua, "CONDITION_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::CONDITION::MOVE);
+    lua_setglobal(lua, "CONDITION_MOVE");
+    lua_pushinteger(lua, fb::model::enum_value::CONDITION::SIGHT);
+    lua_setglobal(lua, "CONDITION_SIGHT");
+    lua_pushinteger(lua, fb::model::enum_value::CONDITION::HEAR);
+    lua_setglobal(lua, "CONDITION_HEAR");
+    lua_pushinteger(lua, fb::model::enum_value::CONDITION::ORAL);
+    lua_setglobal(lua, "CONDITION_ORAL");
+    lua_pushinteger(lua, fb::model::enum_value::CONDITION::MAP);
+    lua_setglobal(lua, "CONDITION_MAP");
+    lua_pushinteger(lua, fb::model::enum_value::CREATURE::PHOENIX);
+    lua_setglobal(lua, "CREATURE_PHOENIX");
+    lua_pushinteger(lua, fb::model::enum_value::CREATURE::TIGER);
+    lua_setglobal(lua, "CREATURE_TIGER");
+    lua_pushinteger(lua, fb::model::enum_value::CREATURE::TURTLE);
+    lua_setglobal(lua, "CREATURE_TURTLE");
+    lua_pushinteger(lua, fb::model::enum_value::CREATURE::DRAGON);
+    lua_setglobal(lua, "CREATURE_DRAGON");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::RIDE);
+    lua_setglobal(lua, "CUSTOM_SETTING_RIDE");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::WHISPER);
+    lua_setglobal(lua, "CUSTOM_SETTING_WHISPER");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::GROUP);
+    lua_setglobal(lua, "CUSTOM_SETTING_GROUP");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::ROAR);
+    lua_setglobal(lua, "CUSTOM_SETTING_ROAR");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::ROAR_WORLDS);
+    lua_setglobal(lua, "CUSTOM_SETTING_ROAR_WORLDS");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::MAGIC_EFFECT);
+    lua_setglobal(lua, "CUSTOM_SETTING_MAGIC_EFFECT");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::WEATHER_EFFECT);
+    lua_setglobal(lua, "CUSTOM_SETTING_WEATHER_EFFECT");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::FIXED_MOVE);
+    lua_setglobal(lua, "CUSTOM_SETTING_FIXED_MOVE");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::TRADE);
+    lua_setglobal(lua, "CUSTOM_SETTING_TRADE");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::FAST_MOVE);
+    lua_setglobal(lua, "CUSTOM_SETTING_FAST_MOVE");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::EFFECT_SOUND);
+    lua_setglobal(lua, "CUSTOM_SETTING_EFFECT_SOUND");
+    lua_pushinteger(lua, fb::model::enum_value::CUSTOM_SETTING::PK);
+    lua_setglobal(lua, "CUSTOM_SETTING_PK");
+    lua_pushinteger(lua, fb::model::enum_value::DEATH_PENALTY::NONE);
+    lua_setglobal(lua, "DEATH_PENALTY_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::DEATH_PENALTY::DROP);
+    lua_setglobal(lua, "DEATH_PENALTY_DROP");
+    lua_pushinteger(lua, fb::model::enum_value::DEATH_PENALTY::DESTROY);
+    lua_setglobal(lua, "DEATH_PENALTY_DESTROY");
+    lua_pushinteger(lua, fb::model::enum_value::DESTROY_TYPE::DEFAULT);
+    lua_setglobal(lua, "DESTROY_TYPE_DEFAULT");
+    lua_pushinteger(lua, fb::model::enum_value::DESTROY_TYPE::DEAD);
+    lua_setglobal(lua, "DESTROY_TYPE_DEAD");
+    lua_pushinteger(lua, fb::model::enum_value::DIALOG_RESULT::PREV);
+    lua_setglobal(lua, "DIALOG_RESULT_PREV");
+    lua_pushinteger(lua, fb::model::enum_value::DIALOG_RESULT::QUIT);
+    lua_setglobal(lua, "DIALOG_RESULT_QUIT");
+    lua_pushinteger(lua, fb::model::enum_value::DIALOG_RESULT::NEXT);
+    lua_setglobal(lua, "DIALOG_RESULT_NEXT");
+    lua_pushinteger(lua, fb::model::enum_value::DIRECTION::TOP);
+    lua_setglobal(lua, "DIRECTION_TOP");
+    lua_pushinteger(lua, fb::model::enum_value::DIRECTION::RIGHT);
+    lua_setglobal(lua, "DIRECTION_RIGHT");
+    lua_pushinteger(lua, fb::model::enum_value::DIRECTION::BOTTOM);
+    lua_setglobal(lua, "DIRECTION_BOTTOM");
+    lua_pushinteger(lua, fb::model::enum_value::DIRECTION::LEFT);
+    lua_setglobal(lua, "DIRECTION_LEFT");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::item);
+    lua_setglobal(lua, "DSL_item");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::level);
+    lua_setglobal(lua, "DSL_level");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::sex);
+    lua_setglobal(lua, "DSL_sex");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::strength);
+    lua_setglobal(lua, "DSL_strength");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::intelligence);
+    lua_setglobal(lua, "DSL_intelligence");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::dexteritry);
+    lua_setglobal(lua, "DSL_dexteritry");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::promotion);
+    lua_setglobal(lua, "DSL_promotion");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::class_t);
+    lua_setglobal(lua, "DSL_class_t");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::admin);
+    lua_setglobal(lua, "DSL_admin");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::world);
+    lua_setglobal(lua, "DSL_world");
+    lua_pushinteger(lua, fb::model::enum_value::DSL::map);
+    lua_setglobal(lua, "DSL_map");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::FAST);
+    lua_setglobal(lua, "DURATION_FAST");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::ATTACK);
+    lua_setglobal(lua, "DURATION_ATTACK");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::SPELL);
+    lua_setglobal(lua, "DURATION_SPELL");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::EAT);
+    lua_setglobal(lua, "DURATION_EAT");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::THROW);
+    lua_setglobal(lua, "DURATION_THROW");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::PICKUP);
+    lua_setglobal(lua, "DURATION_PICKUP");
+    lua_pushinteger(lua, fb::model::enum_value::DURATION::EMOTION);
+    lua_setglobal(lua, "DURATION_EMOTION");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::UNKNOWN);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_UNKNOWN");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::WEAPON);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_WEAPON");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::ARMOR);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_ARMOR");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::SHIELD);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_SHIELD");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::HELMET);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_HELMET");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::LEFT_HAND);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_LEFT_HAND");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::RIGHT_HAND);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_RIGHT_HAND");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::LEFT_AUX);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_LEFT_AUX");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_PARTS::RIGHT_AUX);
+    lua_setglobal(lua, "EQUIPMENT_PARTS_RIGHT_AUX");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_POSITION::LEFT);
+    lua_setglobal(lua, "EQUIPMENT_POSITION_LEFT");
+    lua_pushinteger(lua, fb::model::enum_value::EQUIPMENT_POSITION::RIGHT);
+    lua_setglobal(lua, "EQUIPMENT_POSITION_RIGHT");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_CONSUME");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::BUNDLE);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_BUNDLE");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::SCRIPT);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_SCRIPT");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::CASH);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_CASH");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::EQUIPMENT);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_EQUIPMENT");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::PACK);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_PACK");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::WEAPON);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_WEAPON");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::ARMOR);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_ARMOR");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::SHIELD);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_SHIELD");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::HELMET);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_HELMET");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::RING);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_RING");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::AUXILIARY);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_AUXILIARY");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_ATTRIBUTE::ARROW);
+    lua_setglobal(lua, "ITEM_ATTRIBUTE_ARROW");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::REMOVED);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_REMOVED");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::DROP);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_DROP");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::EAT);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_EAT");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::SMOKE);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_SMOKE");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::THROW);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_THROW");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::SHOOT);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_SHOOT");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::REDUCE);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_REDUCE");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::STICK);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_STICK");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::DECAY);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_DECAY");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::GIVE);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_GIVE");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::SELL);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_SELL");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::NONE);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_DELETE_TYPE::DESTROY);
+    lua_setglobal(lua, "ITEM_DELETE_TYPE_DESTROY");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::STUFF);
+    lua_setglobal(lua, "ITEM_TYPE_STUFF");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::CASH);
+    lua_setglobal(lua, "ITEM_TYPE_CASH");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::CONSUME);
+    lua_setglobal(lua, "ITEM_TYPE_CONSUME");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::WEAPON);
+    lua_setglobal(lua, "ITEM_TYPE_WEAPON");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::ARMOR);
+    lua_setglobal(lua, "ITEM_TYPE_ARMOR");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::HELMET);
+    lua_setglobal(lua, "ITEM_TYPE_HELMET");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::RING);
+    lua_setglobal(lua, "ITEM_TYPE_RING");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::SHIELD);
+    lua_setglobal(lua, "ITEM_TYPE_SHIELD");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::AUXILIARY);
+    lua_setglobal(lua, "ITEM_TYPE_AUXILIARY");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::BOW);
+    lua_setglobal(lua, "ITEM_TYPE_BOW");
+    lua_pushinteger(lua, fb::model::enum_value::ITEM_TYPE::PACKAGE);
+    lua_setglobal(lua, "ITEM_TYPE_PACKAGE");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_EFFECT_TYPE::NONE);
+    lua_setglobal(lua, "MAP_EFFECT_TYPE_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_EFFECT_TYPE::FIRE);
+    lua_setglobal(lua, "MAP_EFFECT_TYPE_FIRE");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_EFFECT_TYPE::WATER);
+    lua_setglobal(lua, "MAP_EFFECT_TYPE_WATER");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::NONE);
+    lua_setglobal(lua, "MAP_OPTION_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::BUILD_IN);
+    lua_setglobal(lua, "MAP_OPTION_BUILD_IN");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::DISABLE_TALK);
+    lua_setglobal(lua, "MAP_OPTION_DISABLE_TALK");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::DISABLE_WHISPER);
+    lua_setglobal(lua, "MAP_OPTION_DISABLE_WHISPER");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::DISABLE_SPELL);
+    lua_setglobal(lua, "MAP_OPTION_DISABLE_SPELL");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::HUNTING_GROUND);
+    lua_setglobal(lua, "MAP_OPTION_HUNTING_GROUND");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::ENABLE_PK);
+    lua_setglobal(lua, "MAP_OPTION_ENABLE_PK");
+    lua_pushinteger(lua, fb::model::enum_value::MAP_OPTION::DISABLE_DIE_PENALTY);
+    lua_setglobal(lua, "MAP_OPTION_DISABLE_DIE_PENALTY");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::NOTIFY);
+    lua_setglobal(lua, "MESSAGE_TYPE_NOTIFY");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::BLUE);
+    lua_setglobal(lua, "MESSAGE_TYPE_BLUE");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::STATE);
+    lua_setglobal(lua, "MESSAGE_TYPE_STATE");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::SHOUT);
+    lua_setglobal(lua, "MESSAGE_TYPE_SHOUT");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::WORLD);
+    lua_setglobal(lua, "MESSAGE_TYPE_WORLD");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::POPUP);
+    lua_setglobal(lua, "MESSAGE_TYPE_POPUP");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::YELLOW);
+    lua_setglobal(lua, "MESSAGE_TYPE_YELLOW");
+    lua_pushinteger(lua, fb::model::enum_value::MESSAGE_TYPE::BROWN);
+    lua_setglobal(lua, "MESSAGE_TYPE_BROWN");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_ATTACK_TYPE::NONE);
+    lua_setglobal(lua, "MOB_ATTACK_TYPE_NONE");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_ATTACK_TYPE::COUNTER);
+    lua_setglobal(lua, "MOB_ATTACK_TYPE_COUNTER");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_ATTACK_TYPE::CONTAINMENT);
+    lua_setglobal(lua, "MOB_ATTACK_TYPE_CONTAINMENT");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_ATTACK_TYPE::RUN_AWAY);
+    lua_setglobal(lua, "MOB_ATTACK_TYPE_RUN_AWAY");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_ATTACK_TYPE::NO_MOVE);
+    lua_setglobal(lua, "MOB_ATTACK_TYPE_NO_MOVE");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_SIZE::SMALL);
+    lua_setglobal(lua, "MOB_SIZE_SMALL");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_SIZE::LARGE);
+    lua_setglobal(lua, "MOB_SIZE_LARGE");
+    lua_pushinteger(lua, fb::model::enum_value::MOB_SIZE::ALL);
+    lua_setglobal(lua, "MOB_SIZE_ALL");
+    lua_pushinteger(lua, fb::model::enum_value::NATION::GOGURYEO);
+    lua_setglobal(lua, "NATION_GOGURYEO");
+    lua_pushinteger(lua, fb::model::enum_value::NATION::BUYEO);
+    lua_setglobal(lua, "NATION_BUYEO");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::UNKNOWN);
+    lua_setglobal(lua, "OBJECT_TYPE_UNKNOWN");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::ITEM);
+    lua_setglobal(lua, "OBJECT_TYPE_ITEM");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::NPC);
+    lua_setglobal(lua, "OBJECT_TYPE_NPC");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::MOB);
+    lua_setglobal(lua, "OBJECT_TYPE_MOB");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::CHARACTER);
+    lua_setglobal(lua, "OBJECT_TYPE_CHARACTER");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::OBJECT);
+    lua_setglobal(lua, "OBJECT_TYPE_OBJECT");
+    lua_pushinteger(lua, fb::model::enum_value::OBJECT_TYPE::LIFE);
+    lua_setglobal(lua, "OBJECT_TYPE_LIFE");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::SELL);
+    lua_setglobal(lua, "REGEX_SELL");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::BUY);
+    lua_setglobal(lua, "REGEX_BUY");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::REPAIR);
+    lua_setglobal(lua, "REGEX_REPAIR");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::DEPOSIT_MONEY);
+    lua_setglobal(lua, "REGEX_DEPOSIT_MONEY");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::WITHDRAW_MONEY);
+    lua_setglobal(lua, "REGEX_WITHDRAW_MONEY");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::DEPOSIT_ITEM);
+    lua_setglobal(lua, "REGEX_DEPOSIT_ITEM");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::WITHDRAW_ITEM);
+    lua_setglobal(lua, "REGEX_WITHDRAW_ITEM");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::SELL_LIST);
+    lua_setglobal(lua, "REGEX_SELL_LIST");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::BUY_LIST);
+    lua_setglobal(lua, "REGEX_BUY_LIST");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::SELL_PRICE);
+    lua_setglobal(lua, "REGEX_SELL_PRICE");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::BUY_PRICE);
+    lua_setglobal(lua, "REGEX_BUY_PRICE");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::DEPOSITED_MONEY);
+    lua_setglobal(lua, "REGEX_DEPOSITED_MONEY");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::RENAME_WEAPON);
+    lua_setglobal(lua, "REGEX_RENAME_WEAPON");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::HOLD_ITEM_LIST);
+    lua_setglobal(lua, "REGEX_HOLD_ITEM_LIST");
+    lua_pushinteger(lua, fb::model::enum_value::REGEX::HOLD_ITEM_COUNT);
+    lua_setglobal(lua, "REGEX_HOLD_ITEM_COUNT");
+    lua_pushinteger(lua, fb::model::enum_value::SEX::MAN);
+    lua_setglobal(lua, "SEX_MAN");
+    lua_pushinteger(lua, fb::model::enum_value::SEX::WOMAN);
+    lua_setglobal(lua, "SEX_WOMAN");
+    lua_pushinteger(lua, fb::model::enum_value::SEX::ALL);
+    lua_setglobal(lua, "SEX_ALL");
+    lua_pushinteger(lua, fb::model::enum_value::SOUND::EAT);
+    lua_setglobal(lua, "SOUND_EAT");
+    lua_pushinteger(lua, fb::model::enum_value::SOUND::DISGUISE);
+    lua_setglobal(lua, "SOUND_DISGUISE");
+    lua_pushinteger(lua, fb::model::enum_value::SOUND::SWING);
+    lua_setglobal(lua, "SOUND_SWING");
+    lua_pushinteger(lua, fb::model::enum_value::SOUND::DAMAGE);
+    lua_setglobal(lua, "SOUND_DAMAGE");
+    lua_pushinteger(lua, fb::model::enum_value::SOUND::EQUIPMENT_OFF);
+    lua_setglobal(lua, "SOUND_EQUIPMENT_OFF");
+    lua_pushinteger(lua, fb::model::enum_value::SOUND::EQUIPMENT_ON);
+    lua_setglobal(lua, "SOUND_EQUIPMENT_ON");
+    lua_pushinteger(lua, fb::model::enum_value::SPELL_TYPE::INPUT);
+    lua_setglobal(lua, "SPELL_TYPE_INPUT");
+    lua_pushinteger(lua, fb::model::enum_value::SPELL_TYPE::TARGET);
+    lua_setglobal(lua, "SPELL_TYPE_TARGET");
+    lua_pushinteger(lua, fb::model::enum_value::SPELL_TYPE::NORMAL);
+    lua_setglobal(lua, "SPELL_TYPE_NORMAL");
+    lua_pushinteger(lua, fb::model::enum_value::SPELL_TYPE::UNKNOWN1);
+    lua_setglobal(lua, "SPELL_TYPE_UNKNOWN1");
+    lua_pushinteger(lua, fb::model::enum_value::SPELL_TYPE::UNKNOWN2);
+    lua_setglobal(lua, "SPELL_TYPE_UNKNOWN2");
+    lua_pushinteger(lua, fb::model::enum_value::SPELL_TYPE::UNKNOWN3);
+    lua_setglobal(lua, "SPELL_TYPE_UNKNOWN3");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::NORMAL);
+    lua_setglobal(lua, "STATE_NORMAL");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::GHOST);
+    lua_setglobal(lua, "STATE_GHOST");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::TRANSLUCENCY);
+    lua_setglobal(lua, "STATE_TRANSLUCENCY");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::RIDING);
+    lua_setglobal(lua, "STATE_RIDING");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::DISGUISE);
+    lua_setglobal(lua, "STATE_DISGUISE");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::HALF_CLOACK);
+    lua_setglobal(lua, "STATE_HALF_CLOACK");
+    lua_pushinteger(lua, fb::model::enum_value::STATE::CLOACK);
+    lua_setglobal(lua, "STATE_CLOACK");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::CONDITION);
+    lua_setglobal(lua, "STATE_LEVEL_CONDITION");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::EXP_MONEY);
+    lua_setglobal(lua, "STATE_LEVEL_EXP_MONEY");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::HP_MP);
+    lua_setglobal(lua, "STATE_LEVEL_HP_MP");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::BASED);
+    lua_setglobal(lua, "STATE_LEVEL_BASED");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::LEVEL_MAX);
+    lua_setglobal(lua, "STATE_LEVEL_LEVEL_MAX");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::LEVEL_MIN);
+    lua_setglobal(lua, "STATE_LEVEL_LEVEL_MIN");
+    lua_pushinteger(lua, fb::model::enum_value::STATE_LEVEL::LEVEL_MIDDLE);
+    lua_setglobal(lua, "STATE_LEVEL_LEVEL_MIDDLE");
+    lua_pushinteger(lua, fb::model::enum_value::SWAP_TYPE::ITEM);
+    lua_setglobal(lua, "SWAP_TYPE_ITEM");
+    lua_pushinteger(lua, fb::model::enum_value::SWAP_TYPE::SPELL);
+    lua_setglobal(lua, "SWAP_TYPE_SPELL");
+    lua_pushinteger(lua, fb::model::enum_value::TIMER_TYPE::INCREASE);
+    lua_setglobal(lua, "TIMER_TYPE_INCREASE");
+    lua_pushinteger(lua, fb::model::enum_value::TIMER_TYPE::DECREASE);
+    lua_setglobal(lua, "TIMER_TYPE_DECREASE");
+    lua_pushinteger(lua, fb::model::enum_value::WEAPON_TYPE::NORMAL);
+    lua_setglobal(lua, "WEAPON_TYPE_NORMAL");
+    lua_pushinteger(lua, fb::model::enum_value::WEAPON_TYPE::SPEAR);
+    lua_setglobal(lua, "WEAPON_TYPE_SPEAR");
+    lua_pushinteger(lua, fb::model::enum_value::WEAPON_TYPE::BOW);
+    lua_setglobal(lua, "WEAPON_TYPE_BOW");
+    lua_pushinteger(lua, fb::model::enum_value::WEAPON_TYPE::FAN);
+    lua_setglobal(lua, "WEAPON_TYPE_FAN");
+    lua_pushinteger(lua, fb::model::enum_value::WEAPON_TYPE::UNKNOWN);
+    lua_setglobal(lua, "WEAPON_TYPE_UNKNOWN");
+    lua_pushinteger(lua, fb::model::enum_value::WEATHER_TYPE::NORMAL);
+    lua_setglobal(lua, "WEATHER_TYPE_NORMAL");
+    lua_pushinteger(lua, fb::model::enum_value::WEATHER_TYPE::RAIN);
+    lua_setglobal(lua, "WEATHER_TYPE_RAIN");
+    lua_pushinteger(lua, fb::model::enum_value::WEATHER_TYPE::SNOW);
+    lua_setglobal(lua, "WEATHER_TYPE_SNOW");
+    lua_pushinteger(lua, fb::model::enum_value::WEATHER_TYPE::BIRD);
+    lua_setglobal(lua, "WEATHER_TYPE_BIRD");
+}
+#endif
+
+} // end of namespace fb::model::lua
 #pragma endregion
 
 #ifdef DECLARE_AFTER_CONST

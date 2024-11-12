@@ -197,6 +197,17 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum DialogResult
+    {
+        [EnumMember(Value = "PREV")]
+        Prev = 0, 
+        [EnumMember(Value = "QUIT")]
+        Quit = 1, 
+        [EnumMember(Value = "NEXT")]
+        Next = 2
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Direction
     {
         [EnumMember(Value = "TOP")]

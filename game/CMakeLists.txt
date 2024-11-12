@@ -16,12 +16,12 @@ set(CMAKE_CXX_STANDARD 20)
 add_compile_options(-g)
 add_compile_options(-rdynamic)
 add_definitions(-DREDISCPP_HEADER_ONLY)
+add_compile_definitions(LUA)
 
 include_directories("${PROJECT_SOURCE_DIR}/..")
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 include_directories("${PROJECT_SOURCE_DIR}/../lib/include")
 include_directories("${PROJECT_SOURCE_DIR}/include")
-include_directories("/usr/include/mysql")
 
 file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
 
