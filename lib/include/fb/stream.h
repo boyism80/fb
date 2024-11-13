@@ -270,7 +270,11 @@ public:
             auto len     = this->read<T2>();
             auto str     = std::string(this->_stream.data() + this->_seek, this->_stream.data() + this->_seek + len);
             this->_seek += len;
+#ifndef _WIN32
+            return utf8(str);
+#else
             return str;
+#endif
         }
         else
         {
