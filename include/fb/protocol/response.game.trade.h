@@ -23,15 +23,15 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         const auto& cname = model.promotion[me.cls()][me.promotion()].name;
 
         std::stringstream sstream;
         sstream << this->me.name() << '(' << cname.c_str() << ')';
 
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x00).write_u32(this->me.sequence()).write(sstream.str()).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x00).write<uint32_t>(this->me.sequence()).write(sstream.str()).write<uint8_t>(0x00);
     }
 };
 
@@ -53,18 +53,18 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         const auto item = this->me.trade.item(this->index);
 
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x02)
-            .write_u8(this->mine ? 0x00 : 0x01)
-            .write_u8(this->index) // trade slot index
-            .write_u16(item->look())
-            .write_u8(item->color())
-            .write(item->trade_name())
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x02);
+        writer.write<uint8_t>(this->mine ? 0x00 : 0x01);
+        writer.write<uint8_t>(this->index); // trade slot index
+        writer.write<uint16_t>(item->look());
+        writer.write<uint8_t>(item->color());
+        writer.write(item->trade_name());
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -77,10 +77,10 @@ public:
     bundle() = default;
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x01).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x01).write<uint8_t>(0x00);
     }
 };
 
@@ -100,10 +100,13 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x03).write_u8(this->mine ? 0x00 : 0x01).write_u32(this->me.trade.money()).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x03);
+        writer.write<uint8_t>(this->mine ? 0x00 : 0x01);
+        writer.write<uint32_t>(this->me.trade.money());
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -121,10 +124,12 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x04).write(this->message, true).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x04);
+        writer.write<std::string, uint16_t>(this->message);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -137,10 +142,10 @@ public:
     lock() = default;
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x05).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x05).write<uint8_t>(0x00);
     }
 };
 

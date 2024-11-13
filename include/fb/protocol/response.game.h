@@ -15,16 +15,16 @@ public:
     init() = default;
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x06).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x06).write<uint8_t>(0x00);
     }
 #ifdef BOT
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        in_stream.read_u8();
-        in_stream.read_u8();
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
     }
 #endif
 };
@@ -55,16 +55,17 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->type).write(this->text, true);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->type));
+        writer.write<std::string, uint16_t>(this->text);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->type = (MESSAGE_TYPE)in_stream.read_u8();
-        this->text = in_stream.readstr_u16();
+        this->type = (MESSAGE_TYPE)reader.read<uint8_t>();
+        this->text = reader.read<std::string, uint16_t>();
     }
 #endif
 };
@@ -88,19 +89,19 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u16((uint16_t)sockets.size()).write_u16((uint16_t)sockets.size()).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint16_t>((uint16_t)sockets.size()).write<uint16_t>((uint16_t)sockets.size()).write<uint8_t>(0x00);
 
-        this->sockets.each([this, &out_stream](auto& socket) {
+        this->sockets.each([this, &writer](auto& socket) {
             auto  user = socket.data();
             auto& name = user->name();
 
-            out_stream.write_u8(0x10 * static_cast<int>(user->nation()))
-                .write_u8(0x10 * static_cast<int>(user->promotion()))
-                .write_u8((&this->me == user) ? 0x88 : 0x0F)
-                .write(name, false);
+            writer.write<uint8_t>(0x10 * static_cast<int>(user->nation()));
+            writer.write<uint8_t>(0x10 * static_cast<int>(user->promotion()));
+            writer.write<uint8_t>((&this->me == user) ? 0x88 : 0x0F);
+            writer.write<std::string, uint8_t>(name);
         });
     }
 };
@@ -134,17 +135,19 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->type).write_u32(this->me.sequence()).write(this->text);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->type));
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write<std::string>(this->text);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->type     = (CHAT_TYPE)in_stream.read_u8();
-        this->sequence = in_stream.read_u32();
-        this->text     = in_stream.readstr_u8();
+        this->type     = (CHAT_TYPE)reader.read<uint8_t>();
+        this->sequence = reader.read<uint32_t>();
+        this->text     = reader.read<std::string, uint8_t>();
     }
 #endif
 };
@@ -163,7 +166,7 @@ public:
 
 public:
 #ifdef BOT
-    time()  = default;
+    time() = default;
 #else
     time(uint8_t hours) :
         hours(hours)
@@ -172,20 +175,19 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream
-            .write_u8(this->hours % 24) // hours
-            .write_u8(0x00)             // Unknown
-            .write_u8(0x00);            // Unknown
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->hours % 24); // hours
+        writer.write<uint8_t>(0x00);             // Unknown
+        writer.write<uint8_t>(0x00);            // Unknown
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->hours = in_stream.read_u8();
-        in_stream.read_u8();
-        in_stream.read_u8();
+        this->hours = reader.read<uint8_t>();
+        reader.read<uint8_t>();
+        reader.read<uint8_t>();
     }
 #endif
 };
@@ -204,10 +206,11 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->value).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->value));
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -225,10 +228,10 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x00).write_u8(std::max(0, 20 - this->value));
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x00).write<uint8_t>(std::max(0, 20 - this->value));
     }
 };
 
@@ -248,10 +251,12 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->type).write_u32(this->time).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->type));
+        writer.write<uint32_t>(this->time);
+        writer.write<uint8_t>(0x00);
     }
 };
 

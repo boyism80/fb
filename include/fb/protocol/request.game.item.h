@@ -23,9 +23,9 @@ public:
     active() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->index = in_stream.read_u8() - 1;
+        this->index = reader.read<uint8_t>() - 1;
     }
 };
 
@@ -41,9 +41,9 @@ public:
     inactive() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->parts = EQUIPMENT_PARTS(in_stream.read_u8());
+        this->parts = EQUIPMENT_PARTS(reader.read<uint8_t>());
     }
 };
 
@@ -60,10 +60,10 @@ public:
     drop() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->index = in_stream.read_u8() - 1;
-        this->all   = bool(in_stream.read_u8());
+        this->index = reader.read<uint8_t>() - 1;
+        this->all   = bool(reader.read<uint8_t>());
     }
 };
 
@@ -79,9 +79,9 @@ public:
     drop_cash() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->chunk = in_stream.read_u32();
+        this->chunk = reader.read<uint32_t>();
     }
 };
 
@@ -97,11 +97,11 @@ public:
     mix() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        auto count = in_stream.read_u8();
+        auto count = reader.read<uint8_t>();
         for (int i = 0; i < count; i++)
-            this->indices.push_back(in_stream.read_u8());
+            this->indices.push_back(reader.read<uint8_t>());
     }
 };
 
@@ -118,10 +118,10 @@ public:
     throws() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->all   = in_stream.read_u8();
-        this->index = in_stream.read_u8() - 1;
+        this->all   = reader.read<uint8_t>();
+        this->index = reader.read<uint8_t>() - 1;
     }
 };
 
@@ -138,13 +138,13 @@ public:
     info() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->position = in_stream.read_u16();
-        auto unknown1  = in_stream.read_u8();
-        auto unknown2  = in_stream.read_u8();
-        auto unknown3  = in_stream.read_u8();
-        this->slot     = in_stream.read_u8() - 1;
+        this->position = reader.read<uint16_t>();
+        auto unknown1  = reader.read<uint8_t>();
+        auto unknown2  = reader.read<uint8_t>();
+        auto unknown3  = reader.read<uint8_t>();
+        this->slot     = reader.read<uint8_t>() - 1;
     }
 };
 

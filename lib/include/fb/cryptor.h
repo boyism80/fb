@@ -26,14 +26,14 @@ private:
     void crypt(const uint8_t* source, uint8_t* dest, uint32_t size, const uint8_t* key, uint32_t ksize);
 
 public:
-    uint32_t encrypt(buffer& data, uint32_t offset, uint32_t size);
-    uint32_t encrypt(buffer& data);
-    uint32_t decrypt(buffer& data, uint32_t offset, uint32_t size);
-    uint32_t decrypt(buffer& data);
-    uint32_t wrap(buffer& data, uint32_t offset) const;
-    uint32_t wrap(buffer& data) const;
-    uint32_t unwrap(buffer& data, uint32_t offset) const;
-    uint32_t unwrap(buffer& data) const;
+    uint32_t encrypt(fb::stream& data, uint32_t offset, uint32_t size);
+    uint32_t encrypt(fb::stream& data);
+    uint32_t decrypt(fb::stream& data, uint32_t offset, uint32_t size);
+    uint32_t decrypt(fb::stream& data);
+    uint32_t wrap(fb::stream& data, uint32_t offset) const;
+    uint32_t wrap(fb::stream& data) const;
+    uint32_t unwrap(fb::stream& data, uint32_t offset) const;
+    uint32_t unwrap(fb::stream& data) const;
 
 public:
     uint8_t  type() const;

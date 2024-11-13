@@ -74,7 +74,7 @@ async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
     co_await this->context.destroy(*this, destroy_type);
 }
 
-void fb::game::object::send(const fb::ostream& stream, bool encrypt, bool wrap)
+void fb::game::object::send(const fb::stream& stream, bool encrypt, bool wrap)
 { }
 
 void fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)

@@ -14,14 +14,15 @@ fb::game::map::map(const fb::game::context& context,
     if (this->active == false)
         return;
 
-    std::string what;
+    auto what   = std::string();
+    auto stream = fb::stream((uint8_t*)data, size);
+    auto reader = fb::stream_reader<big_endian>(stream);
 
-    fb::istream istream((uint8_t*)data, size);
-    this->_size.width = istream.read_u16();
+    this->_size.width = reader.read<uint16_t>();
     if (this->_size.width == 0)
         throw std::runtime_error(std::format("맵 데이터가 올바르지 않습니다. ({})", model.name));
 
-    this->_size.height = istream.read_u16();
+    this->_size.height = reader.read<uint16_t>();
     if (this->_size.height == 0)
         throw std::runtime_error(std::format("맵 데이터가 올바르지 않습니다. ({})", model.name));
 
@@ -32,8 +33,8 @@ fb::game::map::map(const fb::game::context& context,
 
     for (uint32_t i = 0; i < map_size; i++)
     {
-        this->_tiles[i].id     = istream.read_u16();
-        this->_tiles[i].object = istream.read_u16();
+        this->_tiles[i].id     = reader.read<uint16_t>();
+        this->_tiles[i].object = reader.read<uint16_t>();
     }
 
     this->_sectors = std::make_unique<fb::game::sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));

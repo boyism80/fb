@@ -32,27 +32,27 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         auto size = this->model.board.size();
 
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x01).write_u16(size);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x01).write<uint16_t>(size);
 
         for (const auto& [k, v] : this->model.board)
         {
-            out_stream.write_u16(k).write(v.name);
+            writer.write<uint16_t>(k).write(v.name);
         }
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        in_stream.read_u8();
-        auto size = in_stream.read_u16();
+        reader.read<uint8_t>();
+        auto size = reader.read<uint16_t>();
         for (auto i = 0; i < size; i++)
         {
-            auto id    = in_stream.read_u16();
-            auto title = in_stream.readstr_u8();
+            auto id    = reader.read<uint16_t>();
+            auto title = reader.read<std::string, uint8_t>();
 
             this->boards.push_back(fb::bot::board(id, title));
         }
@@ -89,25 +89,28 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x02).write_u8(button_flags).write_u16(board.id).write(board.name);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x02);
+        writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
+        writer.write<uint16_t>(board.id);
+        writer.write<std::string>(board.name);
 
         auto count = this->article_list.size();
-        out_stream.write_u8((uint8_t)count);
+        writer.write<uint8_t>((uint8_t)count);
 
         for (auto& article : this->article_list)
         {
-            out_stream.write_u8(0x00)
-                .write_u16(article.id)
-                .write(article.uname)
-                .write_u8(article.month)
-                .write_u8(article.day)
-                .write(article.title);
+            writer.write<uint8_t>(0x00);
+            writer.write<uint16_t>(article.id);
+            writer.write(article.uname);
+            writer.write<uint8_t>(article.month);
+            writer.write<uint8_t>(article.day);
+            writer.write(article.title);
         }
 
-        out_stream.write_u8(0x00);
+        writer.write<uint8_t>(0x00);
     }
 #else
 
@@ -139,19 +142,19 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x03)
-            .write_u8(button_flags)
-            .write_u8(0x00)
-            .write_u16(this->value.id)
-            .write(this->value.uname)
-            .write_u8(this->value.month)
-            .write_u8(this->value.day)
-            .write(this->value.title)
-            .write(this->value.contents, true)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x03);
+        writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
+        writer.write<uint8_t>(0x00);
+        writer.write<uint16_t>(this->value.id);
+        writer.write(this->value.uname);
+        writer.write<uint8_t>(this->value.month);
+        writer.write<uint8_t>(this->value.day);
+        writer.write(this->value.title);
+        writer.write<std::string, uint16_t>(this->value.contents);
+        writer.write<uint8_t>(0x00);
     }
 #else
 
@@ -176,14 +179,13 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream
-            .write_u8(this->refresh ? 0x06 : 0x07) // mail 관련 0x06인 것 같다. 확인 필요
-            .write_u8(this->deleted)
-            .write(this->text)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->refresh ? 0x06 : 0x07); // mail 관련 0x06인 것 같다. 확인 필요
+        writer.write<uint8_t>(this->deleted);
+        writer.write(this->text);
+        writer.write<uint8_t>(0x00);
     }
 };
 

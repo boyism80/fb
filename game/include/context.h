@@ -3,22 +3,16 @@
 
 #include <boost/algorithm/string/join.hpp>
 #include <jsoncpp/json/json.h>
-#include <string>
 #include <fstream>
-#include <iostream>
-#include <sstream>
-#include <ctime>
-#include <unordered_set>
-#include <format>
 #include <fb/acceptor.h>
 #include <character.h>
 #include <group.h>
-#include <listener.h>
-#include <regex.h>
 #include <fb/protocol/game.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#include <lua.h>
 #include <model.h>
 #include <fb/amqp.h>
+#include <listener.h>
 
 using namespace fb::protocol::internal;
 namespace fb_reqs  = fb::protocol::game::request;

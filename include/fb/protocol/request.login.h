@@ -31,16 +31,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.writestr_u8(this->id).writestr_u8(this->pw);
+        writer.write<uint8_t>(header);
+        writer.write<std::string, uint8_t>(this->id).write<std::string, uint8_t>(this->pw);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->id = in_stream.readstr_u8();
-        this->pw = in_stream.readstr_u8();
+        this->id = reader.read<std::string, uint8_t>();
+        this->pw = reader.read<std::string, uint8_t>();
     }
 #endif
 };
@@ -74,19 +74,19 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->enc_type)
-            .write_u8(this->enc_key_size)
-            .write((const void*)this->enc_key, this->enc_key_size);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->enc_type);
+        writer.write<uint8_t>(this->enc_key_size);
+        writer.write((const void*)this->enc_key, this->enc_key_size);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->enc_type     = in_stream.read_u8();
-        this->enc_key_size = in_stream.read_u8();
-        in_stream.read(this->enc_key, this->enc_key_size);
+        this->enc_type     = reader.read<uint8_t>();
+        this->enc_key_size = reader.read<uint8_t>();
+        reader.read(this->enc_key, this->enc_key_size);
     }
 #endif
 };

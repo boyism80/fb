@@ -172,7 +172,7 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    void send(const fb::ostream& stream, bool encrypt = true, bool wrap = true) final;
+    void send(const fb::stream& stream, bool encrypt = true, bool wrap = true) final;
     /**
      * @brief      { function_description }
      *

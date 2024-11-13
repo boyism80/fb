@@ -53,60 +53,60 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8((uint8_t)this->action);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>((uint8_t)this->action);
         switch (this->action)
         {
         case BOARD_ACTION::ARTICLES:
-            out_stream.write_u16(this->section);
-            out_stream.write_u16(this->offset);
+            writer.write<uint16_t>(this->section);
+            writer.write<uint16_t>(this->offset);
             break;
 
         case BOARD_ACTION::ARTICLE:
-            out_stream.write_u16(this->section);
-            out_stream.write_u16(this->article);
+            writer.write<uint16_t>(this->section);
+            writer.write<uint16_t>(this->article);
             break;
 
         case BOARD_ACTION::WRITE:
-            out_stream.write_u16(this->section);
-            out_stream.writestr_u8(this->title);
-            out_stream.writestr_u16(this->contents);
+            writer.write<uint16_t>(this->section);
+            writer.write<std::string, uint8_t>(this->title);
+            writer.write<std::string, uint16_t>(this->contents);
             break;
 
         case BOARD_ACTION::DELETE:
-            out_stream.write_u16(this->section);
-            out_stream.write_u16(this->article);
+            writer.write<uint16_t>(this->section);
+            writer.write<uint16_t>(this->article);
             break;
         }
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->action = (BOARD_ACTION)in_stream.read_u8();
+        this->action = (BOARD_ACTION)reader.read<uint8_t>();
 
         switch (this->action)
         {
         case BOARD_ACTION::ARTICLES:
-            this->section = in_stream.read_u16();
-            this->offset  = in_stream.read_u16();
+            this->section = reader.read<uint16_t>();
+            this->offset  = reader.read<uint16_t>();
             break;
 
         case BOARD_ACTION::ARTICLE:
-            this->section = in_stream.read_u16();
-            this->article = in_stream.read_u16();
+            this->section = reader.read<uint16_t>();
+            this->article = reader.read<uint16_t>();
             break;
 
         case BOARD_ACTION::WRITE:
-            this->section  = in_stream.read_u16();
-            this->title    = in_stream.readstr_u8();
-            this->contents = in_stream.readstr_u16();
+            this->section  = reader.read<uint16_t>();
+            this->title    = reader.read<std::string, uint8_t>();
+            this->contents = reader.read<std::string, uint16_t>();
             break;
 
         case BOARD_ACTION::DELETE:
-            this->section = in_stream.read_u16();
-            this->article = in_stream.read_u16();
+            this->section = reader.read<uint16_t>();
+            this->article = reader.read<uint16_t>();
             break;
         }
     }

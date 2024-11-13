@@ -51,7 +51,7 @@ public:
     welcome() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 
@@ -81,26 +81,26 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x00)
-            .write_u32(this->entry_crc)
-            .write_u8(this->cryptor.type())
-            .write_u8(0x09)
-            .write(this->cryptor.key(), 0x09)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->entry_crc);
+        writer.write<uint8_t>(this->cryptor.type());
+        writer.write<uint8_t>(0x09);
+        writer.write(this->cryptor.key(), 0x09);
+        writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        in_stream.read_u8();
+        reader.read<uint8_t>();
 
-        auto entry_crc = in_stream.read_u32();
-        auto enc_type  = in_stream.read_u8();
-        auto size      = in_stream.read_u8();
+        auto entry_crc = reader.read<uint32_t>();
+        auto enc_type  = reader.read<uint8_t>();
+        auto size      = reader.read<uint8_t>();
         auto enc_key   = new uint8_t[size];
-        in_stream.read(enc_key, size);
+        reader.read(enc_key, size);
         this->cryptor = fb::cryptor(enc_type, enc_key);
         delete[] enc_key;
     }
@@ -130,31 +130,37 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         // 서버정보를 바이너리 형식으로 변환
-        fb::ostream formats;
-        formats.write_u8((uint8_t)this->entries.size());
-        for (uint32_t i = 0; i < this->entries.size(); i++)
+        auto formats = fb::stream();
         {
-            auto gateway = this->entries.at(i);
-            auto buffer  = std::format("{};{}", gateway.name, gateway.desc);
+            auto writer = fb::stream_writer<big_endian>(formats);
+            writer.write<uint8_t>((uint8_t)this->entries.size());
+            for (uint32_t i = 0; i < this->entries.size(); i++)
+            {
+                auto gateway = this->entries.at(i);
+                auto buffer  = std::format("{};{}", gateway.name, gateway.desc);
 
-            formats.write_u8(i).write_u32(gateway.ip).write_u16(gateway.port).write(buffer.c_str(), buffer.size() + 1);
+                writer.write<uint8_t>(i);
+                writer.write<uint32_t>(gateway.ip);
+                writer.write<uint16_t>(gateway.port);
+                writer.write(buffer.c_str(), buffer.size() + 1);
+            }
         }
 
         // 바이너리 데이터 압축
         auto compressed = formats.compress();
 
         // 패킷 형식으로 저장
-        out_stream.write_u8(header);
-        out_stream.write_u16(compressed.size()).write(compressed.data(), compressed.size() + 1);
+        writer.write<uint8_t>(header);
+        writer.write<uint16_t>(compressed.size()).write(compressed.data(), compressed.size() + 1);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
         // TODO: 파싱해서 데이터 적재
-        auto count = in_stream.read_u8();
+        auto count = reader.read<uint8_t>();
     }
 #endif
 };

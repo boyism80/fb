@@ -40,21 +40,21 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->me.sequence())
-            .write_u8(this->value)     // type
-            .write_u16(this->duration) // duration
-            .write_u8(this->sound);    // sound
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write<uint8_t>(static_cast<uint8_t>(this->value));      // type
+        writer.write<uint16_t>(static_cast<uint16_t>(this->duration)); // duration
+        writer.write<uint8_t>(this->sound);                            // sound
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->sequence = in_stream.read_u32();
-        this->value    = (ACTION)in_stream.read_u8();
-        this->duration = (DURATION)in_stream.read_u16();
-        this->sound    = in_stream.read_u8();
+        this->sequence = reader.read<uint32_t>();
+        this->value    = (ACTION)reader.read<uint8_t>();
+        this->duration = (DURATION)reader.read<uint16_t>();
+        this->sound    = reader.read<uint8_t>();
     }
 #endif
 };
@@ -79,14 +79,14 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->me.sequence())
-            .write_u8(this->critical)
-            .write_u8(this->percentage)
-            .write_u32(this->damage)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write<uint8_t>(this->critical);
+        writer.write<uint8_t>(this->percentage);
+        writer.write<uint32_t>(this->damage);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -107,10 +107,10 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->id).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->id).write<uint8_t>(0x00);
     }
 };
 

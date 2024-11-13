@@ -13,7 +13,7 @@ class tip : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x59;
-    
+
 public:
     const uint16_t    position;
     const std::string message;
@@ -25,10 +25,12 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u16(this->position).write(this->message, true).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint16_t>(this->position);
+        writer.write<std::string, uint16_t>(this->message);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -36,7 +38,7 @@ class update : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x0F;
-    
+
 public:
     const fb::game::character& me;
     const uint8_t              index;
@@ -48,20 +50,20 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         auto item = this->me.items.at(index);
         if (item == nullptr)
             return;
 
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->index + 1)
-            .write_u16(item->look())
-            .write_u8(item->color())
-            .write(item->inven_name(), false)
-            .write_u32(item->count())
-            .write_u8(0x00)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->index + 1);
+        writer.write<uint16_t>(item->look());
+        writer.write<uint8_t>(item->color());
+        writer.write<std::string, uint8_t>(item->inven_name());
+        writer.write<uint32_t>(item->count());
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -69,7 +71,7 @@ class update_slot : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x37;
-    
+
 public:
     const fb::game::character& me;
     const EQUIPMENT_PARTS      parts;
@@ -81,7 +83,7 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         fb::game::item* item;
 
@@ -126,8 +128,10 @@ public:
         if (item == nullptr)
             return;
 
-        out_stream.write_u8(header);
-        out_stream.write_u16(item->look()).write_u8(item->color()).write(item->name(), false);
+        writer.write<uint8_t>(header);
+        writer.write<uint16_t>(item->look());
+        writer.write<uint8_t>(item->color());
+        writer.write<std::string, uint8_t>(item->name());
     }
 };
 
@@ -135,7 +139,7 @@ class remove : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x10;
-    
+
 public:
     const ITEM_DELETE_TYPE type;
     const uint32_t         index;
@@ -149,10 +153,12 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->index + 1).write_u8(this->type).write_u16(this->count);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->index + 1);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->type));
+        writer.write<uint16_t>(this->count);
     }
 };
 
@@ -160,7 +166,7 @@ class unequip : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x38;
-    
+
 public:
     const EQUIPMENT_PARTS parts;
 
@@ -170,10 +176,11 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->parts).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->parts));
+        writer.write<uint8_t>(0x00);
     }
 };
 

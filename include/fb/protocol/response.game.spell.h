@@ -27,10 +27,10 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write(this->name).write_u32(static_cast<uint32_t>(this->time.count() / 1000));
+        writer.write<uint8_t>(header);
+        writer.write<std::string>(this->name).write<uint32_t>(static_cast<uint32_t>(this->time.count() / 1000));
     }
 };
 
@@ -48,10 +48,10 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write(this->buff.model.name).write_u32(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<std::string>(this->buff.model.name).write<uint32_t>(0x00);
     }
 };
 
@@ -83,26 +83,28 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         auto spell = this->me.spells.at(index);
         if (spell == nullptr)
             return;
 
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->index + 1).write_u8(spell->type).write(spell->name);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->index + 1);
+        writer.write<uint8_t>(static_cast<uint8_t>(spell->type));
+        writer.write(spell->name);
 
         if (static_cast<int>(spell->type) < 3)
-            out_stream.write(spell->message);
+            writer.write<std::string>(spell->message);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->index = in_stream.read_u8();
-        this->type  = in_stream.read_u8();
-        this->name  = in_stream.readstr_u8();
+        this->index = reader.read<uint8_t>();
+        this->type  = reader.read<uint8_t>();
+        this->name  = reader.read<std::string, uint8_t>();
         if (type < 3)
-            this->message = in_stream.readstr_u8();
+            this->message = reader.read<std::string, uint8_t>();
     }
 #endif
 };
@@ -123,14 +125,14 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
         auto spell = this->me.spells.at(index);
         if (spell != nullptr)
             return;
 
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->index + 1).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->index + 1).write<uint8_t>(0x00);
     }
 };
 

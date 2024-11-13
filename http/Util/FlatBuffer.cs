@@ -10,8 +10,8 @@ namespace http.Util
             using (var writer = new BinaryWriter(ms))
             {
                 var bytes = flatbuffer.Serialize();
-                writer.Write(flatbuffer.ProtocolType.ToMachineEndian());
-                writer.Write(bytes.Length.ToMachineEndian());
+                writer.Write(flatbuffer.ProtocolType);
+                writer.Write(bytes.Length);
                 writer.Write(bytes);
                 writer.Flush();
             }

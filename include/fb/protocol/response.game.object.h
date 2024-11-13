@@ -12,7 +12,7 @@ class direction : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x11;
-    
+
 public:
 #ifndef BOT
     const uint32_t  sequence;
@@ -32,21 +32,23 @@ public:
         value(value)
     { }
 #else
-    direction()  = default;
+    direction() = default;
 #endif
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->sequence).write_u8(this->value).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->sequence);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->value));
+        writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->sequence = in_stream.read_u32();
-        this->value    = (DIRECTION)in_stream.read_u8();
+        this->sequence = reader.read<uint32_t>();
+        this->value    = (DIRECTION)reader.read<uint8_t>();
     }
 #endif
 };
@@ -55,7 +57,7 @@ class show : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x07;
-    
+
 private:
     const fb::game::object*               object;
     const std::vector<fb::game::object*>* objects;
@@ -72,27 +74,26 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
+        writer.write<uint8_t>(header);
         if (this->object != nullptr)
         {
             auto map = this->object->map();
             if (map == nullptr)
                 return;
 
-            out_stream
-                .write_u16(0x0001)                    // count
-                .write_u16(this->object->x())         // object x
-                .write_u16(this->object->y())         // object y
-                .write_u32(this->object->sequence())  // object sequence
-                .write_u16(this->object->look())      // npc icon code
-                .write_u8(this->object->color())      // color
-                .write_u8(this->object->direction()); // side
+            writer.write<uint16_t>(0x0001);                                         // count
+            writer.write<uint16_t>(this->object->x());                              // object x
+            writer.write<uint16_t>(this->object->y());                              // object y
+            writer.write<uint32_t>(this->object->sequence());                       // object sequence
+            writer.write<uint16_t>(this->object->look());                           // npc icon code
+            writer.write<uint8_t>(this->object->color());                           // color
+            writer.write<uint8_t>(static_cast<uint8_t>(this->object->direction())); // side
         }
         else if (this->objects != nullptr)
         {
-            out_stream.write_u8(0x07).write_u16((uint16_t)this->objects->size());
+            writer.write<uint8_t>(0x07).write<uint16_t>((uint16_t)this->objects->size());
 
             for (const auto object : *this->objects)
             {
@@ -100,13 +101,12 @@ public:
                 if (map == nullptr)
                     continue;
 
-                out_stream
-                    .write_u16(object->x())         // object x
-                    .write_u16(object->y())         // object y
-                    .write_u32(object->sequence())  // object sequence
-                    .write_u16(object->look())      // npc icon code
-                    .write_u8(object->color())      // color
-                    .write_u8(object->direction()); // side
+                writer.write<uint16_t>(object->x());                              // object x
+                writer.write<uint16_t>(object->y());                              // object y
+                writer.write<uint32_t>(object->sequence());                       // object sequence
+                writer.write<uint16_t>(object->look());                           // npc icon code
+                writer.write<uint8_t>(object->color());                           // color
+                writer.write<uint8_t>(static_cast<uint8_t>(object->direction())); // side
             }
         }
         else
@@ -121,7 +121,7 @@ class hide : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x0E;
-    
+
 public:
     const uint32_t id;
 
@@ -134,10 +134,10 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->id).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->id).write<uint8_t>(0x00);
     }
 };
 
@@ -145,7 +145,7 @@ class chat : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x0D;
-    
+
 public:
     const fb::game::object& me;
     const CHAT_TYPE         type;
@@ -159,10 +159,12 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->type).write_u32(this->me.sequence()).write(this->message);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->type));
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write(this->message);
     }
 };
 
@@ -170,7 +172,7 @@ class move : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x0C;
-    
+
 public:
 #ifndef BOT
     const uint32_t  id;
@@ -198,22 +200,22 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->id)
-            .write_u16(this->position.x)
-            .write_u16(this->position.y)
-            .write_u8(this->direction)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->id);
+        writer.write<uint16_t>(this->position.x);
+        writer.write<uint16_t>(this->position.y);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->direction));
+        writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->id         = in_stream.read_u32();
-        this->position.x = in_stream.read_u16();
-        this->position.y = in_stream.read_u16();
-        this->direction  = (DIRECTION)in_stream.read_u8();
+        this->id         = reader.read<uint32_t>();
+        this->position.x = reader.read<uint16_t>();
+        this->position.y = reader.read<uint16_t>();
+        this->direction  = (DIRECTION)reader.read<uint8_t>();
     }
 #endif
 };
@@ -222,7 +224,7 @@ class sound : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x19;
-    
+
 public:
     const fb::game::object& me;
     const SOUND             value;
@@ -234,19 +236,19 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x00)
-            .write_u8(0x03)
-            .write_u16(this->value) // sound
-            .write_u8(100)
-            .write_u16(0x0004)
-            .write_u32(this->me.sequence())
-            .write_u16(0x0100)
-            .write_u16(0x0202)
-            .write_u16(0x0004)
-            .write_u16(0xCCCC);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x03);
+        writer.write<uint16_t>(static_cast<uint16_t>(this->value)); // sound
+        writer.write<uint8_t>(100);
+        writer.write<uint16_t>(0x0004);
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write<uint16_t>(0x0100);
+        writer.write<uint16_t>(0x0202);
+        writer.write<uint16_t>(0x0004);
+        writer.write<uint16_t>(0xCCCC);
     }
 };
 
@@ -254,7 +256,7 @@ class effect : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x29;
-    
+
 public:
     const fb::game::object& me;
     const uint8_t           value;
@@ -266,10 +268,10 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->me.sequence()).write_u8(this->value).write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->me.sequence()).write<uint8_t>(this->value).write<uint8_t>(0x00);
     }
 };
 

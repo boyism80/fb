@@ -43,7 +43,7 @@ character::character(fb::game::context& context, fb::socket<character>& socket) 
 character::~character()
 { }
 
-void character::send(const fb::ostream& stream, bool encrypt, bool wrap)
+void character::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     if (this->inited() == false)
         return;

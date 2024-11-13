@@ -28,23 +28,23 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        auto compressed = fb::buffer((uint8_t*)this->contents.data(), this->contents.size()).compress();
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x01)
-            .write_u16((uint16_t)compressed.size())
-            .write(compressed.data(), (uint16_t)compressed.size());
+        auto compressed = fb::stream((uint8_t*)this->contents.data(), this->contents.size()).compress();
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>((uint16_t)compressed.size());
+        writer.write(compressed.data(), (uint16_t)compressed.size());
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        in_stream.read_u8();
-        auto size   = in_stream.read_u16();
+        reader.read<uint8_t>();
+        auto size   = reader.read<uint16_t>();
         auto buffer = new uint8_t[size];
-        in_stream.read(buffer, size);
+        reader.read(buffer, size);
 
-        auto decompressed = fb::buffer(buffer, size).decompress();
+        auto decompressed = fb::stream(buffer, size).decompress();
         delete[] buffer;
 
         decompressed.push_back(0);
@@ -79,16 +79,16 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->type).writestr_u8(this->text);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->type).write<std::string, uint8_t>(this->text);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->type = in_stream.read_8();
-        this->text = in_stream.readstr_u8();
+        this->type = reader.read_8();
+        this->text = reader.read<std::string, uint8_t>();
     }
 #endif
 };

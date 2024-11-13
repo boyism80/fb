@@ -40,24 +40,23 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream
-            .write_u8(0x00)              // unknown
-            .write_u8(this->interaction) // interaction
-            .write_u32(0x01)
-            .write_u8(this->object.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u8(0x01)
-            .write_u16(this->object.look)
-            .write_u8(this->object.color)
-            .write_u8(this->object.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u16(this->object.look)
-            .write_u8(this->object.color)
-            .write_u32(0x01)
-            .write_u8(this->button_prev)
-            .write_u8(this->button_next)
-            .write(this->message, true);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x00);                                    // unknown
+        writer.write<uint8_t>(static_cast<uint8_t>(this->interaction)); // interaction
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(this->object.look);
+        writer.write<uint8_t>(this->object.color);
+        writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint16_t>(this->object.look);
+        writer.write<uint8_t>(this->object.color);
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->button_prev);
+        writer.write<uint8_t>(this->button_next);
+        writer.write<std::string, uint16_t>(this->message);
     }
 };
 
@@ -84,35 +83,37 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x01)
-            .write_u8(interaction)
-            .write_u32(0x01)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u8(0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write(message, true);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint8_t>(static_cast<uint8_t>(interaction));
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<std::string, uint16_t>(message);
 
-        out_stream.write_u16((uint16_t)menus.size());
+        writer.write<uint16_t>((uint16_t)menus.size());
         for (int i = 0; i < menus.size(); i++)
         {
-            out_stream.write(menus[i]).write_u16(i);
+            writer.write<std::string>(menus[i]);
+            writer.write<uint16_t>(i);
         }
 
-        out_stream.write_u8(0x00);
+        writer.write<uint8_t>(0x00);
 
         for (int i = 0; i < this->menus.size(); i++)
         {
-            out_stream.write(menus[i]).write_u16(i);
+            writer.write<std::string>(menus[i]);
+            writer.write<uint16_t>(i);
         }
 
-        out_stream.write_u8(0x00);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -139,26 +140,26 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x05)
-            .write_u8(this->interaction)
-            .write_u32(0x01)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u8(0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write(this->message, true)
-            .write_u16(0xFFFF)
-            .write_u8((uint8_t)this->slots.size());
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x05);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<std::string, uint16_t>(this->message);
+        writer.write<uint16_t>(0xFFFF);
+        writer.write<uint8_t>((uint8_t)this->slots.size());
 
         for (auto slot : this->slots)
-            out_stream.write_u8(slot);
-        out_stream.write_u8(0x00);
+            writer.write<uint8_t>(slot);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -188,29 +189,33 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x04)
-            .write_u8(interaction)
-            .write_u32(0x01)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u8(0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write(this->message, true)
-            .write_u16(this->pursuit)
-            .write_u16((uint16_t)this->items.size());
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x04);
+        writer.write<uint8_t>(static_cast<uint8_t>(interaction));
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<std::string, uint16_t>(this->message);
+        writer.write<uint16_t>(this->pursuit);
+        writer.write<uint16_t>((uint16_t)this->items.size());
 
         for (auto& [item, value] : this->items)
         {
-            out_stream.write_u16(item.look).write_u8(item.color).write_u32(value).write(item.name).write(item.desc);
+            writer.write<uint16_t>(item.look);
+            writer.write<uint8_t>(item.color);
+            writer.write<uint32_t>(value);
+            writer.write<std::string>(item.name);
+            writer.write<std::string>(item.desc);
         }
 
-        out_stream.write_u8(0x00);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -235,21 +240,21 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x03)
-            .write_u8(this->interaction)
-            .write_u32(0x01)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u8(0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write(this->message, true)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x03);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<std::string, uint16_t>(this->message);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -285,27 +290,27 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(0x04)
-            .write_u8(this->interaction)
-            .write_u32(0x01)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u8(0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write_u8(this->npc.look > 0xBFFF ? 0x02 : 0x01)
-            .write_u16(this->npc.look)
-            .write_u8(this->npc.color)
-            .write_u32(0x00000001)
-            .write_u8(this->button_prev)
-            .write_u8(0x00)
-            .write(this->message, true)
-            .write(this->top, false)
-            .write_u8(this->maxlen)
-            .write(this->bottom, false)
-            .write_u8(0x00);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x04);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
+        writer.write<uint32_t>(0x01);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+        writer.write<uint16_t>(this->npc.look);
+        writer.write<uint8_t>(this->npc.color);
+        writer.write<uint32_t>(0x00000001);
+        writer.write<uint8_t>(this->button_prev);
+        writer.write<uint8_t>(0x00);
+        writer.write<std::string, uint16_t>(this->message);
+        writer.write<std::string, uint8_t>(this->top);
+        writer.write<uint8_t>(this->maxlen);
+        writer.write<std::string, uint8_t>(this->bottom);
+        writer.write<uint8_t>(0x00);
     }
 };
 

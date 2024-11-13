@@ -47,8 +47,8 @@ private:
 protected:
     virtual void                                on_connected();
     virtual void                                on_disconnected();
-    virtual bool                                on_encrypt(fb::ostream& out);
-    virtual bool                                on_wrap(fb::ostream& out);
+    virtual bool                                on_encrypt(fb::stream_writer<>& out);
+    virtual bool                                on_wrap(fb::stream_writer<>& out);
     virtual bool                                decrypt_policy(int cmd) const;
 
 public:
@@ -60,10 +60,10 @@ public:
     {
         this->_handler.insert({ cmd, [this, fn](const std::function<void()>& callback) -> async::task<void>
         {
-            co_await this->in_stream<async::task<void>>([this, fn, &callback](auto& in_stream) -> async::task<void>
+            co_await this->reader<async::task<void>>([this, fn, &callback](auto& reader) -> async::task<void>
             {
                 T     header;
-                header.deserialize(in_stream);
+                header.deserialize(reader);
                 callback();
                 this->invoke_promise(header.__id, header);
 
@@ -106,7 +106,7 @@ private:
 
 public:
     login_bot(bot_container& owner, uint32_t id);
-    login_bot(bot_container& owner, uint32_t id, const fb::buffer& params);
+    login_bot(bot_container& owner, uint32_t id, const fb::stream& params);
     ~login_bot();
 
 private:
@@ -136,14 +136,14 @@ private:
 private:
     uint32_t                                    _sequence = 0;
     point16_t                                   _position;
-    fb::buffer                                  _transfer_buffer;
+    fb::stream                                  _transfer_buffer;
     std::vector<pattern_params>                 _pattern_params;
     datetime                                    _next_action_time;
     bool                                        _inited = false;
 
 public:
     game_bot(bot_container& owner, uint32_t id);
-    game_bot(bot_container& owner, uint32_t id, const fb::buffer& params);
+    game_bot(bot_container& owner, uint32_t id, const fb::stream& params);
     ~game_bot();
 
 private:
@@ -209,7 +209,7 @@ public:
     }
 
     template <typename T>
-    T* create(const fb::buffer& params)
+    T* create(const fb::stream& params)
     {/*   MUTEX_GUARD(this->_bots_lock)*/
         
         auto id = this->_sequence++;

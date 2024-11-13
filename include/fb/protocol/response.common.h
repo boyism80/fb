@@ -14,18 +14,18 @@ public:
 #ifdef BOT
     uint32_t   ip;
     uint16_t   port;
-    fb::buffer parameter;
+    fb::stream parameter;
 #else
     const uint32_t   ip;
     const uint16_t   port;
-    const fb::buffer parameter;
+    const fb::stream parameter;
 #endif
 
 public:
 #ifdef BOT
     transfer() = default;
 #else
-    transfer(uint32_t ip, uint16_t port, const fb::buffer& parameter) :
+    transfer(uint32_t ip, uint16_t port, const fb::stream& parameter) :
         ip(ip),
         port(port),
         parameter(parameter)
@@ -34,24 +34,24 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u32(this->ip)
-            .write_u16(this->port)
-            .write_u8(static_cast<uint8_t>(this->parameter.size()))
-            .write(this->parameter);
+        writer.write<uint8_t>(header);
+        writer.write<uint32_t>(this->ip);
+        writer.write<uint16_t>(this->port);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->parameter.size()));
+        writer.write(this->parameter);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->ip    = in_stream.read_u32();
-        this->port  = in_stream.read_u16();
+        this->ip    = reader.read<uint32_t>();
+        this->port  = reader.read<uint16_t>();
 
-        auto size   = in_stream.read_u8();
+        auto size   = reader.read<uint8_t>();
         auto buffer = new uint8_t[size];
-        in_stream.read(buffer, size);
-        this->parameter = fb::buffer(buffer, size);
+        reader.read(buffer, size);
+        this->parameter = fb::stream(buffer, size);
         delete[] buffer;
     }
 #endif
