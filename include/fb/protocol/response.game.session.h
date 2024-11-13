@@ -83,20 +83,19 @@ public:
 
         if (this->light == false)
         {
-            writer
-                .write<uint8_t>(0x33)                                             // id
-                .write<uint16_t>(this->session.x())                               // x
-                .write<uint16_t>(this->session.y())                               // y
-                .write<uint8_t>(static_cast<uint8_t>(this->session.direction())); // side
+            writer.write<uint8_t>(0x33);                                            // id
+            writer.write<uint16_t>(this->session.x());                              // x
+            writer.write<uint16_t>(this->session.y());                              // y
+            writer.write<uint8_t>(static_cast<uint8_t>(this->session.direction())); // side
         }
         else
         {
             writer.write<uint8_t>(0x1D); // id
         }
 
-        writer.write<uint32_t>(this->session.sequence())
-            .write<uint8_t>(this->session.state() == STATE::DISGUISE)   // 변신유무
-            .write<uint8_t>(static_cast<uint8_t>(this->session.sex())); // sex
+        writer.write<uint32_t>(this->session.sequence());
+        writer.write<uint8_t>(this->session.state() == STATE::DISGUISE);  // 변신유무
+        writer.write<uint8_t>(static_cast<uint8_t>(this->session.sex())); // sex
 
         switch (this->session.state())
         {
@@ -117,26 +116,24 @@ public:
 
         if (this->session.state() == STATE::DISGUISE)
         {
-            writer.write<uint16_t>(this->session.disguise().value())
-                .write<uint8_t>(this->session.current_armor_color());
+            writer.write<uint16_t>(this->session.disguise().value());
+            writer.write<uint8_t>(this->session.current_armor_color());
         }
         else
         {
-            writer
-                .write<uint16_t>(this->session.look())  // face
-                .write<uint8_t>(this->session.color()); // hair color
+            writer.write<uint16_t>(this->session.look()); // face
+            writer.write<uint8_t>(this->session.color()); // hair color
 
             auto armor = this->session.items.armor();
             if (armor != nullptr)
             {
-                writer.write<uint8_t>((uint8_t)armor->based<fb::model::armor>().dress)
-                    .write<uint8_t>(session.current_armor_color());
+                writer.write<uint8_t>((uint8_t)armor->based<fb::model::armor>().dress);
+                writer.write<uint8_t>(session.current_armor_color());
             }
             else
             {
-                writer
-                    .write<uint8_t>(static_cast<uint8_t>(this->session.sex())) // sex
-                    .write<uint8_t>(0x00);
+                writer.write<uint8_t>(static_cast<uint8_t>(this->session.sex())); // sex
+                writer.write<uint8_t>(0x00);
             }
 
             auto weapon = this->session.items.weapon();
@@ -152,20 +149,18 @@ public:
             auto shield = this->session.items.shield();
             if (shield != nullptr)
             {
-                writer.write<uint8_t>((uint8_t)shield->based<fb::model::shield>().dress)
-                    .write<uint8_t>(shield->color());
+                writer.write<uint8_t>((uint8_t)shield->based<fb::model::shield>().dress);
+                writer.write<uint8_t>(shield->color());
             }
             else
             {
-                writer
-                    .write<uint8_t>(0xFF) // about shield
-                    .write<uint8_t>(0x00);
+                writer.write<uint8_t>(0xFF); // about shield
+                writer.write<uint8_t>(0x00);
             }
         }
 
-        writer
-            .write<uint8_t>(0x04)                               // head mark
-            .write<std::string, uint8_t>(this->session.name()); // name
+        writer.write<uint8_t>(0x04);                              // head mark
+        writer.write<std::string, uint8_t>(this->session.name()); // name
     }
 };
 
@@ -197,11 +192,11 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->session.sequence())
-            .write<uint32_t>(static_cast<uint32_t>(this->session.direction())) // side
-            .write<uint8_t>(static_cast<uint8_t>(this->session.cls()))         // class
-            .write<uint16_t>(0x00)
-            .write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->session.sequence());
+        writer.write<uint32_t>(static_cast<uint32_t>(this->session.direction())); // side
+        writer.write<uint8_t>(static_cast<uint8_t>(this->session.cls()));         // class
+        writer.write<uint16_t>(0x00);
+        writer.write<uint8_t>(0x00);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)
@@ -260,51 +255,46 @@ public:
 
         if (enum_in(this->level, STATE_LEVEL::BASED))
         {
-            writer
-                .write<uint8_t>(static_cast<uint8_t>(this->session.nation()))   // nation
-                .write<uint8_t>(static_cast<uint8_t>(this->session.creature())) // creature
-                .write<uint8_t>(0x00)                                           // Unknown (clan?)
-                .write<uint8_t>(this->session.level())                          // level
-                .write<uint32_t>(this->session.base_hp())                       // base hp
-                .write<uint32_t>(this->session.base_mp())                       // base mp
-                .write<uint8_t>(this->session.strength())
-                .write<uint8_t>(this->session.intelligence())
-                .write<uint8_t>(0x03)
-                .write<uint8_t>(0x03)
-                .write<uint8_t>(this->session.dexteritry())
-                .write<uint8_t>(0x03)
-                .write<uint32_t>(0x00)
-                .write<uint8_t>(0x00);
+            writer.write<uint8_t>(static_cast<uint8_t>(this->session.nation()));   // nation
+            writer.write<uint8_t>(static_cast<uint8_t>(this->session.creature())); // creature
+            writer.write<uint8_t>(0x00);                                           // Unknown (clan?)
+            writer.write<uint8_t>(this->session.level());                          // level
+            writer.write<uint32_t>(this->session.base_hp());                       // base hp
+            writer.write<uint32_t>(this->session.base_mp());                       // base mp
+            writer.write<uint8_t>(this->session.strength());
+            writer.write<uint8_t>(this->session.intelligence());
+            writer.write<uint8_t>(0x03);
+            writer.write<uint8_t>(0x03);
+            writer.write<uint8_t>(this->session.dexteritry());
+            writer.write<uint8_t>(0x03);
+            writer.write<uint32_t>(0x00);
+            writer.write<uint8_t>(0x00);
         }
 
         if (enum_in(this->level, STATE_LEVEL::HP_MP))
         {
-            writer
-                .write<uint32_t>(this->session.hp())  // current hp
-                .write<uint32_t>(this->session.mp()); // current mp
+            writer.write<uint32_t>(this->session.hp()); // current hp
+            writer.write<uint32_t>(this->session.mp()); // current mp
         }
 
         if (enum_in(this->level, STATE_LEVEL::EXP_MONEY))
         {
-            writer
-                .write<uint32_t>(this->session.experience()) // exp
-                .write<uint32_t>(this->session.money());     // money
+            writer.write<uint32_t>(this->session.experience()); // exp
+            writer.write<uint32_t>(this->session.money());      // money
         }
 
         if (enum_in(this->level, STATE_LEVEL::CONDITION))
         {
-            writer
-                .write<uint8_t>(this->session.condition_contains(CONDITION::MOVE))  // condition::move
-                .write<uint8_t>(this->session.condition_contains(CONDITION::SIGHT)) // condition::sight
-                .write<uint8_t>(this->session.condition_contains(CONDITION::HEAR))  // condition::hear?
-                .write<uint8_t>(this->session.condition_contains(CONDITION::ORAL))  // condition:oral
-                .write<uint8_t>(this->session.condition_contains(CONDITION::MAP));  // condition:map?
+            writer.write<uint8_t>(this->session.condition_contains(CONDITION::MOVE));  // condition::move
+            writer.write<uint8_t>(this->session.condition_contains(CONDITION::SIGHT)); // condition::sight
+            writer.write<uint8_t>(this->session.condition_contains(CONDITION::HEAR));  // condition::hear?
+            writer.write<uint8_t>(this->session.condition_contains(CONDITION::ORAL));  // condition:oral
+            writer.write<uint8_t>(this->session.condition_contains(CONDITION::MAP));   // condition:map?
         }
 
-        writer
-            .write<uint8_t>(0x00) // mail count
-            .write<uint8_t>(true) // fast move
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00); // mail count
+        writer.write<uint8_t>(true); // fast move
+        writer.write<uint8_t>(0x00);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)
@@ -388,9 +378,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer
-            .write<uint16_t>(this->session.x())  // 실제 x 좌표
-            .write<uint16_t>(this->session.y()); // 실제 y 좌표
+        writer.write<uint16_t>(this->session.x()); // 실제 x 좌표
+        writer.write<uint16_t>(this->session.y()); // 실제 y 좌표
 
         auto map = this->session.map();
         if (map->width() < fb::game::map::MAX_SCREEN_WIDTH)
@@ -445,12 +434,12 @@ public:
     {
         auto clan = this->session.clan();
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>((uint8_t)this->session.defensive_physical())
-            .write<uint8_t>(this->session.damage())
-            .write<uint8_t>(this->session.hit())
-            .write(clan != nullptr ? clan->name() : "")
-            .write(clan != nullptr ? clan->title() : "")
-            .write(this->session.title());
+        writer.write<uint8_t>((uint8_t)this->session.defensive_physical());
+        writer.write<uint8_t>(this->session.damage());
+        writer.write<uint8_t>(this->session.hit());
+        writer.write(clan != nullptr ? clan->name() : "");
+        writer.write(clan != nullptr ? clan->title() : "");
+        writer.write(this->session.title());
 
         auto group = this->session.group();
         if (group != nullptr)
@@ -496,10 +485,9 @@ public:
             }
         }
 
-        writer
-            .write<uint8_t>(0x00) // fixed;
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::TRADE))
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::PK));
+        writer.write<uint8_t>(0x00); // fixed
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::TRADE));
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::PK));
 
         writer.write<uint8_t>((uint8_t)this->session.legends.size());
         for (auto legend : this->session.legends)
@@ -641,13 +629,12 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::WEATHER_EFFECT)) // weather
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::MAGIC_EFFECT))   // magic effect
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::ROAR_WORLDS))    // listen news
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::FAST_MOVE))      // fast move
-            .write<uint8_t>(this->session.option(CUSTOM_SETTING::EFFECT_SOUND))   // effect sound
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::WEATHER_EFFECT)); // weather
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::MAGIC_EFFECT));   // magic effect
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::ROAR_WORLDS));    // listen news
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::FAST_MOVE));      // fast move
+        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::EFFECT_SOUND));   // effect sound
+        writer.write<uint8_t>(0x00);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)
@@ -683,17 +670,17 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->session.sequence())
-            .write<uint16_t>(this->item.look())
-            .write<uint8_t>(this->item.color())
-            .write<uint32_t>(this->item.sequence())
-            .write<uint16_t>(this->session.x())
-            .write<uint16_t>(this->session.y())
-            .write<uint16_t>(this->to.x)
-            .write<uint16_t>(this->to.y)
-            .write<uint32_t>(0x00000000)
-            .write<uint8_t>(0x02)
-            .write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->session.sequence());
+        writer.write<uint16_t>(this->item.look());
+        writer.write<uint8_t>(this->item.color());
+        writer.write<uint32_t>(this->item.sequence());
+        writer.write<uint16_t>(this->session.x());
+        writer.write<uint16_t>(this->session.y());
+        writer.write<uint16_t>(this->to.x);
+        writer.write<uint16_t>(this->to.y);
+        writer.write<uint32_t>(0x00000000);
+        writer.write<uint8_t>(0x02);
+        writer.write<uint8_t>(0x00);
     }
 };
 

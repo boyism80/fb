@@ -178,10 +178,9 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer
-            .write<uint8_t>(this->hours % 24) // hours
-            .write<uint8_t>(0x00)             // Unknown
-            .write<uint8_t>(0x00);            // Unknown
+        writer.write<uint8_t>(this->hours % 24); // hours
+        writer.write<uint8_t>(0x00);             // Unknown
+        writer.write<uint8_t>(0x00);            // Unknown
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

@@ -58,13 +58,13 @@ public:
         const auto item = this->me.trade.item(this->index);
 
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x02)
-            .write<uint8_t>(this->mine ? 0x00 : 0x01)
-            .write<uint8_t>(this->index) // trade slot index
-            .write<uint16_t>(item->look())
-            .write<uint8_t>(item->color())
-            .write(item->trade_name())
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x02);
+        writer.write<uint8_t>(this->mine ? 0x00 : 0x01);
+        writer.write<uint8_t>(this->index); // trade slot index
+        writer.write<uint16_t>(item->look());
+        writer.write<uint8_t>(item->color());
+        writer.write(item->trade_name());
+        writer.write<uint8_t>(0x00);
     }
 };
 

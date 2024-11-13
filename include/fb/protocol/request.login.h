@@ -77,9 +77,9 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->enc_type)
-            .write<uint8_t>(this->enc_key_size)
-            .write((const void*)this->enc_key, this->enc_key_size);
+        writer.write<uint8_t>(this->enc_type);
+        writer.write<uint8_t>(this->enc_key_size);
+        writer.write((const void*)this->enc_key, this->enc_key_size);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

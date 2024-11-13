@@ -241,21 +241,17 @@ public:
     template <typename ValueType>
     ValueType read()
     {
-        auto size    = sizeof(ValueType);
-        auto value   = EndianType::get<ValueType>(this->_stream.data() + this->_seek);
-        this->_seek += size;
-        return value;
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    std::string read()
-    {
-        return this->read<std::string, uint8_t>();
+        if constexpr (std::is_same_v<ValueType, std::string>)
+        {
+            return this->read<std::string, uint8_t>();
+        }
+        else
+        {
+            auto size    = sizeof(ValueType);
+            auto value   = EndianType::template get<ValueType>(this->_stream.data() + this->_seek);
+            this->_seek += size;
+            return value;
+        }
     }
 
     /**
@@ -269,35 +265,17 @@ public:
     template <typename T1, typename T2>
     T1 read()
     {
-        throw std::runtime_error("cannot call this");
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    std::string read<std::string, uint8_t>()
-    {
-        auto len     = this->read<uint8_t>();
-        auto str     = std::string(this->_stream.data() + this->_seek, this->_stream.data() + this->_seek + len);
-        this->_seek += len;
-        return str;
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    std::string read<std::string, uint16_t>()
-    {
-        auto len     = this->read<uint16_t>();
-        auto str     = std::string(this->_stream.data() + this->_seek, this->_stream.data() + this->_seek + len);
-        this->_seek += len;
-        return str;
+        if constexpr (std::is_same_v<T1, std::string>)
+        {
+            auto len     = this->read<T2>();
+            auto str     = std::string(this->_stream.data() + this->_seek, this->_stream.data() + this->_seek + len);
+            this->_seek += len;
+            return str;
+        }
+        else
+        {
+            throw std::runtime_error("cannot call this");
+        }
     }
 
     /**
@@ -400,42 +378,27 @@ public:
     template <typename ValueType>
     stream_writer& write(const ValueType& value)
     {
-        auto size = sizeof(ValueType);
-        auto seek = this->_stream.size();
-        for (int i = 0; i < size; i++)
+        if constexpr (std::is_same_v<ValueType, std::string>)
         {
-            this->_stream.push_back(0);
+            this->write<std::string, uint8_t>(value);
+            return *this;
         }
-        EndianType::put<ValueType>(value, this->_stream.data() + seek);
-        return *this;
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    stream_writer& write<std::string>(const std::string& value)
-    {
-        this->write<std::string, uint8_t>(value);
-        return *this;
-    }
-
-    /**
-     * @brief      Writes a stream.
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    stream_writer& write<stream>(const stream& value)
-    {
-        this->_stream.insert(this->_stream.end(), value.begin(), value.end());
-        return *this;
+        else if constexpr (std::is_same_v<ValueType, fb::stream>)
+        {
+            this->_stream.insert(this->_stream.end(), value.begin(), value.end());
+            return *this;
+        }
+        else
+        {
+            auto size = sizeof(ValueType);
+            auto seek = this->_stream.size();
+            for (int i = 0; i < size; i++)
+            {
+                this->_stream.push_back(0);
+            }
+            EndianType::template put<ValueType>(value, this->_stream.data() + seek);
+            return *this;
+        }
     }
 
     /**
@@ -465,55 +428,25 @@ public:
     template <typename T1, typename T2>
     stream_writer& write(const T1& value)
     {
-        throw std::runtime_error("cannot call this");
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    stream_writer& write<std::string, uint8_t>(const std::string& value)
-    {
-#ifdef _WIN32
-        auto& target = value;
-#else
-        auto target = cp949(value);
-#endif
-        this->write<uint8_t>(target.size());
-        for (int i = 0; i < target.size(); i++)
+        if constexpr (std::is_same_v<T1, std::string>)
         {
-            this->_stream.push_back(target[i]);
-        }
-
-        return *this;
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <>
-    stream_writer& write<std::string, uint16_t>(const std::string& value)
-    {
 #ifdef _WIN32
-        auto& target = value;
+            auto& target = value;
 #else
-        auto target = cp949(value);
+            auto target = cp949(value);
 #endif
-        this->write<uint16_t>(target.size());
-        for (int i = 0; i < target.size(); i++)
-        {
-            this->_stream.push_back(target[i]);
-        }
+            this->write<T2>(target.size());
+            for (int i = 0; i < target.size(); i++)
+            {
+                this->_stream.push_back(target[i]);
+            }
 
-        return *this;
+            return *this;
+        }
+        else
+        {
+            throw std::runtime_error("cannot call this");
+        }
     }
 };
 

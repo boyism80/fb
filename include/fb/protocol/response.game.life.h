@@ -82,11 +82,11 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->me.sequence())
-            .write<uint8_t>(this->critical)
-            .write<uint8_t>(this->percentage)
-            .write<uint32_t>(this->damage)
-            .write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write<uint8_t>(this->critical);
+        writer.write<uint8_t>(this->percentage);
+        writer.write<uint32_t>(this->damage);
+        writer.write<uint8_t>(0x00);
     }
 };
 

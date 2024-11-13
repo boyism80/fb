@@ -37,10 +37,10 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->ip)
-            .write<uint16_t>(this->port)
-            .write<uint8_t>(static_cast<uint8_t>(this->parameter.size()))
-            .write(this->parameter);
+        writer.write<uint32_t>(this->ip);
+        writer.write<uint16_t>(this->port);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->parameter.size()));
+        writer.write(this->parameter);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

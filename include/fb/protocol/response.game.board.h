@@ -102,12 +102,12 @@ public:
 
         for (auto& article : this->article_list)
         {
-            writer.write<uint8_t>(0x00)
-                .write<uint16_t>(article.id)
-                .write(article.uname)
-                .write<uint8_t>(article.month)
-                .write<uint8_t>(article.day)
-                .write(article.title);
+            writer.write<uint8_t>(0x00);
+            writer.write<uint16_t>(article.id);
+            writer.write(article.uname);
+            writer.write<uint8_t>(article.month);
+            writer.write<uint8_t>(article.day);
+            writer.write(article.title);
         }
 
         writer.write<uint8_t>(0x00);
@@ -182,11 +182,10 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer
-            .write<uint8_t>(this->refresh ? 0x06 : 0x07) // mail 관련 0x06인 것 같다. 확인 필요
-            .write<uint8_t>(this->deleted)
-            .write(this->text)
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(this->refresh ? 0x06 : 0x07); // mail 관련 0x06인 것 같다. 확인 필요
+        writer.write<uint8_t>(this->deleted);
+        writer.write(this->text);
+        writer.write<uint8_t>(0x00);
     }
 };
 

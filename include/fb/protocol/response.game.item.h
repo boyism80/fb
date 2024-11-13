@@ -57,13 +57,13 @@ public:
             return;
 
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->index + 1)
-            .write<uint16_t>(item->look())
-            .write<uint8_t>(item->color())
-            .write<std::string, uint8_t>(item->inven_name())
-            .write<uint32_t>(item->count())
-            .write<uint8_t>(0x00)
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(this->index + 1);
+        writer.write<uint16_t>(item->look());
+        writer.write<uint8_t>(item->color());
+        writer.write<std::string, uint8_t>(item->inven_name());
+        writer.write<uint32_t>(item->count());
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
     }
 };
 

@@ -512,11 +512,11 @@ public:
         auto  header = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(header);
-            writer.write<uint8_t>(crt.type())
-                .write<uint8_t>(cryptor::KEY_SIZE)
-                .write(crt.key(), cryptor::KEY_SIZE)
-                .write<uint8_t>(static_cast<uint8_t>(from))
-                .write<fb::stream>(parameter);
+            writer.write<uint8_t>(crt.type());
+            writer.write<uint8_t>(cryptor::KEY_SIZE);
+            writer.write(crt.key(), cryptor::KEY_SIZE);
+            writer.write<uint8_t>(static_cast<uint8_t>(from));
+            writer.write<fb::stream>(parameter);
         }
 
         auto stream = fb::stream();

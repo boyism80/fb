@@ -84,12 +84,12 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x00)
-            .write<uint32_t>(this->entry_crc)
-            .write<uint8_t>(this->cryptor.type())
-            .write<uint8_t>(0x09)
-            .write(this->cryptor.key(), 0x09)
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->entry_crc);
+        writer.write<uint8_t>(this->cryptor.type());
+        writer.write<uint8_t>(0x09);
+        writer.write(this->cryptor.key(), 0x09);
+        writer.write<uint8_t>(0x00);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

@@ -80,10 +80,10 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->hair)
-            .write<uint8_t>(this->sex)
-            .write<uint8_t>(this->nation)
-            .write<uint8_t>(this->creature);
+        writer.write<uint8_t>(this->hair);
+        writer.write<uint8_t>(this->sex);
+        writer.write<uint8_t>(this->nation);
+        writer.write<uint8_t>(this->creature);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)
@@ -131,10 +131,10 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<std::string, uint8_t>(this->name)
-            .write<std::string, uint8_t>(this->pw)
-            .write<std::string, uint8_t>(this->new_pw)
-            .write<uint32_t>(this->birthday);
+        writer.write<std::string, uint8_t>(this->name);
+        writer.write<std::string, uint8_t>(this->pw);
+        writer.write<std::string, uint8_t>(this->new_pw);
+        writer.write<uint32_t>(this->birthday);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

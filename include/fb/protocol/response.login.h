@@ -32,9 +32,9 @@ public:
     {
         auto compressed = fb::stream((uint8_t*)this->contents.data(), this->contents.size()).compress();
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x01)
-            .write<uint16_t>((uint16_t)compressed.size())
-            .write(compressed.data(), (uint16_t)compressed.size());
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>((uint16_t)compressed.size());
+        writer.write(compressed.data(), (uint16_t)compressed.size());
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

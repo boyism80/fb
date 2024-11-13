@@ -112,16 +112,16 @@ public:
     {
         writer.write<uint8_t>(header);
 
-        writer.write<uint8_t>(0x01)
-            .write<uint8_t>(0x05)
-            .write<uint16_t>(this->map.model.id)
-            .write<uint16_t>(this->map.model.id)
-            .write<uint8_t>(volume) // volume
-            .write<uint16_t>(512)
-            .write<uint16_t>(512)
-            .write<uint8_t>(0x00)
-            .write<uint8_t>(0x00)
-            .write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint8_t>(0x05);
+        writer.write<uint16_t>(this->map.model.id);
+        writer.write<uint16_t>(this->map.model.id);
+        writer.write<uint8_t>(volume); // volume
+        writer.write<uint16_t>(512);
+        writer.write<uint16_t>(512);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -206,9 +206,9 @@ public:
                 g.insert({point.group, std::vector<uint16_t>{id}});
         }
 
-        writer.write<std::string, uint8_t>(attr.key)
-            .write<uint8_t>(this->model.world[this->id].size())
-            .write<uint8_t>(this->index);
+        writer.write<std::string, uint8_t>(attr.key);
+        writer.write<uint8_t>(this->model.world[this->id].size());
+        writer.write<uint8_t>(this->index);
 
         for (int i = 0; i < points.size(); i++)
         {

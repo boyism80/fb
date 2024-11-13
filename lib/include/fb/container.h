@@ -55,7 +55,7 @@ public:
     V& operator[] (const K& k)
     {
         auto found = this->find(k);
-        if(found == nullptr)
+        if (found == nullptr)
         {
             auto sstream = std::stringstream();
             if constexpr (std::is_enum_v<K>)
