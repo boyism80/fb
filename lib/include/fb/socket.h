@@ -76,7 +76,7 @@ protected:
     }
 
 public:
-    void send(const fb::stream stream, bool encrypt = true, bool wrap = true)
+    void send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         static auto empty_fn = [](const boost::system::error_code ec, size_t size) {
 
@@ -85,8 +85,11 @@ public:
     }
 
 public:
-    void send(const fb::stream stream, bool encrypt, bool wrap, const boost_send_callback& callback)
+    void send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
+        if (stream.empty())
+            return;
+
         auto clone = fb::stream(stream);
         if (encrypt && this->on_encrypt(clone) == false)
             return;
