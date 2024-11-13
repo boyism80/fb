@@ -41,9 +41,9 @@ public:
     ~header() = default;
 
 public:
-    virtual void serialize(fb::ostream& out_stream) const
+    virtual void serialize(fb::stream_writer<big_endian>& writer) const
     { }
-    virtual void deserialize(fb::istream& in_stream)
+    virtual void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 

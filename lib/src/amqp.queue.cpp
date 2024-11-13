@@ -53,12 +53,13 @@ const std::string& queue::consumer_tag() const
 
 async::task<void> queue::invoke(const std::vector<uint8_t>& message)
 {
-    auto in_stream = fb::istream(message.data(), message.size());
-    auto cmd       = in_stream.read_u32();
-    auto size      = in_stream.read_u32();
-    auto found     = this->_handler.find(cmd);
+    auto stream = fb::stream(message.data(), message.size());
+    auto reader = fb::stream_reader<big_endian>(stream);
+    auto cmd    = reader.read<uint32_t>();
+    auto size   = reader.read<uint32_t>();
+    auto found  = this->_handler.find(cmd);
     if (found == this->_handler.end())
         co_return;
 
-    co_await found->second(((const uint8_t*)in_stream.data()) + (sizeof(uint32_t) * 2));
+    co_await found->second(((const uint8_t*)stream.data()) + (sizeof(uint32_t) * 2));
 }

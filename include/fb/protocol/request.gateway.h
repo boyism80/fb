@@ -25,16 +25,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u16(this->version).write_u8(this->national_key);
+        writer.write<uint8_t>(header);
+        writer.write<uint16_t>(this->version).write<uint8_t>(this->national_key);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->version      = in_stream.read_u16();
-        this->national_key = in_stream.read_u8();
+        this->version      = reader.read<uint16_t>();
+        this->national_key = reader.read<uint8_t>();
     }
 #endif
 };
@@ -60,20 +60,20 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->action);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->action);
 
         if (this->action == 0x00)
-            out_stream.write_u8(this->index);
+            writer.write<uint8_t>(this->index);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->action = in_stream.read_u8();
+        this->action = reader.read<uint8_t>();
         if (action == 0x00)
-            this->index = in_stream.read_u8();
+            this->index = reader.read<uint8_t>();
     }
 #endif
 };

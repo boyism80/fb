@@ -2,6 +2,8 @@
 #include <lua.h>
 #include <mob.h>
 #include <object.h>
+#include <model.h>
+
 using namespace fb::game::lua;
 
 context* fb::game::lua::get()

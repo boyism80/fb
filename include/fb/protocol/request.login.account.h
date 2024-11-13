@@ -31,16 +31,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.writestr_u8(this->id).writestr_u8(this->pw);
+        writer.write<uint8_t>(header);
+        writer.write<std::string, uint8_t>(this->id).write<std::string, uint8_t>(this->pw);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->id = in_stream.readstr_u8();
-        this->pw = in_stream.readstr_u8();
+        this->id = reader.read<std::string, uint8_t>();
+        this->pw = reader.read<std::string, uint8_t>();
     }
 #endif
 };
@@ -77,18 +77,21 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->hair).write_u8(this->sex).write_u8(this->nation).write_u8(this->creature);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->hair)
+            .write<uint8_t>(this->sex)
+            .write<uint8_t>(this->nation)
+            .write<uint8_t>(this->creature);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->hair     = in_stream.read_u8();
-        this->sex      = in_stream.read_u8();
-        this->nation   = in_stream.read_u8();
-        this->creature = in_stream.read_u8();
+        this->hair     = reader.read<uint8_t>();
+        this->sex      = reader.read<uint8_t>();
+        this->nation   = reader.read<uint8_t>();
+        this->creature = reader.read<uint8_t>();
     }
 #endif
 };
@@ -125,21 +128,21 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.writestr_u8(this->name)
-            .writestr_u8(this->pw)
-            .writestr_u8(this->new_pw)
-            .write_u32(this->birthday, buffer::endian::BIG);
+        writer.write<uint8_t>(header);
+        writer.write<std::string, uint8_t>(this->name)
+            .write<std::string, uint8_t>(this->pw)
+            .write<std::string, uint8_t>(this->new_pw)
+            .write<uint32_t>(this->birthday);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->name     = in_stream.readstr_u8();
-        this->pw       = in_stream.readstr_u8();
-        this->new_pw   = in_stream.readstr_u8();
-        this->birthday = in_stream.read_u32(buffer::endian::BIG);
+        this->name     = reader.read<std::string, uint8_t>();
+        this->pw       = reader.read<std::string, uint8_t>();
+        this->new_pw   = reader.read<std::string, uint8_t>();
+        this->birthday = reader.read<uint32_t>();
     }
 #endif
 };

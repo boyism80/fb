@@ -505,9 +505,6 @@ void context::on_map_changed(object& me, map* before, map* after)
 
 async::task<bool> context::on_transfer(character& me, map& map, const point16_t& position)
 {
-    fb::ostream parameter;
-    parameter.write(me.name());
-
     auto& socket = static_cast<fb::socket<character>&>(me);
     auto  fd     = static_cast<uint32_t>(socket.native_handle());
 
@@ -526,14 +523,15 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
         co_await session->map(nullptr);
 
         co_await this->save(*session);
-        fb::ostream parameter;
-        parameter.write_u32(me.id());
-        parameter.write(session->name());
-        parameter.write_u8(1);
-        parameter.write_u16(map.model.id);
-        parameter.write_u16(position.x);
-        parameter.write_u16(position.y);
-        this->transfer(socket, response.ip, response.port, fb::protocol::internal::services::GAME, parameter);
+        auto stream = fb::stream();
+        auto writer = fb::stream_writer<big_endian>(stream);
+        writer.write<uint32_t>(me.id());
+        writer.write(session->name());
+        writer.write<uint8_t>(1);
+        writer.write<uint16_t>(map.model.id);
+        writer.write<uint16_t>(position.x);
+        writer.write<uint16_t>(position.y);
+        this->transfer(socket, response.ip, response.port, fb::protocol::internal::services::GAME, stream);
 
         co_return true;
     }

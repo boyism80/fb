@@ -279,10 +279,11 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         }
 
         socket.send(response::message("", 0x00));
-        fb::ostream parameter;
-        parameter.write_u32(uid);
-        parameter.write(name);
-        parameter.write_u8(0);
+        auto parameter = fb::stream();
+        auto writer    = fb::stream_writer<big_endian>(parameter);
+        writer.write<uint32_t>(uid);
+        writer.write<std::string>(name);
+        writer.write<uint8_t>(0);
         this->transfer(socket, response3.ip, response3.port, internal::services::LOGIN, parameter);
     }
     catch (login_exception& e)

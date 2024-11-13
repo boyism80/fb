@@ -128,12 +128,13 @@ private:
         if (res->status != 200)
             throw std::runtime_error(std::format("http server response status code {}", res->status));
 
-        auto ptr       = (const uint8_t*)res->body.c_str();
-        auto size      = std::stoi(res->get_header_value("Content-Length"));
-        auto in_stream = fb::istream(ptr, size);
+        auto ptr    = (const uint8_t*)res->body.c_str();
+        auto size   = std::stoi(res->get_header_value("Content-Length"));
+        auto stream = fb::stream(ptr, size);
+        auto reader = fb::stream_reader<big_endian>(stream);
 
-        auto protocol_type = in_stream.read_u32();
-        auto protocol_size = in_stream.read_u32();
+        auto protocol_type = reader.read<uint32_t>();
+        auto protocol_size = reader.read<uint32_t>();
         auto offset        = ptr + sizeof(uint32_t) + sizeof(uint32_t);
         co_return Response::Deserialize(offset);
     }
@@ -204,26 +205,28 @@ private:
     template <typename Request, typename Response>
     async::task<Response> post_internal(const std::string& host, const std::string& path, const Request& body)
     {
-        httplib::Headers headers;
-        auto             serialized = body.Serialize();
-        auto             out_stream = fb::ostream();
-        out_stream.write_u32(Request::FlatBufferProtocolType);
-        out_stream.write_u32(serialized.size());
-        out_stream.write((const void*)serialized.data(), serialized.size());
+        auto headers    = httplib::Headers();
+        auto serialized = body.Serialize();
+        auto stream_req = fb::stream();
+        auto writer     = fb::stream_writer<>(stream_req);
+        writer.write<uint32_t>(static_cast<uint32_t>(Request::FlatBufferProtocolType));
+        writer.write<uint32_t>(serialized.size());
+        writer.write((const void*)serialized.data(), serialized.size());
 
-        auto&& res = co_await this->post_internal(host, path, headers, out_stream.data(), out_stream.size());
+        auto&& res = co_await this->post_internal(host, path, headers, stream_req.data(), stream_req.size());
         if (!res)
             throw std::runtime_error(std::format("cannot request to http server : {}", host));
 
         if (res->status != 200)
             throw std::runtime_error(std::format("http server response status code {}", res->status));
 
-        auto ptr       = (const uint8_t*)res->body.c_str();
-        auto size      = std::stoi(res->get_header_value("Content-Length"));
-        auto in_stream = fb::istream(ptr, size);
+        auto ptr        = (const uint8_t*)res->body.c_str();
+        auto size       = std::stoi(res->get_header_value("Content-Length"));
+        auto stream_res = fb::stream(ptr, size);
+        auto reader     = fb::stream_reader<>(stream_res);
 
-        auto protocol_type = in_stream.read_u32();
-        auto protocol_size = in_stream.read_u32();
+        auto protocol_type = reader.read<uint32_t>();
+        auto protocol_size = reader.read<uint32_t>();
         co_return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
     }
 
@@ -293,55 +296,48 @@ private:
      * @brief      { function_description }
      *
      * @param      socket     The socket
-     * @param      in_stream  The stream to read data from
+     * @param      reader  The stream to read data from
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> execute_bound_handler(fb::socket<T>& socket, fb::istream& in_stream)
+    async::task<bool> execute_bound_handler(fb::socket<T>& socket, fb::stream& stream)
     {
         static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
-
+        auto                     reader    = fb::stream_reader<big_endian>(stream);
         while (true)
         {
             try
             {
-                if (in_stream.readable_size() < base_size)
+                if (reader.readable_size() < base_size)
                     break;
 
                 // Read base head and check it is 0xAA
-                auto head = in_stream.read_u8();
+                auto head = reader.read<uint8_t>();
                 if (head != 0xAA)
                     throw std::exception();
 
-                // Read data size and check it is greater than buffer
-                // size
-                auto size = in_stream.read_u16(buffer::endian::BIG);
-                if (size > in_stream.capacity())
-                    throw std::exception();
-
-                // If data size is not enough to parse, do not anymore
-                if (in_stream.readable_size() < size)
+                auto size = reader.read<uint16_t>();
+                if (reader.readable_size() < size)
                     break;
 
-                auto cmd = in_stream.read_u8();
+                auto cmd = reader.read<uint8_t>();
                 if (this->decrypt_policy(cmd))
-                    size = socket.crt().decrypt(in_stream, in_stream.offset() - 1, size);
+                    size = socket.crt().decrypt(stream, reader.seek() - 1, size);
 
                 // Call function that matched by command byte
                 if (this->_handler.contains(cmd) == false)
                 {
                     fb::logger::warn("정의되지 않은 요청입니다. [{:#x}]", cmd);
-                    in_stream.reset();
-                    in_stream.shift(base_size + size);
-                    in_stream.flush();
+                    reader.seek(base_size + size);
+                    reader.flush();
                     continue;
                 }
 
+                reader.flush(); // remove magic code and size
                 auto before = this->thread_id(socket);
-                auto result = co_await this->_handler[cmd](socket, [&in_stream, size] {
-                    in_stream.reset();
-                    in_stream.shift(base_size + size);
-                    in_stream.flush();
+                auto result = co_await this->_handler[cmd](socket, [&reader, size] {
+                    reader.seek(size - sizeof(uint8_t));
+                    reader.flush();
                 });
                 auto after  = this->thread_id(socket);
 
@@ -352,17 +348,17 @@ private:
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
-                in_stream.clear();
+                reader.clear();
                 break;
             }
             catch (...)
             {
-                in_stream.clear();
+                reader.clear();
                 break;
             }
         }
 
-        in_stream.reset();
+        reader.seek(0);
         co_return false;
     }
 
@@ -379,9 +375,9 @@ private:
         if (this->_running == false)
             co_return;
 
-        auto switched = co_await socket.template in_stream<async::task<bool>>(
-            [this, &socket](auto& in_stream) -> async::task<bool> {
-                co_return co_await this->execute_bound_handler(socket, in_stream);
+        auto switched = co_await socket.template stream<async::task<bool>>(
+            [this, &socket](fb::stream& stream) -> async::task<bool> {
+                co_return co_await this->execute_bound_handler(socket, stream);
             });
 
         if (switched == false)
@@ -462,15 +458,24 @@ public:
      */
     void transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
     {
-        auto&       crt = socket.crt();
-        fb::ostream data;
-        data.write_u8(crt.type()).write_u8(cryptor::KEY_SIZE).write(crt.key(), cryptor::KEY_SIZE).write_u8(from);
+        auto& crt    = socket.crt();
+        auto  params = fb::stream();
+        {
+            auto writer = fb::stream_writer<big_endian>(params);
+            writer.write<uint8_t>(crt.type());
+            writer.write<uint8_t>(cryptor::KEY_SIZE);
+            writer.write(crt.key(), cryptor::KEY_SIZE);
+            writer.write<uint8_t>(static_cast<uint8_t>(from));
+        }
 
-        fb::ostream out_stream;
-        fb::protocol::response::transfer(ip, port, data).serialize(out_stream);
+        auto stream = fb::stream();
+        {
+            auto writer = fb::stream_writer<big_endian>(stream);
+            fb::protocol::response::transfer(ip, port, params).serialize(writer);
+        }
 
-        crt.wrap(out_stream);
-        socket.send(out_stream, false, false);
+        crt.wrap(stream);
+        socket.send(stream, false, false);
     }
 
 public:
@@ -501,21 +506,27 @@ public:
                   uint32_t                         ip,
                   uint16_t                         port,
                   fb::protocol::internal::services from,
-                  const fb::ostream&               parameter)
+                  const fb::stream&                parameter)
     {
-        auto&       crt = socket.crt();
-        fb::ostream data;
-        data.write_u8(crt.type())
-            .write_u8(cryptor::KEY_SIZE)
-            .write(crt.key(), cryptor::KEY_SIZE)
-            .write_u8(from)
-            .write(parameter.data(), parameter.size());
+        auto& crt    = socket.crt();
+        auto  header = fb::stream();
+        {
+            auto writer = fb::stream_writer<big_endian>(header);
+            writer.write<uint8_t>(crt.type())
+                .write<uint8_t>(cryptor::KEY_SIZE)
+                .write(crt.key(), cryptor::KEY_SIZE)
+                .write<uint8_t>(static_cast<uint8_t>(from))
+                .write<fb::stream>(parameter);
+        }
 
-        fb::ostream out_stream;
-        fb::protocol::response::transfer(ip, port, data).serialize(out_stream);
+        auto stream = fb::stream();
+        {
+            auto writer = fb::stream_writer<big_endian>(stream);
+            fb::protocol::response::transfer(ip, port, header).serialize(writer);
+        }
 
-        crt.wrap(out_stream);
-        socket.send(out_stream, false, false);
+        crt.wrap(stream);
+        socket.send(stream, false, false);
     }
 
 public:
@@ -532,7 +543,7 @@ public:
                   const std::string&               ip,
                   uint16_t                         port,
                   fb::protocol::internal::services from,
-                  const fb::ostream&               parameter)
+                  const fb::stream&                parameter)
     {
         this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
     }
@@ -697,10 +708,11 @@ protected:
         auto bound_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
         this->_handler.insert(
             {header, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
-                 return socket.template in_stream<async::task<bool>>(
-                     [this, &bound_func, &socket, &callback](auto& in_stream) {
-                         Request protocol;
-                         protocol.deserialize(in_stream);
+                 return socket.template stream<async::task<bool>>(
+                     [this, &bound_func, &socket, &callback](fb::stream& stream) {
+                         auto protocol = Request();
+                         auto reader   = fb::stream_reader<big_endian>(stream);
+                         protocol.deserialize(reader);
                          callback();
                          return bound_func(socket, protocol);
                      });
@@ -754,7 +766,7 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    void send(fb::socket<T>& socket, const fb::ostream& stream, bool encrypt = true, bool wrap = true)
+    void send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         if (stream.empty())
             return;
@@ -773,12 +785,13 @@ public:
      */
     void send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
-        fb::ostream out_stream;
-        response.serialize(out_stream);
-        if (out_stream.empty())
+        auto stream = fb::stream();
+        auto writer = fb::stream_writer<big_endian>(stream);
+        response.serialize(writer);
+        if (stream.empty())
             return;
 
-        socket.send(out_stream, encrypt, wrap);
+        socket.send(stream, encrypt, wrap);
     }
 
 public:

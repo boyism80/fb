@@ -31,14 +31,14 @@ game_bot::game_bot(bot_container& owner, uint32_t id) :
     // this->pattern(std::bind(&game_bot::pattern_board_sections, this), 1000ms, 2000ms);
 }
 
-game_bot::game_bot(bot_container& owner, uint32_t id, const fb::buffer& params) :
+game_bot::game_bot(bot_container& owner, uint32_t id, const fb::stream& params) :
     game_bot(owner, id)
 {
-    auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
-    auto enc_type  = in_stream.read_8();
-    auto key_size  = in_stream.read_8();
+    auto reader = fb::stream_reader<>((const uint8_t*)params.data(), params.size());
+    auto enc_type  = reader.read_8();
+    auto key_size  = reader.read_8();
     auto enc_key   = new uint8_t[key_size];
-    in_stream.read(enc_key, key_size);
+    reader.read(enc_key, key_size);
     this->_cryptor = fb::cryptor(enc_type, enc_key);
     delete[] enc_key;
 

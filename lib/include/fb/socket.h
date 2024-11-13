@@ -31,7 +31,7 @@ private:
     handler_event _handle_received;
     handler_event _handle_closed;
     uint32_t      _fd = 0xFFFFFFFF;
-    istream       _instream;
+    fb::stream    _stream;
 
 protected:
     std::array<char, 256> _buffer;
@@ -64,19 +64,19 @@ public:
     }
 
 protected:
-    virtual bool on_encrypt(fb::ostream& out)
+    virtual bool on_encrypt(fb::stream& out)
     {
         return this->_crt.encrypt(out);
     }
 
 protected:
-    virtual bool on_wrap(fb::ostream& out)
+    virtual bool on_wrap(fb::stream& out)
     {
         return this->_crt.wrap(out);
     }
 
 public:
-    void send(const ostream& stream, bool encrypt = true, bool wrap = true)
+    void send(const fb::stream stream, bool encrypt = true, bool wrap = true)
     {
         static auto empty_fn = [](const boost::system::error_code ec, size_t size) {
 
@@ -85,9 +85,9 @@ public:
     }
 
 public:
-    void send(const ostream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
+    void send(const fb::stream stream, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
-        auto clone = fb::ostream(stream);
+        auto clone = fb::stream(stream);
         if (encrypt && this->on_encrypt(clone) == false)
             return;
 
@@ -112,9 +112,10 @@ public:
 public:
     void send(const fb::protocol::base::header& response, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
-        fb::ostream out_stream;
-        response.serialize(out_stream);
-        this->send(out_stream, encrypt, wrap, callback);
+        auto stream = fb::stream();
+        auto writer = fb::stream_writer<big_endian>(stream);
+        response.serialize(writer);
+        this->send(stream, encrypt, wrap, callback);
     }
 
 public:
@@ -126,10 +127,9 @@ public:
             {
                 auto bytes_transferred =
                     co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
-                this->in_stream<void>([this, bytes_transferred](auto& in_stream) {
-                    this->_instream.insert(this->_instream.end(),
-                                           this->_buffer.begin(),
-                                           this->_buffer.begin() + bytes_transferred);
+                this->stream<void>([this, bytes_transferred](fb::stream& stream) {
+                    auto writer = fb::stream_writer<big_endian>(stream);
+                    writer.write(this->_buffer.data(), bytes_transferred);
                 });
 
                 async::awaitable_get(this->_handle_received(*this));
@@ -219,15 +219,15 @@ public:
 
 public:
     template <typename R = void>
-    R in_stream(const std::function<R(fb::istream& in_stream)>& func)
+    R stream(const std::function<R(fb::stream& stream)>& func)
     {
         if constexpr (std::is_void_v<T>)
         {
-            func(this->_instream);
+            func(this->_stream);
         }
         else
         {
-            return func(this->_instream);
+            return func(this->_stream);
         }
     }
 };

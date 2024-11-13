@@ -48,19 +48,24 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
+        writer.write<uint8_t>(header);
 
         if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
-            out_stream.write_u8(0x00);
+        {
+            writer.write<uint8_t>(0x00);
+        }
         else
-            out_stream.write_u8(0x04).write_u8(this->map.model.effect);
+        {
+            writer.write<uint8_t>(0x04);
+            writer.write<uint8_t>(static_cast<uint8_t>(this->map.model.effect));
+        }
 
-        out_stream.write_u16(this->position.x)
-            .write_u16(this->position.y)
-            .write_u8(this->size.width)
-            .write_u8(this->size.height);
+        writer.write<uint16_t>(this->position.x);
+        writer.write<uint16_t>(this->position.y);
+        writer.write<uint8_t>(this->size.width);
+        writer.write<uint8_t>(this->size.height);
 
         uint16_t now_crc  = 0;
         uint32_t map_size = this->size.width * this->size.height * sizeof(uint16_t) * 3; // tile id, block, object
@@ -72,7 +77,9 @@ public:
                 if (tile == nullptr)
                     continue;
 
-                out_stream.write_u16(tile->id).write_u16(tile->blocked).write_u16(tile->object);
+                writer.write<uint16_t>(tile->id);
+                writer.write<uint16_t>(tile->blocked);
+                writer.write<uint16_t>(tile->object);
 
                 now_crc = (now_crc << 8) ^ crc16tab[now_crc >> 8] ^ tile->id;
                 now_crc = (now_crc << 8) ^ crc16tab[now_crc >> 8] ^ uint16_t(tile->blocked);
@@ -101,20 +108,20 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
+        writer.write<uint8_t>(header);
 
-        out_stream.write_u8(0x01)
-            .write_u8(0x05)
-            .write_u16(this->map.model.id)
-            .write_u16(this->map.model.id)
-            .write_u8(volume) // volume
-            .write_u16(512)
-            .write_u16(512)
-            .write_u8(0x00)
-            .write_u8(0x00)
-            .write_u8(0x00);
+        writer.write<uint8_t>(0x01)
+            .write<uint8_t>(0x05)
+            .write<uint16_t>(this->map.model.id)
+            .write<uint16_t>(this->map.model.id)
+            .write<uint8_t>(volume) // volume
+            .write<uint16_t>(512)
+            .write<uint16_t>(512)
+            .write<uint8_t>(0x00)
+            .write<uint8_t>(0x00)
+            .write<uint8_t>(0x00);
     }
 };
 
@@ -144,26 +151,24 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-
-        out_stream
-            .write_u16(this->map.model.id) // id
-            .write_u16(this->map.width())  // width
-            .write_u16(this->map.height()) // height
-            .write_u8(enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04
-                                                                            : 0x05) // this.building ? 0x04 : 0x05
-            .write(this->map.model.name, true);
+        auto building = enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
+        writer.write<uint8_t>(header);
+        writer.write<uint16_t>(this->map.model.id); // id
+        writer.write<uint16_t>(this->map.width());  // width
+        writer.write<uint16_t>(this->map.height()); // height
+        writer.write<uint8_t>(building);            // this.building ? 0x04 : 0x05
+        writer.write<std::string, uint16_t>(this->map.model.name);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->id          = in_stream.read_u16();
-        this->size.width  = in_stream.read_u16();
-        this->size.height = in_stream.read_u16();
-        this->building    = in_stream.read_u8();
-        this->name        = in_stream.readstr_u16();
+        this->id          = reader.read<uint16_t>();
+        this->size.width  = reader.read<uint16_t>();
+        this->size.height = reader.read<uint16_t>();
+        this->building    = reader.read<uint8_t>();
+        this->name        = reader.read<std::string, uint16_t>();
     }
 #endif
 };
@@ -186,10 +191,9 @@ public:
     { }
 
 public:
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        // TODO: 코드 분석 후 다시 구현
-        out_stream.write_u8(header);
+        writer.write<uint8_t>(header);
 
         auto& attr   = this->model.world_attribute[this->id];
         auto& points = this->model.world[this->id];
@@ -202,23 +206,25 @@ public:
                 g.insert({point.group, std::vector<uint16_t>{id}});
         }
 
-        out_stream.writestr_u8(attr.key).write_u8(this->model.world[this->id].size()).write_u8(this->index);
+        writer.write<std::string, uint8_t>(attr.key)
+            .write<uint8_t>(this->model.world[this->id].size())
+            .write<uint8_t>(this->index);
 
         for (int i = 0; i < points.size(); i++)
         {
             auto& point = this->model.world[this->id][i];
-            out_stream.write_u16(point.offset.x)
-                .write_u16(point.offset.y)
-                .writestr_u8(point.name)
-                .write_u16(0x0000)
-                .write_u16(this->id)
-                .write_u16(this->index)
-                .write_u16(i)
-                .write_u16(g[point.group].size());
+            writer.write<uint16_t>(point.offset.x);
+            writer.write<uint16_t>(point.offset.y);
+            writer.write<std::string, uint8_t>(point.name);
+            writer.write<uint16_t>(0x0000);
+            writer.write<uint16_t>(this->id);
+            writer.write<uint16_t>(this->index);
+            writer.write<uint16_t>(i);
+            writer.write<uint16_t>(g[point.group].size());
 
             for (auto x : g[point.group])
             {
-                out_stream.write_u16(x);
+                writer.write<uint16_t>(x);
             }
         }
     }

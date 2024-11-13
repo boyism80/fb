@@ -27,9 +27,9 @@ public:
 
 private:
     std::vector<entry>          _entrypoints;
-    fb::ostream                 _entry_stream_cache;
+    fb::stream                  _entry_stream_cache;
     uint32_t                    _entry_crc32_cache = 0;
-    fb::ostream                 _connection_cache;
+    fb::stream                  _connection_cache;
     std::vector<unique_session> _sessions;
 
 public:
@@ -61,7 +61,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::ostream make_crt_stream(const fb::cryptor& crt);
+    fb::stream make_crt_stream(const fb::cryptor& crt);
 
     // override
 

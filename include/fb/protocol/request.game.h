@@ -37,52 +37,51 @@ public:
 #ifndef BOT
     login() = default;
 #else
-    login(const fb::buffer& params)
+    login(const fb::stream& params)
     {
-        auto in_stream = fb::istream((const uint8_t*)params.data(), params.size());
-        this->deserialize(in_stream);
+        auto reader = fb::stream_reader<big_endian>((const uint8_t*)params.data(), params.size());
+        this->deserialize(reader);
     }
 #endif
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->enc_type);
-        out_stream.write_u8(this->key_size);
-        out_stream.write((void*)this->enc_key, this->key_size);
-        out_stream.write_u8(this->from);
-        out_stream.write_u32(this->id);
-        out_stream.writestr_u8(this->name);
-        out_stream.write_u8(this->transfer.has_value());
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->enc_type);
+        writer.write<uint8_t>(this->key_size);
+        writer.write((void*)this->enc_key, this->key_size);
+        writer.write<uint8_t>(this->from);
+        writer.write<uint32_t>(this->id);
+        writer.write<std::string, uint8_t>(this->name);
+        writer.write<uint8_t>(this->transfer.has_value());
 
         if (transfer.has_value())
         {
-            out_stream.write_u16(this->transfer.value().map);
-            out_stream.write_u16(this->transfer.value().position.x);
-            out_stream.write_u16(this->transfer.value().position.y);
+            writer.write<uint16_t>(this->transfer.value().map);
+            writer.write<uint16_t>(this->transfer.value().position.x);
+            writer.write<uint16_t>(this->transfer.value().position.y);
         }
     }
 #endif
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
         // base
-        this->enc_type = in_stream.read_u8();
-        this->key_size = in_stream.read_u8();
-        in_stream.read((void*)this->enc_key, this->key_size);
-        this->from = (fb::protocol::internal::services)in_stream.read_u8();
+        this->enc_type = reader.read<uint8_t>();
+        this->key_size = reader.read<uint8_t>();
+        reader.read((void*)this->enc_key, this->key_size);
+        this->from = (fb::protocol::internal::services)reader.read<uint8_t>();
 
         // additional parameters
-        this->id   = in_stream.read_u32();
-        this->name = in_stream.readstr_u8();
-
-        auto transfer = in_stream.read_8();
+        this->id      = reader.read<uint32_t>();
+        this->name    = reader.read<std::string, uint8_t>();
+        auto transfer = reader.read<uint8_t>();
         if (transfer == 1)
         {
-            auto map       = in_stream.read_u16();
-            auto x         = in_stream.read_u16();
-            auto y         = in_stream.read_u16();
+            auto map       = reader.read<uint16_t>();
+            auto x         = reader.read<uint16_t>();
+            auto y         = reader.read<uint16_t>();
             this->transfer = transfer_param{.map = map, .position = point16_t(x, y)};
         }
     }
@@ -111,15 +110,15 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8((uint8_t)this->value);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>((uint8_t)this->value);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->value = DIRECTION(in_stream.read_u8());
+        this->value = DIRECTION(reader.read<uint8_t>());
     }
 #endif
 };
@@ -133,7 +132,7 @@ public:
     exit() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 
@@ -160,21 +159,21 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->direction);
-        out_stream.write_u8(this->sequence);
-        out_stream.write_u16(this->position.x);
-        out_stream.write_u16(this->position.y);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->direction);
+        writer.write<uint8_t>(this->sequence);
+        writer.write<uint16_t>(this->position.x);
+        writer.write<uint16_t>(this->position.y);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->direction  = DIRECTION(in_stream.read_u8());
-        this->sequence   = in_stream.read_u8();
-        this->position.x = in_stream.read_u16();
-        this->position.y = in_stream.read_u16();
+        this->direction  = DIRECTION(reader.read<uint8_t>());
+        this->sequence   = reader.read<uint8_t>();
+        this->position.x = reader.read<uint16_t>();
+        this->position.y = reader.read<uint16_t>();
     }
 #endif
 };
@@ -193,15 +192,15 @@ public:
     update_move() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        move::deserialize(in_stream);
+        move::deserialize(reader);
 
-        this->begin.x     = in_stream.read_u16();
-        this->begin.y     = in_stream.read_u16();
-        this->size.width  = in_stream.read_u8();
-        this->size.height = in_stream.read_u8();
-        this->crc         = in_stream.read_u16();
+        this->begin.x     = reader.read<uint16_t>();
+        this->begin.y     = reader.read<uint16_t>();
+        this->size.width  = reader.read<uint8_t>();
+        this->size.height = reader.read<uint8_t>();
+        this->crc         = reader.read<uint16_t>();
     }
 };
 
@@ -215,12 +214,12 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
+        writer.write<uint8_t>(header);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 #endif
 };
@@ -248,15 +247,15 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->boost);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->boost);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->boost = bool(in_stream.read_u8());
+        this->boost = bool(reader.read<uint8_t>());
     }
 #endif
 };
@@ -284,15 +283,15 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->value);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->value);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->value = in_stream.read_u8();
+        this->value = reader.read<uint8_t>();
     }
 #endif
 };
@@ -306,7 +305,7 @@ public:
     refresh() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 
@@ -319,7 +318,7 @@ public:
     front_info() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 
@@ -332,7 +331,7 @@ public:
     self_info() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 
@@ -348,9 +347,9 @@ public:
     change_option() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->option = CUSTOM_SETTING(in_stream.read_u8());
+        this->option = CUSTOM_SETTING(reader.read<uint8_t>());
     }
 };
 
@@ -366,10 +365,10 @@ public:
     click() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        auto unknown = in_stream.read_u8();
-        this->fd     = in_stream.read_u32();
+        auto unknown = reader.read<uint8_t>();
+        this->fd     = reader.read<uint32_t>();
     }
 };
 
@@ -396,22 +395,22 @@ public:
     trade() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->action = in_stream.read_u8();
-        this->fd     = in_stream.read_u32();
+        this->action = reader.read<uint8_t>();
+        this->fd     = reader.read<uint32_t>();
         switch (static_cast<fb::game::trade::state>(this->action))
         {
         case fb::game::trade::state::UP_ITEM:
-            this->parameter.index = in_stream.read_u8();
+            this->parameter.index = reader.read<uint8_t>();
             break;
 
         case fb::game::trade::state::ITEM_COUNT:
-            this->parameter.count = in_stream.read_u16();
+            this->parameter.count = reader.read<uint16_t>();
             break;
 
         case fb::game::trade::state::UP_MONEY:
-            this->parameter.money = in_stream.read_u32();
+            this->parameter.money = reader.read<uint32_t>();
             break;
         }
     }
@@ -429,9 +428,9 @@ public:
     group() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->name = in_stream.readstr_u8();
+        this->name = reader.read<std::string, uint8_t>();
     }
 };
 
@@ -444,9 +443,9 @@ public:
     user_list() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        auto unknown = in_stream.read_u8();
+        auto unknown = reader.read<uint8_t>();
     }
 };
 
@@ -477,16 +476,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::ostream& out_stream) const
+    void serialize(fb::stream_writer<big_endian>& writer) const
     {
-        out_stream.write_u8(header);
-        out_stream.write_u8(this->shout).writestr_u8(this->message);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(this->shout).write<std::string, uint8_t>(this->message);
     }
 #else
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->shout   = in_stream.read_u8();
-        this->message = in_stream.readstr_u8();
+        this->shout   = reader.read<uint8_t>();
+        this->message = reader.read<std::string, uint8_t>();
     }
 #endif
 };
@@ -505,11 +504,11 @@ public:
     swap() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->type = SWAP_TYPE(in_stream.read_u8());
-        this->src  = in_stream.read_u8();
-        this->dst  = in_stream.read_u8();
+        this->type = SWAP_TYPE(reader.read<uint8_t>());
+        this->src  = reader.read<uint8_t>();
+        this->dst  = reader.read<uint8_t>();
     }
 };
 
@@ -530,58 +529,58 @@ public:
     dialog() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->interaction = static_cast<fb::game::dialog::interaction>(in_stream.read_u8());
+        this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
         switch (static_cast<fb::game::dialog::interaction>(this->interaction))
         {
         case fb::game::dialog::interaction::NORMAL: // 일반 다이얼로그
         {
-            in_stream.read(nullptr, 0x07); // 7바이트 무시
-            this->action = in_stream.read_u8();
+            reader.read(nullptr, 0x07); // 7바이트 무시
+            this->action = reader.read<uint8_t>();
             break;
         }
 
         case fb::game::dialog::interaction::INPUT:
         {
-            auto unknown1 = in_stream.read_u16();
-            auto unknown2 = in_stream.read_u32();
-            this->message = in_stream.readstr_u16();
+            auto unknown1 = reader.read<uint16_t>();
+            auto unknown2 = reader.read<uint32_t>();
+            this->message = reader.read<std::string, uint16_t>();
             break;
         }
 
         case fb::game::dialog::interaction::INPUT_EX:
         {
-            in_stream.read(nullptr, 0x07); // 7바이트 무시
-            this->action = in_stream.read_u8();
+            reader.read(nullptr, 0x07); // 7바이트 무시
+            this->action = reader.read<uint8_t>();
             if (this->action == 0x02) // OK button
             {
-                auto unknown1 = in_stream.read_u8();
-                this->message = in_stream.readstr_u8();
+                auto unknown1 = reader.read<uint8_t>();
+                this->message = reader.read<std::string, uint8_t>();
             }
             break;
         }
 
         case fb::game::dialog::interaction::MENU:
         {
-            auto unknown = in_stream.read_u32();
-            this->index  = in_stream.read_u16();
+            auto unknown = reader.read<uint32_t>();
+            this->index  = reader.read<uint16_t>();
             break;
         }
 
         case fb::game::dialog::interaction::ITEM:
         {
-            auto unknown  = in_stream.read_u32();
-            this->pursuit = in_stream.read_u16();
-            this->name    = in_stream.readstr_u8();
+            auto unknown  = reader.read<uint32_t>();
+            this->pursuit = reader.read<uint16_t>();
+            this->name    = reader.read<std::string, uint8_t>();
             break;
         }
 
         case fb::game::dialog::interaction::SLOT:
         {
-            auto unknown  = in_stream.read_u32();
-            this->pursuit = in_stream.read_u16();
-            this->index   = in_stream.read_u8();
+            auto unknown  = reader.read<uint32_t>();
+            this->pursuit = reader.read<uint16_t>();
+            this->index   = reader.read<uint8_t>();
             break;
         }
         }
@@ -597,7 +596,7 @@ public:
     door() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     { }
 };
 
@@ -614,10 +613,10 @@ public:
     whisper() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->name    = in_stream.readstr_u8();
-        this->message = in_stream.readstr_u8();
+        this->name    = reader.read<std::string, uint8_t>();
+        this->message = reader.read<std::string, uint8_t>();
     }
 };
 

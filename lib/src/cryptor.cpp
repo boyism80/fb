@@ -81,7 +81,7 @@ void fb::cryptor::crypt(const uint8_t* src, uint8_t* dst, uint32_t size, const u
     }
 }
 
-uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
+uint32_t fb::cryptor::encrypt(fb::stream& data, uint32_t offset, uint32_t size)
 {
     auto extended_size = size + 0x100;
     auto buffer_src    = (uint8_t*)data.data() + offset;
@@ -128,7 +128,7 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data, uint32_t offset, uint32_t size)
     return new_size;
 }
 
-uint32_t fb::cryptor::encrypt(fb::buffer& data)
+uint32_t fb::cryptor::encrypt(fb::stream& data)
 {
     if (data.size() == 0)
         return -1;
@@ -136,7 +136,7 @@ uint32_t fb::cryptor::encrypt(fb::buffer& data)
     return this->encrypt(data, 0, (uint32_t)data.size());
 }
 
-uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
+uint32_t fb::cryptor::decrypt(fb::stream& data, uint32_t offset, uint32_t size)
 {
     auto extended_size = size + 0x100;
     auto buffer_src    = (uint8_t*)data.data() + offset;
@@ -179,7 +179,7 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data, uint32_t offset, uint32_t size)
     return new_size;
 }
 
-uint32_t fb::cryptor::decrypt(fb::buffer& data)
+uint32_t fb::cryptor::decrypt(fb::stream& data)
 {
     if (data.size() == 0)
         return -1;
@@ -187,7 +187,7 @@ uint32_t fb::cryptor::decrypt(fb::buffer& data)
     return this->decrypt(data, 0, (uint32_t)data.size());
 }
 
-uint32_t fb::cryptor::wrap(fb::buffer& data, uint32_t offset) const
+uint32_t fb::cryptor::wrap(fb::stream& data, uint32_t offset) const
 {
     uint16_t size = (uint16_t)data.size() - offset;
     if (size == 0)
@@ -199,12 +199,12 @@ uint32_t fb::cryptor::wrap(fb::buffer& data, uint32_t offset) const
     return size + sizeof(header);
 }
 
-uint32_t fb::cryptor::wrap(fb::buffer& data) const
+uint32_t fb::cryptor::wrap(fb::stream& data) const
 {
     return this->wrap(data, 0);
 }
 
-uint32_t fb::cryptor::unwrap(fb::buffer& data, uint32_t offset) const
+uint32_t fb::cryptor::unwrap(fb::stream& data, uint32_t offset) const
 {
     uint16_t size = uint16_t(data.size() - offset);
     if (size < 3)
@@ -214,7 +214,7 @@ uint32_t fb::cryptor::unwrap(fb::buffer& data, uint32_t offset) const
     return size - 3;
 }
 
-uint32_t fb::cryptor::unwrap(fb::buffer& data) const
+uint32_t fb::cryptor::unwrap(fb::stream& data) const
 {
     return this->unwrap(data, 0);
 }

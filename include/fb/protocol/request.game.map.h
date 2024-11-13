@@ -19,13 +19,13 @@ public:
     update() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->position.x  = in_stream.read_u16();
-        this->position.y  = in_stream.read_u16();
-        this->size.width  = in_stream.read_u8();
-        this->size.height = in_stream.read_u8();
-        this->crc         = in_stream.read_u16();
+        this->position.x  = reader.read<uint16_t>();
+        this->position.y  = reader.read<uint16_t>();
+        this->size.width  = reader.read<uint8_t>();
+        this->size.height = reader.read<uint8_t>();
+        this->crc         = reader.read<uint16_t>();
     }
 };
 
@@ -43,11 +43,11 @@ public:
     world() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->value  = in_stream.read_u16();
-        this->before = in_stream.read_u16();
-        this->after  = in_stream.read_u16();
+        this->value  = reader.read<uint16_t>();
+        this->before = reader.read<uint16_t>();
+        this->after  = reader.read<uint16_t>();
     }
 };
 

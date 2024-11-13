@@ -12,7 +12,7 @@ public:
     inline static uint8_t header = 0x0F;
 
 private:
-    mutable fb::istream _in_stream;
+    fb::stream_reader<big_endian>* _reader;
 
 public:
     mutable uint8_t     slot;
@@ -24,10 +24,10 @@ public:
     use() = default;
 
 public:
-    void deserialize(fb::istream& in_stream)
+    void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->_in_stream = in_stream;
-        this->slot       = this->_in_stream.read_u8() - 1;
+        this->_reader = &reader;
+        this->slot    = reader.read<uint8_t>() - 1;
     }
 
     void parse(SPELL_TYPE type) const
@@ -36,15 +36,15 @@ public:
         {
         case SPELL_TYPE::INPUT:
         {
-            this->message = _in_stream.readstr();
+            this->message = this->_reader->read<std::string, uint8_t>();
             break;
         }
 
         case SPELL_TYPE::TARGET:
         {
-            this->fd         = this->_in_stream.read_u32();
-            this->position.x = this->_in_stream.read_u16();
-            this->position.y = this->_in_stream.read_u16();
+            this->fd         = this->_reader->read<uint32_t>();
+            this->position.x = this->_reader->read<uint16_t>();
+            this->position.y = this->_reader->read<uint16_t>();
             break;
         }
         }

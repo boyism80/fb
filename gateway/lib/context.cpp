@@ -4,8 +4,11 @@ fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<fb::gateway::session>(context, port)
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
-    this->_connection_cache.write_u8(0x7E).write_u8(0x1B).write((const void*)message, strlen(message));
 
+    auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
+    writer.write<uint8_t>(0x7E);
+    writer.write<uint8_t>(0x1B);
+    writer.write((const void*)message, strlen(message));
     this->load_entries();
 
     // Register event handler
@@ -30,7 +33,8 @@ bool fb::gateway::context::load_entries()
                                                (*i)["port"].asInt()));
         }
 
-        fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(this->_entry_stream_cache);
+        auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
+        fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
         this->_entry_crc32_cache = this->_entry_stream_cache.crc();
         return true;
     }
@@ -40,19 +44,19 @@ bool fb::gateway::context::load_entries()
     }
 }
 
-fb::ostream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
+fb::stream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
 {
-    fb::ostream ostream;
-    ostream
-        .write_u8(0x00) // cmd : 0x00
-        .write_u8(0x00)
-        .write_u32(this->_entry_crc32_cache)
-        .write_u8(crt.type())
-        .write_u8(0x09)
-        .write(crt.key(), 0x09)
-        .write_u8(0x00);
+    auto stream = fb::stream();
+    auto writer = fb::stream_writer<big_endian>(stream);
+    writer.write<uint8_t>(0x00); // cmd : 0x00
+    writer.write<uint8_t>(0x00);
+    writer.write<uint32_t>(this->_entry_crc32_cache);
+    writer.write<uint8_t>(crt.type());
+    writer.write<uint8_t>(0x09);
+    writer.write(crt.key(), 0x09);
+    writer.write<uint8_t>(0x00);
 
-    return ostream;
+    return stream;
 }
 
 bool fb::gateway::context::decrypt_policy(uint8_t cmd) const
