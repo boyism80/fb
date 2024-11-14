@@ -28,7 +28,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint16_t>(this->version).write<uint8_t>(this->national_key);
+        writer.write<uint16_t>(this->version);
+        writer.write<uint8_t>(this->national_key);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

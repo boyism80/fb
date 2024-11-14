@@ -30,7 +30,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<std::string>(this->name).write<uint32_t>(static_cast<uint32_t>(this->time.count() / 1000));
+        writer.write<std::string>(this->name);
+        writer.write<uint32_t>(static_cast<uint32_t>(this->time.count() / 1000));
     }
 };
 
@@ -51,7 +52,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<std::string>(this->buff.model.name).write<uint32_t>(0x00);
+        writer.write<std::string>(this->buff.model.name);
+        writer.write<uint32_t>(0x00);
     }
 };
 
@@ -132,7 +134,8 @@ public:
             return;
 
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->index + 1).write<uint8_t>(0x00);
+        writer.write<uint8_t>(this->index + 1);
+        writer.write<uint8_t>(0x00);
     }
 };
 

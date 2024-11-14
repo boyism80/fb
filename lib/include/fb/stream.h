@@ -136,9 +136,21 @@ public:
 #endif
 };
 
+/**
+ * @brief      This class describes a little endian.
+ */
 class little_endian
 {
 public:
+    /**
+     * @brief      Gets the specified p.
+     *
+     * @param[in]  p          { parameter_description }
+     *
+     * @tparam     ValueType  { description }
+     *
+     * @return     The value type.
+     */
     template <typename ValueType>
     static ValueType get(const uint8_t* p)
     {
@@ -156,6 +168,14 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value      The value
+     * @param      p          { parameter_description }
+     *
+     * @tparam     ValueType  { description }
+     */
     template <typename ValueType>
     static void put(const ValueType& value, uint8_t* p)
     {
@@ -171,9 +191,21 @@ public:
     }
 };
 
+/**
+ * @brief      This class describes a big endian.
+ */
 class big_endian
 {
 public:
+    /**
+     * @brief      Gets the specified p.
+     *
+     * @param[in]  p          { parameter_description }
+     *
+     * @tparam     ValueType  { description }
+     *
+     * @return     The value type.
+     */
     template <typename ValueType>
     static ValueType get(const uint8_t* p)
     {
@@ -191,6 +223,14 @@ public:
     }
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value      The value
+     * @param      p          { parameter_description }
+     *
+     * @tparam     ValueType  { description }
+     */
     template <typename ValueType>
     static void put(const ValueType& value, uint8_t* p)
     {
@@ -208,6 +248,9 @@ public:
 
 /**
  * @brief      This class describes a stream reader.
+ *
+ * @tparam     EndianType  { description }
+ * @tparam     EndianType  { description }
  */
 #ifdef LITTLE_ENDIAN
 template <typename EndianType = little_endian>
@@ -348,6 +391,9 @@ public:
 
 /**
  * @brief      This class describes a stream writer.
+ *
+ * @tparam     EndianType  { description }
+ * @tparam     EndianType  { description }
  */
 #ifdef LITTLE_ENDIAN
 template <typename EndianType = little_endian>

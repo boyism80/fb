@@ -110,7 +110,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->id).write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->id);
+        writer.write<uint8_t>(0x00);
     }
 };
 

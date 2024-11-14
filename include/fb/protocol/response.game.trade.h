@@ -31,7 +31,10 @@ public:
         sstream << this->me.name() << '(' << cname.c_str() << ')';
 
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x00).write<uint32_t>(this->me.sequence()).write(sstream.str()).write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write(sstream.str());
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -80,7 +83,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x01).write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -145,7 +149,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x05).write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x05);
+        writer.write<uint8_t>(0x00);
     }
 };
 

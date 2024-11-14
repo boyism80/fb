@@ -154,7 +154,8 @@ public:
 
         // 패킷 형식으로 저장
         writer.write<uint8_t>(header);
-        writer.write<uint16_t>(compressed.size()).write(compressed.data(), compressed.size() + 1);
+        writer.write<uint16_t>(compressed.size());
+        writer.write(compressed.data(), compressed.size() + 1);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

@@ -82,7 +82,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->type).write<std::string, uint8_t>(this->text);
+        writer.write<uint8_t>(this->type);
+        writer.write<std::string, uint8_t>(this->text);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

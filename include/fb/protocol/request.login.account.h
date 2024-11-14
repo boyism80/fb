@@ -34,7 +34,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<std::string, uint8_t>(this->id).write<std::string, uint8_t>(this->pw);
+        writer.write<std::string, uint8_t>(this->id);
+        writer.write<std::string, uint8_t>(this->pw);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

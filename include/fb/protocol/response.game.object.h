@@ -93,7 +93,8 @@ public:
         }
         else if (this->objects != nullptr)
         {
-            writer.write<uint8_t>(0x07).write<uint16_t>((uint16_t)this->objects->size());
+            writer.write<uint8_t>(0x07);
+            writer.write<uint16_t>((uint16_t)this->objects->size());
 
             for (const auto object : *this->objects)
             {
@@ -137,7 +138,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->id).write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->id);
+        writer.write<uint8_t>(0x00);
     }
 };
 
@@ -271,7 +273,9 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint32_t>(this->me.sequence()).write<uint8_t>(this->value).write<uint8_t>(0x00);
+        writer.write<uint32_t>(this->me.sequence());
+        writer.write<uint8_t>(this->value);
+        writer.write<uint8_t>(0x00);
     }
 };
 

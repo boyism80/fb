@@ -37,11 +37,13 @@ public:
         auto size = this->model.board.size();
 
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x01).write<uint16_t>(size);
+        writer.write<uint8_t>(0x01);
+        writer.write<uint16_t>(size);
 
         for (const auto& [k, v] : this->model.board)
         {
-            writer.write<uint16_t>(k).write(v.name);
+            writer.write<uint16_t>(k);
+            writer.write(v.name);
         }
     }
 #else

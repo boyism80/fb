@@ -18,7 +18,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x06).write<uint8_t>(0x00);
+        writer.write<uint8_t>(0x06);
+        writer.write<uint8_t>(0x00);
     }
 #ifdef BOT
     void deserialize(fb::stream_reader<big_endian>& reader)
@@ -92,7 +93,9 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint16_t>((uint16_t)sockets.size()).write<uint16_t>((uint16_t)sockets.size()).write<uint8_t>(0x00);
+        writer.write<uint16_t>((uint16_t)sockets.size());
+        writer.write<uint16_t>((uint16_t)sockets.size());
+        writer.write<uint8_t>(0x00);
 
         this->sockets.each([this, &writer](auto& socket) {
             auto  user = socket.data();
@@ -231,7 +234,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(0x00).write<uint8_t>(std::max(0, 20 - this->value));
+        writer.write<uint8_t>(0x00);
+        writer.write<uint8_t>(std::max(0, 20 - this->value));
     }
 };
 

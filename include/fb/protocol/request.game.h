@@ -479,7 +479,8 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->shout).write<std::string, uint8_t>(this->message);
+        writer.write<uint8_t>(this->shout);
+        writer.write<std::string, uint8_t>(this->message);
     }
 #else
     void deserialize(fb::stream_reader<big_endian>& reader)

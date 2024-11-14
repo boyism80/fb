@@ -139,11 +139,13 @@ public:
             auto weapon = this->session.items.weapon();
             if (weapon != nullptr)
             {
-                writer.write<uint16_t>(weapon->based<fb::model::weapon>().dress).write<uint8_t>(weapon->color());
+                writer.write<uint16_t>(weapon->based<fb::model::weapon>().dress);
+                writer.write<uint8_t>(weapon->color());
             }
             else
             {
-                writer.write<uint16_t>(0xFFFF).write<uint8_t>(0x00);
+                writer.write<uint16_t>(0xFFFF);
+                writer.write<uint8_t>(0x00);
             }
 
             auto shield = this->session.items.shield();
@@ -477,11 +479,13 @@ public:
         {
             if (equipments[i] == nullptr)
             {
-                writer.write<uint16_t>(0xFFFF).write<uint8_t>(0x00);
+                writer.write<uint16_t>(0xFFFF);
+                writer.write<uint8_t>(0x00);
             }
             else
             {
-                writer.write<uint16_t>(equipments[i]->look()).write<uint8_t>(equipments[i]->color());
+                writer.write<uint16_t>(equipments[i]->look());
+                writer.write<uint8_t>(equipments[i]->color());
             }
         }
 
@@ -492,7 +496,9 @@ public:
         writer.write<uint8_t>((uint8_t)this->session.legends.size());
         for (auto legend : this->session.legends)
         {
-            writer.write<uint8_t>(legend.look).write<uint8_t>(legend.color).write(legend.content);
+            writer.write<uint8_t>(legend.look);
+            writer.write<uint8_t>(legend.color);
+            writer.write(legend.content);
         }
         writer.write<uint8_t>(0x00);
     }
@@ -517,7 +523,9 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<std::string>(this->session.title()).write("클랜 이름").write("클랜 타이틀");
+        writer.write<std::string>(this->session.title());
+        writer.write("클랜 이름");
+        writer.write("클랜 타이틀");
 
         // 클래스 이름
         const auto& class_name = model.promotion[this->session.cls()][this->session.promotion()].name;
@@ -539,7 +547,8 @@ public:
         }
         else
         {
-            writer.write<uint16_t>(this->session.look()).write<uint8_t>(this->session.color());
+            writer.write<uint16_t>(this->session.look());
+            writer.write<uint8_t>(this->session.color());
 
             writer.write<uint8_t>(armor != nullptr ? armor->based<fb::model::armor>().dress : 0xFF);
             writer.write<uint8_t>(this->session.current_armor_color());
@@ -593,7 +602,9 @@ public:
         writer.write<uint8_t>((uint8_t)this->session.legends.size());
         for (auto& legend : this->session.legends)
         {
-            writer.write<uint8_t>(legend.look).write<uint8_t>(legend.color).write(legend.content);
+            writer.write<uint8_t>(legend.look);
+            writer.write<uint8_t>(legend.color);
+            writer.write(legend.content);
         }
         writer.write<uint8_t>(0x00);
     }
