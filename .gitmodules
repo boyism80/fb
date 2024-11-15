@@ -10,9 +10,6 @@
 [submodule "dependency/rabbitmq-c"]
 	path = dependency/rabbitmq-c
 	url = https://github.com/alanxz/rabbitmq-c
-[submodule "zlib"]
-	path = zlib
-	url = https://github.com/intel/zlib
 [submodule "dependency/zlib"]
 	path = dependency/zlib
 	url = https://github.com/intel/zlib
