@@ -12,6 +12,7 @@ RUN cmake --build . --config Release --parallel
 FROM cshyeon/fb:build
 WORKDIR /app
 COPY --from=build /app/login/build/app .
+COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
 ENTRYPOINT ./app
