@@ -819,6 +819,13 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (this->sockets.contains(fd) == false)
             co_return false;
 
+        auto&& login_resp = co_await this->post<internal::request::Login, internal::response::Login>(
+            "internal",
+            "/in-game/login",
+            internal::request::Login{id, name, (uint8_t)config["id"].asUInt()});
+        if (login_resp.success == false)
+            co_return false;
+
         auto&& response = co_await this->get<db::response::Login>("db", std::format("/user/login/{}", id));
         if (this->sockets.contains(fd) == false)
             co_return false;

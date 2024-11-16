@@ -4,6 +4,7 @@
 #include <fb/console.h>
 #include <fb/leak.h>
 #include <fb/protocol/flatbuffer/protocol.h>
+#include <fb/model/loader.h>
 #ifndef _WIN32
 #include <execinfo.h>
 #endif
@@ -45,6 +46,7 @@ int main(int argc, const char** argv)
         // Execute acceptor
         auto io_context = boost::asio::io_context{};
         auto context    = std::make_unique<fb::login::context>(io_context, config["port"].asInt());
+        fb::model::loader(context->model).run();
         context->run();
     }
     catch (std::exception& e)

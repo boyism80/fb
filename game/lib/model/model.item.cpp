@@ -1,6 +1,6 @@
 #include <context.h>
 #include <item.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 ITEM_ATTRIBUTE fb::model::item::attr() const
 {

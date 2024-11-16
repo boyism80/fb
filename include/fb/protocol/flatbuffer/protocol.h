@@ -1699,21 +1699,21 @@ public:
 public:
     uint32_t uid = 0;
     std::string name;
-    uint16_t map = 0;
+    uint8_t host = 0;
 
 public:
     Login() = default;
 
     Login(const Login& x)
-        : uid(x.uid), name(x.name), map(x.map)
+        : uid(x.uid), name(x.name), host(x.host)
     { }
 
-    Login(uint32_t uid, const std::string& name, uint16_t map)
-        : uid(uid), name(name), map(map)
+    Login(uint32_t uid, const std::string& name, uint8_t host)
+        : uid(uid), name(name), host(host)
     { }
 
     Login(const fb::protocol::internal::request::raw::Login& raw)
-        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), map(raw.map())
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), host(raw.host())
     { }
 
 public:
@@ -1822,20 +1822,21 @@ public:
 public:
     fb::protocol::internal::Service service;
     uint8_t id = 0;
+    std::optional<uint32_t> uid = std::nullopt;
 
 public:
     Transfer() = default;
 
     Transfer(const Transfer& x)
-        : service(x.service), id(x.id)
+        : service(x.service), id(x.id), uid(x.uid)
     { }
 
-    Transfer(fb::protocol::internal::Service service, uint8_t id)
-        : service(service), id(id)
+    Transfer(fb::protocol::internal::Service service, uint8_t id, const std::optional<uint32_t>& uid)
+        : service(service), id(id), uid(uid)
     { }
 
     Transfer(const fb::protocol::internal::request::raw::Transfer& raw)
-        : service((fb::protocol::internal::Service)raw.service()), id(raw.id())
+        : service((fb::protocol::internal::Service)raw.service()), id(raw.id()), uid(raw.uid() != nullptr ? raw.uid()->value() : std::optional<uint32_t>())
     { }
 
 public:
@@ -2516,7 +2517,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::proto
     return fb::protocol::internal::request::raw::CreateLogin(builder,
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.name),
-            flatbuffers::build<uint16_t>(builder, value.map));
+            flatbuffers::build<uint8_t>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> build<fb::protocol::internal::request::Logout>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Logout& value)
@@ -2539,7 +2540,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::pr
 {
     return fb::protocol::internal::request::raw::CreateTransfer(builder,
             flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
-            flatbuffers::build<uint8_t>(builder, value.id));
+            flatbuffers::build<uint8_t>(builder, value.id),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.uid));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value)

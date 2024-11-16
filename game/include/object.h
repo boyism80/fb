@@ -5,7 +5,7 @@
 #include <spell.h>
 #include <lua.h>
 #include <fb/stream.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 using namespace fb::model;
 using namespace fb::model::enum_value;

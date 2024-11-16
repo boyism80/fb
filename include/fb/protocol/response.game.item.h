@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <item.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 using namespace fb::model::enum_value;
 

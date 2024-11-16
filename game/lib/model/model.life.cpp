@@ -1,4 +1,4 @@
-#include <model.h>
+#include <fb/model/model.h>
 
 int fb::model::life::builtin_hp(lua_State* lua)
 {

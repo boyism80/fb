@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <trade.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 namespace fb { namespace protocol { namespace game { namespace response { namespace trade {
 

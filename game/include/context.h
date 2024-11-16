@@ -10,7 +10,7 @@
 #include <fb/protocol/game.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <lua.h>
-#include <model.h>
+#include <fb/model/model.h>
 #include <fb/amqp.h>
 #include <listener.h>
 

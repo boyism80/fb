@@ -84,7 +84,7 @@ int main(int argc, const char** argv)
                 return nullptr;
             }
         };
-        fb::game::model_loader(*context).run();
+        fb::model::loader(context->model).run();
         fb::game::map_loader(*context).run();
         fb::game::npc_spawner(*context).run();
 

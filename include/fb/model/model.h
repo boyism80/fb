@@ -13,10 +13,7 @@
 #include <chrono>
 #include <jsoncpp/json/json.h>
 #include <unordered_map>
-#include <lua.h>
-#include <fb/model/datetime.h>
-#include <model.preprocessor.h>
-#include <enum_ext.h>
+#include <model.additional.h>
 #ifdef LUA
 extern "C"
 {
@@ -24,6 +21,10 @@ extern "C"
 #include <lua/lualib.h>
 #include <lua/lauxlib.h>
 }
+#endif
+
+#ifdef DELETE
+#undef DELETE
 #endif
 
 #ifdef BEGIN_PREPROCESSOR
@@ -2702,9 +2703,8 @@ inline static void map_enum(lua_State* lua)
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::WEATHER_TYPE::BIRD);
     lua_setglobal(lua, "WEATHER_TYPE_BIRD");
 }
-#endif
-
 } // end of namespace fb::model::lua
+#endif
 #pragma endregion
 
 #ifdef DECLARE_AFTER_CONST
@@ -2755,8 +2755,8 @@ template <> std::string build<std::string>(const Json::Value& json);
 template <> float build<float>(const Json::Value& json);
 template <> double build<double>(const Json::Value& json);
 template <> bool build<bool>(const Json::Value& json);
-template <> datetime build<datetime>(const Json::Value& json);
-template <> timespan build<timespan>(const Json::Value& json);
+template <> fb::model::datetime build<fb::model::datetime>(const Json::Value& json);
+template <> fb::model::timespan build<fb::model::timespan>(const Json::Value& json);
 template <> fb::model::date_range build<fb::model::date_range>(const Json::Value& json);
 template <> fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
 

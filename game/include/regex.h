@@ -3,7 +3,7 @@
 
 #include <string>
 #include <optional>
-#include <model.h>
+#include <fb/model/model.h>
 
 namespace fb { namespace game { namespace regex {
 

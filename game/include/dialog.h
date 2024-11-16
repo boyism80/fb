@@ -6,7 +6,7 @@
 #include <stack>
 #include <npc.h>
 #include <item.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 namespace fb { namespace game {
 

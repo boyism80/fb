@@ -13,12 +13,14 @@ POPD
 if ERRORLEVEL 1 GOTO END
 
 PUSHD ..
-DEL /s /q "game\include\model.h"
+DEL /s /q "include\fb\model\model.h"
 DEL /s /q "include\fb\model\datetime.h"
 RMDIR /s /q "game\json"
-COPY "tools\data-converter\bin\output\C++\server\model.h" "game\include\model.h"
+RMDIR /s /q "login\json"
+COPY "tools\data-converter\bin\output\C++\server\model.h" "include\fb\model\model.h"
 COPY "tools\data-converter\bin\output\C++\datetime.h" "include\fb\model\datetime.h"
 XCOPY "tools\data-converter\bin\output\json\server\*.json" "game\json\*.json"
+XCOPY "tools\data-converter\bin\output\json\server\*.json" "login\json\*.json"
 
 DEL /s /q "http\Model\Model.cs"
 RMDIR /s /q "internal\json"

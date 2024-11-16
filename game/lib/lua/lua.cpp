@@ -2,7 +2,7 @@
 #include <lua.h>
 #include <mob.h>
 #include <object.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 using namespace fb::game::lua;
 

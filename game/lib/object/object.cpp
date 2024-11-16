@@ -1,6 +1,6 @@
 #include <character.h>
 #include <context.h>
-#include <model.h>
+#include <fb/model/model.h>
 #include <object.h>
 
 using namespace fb::model::enum_value;

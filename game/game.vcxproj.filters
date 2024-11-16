@@ -48,9 +48,6 @@
     <ClCompile Include="lib\worker\worker.map.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\worker\worker.model.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lib\worker\worker.npc.spawn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

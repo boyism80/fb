@@ -1,4 +1,4 @@
-#include <model.h>
+#include <fb/model/model.h>
 
 fb::model::spell* fb::model::__spell::name2spell(const std::string& name) const
 {

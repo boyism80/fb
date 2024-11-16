@@ -39,17 +39,14 @@ namespace Internal.Controllers
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
         {
-            var map = _dataSet.Map[request.Map] ?? throw new KeyNotFoundException($"{request.Map} not found in map data");
             var connection = _redisService.Connection;
-            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = map.Host }.Key);
+            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
             if (config == null)
             {
                 return new Response.Login
                 {
                     Success = false,
                     Logon = false,
-                    Ip = string.Empty,
-                    Port = 0
                 };
             }
 
@@ -60,7 +57,7 @@ namespace Internal.Controllers
                 session = JsonConvert.SerializeObject(new Session
                 {
                     Uid = request.Uid,
-                    Host = map.Host
+                    Host = request.Host
                 }),
             });
 
@@ -106,17 +103,33 @@ namespace Internal.Controllers
         public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
             var connection = _redisService.Connection;
-            var exists = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
-            if (exists.IsNull)
+            var connectedGameConf = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
+            if (connectedGameConf.IsNull)
             {
                 return new Response.Transfer
                 {
                     Code = TransferResult.Failed,
-                    Ip = "0.0.0.0",
                 };
             }
 
-            var config = JsonConvert.DeserializeObject<HostConfig>(exists.ToString());
+            if (request.Uid != null)
+            {
+                var sessionValue = await connection.HashGetAsync(new SessionKey().Key, request.Uid.Value);
+                if (!sessionValue.IsNull)
+                {
+                    var session = JsonConvert.DeserializeObject<Session>(sessionValue);
+                    _rabbitMqService.Publish(new Response.KickOut
+                    {
+                        Uid = session.Uid
+                    }, "amq.direct", $"fb.game.{session.Host}");
+                    return new Response.Transfer
+                    {
+                        Code = TransferResult.LoggedIn
+                    };
+                }
+            }
+
+            var config = JsonConvert.DeserializeObject<HostConfig>(connectedGameConf.ToString());
             return new Response.Transfer
             {
                 Code = TransferResult.Success,

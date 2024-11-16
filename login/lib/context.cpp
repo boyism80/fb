@@ -263,19 +263,20 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         }
 
         auto   map       = response2.map;
-        auto&& response3 = co_await this->post<internal::request::Login, internal::response::Login>(
+        auto&& response3 = co_await this->post<internal::request::Transfer, internal::response::Transfer>(
             "internal",
-            "/in-game/login",
-            internal::request::Login{uid, name, (uint16_t)map});
+            "/in-game/transfer",
+            internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, uid});
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        if (!response3.success)
+        switch (response3.code)
         {
-            if (response3.logon)
-                throw id_exception("이미 접속중입니다.");
-            else
-                throw id_exception("비바람이 휘몰아치고 있습니다.");
+        case fb::protocol::internal::TransferResult::Failed:
+            throw id_exception("비바람이 휘몰아치고 있습니다.");
+
+        case fb::protocol::internal::TransferResult::LoggedIn:
+            throw id_exception("이미 접속중입니다.");
         }
 
         socket.send(response::message("", 0x00));

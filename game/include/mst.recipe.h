@@ -1,7 +1,7 @@
 #ifndef __MST_RECIPE_H__
 #define __MST_RECIPE_H__
 
-#include <model.h>
+#include <fb/model/model.h>
 #include <fb/mst.h>
 #include <item.h>
 #include <fb/generator.h>

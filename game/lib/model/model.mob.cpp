@@ -1,7 +1,7 @@
 #include <character.h>
 #include <map.h>
 #include <mob.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 int fb::model::mob::builtin_speed(lua_State* lua)
 {

@@ -2,7 +2,7 @@
 #include <context.h>
 #include <map.h>
 #include <mob.h>
-#include <model.h>
+#include <fb/model/model.h>
 #include <object.h>
 
 uint8_t fb::model::object::dialog_look_type() const

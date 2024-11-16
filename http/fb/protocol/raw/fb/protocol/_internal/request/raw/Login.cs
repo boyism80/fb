@@ -28,23 +28,23 @@ public struct Login : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
-  public ushort Map { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public byte Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.Login> CreateLogin(FlatBufferBuilder builder,
       uint uid = 0,
       StringOffset nameOffset = default(StringOffset),
-      ushort map = 0) {
+      byte host = 0) {
     builder.StartTable(3);
     Login.AddName(builder, nameOffset);
     Login.AddUid(builder, uid);
-    Login.AddMap(builder, map);
+    Login.AddHost(builder, host);
     return Login.EndLogin(builder);
   }
 
   public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(0, uid, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
-  public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(2, map, 0); }
+  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(2, host, 0); }
   public static Offset<fb.protocol._internal.request.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Login>(o);
@@ -61,7 +61,7 @@ static public class LoginVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
-      && verifier.VerifyField(tablePos, 8 /*Map*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 8 /*Host*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

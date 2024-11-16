@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #include <character.h>
-#include <model.h>
+#include <fb/model/model.h>
 #include <clan.h>
 #include <group.h>
 

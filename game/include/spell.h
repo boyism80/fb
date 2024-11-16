@@ -5,7 +5,7 @@
 #include <chrono>
 #include <mmo.h>
 #include <inventory.h>
-#include <model.h>
+#include <fb/model/model.h>
 
 namespace fb { namespace game {
 

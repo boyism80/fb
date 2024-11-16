@@ -1,4 +1,4 @@
-#include <model.h>
+#include <fb/model/model.h>
 
 const fb::model::buy* fb::model::__buy::find(uint32_t pursuit, const fb::model::item& item) const
 {

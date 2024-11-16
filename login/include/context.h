@@ -16,6 +16,7 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/acceptor.h>
 #include <fb/string.h>
+#include <fb/model/model.h>
 
 #define MAX_NXCLUB_SIZE 14
 
@@ -134,6 +135,9 @@ private:
     std::vector<std::string>                 _forbiddens;
     std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
+
+public:
+    fb::model::model                         model;
 
 public:
     /**
