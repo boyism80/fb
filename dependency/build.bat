@@ -14,6 +14,8 @@ POPD
 XCOPY jsoncpp\build\lib\Debug\jsoncpp_static.lib lib\jsoncppd.* /K /D /H /Y
 XCOPY jsoncpp\build\lib\Release\jsoncpp_static.lib lib\ /K /D /H /Y
 ROBOCOPY jsoncpp\include\json\ include\jsoncpp\json\
+rmdir /s /q jsoncpp
+mkdir jsoncpp
 
 
 PUSHD cpp-terminal
@@ -31,6 +33,8 @@ XCOPY cpp-terminal\build\cpp-terminal\private\Release\cpp-terminal-private.lib l
 XCOPY cpp-terminal\build\cpp-terminal\private\Debug\cpp-terminal-private.lib lib\cpp-terminal-privated.* /K /D /H /Y
 ROBOCOPY cpp-terminal\cpp-terminal\ include\cpp-terminal\ *.h*
 ROBOCOPY cpp-terminal\cpp-terminal\private\ include\cpp-terminal\private\ *.h*
+rmdir /s /q cpp-terminal
+mkdir cpp-terminal
 
 PUSHD rabbitmq-c
 git checkout v0.14.0
@@ -47,6 +51,8 @@ XCOPY rabbitmq-c\build\librabbitmq\Debug\librabbitmq.4.lib lib\librabbitmq.4d.* 
 XCOPY rabbitmq-c\build\librabbitmq\Release\librabbitmq.4.lib lib\librabbitmq.4.* /K /D /H /Y
 ROBOCOPY rabbitmq-c\include\rabbitmq-c\ include\rabbitmq-c\ *.h*
 ROBOCOPY rabbitmq-c\build\include\rabbitmq-c\ include\rabbitmq-c\ *.h*
+rmdir /s /q rabbitmq-c
+mkdir rabbitmq-c
 
 PUSHD lua
 git add .
@@ -65,6 +71,8 @@ POPD
 XCOPY lua\build\Debug\lua.lib lib\luad.* /K /D /H /Y
 XCOPY lua\build\Release\lua.lib lib\lua.* /K /D /H /Y
 ROBOCOPY lua\upstream\ include\lua\ *.h*
+rmdir /s /q lua
+mkdir lua
 
 PUSHD zlib
 git checkout v1.2.9
@@ -81,6 +89,8 @@ XCOPY zlib\build\Debug\zlibstaticd.lib lib\zlibd.* /K /D /H /Y
 XCOPY zlib\build\Release\zlibstatic.lib lib\zlib.* /K /D /H /Y
 COPY zlib\zconf.h.included include\zlib\zconf.h /Y
 ROBOCOPY zlib\ include\zlib\ *.h
+rmdir /s /q zlib
+mkdir zlib
 
 PUSHD flatbuffers
 git add .
@@ -95,13 +105,19 @@ POPD
 XCOPY flatbuffers\build\Debug\flatbuffers.lib lib\flatbuffersd.* /K /D /H /Y
 XCOPY flatbuffers\build\Release\flatbuffers.lib lib\flatbuffers.* /K /D /H /Y
 ROBOCOPY flatbuffers\include\ include\ /E
+rmdir /s /q flatbuffers
+mkdir flatbuffers
 
 ROBOCOPY cpp-async\include\async\ include\async\ *.h
+rmdir /s /q cpp-async
+mkdir cpp-async
 
 PUSHD cpp-httplib
 git checkout v0.18.1
 POPD
 COPY cpp-httplib\httplib.h include\httplib.* /Y
+rmdir /s /q cpp-httplib
+mkdir cpp-httplib
 
 PUSHD cpp_redis
 git checkout 4.3.1
@@ -124,6 +140,8 @@ COPY cpp_redis\build\lib\Release\tacopie.lib lib\tacopie.lib /Y
 COPY cpp_redis\build\lib\Release\cpp_redis.lib lib\cpp_redis.lib /Y
 ROBOCOPY cpp_redis\includes\ include\ /E
 ROBOCOPY cpp_redis\tacopie\includes\ include\ /E
+rmdir /s /q cpp_redis
+mkdir cpp_redis
 
 PUSHD boost
 git checkout boost-1.84.0
@@ -141,7 +159,6 @@ POPD
 ROBOCOPY boost\boost\ include\boost\ /E
 ROBOCOPY boost\build\stage\lib\Debug\ lib\boost\ /E *.lib
 ROBOCOPY boost\build\stage\lib\Release\ lib\boost\ /E *.lib
-
-git submodule foreach git reset --hard
-git submodule foreach git clean -fxd
+rmdir /s /q boost
+mkdir boost
 PAUSE
