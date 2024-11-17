@@ -81,7 +81,7 @@ namespace Db.Reepository
             return null;
         }
 
-        protected override Task<IEnumerable<TModel>> GetAll(TKey key)
+        protected override sealed Task<IEnumerable<TModel>> GetAll(TKey key)
         {
             throw new InvalidOperationException();
         }
@@ -100,7 +100,7 @@ namespace Db.Reepository
             await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
         }
 
-        public override Task Set(TModel[] values)
+        public override sealed Task Set(TModel[] values)
         {
             throw new InvalidOperationException();
         }

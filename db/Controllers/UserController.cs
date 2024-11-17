@@ -1,6 +1,7 @@
 using AutoMapper;
 using Dapper;
 using db.Model;
+using Db;
 using Db.Model;
 using Db.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -70,9 +71,8 @@ namespace db.Controllers
         [HttpPost("authenticate")]
         public async Task<Response.Authenticate> Authenticate(Request.Authenticate request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            var account = await connection.QueryFirstOrDefaultAsync<Account>($"SELECT id, pw, map FROM user WHERE id = {request.Uid} LIMIT 1");
-            if (account == null)
+            var ch = await _dbContext.Character.Get(request.Uid);
+            if (ch == null)
             {
                 return new Response.Authenticate
                 {
@@ -80,7 +80,7 @@ namespace db.Controllers
                 };
             }
 
-            if (account.Pw != SHA256Hash(request.Pw))
+            if (ch.Pw != SHA256Hash(request.Pw))
             {
                 return new Response.Authenticate
                 {
@@ -91,7 +91,7 @@ namespace db.Controllers
             return new Response.Authenticate
             {
                 ErrorCode = 0,
-                Map = account.Map
+                Map = ch.Map
             };
         }
 
@@ -115,88 +115,90 @@ namespace db.Controllers
         [HttpPost("init-ch")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            var success = await connection.QueryFirstAsync<bool>("USP_CHARACTER_INIT", new
+            var ch = new Character
             {
-                id = request.Uid,
-                uname = request.Name,
-                pw = SHA256Hash(request.Pw),
-                base_hp = request.Hp,
-                base_mp = request.Mp,
-                map = request.Map,
-                position_x = request.X,
-                position_y = request.Y,
-                admin = request.Admin
-            }, commandType: CommandType.StoredProcedure);
+                Id = request.Uid,
+                Name = request.Name,
+                Pw = SHA256Hash(request.Pw),
+                Hp = request.Hp,
+                BaseHp = request.Hp,
+                Mp = request.Mp,
+                BaseMp = request.Mp,
+                Map = request.Map,
+                PositionX = request.X,
+                PositionY = request.Y,
+                Admin = request.Admin
+            };
+            await _dbContext.Character.Set(ch);
 
             return new Response.InitCharacter
             {
-                Success = success
+                Success = true
             };
         }
 
         [HttpPost("mk-ch")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            var affectedRows = await connection.ExecuteAsync("USP_CHARACTER_CREATE_FINISH", new
+            try
             {
-                id = request.Uid,
-                look = request.Hair,
-                sex = request.Sex,
-                nation = request.Nation,
-                creature = request.Creature
-            }, commandType: CommandType.StoredProcedure);
+                var ch = await _dbContext.Character.Get(request.Uid) ??
+                    throw new Exception($"user {request.Uid} not found");
 
-            return new Response.MakeCharacter
+                ch.Look = request.Hair;
+                ch.Sex = request.Sex;
+                ch.Nation = request.Nation;
+                ch.Creature = request.Creature;
+                await _dbContext.Character.Set(ch);
+                return new Response.MakeCharacter
+                {
+                    Success = true
+                };
+            }
+            catch (Exception)
             {
-                Success = (affectedRows != 0)
-            };
+                return new Response.MakeCharacter
+                {
+                    Success = false
+                };
+            }
         }
 
         [HttpPost("change-pw")]
         public async Task<Response.ChangePw> ChangePassword(Request.ChangePw request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            using (var reader = await connection.ExecuteReaderAsync($"SELECT pw, birth FROM user WHERE id = {request.Uid}"))
+            try
             {
-                if (await reader.ReadAsync() == false)
-                {
-                    return new Response.ChangePw
-                    {
-                        ErrorCode = 1
-                    };
-                }
+                var ch = await _dbContext.Character.Get(request.Uid) ??
+                    throw new Exception($"user {request.Uid} not found");
 
-                var pw = reader.GetString("pw");
-                if (pw != SHA256Hash(request.Before))
-                {
-                    return new Response.ChangePw
-                    {
-                        ErrorCode = 2
-                    };
-                }
+                if (ch.Pw != SHA256Hash(request.Before))
+                    throw new ChangePasswordException { Error = 2 };
 
-                var birth = reader.GetValue("birth");
-                if ((birth is DBNull) || ((uint)birth != request.Birthday))
+                if (ch.Birth != request.Birthday)
+                    throw new ChangePasswordException { Error = 3 };
+
+                ch.Pw = SHA256Hash(request.After);
+                await _dbContext.Character.Set(ch);
+                return new Response.ChangePw
                 {
-                    return new Response.ChangePw
-                    {
-                        ErrorCode = 3
-                    };
-                }
+                    ErrorCode = 0
+                };
             }
-
-            await connection.ExecuteAsync($"UPDATE user SET pw = @pw WHERE id = @id LIMIT 1", new
+            catch (ChangePasswordException e)
             {
-                id = request.Uid,
-                pw = SHA256Hash(request.After)
-            });
-
-            return new Response.ChangePw
+                return new Response.ChangePw
+                {
+                    ErrorCode = e.Error
+                };
+            }
+            catch (Exception)
             {
-                ErrorCode = 0
-            };
+                return new Response.ChangePw
+                {
+                    ErrorCode = uint.MaxValue
+                };
+            }
         }
 
         [HttpGet("login/{uid}")]

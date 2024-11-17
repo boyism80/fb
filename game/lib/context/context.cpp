@@ -405,6 +405,7 @@ bool context::init_ch(const fb::protocol::db::Character&   response,
     auto map = response.map;
     session.id(response.id);
     session.name(response.name);
+    session.pw(response.pw);
     session.last_login(datetime(response.last_login));
     session.admin(response.admin);
     session.color(response.color);

@@ -1,7 +1,4 @@
-﻿using Db.Reepository;
-using Db.Service;
-using http.Service;
-using StackExchange.Redis;
+﻿using StackExchange.Redis;
 
 namespace Db.Model
 {
@@ -17,6 +14,7 @@ namespace Db.Model
     public class Character : CharacterKey, IModel
     {
         public string Name { get; set; }
+        public string Pw { get; set; }
         public ushort? Birth { get; set; }
         public DateTime LastLogin { get; set; }
         public bool Admin { get; set; }

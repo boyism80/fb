@@ -62,6 +62,7 @@ namespace fb.protocol.db
             return fb.protocol.db.raw.Character.CreateCharacter(builder,
                 builder.Build(value.Id),
                 builder.Build(value.Name),
+                builder.Build(value.Pw),
                 builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
@@ -566,6 +567,7 @@ namespace fb.protocol.db.request
             return fb.protocol.db.raw.Character.CreateCharacter(builder,
                 builder.Build(value.Id),
                 builder.Build(value.Name),
+                builder.Build(value.Pw),
                 builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
@@ -1076,6 +1078,7 @@ namespace fb.protocol.db.response
             return fb.protocol.db.raw.Character.CreateCharacter(builder,
                 builder.Build(value.Id),
                 builder.Build(value.Name),
+                builder.Build(value.Pw),
                 builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
@@ -1586,6 +1589,7 @@ namespace fb.protocol._internal
             return fb.protocol.db.raw.Character.CreateCharacter(builder,
                 builder.Build(value.Id),
                 builder.Build(value.Name),
+                builder.Build(value.Pw),
                 builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
@@ -2084,6 +2088,7 @@ namespace fb.protocol._internal.request
             return fb.protocol.db.raw.Character.CreateCharacter(builder,
                 builder.Build(value.Id),
                 builder.Build(value.Name),
+                builder.Build(value.Pw),
                 builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
@@ -2588,6 +2593,7 @@ namespace fb.protocol._internal.response
             return fb.protocol.db.raw.Character.CreateCharacter(builder,
                 builder.Build(value.Id),
                 builder.Build(value.Name),
+                builder.Build(value.Pw),
                 builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
@@ -3080,6 +3086,7 @@ namespace fb.protocol.db
         public int ProtocolType => (int)FlatBufferProtocolType.Character;
         public uint Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
+        public string Pw { get; set; } = string.Empty;
         public string LastLogin { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
         public ushort Look { get; set; } = 0;
@@ -3120,6 +3127,7 @@ namespace fb.protocol.db
         {
             Id = raw.Id;
             Name = raw.Name;
+            Pw = raw.Pw;
             LastLogin = raw.LastLogin;
             Admin = raw.Admin;
             Look = raw.Look;

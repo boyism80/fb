@@ -247,6 +247,11 @@ void character::name(const std::string& value)
     this->_name = value;
 }
 
+void character::pw(const std::string& value)
+{
+    this->_pw = value;
+}
+
 const datetime& character::last_login() const
 {
     return this->_last_login;
@@ -1496,6 +1501,7 @@ fb::protocol::db::Character character::to_protocol() const
     auto dto             = fb::protocol::db::Character();
     dto.id               = this->_id;
     dto.name             = this->_name;
+    dto.pw               = this->_pw;
     dto.last_login       = datetime().to_string();
     dto.admin            = this->_admin;
     dto.look             = this->_look;
