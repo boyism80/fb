@@ -1495,7 +1495,7 @@ fb::protocol::db::Character character::to_protocol() const
 {
     auto dto             = fb::protocol::db::Character();
     dto.id               = this->_id;
-    dto.name             = UTF8(this->_name, PLATFORM::Windows);
+    dto.name             = this->_name;
     dto.last_login       = datetime().to_string();
     dto.admin            = this->_admin;
     dto.look             = this->_look;

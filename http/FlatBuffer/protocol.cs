@@ -406,7 +406,7 @@ namespace fb.protocol.db
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Uid));
+                builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -910,7 +910,7 @@ namespace fb.protocol.db.request
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Uid));
+                builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -1420,7 +1420,7 @@ namespace fb.protocol.db.response
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Uid));
+                builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -1930,7 +1930,7 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Uid));
+                builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -2428,7 +2428,7 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Uid));
+                builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -2932,7 +2932,7 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Uid));
+                builder.Build(value.Name));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -4286,7 +4286,7 @@ namespace fb.protocol._internal.request
         public int ProtocolType => (int)FlatBufferProtocolType.Transfer;
         public fb.protocol._internal.Service Service { get; set; }
         public byte Id { get; set; } = 0;
-        public uint? Uid { get; set; } = null;
+        public string Name { get; set; } = null;
 
         public Transfer()
         { }
@@ -4295,7 +4295,7 @@ namespace fb.protocol._internal.request
         {
             Service = (fb.protocol._internal.Service)raw.Service;
             Id = raw.Id;
-            Uid = raw.Uid != null ? (uint?)raw.Uid.Value.Value : null;
+            Name = raw.Name;
         }
 
         public Transfer(byte[] bytes) : this(fb.protocol._internal.request.raw.Transfer.GetRootAsTransfer(new ByteBuffer(bytes)))

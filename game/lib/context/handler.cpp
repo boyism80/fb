@@ -516,7 +516,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
                 "/in-game/transfer",
                 fb::protocol::internal::request::Transfer{fb::protocol::internal::Service::Game,
                                                           map.model.host,
-                                                          me.id()});
+                                                          me.name()});
 
         if (response.code != fb::protocol::internal::TransferResult::Success)
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");

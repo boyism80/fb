@@ -1822,21 +1822,21 @@ public:
 public:
     fb::protocol::internal::Service service;
     uint8_t id = 0;
-    std::optional<uint32_t> uid = std::nullopt;
+    std::optional<std::string> name = std::nullopt;
 
 public:
     Transfer() = default;
 
     Transfer(const Transfer& x)
-        : service(x.service), id(x.id), uid(x.uid)
+        : service(x.service), id(x.id), name(x.name)
     { }
 
-    Transfer(fb::protocol::internal::Service service, uint8_t id, const std::optional<uint32_t>& uid)
-        : service(service), id(id), uid(uid)
+    Transfer(fb::protocol::internal::Service service, uint8_t id, const std::optional<std::string>& name)
+        : service(service), id(id), name(name)
     { }
 
     Transfer(const fb::protocol::internal::request::raw::Transfer& raw)
-        : service((fb::protocol::internal::Service)raw.service()), id(raw.id()), uid(raw.uid() != nullptr ? raw.uid()->value() : std::optional<uint32_t>())
+        : service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(raw.name() != nullptr ? flatbuffers::option::decode(raw.name()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -2541,7 +2541,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::pr
     return fb::protocol::internal::request::raw::CreateTransfer(builder,
             flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<uint8_t>(builder, value.id),
-            flatbuffers::build<std::optional<uint32_t>>(builder, value.uid));
+            flatbuffers::build<std::optional<std::string>>(builder, value.name));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value)

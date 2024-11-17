@@ -18,14 +18,14 @@ namespace db.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-        private readonly DbExecuteService _dbExecuteService;
         private readonly DbContext _dbContext;
 
-        public UserController(IConfiguration configuration, IMapper mapper, DbExecuteService dbExecuteService, DbContext dbContext)
+        public UserController(IConfiguration configuration,
+            IMapper mapper,
+            DbContext dbContext)
         {
             _configuration = configuration;
             _mapper = mapper;
-            _dbExecuteService = dbExecuteService;
             _dbContext = dbContext;
         }
 
@@ -202,16 +202,15 @@ namespace db.Controllers
         [HttpGet("login/{uid}")]
         public async Task<Response.Login> Login(uint uid)
         {
-            await using var connection = _dbContext.Connection(uid);
-            var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
-            var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid} AND deleted = 0");
-            var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid} AND deleted = 0");
+            var ch = await _dbContext.Character.Get(uid);
+            var items = await _dbContext.Item.Get(uid);
+            var spells = await _dbContext.Spell.Get(uid);
 
             var response = new Response.Login
             {
-                Character = _mapper.Map<fb.protocol.db.Character>(character),
-                Items = items.Select(item => _mapper.Map<fb.protocol.db.Item>(item)).ToList(),
-                Spells = spells.Select(spell => _mapper.Map<fb.protocol.db.Spell>(spell)).ToList()
+                Character = _mapper.Map<fb.protocol.db.Character>(ch),
+                Items = items.Select(_mapper.Map<fb.protocol.db.Item>).ToList(),
+                Spells = spells.Select(_mapper.Map<fb.protocol.db.Spell>).ToList()
             };
 
             return response;
@@ -220,82 +219,26 @@ namespace db.Controllers
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
-            await using var connection = _dbContext.Connection(request.Character.Id);
-            var characterSql = $@"
-UPDATE user
-SET look = {request.Character.Look},
-    color = {request.Character.Color},
-    sex = {request.Character.Sex},
-    nation = {request.Character.Nation},
-    creature = {request.Character.Creature},
-    map = {request.Character.Map},
-    position_x = {request.Character.Position.X},
-    position_y = {request.Character.Position.Y},
-    direction = {request.Character.Direction},
-    state = {request.Character.State},
-    class = {request.Character.ClassType},
-    promotion = {request.Character.Promotion},
-    exp = {request.Character.Exp},
-    money = {request.Character.Money},
-    deposited_money = {request.Character.DepositedMoney},
-    disguise = {request.Character.Disguise?.ToString() ?? "NULL"},
-    hp = {request.Character.Hp},
-    base_hp = {request.Character.BaseHp},
-    additional_hp = {request.Character.AdditionalHp},
-    mp = {request.Character.Mp},
-    base_mp = {request.Character.BaseMp},
-    additional_mp = {request.Character.AdditionalMp},
-    weapon_color = {request.Character.WeaponColor?.ToString() ?? "NULL"},
-    helmet_color = {request.Character.HelmetColor?.ToString() ?? "NULL"},
-    armor_color = {request.Character.ArmorColor?.ToString() ?? "NULL"},
-    shield_color = {request.Character.ShieldColor?.ToString() ?? "NULL"},
-    ring_left_color = {request.Character.RingLeftColor?.ToString() ?? "NULL"},
-    ring_right_color = {request.Character.RingRightColor?.ToString() ?? "NULL"},
-    aux_top_color = {request.Character.AuxTopColor?.ToString() ?? "NULL"},
-    aux_bot_color = {request.Character.AuxBotColor?.ToString() ?? "NULL"},
-    clan = {request.Character.Clan?.ToString() ?? "NULL"}
-WHERE user.id = {request.Character.Id} LIMIT 1;";
-            await _dbExecuteService.Post(request.Character.Id, characterSql);
+            var ch = _mapper.Map<Character>(request.Character);
+            await _dbContext.Character.Set(ch);
 
-            if (request.Items.Count > 0)
+            var items = await _dbContext.Item.Get(request.Character.Id);
+            foreach (var item in items)
             {
-                var itemArgs = request.Items.Select(item =>
-                {
-                    var customName = item.CustomName;
-                    if (string.IsNullOrEmpty(customName))
-                        customName = "NULL";
-                    else
-                        customName = $"\"{customName}\"";
-
-                    return $"({item.User}, {item.Index}, {item.Parts}, {item.Deposited}, {item.Model}, {item.Count}, {item.Durability?.ToString() ?? "NULL"}, {customName}, 0)";
-                });
-
-                var itemSql = @$"
-UPDATE item SET deleted = 1 WHERE item.owner = {request.Character.Id};
-
-INSERT INTO item (`owner`, `index`, `parts`, `deposited`, `model`, `count`, `durability`, `custom_name`, `deleted`)
-VALUES {string.Join(',', itemArgs)}
-ON DUPLICATE KEY UPDATE model=VALUES(model), count=VALUES(count), durability=VALUES(durability), custom_name=VALUES(custom_name), deleted=0;
-";
-                await _dbExecuteService.Post(request.Character.Id, itemSql);
+                item.Deleted = true;
             }
+            await _dbContext.Item.Set(items.ToArray());
+            items = _mapper.Map<fb.protocol.db.Item[], Item[]>(request.Items.ToArray());
+            await _dbContext.Item.Set(items.ToArray());
 
-            if (request.Spells.Count > 0)
+            var spells = await _dbContext.Spell.Get(request.Character.Id);
+            foreach (var item in spells)
             {
-                var spellArgs = request.Spells.Select(spell =>
-                {
-                    return $"({spell.User}, {spell.Slot}, {spell.Model}, 0)";
-                });
-
-                var spellSql = @$"
-UPDATE spell SET deleted = 1 WHERE spell.owner = {request.Character.Id};
-
-INSERT INTO spell (`owner`, `slot`, `model`, `deleted`)
-VALUES {string.Join(',', spellArgs)}
-ON DUPLICATE KEY UPDATE model=VALUES(model), deleted=0;
-";
-                await _dbExecuteService.Post(request.Character.Id, spellSql);
+                item.Deleted = true;
             }
+            await _dbContext.Spell.Set(spells.ToArray());
+            spells = _mapper.Map<fb.protocol.db.Spell[], Spell[]>(request.Spells.ToArray());
+            await _dbContext.Spell.Set(spells.ToArray());
 
             return new Response.Save
             {

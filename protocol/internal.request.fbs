@@ -26,7 +26,7 @@ table Ping {
 table Transfer {
   service: fb.protocol.internal.Service;
   id: ubyte;
-  uid: uint?;
+  name: string?;
 }
 
 

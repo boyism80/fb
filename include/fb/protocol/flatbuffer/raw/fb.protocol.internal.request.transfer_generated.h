@@ -14,7 +14,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.service_generated.h"
-#include "nullable_uint_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -30,7 +29,7 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SERVICE = 4,
     VT_ID = 6,
-    VT_UID = 8
+    VT_NAME = 8
   };
   fb::protocol::internal::raw::Service service() const {
     return static_cast<fb::protocol::internal::raw::Service>(GetField<int8_t>(VT_SERVICE, 0));
@@ -38,15 +37,15 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint8_t id() const {
     return GetField<uint8_t>(VT_ID, 0);
   }
-  const nullable::nullable_uint *uid() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_UID);
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
            VerifyField<uint8_t>(verifier, VT_ID, 1) &&
-           VerifyOffset(verifier, VT_UID) &&
-           verifier.VerifyTable(uid()) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
            verifier.EndTable();
   }
 };
@@ -61,8 +60,8 @@ struct TransferBuilder {
   void add_id(uint8_t id) {
     fbb_.AddElement<uint8_t>(Transfer::VT_ID, id, 0);
   }
-  void add_uid(::flatbuffers::Offset<nullable::nullable_uint> uid) {
-    fbb_.AddOffset(Transfer::VT_UID, uid);
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(Transfer::VT_NAME, name);
   }
   explicit TransferBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -79,12 +78,25 @@ inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> uid = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
   TransferBuilder builder_(_fbb);
-  builder_.add_uid(uid);
+  builder_.add_name(name);
   builder_.add_id(id);
   builder_.add_service(service);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
+    uint8_t id = 0,
+    const char *name = nullptr) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return fb::protocol::internal::request::raw::CreateTransfer(
+      _fbb,
+      service,
+      id,
+      name__);
 }
 
 inline const fb::protocol::internal::request::raw::Transfer *GetTransfer(const void *buf) {

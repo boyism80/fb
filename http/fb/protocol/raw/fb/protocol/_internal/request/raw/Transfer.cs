@@ -22,14 +22,20 @@ public struct Transfer : IFlatbufferObject
 
   public fb.protocol._internal.raw.Service Service { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.Service)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.Service.Gateway; } }
   public byte Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public nullable.nullable_uint? Uid { get { int o = __p.__offset(8); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public string Name { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol._internal.request.raw.Transfer> CreateTransfer(FlatBufferBuilder builder,
       fb.protocol._internal.raw.Service service = fb.protocol._internal.raw.Service.Gateway,
       byte id = 0,
-      Offset<nullable.nullable_uint> uidOffset = default(Offset<nullable.nullable_uint>)) {
+      StringOffset nameOffset = default(StringOffset)) {
     builder.StartTable(3);
-    Transfer.AddUid(builder, uidOffset);
+    Transfer.AddName(builder, nameOffset);
     Transfer.AddId(builder, id);
     Transfer.AddService(builder, service);
     return Transfer.EndTransfer(builder);
@@ -38,7 +44,7 @@ public struct Transfer : IFlatbufferObject
   public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddService(FlatBufferBuilder builder, fb.protocol._internal.raw.Service service) { builder.AddSbyte(0, (sbyte)service, 0); }
   public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(1, id, 0); }
-  public static void AddUid(FlatBufferBuilder builder, Offset<nullable.nullable_uint> uidOffset) { builder.AddOffset(2, uidOffset.Value, 0); }
+  public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
   public static Offset<fb.protocol._internal.request.raw.Transfer> EndTransfer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Transfer>(o);
@@ -55,7 +61,7 @@ static public class TransferVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Service*/, 1 /*fb.protocol._internal.raw.Service*/, 1, false)
       && verifier.VerifyField(tablePos, 6 /*Id*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyTable(tablePos, 8 /*Uid*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyString(tablePos, 8 /*Name*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

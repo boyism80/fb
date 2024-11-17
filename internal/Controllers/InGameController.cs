@@ -112,12 +112,13 @@ namespace Internal.Controllers
                 };
             }
 
-            if (request.Uid != null)
+            if (string.IsNullOrEmpty(request.Name) == false)
             {
-                var sessionValue = await connection.HashGetAsync(new SessionKey().Key, request.Uid.Value);
-                if (!sessionValue.IsNull)
+                // TODO: 루아스크립트
+                var session = await connection.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
+                if (session != null)
                 {
-                    var session = JsonConvert.DeserializeObject<Session>(sessionValue);
+                    await connection.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
                     _rabbitMqService.Publish(new Response.KickOut
                     {
                         Uid = session.Uid
