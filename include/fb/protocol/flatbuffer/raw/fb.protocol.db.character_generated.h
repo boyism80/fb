@@ -31,44 +31,48 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
     VT_NAME = 6,
-    VT_LAST_LOGIN = 8,
-    VT_ADMIN = 10,
-    VT_LOOK = 12,
-    VT_COLOR = 14,
-    VT_SEX = 16,
-    VT_NATION = 18,
-    VT_CREATURE = 20,
-    VT_MAP = 22,
-    VT_POSITION = 24,
-    VT_DIRECTION = 26,
-    VT_STATE = 28,
-    VT_CLASS_TYPE = 30,
-    VT_PROMOTION = 32,
-    VT_EXP = 34,
-    VT_MONEY = 36,
-    VT_DEPOSITED_MONEY = 38,
-    VT_DISGUISE = 40,
-    VT_HP = 42,
-    VT_BASE_HP = 44,
-    VT_ADDITIONAL_HP = 46,
-    VT_MP = 48,
-    VT_BASE_MP = 50,
-    VT_ADDITIONAL_MP = 52,
-    VT_WEAPON_COLOR = 54,
-    VT_HELMET_COLOR = 56,
-    VT_ARMOR_COLOR = 58,
-    VT_SHIELD_COLOR = 60,
-    VT_RING_LEFT_COLOR = 62,
-    VT_RING_RIGHT_COLOR = 64,
-    VT_AUX_TOP_COLOR = 66,
-    VT_AUX_BOT_COLOR = 68,
-    VT_CLAN = 70
+    VT_PW = 8,
+    VT_LAST_LOGIN = 10,
+    VT_ADMIN = 12,
+    VT_LOOK = 14,
+    VT_COLOR = 16,
+    VT_SEX = 18,
+    VT_NATION = 20,
+    VT_CREATURE = 22,
+    VT_MAP = 24,
+    VT_POSITION = 26,
+    VT_DIRECTION = 28,
+    VT_STATE = 30,
+    VT_CLASS_TYPE = 32,
+    VT_PROMOTION = 34,
+    VT_EXP = 36,
+    VT_MONEY = 38,
+    VT_DEPOSITED_MONEY = 40,
+    VT_DISGUISE = 42,
+    VT_HP = 44,
+    VT_BASE_HP = 46,
+    VT_ADDITIONAL_HP = 48,
+    VT_MP = 50,
+    VT_BASE_MP = 52,
+    VT_ADDITIONAL_MP = 54,
+    VT_WEAPON_COLOR = 56,
+    VT_HELMET_COLOR = 58,
+    VT_ARMOR_COLOR = 60,
+    VT_SHIELD_COLOR = 62,
+    VT_RING_LEFT_COLOR = 64,
+    VT_RING_RIGHT_COLOR = 66,
+    VT_AUX_TOP_COLOR = 68,
+    VT_AUX_BOT_COLOR = 70,
+    VT_CLAN = 72
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  const ::flatbuffers::String *pw() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_PW);
   }
   const ::flatbuffers::String *last_login() const {
     return GetPointer<const ::flatbuffers::String *>(VT_LAST_LOGIN);
@@ -171,6 +175,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
+           VerifyOffset(verifier, VT_PW) &&
+           verifier.VerifyString(pw()) &&
            VerifyOffset(verifier, VT_LAST_LOGIN) &&
            verifier.VerifyString(last_login()) &&
            VerifyField<uint8_t>(verifier, VT_ADMIN, 1) &&
@@ -229,6 +235,9 @@ struct CharacterBuilder {
   }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Character::VT_NAME, name);
+  }
+  void add_pw(::flatbuffers::Offset<::flatbuffers::String> pw) {
+    fbb_.AddOffset(Character::VT_PW, pw);
   }
   void add_last_login(::flatbuffers::Offset<::flatbuffers::String> last_login) {
     fbb_.AddOffset(Character::VT_LAST_LOGIN, last_login);
@@ -341,6 +350,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
     ::flatbuffers::Offset<::flatbuffers::String> last_login = 0,
     bool admin = false,
     uint16_t look = 0,
@@ -397,6 +407,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_map(map);
   builder_.add_creature(creature);
   builder_.add_last_login(last_login);
+  builder_.add_pw(pw);
   builder_.add_name(name);
   builder_.add_id(id);
   builder_.add_nation(nation);
@@ -415,6 +426,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
     const char *name = nullptr,
+    const char *pw = nullptr,
     const char *last_login = nullptr,
     bool admin = false,
     uint16_t look = 0,
@@ -448,11 +460,13 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> clan = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
+  auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto last_login__ = last_login ? _fbb.CreateString(last_login) : 0;
   return fb::protocol::db::raw::CreateCharacter(
       _fbb,
       id,
       name__,
+      pw__,
       last_login__,
       admin,
       look,

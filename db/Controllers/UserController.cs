@@ -1,6 +1,7 @@
 using AutoMapper;
 using Dapper;
 using db.Model;
+using Db;
 using Db.Model;
 using Db.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -18,14 +19,14 @@ namespace db.Controllers
     {
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
-        private readonly DbExecuteService _dbExecuteService;
         private readonly DbContext _dbContext;
 
-        public UserController(IConfiguration configuration, IMapper mapper, DbExecuteService dbExecuteService, DbContext dbContext)
+        public UserController(IConfiguration configuration,
+            IMapper mapper,
+            DbContext dbContext)
         {
             _configuration = configuration;
             _mapper = mapper;
-            _dbExecuteService = dbExecuteService;
             _dbContext = dbContext;
         }
 
@@ -70,9 +71,8 @@ namespace db.Controllers
         [HttpPost("authenticate")]
         public async Task<Response.Authenticate> Authenticate(Request.Authenticate request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            var account = await connection.QueryFirstOrDefaultAsync<Account>($"SELECT id, pw, map FROM user WHERE id = {request.Uid} LIMIT 1");
-            if (account == null)
+            var ch = await _dbContext.Character.Get(request.Uid);
+            if (ch == null)
             {
                 return new Response.Authenticate
                 {
@@ -80,7 +80,7 @@ namespace db.Controllers
                 };
             }
 
-            if (account.Pw != SHA256Hash(request.Pw))
+            if (ch.Pw != SHA256Hash(request.Pw))
             {
                 return new Response.Authenticate
                 {
@@ -91,7 +91,7 @@ namespace db.Controllers
             return new Response.Authenticate
             {
                 ErrorCode = 0,
-                Map = account.Map
+                Map = ch.Map
             };
         }
 
@@ -115,103 +115,104 @@ namespace db.Controllers
         [HttpPost("init-ch")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            var success = await connection.QueryFirstAsync<bool>("USP_CHARACTER_INIT", new
+            var ch = new Character
             {
-                id = request.Uid,
-                uname = request.Name,
-                pw = SHA256Hash(request.Pw),
-                base_hp = request.Hp,
-                base_mp = request.Mp,
-                map = request.Map,
-                position_x = request.X,
-                position_y = request.Y,
-                admin = request.Admin
-            }, commandType: CommandType.StoredProcedure);
+                Id = request.Uid,
+                Name = request.Name,
+                Pw = SHA256Hash(request.Pw),
+                Hp = request.Hp,
+                BaseHp = request.Hp,
+                Mp = request.Mp,
+                BaseMp = request.Mp,
+                Map = request.Map,
+                PositionX = request.X,
+                PositionY = request.Y,
+                Admin = request.Admin
+            };
+            await _dbContext.Character.Set(ch);
 
             return new Response.InitCharacter
             {
-                Success = success
+                Success = true
             };
         }
 
         [HttpPost("mk-ch")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            var affectedRows = await connection.ExecuteAsync("USP_CHARACTER_CREATE_FINISH", new
+            try
             {
-                id = request.Uid,
-                look = request.Hair,
-                sex = request.Sex,
-                nation = request.Nation,
-                creature = request.Creature
-            }, commandType: CommandType.StoredProcedure);
+                var ch = await _dbContext.Character.Get(request.Uid) ??
+                    throw new Exception($"user {request.Uid} not found");
 
-            return new Response.MakeCharacter
+                ch.Look = request.Hair;
+                ch.Sex = request.Sex;
+                ch.Nation = request.Nation;
+                ch.Creature = request.Creature;
+                await _dbContext.Character.Set(ch);
+                return new Response.MakeCharacter
+                {
+                    Success = true
+                };
+            }
+            catch (Exception)
             {
-                Success = (affectedRows != 0)
-            };
+                return new Response.MakeCharacter
+                {
+                    Success = false
+                };
+            }
         }
 
         [HttpPost("change-pw")]
         public async Task<Response.ChangePw> ChangePassword(Request.ChangePw request)
         {
-            await using var connection = _dbContext.Connection(request.Uid);
-            using (var reader = await connection.ExecuteReaderAsync($"SELECT pw, birth FROM user WHERE id = {request.Uid}"))
+            try
             {
-                if (await reader.ReadAsync() == false)
-                {
-                    return new Response.ChangePw
-                    {
-                        ErrorCode = 1
-                    };
-                }
+                var ch = await _dbContext.Character.Get(request.Uid) ??
+                    throw new Exception($"user {request.Uid} not found");
 
-                var pw = reader.GetString("pw");
-                if (pw != SHA256Hash(request.Before))
-                {
-                    return new Response.ChangePw
-                    {
-                        ErrorCode = 2
-                    };
-                }
+                if (ch.Pw != SHA256Hash(request.Before))
+                    throw new ChangePasswordException { Error = 2 };
 
-                var birth = reader.GetValue("birth");
-                if ((birth is DBNull) || ((uint)birth != request.Birthday))
+                if (ch.Birth != request.Birthday)
+                    throw new ChangePasswordException { Error = 3 };
+
+                ch.Pw = SHA256Hash(request.After);
+                await _dbContext.Character.Set(ch);
+                return new Response.ChangePw
                 {
-                    return new Response.ChangePw
-                    {
-                        ErrorCode = 3
-                    };
-                }
+                    ErrorCode = 0
+                };
             }
-
-            await connection.ExecuteAsync($"UPDATE user SET pw = @pw WHERE id = @id LIMIT 1", new
+            catch (ChangePasswordException e)
             {
-                id = request.Uid,
-                pw = SHA256Hash(request.After)
-            });
-
-            return new Response.ChangePw
+                return new Response.ChangePw
+                {
+                    ErrorCode = e.Error
+                };
+            }
+            catch (Exception)
             {
-                ErrorCode = 0
-            };
+                return new Response.ChangePw
+                {
+                    ErrorCode = uint.MaxValue
+                };
+            }
         }
 
         [HttpGet("login/{uid}")]
         public async Task<Response.Login> Login(uint uid)
         {
-            await using var connection = _dbContext.Connection(uid);
-            var character = await connection.QueryFirstOrDefaultAsync<Character>($"SELECT * FROM user WHERE id = {uid} LIMIT 1");
-            var items = await connection.QueryAsync<Item>($"SELECT * FROM item WHERE owner = {uid} AND deleted = 0");
-            var spells = await connection.QueryAsync<Spell>($"SELECT * FROM spell WHERE owner = {uid} AND deleted = 0");
+            var ch = await _dbContext.Character.Get(uid);
+            var items = await _dbContext.Item.Get(uid);
+            var spells = await _dbContext.Spell.Get(uid);
 
             var response = new Response.Login
             {
-                Character = _mapper.Map<fb.protocol.db.Character>(character),
-                Items = items.Select(item => _mapper.Map<fb.protocol.db.Item>(item)).ToList(),
-                Spells = spells.Select(spell => _mapper.Map<fb.protocol.db.Spell>(spell)).ToList()
+                Character = _mapper.Map<fb.protocol.db.Character>(ch),
+                Items = items.Select(_mapper.Map<fb.protocol.db.Item>).ToList(),
+                Spells = spells.Select(_mapper.Map<fb.protocol.db.Spell>).ToList()
             };
 
             return response;
@@ -220,82 +221,26 @@ namespace db.Controllers
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
-            await using var connection = _dbContext.Connection(request.Character.Id);
-            var characterSql = $@"
-UPDATE user
-SET look = {request.Character.Look},
-    color = {request.Character.Color},
-    sex = {request.Character.Sex},
-    nation = {request.Character.Nation},
-    creature = {request.Character.Creature},
-    map = {request.Character.Map},
-    position_x = {request.Character.Position.X},
-    position_y = {request.Character.Position.Y},
-    direction = {request.Character.Direction},
-    state = {request.Character.State},
-    class = {request.Character.ClassType},
-    promotion = {request.Character.Promotion},
-    exp = {request.Character.Exp},
-    money = {request.Character.Money},
-    deposited_money = {request.Character.DepositedMoney},
-    disguise = {request.Character.Disguise?.ToString() ?? "NULL"},
-    hp = {request.Character.Hp},
-    base_hp = {request.Character.BaseHp},
-    additional_hp = {request.Character.AdditionalHp},
-    mp = {request.Character.Mp},
-    base_mp = {request.Character.BaseMp},
-    additional_mp = {request.Character.AdditionalMp},
-    weapon_color = {request.Character.WeaponColor?.ToString() ?? "NULL"},
-    helmet_color = {request.Character.HelmetColor?.ToString() ?? "NULL"},
-    armor_color = {request.Character.ArmorColor?.ToString() ?? "NULL"},
-    shield_color = {request.Character.ShieldColor?.ToString() ?? "NULL"},
-    ring_left_color = {request.Character.RingLeftColor?.ToString() ?? "NULL"},
-    ring_right_color = {request.Character.RingRightColor?.ToString() ?? "NULL"},
-    aux_top_color = {request.Character.AuxTopColor?.ToString() ?? "NULL"},
-    aux_bot_color = {request.Character.AuxBotColor?.ToString() ?? "NULL"},
-    clan = {request.Character.Clan?.ToString() ?? "NULL"}
-WHERE user.id = {request.Character.Id} LIMIT 1;";
-            await _dbExecuteService.Post(request.Character.Id, characterSql);
+            var ch = _mapper.Map<Character>(request.Character);
+            await _dbContext.Character.Set(ch);
 
-            if (request.Items.Count > 0)
+            var items = await _dbContext.Item.Get(request.Character.Id);
+            foreach (var item in items)
             {
-                var itemArgs = request.Items.Select(item =>
-                {
-                    var customName = item.CustomName;
-                    if (string.IsNullOrEmpty(customName))
-                        customName = "NULL";
-                    else
-                        customName = $"\"{customName}\"";
-
-                    return $"({item.User}, {item.Index}, {item.Parts}, {item.Deposited}, {item.Model}, {item.Count}, {item.Durability?.ToString() ?? "NULL"}, {customName}, 0)";
-                });
-
-                var itemSql = @$"
-UPDATE item SET deleted = 1 WHERE item.owner = {request.Character.Id};
-
-INSERT INTO item (`owner`, `index`, `parts`, `deposited`, `model`, `count`, `durability`, `custom_name`, `deleted`)
-VALUES {string.Join(',', itemArgs)}
-ON DUPLICATE KEY UPDATE model=VALUES(model), count=VALUES(count), durability=VALUES(durability), custom_name=VALUES(custom_name), deleted=0;
-";
-                await _dbExecuteService.Post(request.Character.Id, itemSql);
+                item.Deleted = true;
             }
+            await _dbContext.Item.Set(items.ToArray());
+            items = _mapper.Map<fb.protocol.db.Item[], Item[]>(request.Items.ToArray());
+            await _dbContext.Item.Set(items.ToArray());
 
-            if (request.Spells.Count > 0)
+            var spells = await _dbContext.Spell.Get(request.Character.Id);
+            foreach (var item in spells)
             {
-                var spellArgs = request.Spells.Select(spell =>
-                {
-                    return $"({spell.User}, {spell.Slot}, {spell.Model}, 0)";
-                });
-
-                var spellSql = @$"
-UPDATE spell SET deleted = 1 WHERE spell.owner = {request.Character.Id};
-
-INSERT INTO spell (`owner`, `slot`, `model`, `deleted`)
-VALUES {string.Join(',', spellArgs)}
-ON DUPLICATE KEY UPDATE model=VALUES(model), deleted=0;
-";
-                await _dbExecuteService.Post(request.Character.Id, spellSql);
+                item.Deleted = true;
             }
+            await _dbContext.Spell.Set(spells.ToArray());
+            spells = _mapper.Map<fb.protocol.db.Spell[], Spell[]>(request.Spells.ToArray());
+            await _dbContext.Spell.Set(spells.ToArray());
 
             return new Response.Save
             {

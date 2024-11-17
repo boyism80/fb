@@ -1,9 +1,20 @@
-﻿namespace Db.Model
+﻿using StackExchange.Redis;
+
+namespace Db.Model
 {
-    public class Character
+    public class CharacterKey : IRedisCacheKey
     {
-        public uint Id { get; set; }
+        public required uint Id { get; set; }
+
+        public uint GetDbKey() => Id;
+        public RedisKey GetRedisKey() => $"cache:user:{Id}";
+        public RedisValue GetRedisField() => throw new NotImplementedException();
+    }
+
+    public class Character : CharacterKey, IModel
+    {
         public string Name { get; set; }
+        public string Pw { get; set; }
         public ushort? Birth { get; set; }
         public DateTime LastLogin { get; set; }
         public bool Admin { get; set; }

@@ -1,10 +1,17 @@
 ﻿using Dapper;
 using http.Redis;
 using http.Service;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 
 namespace Db.Service
 {
+    public class BackgroundCommitEntry
+    {
+        public required string SQL { get; set; }
+        public required string RedisKey { get; set; }
+    };
+
     public class DbExecuteService : BackgroundService
     {
         private readonly RedisService _redisService;
@@ -52,7 +59,8 @@ namespace Db.Service
                 var bufferKey = $"{RedisBufferKey}:{i}";
                 try
                 {
-                    var result = await _redisService.Connection.ScriptEvaluateAsync("pop_sql_range.lua", new
+                    var connRedis = _redisService.Connection;
+                    var result = await connRedis.ScriptEvaluateAsync("pop_sql_range.lua", new
                     {
                         key = new RedisKey(bufferKey),
                         count = 100
@@ -63,9 +71,22 @@ namespace Db.Service
                         continue;
                     }
 
-                    var sql = string.Join(Environment.NewLine, ((RedisResult[])result).Select(x => x.ToString()));
                     await using var connection = _dbContext.Connection(i);
-                    await connection.ExecuteAsync(sql);
+                    var backgroundCommitEntryList = ((RedisResult[])result).Select(x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString()));
+                    foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
+                    {
+                        var redisKey = g.Key;
+                        var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
+                        await connection.ExecuteAsync(sql);
+
+                        await connRedis.ScriptEvaluateAsync("end_of_ref.lua", new
+                        {
+                            key = new RedisKey(Db.Redis.Const.ReferenceCountKey),
+                            field = new RedisValue(redisKey),
+                            count = g.Count(),
+                            expiry = (int)Db.Redis.Const.CacheTimeToLive.TotalSeconds,
+                        });
+                    }
                 }
                 catch (Exception e)
                 {
@@ -74,16 +95,20 @@ namespace Db.Service
             }
         }
 
-        public async Task Post(int db, string sql)
+        public async Task Post(int db, string sql, string key)
         {
             var bufferKey = $"{RedisBufferKey}:{db}";
-            await _redisService.Connection.ListRightPushAsync(bufferKey, sql);
+            await _redisService.Connection.ListRightPushAsync(bufferKey, JsonConvert.SerializeObject(new BackgroundCommitEntry
+            {
+                SQL = sql,
+                RedisKey = key
+            }));
         }
 
-        public async Task Post(uint modKey, string sql)
+        public async Task Post(uint modKey, string sql, string key)
         {
             var db = modKey % _dbContext.SharedDbSize;
-            await Post((int)db, sql);
+            await Post((int)db, sql, key);
         }
     }
 }
