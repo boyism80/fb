@@ -64,21 +64,29 @@ namespace Db.Reepository
             _dbExecuteService = dbExecuteService;
         }
 
+        private static string GetLockKey(TKey key)
+        {
+            return $"lock:{key.GetRedisKey()}";
+        }
+
         protected override async Task<TModel> Get(TKey key)
         {
             var connRedis = _redisService.Connection;
-            var redisValues = await connRedis.JsonGetAsync<TModel>(key.GetRedisKey());
-            if (redisValues != null)
-                return redisValues;
-
-            var mysqlValue = await base.Get(key);
-            if (mysqlValue != null)
+            return await connRedis.Sync(GetLockKey(key), async () =>
             {
-                await connRedis.JsonSetAsync(key.GetRedisKey(), mysqlValue);
-                return await Get(key);
-            }
+                var redisValues = await connRedis.JsonGetAsync<TModel>(key.GetRedisKey());
+                if (redisValues != null)
+                    return redisValues;
 
-            return null;
+                var mysqlValue = await base.Get(key);
+                if (mysqlValue != null)
+                {
+                    await connRedis.JsonSetAsync(key.GetRedisKey(), mysqlValue);
+                    return mysqlValue;
+                }
+
+                return null;
+            });
         }
 
         protected override sealed Task<IEnumerable<TModel>> GetAll(TKey key)
@@ -119,46 +127,66 @@ namespace Db.Reepository
             _dbExecuteService = dbExecuteService;
         }
 
+        private static string GetLockKey(TKey key)
+        {
+            return $"lock:{key.GetRedisKey()}:{key.GetRedisField()}";
+        }
+
         protected override async Task<TModel> Get(TKey key)
         {
             var connRedis = _redisService.Connection;
-            var redisValues = await connRedis.JsonHashGetAsync<TModel>(key.GetRedisKey(), key.GetRedisField());
-            if (redisValues != null)
-                return redisValues;
-
-            var mysqlValues = await base.GetAll(key);
-            if (mysqlValues.Any())
+            return await connRedis.Sync(GetLockKey(key), async () =>
             {
-                foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
+                var redisValues = await connRedis.JsonHashGetAsync<TModel>(key.GetRedisKey(), key.GetRedisField());
+                if (redisValues != null)
+                    return redisValues;
+
+                var mysqlValues = await base.GetAll(key);
+                if (mysqlValues.Any())
                 {
-                    await connRedis.JsonHashSetAsync(g.Key, g.ToDictionary(x => x.GetRedisField(), x => x));
+                    foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
+                    {
+                        await connRedis.JsonHashSetAsync(g.Key, g.ToDictionary(x => x.GetRedisField(), x => x));
+                    }
+
+                    return mysqlValues.FirstOrDefault(x =>
+                    {
+                        if (x.GetRedisKey() != key.GetRedisKey())
+                            return false;
+
+                        if (x.GetRedisField() != key.GetRedisField())
+                            return false;
+
+                        return true;
+                    });
                 }
 
-                return await Get(key);
-            }
-
-            return null;
+                return null;
+            });
         }
 
         protected override async Task<IEnumerable<TModel>> GetAll(TKey key)
         {
             var connRedis = _redisService.Connection;
-            var redisValues = await connRedis.JsonHashGetAsync<TModel>(key.GetRedisKey());
-            if (redisValues.Count > 0)
-                return redisValues.Values;
-
-            var mysqlValues = await base.GetAll(key);
-            if (mysqlValues.Any())
+            return await connRedis.Sync(GetLockKey(key), async () =>
             {
-                foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
+                var redisValues = await connRedis.JsonHashGetAsync<TModel>(key.GetRedisKey());
+                if (redisValues.Count > 0)
+                    return redisValues.Values;
+
+                var mysqlValues = await base.GetAll(key);
+                if (mysqlValues.Any())
                 {
-                    await connRedis.JsonHashSetAsync(g.Key, g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x));
+                    foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
+                    {
+                        await connRedis.JsonHashSetAsync(g.Key, g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x));
+                    }
+
+                    return mysqlValues;
                 }
 
-                return await GetAll(key);
-            }
-
-            return [];
+                return [];
+            });
         }
 
         public override async Task Set(TModel value)

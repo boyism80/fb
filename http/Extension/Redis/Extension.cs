@@ -100,5 +100,58 @@ namespace http.Redis
             if (await tran.ExecuteAsync())
                 await q.CompleteAsync();
         }
+
+        private static async Task<bool> Lock<T>(this IDatabaseAsync database, string key, TaskCompletionSource<T> tcs, Func<Task<T>> fn, string uuid, ISubscriber sub)
+        {
+            var success = await database.ScriptEvaluateAsync("redis_lock.lua", new
+            {
+                key = key,
+                expiry = (int)TimeSpan.FromSeconds(5).TotalSeconds
+            });
+            if ((bool)success)
+            {
+                try
+                {
+                    var result = await fn();
+                    await database.KeyDeleteAsync(key);
+                    await sub.UnsubscribeAsync(key);
+                    await database.PublishAsync(key, uuid);
+                    tcs.SetResult(result);
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    tcs.SetException(e);
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public static async Task<T> Sync<T>(this IDatabaseAsync database, string key, Func<Task<T>> fn)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            var uuid = Guid.NewGuid().ToString();
+            var sub = database.Multiplexer.GetSubscriber();
+
+            var success = await database.Lock(key, tcs, fn, uuid, sub);
+            if (success == false)
+            {
+                var channel = await sub.SubscribeAsync(key);
+                channel.OnMessage(async message =>
+                {
+                    if (message.Channel != key)
+                        return;
+
+                    if (message.Message != uuid)
+                        await database.Lock(key, tcs, fn, uuid, sub);
+                });
+            }
+
+            return await tcs.Task;
+        }
     }
 }
