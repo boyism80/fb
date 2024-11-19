@@ -50,6 +50,7 @@ table Login {
   character: fb.protocol.db.Character;
   items: [fb.protocol.db.Item];
   spells: [fb.protocol.db.Spell];
+  option: fb.protocol.db.Option;
 }
 
 
@@ -65,5 +66,9 @@ table ReserveName {
 
 
 table Save {
+  success: bool;
+}
+
+table SetOption {
   success: bool;
 }

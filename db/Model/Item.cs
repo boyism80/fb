@@ -20,7 +20,6 @@ namespace Db.Model
         public required ushort Count { get; set; } = 1;
         public required uint? Durability { get; set; }
         public required string CustomName { get; set; }
-        public required bool Deleted { get; set; }
         public ItemKey Key => new ItemKey
         {
             Owner = Owner,

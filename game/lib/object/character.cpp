@@ -985,7 +985,7 @@ void character::regenerative(uint8_t value)
     this->_regenerative = value;
 }
 
-bool character::option(CUSTOM_SETTING key) const
+bool character::option(SETTING key) const
 {
     if (static_cast<int>(key) > 0x1B)
         return false;
@@ -993,7 +993,7 @@ bool character::option(CUSTOM_SETTING key) const
     return this->_options[static_cast<int>(key)];
 }
 
-void character::option(CUSTOM_SETTING key, bool value)
+void character::option(SETTING key, bool value)
 {
     if (static_cast<int>(key) > 0x1B)
         return;
@@ -1011,7 +1011,7 @@ void character::option(CUSTOM_SETTING key, bool value)
     this->_options[static_cast<int>(key)] = value;
 }
 
-bool character::option_toggle(CUSTOM_SETTING key)
+bool character::option_toggle(SETTING key)
 {
     if (static_cast<int>(key) > 0x1B)
         return false;

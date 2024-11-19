@@ -400,17 +400,17 @@ void context::on_trade_item(character& me, character& from, uint8_t index)
     this->send(me, fb_resp::trade::upload(from, index, mine), scope::SELF);
 }
 
-void context::on_option(character& me, CUSTOM_SETTING option, bool enabled)
+void context::on_option(character& me, SETTING option, bool enabled)
 {
     std::stringstream sstream;
 
     switch (option)
     {
-    case CUSTOM_SETTING::WHISPER:
+    case SETTING::WHISPER:
         sstream << "귓속말듣기  ";
         break;
 
-    case CUSTOM_SETTING::GROUP:
+    case SETTING::GROUP:
     {
         auto group = me.group();
         if (group != nullptr)
@@ -433,39 +433,39 @@ void context::on_option(character& me, CUSTOM_SETTING option, bool enabled)
         break;
     }
 
-    case CUSTOM_SETTING::ROAR:
+    case SETTING::ROAR:
         sstream << "외치기듣기  ";
         break;
 
-    case CUSTOM_SETTING::ROAR_WORLDS:
+    case SETTING::ROAR_WORLDS:
         sstream << "세계후      ";
         break;
 
-    case CUSTOM_SETTING::MAGIC_EFFECT:
+    case SETTING::MAGIC_EFFECT:
         sstream << "마법이펙트  ";
         break;
 
-    case CUSTOM_SETTING::WEATHER_EFFECT:
+    case SETTING::WEATHER_EFFECT:
         sstream << "날씨변화    ";
         break;
 
-    case CUSTOM_SETTING::FIXED_MOVE:
+    case SETTING::FIXED_MOVE:
         sstream << "고정이동    ";
         break;
 
-    case CUSTOM_SETTING::TRADE:
+    case SETTING::TRADE:
         sstream << "교환가능    ";
         break;
 
-    case CUSTOM_SETTING::FAST_MOVE:
+    case SETTING::FAST_MOVE:
         sstream << "빠른이동    ";
         break;
 
-    case CUSTOM_SETTING::EFFECT_SOUND:
+    case SETTING::EFFECT_SOUND:
         sstream << "소리듣기    ";
         break;
 
-    case CUSTOM_SETTING::PK:
+    case SETTING::PK_PROTECT:
         sstream << "PK보호      ";
         break;
 

@@ -120,6 +120,15 @@ private:
     bool init_ch(const fb::protocol::db::Character&   response,
                  fb::game::character&                 session,
                  const std::optional<transfer_param>& transfer);
+
+    /**
+     * @brief      Initializes the option.
+     *
+     * @param[in]  response  The response
+     * @param      session   The session
+     */
+    void init_option(const fb::protocol::db::Option& response, fb::game::character& session);
+
     /**
      * @brief      Initializes the items.
      *
@@ -1187,7 +1196,7 @@ public:
      * @param[in]  option   The option
      * @param[in]  enabled  Indicates if enabled
      */
-    void on_option(character& me, CUSTOM_SETTING option, bool enabled) final;
+    void on_option(character& me, SETTING option, bool enabled) final;
     /**
      * @brief      Called on level up.
      *

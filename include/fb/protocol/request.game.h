@@ -341,7 +341,7 @@ public:
     inline static uint8_t header = 0x1B;
 
 public:
-    CUSTOM_SETTING option;
+    SETTING option;
 
 public:
     change_option() = default;
@@ -349,7 +349,7 @@ public:
 public:
     void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->option = CUSTOM_SETTING(reader.read<uint8_t>());
+        this->option = SETTING(reader.read<uint8_t>());
     }
 };
 

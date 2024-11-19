@@ -580,74 +580,6 @@ inline const char* enum_tostring<CREATURE>(CREATURE k)
     return i->second;
 }
 
-enum class CUSTOM_SETTING
-{
-    RIDE = 0x00, 
-    WHISPER = 0x01, 
-    GROUP = 0x02, 
-    ROAR = 0x03, 
-    ROAR_WORLDS = 0x04, 
-    MAGIC_EFFECT = 0x05, 
-    WEATHER_EFFECT = 0x06, 
-    FIXED_MOVE = 0x07, 
-    TRADE = 0x08, 
-    FAST_MOVE = 0x09, 
-    EFFECT_SOUND = 0x0A, 
-    PK = 0x0B
-}; // end of enum 'CUSTOM_SETTING'
-
-template <>
-inline CUSTOM_SETTING enum_parse<CUSTOM_SETTING>(const std::string k)
-{
-    static const std::unordered_map<std::string, CUSTOM_SETTING> enums
-    {
-        { "RIDE", CUSTOM_SETTING::RIDE }, 
-        { "WHISPER", CUSTOM_SETTING::WHISPER }, 
-        { "GROUP", CUSTOM_SETTING::GROUP }, 
-        { "ROAR", CUSTOM_SETTING::ROAR }, 
-        { "ROAR_WORLDS", CUSTOM_SETTING::ROAR_WORLDS }, 
-        { "MAGIC_EFFECT", CUSTOM_SETTING::MAGIC_EFFECT }, 
-        { "WEATHER_EFFECT", CUSTOM_SETTING::WEATHER_EFFECT }, 
-        { "FIXED_MOVE", CUSTOM_SETTING::FIXED_MOVE }, 
-        { "TRADE", CUSTOM_SETTING::TRADE }, 
-        { "FAST_MOVE", CUSTOM_SETTING::FAST_MOVE }, 
-        { "EFFECT_SOUND", CUSTOM_SETTING::EFFECT_SOUND }, 
-        { "PK", CUSTOM_SETTING::PK }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<CUSTOM_SETTING>(CUSTOM_SETTING k)
-{
-    static const std::unordered_map<CUSTOM_SETTING, const char*> enums
-    {
-        { CUSTOM_SETTING::RIDE, "RIDE" }, 
-        { CUSTOM_SETTING::WHISPER, "WHISPER" }, 
-        { CUSTOM_SETTING::GROUP, "GROUP" }, 
-        { CUSTOM_SETTING::ROAR, "ROAR" }, 
-        { CUSTOM_SETTING::ROAR_WORLDS, "ROAR_WORLDS" }, 
-        { CUSTOM_SETTING::MAGIC_EFFECT, "MAGIC_EFFECT" }, 
-        { CUSTOM_SETTING::WEATHER_EFFECT, "WEATHER_EFFECT" }, 
-        { CUSTOM_SETTING::FIXED_MOVE, "FIXED_MOVE" }, 
-        { CUSTOM_SETTING::TRADE, "TRADE" }, 
-        { CUSTOM_SETTING::FAST_MOVE, "FAST_MOVE" }, 
-        { CUSTOM_SETTING::EFFECT_SOUND, "EFFECT_SOUND" }, 
-        { CUSTOM_SETTING::PK, "PK" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
 enum class DEATH_PENALTY
 {
     NONE = 0, 
@@ -1646,6 +1578,74 @@ inline const char* enum_tostring<REGEX>(REGEX k)
     return i->second;
 }
 
+enum class SETTING
+{
+    RIDE = 0x00, 
+    WHISPER = 0x01, 
+    GROUP = 0x02, 
+    ROAR = 0x03, 
+    ROAR_WORLDS = 0x04, 
+    MAGIC_EFFECT = 0x05, 
+    WEATHER_EFFECT = 0x06, 
+    FIXED_MOVE = 0x07, 
+    TRADE = 0x08, 
+    FAST_MOVE = 0x09, 
+    EFFECT_SOUND = 0x0A, 
+    PK_PROTECT = 0x0B
+}; // end of enum 'SETTING'
+
+template <>
+inline SETTING enum_parse<SETTING>(const std::string k)
+{
+    static const std::unordered_map<std::string, SETTING> enums
+    {
+        { "RIDE", SETTING::RIDE }, 
+        { "WHISPER", SETTING::WHISPER }, 
+        { "GROUP", SETTING::GROUP }, 
+        { "ROAR", SETTING::ROAR }, 
+        { "ROAR_WORLDS", SETTING::ROAR_WORLDS }, 
+        { "MAGIC_EFFECT", SETTING::MAGIC_EFFECT }, 
+        { "WEATHER_EFFECT", SETTING::WEATHER_EFFECT }, 
+        { "FIXED_MOVE", SETTING::FIXED_MOVE }, 
+        { "TRADE", SETTING::TRADE }, 
+        { "FAST_MOVE", SETTING::FAST_MOVE }, 
+        { "EFFECT_SOUND", SETTING::EFFECT_SOUND }, 
+        { "PK_PROTECT", SETTING::PK_PROTECT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<SETTING>(SETTING k)
+{
+    static const std::unordered_map<SETTING, const char*> enums
+    {
+        { SETTING::RIDE, "RIDE" }, 
+        { SETTING::WHISPER, "WHISPER" }, 
+        { SETTING::GROUP, "GROUP" }, 
+        { SETTING::ROAR, "ROAR" }, 
+        { SETTING::ROAR_WORLDS, "ROAR_WORLDS" }, 
+        { SETTING::MAGIC_EFFECT, "MAGIC_EFFECT" }, 
+        { SETTING::WEATHER_EFFECT, "WEATHER_EFFECT" }, 
+        { SETTING::FIXED_MOVE, "FIXED_MOVE" }, 
+        { SETTING::TRADE, "TRADE" }, 
+        { SETTING::FAST_MOVE, "FAST_MOVE" }, 
+        { SETTING::EFFECT_SOUND, "EFFECT_SOUND" }, 
+        { SETTING::PK_PROTECT, "PK_PROTECT" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class SEX
 {
     MAN = 1, 
@@ -2334,30 +2334,6 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CREATURE_TURTLE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::DRAGON);
     lua_setglobal(lua, "CREATURE_DRAGON");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::RIDE);
-    lua_setglobal(lua, "CUSTOM_SETTING_RIDE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::WHISPER);
-    lua_setglobal(lua, "CUSTOM_SETTING_WHISPER");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::GROUP);
-    lua_setglobal(lua, "CUSTOM_SETTING_GROUP");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::ROAR);
-    lua_setglobal(lua, "CUSTOM_SETTING_ROAR");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::ROAR_WORLDS);
-    lua_setglobal(lua, "CUSTOM_SETTING_ROAR_WORLDS");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::MAGIC_EFFECT);
-    lua_setglobal(lua, "CUSTOM_SETTING_MAGIC_EFFECT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::WEATHER_EFFECT);
-    lua_setglobal(lua, "CUSTOM_SETTING_WEATHER_EFFECT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::FIXED_MOVE);
-    lua_setglobal(lua, "CUSTOM_SETTING_FIXED_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::TRADE);
-    lua_setglobal(lua, "CUSTOM_SETTING_TRADE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::FAST_MOVE);
-    lua_setglobal(lua, "CUSTOM_SETTING_FAST_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::EFFECT_SOUND);
-    lua_setglobal(lua, "CUSTOM_SETTING_EFFECT_SOUND");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CUSTOM_SETTING::PK);
-    lua_setglobal(lua, "CUSTOM_SETTING_PK");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DEATH_PENALTY::NONE);
     lua_setglobal(lua, "DEATH_PENALTY_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DEATH_PENALTY::DROP);
@@ -2618,6 +2594,30 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "REGEX_HOLD_ITEM_LIST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::HOLD_ITEM_COUNT);
     lua_setglobal(lua, "REGEX_HOLD_ITEM_COUNT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::RIDE);
+    lua_setglobal(lua, "SETTING_RIDE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::WHISPER);
+    lua_setglobal(lua, "SETTING_WHISPER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::GROUP);
+    lua_setglobal(lua, "SETTING_GROUP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::ROAR);
+    lua_setglobal(lua, "SETTING_ROAR");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::ROAR_WORLDS);
+    lua_setglobal(lua, "SETTING_ROAR_WORLDS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::MAGIC_EFFECT);
+    lua_setglobal(lua, "SETTING_MAGIC_EFFECT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::WEATHER_EFFECT);
+    lua_setglobal(lua, "SETTING_WEATHER_EFFECT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::FIXED_MOVE);
+    lua_setglobal(lua, "SETTING_FIXED_MOVE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::TRADE);
+    lua_setglobal(lua, "SETTING_TRADE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::FAST_MOVE);
+    lua_setglobal(lua, "SETTING_FAST_MOVE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::EFFECT_SOUND);
+    lua_setglobal(lua, "SETTING_EFFECT_SOUND");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::PK_PROTECT);
+    lua_setglobal(lua, "SETTING_PK_PROTECT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::MAN);
     lua_setglobal(lua, "SEX_MAN");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::WOMAN);

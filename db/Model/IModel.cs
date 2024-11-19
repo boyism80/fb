@@ -31,6 +31,6 @@ namespace Db.Model
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public DateTime UpdatedDate { get; set; } = DateTime.Now;
-        public abstract bool Deleted { get; set; }
+        public bool Deleted { get; set; } = false;
     }
 }

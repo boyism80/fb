@@ -25,19 +25,22 @@ public struct Login : IFlatbufferObject
   public int ItemsLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol.db.raw.Spell? Spells(int j) { int o = __p.__offset(8); return o != 0 ? (fb.protocol.db.raw.Spell?)(new fb.protocol.db.raw.Spell()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int SpellsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol.db.raw.Option? Option { get { int o = __p.__offset(10); return o != 0 ? (fb.protocol.db.raw.Option?)(new fb.protocol.db.raw.Option()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<fb.protocol.db.response.raw.Login> CreateLogin(FlatBufferBuilder builder,
       Offset<fb.protocol.db.raw.Character> characterOffset = default(Offset<fb.protocol.db.raw.Character>),
       VectorOffset itemsOffset = default(VectorOffset),
-      VectorOffset spellsOffset = default(VectorOffset)) {
-    builder.StartTable(3);
+      VectorOffset spellsOffset = default(VectorOffset),
+      Offset<fb.protocol.db.raw.Option> optionOffset = default(Offset<fb.protocol.db.raw.Option>)) {
+    builder.StartTable(4);
+    Login.AddOption(builder, optionOffset);
     Login.AddSpells(builder, spellsOffset);
     Login.AddItems(builder, itemsOffset);
     Login.AddCharacter(builder, characterOffset);
     return Login.EndLogin(builder);
   }
 
-  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol.db.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddItems(FlatBufferBuilder builder, VectorOffset itemsOffset) { builder.AddOffset(1, itemsOffset.Value, 0); }
   public static VectorOffset CreateItemsVector(FlatBufferBuilder builder, Offset<fb.protocol.db.raw.Item>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -51,6 +54,7 @@ public struct Login : IFlatbufferObject
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol.db.raw.Spell>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol.db.raw.Spell>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartSpellsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddOption(FlatBufferBuilder builder, Offset<fb.protocol.db.raw.Option> optionOffset) { builder.AddOffset(3, optionOffset.Value, 0); }
   public static Offset<fb.protocol.db.response.raw.Login> EndLogin(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol.db.response.raw.Login>(o);
@@ -68,6 +72,7 @@ static public class LoginVerify
       && verifier.VerifyTable(tablePos, 4 /*Character*/, fb.protocol.db.raw.CharacterVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 6 /*Items*/, fb.protocol.db.raw.ItemVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 8 /*Spells*/, fb.protocol.db.raw.SpellVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 10 /*Option*/, fb.protocol.db.raw.OptionVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

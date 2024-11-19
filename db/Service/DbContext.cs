@@ -13,6 +13,7 @@ namespace Db.Service
         public CharacterRepository Character => Bind<CharacterRepository>();
         public ItemRepository Item => Bind<ItemRepository>();
         public SpellRepository Spell => Bind<SpellRepository>();
+        public OptionRepository Option => Bind<OptionRepository>();
 
         public uint SharedDbSize
         {

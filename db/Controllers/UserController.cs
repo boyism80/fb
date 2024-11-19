@@ -4,6 +4,7 @@ using db.Model;
 using Db;
 using Db.Model;
 using Db.Service;
+using Fb.Model.EnumValue;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Cryptography;
@@ -150,6 +151,12 @@ namespace db.Controllers
                 ch.Nation = request.Nation;
                 ch.Creature = request.Creature;
                 await _dbContext.Character.Set(ch);
+
+                var option = new Option
+                {
+                    Uid = request.Uid,
+                };
+                await _dbContext.Option.Set(option);
                 return new Response.MakeCharacter
                 {
                     Success = true
@@ -207,12 +214,14 @@ namespace db.Controllers
             var ch = await _dbContext.Character.Get(uid);
             var items = await _dbContext.Item.Get(uid);
             var spells = await _dbContext.Spell.Get(uid);
+            var option = await _dbContext.Option.Get(uid);
 
             var response = new Response.Login
             {
                 Character = _mapper.Map<fb.protocol.db.Character>(ch),
-                Items = items.Select(_mapper.Map<fb.protocol.db.Item>).ToList(),
-                Spells = spells.Select(_mapper.Map<fb.protocol.db.Spell>).ToList()
+                Items = items.Where(x => !x.Deleted).Select(_mapper.Map<fb.protocol.db.Item>).ToList(),
+                Spells = spells.Where(x => !x.Deleted).Select(_mapper.Map<fb.protocol.db.Spell>).ToList(),
+                Option = _mapper.Map<fb.protocol.db.Option>(option)
             };
 
             return response;
@@ -241,7 +250,10 @@ namespace db.Controllers
         {
             try
             {
-                _ = await _dbContext.Character.Get(request.Character.Id) ??
+                var exists = await _dbContext.Character.Get(request.Character.Id) ??
+                    throw new Exception();
+
+                if (exists.Deleted)
                     throw new Exception();
 
                 var ch = _mapper.Map<Character>(request.Character);
@@ -261,6 +273,78 @@ namespace db.Controllers
             catch (Exception)
             {
                 return new Response.Save
+                {
+                    Success = false
+                };
+            }
+        }
+
+        [HttpPost("option")]
+        public async Task<Response.SetOption> Option(Request.SetOption request)
+        {
+            try
+            {
+                var option = await _dbContext.Option.Get(request.User) ??
+                    throw new Exception($"option {request.User} not found");
+
+                switch ((Setting)request.Type)
+                {
+                    case Setting.Whisper:
+                        option.Whisper = request.Enabled;
+                        break;
+
+                    case Setting.Group:
+                        option.Group = request.Enabled;
+                        break;
+
+                    case Setting.Roar:
+                        option.Roar = request.Enabled;
+                        break;
+
+                    case Setting.RoarWorlds:
+                        option.RoarWorlds = request.Enabled;
+                        break;
+
+                    case Setting.MagicEffect:
+                        option.MagicEffect = request.Enabled;
+                        break;
+
+                    case Setting.WeatherEffect:
+                        option.WeatherEffect = request.Enabled;
+                        break;
+
+                    case Setting.FixedMove:
+                        option.FixedMove = request.Enabled;
+                        break;
+
+                    case Setting.Trade:
+                        option.Trade = request.Enabled;
+                        break;
+
+                    case Setting.FastMove:
+                        option.FastMove = request.Enabled;
+                        break;
+
+                    case Setting.EffectSound:
+                        option.EffectSound = request.Enabled;
+                        break;
+
+                    case Setting.PkProtect:
+                        option.PkProtect = request.Enabled;
+                        break;
+
+                    default:
+                        throw new Exception($"invalid option type : {request.Type}");
+                }
+                await _dbContext.Option.Set(option);
+                return new Response.SetOption
+                {
+                    Success = true
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.SetOption
                 {
                     Success = false
                 };

@@ -15,6 +15,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
 
 #include "fb.protocol.db.character_generated.h"
 #include "fb.protocol.db.item_generated.h"
+#include "fb.protocol.db.option_generated.h"
 #include "fb.protocol.db.spell_generated.h"
 
 namespace fb {
@@ -31,7 +32,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CHARACTER = 4,
     VT_ITEMS = 6,
-    VT_SPELLS = 8
+    VT_SPELLS = 8,
+    VT_OPTION = 10
   };
   const fb::protocol::db::raw::Character *character() const {
     return GetPointer<const fb::protocol::db::raw::Character *>(VT_CHARACTER);
@@ -41,6 +43,9 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>> *spells() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>> *>(VT_SPELLS);
+  }
+  const fb::protocol::db::raw::Option *option() const {
+    return GetPointer<const fb::protocol::db::raw::Option *>(VT_OPTION);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -52,6 +57,8 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SPELLS) &&
            verifier.VerifyVector(spells()) &&
            verifier.VerifyVectorOfTables(spells()) &&
+           VerifyOffset(verifier, VT_OPTION) &&
+           verifier.VerifyTable(option()) &&
            verifier.EndTable();
   }
 };
@@ -69,6 +76,9 @@ struct LoginBuilder {
   void add_spells(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>>> spells) {
     fbb_.AddOffset(Login::VT_SPELLS, spells);
   }
+  void add_option(::flatbuffers::Offset<fb::protocol::db::raw::Option> option) {
+    fbb_.AddOffset(Login::VT_OPTION, option);
+  }
   explicit LoginBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -84,8 +94,10 @@ inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::db::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::db::raw::Item>>> items = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>>> spells = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>>> spells = 0,
+    ::flatbuffers::Offset<fb::protocol::db::raw::Option> option = 0) {
   LoginBuilder builder_(_fbb);
+  builder_.add_option(option);
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_character(character);
@@ -96,14 +108,16 @@ inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::db::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::db::raw::Item>> *items = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>> *spells = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>> *spells = nullptr,
+    ::flatbuffers::Offset<fb::protocol::db::raw::Option> option = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::db::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::db::raw::Spell>>(*spells) : 0;
   return fb::protocol::db::response::raw::CreateLogin(
       _fbb,
       character,
       items__,
-      spells__);
+      spells__,
+      option);
 }
 
 inline const fb::protocol::db::response::raw::Login *GetLogin(const void *buf) {

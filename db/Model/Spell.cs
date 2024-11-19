@@ -15,7 +15,6 @@ namespace Db.Model
     public class Spell : SpellKey, IModel
     {
         public required int Model { get; set; }
-        public required bool Deleted { get; set; }
 
         public SpellKey Key => new SpellKey
         {

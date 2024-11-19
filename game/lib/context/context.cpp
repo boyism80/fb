@@ -444,6 +444,21 @@ bool context::init_ch(const fb::protocol::db::Character&   response,
     return true;
 }
 
+void context::init_option(const fb::protocol::db::Option& response, fb::game::character& session)
+{
+    session.option(SETTING::WHISPER, response.whisper);
+    session.option(SETTING::GROUP, response.group);
+    session.option(SETTING::ROAR, response.roar);
+    session.option(SETTING::ROAR_WORLDS, response.roar_worlds);
+    session.option(SETTING::MAGIC_EFFECT, response.magic_effect);
+    session.option(SETTING::WEATHER_EFFECT, response.weather_effect);
+    session.option(SETTING::FIXED_MOVE, response.fixed_move);
+    session.option(SETTING::TRADE, response.trade);
+    session.option(SETTING::FAST_MOVE, response.fast_move);
+    session.option(SETTING::EFFECT_SOUND, response.effect_sound);
+    session.option(SETTING::PK_PROTECT, response.pk_protect);
+}
+
 void context::init_items(const std::vector<fb::protocol::db::Item>& response, character& session)
 {
     for (auto& x : response)
@@ -834,6 +849,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (this->init_ch(response.character, *session, transfer) == false)
             co_return false;
 
+        this->init_option(response.option, *session);
         this->send(*session, fb_resp::init(), scope::SELF);
         this->send(*session, fb_resp::time(this->_time.hours()), scope::SELF);
         this->send(*session, fb_resp::session::state(*session, STATE_LEVEL::LEVEL_MIN), scope::SELF);
@@ -1099,9 +1115,9 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
     if (session->inited() == false)
         co_return true;
 
-    auto option = CUSTOM_SETTING(request.option);
+    auto option = SETTING(request.option);
 
-    if (option == CUSTOM_SETTING::RIDE)
+    if (option == SETTING::RIDE)
     {
         if (session->state() == STATE::RIDING)
             co_await session->unride();
@@ -1110,7 +1126,15 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
     }
     else
     {
-        session->option_toggle(option);
+        auto   enabled = session->option_toggle(option);
+        auto&& response =
+            co_await this->post<fb::protocol::db::request::SetOption, fb::protocol::db::response::SetOption>(
+                "db",
+                "/user/option",
+                fb::protocol::db::request::SetOption{session->id(), static_cast<uint8_t>(option), enabled});
+
+        if (response.success == false)
+            session->message("설정을 변경하지 못했습니다.");
     }
     co_return true;
 }
@@ -1330,12 +1354,12 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
             throw std::runtime_error(message::group::CANNOT_FIND_TARGET);
         }
 
-        if (me->option(CUSTOM_SETTING::GROUP) == false)
+        if (me->option(SETTING::GROUP) == false)
         {
             throw std::runtime_error(message::group::DISABLED_MINE);
         }
 
-        if (you->option(CUSTOM_SETTING::GROUP) == false)
+        if (you->option(SETTING::GROUP) == false)
         {
             throw std::runtime_error(message::group::DISABLED_TARGET);
         }

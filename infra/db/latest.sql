@@ -123,7 +123,35 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `option`
+--
+
+DROP TABLE IF EXISTS `option`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `option` (
+  `uid` int unsigned NOT NULL,
+  `whisper` tinyint unsigned NOT NULL,
+  `group` tinyint unsigned NOT NULL,
+  `roar` tinyint unsigned NOT NULL,
+  `roar_worlds` tinyint unsigned NOT NULL,
+  `magic_effect` tinyint unsigned NOT NULL,
+  `weather_effect` tinyint unsigned NOT NULL,
+  `fixed_move` tinyint unsigned NOT NULL,
+  `trade` tinyint unsigned NOT NULL,
+  `fast_move` tinyint unsigned NOT NULL,
+  `effect_sound` tinyint unsigned NOT NULL,
+  `pk_protect` tinyint unsigned NOT NULL,
+  `deleted` tinyint unsigned NOT NULL,
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
+  PRIMARY KEY (`uid`),
+  UNIQUE KEY `uid_UNIQUE` (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,6 +218,7 @@ CREATE TABLE `user` (
   `aux_top_color` int DEFAULT NULL,
   `aux_bot_color` int unsigned DEFAULT NULL,
   `clan` int unsigned DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -360,4 +389,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-19 23:58:49
+-- Dump completed on 2024-11-20  1:58:11

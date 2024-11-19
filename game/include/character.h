@@ -890,7 +890,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool option(CUSTOM_SETTING key) const;
+    bool option(SETTING key) const;
 
     /**
      * @brief      { function_description }
@@ -898,7 +898,7 @@ public:
      * @param[in]  key    The key
      * @param[in]  value  The value
      */
-    void option(CUSTOM_SETTING key, bool value);
+    void option(SETTING key, bool value);
 
     /**
      * @brief      { function_description }
@@ -907,7 +907,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool option_toggle(CUSTOM_SETTING key);
+    bool option_toggle(SETTING key);
 
     /**
      * @brief      { function_description }
@@ -1521,7 +1521,7 @@ public:
      * @param[in]  option   The option
      * @param[in]  enabled  Indicates if enabled
      */
-    virtual void on_option(character& me, CUSTOM_SETTING option, bool enabled) = 0;
+    virtual void on_option(character& me, SETTING option, bool enabled) = 0;
 
     /**
      * @brief      Called on level up.

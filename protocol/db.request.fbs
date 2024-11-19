@@ -83,3 +83,10 @@ table DeleteArticle {
   id: uint;
   user: uint;
 }
+
+
+table SetOption {
+  user: uint;
+  type: ubyte;
+  enabled: bool;
+}

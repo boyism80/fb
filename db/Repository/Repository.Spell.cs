@@ -1,3 +1,4 @@
+using Db.Extension;
 using Db.Model;
 using Db.Service;
 using http.Service;
@@ -62,16 +63,16 @@ namespace Db.Reepository
                         `created_date`,
                         `updated_date`)
                     VALUES (
-                        {value.Owner},
-                        {value.Slot},
-                        {value.Model},
-                        {value.Deleted},
-                        '{value.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
-                        '{value.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                        {value.Owner.Escape()},
+                        {value.Slot.Escape()},
+                        {value.Model.Escape()},
+                        {value.Deleted.Escape()},
+                        {value.CreatedDate.Escape()},
+                        {value.UpdatedDate.Escape()})
                     ON DUPLICATE KEY UPDATE
-                        model=VALUES(model),
-                        deleted=VALUES(deleted),
-                        updated_date=VALUES(updated_date);
+                        `model`=VALUES(`model`),
+                        `deleted`=VALUES(`deleted`),
+                        `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
@@ -82,12 +83,12 @@ namespace Db.Reepository
             var args = values.Select(spell =>
             {
                 return $"""
-                        ({spell.Owner},
-                         {spell.Slot},
-                         {spell.Model},
-                         {spell.Deleted},
-                         '{spell.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
-                         '{spell.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                        ({spell.Owner.Escape()},
+                         {spell.Slot.Escape()},
+                         {spell.Model.Escape()},
+                         {spell.Deleted.Escape()},
+                         {spell.CreatedDate.Escape()},
+                         {spell.UpdatedDate.Escape()})
                         """;
             });
 
@@ -101,10 +102,10 @@ namespace Db.Reepository
                         `updated_date`)
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
-                        model=VALUES(model),
-                        deleted=VALUES(deleted),
-                        created_date=VALUES(created_date),
-                        updated_date=VALUES(updated_date);
+                        `model`=VALUES(`model`),
+                        `deleted`=VALUES(`deleted`),
+                        `created_date`=VALUES(`created_date`),
+                        `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;

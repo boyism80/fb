@@ -9,6 +9,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.character_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.item_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.spell_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.option_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.articlesummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.article_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.account_generated.h>
@@ -23,6 +24,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.getarticlelist_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.writearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.deletearticle_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.setoption_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.deletearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getarticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getarticlelist_generated.h>
@@ -35,6 +37,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.makecharacter_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.reservename_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.save_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.setoption_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.service_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.transferresult_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.login_generated.h>
@@ -56,6 +59,7 @@ namespace fb::protocol::db
     class Character;
     class Item;
     class Spell;
+    class Option;
     class ArticleSummary;
     class Article;
 } // end of namespace fb::protocol::db
@@ -73,6 +77,7 @@ namespace fb::protocol::db::request
     class GetArticleList;
     class WriteArticle;
     class DeleteArticle;
+    class SetOption;
 } // end of namespace fb::protocol::db::request
 namespace fb::protocol::db::response
 {
@@ -88,6 +93,7 @@ namespace fb::protocol::db::response
     class MakeCharacter;
     class ReserveName;
     class Save;
+    class SetOption;
 } // end of namespace fb::protocol::db::response
 namespace fb::protocol::internal
 {
@@ -206,6 +212,7 @@ template <> struct FlatBufferOffset<fb::protocol::db::Position> { typedef flatbu
 template <> struct FlatBufferOffset<fb::protocol::db::Character> { typedef flatbuffers::Offset<fb::protocol::db::raw::Character> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::Item> { typedef flatbuffers::Offset<fb::protocol::db::raw::Item> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::Spell> { typedef flatbuffers::Offset<fb::protocol::db::raw::Spell> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Option> { typedef flatbuffers::Offset<fb::protocol::db::raw::Option> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::Article> { typedef flatbuffers::Offset<fb::protocol::db::raw::Article> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::Account> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::Account> type; };
@@ -220,6 +227,7 @@ template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticle> { typ
 template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::GetArticleList> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::WriteArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::WriteArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::SetOption> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::SetOption> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetArticleList> type; };
@@ -232,6 +240,7 @@ template <> struct FlatBufferOffset<fb::protocol::db::response::Login> { typedef
 template <> struct FlatBufferOffset<fb::protocol::db::response::MakeCharacter> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::MakeCharacter> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::ReserveName> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::ReserveName> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::Save> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::Save> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::SetOption> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::SetOption> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> type; };
@@ -262,6 +271,8 @@ flatbuffers::Offset<fb::protocol::db::raw::Item> build<fb::protocol::db::Item>(F
 template <>
 flatbuffers::Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>(FlatBufferBuilder& builder, const fb::protocol::db::Spell& value);
 template <>
+flatbuffers::Offset<fb::protocol::db::raw::Option> build<fb::protocol::db::Option>(FlatBufferBuilder& builder, const fb::protocol::db::Option& value);
+template <>
 flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSummary>(FlatBufferBuilder& builder, const fb::protocol::db::ArticleSummary& value);
 template <>
 flatbuffers::Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBufferBuilder& builder, const fb::protocol::db::Article& value);
@@ -290,6 +301,8 @@ flatbuffers::Offset<fb::protocol::db::request::raw::WriteArticle> build<fb::prot
 template <>
 flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::protocol::db::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::request::DeleteArticle& value);
 template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::SetOption> build<fb::protocol::db::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::db::request::SetOption& value);
+template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value);
 template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::response::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticle& value);
@@ -313,6 +326,8 @@ template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::ReserveName> build<fb::protocol::db::response::ReserveName>(FlatBufferBuilder& builder, const fb::protocol::db::response::ReserveName& value);
 template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::SetOption> build<fb::protocol::db::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::db::response::SetOption& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <>
@@ -368,6 +383,7 @@ enum class FlatBufferProtocolType
     Character,
     Item,
     Spell,
+    Option,
     ArticleSummary,
     Article,
 };
@@ -572,6 +588,56 @@ public:
         return Spell(*raw);
     }
 };
+class Option
+{
+public:
+    static inline fb::protocol::db::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::FlatBufferProtocolType::Option;
+
+public:
+    uint32_t uid = 0;
+    bool whisper = false;
+    bool group = false;
+    bool roar = false;
+    bool roar_worlds = false;
+    bool magic_effect = false;
+    bool weather_effect = false;
+    bool fixed_move = false;
+    bool trade = false;
+    bool fast_move = false;
+    bool effect_sound = false;
+    bool pk_protect = false;
+
+public:
+    Option() = default;
+
+    Option(const Option& x)
+        : uid(x.uid), whisper(x.whisper), group(x.group), roar(x.roar), roar_worlds(x.roar_worlds), magic_effect(x.magic_effect), weather_effect(x.weather_effect), fixed_move(x.fixed_move), trade(x.trade), fast_move(x.fast_move), effect_sound(x.effect_sound), pk_protect(x.pk_protect)
+    { }
+
+    Option(uint32_t uid, bool whisper, bool group, bool roar, bool roar_worlds, bool magic_effect, bool weather_effect, bool fixed_move, bool trade, bool fast_move, bool effect_sound, bool pk_protect)
+        : uid(uid), whisper(whisper), group(group), roar(roar), roar_worlds(roar_worlds), magic_effect(magic_effect), weather_effect(weather_effect), fixed_move(fixed_move), trade(trade), fast_move(fast_move), effect_sound(effect_sound), pk_protect(pk_protect)
+    { }
+
+    Option(const fb::protocol::db::raw::Option& raw)
+        : uid(raw.uid()), whisper(raw.whisper()), group(raw.group()), roar(raw.roar()), roar_worlds(raw.roar_worlds()), magic_effect(raw.magic_effect()), weather_effect(raw.weather_effect()), fixed_move(raw.fixed_move()), trade(raw.trade()), fast_move(raw.fast_move()), effect_sound(raw.effect_sound()), pk_protect(raw.pk_protect())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::Option>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Option Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::raw::GetOption(bytes);
+        return Option(*raw);
+    }
+};
 class ArticleSummary
 {
 public:
@@ -678,6 +744,7 @@ enum class FlatBufferProtocolType
     GetArticleList,
     WriteArticle,
     DeleteArticle,
+    SetOption,
 };
 
 class Account
@@ -1172,6 +1239,47 @@ public:
         return DeleteArticle(*raw);
     }
 };
+class SetOption
+{
+public:
+    static inline fb::protocol::db::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::request::FlatBufferProtocolType::SetOption;
+
+public:
+    uint32_t user = 0;
+    uint8_t type = 0;
+    bool enabled = false;
+
+public:
+    SetOption() = default;
+
+    SetOption(const SetOption& x)
+        : user(x.user), type(x.type), enabled(x.enabled)
+    { }
+
+    SetOption(uint32_t user, uint8_t type, bool enabled)
+        : user(user), type(type), enabled(enabled)
+    { }
+
+    SetOption(const fb::protocol::db::request::raw::SetOption& raw)
+        : user(raw.user()), type(raw.type()), enabled(raw.enabled())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::request::SetOption>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static SetOption Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::request::raw::GetSetOption(bytes);
+        return SetOption(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::db::request
 
@@ -1191,6 +1299,7 @@ enum class FlatBufferProtocolType
     MakeCharacter,
     ReserveName,
     Save,
+    SetOption,
 };
 
 class DeleteArticle
@@ -1518,20 +1627,21 @@ public:
     fb::protocol::db::Character character;
     std::vector<fb::protocol::db::Item> items = {};
     std::vector<fb::protocol::db::Spell> spells = {};
+    fb::protocol::db::Option option;
 
 public:
     Login() = default;
 
     Login(const Login& x)
-        : character(x.character), items(x.items), spells(x.spells)
+        : character(x.character), items(x.items), spells(x.spells), option(x.option)
     { }
 
-    Login(const fb::protocol::db::Character& character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells)
-        : character(character), items(items), spells(spells)
+    Login(const fb::protocol::db::Character& character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells, const fb::protocol::db::Option& option)
+        : character(character), items(items), spells(spells), option(option)
     { }
 
     Login(const fb::protocol::db::response::raw::Login& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::db::Item>(raw.items())), spells(unpack<fb::protocol::db::Spell>(raw.spells()))
+        : character(*raw.character()), items(unpack<fb::protocol::db::Item>(raw.items())), spells(unpack<fb::protocol::db::Spell>(raw.spells())), option(*raw.option())
     { }
 
 public:
@@ -1666,6 +1776,45 @@ public:
     {
         auto raw = fb::protocol::db::response::raw::GetSave(bytes);
         return Save(*raw);
+    }
+};
+class SetOption
+{
+public:
+    static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::SetOption;
+
+public:
+    bool success = false;
+
+public:
+    SetOption() = default;
+
+    SetOption(const SetOption& x)
+        : success(x.success)
+    { }
+
+    SetOption(bool success)
+        : success(success)
+    { }
+
+    SetOption(const fb::protocol::db::response::raw::SetOption& raw)
+        : success(raw.success())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::response::SetOption>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static SetOption Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::response::raw::GetSetOption(bytes);
+        return SetOption(*raw);
     }
 };
 
@@ -2318,6 +2467,23 @@ flatbuffers::Offset<fb::protocol::db::raw::Spell> build<fb::protocol::db::Spell>
             flatbuffers::build<uint32_t>(builder, value.model));
 }
 template <>
+flatbuffers::Offset<fb::protocol::db::raw::Option> build<fb::protocol::db::Option>(FlatBufferBuilder& builder, const fb::protocol::db::Option& value)
+{
+    return fb::protocol::db::raw::CreateOption(builder,
+            flatbuffers::build<uint32_t>(builder, value.uid),
+            flatbuffers::build<bool>(builder, value.whisper),
+            flatbuffers::build<bool>(builder, value.group),
+            flatbuffers::build<bool>(builder, value.roar),
+            flatbuffers::build<bool>(builder, value.roar_worlds),
+            flatbuffers::build<bool>(builder, value.magic_effect),
+            flatbuffers::build<bool>(builder, value.weather_effect),
+            flatbuffers::build<bool>(builder, value.fixed_move),
+            flatbuffers::build<bool>(builder, value.trade),
+            flatbuffers::build<bool>(builder, value.fast_move),
+            flatbuffers::build<bool>(builder, value.effect_sound),
+            flatbuffers::build<bool>(builder, value.pk_protect));
+}
+template <>
 flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::db::ArticleSummary>(FlatBufferBuilder& builder, const fb::protocol::db::ArticleSummary& value)
 {
     return fb::protocol::db::raw::CreateArticleSummary(builder,
@@ -2435,6 +2601,14 @@ flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::pro
             flatbuffers::build<uint32_t>(builder, value.user));
 }
 template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::SetOption> build<fb::protocol::db::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::db::request::SetOption& value)
+{
+    return fb::protocol::db::request::raw::CreateSetOption(builder,
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint8_t>(builder, value.type),
+            flatbuffers::build<bool>(builder, value.enabled));
+}
+template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value)
 {
     return fb::protocol::db::response::raw::CreateDeleteArticle(builder,
@@ -2492,7 +2666,8 @@ flatbuffers::Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::
     return fb::protocol::db::response::raw::CreateLogin(builder,
             flatbuffers::build<fb::protocol::db::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::db::Item>>(builder, value.items),
-            flatbuffers::build<std::vector<fb::protocol::db::Spell>>(builder, value.spells));
+            flatbuffers::build<std::vector<fb::protocol::db::Spell>>(builder, value.spells),
+            flatbuffers::build<fb::protocol::db::Option>(builder, value.option));
 }
 template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::MakeCharacter> build<fb::protocol::db::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::MakeCharacter& value)
@@ -2511,6 +2686,12 @@ template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value)
 {
     return fb::protocol::db::response::raw::CreateSave(builder,
+            flatbuffers::build<bool>(builder, value.success));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::SetOption> build<fb::protocol::db::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::db::response::SetOption& value)
+{
+    return fb::protocol::db::response::raw::CreateSetOption(builder,
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>

@@ -9,7 +9,9 @@
 
             return obj switch
             {
-                string s => $"'{s}'",
+                string s => string.IsNullOrEmpty(s) ? "NULL" : $"'{s}'",
+                bool b => b ? "1" : "0",
+                DateTime dt => $"'{dt:yyyy-MM-dd HH:mm:ss.ffffff}'",
                 _ => obj.ToString(),
             };
         }

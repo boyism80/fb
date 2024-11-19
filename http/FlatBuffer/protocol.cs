@@ -121,6 +121,25 @@ namespace fb.protocol.db
                 builder.Build(value.Slot),
                 builder.Build(value.Model));
         }
+        public static Offset<fb.protocol.db.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.db.Option value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Option.CreateOption(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Whisper),
+                builder.Build(value.Group),
+                builder.Build(value.Roar),
+                builder.Build(value.RoarWorlds),
+                builder.Build(value.MagicEffect),
+                builder.Build(value.WeatherEffect),
+                builder.Build(value.FixedMove),
+                builder.Build(value.Trade),
+                builder.Build(value.FastMove),
+                builder.Build(value.EffectSound),
+                builder.Build(value.PkProtect));
+        }
         public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
         {
             if (value == null)
@@ -266,6 +285,16 @@ namespace fb.protocol.db
                 builder.Build(value.Id),
                 builder.Build(value.User));
         }
+        public static Offset<fb.protocol.db.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.request.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.SetOption.CreateSetOption(builder,
+                builder.Build(value.User),
+                builder.Build(value.Type),
+                builder.Build(value.Enabled));
+        }
         public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
         {
             if (value == null)
@@ -342,7 +371,8 @@ namespace fb.protocol.db
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
         {
@@ -367,6 +397,14 @@ namespace fb.protocol.db
                 return default;
 
             return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.response.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
@@ -511,6 +549,7 @@ namespace fb.protocol.db
         Character,
         Item,
         Spell,
+        Option,
         ArticleSummary,
         Article
     }
@@ -625,6 +664,25 @@ namespace fb.protocol.db.request
                 builder.Build(value.User),
                 builder.Build(value.Slot),
                 builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.db.Option value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Option.CreateOption(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Whisper),
+                builder.Build(value.Group),
+                builder.Build(value.Roar),
+                builder.Build(value.RoarWorlds),
+                builder.Build(value.MagicEffect),
+                builder.Build(value.WeatherEffect),
+                builder.Build(value.FixedMove),
+                builder.Build(value.Trade),
+                builder.Build(value.FastMove),
+                builder.Build(value.EffectSound),
+                builder.Build(value.PkProtect));
         }
         public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
         {
@@ -771,6 +829,16 @@ namespace fb.protocol.db.request
                 builder.Build(value.Id),
                 builder.Build(value.User));
         }
+        public static Offset<fb.protocol.db.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.request.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.SetOption.CreateSetOption(builder,
+                builder.Build(value.User),
+                builder.Build(value.Type),
+                builder.Build(value.Enabled));
+        }
         public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
         {
             if (value == null)
@@ -847,7 +915,8 @@ namespace fb.protocol.db.request
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
         {
@@ -872,6 +941,14 @@ namespace fb.protocol.db.request
                 return default;
 
             return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.response.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
@@ -1023,7 +1100,8 @@ namespace fb.protocol.db.request
         GetArticle,
         GetArticleList,
         WriteArticle,
-        DeleteArticle
+        DeleteArticle,
+        SetOption
     }
 }
 namespace fb.protocol.db.response
@@ -1136,6 +1214,25 @@ namespace fb.protocol.db.response
                 builder.Build(value.User),
                 builder.Build(value.Slot),
                 builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.db.Option value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Option.CreateOption(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Whisper),
+                builder.Build(value.Group),
+                builder.Build(value.Roar),
+                builder.Build(value.RoarWorlds),
+                builder.Build(value.MagicEffect),
+                builder.Build(value.WeatherEffect),
+                builder.Build(value.FixedMove),
+                builder.Build(value.Trade),
+                builder.Build(value.FastMove),
+                builder.Build(value.EffectSound),
+                builder.Build(value.PkProtect));
         }
         public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
         {
@@ -1282,6 +1379,16 @@ namespace fb.protocol.db.response
                 builder.Build(value.Id),
                 builder.Build(value.User));
         }
+        public static Offset<fb.protocol.db.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.request.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.SetOption.CreateSetOption(builder,
+                builder.Build(value.User),
+                builder.Build(value.Type),
+                builder.Build(value.Enabled));
+        }
         public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
         {
             if (value == null)
@@ -1358,7 +1465,8 @@ namespace fb.protocol.db.response
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
         {
@@ -1383,6 +1491,14 @@ namespace fb.protocol.db.response
                 return default;
 
             return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.response.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
@@ -1534,7 +1650,8 @@ namespace fb.protocol.db.response
         Login,
         MakeCharacter,
         ReserveName,
-        Save
+        Save,
+        SetOption
     }
 }
 namespace fb.protocol._internal
@@ -1647,6 +1764,25 @@ namespace fb.protocol._internal
                 builder.Build(value.User),
                 builder.Build(value.Slot),
                 builder.Build(value.Model));
+        }
+        public static Offset<fb.protocol.db.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.db.Option value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Option.CreateOption(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Whisper),
+                builder.Build(value.Group),
+                builder.Build(value.Roar),
+                builder.Build(value.RoarWorlds),
+                builder.Build(value.MagicEffect),
+                builder.Build(value.WeatherEffect),
+                builder.Build(value.FixedMove),
+                builder.Build(value.Trade),
+                builder.Build(value.FastMove),
+                builder.Build(value.EffectSound),
+                builder.Build(value.PkProtect));
         }
         public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
         {
@@ -1793,6 +1929,16 @@ namespace fb.protocol._internal
                 builder.Build(value.Id),
                 builder.Build(value.User));
         }
+        public static Offset<fb.protocol.db.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.request.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.SetOption.CreateSetOption(builder,
+                builder.Build(value.User),
+                builder.Build(value.Type),
+                builder.Build(value.Enabled));
+        }
         public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
         {
             if (value == null)
@@ -1869,7 +2015,8 @@ namespace fb.protocol._internal
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
         {
@@ -1894,6 +2041,14 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.response.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
@@ -2147,6 +2302,25 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Slot),
                 builder.Build(value.Model));
         }
+        public static Offset<fb.protocol.db.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.db.Option value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Option.CreateOption(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Whisper),
+                builder.Build(value.Group),
+                builder.Build(value.Roar),
+                builder.Build(value.RoarWorlds),
+                builder.Build(value.MagicEffect),
+                builder.Build(value.WeatherEffect),
+                builder.Build(value.FixedMove),
+                builder.Build(value.Trade),
+                builder.Build(value.FastMove),
+                builder.Build(value.EffectSound),
+                builder.Build(value.PkProtect));
+        }
         public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
         {
             if (value == null)
@@ -2292,6 +2466,16 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Id),
                 builder.Build(value.User));
         }
+        public static Offset<fb.protocol.db.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.request.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.SetOption.CreateSetOption(builder,
+                builder.Build(value.User),
+                builder.Build(value.Type),
+                builder.Build(value.Enabled));
+        }
         public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
         {
             if (value == null)
@@ -2368,7 +2552,8 @@ namespace fb.protocol._internal.request
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
         {
@@ -2393,6 +2578,14 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.response.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
@@ -2652,6 +2845,25 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Slot),
                 builder.Build(value.Model));
         }
+        public static Offset<fb.protocol.db.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol.db.Option value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.raw.Option.CreateOption(builder,
+                builder.Build(value.Uid),
+                builder.Build(value.Whisper),
+                builder.Build(value.Group),
+                builder.Build(value.Roar),
+                builder.Build(value.RoarWorlds),
+                builder.Build(value.MagicEffect),
+                builder.Build(value.WeatherEffect),
+                builder.Build(value.FixedMove),
+                builder.Build(value.Trade),
+                builder.Build(value.FastMove),
+                builder.Build(value.EffectSound),
+                builder.Build(value.PkProtect));
+        }
         public static Offset<fb.protocol.db.raw.ArticleSummary> Build(this FlatBufferBuilder builder, fb.protocol.db.ArticleSummary value)
         {
             if (value == null)
@@ -2797,6 +3009,16 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Id),
                 builder.Build(value.User));
         }
+        public static Offset<fb.protocol.db.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.request.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.request.raw.SetOption.CreateSetOption(builder,
+                builder.Build(value.User),
+                builder.Build(value.Type),
+                builder.Build(value.Enabled));
+        }
         public static Offset<fb.protocol.db.response.raw.DeleteArticle> Build(this FlatBufferBuilder builder, fb.protocol.db.response.DeleteArticle value)
         {
             if (value == null)
@@ -2873,7 +3095,8 @@ namespace fb.protocol._internal.response
             return fb.protocol.db.response.raw.Login.CreateLogin(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol.db.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol.db.response.MakeCharacter value)
         {
@@ -2898,6 +3121,14 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol.db.response.raw.Save.CreateSave(builder,
+                builder.Build(value.Success));
+        }
+        public static Offset<fb.protocol.db.response.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol.db.response.SetOption value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol.db.response.raw.SetOption.CreateSetOption(builder,
                 builder.Build(value.Success));
         }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
@@ -3254,6 +3485,57 @@ namespace fb.protocol.db
             return new Spell(bytes);
         }
     }
+    public class Option : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Option;
+        public uint Uid { get; set; } = 0;
+        public bool Whisper { get; set; } = false;
+        public bool Group { get; set; } = false;
+        public bool Roar { get; set; } = false;
+        public bool RoarWorlds { get; set; } = false;
+        public bool MagicEffect { get; set; } = false;
+        public bool WeatherEffect { get; set; } = false;
+        public bool FixedMove { get; set; } = false;
+        public bool Trade { get; set; } = false;
+        public bool FastMove { get; set; } = false;
+        public bool EffectSound { get; set; } = false;
+        public bool PkProtect { get; set; } = false;
+
+        public Option()
+        { }
+
+        public Option(fb.protocol.db.raw.Option raw)
+        {
+            Uid = raw.Uid;
+            Whisper = raw.Whisper;
+            Group = raw.Group;
+            Roar = raw.Roar;
+            RoarWorlds = raw.RoarWorlds;
+            MagicEffect = raw.MagicEffect;
+            WeatherEffect = raw.WeatherEffect;
+            FixedMove = raw.FixedMove;
+            Trade = raw.Trade;
+            FastMove = raw.FastMove;
+            EffectSound = raw.EffectSound;
+            PkProtect = raw.PkProtect;
+        }
+
+        public Option(byte[] bytes) : this(fb.protocol.db.raw.Option.GetRootAsOption(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Option Deserialize(byte[] bytes)
+        {
+            return new Option(bytes);
+        }
+    }
     public class ArticleSummary : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ArticleSummary;
@@ -3341,6 +3623,7 @@ namespace fb.protocol.db
                 FlatBufferProtocolType.Character => typeof(fb.protocol.db.Character),
                 FlatBufferProtocolType.Item => typeof(fb.protocol.db.Item),
                 FlatBufferProtocolType.Spell => typeof(fb.protocol.db.Spell),
+                FlatBufferProtocolType.Option => typeof(fb.protocol.db.Option),
                 FlatBufferProtocolType.ArticleSummary => typeof(fb.protocol.db.ArticleSummary),
                 FlatBufferProtocolType.Article => typeof(fb.protocol.db.Article),
                 _ => throw new ArgumentException(),
@@ -3747,6 +4030,39 @@ namespace fb.protocol.db.request
             return new DeleteArticle(bytes);
         }
     }
+    public class SetOption : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.SetOption;
+        public uint User { get; set; } = 0;
+        public byte Type { get; set; } = 0;
+        public bool Enabled { get; set; } = false;
+
+        public SetOption()
+        { }
+
+        public SetOption(fb.protocol.db.request.raw.SetOption raw)
+        {
+            User = raw.User;
+            Type = raw.Type;
+            Enabled = raw.Enabled;
+        }
+
+        public SetOption(byte[] bytes) : this(fb.protocol.db.request.raw.SetOption.GetRootAsSetOption(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static SetOption Deserialize(byte[] bytes)
+        {
+            return new SetOption(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -3766,6 +4082,7 @@ namespace fb.protocol.db.request
                 FlatBufferProtocolType.GetArticleList => typeof(fb.protocol.db.request.GetArticleList),
                 FlatBufferProtocolType.WriteArticle => typeof(fb.protocol.db.request.WriteArticle),
                 FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol.db.request.DeleteArticle),
+                FlatBufferProtocolType.SetOption => typeof(fb.protocol.db.request.SetOption),
                 _ => throw new ArgumentException(),
             };
         }
@@ -4020,6 +4337,7 @@ namespace fb.protocol.db.response
         public fb.protocol.db.Character Character { get; set; } = new fb.protocol.db.Character();
         public List<fb.protocol.db.Item> Items { get; set; } = new List<fb.protocol.db.Item>();
         public List<fb.protocol.db.Spell> Spells { get; set; } = new List<fb.protocol.db.Spell>();
+        public fb.protocol.db.Option Option { get; set; } = new fb.protocol.db.Option();
 
         public Login()
         { }
@@ -4029,6 +4347,7 @@ namespace fb.protocol.db.response
             Character = new Character(raw.Character.Value);
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
+            Option = new Option(raw.Option.Value);
         }
 
         public Login(byte[] bytes) : this(fb.protocol.db.response.raw.Login.GetRootAsLogin(new ByteBuffer(bytes)))
@@ -4136,6 +4455,35 @@ namespace fb.protocol.db.response
             return new Save(bytes);
         }
     }
+    public class SetOption : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.SetOption;
+        public bool Success { get; set; } = false;
+
+        public SetOption()
+        { }
+
+        public SetOption(fb.protocol.db.response.raw.SetOption raw)
+        {
+            Success = raw.Success;
+        }
+
+        public SetOption(byte[] bytes) : this(fb.protocol.db.response.raw.SetOption.GetRootAsSetOption(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static SetOption Deserialize(byte[] bytes)
+        {
+            return new SetOption(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -4155,6 +4503,7 @@ namespace fb.protocol.db.response
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol.db.response.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol.db.response.ReserveName),
                 FlatBufferProtocolType.Save => typeof(fb.protocol.db.response.Save),
+                FlatBufferProtocolType.SetOption => typeof(fb.protocol.db.response.SetOption),
                 _ => throw new ArgumentException(),
             };
         }

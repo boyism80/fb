@@ -462,7 +462,7 @@ public:
         {
             writer.write<std::string>("그룹 없음.");
         }
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::GROUP));
+        writer.write<uint8_t>(this->session.option(SETTING::GROUP));
 
         uint32_t remained_exp = this->session.experience_remained();
         writer.write<uint32_t>(remained_exp);
@@ -490,8 +490,8 @@ public:
         }
 
         writer.write<uint8_t>(0x00); // fixed
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::TRADE));
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::PK));
+        writer.write<uint8_t>(this->session.option(SETTING::TRADE));
+        writer.write<uint8_t>(this->session.option(SETTING::PK_PROTECT));
 
         writer.write<uint8_t>((uint8_t)this->session.legends.size());
         for (auto legend : this->session.legends)
@@ -594,8 +594,8 @@ public:
         writer.write<std::string>(sstream.str());
 
         writer.write<uint32_t>(this->session.sequence());
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::GROUP));
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::TRADE));
+        writer.write<uint8_t>(this->session.option(SETTING::GROUP));
+        writer.write<uint8_t>(this->session.option(SETTING::TRADE));
         writer.write<uint32_t>(0x00000000); // unknown
 
         // 업적
@@ -640,11 +640,11 @@ public:
     void serialize(fb::stream_writer<big_endian>& writer) const
     {
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::WEATHER_EFFECT)); // weather
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::MAGIC_EFFECT));   // magic effect
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::ROAR_WORLDS));    // listen news
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::FAST_MOVE));      // fast move
-        writer.write<uint8_t>(this->session.option(CUSTOM_SETTING::EFFECT_SOUND));   // effect sound
+        writer.write<uint8_t>(this->session.option(SETTING::WEATHER_EFFECT)); // weather
+        writer.write<uint8_t>(this->session.option(SETTING::MAGIC_EFFECT));   // magic effect
+        writer.write<uint8_t>(this->session.option(SETTING::ROAR_WORLDS));    // listen news
+        writer.write<uint8_t>(this->session.option(SETTING::FAST_MOVE));      // fast move
+        writer.write<uint8_t>(this->session.option(SETTING::EFFECT_SOUND));   // effect sound
         writer.write<uint8_t>(0x00);
     }
 #else

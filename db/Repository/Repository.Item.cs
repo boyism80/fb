@@ -54,12 +54,6 @@ namespace Db.Reepository
 
         protected override string OnUpsert(Item value)
         {
-            var customName = value.CustomName;
-            if (string.IsNullOrEmpty(customName))
-                customName = "NULL";
-            else
-                customName = $"\"{customName}\"";
-
             var sql = $"""
                 INSERT INTO item (
                     `owner`,
@@ -74,24 +68,24 @@ namespace Db.Reepository
                     `created_date`,
                     `updated_date`)
                 VALUES (
-                    {value.Owner},
-                    {value.Index},
-                    {value.Parts},
-                    {value.Deposited},
-                    {value.Model},
-                    {value.Count},
+                    {value.Owner.Escape()},
+                    {value.Index.Escape()},
+                    {value.Parts.Escape()},
+                    {value.Deposited.Escape()},
+                    {value.Model.Escape()},
+                    {value.Count.Escape()},
                     {value.Durability.Escape()},
-                    {customName},
-                    {value.Deleted},
-                    '{value.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
-                    '{value.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                    {value.CustomName.Escape()},
+                    {value.Deleted.Escape()},
+                    {value.CreatedDate.Escape()},
+                    {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
-                    model=VALUES(model), 
-                    count=VALUES(count), 
-                    durability=VALUES(durability),
-                    custom_name=VALUES(custom_name),
-                    deleted=VALUES(deleted),
-                    updated_date=VALUES(updated_date);";
+                    `model`=VALUES(`model`), 
+                    `count`=VALUES(`count`), 
+                    `durability`=VALUES(`durability`),
+                    `custom_name`=VALUES(`custom_name`),
+                    `deleted`=VALUES(`deleted`),
+                    `updated_date`=VALUES(`updated_date`);";
                 """;
 
             return sql;
@@ -108,17 +102,17 @@ namespace Db.Reepository
                     customName = $"\"{customName}\"";
 
                 return $"""
-                        ({item.Owner},
-                         {item.Index},
-                         {item.Parts},
-                         {item.Deposited},
-                         {item.Model},
-                         {item.Count},
+                        ({item.Owner.Escape()},
+                         {item.Index.Escape()},
+                         {item.Parts.Escape()},
+                         {item.Deposited.Escape()},
+                         {item.Model.Escape()},
+                         {item.Count.Escape()},
                          {item.Durability.Escape()},
-                         {customName},
-                         {item.Deleted},
-                         '{item.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
-                         '{item.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                         {customName.Escape()},
+                         {item.Deleted.Escape()},
+                         {item.CreatedDate.Escape()},
+                         {item.UpdatedDate.Escape()})
                         """;
             });
 
@@ -137,11 +131,11 @@ namespace Db.Reepository
                         `updated_date`)
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
-                        model=VALUES(model),
-                        count=VALUES(count),
-                        durability=VALUES(durability),
-                        custom_name=VALUES(custom_name),
-                        deleted=VALUES(deleted);";
+                        `model`=VALUES(`model`),
+                        `count`=VALUES(`count`),
+                        `durability`=VALUES(`durability`),
+                        `custom_name`=VALUES(`custom_name`),
+                        `deleted`=VALUES(`deleted`);";
                     """;
 
             return sql;

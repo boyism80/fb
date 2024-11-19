@@ -32,6 +32,9 @@ namespace db
                 cfg.CreateMap<Db.Model.Item, fb.protocol.db.Item>()
                 .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
                 .ReverseMap();
+
+                cfg.CreateMap<Db.Model.Option, fb.protocol.db.Option>()
+                .ReverseMap();
             });
 
             var builder = WebApplication.CreateBuilder(args);

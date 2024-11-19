@@ -52,25 +52,24 @@ namespace Db.Service
             }
         }
 
-        private async Task OnWork(int i, CancellationToken stoppingToken)
+        private async Task OnWork(int db, CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var bufferKey = $"{RedisBufferKey}:{i}";
                 try
                 {
                     var connRedis = _redisService.Connection;
-                    var success = await connRedis.Sync("write-back", async () =>
+                    var success = await connRedis.Sync($"write-back-{db}", async () =>
                     {
                         var result = await connRedis.ScriptEvaluateAsync("pop_sql_range.lua", new
                         {
-                            key = new RedisKey(bufferKey),
+                            key = new RedisKey($"{RedisBufferKey}:{db}"),
                             count = 100
                         });
                         if (result.Length == 0)
                             return false;
 
-                        await using var connection = _dbContext.Connection(i);
+                        await using var connection = _dbContext.Connection(db);
                         var backgroundCommitEntryList = ((RedisResult[])result).Select(x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString()));
                         foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
                         {
