@@ -22,7 +22,7 @@ namespace Db.Reepository
         {
             return $"""
                 SELECT * FROM `option`
-                WHERE `id` = {key.Uid}
+                WHERE `uid` = {key.Uid}
                 LIMIT 1;
                 """;
         }
