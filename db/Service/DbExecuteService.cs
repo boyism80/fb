@@ -60,33 +60,37 @@ namespace Db.Service
                 try
                 {
                     var connRedis = _redisService.Connection;
-                    var result = await connRedis.ScriptEvaluateAsync("pop_sql_range.lua", new
+                    var success = await connRedis.Sync("write-back", async () =>
                     {
-                        key = new RedisKey(bufferKey),
-                        count = 100
-                    });
-                    if (result.Length == 0)
-                    {
-                        await Task.Delay(_delay, stoppingToken);
-                        continue;
-                    }
-
-                    await using var connection = _dbContext.Connection(i);
-                    var backgroundCommitEntryList = ((RedisResult[])result).Select(x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString()));
-                    foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
-                    {
-                        var redisKey = g.Key;
-                        var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
-                        await connection.ExecuteAsync(sql);
-
-                        await connRedis.ScriptEvaluateAsync("end_of_ref.lua", new
+                        var result = await connRedis.ScriptEvaluateAsync("pop_sql_range.lua", new
                         {
-                            key = new RedisKey(Db.Redis.Const.ReferenceCountKey),
-                            field = new RedisValue(redisKey),
-                            count = g.Count(),
-                            expiry = (int)Db.Redis.Const.CacheTimeToLive.TotalSeconds,
+                            key = new RedisKey(bufferKey),
+                            count = 100
                         });
-                    }
+                        if (result.Length == 0)
+                            return false;
+
+                        await using var connection = _dbContext.Connection(i);
+                        var backgroundCommitEntryList = ((RedisResult[])result).Select(x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString()));
+                        foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
+                        {
+                            var redisKey = g.Key;
+                            var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
+                            await connection.ExecuteAsync(sql);
+
+                            await connRedis.ScriptEvaluateAsync("end_of_ref.lua", new
+                            {
+                                key = new RedisKey(Db.Redis.Const.ReferenceCountKey),
+                                field = new RedisValue(redisKey),
+                                count = g.Count(),
+                                expiry = (int)Db.Redis.Const.CacheTimeToLive.TotalSeconds,
+                            });
+                        }
+                        return true;
+                    });
+
+                    if (!success)
+                        await Task.Delay(_delay, stoppingToken);
                 }
                 catch (Exception e)
                 {

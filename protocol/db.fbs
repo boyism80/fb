@@ -9,7 +9,6 @@ table Character {
 	id: uint;
 	name: string;
 	pw: string;
-	last_login: string;
 	admin: bool;
 	look: ushort;
 	color: ushort;
@@ -41,6 +40,7 @@ table Character {
 	aux_top_color: ubyte?;
 	aux_bot_color: ubyte?;
 	clan: uint?;
+	updated_date: string;
 }
 
 table Item {

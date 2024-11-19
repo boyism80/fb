@@ -1,3 +1,4 @@
+using Db.Extension;
 using Db.Model;
 using Db.Service;
 using http.Service;
@@ -69,7 +70,9 @@ namespace Db.Reepository
                     `count`,
                     `durability`,
                     `custom_name`,
-                    `deleted`)
+                    `deleted`,
+                    `created_date`,
+                    `updated_date`)
                 VALUES (
                     {value.Owner},
                     {value.Index},
@@ -77,15 +80,18 @@ namespace Db.Reepository
                     {value.Deposited},
                     {value.Model},
                     {value.Count},
-                    {value.Durability?.ToString() ?? "NULL"},
+                    {value.Durability.Escape()},
                     {customName},
-                    {value.Deleted})
+                    {value.Deleted},
+                    '{value.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
+                    '{value.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
                 ON DUPLICATE KEY UPDATE 
                     model=VALUES(model), 
                     count=VALUES(count), 
                     durability=VALUES(durability),
                     custom_name=VALUES(custom_name),
-                    deleted=VALUES(deleted);";
+                    deleted=VALUES(deleted),
+                    updated_date=VALUES(updated_date);";
                 """;
 
             return sql;
@@ -101,7 +107,19 @@ namespace Db.Reepository
                 else
                     customName = $"\"{customName}\"";
 
-                return $"({item.Owner}, {item.Index}, {item.Parts}, {item.Deposited}, {item.Model}, {item.Count}, {item.Durability?.ToString() ?? "NULL"}, {customName}, {item.Deleted})";
+                return $"""
+                        ({item.Owner},
+                         {item.Index},
+                         {item.Parts},
+                         {item.Deposited},
+                         {item.Model},
+                         {item.Count},
+                         {item.Durability.Escape()},
+                         {customName},
+                         {item.Deleted},
+                         '{item.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
+                         '{item.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                        """;
             });
 
             var sql = $"""
@@ -114,7 +132,9 @@ namespace Db.Reepository
                         `count`,
                         `durability`,
                         `custom_name`,
-                        `deleted`)
+                        `deleted`,
+                        `created_date`,
+                        `updated_date`)
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
                         model=VALUES(model),

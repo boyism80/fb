@@ -63,7 +63,6 @@ namespace fb.protocol.db
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
-                builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -94,7 +93,8 @@ namespace fb.protocol.db
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
-                builder.Build(value.Clan));
+                builder.Build(value.Clan),
+                builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
         {
@@ -568,7 +568,6 @@ namespace fb.protocol.db.request
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
-                builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -599,7 +598,8 @@ namespace fb.protocol.db.request
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
-                builder.Build(value.Clan));
+                builder.Build(value.Clan),
+                builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
         {
@@ -1079,7 +1079,6 @@ namespace fb.protocol.db.response
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
-                builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -1110,7 +1109,8 @@ namespace fb.protocol.db.response
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
-                builder.Build(value.Clan));
+                builder.Build(value.Clan),
+                builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
         {
@@ -1590,7 +1590,6 @@ namespace fb.protocol._internal
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
-                builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -1621,7 +1620,8 @@ namespace fb.protocol._internal
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
-                builder.Build(value.Clan));
+                builder.Build(value.Clan),
+                builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
         {
@@ -2089,7 +2089,6 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
-                builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -2120,7 +2119,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
-                builder.Build(value.Clan));
+                builder.Build(value.Clan),
+                builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
         {
@@ -2594,7 +2594,6 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
-                builder.Build(value.LastLogin),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -2625,7 +2624,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
-                builder.Build(value.Clan));
+                builder.Build(value.Clan),
+                builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol.db.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol.db.Item value)
         {
@@ -3087,7 +3087,6 @@ namespace fb.protocol.db
         public uint Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string Pw { get; set; } = string.Empty;
-        public string LastLogin { get; set; } = string.Empty;
         public bool Admin { get; set; } = false;
         public ushort Look { get; set; } = 0;
         public ushort Color { get; set; } = 0;
@@ -3119,6 +3118,7 @@ namespace fb.protocol.db
         public byte? AuxTopColor { get; set; } = null;
         public byte? AuxBotColor { get; set; } = null;
         public uint? Clan { get; set; } = null;
+        public string UpdatedDate { get; set; } = string.Empty;
 
         public Character()
         { }
@@ -3128,7 +3128,6 @@ namespace fb.protocol.db
             Id = raw.Id;
             Name = raw.Name;
             Pw = raw.Pw;
-            LastLogin = raw.LastLogin;
             Admin = raw.Admin;
             Look = raw.Look;
             Color = raw.Color;
@@ -3160,6 +3159,7 @@ namespace fb.protocol.db
             AuxTopColor = raw.AuxTopColor != null ? (byte?)raw.AuxTopColor.Value.Value : null;
             AuxBotColor = raw.AuxBotColor != null ? (byte?)raw.AuxBotColor.Value.Value : null;
             Clan = raw.Clan != null ? (uint?)raw.Clan.Value.Value : null;
+            UpdatedDate = raw.UpdatedDate;
         }
 
         public Character(byte[] bytes) : this(fb.protocol.db.raw.Character.GetRootAsCharacter(new ByteBuffer(bytes)))

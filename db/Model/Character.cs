@@ -2,13 +2,12 @@
 
 namespace Db.Model
 {
-    public class CharacterKey : IRedisCacheKey
+    public class CharacterKey : BaseModel, IRedisValueKey
     {
         public required uint Id { get; set; }
 
         public uint GetDbKey() => Id;
         public RedisKey GetRedisKey() => $"cache:user:{Id}";
-        public RedisValue GetRedisField() => throw new NotImplementedException();
     }
 
     public class Character : CharacterKey, IModel
@@ -16,7 +15,6 @@ namespace Db.Model
         public string Name { get; set; }
         public string Pw { get; set; }
         public ushort? Birth { get; set; }
-        public DateTime LastLogin { get; set; }
         public bool Admin { get; set; }
         public ushort Look { get; set; }
         public ushort Color { get; set; }

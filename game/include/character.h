@@ -71,7 +71,7 @@ private:
     bool                    _admin = false;
     std::string             _name;
     std::string             _pw;
-    datetime                _last_login;
+    datetime                _updated_date;
     uint16_t                _look            = 0;
     uint8_t                 _color           = 0;
     std::optional<uint8_t>  _armor_color     = 0;
@@ -320,14 +320,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    const datetime& last_login() const;
+    const datetime& updated_date() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void last_login(const datetime& value);
+    void updated_date(const datetime& value);
 
     /**
      * @brief      { function_description }

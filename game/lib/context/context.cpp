@@ -406,7 +406,7 @@ bool context::init_ch(const fb::protocol::db::Character&   response,
     session.id(response.id);
     session.name(response.name);
     session.pw(response.pw);
-    session.last_login(datetime(response.last_login));
+    session.updated_date(datetime(response.updated_date));
     session.admin(response.admin);
     session.color(response.color);
     session.direction(DIRECTION(response.direction));
@@ -840,7 +840,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
         if (from == internal::services::LOGIN)
         {
-            auto msg = this->elapsed_message(response.character.last_login);
+            auto msg = this->elapsed_message(response.character.updated_date);
             if (msg.empty() == false)
                 session->message(msg, MESSAGE_TYPE::STATE);
         }

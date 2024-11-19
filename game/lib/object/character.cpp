@@ -252,14 +252,14 @@ void character::pw(const std::string& value)
     this->_pw = value;
 }
 
-const datetime& character::last_login() const
+const datetime& character::updated_date() const
 {
-    return this->_last_login;
+    return this->_updated_date;
 }
 
-void character::last_login(const datetime& value)
+void character::updated_date(const datetime& value)
 {
-    this->_last_login = value;
+    this->_updated_date = value;
 }
 
 uint16_t character::look() const
@@ -1502,7 +1502,7 @@ fb::protocol::db::Character character::to_protocol() const
     dto.id               = this->_id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
-    dto.last_login       = datetime().to_string();
+    dto.updated_date     = datetime().to_string();
     dto.admin            = this->_admin;
     dto.look             = this->_look;
     dto.color            = this->_color;

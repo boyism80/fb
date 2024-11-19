@@ -32,38 +32,38 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 4,
     VT_NAME = 6,
     VT_PW = 8,
-    VT_LAST_LOGIN = 10,
-    VT_ADMIN = 12,
-    VT_LOOK = 14,
-    VT_COLOR = 16,
-    VT_SEX = 18,
-    VT_NATION = 20,
-    VT_CREATURE = 22,
-    VT_MAP = 24,
-    VT_POSITION = 26,
-    VT_DIRECTION = 28,
-    VT_STATE = 30,
-    VT_CLASS_TYPE = 32,
-    VT_PROMOTION = 34,
-    VT_EXP = 36,
-    VT_MONEY = 38,
-    VT_DEPOSITED_MONEY = 40,
-    VT_DISGUISE = 42,
-    VT_HP = 44,
-    VT_BASE_HP = 46,
-    VT_ADDITIONAL_HP = 48,
-    VT_MP = 50,
-    VT_BASE_MP = 52,
-    VT_ADDITIONAL_MP = 54,
-    VT_WEAPON_COLOR = 56,
-    VT_HELMET_COLOR = 58,
-    VT_ARMOR_COLOR = 60,
-    VT_SHIELD_COLOR = 62,
-    VT_RING_LEFT_COLOR = 64,
-    VT_RING_RIGHT_COLOR = 66,
-    VT_AUX_TOP_COLOR = 68,
-    VT_AUX_BOT_COLOR = 70,
-    VT_CLAN = 72
+    VT_ADMIN = 10,
+    VT_LOOK = 12,
+    VT_COLOR = 14,
+    VT_SEX = 16,
+    VT_NATION = 18,
+    VT_CREATURE = 20,
+    VT_MAP = 22,
+    VT_POSITION = 24,
+    VT_DIRECTION = 26,
+    VT_STATE = 28,
+    VT_CLASS_TYPE = 30,
+    VT_PROMOTION = 32,
+    VT_EXP = 34,
+    VT_MONEY = 36,
+    VT_DEPOSITED_MONEY = 38,
+    VT_DISGUISE = 40,
+    VT_HP = 42,
+    VT_BASE_HP = 44,
+    VT_ADDITIONAL_HP = 46,
+    VT_MP = 48,
+    VT_BASE_MP = 50,
+    VT_ADDITIONAL_MP = 52,
+    VT_WEAPON_COLOR = 54,
+    VT_HELMET_COLOR = 56,
+    VT_ARMOR_COLOR = 58,
+    VT_SHIELD_COLOR = 60,
+    VT_RING_LEFT_COLOR = 62,
+    VT_RING_RIGHT_COLOR = 64,
+    VT_AUX_TOP_COLOR = 66,
+    VT_AUX_BOT_COLOR = 68,
+    VT_CLAN = 70,
+    VT_UPDATED_DATE = 72
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -73,9 +73,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::String *pw() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PW);
-  }
-  const ::flatbuffers::String *last_login() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_LAST_LOGIN);
   }
   bool admin() const {
     return GetField<uint8_t>(VT_ADMIN, 0) != 0;
@@ -170,6 +167,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const nullable::nullable_uint *clan() const {
     return GetPointer<const nullable::nullable_uint *>(VT_CLAN);
   }
+  const ::flatbuffers::String *updated_date() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
@@ -177,8 +177,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_PW) &&
            verifier.VerifyString(pw()) &&
-           VerifyOffset(verifier, VT_LAST_LOGIN) &&
-           verifier.VerifyString(last_login()) &&
            VerifyField<uint8_t>(verifier, VT_ADMIN, 1) &&
            VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
@@ -222,6 +220,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(aux_bot_color()) &&
            VerifyOffset(verifier, VT_CLAN) &&
            verifier.VerifyTable(clan()) &&
+           VerifyOffset(verifier, VT_UPDATED_DATE) &&
+           verifier.VerifyString(updated_date()) &&
            verifier.EndTable();
   }
 };
@@ -238,9 +238,6 @@ struct CharacterBuilder {
   }
   void add_pw(::flatbuffers::Offset<::flatbuffers::String> pw) {
     fbb_.AddOffset(Character::VT_PW, pw);
-  }
-  void add_last_login(::flatbuffers::Offset<::flatbuffers::String> last_login) {
-    fbb_.AddOffset(Character::VT_LAST_LOGIN, last_login);
   }
   void add_admin(bool admin) {
     fbb_.AddElement<uint8_t>(Character::VT_ADMIN, static_cast<uint8_t>(admin), 0);
@@ -335,6 +332,9 @@ struct CharacterBuilder {
   void add_clan(::flatbuffers::Offset<nullable::nullable_uint> clan) {
     fbb_.AddOffset(Character::VT_CLAN, clan);
   }
+  void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
+    fbb_.AddOffset(Character::VT_UPDATED_DATE, updated_date);
+  }
   explicit CharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -351,7 +351,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint32_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> last_login = 0,
     bool admin = false,
     uint16_t look = 0,
     uint16_t color = 0,
@@ -382,8 +381,10 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<nullable::nullable_ubyte> ring_right_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_top_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0) {
+    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
   CharacterBuilder builder_(_fbb);
+  builder_.add_updated_date(updated_date);
   builder_.add_clan(clan);
   builder_.add_aux_bot_color(aux_bot_color);
   builder_.add_aux_top_color(aux_top_color);
@@ -406,7 +407,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_position(position);
   builder_.add_map(map);
   builder_.add_creature(creature);
-  builder_.add_last_login(last_login);
   builder_.add_pw(pw);
   builder_.add_name(name);
   builder_.add_id(id);
@@ -427,7 +427,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint32_t id = 0,
     const char *name = nullptr,
     const char *pw = nullptr,
-    const char *last_login = nullptr,
     bool admin = false,
     uint16_t look = 0,
     uint16_t color = 0,
@@ -458,16 +457,16 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::Offset<nullable::nullable_ubyte> ring_right_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_top_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0) {
+    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
+    const char *updated_date = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
-  auto last_login__ = last_login ? _fbb.CreateString(last_login) : 0;
+  auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::db::raw::CreateCharacter(
       _fbb,
       id,
       name__,
       pw__,
-      last_login__,
       admin,
       look,
       color,
@@ -498,7 +497,8 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       ring_right_color,
       aux_top_color,
       aux_bot_color,
-      clan);
+      clan,
+      updated_date__);
 }
 
 inline const fb::protocol::db::raw::Character *GetCharacter(const void *buf) {

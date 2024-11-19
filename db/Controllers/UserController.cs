@@ -218,34 +218,53 @@ namespace db.Controllers
             return response;
         }
 
+        private static T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
+        {
+            var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
+            var dst = exists.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
+
+            foreach (var x in dst.Values)
+            {
+                x.Deleted = true;
+            }
+
+            foreach (var key in src.Keys.ToArray())
+            {
+                dst[key] = src[key];
+            }
+
+            return dst.Values.ToArray();
+        }
+
         [HttpPost("save")]
         public async Task<Response.Save> Save(Request.Save request)
         {
-            var ch = _mapper.Map<Character>(request.Character);
-            await _dbContext.Character.Set(ch);
-
-            var items = await _dbContext.Item.Get(request.Character.Id);
-            foreach (var item in items)
+            try
             {
-                item.Deleted = true;
+                _ = await _dbContext.Character.Get(request.Character.Id) ??
+                    throw new Exception();
+
+                var ch = _mapper.Map<Character>(request.Character);
+                await _dbContext.Character.Set(ch);
+
+                var items = Override(_mapper.Map<fb.protocol.db.Item[], Item[]>(request.Items.ToArray()), await _dbContext.Item.Get(request.Character.Id));
+                await _dbContext.Item.Set(items);
+
+                var spells = Override(_mapper.Map<fb.protocol.db.Spell[], Spell[]>(request.Spells.ToArray()), await _dbContext.Spell.Get(request.Character.Id));
+                await _dbContext.Spell.Set(spells.ToArray());
+
+                return new Response.Save
+                {
+                    Success = true
+                };
             }
-            await _dbContext.Item.Set(items.ToArray());
-            items = _mapper.Map<fb.protocol.db.Item[], Item[]>(request.Items.ToArray());
-            await _dbContext.Item.Set(items.ToArray());
-
-            var spells = await _dbContext.Spell.Get(request.Character.Id);
-            foreach (var item in spells)
+            catch (Exception)
             {
-                item.Deleted = true;
+                return new Response.Save
+                {
+                    Success = false
+                };
             }
-            await _dbContext.Spell.Set(spells.ToArray());
-            spells = _mapper.Map<fb.protocol.db.Spell[], Spell[]>(request.Spells.ToArray());
-            await _dbContext.Spell.Set(spells.ToArray());
-
-            return new Response.Save
-            {
-                Success = true
-            };
         }
     }
 }

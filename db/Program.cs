@@ -16,11 +16,11 @@ namespace db
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.CreateMap<Db.Model.Character, fb.protocol.db.Character>()
-                .ForMember(x => x.LastLogin, x => x.MapFrom(u => u.LastLogin.ToString("yyyy-MM-dd HH:mm:ss")))
+                .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
                 .ForMember(x => x.Position, x => x.MapFrom(u => new Position { X = u.PositionX, Y = u.PositionY }));
 
                 cfg.CreateMap<fb.protocol.db.Character, Db.Model.Character>()
-                .ForMember(x => x.LastLogin, x => x.MapFrom(u => DateTime.Parse(u.LastLogin)))
+                .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))
                 .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
                 .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y));
 

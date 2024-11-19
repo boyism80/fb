@@ -1,3 +1,4 @@
+using Db.Extension;
 using Db.Model;
 using Db.Service;
 using http.Service;
@@ -17,12 +18,6 @@ namespace Db.Reepository
             return await Get(new CharacterKey { Id = id });
         }
 
-        public override async Task Set(Character value)
-        {
-            value.LastLogin = DateTime.Now;
-            await base.Set(value);
-        }
-
         protected override string OnSelect(CharacterKey key)
         {
             return $"""
@@ -40,7 +35,6 @@ namespace Db.Reepository
                     `name`,
                     `pw`,
                     `birth`,
-                    `last_login`,
                     `look`,
                     `color`,
                     `sex`,
@@ -71,18 +65,19 @@ namespace Db.Reepository
                     `ring_right_color`,
                     `aux_top_color`,
                     `aux_bot_color`,
-                    `clan`)
+                    `clan`,
+                    `created_date`,
+                    `updated_date`)
                 VALUES (
-                    '{value.Id}',
+                    {value.Id},
                     '{value.Name}',
                     '{value.Pw}',
-                    {value.Birth?.ToString() ?? "NULL"},
-                    '{value.LastLogin:yyyy-MM-dd HH:mm:ss}',
+                    {value.Birth.Escape()},
                     {value.Look},
                     {value.Color},
                     {value.Sex},
                     {value.Nation},
-                    {value.Creature?.ToString() ?? "NULL"},
+                    {value.Creature.Escape()},
                     {value.Map},
                     {value.PositionX},
                     {value.PositionY},
@@ -93,26 +88,27 @@ namespace Db.Reepository
                     {value.Exp},
                     {value.Money},
                     {value.DepositedMoney},
-                    {value.Disguise?.ToString() ?? "NULL"},
+                    {value.Disguise.Escape()},
                     {value.Hp},
                     {value.BaseHp},
                     {value.AdditionalHp},
                     {value.Mp},
                     {value.BaseMp},
                     {value.AdditionalMp},
-                    {value.WeaponColor?.ToString() ?? "NULL"},
-                    {value.HelmetColor?.ToString() ?? "NULL"},
-                    {value.ArmorColor?.ToString() ?? "NULL"},
-                    {value.ShieldColor?.ToString() ?? "NULL"},
-                    {value.RingLeftColor?.ToString() ?? "NULL"},
-                    {value.RingRightColor?.ToString() ?? "NULL"},
-                    {value.AuxTopColor?.ToString() ?? "NULL"},
-                    {value.AuxBotColor?.ToString() ?? "NULL"},
-                    {value.Clan?.ToString() ?? "NULL"})
+                    {value.WeaponColor.Escape()},
+                    {value.HelmetColor.Escape()},
+                    {value.ArmorColor.Escape()},
+                    {value.ShieldColor.Escape()},
+                    {value.RingLeftColor.Escape()},
+                    {value.RingRightColor.Escape()},
+                    {value.AuxTopColor.Escape()},
+                    {value.AuxBotColor.Escape()},
+                    {value.Clan.Escape()},
+                    '{value.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
+                    '{value.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
                 ON DUPLICATE KEY UPDATE 
                     pw=VALUES(pw),
                     birth=VALUES(birth),
-                    last_login=VALUES(last_login),
                     look=VALUES(look),
                     color=VALUES(color),
                     sex=VALUES(sex),
@@ -143,7 +139,8 @@ namespace Db.Reepository
                     ring_right_color=VALUES(ring_right_color),
                     aux_top_color=VALUES(aux_top_color),
                     aux_bot_color=VALUES(aux_bot_color),
-                    clan=VALUES(clan);
+                    clan=VALUES(clan),
+                    updated_date=VALUES(updated_date);
                 """;
 
             return sql;

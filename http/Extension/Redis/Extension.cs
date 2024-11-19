@@ -49,6 +49,12 @@ namespace http.Redis
             return JsonConvert.DeserializeObject<T>(value.ToString());
         }
 
+        public static async Task<IReadOnlyDictionary<RedisValue, T>> JsonHashGetAllAsync<T>(this IDatabaseAsync database, RedisKey key) where T : class
+        {
+            var values = await database.HashGetAllAsync(key);
+            return values.ToDictionary(x => x.Name, x => JsonConvert.DeserializeObject<T>(x.Value));
+        }
+
         public static async Task<IReadOnlyDictionary<RedisValue, T>> JsonHashGetAsync<T>(this IDatabaseAsync database, RedisKey key) where T : class
         {
             var value = await database.HashGetAllAsync(key);
@@ -136,21 +142,17 @@ namespace http.Redis
             var tcs = new TaskCompletionSource<T>();
             var uuid = Guid.NewGuid().ToString();
             var sub = database.Multiplexer.GetSubscriber();
-
-            var success = await database.Lock(key, tcs, fn, uuid, sub);
-            if (success == false)
+            var channel = await sub.SubscribeAsync(key);
+            channel.OnMessage(async message =>
             {
-                var channel = await sub.SubscribeAsync(key);
-                channel.OnMessage(async message =>
-                {
-                    if (message.Channel != key)
-                        return;
+                if (message.Channel != key)
+                    return;
 
-                    if (message.Message != uuid)
-                        await database.Lock(key, tcs, fn, uuid, sub);
-                });
-            }
+                if (message.Message != uuid)
+                    await database.Lock(key, tcs, fn, uuid, sub);
+            });
 
+            await database.Lock(key, tcs, fn, uuid, sub);
             return await tcs.Task;
         }
     }

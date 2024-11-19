@@ -82,6 +82,8 @@ CREATE TABLE `item` (
   `durability` int unsigned DEFAULT NULL,
   `custom_name` varchar(32) DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
   PRIMARY KEY (`owner`,`index`,`parts`,`deposited`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -121,7 +123,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,6 +138,8 @@ CREATE TABLE `spell` (
   `slot` tinyint NOT NULL,
   `model` int NOT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
   PRIMARY KEY (`owner`,`slot`),
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
@@ -154,7 +158,6 @@ CREATE TABLE `user` (
   `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `birth` int unsigned DEFAULT NULL,
-  `last_login` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `admin` tinyint NOT NULL DEFAULT '0',
   `look` smallint unsigned NOT NULL DEFAULT '0',
   `color` tinyint unsigned NOT NULL DEFAULT '0',
@@ -187,6 +190,8 @@ CREATE TABLE `user` (
   `aux_top_color` int DEFAULT NULL,
   `aux_bot_color` int unsigned DEFAULT NULL,
   `clan` int unsigned DEFAULT NULL,
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `user_clan_idx` (`clan`),
@@ -355,4 +360,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-18  3:32:23
+-- Dump completed on 2024-11-19 23:58:49

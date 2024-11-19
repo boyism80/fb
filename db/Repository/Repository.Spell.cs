@@ -54,9 +54,24 @@ namespace Db.Reepository
         protected override string OnUpsert(Spell value)
         {
             var sql = $"""
-                    INSERT INTO spell (`owner`, `slot`, `model`, `deleted`)
-                    VALUES ({value.Owner}, {value.Slot}, {value.Model}, {value.Deleted})
-                    ON DUPLICATE KEY UPDATE model=VALUES(model), deleted=VALUES(deleted);
+                    INSERT INTO spell (
+                        `owner`,
+                        `slot`,
+                        `model`,
+                        `deleted`,
+                        `created_date`,
+                        `updated_date`)
+                    VALUES (
+                        {value.Owner},
+                        {value.Slot},
+                        {value.Model},
+                        {value.Deleted},
+                        '{value.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
+                        '{value.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                    ON DUPLICATE KEY UPDATE
+                        model=VALUES(model),
+                        deleted=VALUES(deleted),
+                        updated_date=VALUES(updated_date);
                     """;
 
             return sql;
@@ -66,13 +81,30 @@ namespace Db.Reepository
         {
             var args = values.Select(spell =>
             {
-                return $"({spell.Owner}, {spell.Slot}, {spell.Model}, {spell.Deleted})";
+                return $"""
+                        ({spell.Owner},
+                         {spell.Slot},
+                         {spell.Model},
+                         {spell.Deleted},
+                         '{spell.CreatedDate:yyyy-MM-dd HH:mm:ss.ffffff}',
+                         '{spell.UpdatedDate:yyyy-MM-dd HH:mm:ss.ffffff}')
+                        """;
             });
 
             var sql = $"""
-                    INSERT INTO spell (`owner`, `slot`, `model`, `deleted`)
+                    INSERT INTO spell (
+                        `owner`,
+                        `slot`,
+                        `model`,
+                        `deleted`,
+                        `created_date`,
+                        `updated_date`)
                     VALUES {string.Join(',', args)}
-                    ON DUPLICATE KEY UPDATE model=VALUES(model), deleted=VALUES(deleted);
+                    ON DUPLICATE KEY UPDATE
+                        model=VALUES(model),
+                        deleted=VALUES(deleted),
+                        created_date=VALUES(created_date),
+                        updated_date=VALUES(updated_date);
                     """;
 
             return sql;

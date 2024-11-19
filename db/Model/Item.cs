@@ -1,14 +1,8 @@
-﻿using Db.Reepository;
-using Db.Service;
-using http.Redis;
-using http.Service;
-using Newtonsoft.Json;
-using StackExchange.Redis;
-using System.Data;
+﻿using StackExchange.Redis;
 
 namespace Db.Model
 {
-    public class ItemKey : IRedisCacheKey
+    public class ItemKey : BaseModel, IRedisHashKey
     {
         public required uint Owner { get; set; }
         public short Index { get; set; }
@@ -27,7 +21,6 @@ namespace Db.Model
         public required uint? Durability { get; set; }
         public required string CustomName { get; set; }
         public required bool Deleted { get; set; }
-
         public ItemKey Key => new ItemKey
         {
             Owner = Owner,

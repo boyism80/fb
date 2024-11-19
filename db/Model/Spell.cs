@@ -1,11 +1,8 @@
-﻿using Db.Reepository;
-using Db.Service;
-using http.Service;
-using StackExchange.Redis;
+﻿using StackExchange.Redis;
 
 namespace Db.Model
 {
-    public class SpellKey : IRedisCacheKey
+    public class SpellKey : BaseModel, IRedisHashKey
     {
         public required uint Owner { get; set; }
         public byte Slot { get; set; }
