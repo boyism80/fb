@@ -446,17 +446,17 @@ bool context::init_ch(const fb::protocol::db::Character&   response,
 
 void context::init_option(const fb::protocol::db::Option& response, fb::game::character& session)
 {
-    session.option(SETTING::WHISPER, response.whisper);
-    session.option(SETTING::GROUP, response.group);
-    session.option(SETTING::ROAR, response.roar);
-    session.option(SETTING::ROAR_WORLDS, response.roar_worlds);
-    session.option(SETTING::MAGIC_EFFECT, response.magic_effect);
-    session.option(SETTING::WEATHER_EFFECT, response.weather_effect);
-    session.option(SETTING::FIXED_MOVE, response.fixed_move);
-    session.option(SETTING::TRADE, response.trade);
-    session.option(SETTING::FAST_MOVE, response.fast_move);
-    session.option(SETTING::EFFECT_SOUND, response.effect_sound);
-    session.option(SETTING::PK_PROTECT, response.pk_protect);
+    session.option(SETTING::WHISPER, response.whisper, false);
+    session.option(SETTING::GROUP, response.group, false);
+    session.option(SETTING::ROAR, response.roar, false);
+    session.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
+    session.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
+    session.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
+    session.option(SETTING::FIXED_MOVE, response.fixed_move, false);
+    session.option(SETTING::TRADE, response.trade, false);
+    session.option(SETTING::FAST_MOVE, response.fast_move, false);
+    session.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
+    session.option(SETTING::PK_PROTECT, response.pk_protect, false);
 }
 
 void context::init_items(const std::vector<fb::protocol::db::Item>& response, character& session)

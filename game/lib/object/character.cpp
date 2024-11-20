@@ -994,7 +994,7 @@ bool character::option(SETTING key) const
     return this->_options[opt];
 }
 
-void character::option(SETTING key, bool value)
+void character::option(SETTING key, bool value, bool notify)
 {
     auto opt = static_cast<uint8_t>(key);
     if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
@@ -1004,7 +1004,7 @@ void character::option(SETTING key, bool value)
         return;
 
     auto listener = this->get_listener<character>();
-    if (listener != nullptr)
+    if (listener != nullptr && notify)
     {
         listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
         listener->on_option(*this, key, value);
@@ -1013,13 +1013,13 @@ void character::option(SETTING key, bool value)
     this->_options[opt] = value;
 }
 
-bool character::option_toggle(SETTING key)
+bool character::option_toggle(SETTING key, bool notify)
 {
     auto opt = static_cast<uint8_t>(key);
     if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
-    this->option(key, !this->_options[opt]);
+    this->option(key, !this->_options[opt], notify);
     return this->_options[opt];
 }
 

@@ -895,19 +895,21 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  key    The key
-     * @param[in]  value  The value
+     * @param[in]  key     The key
+     * @param[in]  value   The value
+     * @param[in]  notify  The notify
      */
-    void option(SETTING key, bool value);
+    void option(SETTING key, bool value, bool notify = true);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  key   The key
+     * @param[in]  key     The key
+     * @param[in]  notify  The notify
      *
      * @return     { description_of_the_return_value }
      */
-    bool option_toggle(SETTING key);
+    bool option_toggle(SETTING key, bool notify = true);
 
     /**
      * @brief      { function_description }
