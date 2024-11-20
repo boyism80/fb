@@ -29,6 +29,12 @@ module.exports = {
                             "Port": conf.redis[sectionConf.redis].port.cluster
                         }
                     ]
+                },
+                "RabbitMQ": {
+                    "Host": "rabbitmq",
+                    "Port": conf.rabbitmq[sectionConf.redis].port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin"
                 }
             }
 

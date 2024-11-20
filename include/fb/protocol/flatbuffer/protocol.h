@@ -12,6 +12,8 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.option_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.articlesummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.article_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.group_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.groupmember_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.account_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.changepw_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.initcharacter_generated.h>
@@ -25,6 +27,9 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.writearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.deletearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.setoption_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.creategroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.entergroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.request.leavegroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.deletearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getarticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.getarticlelist_generated.h>
@@ -38,6 +43,9 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.reservename_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.save_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.setoption_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.creategroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.entergroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.db.response.leavegroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.service_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.transferresult_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.login_generated.h>
@@ -62,6 +70,8 @@ namespace fb::protocol::db
     class Option;
     class ArticleSummary;
     class Article;
+    class Group;
+    class GroupMember;
 } // end of namespace fb::protocol::db
 namespace fb::protocol::db::request
 {
@@ -78,6 +88,9 @@ namespace fb::protocol::db::request
     class WriteArticle;
     class DeleteArticle;
     class SetOption;
+    class CreateGroup;
+    class EnterGroup;
+    class LeaveGroup;
 } // end of namespace fb::protocol::db::request
 namespace fb::protocol::db::response
 {
@@ -94,6 +107,9 @@ namespace fb::protocol::db::response
     class ReserveName;
     class Save;
     class SetOption;
+    class CreateGroup;
+    class EnterGroup;
+    class LeaveGroup;
 } // end of namespace fb::protocol::db::response
 namespace fb::protocol::internal
 {
@@ -215,6 +231,8 @@ template <> struct FlatBufferOffset<fb::protocol::db::Spell> { typedef flatbuffe
 template <> struct FlatBufferOffset<fb::protocol::db::Option> { typedef flatbuffers::Offset<fb::protocol::db::raw::Option> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::Article> { typedef flatbuffers::Offset<fb::protocol::db::raw::Article> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::Group> { typedef flatbuffers::Offset<fb::protocol::db::raw::Group> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::GroupMember> { typedef flatbuffers::Offset<fb::protocol::db::raw::GroupMember> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::Account> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::Account> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::ChangePw> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::ChangePw> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::InitCharacter> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::InitCharacter> type; };
@@ -228,6 +246,9 @@ template <> struct FlatBufferOffset<fb::protocol::db::request::GetArticleList> {
 template <> struct FlatBufferOffset<fb::protocol::db::request::WriteArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::WriteArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::request::SetOption> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::SetOption> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::CreateGroup> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::CreateGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::EnterGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::request::LeaveGroup> { typedef flatbuffers::Offset<fb::protocol::db::request::raw::LeaveGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticle> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::GetArticleList> type; };
@@ -241,6 +262,9 @@ template <> struct FlatBufferOffset<fb::protocol::db::response::MakeCharacter> {
 template <> struct FlatBufferOffset<fb::protocol::db::response::ReserveName> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::ReserveName> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::Save> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::Save> type; };
 template <> struct FlatBufferOffset<fb::protocol::db::response::SetOption> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::SetOption> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::CreateGroup> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::CreateGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::EnterGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::db::response::LeaveGroup> { typedef flatbuffers::Offset<fb::protocol::db::response::raw::LeaveGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> type; };
@@ -277,6 +301,10 @@ flatbuffers::Offset<fb::protocol::db::raw::ArticleSummary> build<fb::protocol::d
 template <>
 flatbuffers::Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Article>(FlatBufferBuilder& builder, const fb::protocol::db::Article& value);
 template <>
+flatbuffers::Offset<fb::protocol::db::raw::Group> build<fb::protocol::db::Group>(FlatBufferBuilder& builder, const fb::protocol::db::Group& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::raw::GroupMember> build<fb::protocol::db::GroupMember>(FlatBufferBuilder& builder, const fb::protocol::db::GroupMember& value);
+template <>
 flatbuffers::Offset<fb::protocol::db::request::raw::Account> build<fb::protocol::db::request::Account>(FlatBufferBuilder& builder, const fb::protocol::db::request::Account& value);
 template <>
 flatbuffers::Offset<fb::protocol::db::request::raw::ChangePw> build<fb::protocol::db::request::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::db::request::ChangePw& value);
@@ -303,6 +331,12 @@ flatbuffers::Offset<fb::protocol::db::request::raw::DeleteArticle> build<fb::pro
 template <>
 flatbuffers::Offset<fb::protocol::db::request::raw::SetOption> build<fb::protocol::db::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::db::request::SetOption& value);
 template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::CreateGroup> build<fb::protocol::db::request::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::db::request::CreateGroup& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::EnterGroup> build<fb::protocol::db::request::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::db::request::EnterGroup& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::LeaveGroup> build<fb::protocol::db::request::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::db::request::LeaveGroup& value);
+template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value);
 template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::GetArticle> build<fb::protocol::db::response::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::GetArticle& value);
@@ -328,6 +362,12 @@ template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::Save> build<fb::protocol::db::response::Save>(FlatBufferBuilder& builder, const fb::protocol::db::response::Save& value);
 template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::SetOption> build<fb::protocol::db::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::db::response::SetOption& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::CreateGroup> build<fb::protocol::db::response::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::db::response::CreateGroup& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::EnterGroup> build<fb::protocol::db::response::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::db::response::EnterGroup& value);
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::LeaveGroup> build<fb::protocol::db::response::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::db::response::LeaveGroup& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <>
@@ -386,6 +426,8 @@ enum class FlatBufferProtocolType
     Option,
     ArticleSummary,
     Article,
+    Group,
+    GroupMember,
 };
 
 class Position
@@ -725,6 +767,86 @@ public:
         return Article(*raw);
     }
 };
+class Group
+{
+public:
+    static inline fb::protocol::db::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::FlatBufferProtocolType::Group;
+
+public:
+    uint32_t master = 0;
+    std::vector<fb::protocol::db::GroupMember> members = {};
+
+public:
+    Group() = default;
+
+    Group(const Group& x)
+        : master(x.master), members(x.members)
+    { }
+
+    Group(uint32_t master, std::vector<fb::protocol::db::GroupMember> members)
+        : master(master), members(members)
+    { }
+
+    Group(const fb::protocol::db::raw::Group& raw)
+        : master(raw.master()), members(unpack<fb::protocol::db::GroupMember>(raw.members()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::Group>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Group Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::raw::GetGroup(bytes);
+        return Group(*raw);
+    }
+};
+class GroupMember
+{
+public:
+    static inline fb::protocol::db::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::FlatBufferProtocolType::GroupMember;
+
+public:
+    uint32_t uid = 0;
+    std::string name;
+
+public:
+    GroupMember() = default;
+
+    GroupMember(const GroupMember& x)
+        : uid(x.uid), name(x.name)
+    { }
+
+    GroupMember(uint32_t uid, const std::string& name)
+        : uid(uid), name(name)
+    { }
+
+    GroupMember(const fb::protocol::db::raw::GroupMember& raw)
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::GroupMember>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static GroupMember Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::raw::GetGroupMember(bytes);
+        return GroupMember(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::db
 
@@ -745,6 +867,9 @@ enum class FlatBufferProtocolType
     WriteArticle,
     DeleteArticle,
     SetOption,
+    CreateGroup,
+    EnterGroup,
+    LeaveGroup,
 };
 
 class Account
@@ -1280,6 +1405,128 @@ public:
         return SetOption(*raw);
     }
 };
+class CreateGroup
+{
+public:
+    static inline fb::protocol::db::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::request::FlatBufferProtocolType::CreateGroup;
+
+public:
+    uint32_t master = 0;
+    uint32_t member = 0;
+    uint8_t host = 0;
+
+public:
+    CreateGroup() = default;
+
+    CreateGroup(const CreateGroup& x)
+        : master(x.master), member(x.member), host(x.host)
+    { }
+
+    CreateGroup(uint32_t master, uint32_t member, uint8_t host)
+        : master(master), member(member), host(host)
+    { }
+
+    CreateGroup(const fb::protocol::db::request::raw::CreateGroup& raw)
+        : master(raw.master()), member(raw.member()), host(raw.host())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::request::CreateGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static CreateGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::request::raw::GetCreateGroup(bytes);
+        return CreateGroup(*raw);
+    }
+};
+class EnterGroup
+{
+public:
+    static inline fb::protocol::db::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::request::FlatBufferProtocolType::EnterGroup;
+
+public:
+    std::string id;
+    uint32_t member = 0;
+    uint8_t host = 0;
+
+public:
+    EnterGroup() = default;
+
+    EnterGroup(const EnterGroup& x)
+        : id(x.id), member(x.member), host(x.host)
+    { }
+
+    EnterGroup(const std::string& id, uint32_t member, uint8_t host)
+        : id(id), member(member), host(host)
+    { }
+
+    EnterGroup(const fb::protocol::db::request::raw::EnterGroup& raw)
+        : id(flatbuffers::option::decode(raw.id()->c_str())), member(raw.member()), host(raw.host())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::request::EnterGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static EnterGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::request::raw::GetEnterGroup(bytes);
+        return EnterGroup(*raw);
+    }
+};
+class LeaveGroup
+{
+public:
+    static inline fb::protocol::db::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::request::FlatBufferProtocolType::LeaveGroup;
+
+public:
+    uint32_t member = 0;
+    uint8_t host = 0;
+
+public:
+    LeaveGroup() = default;
+
+    LeaveGroup(const LeaveGroup& x)
+        : member(x.member), host(x.host)
+    { }
+
+    LeaveGroup(uint32_t member, uint8_t host)
+        : member(member), host(host)
+    { }
+
+    LeaveGroup(const fb::protocol::db::request::raw::LeaveGroup& raw)
+        : member(raw.member()), host(raw.host())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::request::LeaveGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static LeaveGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::request::raw::GetLeaveGroup(bytes);
+        return LeaveGroup(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::db::request
 
@@ -1300,6 +1547,9 @@ enum class FlatBufferProtocolType
     ReserveName,
     Save,
     SetOption,
+    CreateGroup,
+    EnterGroup,
+    LeaveGroup,
 };
 
 class DeleteArticle
@@ -1628,20 +1878,21 @@ public:
     std::vector<fb::protocol::db::Item> items = {};
     std::vector<fb::protocol::db::Spell> spells = {};
     fb::protocol::db::Option option;
+    fb::protocol::db::Group group;
 
 public:
     Login() = default;
 
     Login(const Login& x)
-        : character(x.character), items(x.items), spells(x.spells), option(x.option)
+        : character(x.character), items(x.items), spells(x.spells), option(x.option), group(x.group)
     { }
 
-    Login(const fb::protocol::db::Character& character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells, const fb::protocol::db::Option& option)
-        : character(character), items(items), spells(spells), option(option)
+    Login(const fb::protocol::db::Character& character, std::vector<fb::protocol::db::Item> items, std::vector<fb::protocol::db::Spell> spells, const fb::protocol::db::Option& option, const fb::protocol::db::Group& group)
+        : character(character), items(items), spells(spells), option(option), group(group)
     { }
 
     Login(const fb::protocol::db::response::raw::Login& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::db::Item>(raw.items())), spells(unpack<fb::protocol::db::Spell>(raw.spells())), option(*raw.option())
+        : character(*raw.character()), items(unpack<fb::protocol::db::Item>(raw.items())), spells(unpack<fb::protocol::db::Spell>(raw.spells())), option(*raw.option()), group(*raw.group())
     { }
 
 public:
@@ -1815,6 +2066,131 @@ public:
     {
         auto raw = fb::protocol::db::response::raw::GetSetOption(bytes);
         return SetOption(*raw);
+    }
+};
+class CreateGroup
+{
+public:
+    static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::CreateGroup;
+
+public:
+    fb::protocol::db::Group group;
+    uint8_t host = 0;
+    uint32_t error = 0;
+
+public:
+    CreateGroup() = default;
+
+    CreateGroup(const CreateGroup& x)
+        : group(x.group), host(x.host), error(x.error)
+    { }
+
+    CreateGroup(const fb::protocol::db::Group& group, uint8_t host, uint32_t error)
+        : group(group), host(host), error(error)
+    { }
+
+    CreateGroup(const fb::protocol::db::response::raw::CreateGroup& raw)
+        : group(*raw.group()), host(raw.host()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::response::CreateGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static CreateGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::response::raw::GetCreateGroup(bytes);
+        return CreateGroup(*raw);
+    }
+};
+class EnterGroup
+{
+public:
+    static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::EnterGroup;
+
+public:
+    std::string id;
+    fb::protocol::db::GroupMember member;
+    uint8_t host = 0;
+    uint32_t error = 0;
+
+public:
+    EnterGroup() = default;
+
+    EnterGroup(const EnterGroup& x)
+        : id(x.id), member(x.member), host(x.host), error(x.error)
+    { }
+
+    EnterGroup(const std::string& id, const fb::protocol::db::GroupMember& member, uint8_t host, uint32_t error)
+        : id(id), member(member), host(host), error(error)
+    { }
+
+    EnterGroup(const fb::protocol::db::response::raw::EnterGroup& raw)
+        : id(flatbuffers::option::decode(raw.id()->c_str())), member(*raw.member()), host(raw.host()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::response::EnterGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static EnterGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::response::raw::GetEnterGroup(bytes);
+        return EnterGroup(*raw);
+    }
+};
+class LeaveGroup
+{
+public:
+    static inline fb::protocol::db::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::db::response::FlatBufferProtocolType::LeaveGroup;
+
+public:
+    std::string id;
+    fb::protocol::db::GroupMember member;
+    uint8_t host = 0;
+    uint32_t error = 0;
+
+public:
+    LeaveGroup() = default;
+
+    LeaveGroup(const LeaveGroup& x)
+        : id(x.id), member(x.member), host(x.host), error(x.error)
+    { }
+
+    LeaveGroup(const std::string& id, const fb::protocol::db::GroupMember& member, uint8_t host, uint32_t error)
+        : id(id), member(member), host(host), error(error)
+    { }
+
+    LeaveGroup(const fb::protocol::db::response::raw::LeaveGroup& raw)
+        : id(flatbuffers::option::decode(raw.id()->c_str())), member(*raw.member()), host(raw.host()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::db::response::LeaveGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static LeaveGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::db::response::raw::GetLeaveGroup(bytes);
+        return LeaveGroup(*raw);
     }
 };
 
@@ -2505,6 +2881,20 @@ flatbuffers::Offset<fb::protocol::db::raw::Article> build<fb::protocol::db::Arti
             flatbuffers::build<std::string>(builder, value.created_date));
 }
 template <>
+flatbuffers::Offset<fb::protocol::db::raw::Group> build<fb::protocol::db::Group>(FlatBufferBuilder& builder, const fb::protocol::db::Group& value)
+{
+    return fb::protocol::db::raw::CreateGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.master),
+            flatbuffers::build<std::vector<fb::protocol::db::GroupMember>>(builder, value.members));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::raw::GroupMember> build<fb::protocol::db::GroupMember>(FlatBufferBuilder& builder, const fb::protocol::db::GroupMember& value)
+{
+    return fb::protocol::db::raw::CreateGroupMember(builder,
+            flatbuffers::build<uint32_t>(builder, value.uid),
+            flatbuffers::build<std::string>(builder, value.name));
+}
+template <>
 flatbuffers::Offset<fb::protocol::db::request::raw::Account> build<fb::protocol::db::request::Account>(FlatBufferBuilder& builder, const fb::protocol::db::request::Account& value)
 {
     return fb::protocol::db::request::raw::CreateAccount(builder,
@@ -2609,6 +2999,29 @@ flatbuffers::Offset<fb::protocol::db::request::raw::SetOption> build<fb::protoco
             flatbuffers::build<bool>(builder, value.enabled));
 }
 template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::CreateGroup> build<fb::protocol::db::request::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::db::request::CreateGroup& value)
+{
+    return fb::protocol::db::request::raw::CreateCreateGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.master),
+            flatbuffers::build<uint32_t>(builder, value.member),
+            flatbuffers::build<uint8_t>(builder, value.host));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::EnterGroup> build<fb::protocol::db::request::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::db::request::EnterGroup& value)
+{
+    return fb::protocol::db::request::raw::CreateEnterGroup(builder,
+            flatbuffers::build<std::string>(builder, value.id),
+            flatbuffers::build<uint32_t>(builder, value.member),
+            flatbuffers::build<uint8_t>(builder, value.host));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::request::raw::LeaveGroup> build<fb::protocol::db::request::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::db::request::LeaveGroup& value)
+{
+    return fb::protocol::db::request::raw::CreateLeaveGroup(builder,
+            flatbuffers::build<uint32_t>(builder, value.member),
+            flatbuffers::build<uint8_t>(builder, value.host));
+}
+template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::DeleteArticle> build<fb::protocol::db::response::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::db::response::DeleteArticle& value)
 {
     return fb::protocol::db::response::raw::CreateDeleteArticle(builder,
@@ -2667,7 +3080,8 @@ flatbuffers::Offset<fb::protocol::db::response::raw::Login> build<fb::protocol::
             flatbuffers::build<fb::protocol::db::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::db::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::db::Spell>>(builder, value.spells),
-            flatbuffers::build<fb::protocol::db::Option>(builder, value.option));
+            flatbuffers::build<fb::protocol::db::Option>(builder, value.option),
+            flatbuffers::build<fb::protocol::db::Group>(builder, value.group));
 }
 template <>
 flatbuffers::Offset<fb::protocol::db::response::raw::MakeCharacter> build<fb::protocol::db::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::db::response::MakeCharacter& value)
@@ -2693,6 +3107,32 @@ flatbuffers::Offset<fb::protocol::db::response::raw::SetOption> build<fb::protoc
 {
     return fb::protocol::db::response::raw::CreateSetOption(builder,
             flatbuffers::build<bool>(builder, value.success));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::CreateGroup> build<fb::protocol::db::response::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::db::response::CreateGroup& value)
+{
+    return fb::protocol::db::response::raw::CreateCreateGroup(builder,
+            flatbuffers::build<fb::protocol::db::Group>(builder, value.group),
+            flatbuffers::build<uint8_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::EnterGroup> build<fb::protocol::db::response::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::db::response::EnterGroup& value)
+{
+    return fb::protocol::db::response::raw::CreateEnterGroup(builder,
+            flatbuffers::build<std::string>(builder, value.id),
+            flatbuffers::build<fb::protocol::db::GroupMember>(builder, value.member),
+            flatbuffers::build<uint8_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::db::response::raw::LeaveGroup> build<fb::protocol::db::response::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::db::response::LeaveGroup& value)
+{
+    return fb::protocol::db::response::raw::CreateLeaveGroup(builder,
+            flatbuffers::build<std::string>(builder, value.id),
+            flatbuffers::build<fb::protocol::db::GroupMember>(builder, value.member),
+            flatbuffers::build<uint8_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)

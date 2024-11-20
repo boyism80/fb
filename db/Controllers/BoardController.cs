@@ -1,8 +1,4 @@
-﻿using Dapper;
-using db.Model;
-using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
-using System.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using Request = fb.protocol.db.request;
 using Response = fb.protocol.db.response;
 

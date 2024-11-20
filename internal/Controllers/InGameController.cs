@@ -2,7 +2,6 @@
 using http.Redis;
 using http.Service;
 using Internal.Model.Redis;
-using Internal.Redis;
 using Internal.Redis.Key;
 using Internal.Service;
 using Microsoft.AspNetCore.Mvc;

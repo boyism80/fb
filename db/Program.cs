@@ -1,4 +1,6 @@
 using AutoMapper;
+using Dapper;
+using Db.Extension;
 using Db.Formatter;
 using Db.Service;
 using fb.protocol.db;
@@ -12,6 +14,7 @@ namespace db
         public static void Main(string[] args)
         {
             Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+            SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
 
             var config = new MapperConfiguration(cfg =>
             {
@@ -48,6 +51,7 @@ namespace db
                 opt.OutputFormatters.Insert(0, new FlatBufferOutputFormatter());
             });
             builder.Services.AddSingleton<RedisService>();
+            builder.Services.AddSingleton<RabbitMqService>();
             builder.Services.AddSingleton<Fb.Model.Model>();
             builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
             builder.Services.AddScoped<DbContext>();

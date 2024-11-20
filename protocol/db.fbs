@@ -91,3 +91,13 @@ table Article {
     contents: string;
     created_date: string;
 }
+
+table Group {
+    master: uint;
+    members: [GroupMember];
+}
+
+table GroupMember {
+    uid: uint;
+    name: string;
+}

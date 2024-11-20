@@ -90,3 +90,20 @@ table SetOption {
   type: ubyte;
   enabled: bool;
 }
+
+table CreateGroup {
+  master: uint;
+  member: uint;
+  host: ubyte;
+}
+
+table EnterGroup {
+  id: string;
+  member: uint;
+  host: ubyte;
+}
+
+table LeaveGroup {
+  member: uint;
+  host: ubyte;
+}

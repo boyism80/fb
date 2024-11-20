@@ -1,5 +1,4 @@
-﻿using Db.Model;
-using Db.Reepository;
+﻿using Db.Reepository;
 using MySqlConnector;
 
 namespace Db.Service
@@ -14,6 +13,7 @@ namespace Db.Service
         public ItemRepository Item => Bind<ItemRepository>();
         public SpellRepository Spell => Bind<SpellRepository>();
         public OptionRepository Option => Bind<OptionRepository>();
+        public GroupRepository Group => Bind<GroupRepository>();
 
         public uint SharedDbSize
         {

@@ -2,7 +2,7 @@
 using http.Util;
 using RabbitMQ.Client;
 
-namespace Internal.Service
+namespace http.Service
 {
     public class RabbitMqService
     {

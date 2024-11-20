@@ -51,6 +51,7 @@ table Login {
   items: [fb.protocol.db.Item];
   spells: [fb.protocol.db.Spell];
   option: fb.protocol.db.Option;
+  group: fb.protocol.db.Group;
 }
 
 
@@ -71,4 +72,25 @@ table Save {
 
 table SetOption {
   success: bool;
+}
+
+table CreateGroup {
+  group: fb.protocol.db.Group;
+  host: ubyte;
+  error: uint;
+}
+
+
+table EnterGroup {
+  id: string;
+  member: fb.protocol.db.GroupMember;
+  host: ubyte;
+  error: uint;
+}
+
+table LeaveGroup {
+  id: string;
+  member: fb.protocol.db.GroupMember;
+  host: ubyte;
+  error: uint;
 }
