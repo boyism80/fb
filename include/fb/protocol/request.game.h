@@ -342,6 +342,7 @@ public:
 
 public:
     SETTING option;
+    bool    ride = false;
 
 public:
     change_option() = default;
@@ -349,7 +350,11 @@ public:
 public:
     void deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->option = SETTING(reader.read<uint8_t>());
+        this->option = static_cast<SETTING>(reader.read<uint8_t>());
+        if (this->option == SETTING::EXTENSION)
+        {
+            this->ride = reader.read<bool>();
+        }
     }
 };
 

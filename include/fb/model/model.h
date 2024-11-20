@@ -1580,7 +1580,7 @@ inline const char* enum_tostring<REGEX>(REGEX k)
 
 enum class SETTING
 {
-    RIDE = 0x00, 
+    EXTENSION = 0x00, 
     WHISPER = 0x01, 
     GROUP = 0x02, 
     ROAR = 0x03, 
@@ -1599,7 +1599,7 @@ inline SETTING enum_parse<SETTING>(const std::string k)
 {
     static const std::unordered_map<std::string, SETTING> enums
     {
-        { "RIDE", SETTING::RIDE }, 
+        { "EXTENSION", SETTING::EXTENSION }, 
         { "WHISPER", SETTING::WHISPER }, 
         { "GROUP", SETTING::GROUP }, 
         { "ROAR", SETTING::ROAR }, 
@@ -1625,7 +1625,7 @@ inline const char* enum_tostring<SETTING>(SETTING k)
 {
     static const std::unordered_map<SETTING, const char*> enums
     {
-        { SETTING::RIDE, "RIDE" }, 
+        { SETTING::EXTENSION, "EXTENSION" }, 
         { SETTING::WHISPER, "WHISPER" }, 
         { SETTING::GROUP, "GROUP" }, 
         { SETTING::ROAR, "ROAR" }, 
@@ -2594,8 +2594,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "REGEX_HOLD_ITEM_LIST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::HOLD_ITEM_COUNT);
     lua_setglobal(lua, "REGEX_HOLD_ITEM_COUNT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::RIDE);
-    lua_setglobal(lua, "SETTING_RIDE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::EXTENSION);
+    lua_setglobal(lua, "SETTING_EXTENSION");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::WHISPER);
     lua_setglobal(lua, "SETTING_WHISPER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::GROUP);

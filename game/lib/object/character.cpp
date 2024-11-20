@@ -987,18 +987,20 @@ void character::regenerative(uint8_t value)
 
 bool character::option(SETTING key) const
 {
-    if (static_cast<int>(key) > 0x1B)
-        return false;
+    auto opt = static_cast<uint8_t>(key);
+    if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
+        throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
-    return this->_options[static_cast<int>(key)];
+    return this->_options[opt];
 }
 
 void character::option(SETTING key, bool value)
 {
-    if (static_cast<int>(key) > 0x1B)
+    auto opt = static_cast<uint8_t>(key);
+    if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
         return;
 
-    if (this->_options[static_cast<int>(key)] == value)
+    if (this->_options[opt] == value)
         return;
 
     auto listener = this->get_listener<character>();
@@ -1008,16 +1010,17 @@ void character::option(SETTING key, bool value)
         listener->on_option(*this, key, value);
     }
 
-    this->_options[static_cast<int>(key)] = value;
+    this->_options[opt] = value;
 }
 
 bool character::option_toggle(SETTING key)
 {
-    if (static_cast<int>(key) > 0x1B)
-        return false;
+    auto opt = static_cast<uint8_t>(key);
+    if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
+        throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
-    this->option(key, !this->_options[static_cast<int>(key)]);
-    return this->_options[static_cast<int>(key)];
+    this->option(key, !this->_options[opt]);
+    return this->_options[opt];
 }
 
 const std::string& character::title() const

@@ -505,8 +505,8 @@ namespace Fb.Model.EnumValue
     [JsonConverter(typeof(StringEnumConverter))]
     public enum Setting
     {
-        [EnumMember(Value = "RIDE")]
-        Ride = 0x00, 
+        [EnumMember(Value = "EXTENSION")]
+        Extension = 0x00, 
         [EnumMember(Value = "WHISPER")]
         Whisper = 0x01, 
         [EnumMember(Value = "GROUP")]

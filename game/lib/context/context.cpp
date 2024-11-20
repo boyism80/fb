@@ -1116,16 +1116,19 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         co_return true;
 
     auto option = SETTING(request.option);
+    switch (option)
+    {
+    case SETTING::EXTENSION:
+        if (request.ride)
+        {
+            if (session->state() == STATE::RIDING)
+                co_await session->unride();
+            else
+                co_await session->ride();
+        }
+        break;
 
-    if (option == SETTING::RIDE)
-    {
-        if (session->state() == STATE::RIDING)
-            co_await session->unride();
-        else
-            co_await session->ride();
-    }
-    else
-    {
+    default:
         auto   enabled = session->option_toggle(option);
         auto&& response =
             co_await this->post<fb::protocol::db::request::SetOption, fb::protocol::db::response::SetOption>(
@@ -1135,6 +1138,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
 
         if (response.success == false)
             session->message("설정을 변경하지 못했습니다.");
+        break;
     }
     co_return true;
 }
