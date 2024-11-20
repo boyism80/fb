@@ -1,8 +1,6 @@
 #ifndef __REGEX_H__
 #define __REGEX_H__
 
-#include <string>
-#include <optional>
 #include <fb/model/model.h>
 
 namespace fb { namespace game { namespace regex {

@@ -1,8 +1,6 @@
 #ifndef __MUTEX_H__
 #define __MUTEX_H__
 
-#include <map>
-#include <mutex>
 #include <fb/abstract.h>
 #include <fb/concurrent.h>
 

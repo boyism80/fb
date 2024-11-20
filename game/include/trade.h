@@ -1,7 +1,6 @@
 #ifndef __TRADE_H__
 #define __TRADE_H__
 
-#include <vector>
 #include <fb/stream.h>
 
 namespace fb { namespace game {

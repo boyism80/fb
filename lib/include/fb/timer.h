@@ -1,7 +1,6 @@
 #ifndef __TIMER_H__
 #define __TIMER_H__
 
-#include <chrono>
 #include <fb/model/datetime.h>
 
 using namespace std::chrono_literals;

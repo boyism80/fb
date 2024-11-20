@@ -1,4 +1,3 @@
-#include "resource.h"
 #include <context.h>
 #include <fb/socket.h>
 #include <iomanip>
@@ -10,6 +9,8 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #ifndef _WIN32
 #include <execinfo.h>
+#else
+#include "resource.h"
 #endif
 
 using namespace fb;

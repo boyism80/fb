@@ -4,14 +4,11 @@
 #include <exception>
 #include <map>
 #include <deque>
-#include <mutex>
-#include <optional>
 #include <boost/asio.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/system/error_code.hpp>
 #include <fb/protocol/protocol.h>
 #include <fb/cryptor.h>
-#include <fb/stream.h>
 #include <fb/logger.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>

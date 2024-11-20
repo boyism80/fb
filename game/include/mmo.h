@@ -2,10 +2,7 @@
 #define __MMO_TYPE_H__
 
 #include <stdint.h>
-#include <string>
-#include <vector>
 #include <fb/socket.h>
-#include <fb/stream.h>
 
 #ifndef interface
 #define interface struct

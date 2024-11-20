@@ -1,20 +1,12 @@
 #ifndef __BOT_H__
 #define __BOT_H__
 
-#include <map>
-#include <boost/asio.hpp>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
 #include <random>
-#include <sstream>
-#include <fb/stream.h>
 #include <fb/socket.h>
 #include <fb/thread.h>
 #include <fb/protocol/gateway.h>
 #include <fb/protocol/login.h>
 #include <fb/protocol/game.h>
-#include <fb/model/datetime.h>
 
 using namespace std::chrono_literals;
 

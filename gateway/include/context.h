@@ -2,14 +2,8 @@
 #define __FB_GATEWAY_H__
 
 #include <fb/acceptor.h>
-#include <fb/config.h>
 #include <session.h>
 #include <util.h>
-#include <zlib.h>
-#include <memory>
-#include <fb/protocol/gateway.h>
-#include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/encoding.h>
 
 using namespace fb::protocol::internal;
 

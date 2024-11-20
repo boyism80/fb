@@ -1,11 +1,7 @@
 #ifndef __NPC_H__
 #define __NPC_H__
 
-#include <object.h>
 #include <item.h>
-#include <fb/encoding.h>
-#include <format>
-#include <optional>
 
 namespace fb { namespace game {
 

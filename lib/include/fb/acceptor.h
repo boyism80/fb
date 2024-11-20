@@ -1,26 +1,13 @@
 #ifndef __FB_ACCEPTOR_H__
 #define __FB_ACCEPTOR_H__
 
-#include <async/awaitable_get.h>
-#include <async/task.h>
-#include <async/task_completion_source.h>
-#include <chrono>
 #include <ctime>
-#include <fb/abstract.h>
-#include <fb/logger.h>
-#include <fb/model/datetime.h>
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/protocol/protocol.h>
 #include <fb/redis.h>
 #include <fb/socket.h>
-#include <fb/stream.h>
-#include <functional>
 #include <httplib.h>
 #include <iomanip>
-#include <map>
-#include <queue>
-#include <zlib.h>
 
 using namespace std::chrono_literals;
 

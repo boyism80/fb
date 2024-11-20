@@ -14,9 +14,7 @@
 #include <rabbitmq-c/amqp.h>
 #include <rabbitmq-c/tcp_socket.h>
 #include <stdexcept>
-#include <string>
 #include <unordered_map>
-#include <vector>
 
 namespace fb { namespace amqp {
 

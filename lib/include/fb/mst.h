@@ -1,13 +1,9 @@
 #ifndef __MST_H__
 #define __MST_H__
 
-#include <vector>
-#include <string>
-#include <memory>
 #include <queue>
 #include <list>
 #include <set>
-#include <sstream>
 #include <boost/algorithm/string/join.hpp>
 #include <fb/logger.h>
 

@@ -1,16 +1,9 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
-#include <stdint.h>
-#include <string>
 #include <stdexcept>
-#include <sstream>
-#include <zlib.h>
-#include <memory>
 #include <door.h>
 #include <sector.h>
-#include <fb/stream.h>
-#include <fb/config.h>
 #include <fb/container.h>
 
 namespace fb { namespace game {

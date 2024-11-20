@@ -1,7 +1,6 @@
 #ifndef __DOOR_H__
 #define __DOOR_H__
 
-#include <vector>
 #include <mmo.h>
 #include <lua.h>
 #include <fb/model/model.h>

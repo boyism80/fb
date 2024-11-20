@@ -1,8 +1,6 @@
 #ifndef __BOARD_H__
 #define __BOARD_H__
 
-#include <string>
-#include <vector>
 #include <ctime>
 #include <character.h>
 

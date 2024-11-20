@@ -1,15 +1,12 @@
 #ifndef __REDIS_H__
 #define __REDIS_H__
 
-#include <functional>
-#include <set>
 #include <cpp_redis/cpp_redis>
 #include <fb/abstract.h>
 #include <fb/concurrent.h>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <async/task_completion_source.h>
 
 namespace fb {
 

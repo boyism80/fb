@@ -1,4 +1,3 @@
-#include "resource.h"
 #include <context.h>
 #include <fb/config.h>
 #include <fb/console.h>
@@ -7,6 +6,8 @@
 #include <fb/model/loader.h>
 #ifndef _WIN32
 #include <execinfo.h>
+#else
+#include "resource.h"
 #endif
 
 using namespace fb;

@@ -1,19 +1,10 @@
 #ifndef __FB_LOGIN_H__
 #define __FB_LOGIN_H__
 
-#include <string>
-#include <iostream>
-#include <memory>
-#include <fstream>
-#include <jsoncpp/json/json.h>
 #include <regex>
-#include <ctime>
-#include <zlib.h>
-#include <fb/socket.h>
 #include <session.h>
 #include <gateway.h>
 #include <fb/protocol/login.h>
-#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/acceptor.h>
 #include <fb/string.h>
 #include <fb/model/model.h>

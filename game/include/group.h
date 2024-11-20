@@ -2,7 +2,6 @@
 #define __GROUP_H__
 
 #include <character.h>
-// #include <lua.h>
 
 namespace fb { namespace game {
 

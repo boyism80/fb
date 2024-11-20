@@ -1,19 +1,9 @@
 #ifndef __CHARACTER_H__
 #define __CHARACTER_H__
 
-#include <algorithm>
-#include <dialog.h>
-#include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/socket.h>
 #include <fb/string.h>
-#include <iostream>
-#include <item.h>
+#include <dialog.h>
 #include <mob.h>
-#include <npc.h>
-#include <optional>
-#include <spell.h>
-#include <sstream>
-#include <stdint.h>
 #include <trade.h>
 
 namespace fb { namespace game {

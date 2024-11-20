@@ -1,10 +1,11 @@
-#include "resource.h"
 #include <context.h>
 #include <fb/leak.h>
 #include <fb/mst.h>
 #include <worker.h>
 #ifndef _WIN32
 #include <execinfo.h>
+#else
+#include "resource.h"
 #endif
 
 using namespace fb;

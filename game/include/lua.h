@@ -8,14 +8,9 @@ extern "C"
 #include <lua/lauxlib.h>
 }
 
-#include <vector>
-#include <string>
-#include <map>
 #include <list>
 #include <random>
 #include <fb/socket.h>
-#include <fb/encoding.h>
-#include <fb/logger.h>
 
 #define LUA_PROTOTYPE                                \
     static const struct luaL_Reg LUA_METHODS[];      \

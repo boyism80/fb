@@ -1,13 +1,9 @@
 #ifndef __FB_STREAM_H__
 #define __FB_STREAM_H__
 
-#include <cstdint>
 #include <iostream>
-#include <vector>
 #include <algorithm>
-#include <string>
 #include <zlib.h>
-#include <cstring> // std::memcpy
 #ifdef __linux__
 #include <sys/types.h>
 #endif

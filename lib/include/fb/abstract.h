@@ -1,7 +1,6 @@
 #ifndef __ABSTRACT_H__
 #define __ABSTRACT_H__
 
-#include <boost/asio.hpp>
 #include <fb/thread.h>
 
 namespace fb {

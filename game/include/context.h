@@ -1,16 +1,9 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
-#include <boost/algorithm/string/join.hpp>
-#include <jsoncpp/json/json.h>
-#include <fstream>
 #include <fb/acceptor.h>
-#include <character.h>
 #include <group.h>
 #include <fb/protocol/game.h>
-#include <fb/protocol/flatbuffer/protocol.h>
-#include <lua.h>
-#include <fb/model/model.h>
 #include <fb/amqp.h>
 #include <listener.h>
 

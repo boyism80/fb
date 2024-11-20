@@ -1,16 +1,11 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
+#ifndef _WIN32
 #include <locale.h>
 #include <sys/ioctl.h>
 #endif
-#include <stdarg.h>
-#include <string>
 #include <sstream>
-#include <cstring>
 #include <optional>
 #include <memory>
 #include <mutex>

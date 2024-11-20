@@ -1,14 +1,8 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include <string>
-#include <iostream>
-#include <memory>
 #include <fstream>
 #include <jsoncpp/json/json.h>
-#include <sstream>
-#include <mutex>
-#include <format>
 #include <fb/console.h>
 
 namespace fb {

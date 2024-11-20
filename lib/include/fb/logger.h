@@ -1,7 +1,6 @@
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 
-#include <fb/console.h>
 #include <fb/config.h>
 #include <boost/algorithm/string.hpp>
 

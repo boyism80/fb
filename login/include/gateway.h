@@ -1,8 +1,6 @@
 #ifndef __GATEWAY_H__
 #define __GATEWAY_H__
 
-#include <string>
-#include <vector>
 #include <fb/socket.h>
 
 namespace fb { namespace login {
