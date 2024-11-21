@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace http.Worker
+namespace Http.Worker
 {
     public abstract class ParallelWorker<T>
     {

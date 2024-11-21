@@ -4,7 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <character.h>
 
-namespace fb { namespace protocol { namespace game { namespace response {
+namespace fb::protocol::game::response {
 
 class init : public fb::protocol::base::header
 {
@@ -264,6 +264,6 @@ public:
     }
 };
 
-}}}} // namespace fb::protocol::game::response
+} // namespace fb::protocol::game::response
 
 #endif // !__PROTOCOL_RESPONSE_GAME_H__

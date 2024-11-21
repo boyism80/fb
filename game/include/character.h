@@ -1191,7 +1191,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    fb::protocol::db::Character to_protocol() const;
+    fb::protocol::internal::Character to_protocol() const;
 
 public:
     /**

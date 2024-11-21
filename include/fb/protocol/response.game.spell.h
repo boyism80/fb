@@ -5,7 +5,7 @@
 #include <fb/protocol/protocol.h>
 #include <spell.h>
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace spell {
+namespace fb::protocol::game::response::spell {
 
 class buff : public fb::protocol::base::header
 {
@@ -139,6 +139,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::spell
+} // namespace fb::protocol::game::response::spell
 
 #endif // !__PROTOCOL_RESPONSE_GAME_SPELL_H__

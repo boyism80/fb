@@ -1,4 +1,4 @@
-﻿namespace Internal.Model.Redis
+﻿namespace Http.Model.Redis
 {
     public class HostConfig
     {

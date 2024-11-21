@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace login { namespace request { namespace account {
+namespace fb::protocol::login::request::account {
 
 class create : public fb::protocol::base::header
 {
@@ -148,6 +148,6 @@ public:
 #endif
 };
 
-}}}}} // namespace fb::protocol::login::request::account
+} // namespace fb::protocol::login::request::account
 
 #endif // !__PROTOCOL_REQUEST_LOGIN_ACCOUNT_H__

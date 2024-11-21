@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #endif
 
-namespace fb { namespace protocol { namespace gateway {
+namespace fb::protocol::gateway {
 
 class entry
 {
@@ -38,9 +38,9 @@ public:
     { }
 };
 
-}}} // namespace fb::protocol::gateway
+}// namespace fb::protocol::gateway
 
-namespace fb { namespace protocol { namespace gateway { namespace response {
+namespace fb::protocol::gateway::response {
 
 class welcome : public fb::protocol::base::header
 {
@@ -166,6 +166,6 @@ public:
 #endif
 };
 
-}}}} // namespace fb::protocol::gateway::response
+}// namespace fb::protocol::gateway::response
 
 #endif // !__PROTOCOL_RESPONSE_GATEWAY_H__

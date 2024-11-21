@@ -20,7 +20,7 @@ public struct Login : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Login __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public bool Logon { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public string Ip { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -32,20 +32,20 @@ public struct Login : IFlatbufferObject
   public ushort Port { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.Login> CreateLogin(FlatBufferBuilder builder,
-      bool success = false,
+      uint error = 0,
       bool logon = false,
       StringOffset ipOffset = default(StringOffset),
       ushort port = 0) {
     builder.StartTable(4);
     Login.AddIp(builder, ipOffset);
+    Login.AddError(builder, error);
     Login.AddPort(builder, port);
     Login.AddLogon(builder, logon);
-    Login.AddSuccess(builder, success);
     return Login.EndLogin(builder);
   }
 
   public static void StartLogin(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static void AddLogon(FlatBufferBuilder builder, bool logon) { builder.AddBool(1, logon, false); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(2, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(3, port, 0); }
@@ -63,7 +63,7 @@ static public class LoginVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Logon*/, 1 /*bool*/, 1, false)
       && verifier.VerifyString(tablePos, 8 /*Ip*/, false)
       && verifier.VerifyField(tablePos, 10 /*Port*/, 2 /*ushort*/, 2, false)

@@ -23,10 +23,6 @@ module.exports = function () {
                         ip: "internal",
                         port: conf.internal[sectionConf.internal].port.cluster
                     },
-                    db: {
-                        ip: "db",
-                        port: conf.internal[sectionConf.db].port.cluster
-                    },
                     'transfer delay': 0,
                     'allow other language': true,
                     forbidden: [ "김대중", "노무현" ],

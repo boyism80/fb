@@ -8,15 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\http\http.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Redis\Script\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,9 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Redis\Script\*.lua">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    <Folder Include="Redis\Script\" />
   </ItemGroup>
 
 </Project>

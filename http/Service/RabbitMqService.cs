@@ -1,8 +1,8 @@
 ﻿using Google.FlatBuffers;
-using http.Util;
+using Http.Util;
 using RabbitMQ.Client;
 
-namespace http.Service
+namespace Http.Service
 {
     public class RabbitMqService
     {

@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace login { namespace response {
+namespace fb::protocol::login::response {
 
 class agreement : public fb::protocol::base::header
 {
@@ -94,6 +94,6 @@ public:
 #endif
 };
 
-}}}} // namespace fb::protocol::login::response
+}// namespace fb::protocol::login::response
 
 #endif // !__PROTOCOL_RESPONSE_LOGIN_H__

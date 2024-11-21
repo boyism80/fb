@@ -518,8 +518,17 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
                                                           map.model.host,
                                                           me.name()});
 
-        if (response.code != fb::protocol::internal::TransferResult::Success)
+        switch (static_cast<ERROR_CODE>(response.error))
+        {
+        case ERROR_CODE::NONE:
+            break;
+
+        case ERROR_CODE::SERVER_NOT_READY:
             throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
+
+        default:
+            throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
+        }
 
         auto session = socket.data();
         co_await session->map(nullptr);

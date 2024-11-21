@@ -17,7 +17,6 @@
 using namespace fb::protocol::internal;
 namespace fb_reqs  = fb::protocol::game::request;
 namespace fb_resp  = fb::protocol::game::response;
-namespace db       = fb::protocol::db;
 namespace internal = fb::protocol::internal;
 
 namespace fb { namespace game {
@@ -117,7 +116,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool init_ch(const fb::protocol::db::Character&   response,
+    bool init_ch(const fb::protocol::internal::Character&   response,
                  fb::game::character&                 session,
                  const std::optional<transfer_param>& transfer);
 
@@ -127,7 +126,7 @@ private:
      * @param[in]  response  The response
      * @param      session   The session
      */
-    void init_option(const fb::protocol::db::Option& response, fb::game::character& session);
+    void init_option(const fb::protocol::internal::Option& response, fb::game::character& session);
 
     /**
      * @brief      Initializes the items.
@@ -135,14 +134,14 @@ private:
      * @param[in]  response  The response
      * @param      session   The session
      */
-    void init_items(const std::vector<fb::protocol::db::Item>& response, fb::game::character& session);
+    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& session);
     /**
      * @brief      Initializes the spells.
      *
      * @param[in]  response  The response
      * @param      session   The session
      */
-    void init_spells(const std::vector<fb::protocol::db::Spell>& response, fb::game::character& session);
+    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& session);
 
 private:
     /**

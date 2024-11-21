@@ -9,7 +9,7 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace session {
+namespace fb::protocol::game::response::session {
 
 class message : public fb::protocol::base::header
 {
@@ -725,6 +725,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::session
+} // namespace fb::protocol::game::response::session
 
 #endif // !__PROTOCOL_RESPONSE_GAME_SESSION_H__

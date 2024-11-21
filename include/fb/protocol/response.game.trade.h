@@ -5,7 +5,7 @@
 #include <trade.h>
 #include <fb/model/model.h>
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace trade {
+namespace fb::protocol::game::response::trade {
 
 class dialog : public fb::protocol::base::header
 {
@@ -154,6 +154,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::trade
+} // namespace fb::protocol::game::response::trade
 
 #endif // !__PROTOCOL_RESPONSE_GAME_TRADE_H__

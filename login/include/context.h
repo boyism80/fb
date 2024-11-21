@@ -21,8 +21,8 @@
 #define MAX_NXCLUB_SIZE 14
 
 using namespace fb::protocol::login;
+using namespace fb::model::enum_value;
 
-namespace db       = fb::protocol::db;
 namespace internal = fb::protocol::internal;
 
 namespace fb { namespace login {
@@ -137,7 +137,7 @@ private:
     std::vector<boost::asio::deadline_timer> _timers;
 
 public:
-    fb::model::model                         model;
+    fb::model::model model;
 
 public:
     /**

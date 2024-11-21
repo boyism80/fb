@@ -6,7 +6,7 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace life {
+namespace fb::protocol::game::response::life {
 
 class action : public fb::protocol::base::header
 {
@@ -115,6 +115,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::life
+} // namespace fb::protocol::game::response::life
 
 #endif // !__PROTOCOL_RESPONSE_GAME_LIFE_H__

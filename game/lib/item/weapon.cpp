@@ -71,7 +71,7 @@ void fb::game::weapon::reset_custom_name()
     }
 }
 
-fb::protocol::db::Item fb::game::weapon::to_protocol() const
+fb::protocol::internal::Item fb::game::weapon::to_protocol() const
 {
     auto base        = fb::game::item::to_protocol();
     base.custom_name = this->_custom_name.value_or("");

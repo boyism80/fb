@@ -1,4 +1,4 @@
-namespace http
+namespace Http
 {
     public class Program
     {

@@ -25,14 +25,12 @@ struct WhisperBuilder;
 struct Whisper FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef WhisperBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SUCCESS = 4,
-    VT_FROM = 6,
-    VT_TO = 8,
-    VT_MESSAGE = 10
+    VT_FROM = 4,
+    VT_TO = 6,
+    VT_MESSAGE = 8,
+    VT_HOST = 10,
+    VT_ERROR = 12
   };
-  bool success() const {
-    return GetField<uint8_t>(VT_SUCCESS, 0) != 0;
-  }
   const ::flatbuffers::String *from() const {
     return GetPointer<const ::flatbuffers::String *>(VT_FROM);
   }
@@ -42,14 +40,21 @@ struct Whisper FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
   }
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_SUCCESS, 1) &&
            VerifyOffset(verifier, VT_FROM) &&
            verifier.VerifyString(from()) &&
            VerifyField<uint32_t>(verifier, VT_TO, 4) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
 };
@@ -58,9 +63,6 @@ struct WhisperBuilder {
   typedef Whisper Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_success(bool success) {
-    fbb_.AddElement<uint8_t>(Whisper::VT_SUCCESS, static_cast<uint8_t>(success), 0);
-  }
   void add_from(::flatbuffers::Offset<::flatbuffers::String> from) {
     fbb_.AddOffset(Whisper::VT_FROM, from);
   }
@@ -69,6 +71,12 @@ struct WhisperBuilder {
   }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
     fbb_.AddOffset(Whisper::VT_MESSAGE, message);
+  }
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(Whisper::VT_HOST, host, 0);
+  }
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(Whisper::VT_ERROR, error, 0);
   }
   explicit WhisperBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -83,32 +91,36 @@ struct WhisperBuilder {
 
 inline ::flatbuffers::Offset<Whisper> CreateWhisper(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool success = false,
     ::flatbuffers::Offset<::flatbuffers::String> from = 0,
     uint32_t to = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> message = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> message = 0,
+    uint32_t host = 0,
+    uint32_t error = 0) {
   WhisperBuilder builder_(_fbb);
+  builder_.add_error(error);
+  builder_.add_host(host);
   builder_.add_message(message);
   builder_.add_to(to);
   builder_.add_from(from);
-  builder_.add_success(success);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Whisper> CreateWhisperDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool success = false,
     const char *from = nullptr,
     uint32_t to = 0,
-    const char *message = nullptr) {
+    const char *message = nullptr,
+    uint32_t host = 0,
+    uint32_t error = 0) {
   auto from__ = from ? _fbb.CreateString(from) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   return fb::protocol::internal::response::raw::CreateWhisper(
       _fbb,
-      success,
       from__,
       to,
-      message__);
+      message__,
+      host,
+      error);
 }
 
 inline const fb::protocol::internal::response::raw::Whisper *GetWhisper(const void *buf) {

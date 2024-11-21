@@ -155,13 +155,13 @@ void fb::game::item::merge(fb::game::item& item)
     }
 }
 
-fb::protocol::db::Item fb::game::item::to_protocol() const
+fb::protocol::internal::Item fb::game::item::to_protocol() const
 {
     if (this->_owner == nullptr)
         throw std::runtime_error("cannot convert to protocol because owner is empty");
 
     auto& model        = this->based<fb::model::item>();
-    auto  result       = fb::protocol::db::Item();
+    auto  result       = fb::protocol::internal::Item();
     result.user        = this->_owner->id();
     result.index       = -1;
     result.parts       = (uint16_t)EQUIPMENT_PARTS::UNKNOWN;

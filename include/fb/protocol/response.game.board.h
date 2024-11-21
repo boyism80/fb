@@ -7,7 +7,7 @@
 #include <fb/bot/board.h>
 #endif
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace board {
+namespace fb::protocol::game::response::board {
 
 class sections : public fb::protocol::base::header
 {
@@ -191,6 +191,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::board
+} // namespace fb::protocol::game::response::board
 
 #endif // !__PROTOCOL_REQUEST_BOARD_H__

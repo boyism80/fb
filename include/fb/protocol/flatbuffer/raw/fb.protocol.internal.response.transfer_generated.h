@@ -13,8 +13,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.transferresult_generated.h"
-
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -27,12 +25,12 @@ struct TransferBuilder;
 struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef TransferBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CODE = 4,
+    VT_ERROR = 4,
     VT_IP = 6,
     VT_PORT = 8
   };
-  fb::protocol::internal::raw::TransferResult code() const {
-    return static_cast<fb::protocol::internal::raw::TransferResult>(GetField<int8_t>(VT_CODE, 0));
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
   }
   const ::flatbuffers::String *ip() const {
     return GetPointer<const ::flatbuffers::String *>(VT_IP);
@@ -42,7 +40,7 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<int8_t>(verifier, VT_CODE, 1) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
            VerifyField<uint16_t>(verifier, VT_PORT, 2) &&
@@ -54,8 +52,8 @@ struct TransferBuilder {
   typedef Transfer Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_code(fb::protocol::internal::raw::TransferResult code) {
-    fbb_.AddElement<int8_t>(Transfer::VT_CODE, static_cast<int8_t>(code), 0);
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(Transfer::VT_ERROR, error, 0);
   }
   void add_ip(::flatbuffers::Offset<::flatbuffers::String> ip) {
     fbb_.AddOffset(Transfer::VT_IP, ip);
@@ -76,25 +74,25 @@ struct TransferBuilder {
 
 inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    fb::protocol::internal::raw::TransferResult code = fb::protocol::internal::raw::TransferResult_Success,
+    uint32_t error = 0,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
     uint16_t port = 0) {
   TransferBuilder builder_(_fbb);
   builder_.add_ip(ip);
+  builder_.add_error(error);
   builder_.add_port(port);
-  builder_.add_code(code);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    fb::protocol::internal::raw::TransferResult code = fb::protocol::internal::raw::TransferResult_Success,
+    uint32_t error = 0,
     const char *ip = nullptr,
     uint16_t port = 0) {
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::response::raw::CreateTransfer(
       _fbb,
-      code,
+      error,
       ip__,
       port);
 }

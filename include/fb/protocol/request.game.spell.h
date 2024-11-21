@@ -4,7 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <spell.h>
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace spell {
+namespace fb::protocol::game::request::spell {
 
 class use : public fb::protocol::base::header
 {
@@ -51,6 +51,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::request::spell
+} // namespace fb::protocol::game::request::spell
 
 #endif // !__PROTOCOL_REQUEST_GAME_SPELL_H__

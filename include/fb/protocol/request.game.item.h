@@ -9,7 +9,7 @@ using namespace fb::model::enum_value;
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace item {
+namespace fb::protocol::game::request::item {
 
 class active : public fb::protocol::base::header
 {
@@ -148,6 +148,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::request::item
+} // namespace fb::protocol::game::request::item
 
 #endif // !__PROTOCOL_REQUEST_GAME_ITEM_H__

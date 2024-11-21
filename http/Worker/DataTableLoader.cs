@@ -1,14 +1,14 @@
 ﻿using Fb.Model;
 using Fb.Model.EnumValue;
 
-namespace http.Worker
+namespace Http.Worker
 {
     public class DataTableLoader : ParallelWorker<Fb.Model.Container>
     {
-        private readonly Model _model;
+        private readonly Fb.Model.Model _model;
         private readonly ILogger<DataTableLoader> _logger;
 
-        public DataTableLoader(Model model, ILogger<DataTableLoader> logger) : base(logger)
+        public DataTableLoader(Fb.Model.Model model, ILogger<DataTableLoader> logger) : base(logger)
         {
             _model = model;
             _logger = logger;

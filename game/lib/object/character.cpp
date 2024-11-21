@@ -1499,9 +1499,9 @@ async::task<bool> character::inline_interaction(const std::string& message, cons
     co_return false;
 }
 
-fb::protocol::db::Character character::to_protocol() const
+fb::protocol::internal::Character character::to_protocol() const
 {
-    auto dto             = fb::protocol::db::Character();
+    auto dto             = fb::protocol::internal::Character();
     dto.id               = this->_id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
@@ -1513,7 +1513,7 @@ fb::protocol::db::Character character::to_protocol() const
     dto.nation           = (uint16_t)this->_nation;
     dto.creature         = (uint16_t)this->_creature;
     dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position         = fb::protocol::db::Position{this->_position.x, this->_position.y};
+    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
     dto.direction        = (uint8_t)this->_direction;
     dto.state            = (uint8_t)this->_state;
     dto.class_type       = (uint8_t)this->_class;

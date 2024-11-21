@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace map {
+namespace fb::protocol::game::request::map {
 
 class update : public fb::protocol::base::header
 {
@@ -51,6 +51,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::request::map
+} // namespace fb::protocol::game::request::map
 
 #endif // !__PROTOCOL_REQUEST_GAME_MAP_H__

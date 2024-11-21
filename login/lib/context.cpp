@@ -126,10 +126,10 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
 
         this->assert_account(name, pw);
 
-        auto&& response1 =
-            co_await this->post<db::request::ReserveName, db::response::ReserveName>("db",
-                                                                                     "/user/reserve-name",
-                                                                                     db::request::ReserveName{name});
+        auto&& response1 = co_await this->post<internal::request::ReserveName, internal::response::ReserveName>(
+            "internal",
+            "/user/reserve-name",
+            internal::request::ReserveName{name});
 
         if (this->sockets.contains(fd) == false)
             co_return false;
@@ -141,10 +141,10 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         auto& config = fb::config::get();
         std::srand(std::time(nullptr));
 
-        auto&& response2 = co_await this->post<db::request::InitCharacter, db::response::InitCharacter>(
-            "db",
+        auto&& response2 = co_await this->post<internal::request::InitCharacter, internal::response::InitCharacter>(
+            "internal",
             "/user/init-ch",
-            db::request::InitCharacter{
+            internal::request::InitCharacter{
                 uid,
                 name,
                 pw,
@@ -196,10 +196,10 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
         if (session->pk == -1)
             throw std::exception();
 
-        auto&& response = co_await this->post<db::request::MakeCharacter, db::response::MakeCharacter>(
-            "db",
+        auto&& response = co_await this->post<internal::request::MakeCharacter, internal::response::MakeCharacter>(
+            "internal",
             "/user/mk-ch",
-            db::request::MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
+            internal::request::MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -238,7 +238,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
     {
         this->assert_account(name, pw);
 
-        auto&& response = co_await this->get<db::response::GetUid>("db", std::format("/user/uid/{}", name));
+        auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -246,10 +246,10 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw id_exception(fb::login::message::account::NOT_FOUND_NAME);
 
         auto   uid       = response.uid;
-        auto&& response2 = co_await this->post<db::request::Authenticate, db::response::Authenticate>(
-            "db",
+        auto&& response2 = co_await this->post<internal::request::Authenticate, internal::response::Authenticate>(
+            "internal",
             "/user/authenticate",
-            db::request::Authenticate{uid, pw});
+            internal::request::Authenticate{uid, pw});
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -270,13 +270,19 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        switch (response3.code)
+        switch (static_cast<ERROR_CODE>(response3.error))
         {
-        case fb::protocol::internal::TransferResult::Failed:
+        case ERROR_CODE::NONE:
+            break;
+
+        case ERROR_CODE::SERVER_NOT_READY:
             throw id_exception("비바람이 휘몰아치고 있습니다.");
 
-        case fb::protocol::internal::TransferResult::LoggedIn:
+        case ERROR_CODE::ALREADY_LOGIN:
             throw id_exception("이미 접속중입니다.");
+
+        default:
+            throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response3.error));
         }
 
         socket.send(response::message("", 0x00));
@@ -353,7 +359,7 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         if (pw == new_pw)
             throw newpw_exception(fb::login::message::account::NEW_PW_EQUALIZATION);
 
-        auto&& response = co_await this->get<db::response::GetUid>("db", std::format("/user/uid/{}", name));
+        auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -362,10 +368,10 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
 
         auto uid = response.uid;
 
-        auto&& response2 = co_await this->post<db::request::ChangePw, db::response::ChangePw>(
-            "db",
+        auto&& response2 = co_await this->post<internal::request::ChangePw, internal::response::ChangePw>(
+            "internal",
             "/user/change-pw",
-            db::request::ChangePw{uid, pw, new_pw, birthday});
+            internal::request::ChangePw{uid, pw, new_pw, birthday});
 
         if (this->sockets.contains(fd) == false)
             co_return false;

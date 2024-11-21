@@ -398,9 +398,9 @@ character* context::find(const std::string& name)
     return socket->data();
 }
 
-bool context::init_ch(const fb::protocol::db::Character&   response,
-                      character&                           session,
-                      const std::optional<transfer_param>& transfer)
+bool context::init_ch(const fb::protocol::internal::Character& response,
+                      character&                               session,
+                      const std::optional<transfer_param>&     transfer)
 {
     auto map = response.map;
     session.id(response.id);
@@ -444,7 +444,7 @@ bool context::init_ch(const fb::protocol::db::Character&   response,
     return true;
 }
 
-void context::init_option(const fb::protocol::db::Option& response, fb::game::character& session)
+void context::init_option(const fb::protocol::internal::Option& response, fb::game::character& session)
 {
     session.option(SETTING::WHISPER, response.whisper, false);
     session.option(SETTING::GROUP, response.group, false);
@@ -459,7 +459,7 @@ void context::init_option(const fb::protocol::db::Option& response, fb::game::ch
     session.option(SETTING::PK_PROTECT, response.pk_protect, false);
 }
 
-void context::init_items(const std::vector<fb::protocol::db::Item>& response, character& session)
+void context::init_items(const std::vector<fb::protocol::internal::Item>& response, character& session)
 {
     for (auto& x : response)
     {
@@ -481,7 +481,7 @@ void context::init_items(const std::vector<fb::protocol::db::Item>& response, ch
     }
 }
 
-void context::init_spells(const std::vector<fb::protocol::db::Spell>& response, character& session)
+void context::init_spells(const std::vector<fb::protocol::internal::Spell>& response, character& session)
 {
     for (auto& x : response)
     {
@@ -637,7 +637,7 @@ void context::send(const fb::protocol::base::header& response, bool encrypt)
 
 async::task<void> context::save(character& session)
 {
-    auto items = std::vector<fb::protocol::db::Item>();
+    auto items = std::vector<fb::protocol::internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = session.items[i];
@@ -666,20 +666,20 @@ async::task<void> context::save(character& session)
         items.push_back(protocol);
     }
 
-    auto spells = std::vector<fb::protocol::db::Spell>();
+    auto spells = std::vector<fb::protocol::internal::Spell>();
     for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto spell = session.spells[i];
         if (spell == nullptr)
             continue;
 
-        spells.push_back(fb::protocol::db::Spell{session.id(), i, spell->id});
+        spells.push_back(fb::protocol::internal::Spell{session.id(), i, spell->id});
     }
 
-    auto&& response = co_await this->post<db::request::Save, db::response::Save>(
-        "db",
+    auto&& response = co_await this->post<internal::request::Save, internal::response::Save>(
+        "internal",
         "/user/save",
-        db::request::Save{session.to_protocol(), items, spells});
+        internal::request::Save{session.to_protocol(), items, spells});
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const
@@ -742,6 +742,10 @@ void context::amqp_thread()
             });
 
             queue1.handler<internal::response::Whisper>([this](auto& response) -> async::task<void> {
+                auto& config = fb::config::get();
+                if (response.host == config["id"].asUInt())
+                    co_return;
+
                 auto socket = this->sockets.find([uid = response.to](fb::socket<character>& socket) {
                     auto data = socket.data();
                     return data->id() == uid;
@@ -839,10 +843,10 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             "internal",
             "/in-game/login",
             internal::request::Login{id, name, (uint8_t)config["id"].asUInt()});
-        if (login_resp.success == false)
+        if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
             co_return false;
 
-        auto&& response = co_await this->get<db::response::Login>("db", std::format("/user/login/{}", id));
+        auto&& response = co_await this->get<internal::response::Init>("internal", std::format("/user/init/{}", id));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -1131,10 +1135,11 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
     default:
         auto   enabled = session->option_toggle(option);
         auto&& response =
-            co_await this->post<fb::protocol::db::request::SetOption, fb::protocol::db::response::SetOption>(
-                "db",
-                "/user/option",
-                fb::protocol::db::request::SetOption{session->id(), static_cast<uint8_t>(option), enabled});
+            co_await this
+                ->post<fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption>(
+                    "internal",
+                    "/user/option",
+                    fb::protocol::internal::request::SetOption{session->id(), static_cast<uint8_t>(option), enabled});
 
         if (response.success == false)
             session->message("설정을 변경하지 못했습니다.");
@@ -1497,8 +1502,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto section = &this->model.board[request.section];
             auto offset  = request.offset;
 
-            auto&& response = co_await this->get<db::response::GetArticleList>(
-                "db",
+            auto&& response = co_await this->get<internal::response::GetArticleList>(
+                "internal",
                 std::format("/board/{}&offset={}", section->id, offset));
             if (this->sockets.contains(fd) == false)
                 co_return false;
@@ -1535,10 +1540,10 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (this->model.board.contains(request.section) == false)
                 throw std::runtime_error(message::board::SECTION_NOT_EXIST);
 
-            auto   section = &this->model.board[request.section]; // 코루틴땜시 포인터로
-            auto&& response =
-                co_await this->get<db::response::GetArticle>("db",
-                                                             std::format("/board/{}/{}", section->id, request.article));
+            auto   section  = &this->model.board[request.section]; // 코루틴땜시 포인터로
+            auto&& response = co_await this->get<internal::response::GetArticle>(
+                "internal",
+                std::format("/board/{}/{}", section->id, request.article));
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -1592,10 +1597,10 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (request.contents.length() > 256)
                 throw std::runtime_error(message::board::TOO_LONG_CONTENTS);
 
-            auto&& response = co_await this->post<db::request::WriteArticle, db::response::WriteArticle>(
-                "db",
+            auto&& response = co_await this->post<internal::request::WriteArticle, internal::response::WriteArticle>(
+                "internal",
                 "/board/write",
-                db::request::WriteArticle{section->id, session->id(), request.title, request.contents});
+                internal::request::WriteArticle{section->id, session->id(), request.title, request.contents});
 
             if (this->sockets.contains(fd) == false)
                 co_return false;
@@ -1623,10 +1628,10 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (session->condition(section->condition) == false)
                 throw std::runtime_error(message::board::NOT_AUTH);
 
-            auto&& response = co_await this->post<db::request::DeleteArticle, db::response::DeleteArticle>(
-                "db",
+            auto&& response = co_await this->post<internal::request::DeleteArticle, internal::response::DeleteArticle>(
+                "internal",
                 "/board/delete",
-                db::request::DeleteArticle{request.article, session->id()});
+                internal::request::DeleteArticle{request.article, session->id()});
 
             if (this->sockets.contains(fd) == false)
                 co_return false;
@@ -1822,13 +1827,27 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        std::stringstream sstream;
-        if (response.success)
-            sstream << to << "< " << message;
-        else
-            sstream << to << "님은 바람의나라에 없습니다.";
+        auto message = std::string();
+        switch (static_cast<ERROR_CODE>(response.error))
+        {
+        case ERROR_CODE::NONE:
+            message = std::format("{}< {}", to, response.message);
+            break;
 
-        session->message(sstream.str(), MESSAGE_TYPE::NOTIFY);
+        case ERROR_CODE::OFFLINE:
+            message = std::format("{}님은 바람의나라에 없습니다.", to);
+            break;
+
+        default:
+            message = std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error);
+            break;
+        }
+
+        session->message(message, MESSAGE_TYPE::NOTIFY);
+
+        auto you = this->find(to);
+        if (you != nullptr)
+            you->message(std::format("{}> {}", from, response.message), MESSAGE_TYPE::NOTIFY);
     }
     catch (std::exception& /*e*/)
     {

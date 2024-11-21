@@ -214,7 +214,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    virtual fb::protocol::db::Item to_protocol() const;
+    virtual fb::protocol::internal::Item to_protocol() const;
 
 public:
     /**
@@ -648,7 +648,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    fb::protocol::db::Item to_protocol() const override;
+    fb::protocol::internal::Item to_protocol() const override;
 };
 
 /**

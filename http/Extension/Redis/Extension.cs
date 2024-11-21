@@ -1,9 +1,9 @@
-﻿using http.Service;
+﻿using Http.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
 
-namespace http.Redis
+namespace Http.Redis
 {
     public class RedisCommandQueue
     {

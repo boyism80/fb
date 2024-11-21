@@ -40,3 +40,109 @@ table Whisper {
 table KickOut {
   uid: uint;
 }
+
+table Account {
+  uid: uint;
+}
+
+
+table ChangePw {
+  uid: uint;
+  before: string;
+  after: string;
+  birthday: uint;
+}
+
+
+table InitCharacter {
+  uid: uint;
+  name: string;
+  pw: string;
+  hp: uint;
+  mp: uint;
+  map: ushort;
+  x: ushort;
+  y: ushort;
+  admin: bool;
+}
+
+table Authenticate {
+  uid: uint;
+  pw: string;
+}
+
+
+table Init {
+  uid: uint;
+}
+
+
+table MakeCharacter {
+  uid: uint;
+  hair: ushort;
+  sex: ubyte;
+  nation: ubyte;
+  creature: ubyte;
+}
+
+
+table ReserveName {
+  name: string;
+}
+
+
+table Save {
+  character: fb.protocol.internal.Character;
+  items: [fb.protocol.internal.Item];
+  spells: [fb.protocol.internal.Spell];
+}
+
+
+table GetArticle {
+  section: uint;
+  article: uint;
+}
+
+
+table GetArticleList {
+  section: uint;
+  position: uint;
+}
+
+
+table WriteArticle {
+  section: uint;
+  user: uint;
+  title: string;
+  contents: string;
+}
+
+
+table DeleteArticle {
+  id: uint;
+  user: uint;
+}
+
+
+table SetOption {
+  user: uint;
+  type: ubyte;
+  enabled: bool;
+}
+
+table CreateGroup {
+  master: uint;
+  member: uint;
+  host: ubyte;
+}
+
+table EnterGroup {
+  id: string;
+  member: uint;
+  host: ubyte;
+}
+
+table LeaveGroup {
+  member: uint;
+  host: ubyte;
+}

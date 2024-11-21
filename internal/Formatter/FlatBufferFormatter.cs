@@ -1,10 +1,9 @@
 ﻿using Google.FlatBuffers;
-using http.Util;
 using Request = fb.protocol._internal.request;
 
 namespace Internal.Formatter
 {
-    public class FlatBufferInputFormatter : http.Formatter.FlatBufferInputFormatter
+    public class FlatBufferInputFormatter : Http.Formatter.FlatBufferInputFormatter
     {
         public FlatBufferInputFormatter()
         {
@@ -22,7 +21,7 @@ namespace Internal.Formatter
         }
     }
 
-    public class FlatBufferOutputFormatter : http.Formatter.FlatBufferOutputFormatter
+    public class FlatBufferOutputFormatter : Http.Formatter.FlatBufferOutputFormatter
     {
         public FlatBufferOutputFormatter()
         {

@@ -15,6 +15,9 @@ module.exports = {
                         "Microsoft.AspNetCore": "Warning"
                     }
                 },
+                "ConnectionStrings": {
+                    "MySql": {}
+                },
                 "Redis": {
                     "AllowAdmin": true,
                     "ConnectTimeout": 6000,
@@ -33,6 +36,10 @@ module.exports = {
                     "Uid": "fb",
                     "Pwd": "admin"
                 }
+            }
+
+            for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql])) {
+                config.ConnectionStrings.MySql[id] = `Server=mysql;Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
             }
 
             const configMap = new k8s.core.v1.ConfigMap(`internal-${section}`, {

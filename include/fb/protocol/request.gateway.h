@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace gateway { namespace request {
+namespace fb::protocol::gateway::request {
 
 class assert_version : public fb::protocol::base::header
 {
@@ -79,6 +79,6 @@ public:
 #endif
 };
 
-}}}} // namespace fb::protocol::gateway::request
+} // namespace fb::protocol::gateway::request
 
 #endif // !__PROTOCOL_REQUEST_GATEWAY_H__

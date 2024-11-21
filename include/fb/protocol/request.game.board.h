@@ -8,7 +8,7 @@
 #include <fb/protocol/protocol.h>
 #include <board.h>
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace board {
+namespace fb::protocol::game::request::board {
 
 class board : public fb::protocol::base::header
 {
@@ -113,6 +113,6 @@ public:
 #endif
 };
 
-}}}}} // namespace fb::protocol::game::request::board
+} // namespace fb::protocol::game::request::board
 
 #endif // !__PROTOCOL_RESPONSE_BOARD_H__

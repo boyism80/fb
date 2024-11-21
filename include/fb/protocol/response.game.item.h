@@ -7,7 +7,7 @@
 
 using namespace fb::model::enum_value;
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace item {
+namespace fb::protocol::game::response::item {
 
 class tip : public fb::protocol::base::header
 {
@@ -184,6 +184,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::item
+} // namespace fb::protocol::game::response::item
 
 #endif // !__PROTOCOL_RESPONSE_GAME_ITEM_H__
