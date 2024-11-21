@@ -183,24 +183,35 @@ namespace Internal.Controllers
                 var session = await _sessionService.Get(request.From) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var you = await _sessionService.Get(request.To);
-                if (you == null)
+                var targetSession = await _sessionService.Get(request.To);
+                if (targetSession == null)
                     throw new LogicException(ErrorCode.Offline);
+
+                var target = await _dbContext.Character.Get(targetSession.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                var targetOption = await _dbContext.Option.Get(targetSession.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundOption);
+
+                if (!targetOption.Whisper)
+                    throw new LogicException(ErrorCode.DisabledWhisperTarget);
 
                 var response = new Response.Whisper
                 {
                     Host = session.Host,
                     From = request.From,
-                    To = you.Uid,
+                    To = target.Name,
                     Message = request.Message
                 };
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.game.{you.Host}");
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.game.{targetSession.Host}");
                 return response;
             }
             catch (LogicException e)
             {
                 return new Response.Whisper
                 {
+                    From = request.From,
+                    To = request.To,
                     Error = (uint)e.Error
                 };
             }
@@ -209,6 +220,8 @@ namespace Internal.Controllers
                 _logger.LogError(e.Message);
                 return new Response.Whisper
                 {
+                    From = request.From,
+                    To = request.To,
                     Error = (uint)ErrorCode.Unhandled
                 };
             }

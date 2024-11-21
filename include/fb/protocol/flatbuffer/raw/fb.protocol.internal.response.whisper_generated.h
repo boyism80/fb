@@ -34,8 +34,8 @@ struct Whisper FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *from() const {
     return GetPointer<const ::flatbuffers::String *>(VT_FROM);
   }
-  uint32_t to() const {
-    return GetField<uint32_t>(VT_TO, 0);
+  const ::flatbuffers::String *to() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TO);
   }
   const ::flatbuffers::String *message() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MESSAGE);
@@ -50,7 +50,8 @@ struct Whisper FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_FROM) &&
            verifier.VerifyString(from()) &&
-           VerifyField<uint32_t>(verifier, VT_TO, 4) &&
+           VerifyOffset(verifier, VT_TO) &&
+           verifier.VerifyString(to()) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
@@ -66,8 +67,8 @@ struct WhisperBuilder {
   void add_from(::flatbuffers::Offset<::flatbuffers::String> from) {
     fbb_.AddOffset(Whisper::VT_FROM, from);
   }
-  void add_to(uint32_t to) {
-    fbb_.AddElement<uint32_t>(Whisper::VT_TO, to, 0);
+  void add_to(::flatbuffers::Offset<::flatbuffers::String> to) {
+    fbb_.AddOffset(Whisper::VT_TO, to);
   }
   void add_message(::flatbuffers::Offset<::flatbuffers::String> message) {
     fbb_.AddOffset(Whisper::VT_MESSAGE, message);
@@ -92,7 +93,7 @@ struct WhisperBuilder {
 inline ::flatbuffers::Offset<Whisper> CreateWhisper(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<::flatbuffers::String> from = 0,
-    uint32_t to = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> to = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint32_t host = 0,
     uint32_t error = 0) {
@@ -108,16 +109,17 @@ inline ::flatbuffers::Offset<Whisper> CreateWhisper(
 inline ::flatbuffers::Offset<Whisper> CreateWhisperDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     const char *from = nullptr,
-    uint32_t to = 0,
+    const char *to = nullptr,
     const char *message = nullptr,
     uint32_t host = 0,
     uint32_t error = 0) {
   auto from__ = from ? _fbb.CreateString(from) : 0;
+  auto to__ = to ? _fbb.CreateString(to) : 0;
   auto message__ = message ? _fbb.CreateString(message) : 0;
   return fb::protocol::internal::response::raw::CreateWhisper(
       _fbb,
       from__,
-      to,
+      to__,
       message__,
       host,
       error);

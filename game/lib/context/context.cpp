@@ -493,6 +493,24 @@ void context::init_spells(const std::vector<fb::protocol::internal::Spell>& resp
     }
 }
 
+void context::assert_whisper(const internal::response::Whisper& response) const
+{
+    switch (static_cast<ERROR_CODE>(response.error))
+    {
+    case ERROR_CODE::NONE:
+        return;
+
+    case ERROR_CODE::OFFLINE:
+        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", response.to));
+
+    case ERROR_CODE::DISABLED_WHISPER_TARGET:
+        throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", response.to));
+
+    default:
+        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
+    }
+}
+
 character* context::handle_accepted(fb::socket<character>& socket)
 {
     return this->make<character>(socket);
@@ -746,18 +764,21 @@ void context::amqp_thread()
                 if (response.host == config["id"].asUInt())
                     co_return;
 
-                auto socket = this->sockets.find([uid = response.to](fb::socket<character>& socket) {
-                    auto data = socket.data();
-                    return data->id() == uid;
-                });
-                if (socket == nullptr)
-                    co_return;
+                try
+                {
+                    this->assert_whisper(response);
+                    auto you = this->find(response.to);
+                    if (you == nullptr)
+                        throw std::runtime_error(std::format("cannot find whisper target user : {}", response.to));
 
-                auto session = socket->data();
-                if (session == nullptr)
-                    co_return;
-
-                session->message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
+                    you->message(std::format("{}< {}", response.from, response.message));
+                }
+                catch (std::exception& e)
+                {
+                    auto me = this->find(response.from);
+                    if (me != nullptr)
+                        me->message(e.what(), MESSAGE_TYPE::NOTIFY);
+                }
             });
 
             auto& queue2 = this->_amqp->declare_queue();
@@ -1810,51 +1831,54 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
 
 async::task<bool> context::handle_whisper(fb::socket<character>& socket, const fb_reqs::whisper& request)
 {
-    auto session = socket.data();
-    if (session->inited() == false)
+    auto me = socket.data();
+    if (me->inited() == false)
         co_return true;
 
-    auto  fd      = session->fd();
-    auto& from    = session->name();
+    auto  fd      = me->fd();
+    auto& from    = me->name();
     auto  to      = std::string(request.name);
     auto  message = std::string(request.message);
     try
     {
-        auto&& response = co_await this->post<internal::request::Whisper, internal::response::Whisper>(
-            "internal",
-            "/in-game/whisper",
-            internal::request::Whisper{from, to, message});
-        if (this->sockets.contains(fd) == false)
-            co_return false;
+        if (me->option(SETTING::WHISPER) == false)
+            throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
 
-        auto message = std::string();
-        switch (static_cast<ERROR_CODE>(response.error))
-        {
-        case ERROR_CODE::NONE:
-            message = std::format("{}< {}", to, response.message);
-            break;
-
-        case ERROR_CODE::OFFLINE:
-            message = std::format("{}님은 바람의나라에 없습니다.", to);
-            break;
-
-        default:
-            message = std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error);
-            break;
-        }
-
-        session->message(message, MESSAGE_TYPE::NOTIFY);
-
+        me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
         auto you = this->find(to);
         if (you != nullptr)
-            you->message(std::format("{}> {}", from, response.message), MESSAGE_TYPE::NOTIFY);
+        {
+            auto response    = internal::response::Whisper{};
+            response.from    = from;
+            response.to      = me->id();
+            response.message = message;
+            response.host    = fb::config::get()["id"].asUInt();
+            if (you->option(SETTING::WHISPER))
+                response.error = static_cast<uint32_t>(ERROR_CODE::NONE);
+            else
+                response.error = static_cast<uint32_t>(ERROR_CODE::DISABLED_WHISPER_TARGET);
+
+            this->assert_whisper(response);
+            you->message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
+        }
+        else
+        {
+            auto&& response = co_await this->post<internal::request::Whisper, internal::response::Whisper>(
+                "internal",
+                "/in-game/whisper",
+                internal::request::Whisper{from, to, message});
+            if (this->sockets.contains(fd) == false)
+                co_return false;
+
+            this->assert_whisper(response);
+        }
     }
-    catch (std::exception& /*e*/)
+    catch (std::exception& e)
     {
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        session->message("서버 오류", MESSAGE_TYPE::NOTIFY);
+        me->message(e.what(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
 }

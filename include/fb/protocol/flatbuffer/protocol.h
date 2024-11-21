@@ -1990,7 +1990,7 @@ public:
 
 public:
     std::string from;
-    uint32_t to = 0;
+    std::string to;
     std::string message;
     uint32_t host = 0;
     uint32_t error = 0;
@@ -2002,12 +2002,12 @@ public:
         : from(x.from), to(x.to), message(x.message), host(x.host), error(x.error)
     { }
 
-    Whisper(const std::string& from, uint32_t to, const std::string& message, uint32_t host, uint32_t error)
+    Whisper(const std::string& from, const std::string& to, const std::string& message, uint32_t host, uint32_t error)
         : from(from), to(to), message(message), host(host), error(error)
     { }
 
     Whisper(const fb::protocol::internal::response::raw::Whisper& raw)
-        : from(flatbuffers::option::decode(raw.from()->c_str())), to(raw.to()), message(flatbuffers::option::decode(raw.message()->c_str())), host(raw.host()), error(raw.error())
+        : from(flatbuffers::option::decode(raw.from()->c_str())), to(flatbuffers::option::decode(raw.to()->c_str())), message(flatbuffers::option::decode(raw.message()->c_str())), host(raw.host()), error(raw.error())
     { }
 
 public:
@@ -3062,7 +3062,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Whisper> build<fb::pr
 {
     return fb::protocol::internal::response::raw::CreateWhisper(builder,
             flatbuffers::build<std::string>(builder, value.from),
-            flatbuffers::build<uint32_t>(builder, value.to),
+            flatbuffers::build<std::string>(builder, value.to),
             flatbuffers::build<std::string>(builder, value.message),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.error));

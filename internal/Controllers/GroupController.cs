@@ -65,13 +65,13 @@ namespace Internal.Controllers
                     throw new Exception($"user option {request.Master} not found");
 
                 if (masterSetting.Group == false)
-                    throw new LogicException(ErrorCode.GroupDisabled);
+                    throw new LogicException(ErrorCode.DisabledGroup);
 
                 var memberSetting = await _dbContext.Option.Get(member.Id) ??
                     throw new Exception($"user option {request.Member} not found");
 
                 if (memberSetting.Group == false)
-                    throw new LogicException(ErrorCode.GroupTargetDisabled);
+                    throw new LogicException(ErrorCode.DisabledGroupTarget);
 
                 // TODO: ∆Æ∑£¿Ëº«
                 var group = new Http.Model.Group

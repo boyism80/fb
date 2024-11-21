@@ -965,14 +965,17 @@ enum class ERROR_CODE
     UNHANDLED = 1, 
     GROUP_ALREADY_JOINED = 2, 
     GROUP_TARGET_ALREADY_JOINED = 3, 
-    GROUP_DISABLED = 4, 
-    GROUP_TARGET_DISABLED = 5, 
+    DISABLED_GROUP = 4, 
+    DISABLED_GROUP_TARGET = 5, 
     PASSWORD_NOT_MATCHED = 6, 
     BIRTHDAY_NOT_MATCHED = 7, 
     OFFLINE = 8, 
     SERVER_NOT_READY = 9, 
     ALREADY_LOGIN = 10, 
-    NOT_FOUND_CHARACTER = 11
+    NOT_FOUND_CHARACTER = 11, 
+    NOT_FOUND_OPTION = 12, 
+    DISABLED_WHISPER = 13, 
+    DISABLED_WHISPER_TARGET = 14
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -984,14 +987,17 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "UNHANDLED", ERROR_CODE::UNHANDLED }, 
         { "GROUP_ALREADY_JOINED", ERROR_CODE::GROUP_ALREADY_JOINED }, 
         { "GROUP_TARGET_ALREADY_JOINED", ERROR_CODE::GROUP_TARGET_ALREADY_JOINED }, 
-        { "GROUP_DISABLED", ERROR_CODE::GROUP_DISABLED }, 
-        { "GROUP_TARGET_DISABLED", ERROR_CODE::GROUP_TARGET_DISABLED }, 
+        { "DISABLED_GROUP", ERROR_CODE::DISABLED_GROUP }, 
+        { "DISABLED_GROUP_TARGET", ERROR_CODE::DISABLED_GROUP_TARGET }, 
         { "PASSWORD_NOT_MATCHED", ERROR_CODE::PASSWORD_NOT_MATCHED }, 
         { "BIRTHDAY_NOT_MATCHED", ERROR_CODE::BIRTHDAY_NOT_MATCHED }, 
         { "OFFLINE", ERROR_CODE::OFFLINE }, 
         { "SERVER_NOT_READY", ERROR_CODE::SERVER_NOT_READY }, 
         { "ALREADY_LOGIN", ERROR_CODE::ALREADY_LOGIN }, 
-        { "NOT_FOUND_CHARACTER", ERROR_CODE::NOT_FOUND_CHARACTER }
+        { "NOT_FOUND_CHARACTER", ERROR_CODE::NOT_FOUND_CHARACTER }, 
+        { "NOT_FOUND_OPTION", ERROR_CODE::NOT_FOUND_OPTION }, 
+        { "DISABLED_WHISPER", ERROR_CODE::DISABLED_WHISPER }, 
+        { "DISABLED_WHISPER_TARGET", ERROR_CODE::DISABLED_WHISPER_TARGET }
     };
 
     auto i = enums.find(k);
@@ -1010,14 +1016,17 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::UNHANDLED, "UNHANDLED" }, 
         { ERROR_CODE::GROUP_ALREADY_JOINED, "GROUP_ALREADY_JOINED" }, 
         { ERROR_CODE::GROUP_TARGET_ALREADY_JOINED, "GROUP_TARGET_ALREADY_JOINED" }, 
-        { ERROR_CODE::GROUP_DISABLED, "GROUP_DISABLED" }, 
-        { ERROR_CODE::GROUP_TARGET_DISABLED, "GROUP_TARGET_DISABLED" }, 
+        { ERROR_CODE::DISABLED_GROUP, "DISABLED_GROUP" }, 
+        { ERROR_CODE::DISABLED_GROUP_TARGET, "DISABLED_GROUP_TARGET" }, 
         { ERROR_CODE::PASSWORD_NOT_MATCHED, "PASSWORD_NOT_MATCHED" }, 
         { ERROR_CODE::BIRTHDAY_NOT_MATCHED, "BIRTHDAY_NOT_MATCHED" }, 
         { ERROR_CODE::OFFLINE, "OFFLINE" }, 
         { ERROR_CODE::SERVER_NOT_READY, "SERVER_NOT_READY" }, 
         { ERROR_CODE::ALREADY_LOGIN, "ALREADY_LOGIN" }, 
-        { ERROR_CODE::NOT_FOUND_CHARACTER, "NOT_FOUND_CHARACTER" }
+        { ERROR_CODE::NOT_FOUND_CHARACTER, "NOT_FOUND_CHARACTER" }, 
+        { ERROR_CODE::NOT_FOUND_OPTION, "NOT_FOUND_OPTION" }, 
+        { ERROR_CODE::DISABLED_WHISPER, "DISABLED_WHISPER" }, 
+        { ERROR_CODE::DISABLED_WHISPER_TARGET, "DISABLED_WHISPER_TARGET" }
     };
 
     auto i = enums.find(k);
@@ -2492,10 +2501,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_GROUP_ALREADY_JOINED");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_TARGET_ALREADY_JOINED);
     lua_setglobal(lua, "ERROR_CODE_GROUP_TARGET_ALREADY_JOINED");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_DISABLED);
-    lua_setglobal(lua, "ERROR_CODE_GROUP_DISABLED");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_TARGET_DISABLED);
-    lua_setglobal(lua, "ERROR_CODE_GROUP_TARGET_DISABLED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_GROUP);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_GROUP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_GROUP_TARGET);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_GROUP_TARGET");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::PASSWORD_NOT_MATCHED);
     lua_setglobal(lua, "ERROR_CODE_PASSWORD_NOT_MATCHED");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::BIRTHDAY_NOT_MATCHED);
@@ -2508,6 +2517,12 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_ALREADY_LOGIN");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_CHARACTER);
     lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CHARACTER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_OPTION);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_OPTION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_WHISPER);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_WHISPER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_WHISPER_TARGET);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_WHISPER_TARGET");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);

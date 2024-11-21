@@ -178,6 +178,19 @@ private:
         });
     }
 
+private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  me       { parameter_description }
+     * @param[in]  you      You
+     * @param[in]  error    The error
+     * @param      message  The message
+     *
+     * @return     { description_of_the_return_value }
+     */
+    void assert_whisper(const internal::response::Whisper& response) const;
+
 public:
     /**
      * @brief      { function_description }

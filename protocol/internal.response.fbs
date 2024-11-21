@@ -39,7 +39,7 @@ table Transfer {
 
 table Whisper {
 	from : string;
-	to: uint;
+	to: string;
 	message: string;
   host: uint;
   error: uint;

@@ -12,6 +12,3 @@ docker push cshyeon/fb:game
 
 docker build --tag cshyeon/fb:internal -f http/Dockerfile --build-arg SERVICE=internal .
 docker push cshyeon/fb:internal
-
-docker build --tag cshyeon/fb:db -f http/Dockerfile --build-arg SERVICE=db .
-docker push cshyeon/fb:db

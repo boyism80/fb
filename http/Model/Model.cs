@@ -280,10 +280,10 @@ namespace Fb.Model.EnumValue
         GroupAlreadyJoined = 2, 
         [EnumMember(Value = "GROUP_TARGET_ALREADY_JOINED")]
         GroupTargetAlreadyJoined = 3, 
-        [EnumMember(Value = "GROUP_DISABLED")]
-        GroupDisabled = 4, 
-        [EnumMember(Value = "GROUP_TARGET_DISABLED")]
-        GroupTargetDisabled = 5, 
+        [EnumMember(Value = "DISABLED_GROUP")]
+        DisabledGroup = 4, 
+        [EnumMember(Value = "DISABLED_GROUP_TARGET")]
+        DisabledGroupTarget = 5, 
         [EnumMember(Value = "PASSWORD_NOT_MATCHED")]
         PasswordNotMatched = 6, 
         [EnumMember(Value = "BIRTHDAY_NOT_MATCHED")]
@@ -295,7 +295,13 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "ALREADY_LOGIN")]
         AlreadyLogin = 10, 
         [EnumMember(Value = "NOT_FOUND_CHARACTER")]
-        NotFoundCharacter = 11
+        NotFoundCharacter = 11, 
+        [EnumMember(Value = "NOT_FOUND_OPTION")]
+        NotFoundOption = 12, 
+        [EnumMember(Value = "DISABLED_WHISPER")]
+        DisabledWhisper = 13, 
+        [EnumMember(Value = "DISABLED_WHISPER_TARGET")]
+        DisabledWhisperTarget = 14
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

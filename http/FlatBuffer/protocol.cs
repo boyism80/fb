@@ -3258,7 +3258,7 @@ namespace fb.protocol._internal.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Whisper;
         public string From { get; set; } = string.Empty;
-        public uint To { get; set; } = 0;
+        public string To { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public uint Host { get; set; } = 0;
         public uint Error { get; set; } = 0;
