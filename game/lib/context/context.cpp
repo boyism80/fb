@@ -771,7 +771,7 @@ void context::amqp_thread()
                     if (you == nullptr)
                         throw std::runtime_error(std::format("cannot find whisper target user : {}", response.to));
 
-                    you->message(std::format("{}< {}", response.from, response.message));
+                    you->message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
                 }
                 catch (std::exception& e)
                 {
