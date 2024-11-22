@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Fb.Model.EnumValue;
 using Http.Redis;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -11,19 +12,19 @@ namespace Http.Service
         public required string RedisKey { get; set; }
     };
 
-    public class DbExecuteService : BackgroundService
+    public class WriteBackService : BackgroundService
     {
         private readonly RedisService _redisService;
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
-        private readonly ILogger<DbExecuteService> _logger;
+        private readonly ILogger<WriteBackService> _logger;
         private const string RedisBufferKey = "exec-buffer";
         private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
 
-        public DbExecuteService(RedisService redisService,
+        public WriteBackService(RedisService redisService,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
-            ILogger<DbExecuteService> logger)
+            ILogger<WriteBackService> logger)
         {
             _redisService = redisService;
             _configuration = configuration;
@@ -58,7 +59,7 @@ namespace Http.Service
                 try
                 {
                     var connRedis = _redisService.Connection;
-                    var success = await connRedis.Sync($"write-back-{db}", (Func<Task<bool>>)(async () =>
+                    var success = await connRedis.TrySync($"write-back-{db}", async () =>
                     {
                         var result = await connRedis.ScriptEvaluateAsync("pop_sql_range.lua", new
                         {
@@ -85,10 +86,23 @@ namespace Http.Service
                             });
                         }
                         return true;
-                    }));
+                    });
 
                     if (!success)
                         await Task.Delay(_delay, stoppingToken);
+                }
+                catch (LogicException e)
+                {
+                    switch (e.Error)
+                    {
+                        case ErrorCode.DistributedLockFailed:
+                            await Task.Delay(_delay, stoppingToken);
+                            break;
+
+                        default:
+                            _logger.LogError(e, e.Message);
+                            break;
+                    }
                 }
                 catch (Exception e)
                 {

@@ -301,7 +301,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "DISABLED_WHISPER")]
         DisabledWhisper = 13, 
         [EnumMember(Value = "DISABLED_WHISPER_TARGET")]
-        DisabledWhisperTarget = 14
+        DisabledWhisperTarget = 14, 
+        [EnumMember(Value = "DISTRIBUTED_LOCK_FAILED")]
+        DistributedLockFailed = 15
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

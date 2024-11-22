@@ -56,11 +56,11 @@ namespace Http.Reepository
     {
         private readonly Dictionary<string, string> _local = new Dictionary<string, string>();
         private readonly RedisService _redisService;
-        private readonly DbExecuteService _dbExecuteService;
+        private readonly WriteBackService _dbExecuteService;
 
         protected RedisValueRepository(DbContext dbContext,
             RedisService redisService,
-            DbExecuteService dbExecuteService) : base(dbContext)
+            WriteBackService dbExecuteService) : base(dbContext)
         {
             _redisService = redisService;
             _dbExecuteService = dbExecuteService;
@@ -127,11 +127,11 @@ namespace Http.Reepository
     {
         private readonly Dictionary<string, Dictionary<string, string>> _local = new Dictionary<string, Dictionary<string, string>>();
         private readonly RedisService _redisService;
-        private readonly DbExecuteService _dbExecuteService;
+        private readonly WriteBackService _dbExecuteService;
 
         protected RedisHashRepository(DbContext dbContext,
             RedisService redisService,
-            DbExecuteService dbExecuteService) : base(dbContext)
+            WriteBackService dbExecuteService) : base(dbContext)
         {
             _redisService = redisService;
             _dbExecuteService = dbExecuteService;

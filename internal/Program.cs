@@ -58,8 +58,8 @@ public class Program
         builder.Services.AddSingleton<RabbitMqService>();
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddScoped<DbContext>();
-        builder.Services.AddSingleton<DbExecuteService>();
-        builder.Services.AddHostedService(p => p.GetRequiredService<DbExecuteService>());
+        builder.Services.AddSingleton<WriteBackService>();
+        builder.Services.AddHostedService(p => p.GetRequiredService<WriteBackService>());
 
         var app = builder.Build();
         var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;

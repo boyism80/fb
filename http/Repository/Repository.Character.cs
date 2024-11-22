@@ -8,7 +8,7 @@ namespace Http.Reepository
     {
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
-            DbExecuteService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
+            WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
         {
         }
 
