@@ -516,7 +516,8 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
                 "/in-game/transfer",
                 fb::protocol::internal::request::Transfer{fb::protocol::internal::Service::Game,
                                                           map.model.host,
-                                                          me.name()});
+                                                          me.name(),
+                                                          false});
 
         switch (static_cast<ERROR_CODE>(response.error))
         {

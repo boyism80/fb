@@ -29,7 +29,8 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SERVICE = 4,
     VT_ID = 6,
-    VT_NAME = 8
+    VT_NAME = 8,
+    VT_FORCE_SHUTDOWN = 10
   };
   fb::protocol::internal::raw::Service service() const {
     return static_cast<fb::protocol::internal::raw::Service>(GetField<int8_t>(VT_SERVICE, 0));
@@ -40,12 +41,16 @@ struct Transfer FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
   }
+  bool force_shutdown() const {
+    return GetField<uint8_t>(VT_FORCE_SHUTDOWN, 0) != 0;
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int8_t>(verifier, VT_SERVICE, 1) &&
            VerifyField<uint8_t>(verifier, VT_ID, 1) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
+           VerifyField<uint8_t>(verifier, VT_FORCE_SHUTDOWN, 1) &&
            verifier.EndTable();
   }
 };
@@ -63,6 +68,9 @@ struct TransferBuilder {
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Transfer::VT_NAME, name);
   }
+  void add_force_shutdown(bool force_shutdown) {
+    fbb_.AddElement<uint8_t>(Transfer::VT_FORCE_SHUTDOWN, static_cast<uint8_t>(force_shutdown), 0);
+  }
   explicit TransferBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -78,9 +86,11 @@ inline ::flatbuffers::Offset<Transfer> CreateTransfer(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> name = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    bool force_shutdown = false) {
   TransferBuilder builder_(_fbb);
   builder_.add_name(name);
+  builder_.add_force_shutdown(force_shutdown);
   builder_.add_id(id);
   builder_.add_service(service);
   return builder_.Finish();
@@ -90,13 +100,15 @@ inline ::flatbuffers::Offset<Transfer> CreateTransferDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     fb::protocol::internal::raw::Service service = fb::protocol::internal::raw::Service_Gateway,
     uint8_t id = 0,
-    const char *name = nullptr) {
+    const char *name = nullptr,
+    bool force_shutdown = false) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   return fb::protocol::internal::request::raw::CreateTransfer(
       _fbb,
       service,
       id,
-      name__);
+      name__,
+      force_shutdown);
 }
 
 inline const fb::protocol::internal::request::raw::Transfer *GetTransfer(const void *buf) {

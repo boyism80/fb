@@ -221,7 +221,8 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.ForceShutdown));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -848,7 +849,8 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.ForceShutdown));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -1488,7 +1490,8 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.Transfer.CreateTransfer(builder,
                 builder.Build(value.Service),
                 builder.Build(value.Id),
-                builder.Build(value.Name));
+                builder.Build(value.Name),
+                builder.Build(value.ForceShutdown));
         }
         public static Offset<fb.protocol._internal.request.raw.Whisper> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Whisper value)
         {
@@ -2449,6 +2452,7 @@ namespace fb.protocol._internal.request
         public fb.protocol._internal.Service Service { get; set; }
         public byte Id { get; set; } = 0;
         public string Name { get; set; } = null;
+        public bool ForceShutdown { get; set; } = false;
 
         public Transfer()
         { }
@@ -2458,6 +2462,7 @@ namespace fb.protocol._internal.request
             Service = (fb.protocol._internal.Service)raw.Service;
             Id = raw.Id;
             Name = raw.Name;
+            ForceShutdown = raw.ForceShutdown;
         }
 
         public Transfer(byte[] bytes) : this(fb.protocol._internal.request.raw.Transfer.GetRootAsTransfer(new ByteBuffer(bytes)))

@@ -992,20 +992,21 @@ public:
     fb::protocol::internal::Service service;
     uint8_t id = 0;
     std::optional<std::string> name = std::nullopt;
+    bool force_shutdown = false;
 
 public:
     Transfer() = default;
 
     Transfer(const Transfer& x)
-        : service(x.service), id(x.id), name(x.name)
+        : service(x.service), id(x.id), name(x.name), force_shutdown(x.force_shutdown)
     { }
 
-    Transfer(fb::protocol::internal::Service service, uint8_t id, const std::optional<std::string>& name)
-        : service(service), id(id), name(name)
+    Transfer(fb::protocol::internal::Service service, uint8_t id, const std::optional<std::string>& name, bool force_shutdown)
+        : service(service), id(id), name(name), force_shutdown(force_shutdown)
     { }
 
     Transfer(const fb::protocol::internal::request::raw::Transfer& raw)
-        : service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(raw.name() != nullptr ? flatbuffers::option::decode(raw.name()->c_str()) : std::optional<std::string>())
+        : service((fb::protocol::internal::Service)raw.service()), id(raw.id()), name(raw.name() != nullptr ? flatbuffers::option::decode(raw.name()->c_str()) : std::optional<std::string>()), force_shutdown(raw.force_shutdown())
     { }
 
 public:
@@ -2880,7 +2881,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> build<fb::pr
     return fb::protocol::internal::request::raw::CreateTransfer(builder,
             flatbuffers::build<fb::protocol::internal::Service>(builder, value.service),
             flatbuffers::build<uint8_t>(builder, value.id),
-            flatbuffers::build<std::optional<std::string>>(builder, value.name));
+            flatbuffers::build<std::optional<std::string>>(builder, value.name),
+            flatbuffers::build<bool>(builder, value.force_shutdown));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Whisper> build<fb::protocol::internal::request::Whisper>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Whisper& value)

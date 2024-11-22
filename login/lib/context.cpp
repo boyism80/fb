@@ -266,7 +266,7 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
         auto&& response3 = co_await this->post<internal::request::Transfer, internal::response::Transfer>(
             "internal",
             "/in-game/transfer",
-            internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name});
+            internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
         if (this->sockets.contains(fd) == false)
             co_return false;
 

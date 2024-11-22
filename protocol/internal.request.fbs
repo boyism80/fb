@@ -27,6 +27,7 @@ table Transfer {
   service: fb.protocol.internal.Service;
   id: ubyte;
   name: string?;
+  force_shutdown: bool;
 }
 
 

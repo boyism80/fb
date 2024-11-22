@@ -117,7 +117,7 @@ namespace Internal.Controllers
                 if (connectedGameConf.IsNull)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
-                if (string.IsNullOrEmpty(request.Name) == false)
+                if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
                     // TODO: 루아스크립트
                     var session = await connection.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
