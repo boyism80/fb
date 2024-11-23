@@ -13,8 +13,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.groupmember_generated.h"
-
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -32,11 +30,11 @@ struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_HOST = 8,
     VT_ERROR = 10
   };
-  const ::flatbuffers::String *id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_ID);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  const fb::protocol::internal::raw::GroupMember *member() const {
-    return GetPointer<const fb::protocol::internal::raw::GroupMember *>(VT_MEMBER);
+  const ::flatbuffers::String *member() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -46,10 +44,9 @@ struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ID) &&
-           verifier.VerifyString(id()) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
            VerifyOffset(verifier, VT_MEMBER) &&
-           verifier.VerifyTable(member()) &&
+           verifier.VerifyString(member()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
@@ -60,10 +57,10 @@ struct EnterGroupBuilder {
   typedef EnterGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(::flatbuffers::Offset<::flatbuffers::String> id) {
-    fbb_.AddOffset(EnterGroup::VT_ID, id);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(EnterGroup::VT_ID, id, 0);
   }
-  void add_member(::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember> member) {
+  void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
     fbb_.AddOffset(EnterGroup::VT_MEMBER, member);
   }
   void add_host(uint32_t host) {
@@ -85,8 +82,8 @@ struct EnterGroupBuilder {
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> id = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember> member = 0,
+    uint32_t id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> member = 0,
     uint32_t host = 0,
     uint32_t error = 0) {
   EnterGroupBuilder builder_(_fbb);
@@ -99,15 +96,15 @@ inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *id = nullptr,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember> member = 0,
+    uint32_t id = 0,
+    const char *member = nullptr,
     uint32_t host = 0,
     uint32_t error = 0) {
-  auto id__ = id ? _fbb.CreateString(id) : 0;
+  auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::response::raw::CreateEnterGroup(
       _fbb,
-      id__,
-      member,
+      id,
+      member__,
       host,
       error);
 }

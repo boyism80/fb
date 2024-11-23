@@ -415,18 +415,18 @@ void context::on_option(character& me, SETTING option, bool enabled)
         auto group = me.group();
         if (group != nullptr)
         {
-            if (group->members().size() == 1)
-            {
-                this->send(me, fb_resp::message("그룹 해체", MESSAGE_TYPE::STATE), scope::GROUP);
-                group::destroy(*group);
-            }
-            else
-            {
-                auto              leader = group->leave(me);
-                std::stringstream sstream;
-                sstream << me.name() << "님 그룹 탈퇴";
-                this->send(*leader, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
-            }
+            // if (group->members().size() == 1)
+            //{
+            //     this->send(me, fb_resp::message("그룹 해체", MESSAGE_TYPE::STATE), scope::GROUP);
+            //     group::destroy(*group);
+            // }
+            // else
+            //{
+            //     auto              leader = group->leave(me);
+            //     std::stringstream sstream;
+            //     sstream << me.name() << "님 그룹 탈퇴";
+            //     this->send(*leader, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
+            // }
         }
 
         sstream << "그룹허가    ";

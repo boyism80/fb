@@ -41,6 +41,7 @@ table Character {
     ring_right_color: ubyte?;
     aux_top_color: ubyte?;
     aux_bot_color: ubyte?;
+    group: uint?;
     clan: uint?;
     updated_date: string;
 }
@@ -95,11 +96,7 @@ table Article {
 }
 
 table Group {
-    master: uint;
-    members: [GroupMember];
-}
-
-table GroupMember {
-    uid: uint;
-    name: string;
+    id: uint;
+    master: string;
+    members: [string];
 }

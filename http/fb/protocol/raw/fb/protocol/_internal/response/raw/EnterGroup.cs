@@ -20,33 +20,33 @@ public struct EnterGroup : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public EnterGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Id { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Member { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetIdBytes() { return __p.__vector_as_span<byte>(4, 1); }
+  public Span<byte> GetMemberBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetIdBytes() { return __p.__vector_as_arraysegment(4); }
+  public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetIdArray() { return __p.__vector_as_array<byte>(4); }
-  public fb.protocol._internal.raw.GroupMember? Member { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.GroupMember?)(new fb.protocol._internal.raw.GroupMember()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(6); }
   public uint Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Error { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.EnterGroup> CreateEnterGroup(FlatBufferBuilder builder,
-      StringOffset idOffset = default(StringOffset),
-      Offset<fb.protocol._internal.raw.GroupMember> memberOffset = default(Offset<fb.protocol._internal.raw.GroupMember>),
+      uint id = 0,
+      StringOffset memberOffset = default(StringOffset),
       uint host = 0,
       uint error = 0) {
     builder.StartTable(4);
     EnterGroup.AddError(builder, error);
     EnterGroup.AddHost(builder, host);
     EnterGroup.AddMember(builder, memberOffset);
-    EnterGroup.AddId(builder, idOffset);
+    EnterGroup.AddId(builder, id);
     return EnterGroup.EndEnterGroup(builder);
   }
 
   public static void StartEnterGroup(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddId(FlatBufferBuilder builder, StringOffset idOffset) { builder.AddOffset(0, idOffset.Value, 0); }
-  public static void AddMember(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.GroupMember> memberOffset) { builder.AddOffset(1, memberOffset.Value, 0); }
+  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
+  public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(1, memberOffset.Value, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(2, host, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(3, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.EnterGroup> EndEnterGroup(FlatBufferBuilder builder) {
@@ -63,8 +63,8 @@ static public class EnterGroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Id*/, false)
-      && verifier.VerifyTable(tablePos, 6 /*Member*/, fb.protocol._internal.raw.GroupMemberVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*Member*/, false)
       && verifier.VerifyField(tablePos, 8 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);

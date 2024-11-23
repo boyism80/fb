@@ -446,17 +446,14 @@ public:
         auto group = this->session.group();
         if (group != nullptr)
         {
-            std::stringstream sstream;
-            sstream << "그룹원" << std::endl << "  * " << group->leader().name() << std::endl;
+            group->lock<void>([&writer](fb::game::group& g) {
+                auto sstream = std::stringstream();
+                sstream << "그룹원" << std::endl << "  * " << g.master() << std::endl;
 
-            for (auto member : group->members())
-            {
-                if (group->leader() == *member)
-                    continue;
-
-                sstream << "    " << member->name() << std::endl;
-            }
-            writer.write<std::string>(sstream.str());
+                for (auto& member : g.members())
+                    sstream << "    " << member << std::endl;
+                writer.write<std::string>(sstream.str());
+            });
         }
         else
         {

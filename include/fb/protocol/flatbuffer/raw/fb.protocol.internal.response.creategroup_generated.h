@@ -28,11 +28,15 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef CreateGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_GROUP = 4,
-    VT_HOST = 6,
-    VT_ERROR = 8
+    VT_MEMBER = 6,
+    VT_HOST = 8,
+    VT_ERROR = 10
   };
   const fb::protocol::internal::raw::Group *group() const {
     return GetPointer<const fb::protocol::internal::raw::Group *>(VT_GROUP);
+  }
+  const ::flatbuffers::String *member() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -44,6 +48,8 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_GROUP) &&
            verifier.VerifyTable(group()) &&
+           VerifyOffset(verifier, VT_MEMBER) &&
+           verifier.VerifyString(member()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
@@ -56,6 +62,9 @@ struct CreateGroupBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_group(::flatbuffers::Offset<fb::protocol::internal::raw::Group> group) {
     fbb_.AddOffset(CreateGroup::VT_GROUP, group);
+  }
+  void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
+    fbb_.AddOffset(CreateGroup::VT_MEMBER, member);
   }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(CreateGroup::VT_HOST, host, 0);
@@ -77,13 +86,30 @@ struct CreateGroupBuilder {
 inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> member = 0,
     uint32_t host = 0,
     uint32_t error = 0) {
   CreateGroupBuilder builder_(_fbb);
   builder_.add_error(error);
   builder_.add_host(host);
+  builder_.add_member(member);
   builder_.add_group(group);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroupDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
+    const char *member = nullptr,
+    uint32_t host = 0,
+    uint32_t error = 0) {
+  auto member__ = member ? _fbb.CreateString(member) : 0;
+  return fb::protocol::internal::response::raw::CreateCreateGroup(
+      _fbb,
+      group,
+      member__,
+      host,
+      error);
 }
 
 inline const fb::protocol::internal::response::raw::CreateGroup *GetCreateGroup(const void *buf) {

@@ -28,16 +28,17 @@ struct LeaveGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MEMBER = 4,
     VT_HOST = 6
   };
-  uint32_t member() const {
-    return GetField<uint32_t>(VT_MEMBER, 0);
+  const ::flatbuffers::String *member() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
-  uint8_t host() const {
-    return GetField<uint8_t>(VT_HOST, 0);
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_MEMBER, 4) &&
-           VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
+           VerifyOffset(verifier, VT_MEMBER) &&
+           verifier.VerifyString(member()) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            verifier.EndTable();
   }
 };
@@ -46,11 +47,11 @@ struct LeaveGroupBuilder {
   typedef LeaveGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_member(uint32_t member) {
-    fbb_.AddElement<uint32_t>(LeaveGroup::VT_MEMBER, member, 0);
+  void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
+    fbb_.AddOffset(LeaveGroup::VT_MEMBER, member);
   }
-  void add_host(uint8_t host) {
-    fbb_.AddElement<uint8_t>(LeaveGroup::VT_HOST, host, 0);
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(LeaveGroup::VT_HOST, host, 0);
   }
   explicit LeaveGroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -65,12 +66,23 @@ struct LeaveGroupBuilder {
 
 inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t member = 0,
-    uint8_t host = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> member = 0,
+    uint32_t host = 0) {
   LeaveGroupBuilder builder_(_fbb);
-  builder_.add_member(member);
   builder_.add_host(host);
+  builder_.add_member(member);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroupDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    const char *member = nullptr,
+    uint32_t host = 0) {
+  auto member__ = member ? _fbb.CreateString(member) : 0;
+  return fb::protocol::internal::request::raw::CreateLeaveGroup(
+      _fbb,
+      member__,
+      host);
 }
 
 inline const fb::protocol::internal::request::raw::LeaveGroup *GetLeaveGroup(const void *buf) {

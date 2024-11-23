@@ -133,17 +133,17 @@ table SetOption {
 
 table CreateGroup {
   master: uint;
-  member: uint;
-  host: ubyte;
+  member: string;
+  host: uint;
 }
 
 table EnterGroup {
   id: string;
   member: uint;
-  host: ubyte;
+  host: uint;
 }
 
 table LeaveGroup {
-  member: uint;
-  host: ubyte;
+  member: string;
+  host: uint;
 }

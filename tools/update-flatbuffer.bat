@@ -2,6 +2,7 @@
 
 git submodule update --recursive --remote flatbuffer-ex
 PUSHD flatbuffer-ex
+del /S /Q output
 CALL dotnet publish -c Release -o "bin"
 CALL bin\FlatBufferEx.exe --path=..\..\protocol --lang="c++|c#" --include="fb/protocol/flatbuffer/raw"
 POPD

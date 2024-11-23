@@ -14,7 +14,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.articlesummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.article_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.group_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.groupmember_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.logout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.ping_generated.h>
@@ -56,6 +55,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.reservename_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.save_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setoption_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getgroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.creategroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.entergroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.leavegroup_generated.h>
@@ -70,7 +70,6 @@ namespace fb::protocol::internal
     class ArticleSummary;
     class Article;
     class Group;
-    class GroupMember;
     enum class Service : int8_t;
 } // end of namespace fb::protocol::internal
 namespace fb::protocol::internal::request
@@ -119,6 +118,7 @@ namespace fb::protocol::internal::response
     class ReserveName;
     class Save;
     class SetOption;
+    class GetGroup;
     class CreateGroup;
     class EnterGroup;
     class LeaveGroup;
@@ -221,7 +221,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Option> { typedef fl
 template <> struct FlatBufferOffset<fb::protocol::internal::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Article> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Group> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Group> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::GroupMember> { typedef flatbuffers::Offset<fb::protocol::internal::raw::GroupMember> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> type; };
@@ -263,6 +262,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::MakeCharac
 template <> struct FlatBufferOffset<fb::protocol::internal::response::ReserveName> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ReserveName> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Save> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Save> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetOption> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::GetGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::CreateGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::CreateGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::LeaveGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> type; };
@@ -290,8 +290,6 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Article> build<fb::protocol::internal::Article>(FlatBufferBuilder& builder, const fb::protocol::internal::Article& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::internal::Group>(FlatBufferBuilder& builder, const fb::protocol::internal::Group& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::raw::GroupMember> build<fb::protocol::internal::GroupMember>(FlatBufferBuilder& builder, const fb::protocol::internal::GroupMember& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <>
@@ -375,6 +373,8 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Save> build<fb::proto
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> build<fb::protocol::internal::response::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetOption& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> build<fb::protocol::internal::response::GetGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetGroup& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::CreateGroup> build<fb::protocol::internal::response::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::CreateGroup& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> build<fb::protocol::internal::response::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::EnterGroup& value);
@@ -409,7 +409,6 @@ enum class FlatBufferProtocolType
     ArticleSummary,
     Article,
     Group,
-    GroupMember,
 };
 
 class Position
@@ -491,6 +490,7 @@ public:
     std::optional<uint8_t> ring_right_color = std::nullopt;
     std::optional<uint8_t> aux_top_color = std::nullopt;
     std::optional<uint8_t> aux_bot_color = std::nullopt;
+    std::optional<uint32_t> group = std::nullopt;
     std::optional<uint32_t> clan = std::nullopt;
     std::string updated_date;
 
@@ -498,15 +498,15 @@ public:
     Character() = default;
 
     Character(const Character& x)
-        : id(x.id), name(x.name), pw(x.pw), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), clan(x.clan), updated_date(x.updated_date)
+        : id(x.id), name(x.name), pw(x.pw), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), group(x.group), clan(x.clan), updated_date(x.updated_date)
     { }
 
-    Character(uint32_t id, const std::string& name, const std::string& pw, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::optional<uint32_t>& clan, const std::string& updated_date)
-        : id(id), name(name), pw(pw), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), clan(clan), updated_date(updated_date)
+    Character(uint32_t id, const std::string& name, const std::string& pw, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, const std::string& updated_date)
+        : id(id), name(name), pw(pw), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), group(group), clan(clan), updated_date(updated_date)
     { }
 
     Character(const fb::protocol::internal::raw::Character& raw)
-        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
     { }
 
 public:
@@ -755,22 +755,23 @@ public:
     static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Group;
 
 public:
-    uint32_t master = 0;
-    std::vector<fb::protocol::internal::GroupMember> members = {};
+    uint32_t id = 0;
+    std::string master;
+    std::vector<std::string> members = {};
 
 public:
     Group() = default;
 
     Group(const Group& x)
-        : master(x.master), members(x.members)
+        : id(x.id), master(x.master), members(x.members)
     { }
 
-    Group(uint32_t master, std::vector<fb::protocol::internal::GroupMember> members)
-        : master(master), members(members)
+    Group(uint32_t id, const std::string& master, std::vector<std::string> members)
+        : id(id), master(master), members(members)
     { }
 
     Group(const fb::protocol::internal::raw::Group& raw)
-        : master(raw.master()), members(unpack<fb::protocol::internal::GroupMember>(raw.members()))
+        : id(raw.id()), master(flatbuffers::option::decode(raw.master()->c_str())), members(unpack<std::string>(raw.members()))
     { }
 
 public:
@@ -787,46 +788,6 @@ public:
     {
         auto raw = fb::protocol::internal::raw::GetGroup(bytes);
         return Group(*raw);
-    }
-};
-class GroupMember
-{
-public:
-    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::GroupMember;
-
-public:
-    uint32_t uid = 0;
-    std::string name;
-
-public:
-    GroupMember() = default;
-
-    GroupMember(const GroupMember& x)
-        : uid(x.uid), name(x.name)
-    { }
-
-    GroupMember(uint32_t uid, const std::string& name)
-        : uid(uid), name(name)
-    { }
-
-    GroupMember(const fb::protocol::internal::raw::GroupMember& raw)
-        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str()))
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::GroupMember>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GroupMember Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::raw::GetGroupMember(bytes);
-        return GroupMember(*raw);
     }
 };
 
@@ -1645,8 +1606,8 @@ public:
 
 public:
     uint32_t master = 0;
-    uint32_t member = 0;
-    uint8_t host = 0;
+    std::string member;
+    uint32_t host = 0;
 
 public:
     CreateGroup() = default;
@@ -1655,12 +1616,12 @@ public:
         : master(x.master), member(x.member), host(x.host)
     { }
 
-    CreateGroup(uint32_t master, uint32_t member, uint8_t host)
+    CreateGroup(uint32_t master, const std::string& member, uint32_t host)
         : master(master), member(member), host(host)
     { }
 
     CreateGroup(const fb::protocol::internal::request::raw::CreateGroup& raw)
-        : master(raw.master()), member(raw.member()), host(raw.host())
+        : master(raw.master()), member(flatbuffers::option::decode(raw.member()->c_str())), host(raw.host())
     { }
 
 public:
@@ -1687,7 +1648,7 @@ public:
 public:
     std::string id;
     uint32_t member = 0;
-    uint8_t host = 0;
+    uint32_t host = 0;
 
 public:
     EnterGroup() = default;
@@ -1696,7 +1657,7 @@ public:
         : id(x.id), member(x.member), host(x.host)
     { }
 
-    EnterGroup(const std::string& id, uint32_t member, uint8_t host)
+    EnterGroup(const std::string& id, uint32_t member, uint32_t host)
         : id(id), member(member), host(host)
     { }
 
@@ -1726,8 +1687,8 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::LeaveGroup;
 
 public:
-    uint32_t member = 0;
-    uint8_t host = 0;
+    std::string member;
+    uint32_t host = 0;
 
 public:
     LeaveGroup() = default;
@@ -1736,12 +1697,12 @@ public:
         : member(x.member), host(x.host)
     { }
 
-    LeaveGroup(uint32_t member, uint8_t host)
+    LeaveGroup(const std::string& member, uint32_t host)
         : member(member), host(host)
     { }
 
     LeaveGroup(const fb::protocol::internal::request::raw::LeaveGroup& raw)
-        : member(raw.member()), host(raw.host())
+        : member(flatbuffers::option::decode(raw.member()->c_str())), host(raw.host())
     { }
 
 public:
@@ -1786,6 +1747,7 @@ enum class FlatBufferProtocolType
     ReserveName,
     Save,
     SetOption,
+    GetGroup,
     CreateGroup,
     EnterGroup,
     LeaveGroup,
@@ -2543,6 +2505,46 @@ public:
         return SetOption(*raw);
     }
 };
+class GetGroup
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetGroup;
+
+public:
+    fb::protocol::internal::Group group;
+    uint32_t error = 0;
+
+public:
+    GetGroup() = default;
+
+    GetGroup(const GetGroup& x)
+        : group(x.group), error(x.error)
+    { }
+
+    GetGroup(const fb::protocol::internal::Group& group, uint32_t error)
+        : group(group), error(error)
+    { }
+
+    GetGroup(const fb::protocol::internal::response::raw::GetGroup& raw)
+        : group(*raw.group()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::GetGroup>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static GetGroup Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetGetGroup(bytes);
+        return GetGroup(*raw);
+    }
+};
 class CreateGroup
 {
 public:
@@ -2550,6 +2552,7 @@ public:
 
 public:
     fb::protocol::internal::Group group;
+    std::string member;
     uint32_t host = 0;
     uint32_t error = 0;
 
@@ -2557,15 +2560,15 @@ public:
     CreateGroup() = default;
 
     CreateGroup(const CreateGroup& x)
-        : group(x.group), host(x.host), error(x.error)
+        : group(x.group), member(x.member), host(x.host), error(x.error)
     { }
 
-    CreateGroup(const fb::protocol::internal::Group& group, uint32_t host, uint32_t error)
-        : group(group), host(host), error(error)
+    CreateGroup(const fb::protocol::internal::Group& group, const std::string& member, uint32_t host, uint32_t error)
+        : group(group), member(member), host(host), error(error)
     { }
 
     CreateGroup(const fb::protocol::internal::response::raw::CreateGroup& raw)
-        : group(*raw.group()), host(raw.host()), error(raw.error())
+        : group(*raw.group()), member(flatbuffers::option::decode(raw.member()->c_str())), host(raw.host()), error(raw.error())
     { }
 
 public:
@@ -2590,8 +2593,8 @@ public:
     static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::EnterGroup;
 
 public:
-    std::string id;
-    fb::protocol::internal::GroupMember member;
+    uint32_t id = 0;
+    std::string member;
     uint32_t host = 0;
     uint32_t error = 0;
 
@@ -2602,12 +2605,12 @@ public:
         : id(x.id), member(x.member), host(x.host), error(x.error)
     { }
 
-    EnterGroup(const std::string& id, const fb::protocol::internal::GroupMember& member, uint32_t host, uint32_t error)
+    EnterGroup(uint32_t id, const std::string& member, uint32_t host, uint32_t error)
         : id(id), member(member), host(host), error(error)
     { }
 
     EnterGroup(const fb::protocol::internal::response::raw::EnterGroup& raw)
-        : id(flatbuffers::option::decode(raw.id()->c_str())), member(*raw.member()), host(raw.host()), error(raw.error())
+        : id(raw.id()), member(flatbuffers::option::decode(raw.member()->c_str())), host(raw.host()), error(raw.error())
     { }
 
 public:
@@ -2632,8 +2635,10 @@ public:
     static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::LeaveGroup;
 
 public:
-    std::string id;
-    fb::protocol::internal::GroupMember member;
+    uint32_t id = 0;
+    fb::protocol::internal::Group group;
+    std::string member;
+    bool break_up = false;
     uint32_t host = 0;
     uint32_t error = 0;
 
@@ -2641,15 +2646,15 @@ public:
     LeaveGroup() = default;
 
     LeaveGroup(const LeaveGroup& x)
-        : id(x.id), member(x.member), host(x.host), error(x.error)
+        : id(x.id), group(x.group), member(x.member), break_up(x.break_up), host(x.host), error(x.error)
     { }
 
-    LeaveGroup(const std::string& id, const fb::protocol::internal::GroupMember& member, uint32_t host, uint32_t error)
-        : id(id), member(member), host(host), error(error)
+    LeaveGroup(uint32_t id, const fb::protocol::internal::Group& group, const std::string& member, bool break_up, uint32_t host, uint32_t error)
+        : id(id), group(group), member(member), break_up(break_up), host(host), error(error)
     { }
 
     LeaveGroup(const fb::protocol::internal::response::raw::LeaveGroup& raw)
-        : id(flatbuffers::option::decode(raw.id()->c_str())), member(*raw.member()), host(raw.host()), error(raw.error())
+        : id(raw.id()), group(*raw.group()), member(flatbuffers::option::decode(raw.member()->c_str())), break_up(raw.break_up()), host(raw.host()), error(raw.error())
     { }
 
 public:
@@ -2775,6 +2780,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Character> build<fb::protocol::
             flatbuffers::build<std::optional<uint8_t>>(builder, value.ring_right_color),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.aux_top_color),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.aux_bot_color),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.group),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.clan),
             flatbuffers::build<std::string>(builder, value.updated_date));
 }
@@ -2841,15 +2847,9 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::internal::Group>(FlatBufferBuilder& builder, const fb::protocol::internal::Group& value)
 {
     return fb::protocol::internal::raw::CreateGroup(builder,
-            flatbuffers::build<uint32_t>(builder, value.master),
-            flatbuffers::build<std::vector<fb::protocol::internal::GroupMember>>(builder, value.members));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::raw::GroupMember> build<fb::protocol::internal::GroupMember>(FlatBufferBuilder& builder, const fb::protocol::internal::GroupMember& value)
-{
-    return fb::protocol::internal::raw::CreateGroupMember(builder,
-            flatbuffers::build<uint32_t>(builder, value.uid),
-            flatbuffers::build<std::string>(builder, value.name));
+            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<std::string>(builder, value.master),
+            flatbuffers::build<std::vector<std::string>>(builder, value.members));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)
@@ -3007,8 +3007,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::CreateGroup> build<fb:
 {
     return fb::protocol::internal::request::raw::CreateCreateGroup(builder,
             flatbuffers::build<uint32_t>(builder, value.master),
-            flatbuffers::build<uint32_t>(builder, value.member),
-            flatbuffers::build<uint8_t>(builder, value.host));
+            flatbuffers::build<std::string>(builder, value.member),
+            flatbuffers::build<uint32_t>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> build<fb::protocol::internal::request::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::EnterGroup& value)
@@ -3016,14 +3016,14 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> build<fb::
     return fb::protocol::internal::request::raw::CreateEnterGroup(builder,
             flatbuffers::build<std::string>(builder, value.id),
             flatbuffers::build<uint32_t>(builder, value.member),
-            flatbuffers::build<uint8_t>(builder, value.host));
+            flatbuffers::build<uint32_t>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveGroup> build<fb::protocol::internal::request::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveGroup& value)
 {
     return fb::protocol::internal::request::raw::CreateLeaveGroup(builder,
-            flatbuffers::build<uint32_t>(builder, value.member),
-            flatbuffers::build<uint8_t>(builder, value.host));
+            flatbuffers::build<std::string>(builder, value.member),
+            flatbuffers::build<uint32_t>(builder, value.host));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value)
@@ -3157,10 +3157,18 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::SetOption> build<fb::
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> build<fb::protocol::internal::response::GetGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetGroup& value)
+{
+    return fb::protocol::internal::response::raw::CreateGetGroup(builder,
+            flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::CreateGroup> build<fb::protocol::internal::response::CreateGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::CreateGroup& value)
 {
     return fb::protocol::internal::response::raw::CreateCreateGroup(builder,
             flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
+            flatbuffers::build<std::string>(builder, value.member),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
@@ -3168,8 +3176,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> build<fb::protocol::internal::response::EnterGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::EnterGroup& value)
 {
     return fb::protocol::internal::response::raw::CreateEnterGroup(builder,
-            flatbuffers::build<std::string>(builder, value.id),
-            flatbuffers::build<fb::protocol::internal::GroupMember>(builder, value.member),
+            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<std::string>(builder, value.member),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
@@ -3177,8 +3185,10 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> build<fb::protocol::internal::response::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::LeaveGroup& value)
 {
     return fb::protocol::internal::response::raw::CreateLeaveGroup(builder,
-            flatbuffers::build<std::string>(builder, value.id),
-            flatbuffers::build<fb::protocol::internal::GroupMember>(builder, value.member),
+            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<fb::protocol::internal::Group>(builder, value.group),
+            flatbuffers::build<std::string>(builder, value.member),
+            flatbuffers::build<bool>(builder, value.break_up),
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
@@ -3209,6 +3219,10 @@ std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::ty
             if constexpr (std::is_fundamental_v<T>)
             {
                 result.push_back(value->Get(i));
+            }
+            else if constexpr (std::is_same_v<T, std::string>)
+            {
+                result.push_back(flatbuffers::option::decode(value->Get(i)->c_str()));
             }
             else
             {

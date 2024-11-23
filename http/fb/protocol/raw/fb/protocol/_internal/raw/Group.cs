@@ -20,26 +20,36 @@ public struct Group : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Group __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Master { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public fb.protocol._internal.raw.GroupMember? Members(int j) { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.GroupMember?)(new fb.protocol._internal.raw.GroupMember()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int MembersLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Master { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMasterBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetMasterBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetMasterArray() { return __p.__vector_as_array<byte>(6); }
+  public string Members(int j) { int o = __p.__offset(8); return o != 0 ? __p.__string(__p.__vector(o) + j * 4) : null; }
+  public int MembersLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<fb.protocol._internal.raw.Group> CreateGroup(FlatBufferBuilder builder,
-      uint master = 0,
+      uint id = 0,
+      StringOffset masterOffset = default(StringOffset),
       VectorOffset membersOffset = default(VectorOffset)) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     Group.AddMembers(builder, membersOffset);
-    Group.AddMaster(builder, master);
+    Group.AddMaster(builder, masterOffset);
+    Group.AddId(builder, id);
     return Group.EndGroup(builder);
   }
 
-  public static void StartGroup(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(0, master, 0); }
-  public static void AddMembers(FlatBufferBuilder builder, VectorOffset membersOffset) { builder.AddOffset(1, membersOffset.Value, 0); }
-  public static VectorOffset CreateMembersVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.GroupMember>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.GroupMember>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.GroupMember>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.GroupMember>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
+  public static void AddMaster(FlatBufferBuilder builder, StringOffset masterOffset) { builder.AddOffset(1, masterOffset.Value, 0); }
+  public static void AddMembers(FlatBufferBuilder builder, VectorOffset membersOffset) { builder.AddOffset(2, membersOffset.Value, 0); }
+  public static VectorOffset CreateMembersVector(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, StringOffset[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, ArraySegment<StringOffset> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateMembersVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<StringOffset>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMembersVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<fb.protocol._internal.raw.Group> EndGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -55,8 +65,9 @@ static public class GroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Master*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyVectorOfTables(tablePos, 6 /*Members*/, fb.protocol._internal.raw.GroupMemberVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 6 /*Master*/, false)
+      && verifier.VerifyVectorOfStrings(tablePos, 8 /*Members*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

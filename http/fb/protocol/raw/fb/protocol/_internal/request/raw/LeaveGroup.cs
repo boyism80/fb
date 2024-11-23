@@ -20,21 +20,27 @@ public struct LeaveGroup : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public LeaveGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Member { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public byte Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public string Member { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMemberBytes() { return __p.__vector_as_span<byte>(4, 1); }
+#else
+  public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(4); }
+#endif
+  public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(4); }
+  public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.LeaveGroup> CreateLeaveGroup(FlatBufferBuilder builder,
-      uint member = 0,
-      byte host = 0) {
+      StringOffset memberOffset = default(StringOffset),
+      uint host = 0) {
     builder.StartTable(2);
-    LeaveGroup.AddMember(builder, member);
     LeaveGroup.AddHost(builder, host);
+    LeaveGroup.AddMember(builder, memberOffset);
     return LeaveGroup.EndLeaveGroup(builder);
   }
 
   public static void StartLeaveGroup(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddMember(FlatBufferBuilder builder, uint member) { builder.AddUint(0, member, 0); }
-  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(1, host, 0); }
+  public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(0, memberOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
   public static Offset<fb.protocol._internal.request.raw.LeaveGroup> EndLeaveGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.LeaveGroup>(o);
@@ -49,8 +55,8 @@ static public class LeaveGroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Member*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Host*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 4 /*Member*/, false)
+      && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

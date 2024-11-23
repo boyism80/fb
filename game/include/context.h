@@ -13,6 +13,7 @@
 #include <fb/model/model.h>
 #include <fb/amqp.h>
 #include <listener.h>
+#include <fb/locker.h>
 
 using namespace fb::protocol::internal;
 namespace fb_reqs  = fb::protocol::game::request;
@@ -55,16 +56,20 @@ public:
     };
 
 public:
-    using object_set         = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using transfer_param     = fb::protocol::game::request::login::transfer_param;
-    using rezen_container    = std::vector<fb::game::rezen>;
-    using protocol_generator = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
+    using object_set          = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using transfer_param      = fb::protocol::game::request::login::transfer_param;
+    using rezen_container     = std::vector<fb::game::rezen>;
+    using protocol_generator  = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
+    using character_container = fb::locker<std::unordered_map<std::string, fb::game::character*>>;
+    using group_container     = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::locker<fb::game::group>>>>;
 
 private:
     std::map<std::string, command_config> _commands;
     datetime                              _time;
     std::unique_ptr<fb::amqp::socket>     _amqp;
     std::unique_ptr<std::thread>          _amqp_thread;
+    character_container                   _characters;
+    group_container                       _groups;
 
 public:
     fb::model::model model;
@@ -116,9 +121,9 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool init_ch(const fb::protocol::internal::Character&   response,
-                 fb::game::character&                 session,
-                 const std::optional<transfer_param>& transfer);
+    async::task<bool> init_ch(const fb::protocol::internal::Character& response,
+                              fb::game::character&                     session,
+                              const std::optional<transfer_param>&     transfer);
 
     /**
      * @brief      Initializes the option.
@@ -190,6 +195,13 @@ private:
      * @return     { description_of_the_return_value }
      */
     void assert_whisper(const internal::response::Whisper& response) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  response  The response
+     */
+    void assert_group(const internal::response::CreateGroup& response) const;
 
 public:
     /**

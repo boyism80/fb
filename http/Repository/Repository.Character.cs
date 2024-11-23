@@ -64,6 +64,7 @@ namespace Http.Reepository
                     `ring_right_color`,
                     `aux_top_color`,
                     `aux_bot_color`,
+                    `group`,
                     `clan`,
                     `deleted`,
                     `created_date`,
@@ -103,6 +104,7 @@ namespace Http.Reepository
                     {value.RingRightColor.Escape()},
                     {value.AuxTopColor.Escape()},
                     {value.AuxBotColor.Escape()},
+                    {value.Group.Escape()},
                     {value.Clan.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
@@ -141,6 +143,7 @@ namespace Http.Reepository
                     `aux_top_color`=VALUES(`aux_top_color`),
                     `aux_bot_color`=VALUES(`aux_bot_color`),
                     `clan`=VALUES(`clan`),
+                    `group`=VALUES(`group`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;

@@ -534,27 +534,6 @@ int fb::game::character::builtin_level(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_group(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
-        return 0;
-
-    auto group = session->group();
-    if (group == nullptr)
-        thread->pushnil();
-    else
-        thread->pushobject(group);
-
-    return 1;
-}
-
 int fb::game::character::builtin_assert(lua_State* lua)
 {
     auto thread = fb::game::lua::get(lua);

@@ -13,8 +13,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
-#include "fb.protocol.internal.groupmember_generated.h"
-
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -26,21 +24,27 @@ struct GroupBuilder;
 struct Group FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef GroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MASTER = 4,
-    VT_MEMBERS = 6
+    VT_ID = 4,
+    VT_MASTER = 6,
+    VT_MEMBERS = 8
   };
-  uint32_t master() const {
-    return GetField<uint32_t>(VT_MASTER, 0);
+  uint32_t id() const {
+    return GetField<uint32_t>(VT_ID, 0);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember>> *members() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember>> *>(VT_MEMBERS);
+  const ::flatbuffers::String *master() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MASTER);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *members() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>> *>(VT_MEMBERS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
+           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyOffset(verifier, VT_MASTER) &&
+           verifier.VerifyString(master()) &&
            VerifyOffset(verifier, VT_MEMBERS) &&
            verifier.VerifyVector(members()) &&
-           verifier.VerifyVectorOfTables(members()) &&
+           verifier.VerifyVectorOfStrings(members()) &&
            verifier.EndTable();
   }
 };
@@ -49,10 +53,13 @@ struct GroupBuilder {
   typedef Group Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_master(uint32_t master) {
-    fbb_.AddElement<uint32_t>(Group::VT_MASTER, master, 0);
+  void add_id(uint32_t id) {
+    fbb_.AddElement<uint32_t>(Group::VT_ID, id, 0);
   }
-  void add_members(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember>>> members) {
+  void add_master(::flatbuffers::Offset<::flatbuffers::String> master) {
+    fbb_.AddOffset(Group::VT_MASTER, master);
+  }
+  void add_members(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> members) {
     fbb_.AddOffset(Group::VT_MEMBERS, members);
   }
   explicit GroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
@@ -68,22 +75,27 @@ struct GroupBuilder {
 
 inline ::flatbuffers::Offset<Group> CreateGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t master = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember>>> members = 0) {
+    uint32_t id = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> master = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<::flatbuffers::String>>> members = 0) {
   GroupBuilder builder_(_fbb);
   builder_.add_members(members);
   builder_.add_master(master);
+  builder_.add_id(id);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Group> CreateGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t master = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember>> *members = nullptr) {
-  auto members__ = members ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::GroupMember>>(*members) : 0;
+    uint32_t id = 0,
+    const char *master = nullptr,
+    const std::vector<::flatbuffers::Offset<::flatbuffers::String>> *members = nullptr) {
+  auto master__ = master ? _fbb.CreateString(master) : 0;
+  auto members__ = members ? _fbb.CreateVector<::flatbuffers::Offset<::flatbuffers::String>>(*members) : 0;
   return fb::protocol::internal::raw::CreateGroup(
       _fbb,
-      master,
+      id,
+      master__,
       members__);
 }
 

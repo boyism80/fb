@@ -117,23 +117,31 @@ table SetOption {
   success: bool;
 }
 
+table GetGroup {
+  group: fb.protocol.internal.Group;
+  error: uint;
+}
+
 table CreateGroup {
   group: fb.protocol.internal.Group;
+  member: string;
   host: uint;
   error: uint;
 }
 
 
 table EnterGroup {
-  id: string;
-  member: fb.protocol.internal.GroupMember;
+  id: uint;
+  member: string;
   host: uint;
   error: uint;
 }
 
 table LeaveGroup {
-  id: string;
-  member: fb.protocol.internal.GroupMember;
+  id: uint;
+  group: fb.protocol.internal.Group;
+  member: string;
+  break_up: bool;
   host: uint;
   error: uint;
 }

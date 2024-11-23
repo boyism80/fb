@@ -28,23 +28,23 @@ public struct EnterGroup : IFlatbufferObject
 #endif
   public byte[] GetIdArray() { return __p.__vector_as_array<byte>(4); }
   public uint Member { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public byte Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public uint Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.EnterGroup> CreateEnterGroup(FlatBufferBuilder builder,
       StringOffset idOffset = default(StringOffset),
       uint member = 0,
-      byte host = 0) {
+      uint host = 0) {
     builder.StartTable(3);
+    EnterGroup.AddHost(builder, host);
     EnterGroup.AddMember(builder, member);
     EnterGroup.AddId(builder, idOffset);
-    EnterGroup.AddHost(builder, host);
     return EnterGroup.EndEnterGroup(builder);
   }
 
   public static void StartEnterGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddId(FlatBufferBuilder builder, StringOffset idOffset) { builder.AddOffset(0, idOffset.Value, 0); }
   public static void AddMember(FlatBufferBuilder builder, uint member) { builder.AddUint(1, member, 0); }
-  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(2, host, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(2, host, 0); }
   public static Offset<fb.protocol._internal.request.raw.EnterGroup> EndEnterGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.EnterGroup>(o);
@@ -61,7 +61,7 @@ static public class EnterGroupVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*Id*/, false)
       && verifier.VerifyField(tablePos, 6 /*Member*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Host*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 8 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

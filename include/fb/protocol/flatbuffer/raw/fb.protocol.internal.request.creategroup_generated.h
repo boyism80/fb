@@ -32,17 +32,18 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t master() const {
     return GetField<uint32_t>(VT_MASTER, 0);
   }
-  uint32_t member() const {
-    return GetField<uint32_t>(VT_MEMBER, 0);
+  const ::flatbuffers::String *member() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
-  uint8_t host() const {
-    return GetField<uint8_t>(VT_HOST, 0);
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
-           VerifyField<uint32_t>(verifier, VT_MEMBER, 4) &&
-           VerifyField<uint8_t>(verifier, VT_HOST, 1) &&
+           VerifyOffset(verifier, VT_MEMBER) &&
+           verifier.VerifyString(member()) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            verifier.EndTable();
   }
 };
@@ -54,11 +55,11 @@ struct CreateGroupBuilder {
   void add_master(uint32_t master) {
     fbb_.AddElement<uint32_t>(CreateGroup::VT_MASTER, master, 0);
   }
-  void add_member(uint32_t member) {
-    fbb_.AddElement<uint32_t>(CreateGroup::VT_MEMBER, member, 0);
+  void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
+    fbb_.AddOffset(CreateGroup::VT_MEMBER, member);
   }
-  void add_host(uint8_t host) {
-    fbb_.AddElement<uint8_t>(CreateGroup::VT_HOST, host, 0);
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(CreateGroup::VT_HOST, host, 0);
   }
   explicit CreateGroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -74,13 +75,26 @@ struct CreateGroupBuilder {
 inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t master = 0,
-    uint32_t member = 0,
-    uint8_t host = 0) {
+    ::flatbuffers::Offset<::flatbuffers::String> member = 0,
+    uint32_t host = 0) {
   CreateGroupBuilder builder_(_fbb);
+  builder_.add_host(host);
   builder_.add_member(member);
   builder_.add_master(master);
-  builder_.add_host(host);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroupDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t master = 0,
+    const char *member = nullptr,
+    uint32_t host = 0) {
+  auto member__ = member ? _fbb.CreateString(member) : 0;
+  return fb::protocol::internal::request::raw::CreateCreateGroup(
+      _fbb,
+      master,
+      member__,
+      host);
 }
 
 inline const fb::protocol::internal::request::raw::CreateGroup *GetCreateGroup(const void *buf) {

@@ -976,7 +976,11 @@ enum class ERROR_CODE
     NOT_FOUND_OPTION = 12, 
     DISABLED_WHISPER = 13, 
     DISABLED_WHISPER_TARGET = 14, 
-    DISTRIBUTED_LOCK_FAILED = 15
+    DISTRIBUTED_LOCK_FAILED = 15, 
+    GROUP_NOT_JOINED = 16, 
+    GROUP_NOT_FOUND = 17, 
+    CANNOT_GROUP_SELF = 18, 
+    NOT_FOUND_MAP = 19
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -999,7 +1003,11 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "NOT_FOUND_OPTION", ERROR_CODE::NOT_FOUND_OPTION }, 
         { "DISABLED_WHISPER", ERROR_CODE::DISABLED_WHISPER }, 
         { "DISABLED_WHISPER_TARGET", ERROR_CODE::DISABLED_WHISPER_TARGET }, 
-        { "DISTRIBUTED_LOCK_FAILED", ERROR_CODE::DISTRIBUTED_LOCK_FAILED }
+        { "DISTRIBUTED_LOCK_FAILED", ERROR_CODE::DISTRIBUTED_LOCK_FAILED }, 
+        { "GROUP_NOT_JOINED", ERROR_CODE::GROUP_NOT_JOINED }, 
+        { "GROUP_NOT_FOUND", ERROR_CODE::GROUP_NOT_FOUND }, 
+        { "CANNOT_GROUP_SELF", ERROR_CODE::CANNOT_GROUP_SELF }, 
+        { "NOT_FOUND_MAP", ERROR_CODE::NOT_FOUND_MAP }
     };
 
     auto i = enums.find(k);
@@ -1029,7 +1037,11 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::NOT_FOUND_OPTION, "NOT_FOUND_OPTION" }, 
         { ERROR_CODE::DISABLED_WHISPER, "DISABLED_WHISPER" }, 
         { ERROR_CODE::DISABLED_WHISPER_TARGET, "DISABLED_WHISPER_TARGET" }, 
-        { ERROR_CODE::DISTRIBUTED_LOCK_FAILED, "DISTRIBUTED_LOCK_FAILED" }
+        { ERROR_CODE::DISTRIBUTED_LOCK_FAILED, "DISTRIBUTED_LOCK_FAILED" }, 
+        { ERROR_CODE::GROUP_NOT_JOINED, "GROUP_NOT_JOINED" }, 
+        { ERROR_CODE::GROUP_NOT_FOUND, "GROUP_NOT_FOUND" }, 
+        { ERROR_CODE::CANNOT_GROUP_SELF, "CANNOT_GROUP_SELF" }, 
+        { ERROR_CODE::NOT_FOUND_MAP, "NOT_FOUND_MAP" }
     };
 
     auto i = enums.find(k);
@@ -2528,6 +2540,14 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_DISABLED_WHISPER_TARGET");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISTRIBUTED_LOCK_FAILED);
     lua_setglobal(lua, "ERROR_CODE_DISTRIBUTED_LOCK_FAILED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_NOT_JOINED);
+    lua_setglobal(lua, "ERROR_CODE_GROUP_NOT_JOINED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_NOT_FOUND);
+    lua_setglobal(lua, "ERROR_CODE_GROUP_NOT_FOUND");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CANNOT_GROUP_SELF);
+    lua_setglobal(lua, "ERROR_CODE_CANNOT_GROUP_SELF");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_MAP);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_MAP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);

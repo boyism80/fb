@@ -303,7 +303,15 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "DISABLED_WHISPER_TARGET")]
         DisabledWhisperTarget = 14, 
         [EnumMember(Value = "DISTRIBUTED_LOCK_FAILED")]
-        DistributedLockFailed = 15
+        DistributedLockFailed = 15, 
+        [EnumMember(Value = "GROUP_NOT_JOINED")]
+        GroupNotJoined = 16, 
+        [EnumMember(Value = "GROUP_NOT_FOUND")]
+        GroupNotFound = 17, 
+        [EnumMember(Value = "CANNOT_GROUP_SELF")]
+        CannotGroupSelf = 18, 
+        [EnumMember(Value = "NOT_FOUND_MAP")]
+        NotFoundMap = 19
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

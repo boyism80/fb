@@ -2,7 +2,7 @@
 #define __SOCKET_H__
 
 #include <exception>
-#include <map>
+#include <unordered_map>
 #include <deque>
 #include <mutex>
 #include <optional>
@@ -239,67 +239,94 @@ template <typename T>
 class acceptor;
 
 template <typename T>
-class socket_container : private std::map<uint32_t, std::unique_ptr<fb::socket<T>>>
+class socket_container
 {
-private:
-    std::mutex mutex;
+public:
+    using handler_event = std::function<void(fb::socket<T>&)>;
+    using socket_map    = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
 
 public:
     friend class acceptor<T>;
 
-public:
-    socket_container() = default;
-    ~socket_container()
-    {
-        auto _ = std::lock_guard(this->mutex);
-    }
+private:
+    std::recursive_mutex _mutex;
+    socket_map           _sockets;
+    handler_event        _on_enter;
+    handler_event        _on_leave;
 
 public:
-    using std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::begin;
-    using std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::end;
-    using std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::size;
+    socket_container()                        = default;
+    socket_container(const socket_container&) = delete;
+    socket_container(socket_container&&)      = delete;
+    ~socket_container()                       = default;
+
+public:
+    size_t size()
+    {
+        return this->_sockets.size();
+    }
+
+    void on_enter(const handler_event& handler)
+    {
+        auto _          = std::lock_guard(this->_mutex);
+        this->_on_enter = handler;
+    }
+
+    void on_leave(const handler_event& handler)
+    {
+        auto _          = std::lock_guard(this->_mutex);
+        this->_on_leave = handler;
+    }
 
 private:
     void push(std::unique_ptr<fb::socket<T>>&& session)
     {
-        auto _ = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
         auto fd = session->fd();
-        std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::insert(
-            std::pair<uint32_t, std::unique_ptr<fb::socket<T>>>(fd, std::move(session)));
-    }
-    void erase(fb::socket<T>& session)
-    {
-        auto _ = std::lock_guard(this->mutex);
-
-        std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::erase(session.fd());
+        this->_sockets.insert({fd, std::move(session)});
+        if (this->_on_enter)
+            this->_on_enter(*this->_sockets[fd]);
     }
 
     void erase(uint32_t fd)
     {
-        auto _ = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
-        std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::erase(fd);
+        if (this->_sockets.contains(fd) == false)
+            return;
+
+        auto ptr = std::move(this->_sockets[fd]);
+        this->_sockets.erase(fd);
+
+        if (this->_on_leave)
+            this->_on_leave(*ptr);
     }
+
+    void erase(fb::socket<T>& session)
+    {
+        this->erase(session.fd());
+    }
+
     bool empty()
     {
-        auto _ = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
-        return std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::empty();
+        return this->_sockets.empty();
     }
 
 public:
     bool contains(uint32_t fd)
     {
-        auto _ = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
-        return std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::contains(fd);
+        return this->_sockets.contains(fd);
     }
 
     void each(const std::function<void(fb::socket<T>&)> fn)
     {
-        auto _ = std::lock_guard(this->mutex);
-        for (auto& [fd, socket] : *this)
+        auto _ = std::lock_guard(this->_mutex);
+        for (auto& [fd, socket] : this->_sockets)
         {
             fn(*socket);
         }
@@ -307,8 +334,8 @@ public:
 
     fb::socket<T>* find(const std::function<bool(fb::socket<T>&)> fn)
     {
-        auto _ = std::lock_guard(this->mutex);
-        for (auto& [fd, socket] : *this)
+        auto _ = std::lock_guard(this->_mutex);
+        for (auto& [fd, socket] : this->_sockets)
         {
             if (fn(*socket))
                 return socket.get();
@@ -318,9 +345,9 @@ public:
     }
     void close()
     {
-        auto _ = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
-        // auto empty = std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::empty();
+        // auto empty = this->_sockets.empty();
         // if(empty)
         //     return;
 
@@ -336,16 +363,16 @@ public:
         //     }
         // }
 
-        std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::clear();
+        this->_sockets.clear();
     }
 
 public:
     fb::socket<T>* operator[] (uint32_t fd)
     {
-        auto _ = std::lock_guard(this->mutex);
+        auto _ = std::lock_guard(this->_mutex);
 
-        const auto& found = std::map<uint32_t, std::unique_ptr<fb::socket<T>>>::find(fd);
-        if (found == this->cend())
+        const auto& found = this->_sockets.find(fd);
+        if (found == this->_sockets.cend())
             return nullptr;
 
         return found->second.get();

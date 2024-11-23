@@ -1033,9 +1033,14 @@ void character::title(const std::string& value)
     this->_title = value;
 }
 
-group* character::group() const
+fb::locker<fb::game::group>* character::group() const
 {
     return this->_group;
+}
+
+void character::group(fb::locker<fb::game::group>* value)
+{
+    this->_group = value;
 }
 
 clan* character::clan() const

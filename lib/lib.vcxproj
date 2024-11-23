@@ -109,6 +109,7 @@
     <ClInclude Include="include\fb\encoding.h" />
     <ClInclude Include="include\fb\generator.h" />
     <ClInclude Include="include\fb\leak.h" />
+    <ClInclude Include="include\fb\locker.h" />
     <ClInclude Include="include\fb\logger.h" />
     <ClInclude Include="include\fb\mst.h" />
     <ClInclude Include="include\fb\mutex.h" />

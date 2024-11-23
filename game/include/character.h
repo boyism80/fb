@@ -6,6 +6,7 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/socket.h>
 #include <fb/string.h>
+#include <fb/locker.h>
 #include <iostream>
 #include <item.h>
 #include <mob.h>
@@ -65,41 +66,41 @@ public:
     struct listener;
 
 private:
-    bool                    _init = false;
-    uint32_t                _id   = 0xFFFFFFFF;
-    fb::socket<character>&  _socket;
-    bool                    _admin = false;
-    std::string             _name;
-    std::string             _pw;
-    datetime                _updated_date;
-    uint16_t                _look            = 0;
-    uint8_t                 _color           = 0;
-    std::optional<uint8_t>  _armor_color     = 0;
-    defensive               _defensive       = {};
-    uint32_t                _base_hp         = 0;
-    uint32_t                _base_mp         = 0;
-    uint32_t                _experience      = 0;
-    uint8_t                 _strength        = 0;
-    uint8_t                 _intelligence    = 0;
-    uint8_t                 _dexteritry      = 0;
-    uint8_t                 _damage          = 0; // 공격수정
-    uint8_t                 _hit             = 0; // 명중수정
-    uint8_t                 _regenerative    = 0; // 재생력
-    NATION                  _nation          = NATION::GOGURYEO;
-    CREATURE                _creature        = CREATURE::DRAGON;
-    SEX                     _sex             = SEX::ALL;
-    STATE                   _state           = STATE::NORMAL;
-    uint8_t                 _level           = 1;
-    CLASS                   _class           = CLASS::NONE;
-    uint8_t                 _promotion       = 0;
-    uint32_t                _money           = 0;
-    std::optional<uint16_t> _disguise        = 0;
-    uint32_t                _deposited_money = 0;
-    std::vector<item*>      _deposited_items;
-    std::string             _title;
-    fb::game::group*        _group             = nullptr;
-    fb::game::clan*         _clan              = nullptr;
-    bool                    _options[0x0B + 1] = {
+    bool                         _init = false;
+    uint32_t                     _id   = 0xFFFFFFFF;
+    fb::socket<character>&       _socket;
+    bool                         _admin = false;
+    std::string                  _name;
+    std::string                  _pw;
+    datetime                     _updated_date;
+    uint16_t                     _look            = 0;
+    uint8_t                      _color           = 0;
+    std::optional<uint8_t>       _armor_color     = 0;
+    defensive                    _defensive       = {};
+    uint32_t                     _base_hp         = 0;
+    uint32_t                     _base_mp         = 0;
+    uint32_t                     _experience      = 0;
+    uint8_t                      _strength        = 0;
+    uint8_t                      _intelligence    = 0;
+    uint8_t                      _dexteritry      = 0;
+    uint8_t                      _damage          = 0; // 공격수정
+    uint8_t                      _hit             = 0; // 명중수정
+    uint8_t                      _regenerative    = 0; // 재생력
+    NATION                       _nation          = NATION::GOGURYEO;
+    CREATURE                     _creature        = CREATURE::DRAGON;
+    SEX                          _sex             = SEX::ALL;
+    STATE                        _state           = STATE::NORMAL;
+    uint8_t                      _level           = 1;
+    CLASS                        _class           = CLASS::NONE;
+    uint8_t                      _promotion       = 0;
+    uint32_t                     _money           = 0;
+    std::optional<uint16_t>      _disguise        = 0;
+    uint32_t                     _deposited_money = 0;
+    std::vector<item*>           _deposited_items;
+    std::string                  _title;
+    fb::locker<fb::game::group>* _group             = nullptr;
+    fb::game::clan*              _clan              = nullptr;
+    bool                         _options[0x0B + 1] = {
         0,
     };
 
@@ -930,7 +931,16 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::group* group() const;
+    fb::locker<fb::game::group>* group() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      value  The value
+     *
+     * @return     { description_of_the_return_value }
+     */
+    void group(fb::locker<fb::game::group>* value);
 
     /**
      * @brief      { function_description }
@@ -1355,15 +1365,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_level(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_group(lua_State* lua);
 
     /**
      * @brief      { function_description }

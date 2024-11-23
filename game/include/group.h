@@ -2,114 +2,91 @@
 #define __GROUP_H__
 
 #include <character.h>
-// #include <lua.h>
 
-namespace fb { namespace game {
+namespace fb::game {
 
-/**
- * @brief      This class describes a character.
- */
-class character;
-
-/**
- * @brief      This class describes a group.
- */
-class group : public lua::luable
+class group
 {
-public:
-    LUA_PROTOTYPE
-
 private:
-    character*           _leader;
-    character::container _members;
-
-private:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param      leader  The leader
-     */
-    group(character& leader);
+    uint32_t                 _id;
+    std::string              _master;
+    std::vector<std::string> _members;
+    std::vector<character*>  _active_members;
 
 public:
-    /**
-     * @brief      Destroys the object.
-     */
-    ~group();
+    group(uint32_t id, const std::string& master, const std::string& member) :
+        _id(id),
+        _master(master)
+    {
+        this->_members.push_back(member);
+    }
+    group(uint32_t id, const std::string& master, const std::vector<std::string>& members) :
+        _id(id),
+        _master(master),
+        _members(members)
+    { }
+    group(const group&) = delete;
+    group(group&& g) :
+        _id(g._id),
+        _master(g._master),
+        _members(std::move(g._members)),
+        _active_members(std::move(g._active_members))
+    { }
+    ~group() = default;
 
 public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      session  The session
-     *
-     * @return     { description_of_the_return_value }
-     */
-    character* enter(character& session);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      session  The session
-     *
-     * @return     { description_of_the_return_value }
-     */
-    character* leave(character& session);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      session  The session
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool contains(character& session);
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    character& leader() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const character::container& members() const;
+    void enter(const std::string& name)
+    {
+        auto i = std::find(this->_members.begin(), this->_members.end(), name);
+        if (i != this->_members.end())
+            throw std::runtime_error(std::format("{} already joined this group {}", name, this->_id));
 
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      leader  The leader
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static fb::game::group* create(character& leader);
-    /**
-     * @brief      Destroys the given group.
-     *
-     * @param      group  The group
-     */
-    static void destroy(fb::game::group& group);
+        this->_members.push_back(name);
+    }
 
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_members(lua_State* lua);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_leader(lua_State* lua);
+    void enter(fb::game::character& ch)
+    {
+        auto i = std::find(this->_active_members.begin(), this->_active_members.end(), &ch);
+        if (i != this->_active_members.end())
+            throw std::runtime_error(std::format("{} already joined this group {}", ch.name(), this->_id));
+
+        this->_active_members.push_back(&ch);
+    }
+
+    void leave_active_member(fb::game::character& ch)
+    {
+        auto i = std::find(this->_active_members.begin(), _active_members.end(), &ch);
+        if (i == this->_active_members.end())
+            throw std::runtime_error(std::format("{} is not a member of this group {}", ch.name(), this->_id));
+
+        this->_active_members.erase(i);
+    }
+
+    void leave(const std::string& name)
+    {
+        auto i = std::find(this->_members.begin(), this->_members.end(), name);
+        if (i == this->_members.end())
+            throw std::runtime_error(std::format("{} is not a member of this group {}", name, this->_id));
+
+        this->_members.erase(i);
+    }
+
+    std::vector<fb::game::character*> active_members() const
+    {
+        return this->_active_members;
+    }
+
+    std::string master() const
+    {
+        return this->_master;
+    }
+
+    std::vector<std::string> members() const
+    {
+        return std::vector<std::string>(this->_members);
+    }
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__GROUP_H__

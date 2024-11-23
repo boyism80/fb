@@ -21,24 +21,30 @@ public struct CreateGroup : IFlatbufferObject
   public CreateGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Master { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Member { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public byte Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public string Member { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMemberBytes() { return __p.__vector_as_span<byte>(6, 1); }
+#else
+  public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(6); }
+#endif
+  public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(6); }
+  public uint Host { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.CreateGroup> CreateCreateGroup(FlatBufferBuilder builder,
       uint master = 0,
-      uint member = 0,
-      byte host = 0) {
+      StringOffset memberOffset = default(StringOffset),
+      uint host = 0) {
     builder.StartTable(3);
-    CreateGroup.AddMember(builder, member);
-    CreateGroup.AddMaster(builder, master);
     CreateGroup.AddHost(builder, host);
+    CreateGroup.AddMember(builder, memberOffset);
+    CreateGroup.AddMaster(builder, master);
     return CreateGroup.EndCreateGroup(builder);
   }
 
   public static void StartCreateGroup(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(0, master, 0); }
-  public static void AddMember(FlatBufferBuilder builder, uint member) { builder.AddUint(1, member, 0); }
-  public static void AddHost(FlatBufferBuilder builder, byte host) { builder.AddByte(2, host, 0); }
+  public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(1, memberOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(2, host, 0); }
   public static Offset<fb.protocol._internal.request.raw.CreateGroup> EndCreateGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.CreateGroup>(o);
@@ -54,8 +60,8 @@ static public class CreateGroupVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Master*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Member*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Host*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyString(tablePos, 6 /*Member*/, false)
+      && verifier.VerifyField(tablePos, 8 /*Host*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
