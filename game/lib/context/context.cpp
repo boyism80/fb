@@ -480,7 +480,7 @@ async::task<bool> context::init_ch(const fb::protocol::internal::Character& resp
                         return groups[group_resp.group.id].get();
                     });
 
-                group->lock<void>([&session, group](auto& g) {
+                group->template lock<void>([&session, group](auto& g) {
                     g.enter(session);
                     session.group(group);
                 });
