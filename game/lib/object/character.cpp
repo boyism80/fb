@@ -1541,7 +1541,14 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
-    dto.clan             = std::nullopt;
+
+    if (this->_group != nullptr)
+    {
+        dto.group = this->_group->lock<std::optional<uint32_t>>([](fb::game::group& g) {
+            return g.id();
+        });
+    }
+    dto.clan = std::nullopt;
     return dto;
 }
 

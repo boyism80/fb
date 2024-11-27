@@ -94,9 +94,6 @@ namespace Internal.Controllers
                 if (await _sessionService.Get(master.Name) == null)
                     throw new Exception($"user {request.Master} is offline");
 
-                if (master.Group != null)
-                    throw new LogicException(ErrorCode.GroupAlreadyJoined);
-
                 if (_model.Map.TryGetValue(master.Map, out var map) == false)
                     throw new Exception("invalid map");
 
@@ -121,19 +118,33 @@ namespace Internal.Controllers
                 if (memberSetting.Group == false)
                     throw new LogicException(ErrorCode.DisabledGroupTarget);
 
-                // TODO: Æ®·£Àè¼Ç
-                var group = new Http.Model.Group
+                // TODO: íŠ¸ëœì­ì…˜
+                var group = master.Group != null ? await _dbContext.Group.Get(master.Group.Value) : null;
+                if (group == null)
                 {
-                    Master = master.Id,
-                    Members = [member.Id]
-                };
-                await _dbContext.Group.Set(group);
+                    group = new Http.Model.Group
+                    {
+                        Master = master.Id,
+                        Deleted = false
+                    };
+                    master.Group = group.Master;
+                    await _dbContext.Character.Set(master);
+                }
 
-                master.Group = group.Master;
-                await _dbContext.Character.Set(master);
+                group.Members.Add(member.Id);
+                await _dbContext.Group.Set(group);
 
                 member.Group = group.Master;
                 await _dbContext.Character.Set(member);
+
+                var memberNames = new List<string>();
+                foreach (var uid in group.Members)
+                {
+                    var ch = await _dbContext.Character.Get(uid) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                    memberNames.Add(ch.Name);
+                }
 
                 var response = new Response.CreateGroup
                 {
@@ -141,7 +152,7 @@ namespace Internal.Controllers
                     {
                         Id = group.Master,
                         Master = master.Name,
-                        Members = [member.Name]
+                        Members = memberNames
                     },
                     Member = request.Member,
                     Host = map.Host,
@@ -194,8 +205,8 @@ namespace Internal.Controllers
 
                 Response.LeaveGroup response;
 
-                // ±×·ìÀÌ ÇØÃ¼µÇ´Â °æ¿ì
-                if (group.Members.Count == 1)
+                // ê·¸ë£¹ì´ í•´ì²´ë˜ëŠ” ê²½ìš°
+                if (group.Members.Count == 0)
                 {
                     var master = await _dbContext.Character.Get(group.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -227,7 +238,7 @@ namespace Internal.Controllers
                         Member = request.Member
                     };
                 }
-                // ±×·ìÀåÀÌ Å»ÅğÇÏ¸é¼­ »õ ±×·ìÀÌ ±¸¼ºµÇ¾î¾ßÇÏ´Â °æ¿ì
+                // ê·¸ë£¹ì¥ì´ íƒˆí‡´í•˜ë©´ì„œ ìƒˆ ê·¸ë£¹ì´ êµ¬ì„±ë˜ì–´ì•¼í•˜ëŠ” ê²½ìš°
                 else if (group.Master == member.Id)
                 {
                     group.Deleted = true;
@@ -313,12 +324,6 @@ namespace Internal.Controllers
                     Error = (uint)ErrorCode.Unhandled
                 };
             }
-        }
-
-        [HttpPost("enter")]
-        public async Task<Response.EnterGroup> Enter(Request.EnterGroup request)
-        {
-            throw new NotImplementedException();
         }
     }
 }

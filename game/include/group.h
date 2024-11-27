@@ -14,12 +14,6 @@ private:
     std::vector<character*>  _active_members;
 
 public:
-    group(uint32_t id, const std::string& master, const std::string& member) :
-        _id(id),
-        _master(master)
-    {
-        this->_members.push_back(member);
-    }
     group(uint32_t id, const std::string& master, const std::vector<std::string>& members) :
         _id(id),
         _master(master),
@@ -35,11 +29,16 @@ public:
     ~group() = default;
 
 public:
+    uint32_t id() const
+    {
+        return this->_id;
+    }
+
     void enter(const std::string& name)
     {
         auto i = std::find(this->_members.begin(), this->_members.end(), name);
         if (i != this->_members.end())
-            throw std::runtime_error(std::format("{} already joined this group {}", name, this->_id));
+            return;
 
         this->_members.push_back(name);
     }
@@ -48,7 +47,7 @@ public:
     {
         auto i = std::find(this->_active_members.begin(), this->_active_members.end(), &ch);
         if (i != this->_active_members.end())
-            throw std::runtime_error(std::format("{} already joined this group {}", ch.name(), this->_id));
+            return;
 
         this->_active_members.push_back(&ch);
     }
@@ -57,7 +56,7 @@ public:
     {
         auto i = std::find(this->_active_members.begin(), _active_members.end(), &ch);
         if (i == this->_active_members.end())
-            throw std::runtime_error(std::format("{} is not a member of this group {}", ch.name(), this->_id));
+            return;
 
         this->_active_members.erase(i);
     }
@@ -66,7 +65,7 @@ public:
     {
         auto i = std::find(this->_members.begin(), this->_members.end(), name);
         if (i == this->_members.end())
-            throw std::runtime_error(std::format("{} is not a member of this group {}", name, this->_id));
+            return;
 
         this->_members.erase(i);
     }

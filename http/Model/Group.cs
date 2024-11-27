@@ -12,6 +12,6 @@ namespace Http.Model
 
     public class Group : GroupKey, IModel
     {
-        public List<uint> Members { get; set; }
+        public List<uint> Members { get; set; } = new List<uint>();
     }
 }
