@@ -130,8 +130,9 @@ namespace Internal.Controllers
                 PositionY = request.Y,
                 Admin = request.Admin
             };
-            await _dbContext.Character.Set(ch);
+            _dbContext.Character.Set(ch);
 
+            await _dbContext.SaveChangesAsync();
             return new Response.InitCharacter
             {
                 Success = true
@@ -150,13 +151,15 @@ namespace Internal.Controllers
                 ch.Sex = request.Sex;
                 ch.Nation = request.Nation;
                 ch.Creature = request.Creature;
-                await _dbContext.Character.Set(ch);
+                _dbContext.Character.Set(ch);
 
                 var option = new Option
                 {
                     Uid = request.Uid,
                 };
-                await _dbContext.Option.Set(option);
+                _dbContext.Option.Set(option);
+
+                await _dbContext.SaveChangesAsync();
                 return new Response.MakeCharacter
                 {
                     Success = true
@@ -186,7 +189,9 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.BirthdayNotMatched);
 
                 ch.Pw = SHA256Hash(request.After);
-                await _dbContext.Character.Set(ch);
+                _dbContext.Character.Set(ch);
+
+                await _dbContext.SaveChangesAsync();
                 return new Response.ChangePw
                 {
                     ErrorCode = 0
@@ -257,14 +262,15 @@ namespace Internal.Controllers
                     throw new Exception();
 
                 var ch = _mapper.Map<Character>(request.Character);
-                await _dbContext.Character.Set(ch);
+                _dbContext.Character.Set(ch);
 
                 var items = Override(_mapper.Map<Protocol.Item[], Item[]>(request.Items.ToArray()), await _dbContext.Item.Get(request.Character.Id));
-                await _dbContext.Item.Set(items);
+                _dbContext.Item.Set(items);
 
                 var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(request.Spells.ToArray()), await _dbContext.Spell.Get(request.Character.Id));
-                await _dbContext.Spell.Set(spells.ToArray());
+                _dbContext.Spell.Set(spells.ToArray());
 
+                await _dbContext.SaveChangesAsync();
                 return new Response.Save
                 {
                     Success = true
@@ -336,7 +342,9 @@ namespace Internal.Controllers
                     default:
                         throw new Exception($"invalid option type : {request.Type}");
                 }
-                await _dbContext.Option.Set(option);
+                _dbContext.Option.Set(option);
+
+                await _dbContext.SaveChangesAsync();
                 return new Response.SetOption
                 {
                     Success = true

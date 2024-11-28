@@ -311,7 +311,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "CANNOT_GROUP_SELF")]
         CannotGroupSelf = 18, 
         [EnumMember(Value = "NOT_FOUND_MAP")]
-        NotFoundMap = 19
+        NotFoundMap = 19, 
+        [EnumMember(Value = "NOT_GROUP_MASTER")]
+        NotGroupMaster = 20
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

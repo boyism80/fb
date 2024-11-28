@@ -1,4 +1,5 @@
 using AutoMapper;
+using fb.protocol._internal;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Service;
@@ -103,39 +104,52 @@ namespace Internal.Controllers
                 var member = await _dbContext.Character.Get(memberSession.Uid) ??
                     throw new Exception($"user {request.Member} not found");
 
-                if (member.Group != null)
-                    throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
-
-                var masterSetting = await _dbContext.Option.Get(master.Id) ??
-                    throw new Exception($"user option {request.Master} not found");
-
-                if (masterSetting.Group == false)
-                    throw new LogicException(ErrorCode.DisabledGroup);
-
-                var memberSetting = await _dbContext.Option.Get(member.Id) ??
-                    throw new Exception($"user option {request.Member} not found");
-
-                if (memberSetting.Group == false)
-                    throw new LogicException(ErrorCode.DisabledGroupTarget);
-
-                // TODO: 트랜잭션
                 var group = master.Group != null ? await _dbContext.Group.Get(master.Group.Value) : null;
                 if (group == null)
                 {
                     group = new Http.Model.Group
                     {
                         Master = master.Id,
-                        Deleted = false
                     };
                     master.Group = group.Master;
-                    await _dbContext.Character.Set(master);
+                    _dbContext.Character.Set(master);
+                }
+                group.Deleted = false;
+
+                if (group.Master != master.Id)
+                    throw new LogicException(ErrorCode.NotGroupMaster);
+
+                GroupAction action;
+                if (group.Members.Contains(member.Id))
+                {
+                    group.Members.Remove(member.Id);
+                    member.Group = null;
+                    action = GroupAction.Kick;
+                }
+                else
+                {
+                    var masterSetting = await _dbContext.Option.Get(master.Id) ??
+                    throw new Exception($"user option {request.Master} not found");
+
+                    if (masterSetting.Group == false)
+                        throw new LogicException(ErrorCode.DisabledGroup);
+
+                    var memberSetting = await _dbContext.Option.Get(member.Id) ??
+                        throw new Exception($"user option {request.Member} not found");
+
+                    if (memberSetting.Group == false)
+                        throw new LogicException(ErrorCode.DisabledGroupTarget);
+
+                    if (member.Group != null)
+                        throw new LogicException(ErrorCode.GroupTargetAlreadyJoined);
+
+                    group.Members.Add(member.Id);
+                    member.Group = group.Master;
+                    action = GroupAction.Enter;
                 }
 
-                group.Members.Add(member.Id);
-                await _dbContext.Group.Set(group);
-
-                member.Group = group.Master;
-                await _dbContext.Character.Set(member);
+                _dbContext.Group.Set(group);
+                _dbContext.Character.Set(member);
 
                 var memberNames = new List<string>();
                 foreach (var uid in group.Members)
@@ -156,10 +170,12 @@ namespace Internal.Controllers
                     },
                     Member = request.Member,
                     Host = map.Host,
+                    Action = action,
                     Error = 0
                 };
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
 
+                await _dbContext.SaveChangesAsync();
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
                 return response;
             }
             catch (LogicException e)
@@ -216,13 +232,13 @@ namespace Internal.Controllers
                     {
                         var ch = await _dbContext.Character.Get(uid);
                         ch.Group = null;
-                        await _dbContext.Character.Set(ch);
+                        _dbContext.Character.Set(ch);
 
                         members.Add(ch);
                     }
 
                     group.Deleted = true;
-                    await _dbContext.Group.Set(group);
+                    _dbContext.Group.Set(group);
 
                     response = new Response.LeaveGroup
                     {
@@ -242,7 +258,7 @@ namespace Internal.Controllers
                 else if (group.Master == member.Id)
                 {
                     group.Deleted = true;
-                    await _dbContext.Group.Set(group);
+                    _dbContext.Group.Set(group);
 
                     var replaced = new Http.Model.Group
                     {
@@ -250,10 +266,10 @@ namespace Internal.Controllers
                         Members = group.Members.Skip(1).ToList(),
                         Deleted = false
                     };
-                    await _dbContext.Group.Set(replaced);
+                    _dbContext.Group.Set(replaced);
 
                     member.Group = null;
-                    await _dbContext.Character.Set(member);
+                    _dbContext.Character.Set(member);
 
                     var master = await _dbContext.Character.Get(group.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -267,7 +283,7 @@ namespace Internal.Controllers
                     foreach (var x in members.Concat([master]))
                     {
                         x.Group = group.Master;
-                        await _dbContext.Character.Set(x);
+                        _dbContext.Character.Set(x);
                     }
 
                     response = new Response.LeaveGroup
@@ -287,10 +303,10 @@ namespace Internal.Controllers
                 else
                 {
                     group.Members.Remove(member.Id);
-                    await _dbContext.Group.Set(group);
+                    _dbContext.Group.Set(group);
 
                     member.Group = null;
-                    await _dbContext.Character.Set(member);
+                    _dbContext.Character.Set(member);
 
                     response = new Response.LeaveGroup
                     {
@@ -305,6 +321,7 @@ namespace Internal.Controllers
                     };
                 }
 
+                await _dbContext.SaveChangesAsync();
                 _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
                 return response;
             }

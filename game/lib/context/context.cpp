@@ -851,49 +851,74 @@ void context::amqp_thread()
 
             auto& queue3 = this->_amqp->declare_queue();
             queue3.bind("amq.direct", "fb.group");
-            queue3.handler<internal::response::CreateGroup>(
-                [this](internal::response::CreateGroup& response) -> async::task<void> {
-                    this->assert_group(response);
+            queue3.handler<internal::response::CreateGroup>([this](internal::response::CreateGroup& response)
+                                                                -> async::task<void> {
+                this->assert_group(response);
 
-                    auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
-                        if (groups.contains(response.group.id))
-                            groups.erase(response.group.id);
+                auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
+                    if (groups.contains(response.group.id))
+                        groups.erase(response.group.id);
 
-                        groups.insert({response.group.id,
-                                       std::make_unique<fb::locker<fb::game::group>>(*this,
-                                                                                     response.group.id,
-                                                                                     response.group.master,
-                                                                                     response.group.members)});
-                        return groups[response.group.id].get();
-                    });
+                    groups.insert({response.group.id,
+                                   std::make_unique<fb::locker<fb::game::group>>(*this,
+                                                                                 response.group.id,
+                                                                                 response.group.master,
+                                                                                 response.group.members)});
+                    return groups[response.group.id].get();
+                });
 
-                    group->lock<void>([this, &response, group](auto& g) {
-                        this->_characters.lock<void>([&response, &g, group](auto& characters) {
-                            auto members = std::vector<fb::game::character*>();
+                group->lock<void>([this, &response, group](auto& g) {
+                    this->_characters.lock<void>([&response, &g, group](auto& characters) {
+                        auto members = std::vector<fb::game::character*>();
 
-                            if (characters.contains(response.group.master))
-                                members.push_back(characters[response.group.master]);
+                        if (characters.contains(response.group.master))
+                            members.push_back(characters[response.group.master]);
 
-                            for (auto& member : response.group.members)
-                            {
-                                if (characters.contains(member))
-                                    members.push_back(characters[member]);
-                            }
+                        for (auto& member : response.group.members)
+                        {
+                            if (characters.contains(member))
+                                members.push_back(characters[member]);
+                        }
 
+                        for (auto ch : members)
+                        {
+                            g.enter(*ch);
+                            ch->group(group);
+                        }
+
+                        switch (response.action)
+                        {
+                        case GroupAction::Enter:
+                        {
                             for (auto ch : members)
                             {
-                                g.enter(*ch);
-                                ch->group(group);
-
                                 if (ch->name() != response.member)
                                     ch->message(std::format("{}님 그룹에 참여", response.member), MESSAGE_TYPE::STATE);
                                 else
                                     ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
                             }
-                        });
+                        }
+                        break;
+
+                        case GroupAction::Kick:
+                        {
+                            for (auto ch : members)
+                            {
+                                ch->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
+                            }
+
+                            if (characters.contains(response.member))
+                            {
+                                characters[response.member]->group(nullptr);
+                                characters[response.member]->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+                            }
+                        }
+                        break;
+                        }
                     });
-                    co_return;
                 });
+                co_return;
+            });
         }
         catch (std::exception& e)
         {
@@ -1500,6 +1525,9 @@ void context::assert_group(const internal::response::CreateGroup& response) cons
 
     case ERROR_CODE::DISABLED_GROUP_TARGET:
         throw std::runtime_error(std::format("{}님은 그룹 참여 거부중입니다.", response.member));
+
+    case ERROR_CODE::NOT_GROUP_MASTER:
+        throw std::runtime_error("당신은 그룹장이 아닙니다.");
 
     default:
         throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));

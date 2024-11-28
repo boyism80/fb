@@ -1,6 +1,5 @@
 using Dapper;
 using Http.Model;
-using Http.Service;
 using Http.Redis;
 using Http.Service;
 using Newtonsoft.Json;
@@ -9,11 +8,14 @@ using StackExchange.Redis;
 namespace Http.Reepository
 {
     public interface IRepository
-    { }
+    {
+        Task SaveChangesAsync();
+    }
 
     public abstract class Repository<TModel, TKey> : IRepository where TModel : IModel, TKey where TKey : IModelKey
     {
         private readonly DbContext _dbContext;
+        protected readonly Queue<Func<Task>> _buffer = new Queue<Func<Task>>();
 
         protected Repository(DbContext dbContext)
         {
@@ -37,17 +39,34 @@ namespace Http.Reepository
             return await conn.QueryAsync<TModel>(OnSelectBulk(key));
         }
 
-        public virtual async Task Set(TModel value)
+        public virtual TModel Set(TModel value)
         {
-            await using var conn = _dbContext.Connection(value.GetDbKey());
-            await conn.ExecuteAsync(OnUpsert(value));
+            _buffer.Enqueue(async () =>
+            {
+                await using var conn = _dbContext.Connection(value.GetDbKey());
+                await conn.ExecuteAsync(OnUpsert(value));
+            });
+            return value;
         }
 
-        public virtual async Task Set(TModel[] values)
+        public virtual TModel[] Set(TModel[] values)
         {
-            foreach (var (conn, items) in _dbContext.Connections(values, value => value.GetDbKey()))
+            _buffer.Enqueue(async () =>
             {
-                await conn.ExecuteAsync(OnUpsert(items));
+                foreach (var (conn, items) in _dbContext.Connections(values, value => value.GetDbKey()))
+                {
+                    await conn.ExecuteAsync(OnUpsert(items));
+                }
+            });
+
+            return values;
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            while (_buffer.TryDequeue(out var func))
+            {
+                await func();
             }
         }
     }
@@ -99,25 +118,29 @@ namespace Http.Reepository
             throw new InvalidOperationException();
         }
 
-        public override async Task Set(TModel value)
+        public override TModel Set(TModel value)
         {
-            value.UpdatedDate = DateTime.Now;
-
-            var connRedis = _redisService.Connection;
-            await connRedis.TransactAsync(cmd =>
+            _buffer.Enqueue(async () =>
             {
-                cmd.Enqueue(trans => trans.JsonSetAsync(value.GetRedisKey(), value));
-                cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
-                cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, value.GetRedisKey().ToString()));
+                value.UpdatedDate = DateTime.Now;
+
+                var connRedis = _redisService.Connection;
+                await connRedis.TransactAsync(cmd =>
+                {
+                    cmd.Enqueue(trans => trans.JsonSetAsync(value.GetRedisKey(), value));
+                    cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
+                    cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, value.GetRedisKey().ToString()));
+                });
+
+                _local[value.GetRedisKey()] = JsonConvert.SerializeObject(value);
+
+                var sql = OnUpsert(value);
+                await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
             });
-
-            _local[value.GetRedisKey()] = JsonConvert.SerializeObject(value);
-
-            var sql = OnUpsert(value);
-            await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
+            return value;
         }
 
-        public override sealed Task Set(TModel[] values)
+        public override sealed TModel[] Set(TModel[] values)
         {
             throw new InvalidOperationException();
         }
@@ -219,50 +242,60 @@ namespace Http.Reepository
             });
         }
 
-        public override async Task Set(TModel value)
+        public override TModel Set(TModel value)
         {
-            value.UpdatedDate = DateTime.Now;
-
-            var connRedis = _redisService.Connection;
-            await connRedis.TransactAsync(cmd =>
-            {
-                cmd.Enqueue(trans => trans.JsonHashSetAsync(value.GetRedisKey(), value.GetRedisField(), value));
-                cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
-                cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, value.GetRedisKey().ToString()));
-            });
-
-            if (_local.TryGetValue(value.GetRedisKey(), out var localValues))
-                localValues.Add(value.GetRedisField(), JsonConvert.SerializeObject(value));
-
-            var sql = OnUpsert(value);
-            await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
-        }
-
-        public override async Task Set(TModel[] values)
-        {
-            foreach (var value in values)
+            _buffer.Enqueue(async () =>
             {
                 value.UpdatedDate = DateTime.Now;
-            }
 
-            var connRedis = _redisService.Connection;
-            foreach (var g in values.GroupBy(x => x.GetRedisKey()))
-            {
-                if (g.GroupBy(x => x.GetDbKey()).Count() > 1)
-                    throw new InvalidOperationException();
-
-                var redisKey = g.Key;
-                var valueSet = g.ToDictionary(x => x.GetRedisField(), x => x);
+                var connRedis = _redisService.Connection;
                 await connRedis.TransactAsync(cmd =>
                 {
-                    cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
-                    cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
-                    cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, redisKey.ToString()));
+                    cmd.Enqueue(trans => trans.JsonHashSetAsync(value.GetRedisKey(), value.GetRedisField(), value));
+                    cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
+                    cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, value.GetRedisKey().ToString()));
                 });
-                var dbKey = g.Select(x => x.GetDbKey()).First();
-                var sql = OnUpsert(g.ToArray());
-                await _dbExecuteService.Post(dbKey, sql, redisKey.ToString());
-            }
+
+                if (_local.TryGetValue(value.GetRedisKey(), out var localValues))
+                    localValues.Add(value.GetRedisField(), JsonConvert.SerializeObject(value));
+
+                var sql = OnUpsert(value);
+                await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
+            });
+
+            return value;
+        }
+
+        public override TModel[] Set(TModel[] values)
+        {
+            _buffer.Enqueue(async () =>
+            {
+                foreach (var value in values)
+                {
+                    value.UpdatedDate = DateTime.Now;
+                }
+
+                var connRedis = _redisService.Connection;
+                foreach (var g in values.GroupBy(x => x.GetRedisKey()))
+                {
+                    if (g.GroupBy(x => x.GetDbKey()).Count() > 1)
+                        throw new InvalidOperationException();
+
+                    var redisKey = g.Key;
+                    var valueSet = g.ToDictionary(x => x.GetRedisField(), x => x);
+                    await connRedis.TransactAsync(cmd =>
+                    {
+                        cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
+                        cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
+                        cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, redisKey.ToString()));
+                    });
+                    var dbKey = g.Select(x => x.GetDbKey()).First();
+                    var sql = OnUpsert(g.ToArray());
+                    await _dbExecuteService.Post(dbKey, sql, redisKey.ToString());
+                }
+            });
+
+            return values;
         }
     }
 }

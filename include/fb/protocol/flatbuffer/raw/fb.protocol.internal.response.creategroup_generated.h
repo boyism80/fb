@@ -14,6 +14,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.group_generated.h"
+#include "fb.protocol.internal.groupaction_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -30,7 +31,8 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_GROUP = 4,
     VT_MEMBER = 6,
     VT_HOST = 8,
-    VT_ERROR = 10
+    VT_ACTION = 10,
+    VT_ERROR = 12
   };
   const fb::protocol::internal::raw::Group *group() const {
     return GetPointer<const fb::protocol::internal::raw::Group *>(VT_GROUP);
@@ -40,6 +42,9 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
+  }
+  fb::protocol::internal::raw::GroupAction action() const {
+    return static_cast<fb::protocol::internal::raw::GroupAction>(GetField<int8_t>(VT_ACTION, 0));
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -51,6 +56,7 @@ struct CreateGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_MEMBER) &&
            verifier.VerifyString(member()) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
+           VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -68,6 +74,9 @@ struct CreateGroupBuilder {
   }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(CreateGroup::VT_HOST, host, 0);
+  }
+  void add_action(fb::protocol::internal::raw::GroupAction action) {
+    fbb_.AddElement<int8_t>(CreateGroup::VT_ACTION, static_cast<int8_t>(action), 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(CreateGroup::VT_ERROR, error, 0);
@@ -88,12 +97,14 @@ inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroup(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     ::flatbuffers::Offset<::flatbuffers::String> member = 0,
     uint32_t host = 0,
+    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Enter,
     uint32_t error = 0) {
   CreateGroupBuilder builder_(_fbb);
   builder_.add_error(error);
   builder_.add_host(host);
   builder_.add_member(member);
   builder_.add_group(group);
+  builder_.add_action(action);
   return builder_.Finish();
 }
 
@@ -102,6 +113,7 @@ inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroupDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     const char *member = nullptr,
     uint32_t host = 0,
+    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Enter,
     uint32_t error = 0) {
   auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::response::raw::CreateCreateGroup(
@@ -109,6 +121,7 @@ inline ::flatbuffers::Offset<CreateGroup> CreateCreateGroupDirect(
       group,
       member__,
       host,
+      action,
       error);
 }
 

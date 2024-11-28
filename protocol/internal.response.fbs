@@ -126,6 +126,7 @@ table CreateGroup {
   group: fb.protocol.internal.Group;
   member: string;
   host: uint;
+  action: fb.protocol.internal.GroupAction;
   error: uint;
 }
 

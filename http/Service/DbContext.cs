@@ -75,5 +75,13 @@ namespace Http.Service
         {
             return new MySqlConnection(_configuration.GetConnectionString($"MySql:{db}"));
         }
+
+        public async Task SaveChangesAsync()
+        {
+            foreach (var repository in _repositories.Values)
+            {
+                await repository.SaveChangesAsync();
+            }
+        }
     }
 }

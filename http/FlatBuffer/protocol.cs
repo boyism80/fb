@@ -582,6 +582,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Group),
                 builder.Build(value.Member),
                 builder.Build(value.Host),
+                builder.Build(value.Action),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.EnterGroup value)
@@ -633,6 +634,10 @@ namespace fb.protocol._internal
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.GroupAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupAction value)
+        {
+            return (fb.protocol._internal.raw.GroupAction)value;
         }
     }
 
@@ -1220,6 +1225,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Group),
                 builder.Build(value.Member),
                 builder.Build(value.Host),
+                builder.Build(value.Action),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.EnterGroup value)
@@ -1271,6 +1277,10 @@ namespace fb.protocol._internal.request
         public static fb.protocol._internal.raw.Service Build(this FlatBufferBuilder builder, fb.protocol._internal.Service value)
         {
             return (fb.protocol._internal.raw.Service)value;
+        }
+        public static fb.protocol._internal.raw.GroupAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupAction value)
+        {
+            return (fb.protocol._internal.raw.GroupAction)value;
         }
     }
 
@@ -1872,6 +1882,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Group),
                 builder.Build(value.Member),
                 builder.Build(value.Host),
+                builder.Build(value.Action),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.EnterGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.EnterGroup value)
@@ -1924,6 +1935,10 @@ namespace fb.protocol._internal.response
         {
             return (fb.protocol._internal.raw.Service)value;
         }
+        public static fb.protocol._internal.raw.GroupAction Build(this FlatBufferBuilder builder, fb.protocol._internal.GroupAction value)
+        {
+            return (fb.protocol._internal.raw.GroupAction)value;
+        }
     }
 
     public enum FlatBufferProtocolType
@@ -1961,6 +1976,12 @@ namespace fb.protocol._internal
         Gateway,
         Login,
         Game,
+    }
+    public enum GroupAction
+    {
+        Enter,
+        Leave,
+        Kick,
     }
 
     public class Position : IFlatBufferEx
@@ -3733,6 +3754,7 @@ namespace fb.protocol._internal.response
         public fb.protocol._internal.Group Group { get; set; } = new fb.protocol._internal.Group();
         public string Member { get; set; } = string.Empty;
         public uint Host { get; set; } = 0;
+        public fb.protocol._internal.GroupAction Action { get; set; }
         public uint Error { get; set; } = 0;
 
         public CreateGroup()
@@ -3743,6 +3765,7 @@ namespace fb.protocol._internal.response
             Group = new Group(raw.Group.Value);
             Member = raw.Member;
             Host = raw.Host;
+            Action = (fb.protocol._internal.GroupAction)raw.Action;
             Error = raw.Error;
         }
 

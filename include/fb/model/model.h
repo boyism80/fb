@@ -980,7 +980,8 @@ enum class ERROR_CODE
     GROUP_NOT_JOINED = 16, 
     GROUP_NOT_FOUND = 17, 
     CANNOT_GROUP_SELF = 18, 
-    NOT_FOUND_MAP = 19
+    NOT_FOUND_MAP = 19, 
+    NOT_GROUP_MASTER = 20
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1007,7 +1008,8 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "GROUP_NOT_JOINED", ERROR_CODE::GROUP_NOT_JOINED }, 
         { "GROUP_NOT_FOUND", ERROR_CODE::GROUP_NOT_FOUND }, 
         { "CANNOT_GROUP_SELF", ERROR_CODE::CANNOT_GROUP_SELF }, 
-        { "NOT_FOUND_MAP", ERROR_CODE::NOT_FOUND_MAP }
+        { "NOT_FOUND_MAP", ERROR_CODE::NOT_FOUND_MAP }, 
+        { "NOT_GROUP_MASTER", ERROR_CODE::NOT_GROUP_MASTER }
     };
 
     auto i = enums.find(k);
@@ -1041,7 +1043,8 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::GROUP_NOT_JOINED, "GROUP_NOT_JOINED" }, 
         { ERROR_CODE::GROUP_NOT_FOUND, "GROUP_NOT_FOUND" }, 
         { ERROR_CODE::CANNOT_GROUP_SELF, "CANNOT_GROUP_SELF" }, 
-        { ERROR_CODE::NOT_FOUND_MAP, "NOT_FOUND_MAP" }
+        { ERROR_CODE::NOT_FOUND_MAP, "NOT_FOUND_MAP" }, 
+        { ERROR_CODE::NOT_GROUP_MASTER, "NOT_GROUP_MASTER" }
     };
 
     auto i = enums.find(k);
@@ -2548,6 +2551,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_CANNOT_GROUP_SELF");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_MAP);
     lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_MAP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_GROUP_MASTER);
+    lua_setglobal(lua, "ERROR_CODE_NOT_GROUP_MASTER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);
