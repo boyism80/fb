@@ -165,7 +165,9 @@ END_LUA_EXTENSION
 
 context::context(boost::asio::io_context& context, uint16_t port) : // clang-format on
     fb::acceptor<character>(context, port),
-    maps(*this, fb::config::get()["id"].asUInt())
+    maps(*this, fb::config::get()["id"].asUInt()),
+    _characters(*this),
+    _groups(*this)
 {
     this->bind_timer(
         [this]() -> async::task<void> {
@@ -473,7 +475,8 @@ async::task<bool> context::init_ch(const fb::protocol::internal::Character& resp
                                 members.push_back(x);
 
                             groups.insert({group_resp.group.id,
-                                           std::make_unique<fb::locker<fb::game::group>>(group_resp.group.id,
+                                           std::make_unique<fb::locker<fb::game::group>>(*this,
+                                                                                         group_resp.group.id,
                                                                                          group_resp.group.master,
                                                                                          members)});
 
@@ -857,7 +860,8 @@ void context::amqp_thread()
                             groups.erase(response.group.id);
 
                         groups.insert({response.group.id,
-                                       std::make_unique<fb::locker<fb::game::group>>(response.group.id,
+                                       std::make_unique<fb::locker<fb::game::group>>(*this,
+                                                                                     response.group.id,
                                                                                      response.group.master,
                                                                                      response.group.members)});
                         return groups[response.group.id].get();

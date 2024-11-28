@@ -4,6 +4,8 @@
 #include <mutex>
 #include <functional>
 #include <async/task.h>
+#include <fb/abstract.h>
+#include <fb/logger.h>
 
 namespace fb {
 
@@ -13,10 +15,13 @@ class locker
 private:
     std::recursive_mutex _mutex;
     ValueType            _value;
+    fb::icontext&        _context;
+    bool                 _locked = false;
 
 public:
     template <typename... Args>
-    locker(Args&&... args) :
+    locker(fb::icontext& context, Args&&... args) :
+        _context(context),
         _value(std::forward<Args>(args)...)
     { }
     locker(const locker&) = delete;
@@ -28,13 +33,18 @@ public:
     ReturnType lock(const std::function<ReturnType(ValueType&)>& fn)
     {
         auto _ = std::lock_guard(this->_mutex);
+
+        this->_locked = true;
         if constexpr (std::is_same_v<ReturnType, void>)
         {
             fn(this->_value);
+            this->_locked = false;
         }
         else
         {
-            return fn(this->_value);
+            auto result   = fn(this->_value);
+            this->_locked = false;
+            return result;
         }
     }
 
@@ -42,13 +52,44 @@ public:
     async::task<ReturnType> lock(const std::function<async::task<ReturnType>(ValueType&)>& fn)
     {
         auto _ = std::lock_guard(this->_mutex);
+
+        auto thread = this->_context.current_thread();
+        if (thread == nullptr)
+            throw std::runtime_error("cannot find current thread in locker");
+
+        while (this->_locked)
+        {
+            co_await thread->sleep(100ms);
+        }
+
+        this->_locked = true;
         if constexpr (std::is_same_v<ReturnType, void>)
         {
-            co_await fn(this->_value);
+            try
+            {
+                co_await fn(this->_value);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+                throw e;
+            }
+            this->_locked = false;
         }
         else
         {
-            co_return co_await fn(this->_value);
+            try
+            {
+                auto result   = co_await fn(this->_value);
+                this->_locked = false;
+                co_return result;
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+                this->_locked = false;
+                throw e;
+            }
         }
     }
 };
