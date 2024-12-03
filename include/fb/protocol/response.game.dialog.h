@@ -40,7 +40,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -84,7 +84,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -142,7 +142,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -192,7 +192,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -244,7 +244,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -295,7 +295,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);

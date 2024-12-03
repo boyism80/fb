@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <fb/model/datetime.h>
+#include <async/task.h>
 
 using namespace std::chrono_literals;
 
@@ -10,7 +11,7 @@ namespace fb {
 
 class thread;
 
-using timer_callback = std::function<void(const fb::model::datetime&, std::thread::id)>;
+using timer_callback = std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>;
 
 class timer
 {

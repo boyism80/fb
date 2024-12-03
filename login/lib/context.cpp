@@ -104,7 +104,7 @@ async::task<bool> fb::login::context::handle_agreement(fb::socket<fb::login::ses
             throw std::exception();
 
         socket.crt(request.enc_type, request.enc_key);
-        socket.send(this->_agreement);
+        co_await socket.send(this->_agreement);
         co_return true;
     }
     catch (std::exception&)
@@ -117,7 +117,9 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
                                                             const request::account::create& request)
 {
     // 여기는 task handler
-    auto fd = socket.fd();
+    auto fd         = socket.fd();
+    auto error      = std::string();
+    auto error_code = 0x0E;
 
     try
     {
@@ -163,32 +165,35 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         if (response2.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        this->send(socket, response::message("", 0x00));
+        co_await this->send(socket, response::message("", 0x00));
         auto session  = socket.data();
         session->pk   = uid;
         session->name = name;
+        co_return true;
     }
     catch (login_exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        error      = e.what();
+        error_code = e.type();
     }
     catch (std::exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        error      = e.what();
+        error_code = 0x0E;
     }
-    co_return true;
+
+    if (this->sockets.contains(fd) == false)
+        co_return false;
+
+    co_await socket.send(response::message(error, error_code));
 }
 
 async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::login::session>&   socket,
                                                               const request::account::complete& request)
 {
-    auto fd = socket.fd();
+    auto fd         = socket.fd();
+    auto error      = std::string();
+    auto error_code = 0x0E;
 
     try
     {
@@ -206,31 +211,36 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
         if (response.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        socket.send(response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
+        co_await socket.send(response::message(fb::login::message::account::SUCCESS_REGISTER_ACCOUNT, 0x00));
         session->pk = -1;
         session->name.clear();
         co_return true;
     }
     catch (login_exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
-        co_return true;
+        error      = e.what();
+        error_code = e.type();
     }
-    catch (std::exception&)
+    catch (std::exception& e)
     {
         co_return false;
     }
+
+    if (this->sockets.contains(fd) == false)
+        co_return false;
+
+    co_await socket.send(response::message(error, error_code));
+    co_return true;
 }
 
 async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& socket,
                                                    const request::login&           request)
 {
-    auto delay = fb::config::get()["transfer delay"].asInt();
-    auto name  = std::string(request.id);
-    auto pw    = std::string(request.pw);
+    auto delay      = fb::config::get()["transfer delay"].asInt();
+    auto name       = std::string(request.id);
+    auto pw         = std::string(request.pw);
+    auto error      = std::string();
+    auto error_code = 0x0E;
     co_await this->sleep(std::chrono::seconds(delay));
 
     auto fd = socket.fd();
@@ -285,45 +295,44 @@ async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session
             throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response3.error));
         }
 
-        socket.send(response::message("", 0x00));
+        co_await socket.send(response::message("", 0x00));
         auto parameter = fb::stream();
         auto writer    = fb::stream_writer<big_endian>(parameter);
         writer.write<uint32_t>(uid);
         writer.write<std::string>(name);
         writer.write<uint8_t>(0);
-        this->transfer(socket, response3.ip, response3.port, internal::services::LOGIN, parameter);
+        co_await this->transfer(socket, response3.ip, response3.port, internal::services::LOGIN, parameter);
+        co_return true;
     }
     catch (login_exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        error      = e.what();
+        error_code = e.type();
     }
     catch (boost::system::error_code& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        auto sstream = std::stringstream();
-        sstream << e.message() << "(" << e.value() << ")";
-        socket.send(response::message(sstream.str(), 0x0E));
+        error      = std::format("({})", e.value());
+        error_code = 0x0E;
     }
     catch (std::exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        error      = e.what();
+        error_code = 0x0E;
     }
 
+    if (this->sockets.contains(fd) == false)
+        co_return false;
+
+    co_await socket.send(response::message(error, error_code));
     co_return true;
 }
 
 async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::login::session>&    socket,
                                                              const request::account::change_pw& request)
 {
-    auto fd = socket.fd();
+    auto fd         = socket.fd();
+    auto error      = std::string();
+    auto error_code = 0x0E;
     try
     {
         // co_await this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
@@ -388,22 +397,23 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
             throw pw_exception(fb::login::message::account::INVALID_BIRTHDAY);
         }
 
-        socket.send(response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+        co_await socket.send(response::message((fb::login::message::account::SUCCESS_CHANGE_PASSWORD), 0x00));
+        co_return true;
     }
     catch (login_exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        error      = e.what();
+        error_code = e.type();
     }
     catch (std::exception& e)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        error      = e.what();
+        error_code = 0x0E;
     }
 
+    if (this->sockets.contains(fd) == false)
+        co_return false;
+
+    co_await socket.send(response::message(error, error_code));
     co_return true;
 }

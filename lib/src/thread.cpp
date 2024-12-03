@@ -96,12 +96,13 @@ async::task<void> fb::thread::dispatch(const fb::thread::async_func_type& fn,
     if (delay > 0s)
     {
         this->settimer(
-            [this, priority, promise, fn](auto time, auto id) mutable {
+            [this, priority, promise, fn](auto time, auto id) mutable -> async::task<void> {
                 this->_queue.enqueue(fb::thread::task(fn,
                                                       [promise]() {
                                                           promise->set_value();
                                                       }),
                                      priority);
+                co_return;
             },
             delay,
             true);
@@ -123,8 +124,9 @@ void fb::thread::post(const fb::thread::async_func_type& fn, const fb::model::ti
     if (delay > 0s)
     {
         this->settimer(
-            [this, priority, fn](auto time, auto id) mutable {
+            [this, priority, fn](auto time, auto id) mutable -> async::task<void> {
                 this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
+                co_return;
             },
             delay,
             true);
@@ -150,8 +152,9 @@ void fb::thread::settimer(const fb::timer_callback& fn, const fb::model::timespa
     auto _ = std::lock_guard(this->_mutex_timer);
 
     auto timer = new fb::timer(
-        [this, fn](const fb::model::datetime&, std::thread::id) {
+        [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
             fn(fb::model::datetime(), this->_thread.get_id());
+            co_return;
         },
         duration,
         disposable);

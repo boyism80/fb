@@ -26,8 +26,8 @@ async::task<bool> context::handle_command_map(character& session, Json::Value& p
             y = parameters[2].asInt();
     }
 
-    auto& map = this->maps[model->id];
-    co_await session.map(&map, point16_t(x, y));
+    auto& map   = this->maps[model->id];
+    std::ignore = co_await session.map(&map, point16_t(x, y));
     co_return true;
 }
 
@@ -40,7 +40,7 @@ async::task<bool> context::handle_command_sound(character& session, Json::Value&
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::object::sound(session, SOUND(value)), scope::PIVOT);
+    co_await this->send(session, fb_resp::object::sound(session, SOUND(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -53,7 +53,7 @@ async::task<bool> context::handle_command_action(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    co_await this->send(session, fb_resp::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
@@ -66,7 +66,7 @@ async::task<bool> context::handle_command_weather(character& session, Json::Valu
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
+    co_await this->send(session, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -79,7 +79,7 @@ async::task<bool> context::handle_command_bright(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::bright(value), scope::PIVOT);
+    co_await this->send(session, fb_resp::bright(value), scope::PIVOT);
     co_return true;
 }
 
@@ -92,7 +92,7 @@ async::task<bool> context::handle_command_timer(character& session, Json::Value&
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::timer(value), scope::PIVOT);
+    co_await this->send(session, fb_resp::timer(value), scope::PIVOT);
     co_return true;
 }
 
@@ -105,7 +105,7 @@ async::task<bool> context::handle_command_effect(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::object::effect(session, value), scope::PIVOT);
+    co_await this->send(session, fb_resp::object::effect(session, value), scope::PIVOT);
     co_return true;
 }
 
@@ -122,16 +122,16 @@ async::task<bool> context::handle_command_disguise(character& session, Json::Val
     if (mob == nullptr)
         co_return true;
 
-    session.disguise(mob->look);
-    this->send(session, fb_resp::object::effect(session, 0x03), scope::PIVOT);
-    this->send(session, fb_resp::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    this->send(session, fb_resp::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
+    co_await session.disguise(mob->look);
+    co_await this->send(session, fb_resp::object::effect(session, 0x03), scope::PIVOT);
+    co_await this->send(session, fb_resp::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    co_await this->send(session, fb_resp::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
     co_return true;
 }
 
 async::task<bool> context::handle_command_undisguise(character& session, Json::Value& parameters)
 {
-    session.undisguise();
+    co_await session.undisguise();
     co_return true;
 }
 
@@ -148,9 +148,9 @@ async::task<bool> context::handle_command_mob(character& session, Json::Value& p
     if (model == nullptr)
         co_return true;
 
-    auto mob = model->make<fb::game::mob>(*this, mob::config{.alive = true});
-    auto map = session.map();
-    co_await mob->map(map, session.position());
+    auto mob    = model->make<fb::game::mob>(*this, mob::config{.alive = true});
+    auto map    = session.map();
+    std::ignore = co_await mob->map(map, session.position());
     co_return true;
 }
 
@@ -170,8 +170,8 @@ async::task<bool> context::handle_command_class(character& session, Json::Value&
 
     session.cls(class_type);
     session.promotion(promotion);
-    this->send(session, fb_resp::session::id(session), scope::SELF);
-    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    co_await this->send(session, fb_resp::session::id(session), scope::SELF);
+    co_await this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -184,8 +184,8 @@ async::task<bool> context::handle_command_level(character& session, Json::Value&
         co_return false;
 
     auto level = parameters[0].asInt();
-    session.level(level);
-    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    co_await session.level(level);
+    co_await this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -224,8 +224,8 @@ async::task<bool> context::handle_command_item(character& session, Json::Value& 
 
     auto count = parameters.size() > 1 && parameters[1].isInt() ? parameters[1].asInt() : 1;
 
-    auto item = model->make(*this, count);
-    co_await item->map(session.map(), session.position());
+    auto item   = model->make(*this, count);
+    std::ignore = co_await item->map(session.map(), session.position());
     co_return true;
 }
 
@@ -244,7 +244,7 @@ async::task<bool> context::handle_command_world(character& session, Json::Value&
         {
             if (point.name == name)
             {
-                session.send(fb_resp::map::worlds(this->model, id, index));
+                co_await session.send(fb_resp::map::worlds(this->model, id, index));
                 co_return true;
             }
         }
@@ -269,7 +269,7 @@ async::task<bool> context::handle_command_hair(character& session, Json::Value& 
         co_return false;
 
     auto hair = parameters[0].asInt();
-    session.look(hair);
+    co_await session.look(hair);
     co_return true;
 }
 
@@ -282,7 +282,7 @@ async::task<bool> context::handle_command_hair_color(character& session, Json::V
         co_return false;
 
     auto color = parameters[0].asInt();
-    session.color(color);
+    co_await session.color(color);
     co_return true;
 }
 
@@ -290,7 +290,7 @@ async::task<bool> context::handle_command_armor_color(character& session, Json::
 {
     if (parameters.size() == 0)
     {
-        session.armor_color(std::nullopt);
+        co_await session.armor_color(std::nullopt);
         co_return true;
     }
     else if (parameters[0].isInt() == false)
@@ -300,7 +300,7 @@ async::task<bool> context::handle_command_armor_color(character& session, Json::
     else
     {
         auto color = parameters[0].asInt();
-        session.armor_color(color);
+        co_await session.armor_color(color);
         co_return true;
     }
 }
@@ -325,12 +325,12 @@ async::task<bool> context::handle_command_tile(character& session, Json::Value& 
     auto sstream = std::stringstream();
     sstream << "맵타일 : " << tile->id;
     if (listener != nullptr)
-        listener->on_notify(session, sstream.str());
+        co_await listener->on_notify(session, sstream.str());
 
     sstream.str("");
     sstream << "오브젝트 : " << tile->object;
     if (listener != nullptr)
-        listener->on_notify(session, sstream.str());
+        co_await listener->on_notify(session, sstream.str());
 
     co_return true;
 }
@@ -376,8 +376,7 @@ async::task<bool> context::handle_command_randmap(character& session, Json::Valu
     auto  x     = map->width() > 0 ? std::rand() % map->width() : 0;
     auto  y     = map->height() > 0 ? std::rand() % map->height() : 0;
 
-    co_await session.map(map, point16_t(x, y));
-    co_return true;
+    co_return co_await session.map(map, point16_t(x, y));
 }
 
 async::task<bool> context::handle_command_npc(character& session, Json::Value& parameters)
@@ -394,10 +393,9 @@ async::task<bool> context::handle_command_npc(character& session, Json::Value& p
     if (model == nullptr)
         co_return false;
 
-    auto npc = model->make<fb::game::npc>(*this);
-    npc->direction(session.direction());
-    co_await npc->map(session.map(), session.position());
-    co_return true;
+    auto npc    = model->make<fb::game::npc>(*this);
+    std::ignore = co_await npc->direction(session.direction());
+    co_return co_await npc->map(session.map(), session.position());
 }
 
 async::task<bool> context::handle_command_durability(character& session, Json::Value& parameters)
@@ -446,27 +444,27 @@ async::task<bool> context::handle_command_concurrency(character& session, Json::
 {
     auto seconds = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 10;
     auto key     = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : "global";
-
+    auto error   = std::string();
     try
     {
-        co_await this->_mutex.sync<bool>(key, [this, &session, seconds](auto& trans) -> async::task<bool> {
+        co_await this->_mutex.sync<void>(key, [this, &session, seconds](auto& trans) -> async::task<void> {
             for (int i = 0; i < seconds; i++)
             {
-                session.chat(std::format("{}초 후에 풀립니다.", seconds - i));
+                co_await session.chat(std::format("{}초 후에 풀립니다.", seconds - i));
                 co_await this->sleep(1s);
             }
-            co_return true;
         });
     }
     catch (fb::lock_error&)
     {
-        session.chat("리소스 점유 실패");
+        error = "리소스 점유 실패";
     }
     catch (std::exception& e)
     {
-        session.chat(e.what());
+        error = e.what();
     }
 
+    co_await session.chat(error);
     co_return true;
 }
 
@@ -488,6 +486,6 @@ async::task<bool> context::handle_map_tile(character& session, Json::Value& para
     if (tile == nullptr)
         co_return false;
 
-    session.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
+    co_await session.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
     co_return true;
 }

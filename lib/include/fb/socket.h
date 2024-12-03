@@ -76,7 +76,7 @@ protected:
     }
 
 public:
-    async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    [[nodiscard]] async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         static auto empty_fn = [](const boost::system::error_code ec, size_t size) {
 
@@ -85,7 +85,7 @@ public:
     }
 
 public:
-    async::task<void> send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
+    [[nodiscard]] async::task<void> send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
         if (stream.empty())
             co_return;
@@ -105,7 +105,7 @@ public:
     }
 
 public:
-    async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
+    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         static auto empty_fn = [](const boost::system::error_code&, size_t) {
         };
@@ -113,7 +113,7 @@ public:
     }
 
 public:
-    async::task<void>
+    [[nodiscard]] async::task<void>
     send(const fb::protocol::base::header& response, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
         auto stream = fb::stream();
@@ -225,7 +225,7 @@ public:
 
 public:
     template <typename R = void>
-    async::task<R> stream(const std::function<async::task<R>(fb::stream& stream)>& func)
+    [[nodiscard]] async::task<R> stream(const std::function<async::task<R>(fb::stream& stream)>& func)
     {
         if constexpr (std::is_void_v<T>)
         {
@@ -326,12 +326,12 @@ public:
         return this->_sockets.contains(fd);
     }
 
-    void each(const std::function<void(fb::socket<T>&)> fn)
+    [[nodiscard]] async::task<void> each(const std::function<async::task<void>(fb::socket<T>&)> fn)
     {
         auto _ = std::lock_guard(this->_mutex);
         for (auto& [fd, socket] : this->_sockets)
         {
-            fn(*socket);
+            co_await fn(*socket);
         }
     }
 

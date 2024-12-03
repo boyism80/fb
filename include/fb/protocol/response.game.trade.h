@@ -23,7 +23,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         const auto& cname = model.promotion[me.cls()][me.promotion()].name;
@@ -57,7 +57,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         const auto item = this->me.trade.item(this->index);
@@ -82,7 +82,7 @@ public:
     bundle() = default;
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -107,7 +107,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -132,7 +132,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -151,7 +151,7 @@ public:
     lock() = default;
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);

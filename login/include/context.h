@@ -195,7 +195,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_connected(fb::socket<fb::login::session>&) final;
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::login::session>&) final;
     /**
      * @brief      { function_description }
      *
@@ -203,7 +203,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_disconnected(fb::socket<fb::login::session>&) final;
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::login::session>&) final;
 
     // for heart-beat
 
@@ -227,7 +227,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
+    [[nodiscard]] async::task<bool> handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
     /**
      * @brief      { function_description }
      *
@@ -236,7 +236,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_create_account(fb::socket<fb::login::session>&,
+    [[nodiscard]] async::task<bool> handle_create_account(fb::socket<fb::login::session>&,
                                             const fb::protocol::login::request::account::create&);
     /**
      * @brief      { function_description }
@@ -246,7 +246,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_account_complete(fb::socket<fb::login::session>&,
+    [[nodiscard]] async::task<bool> handle_account_complete(fb::socket<fb::login::session>&,
                                               const fb::protocol::login::request::account::complete&);
     /**
      * @brief      { function_description }
@@ -256,7 +256,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
+    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
     /**
      * @brief      { function_description }
      *
@@ -265,7 +265,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_change_password(fb::socket<fb::login::session>&,
+    [[nodiscard]] async::task<bool> handle_change_password(fb::socket<fb::login::session>&,
                                              const fb::protocol::login::request::account::change_pw&);
 };
 

@@ -96,7 +96,7 @@ protected:
      *
      * @param      map   The map
      */
-    virtual void on_map_changed(fb::game::map* map);
+    virtual async::task<void> on_map_changed(fb::game::map* map);
 
 public:
     /**
@@ -192,7 +192,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual bool active();
+    virtual async::task<bool> active();
     /**
      * @brief      { function_description }
      *
@@ -206,7 +206,7 @@ public:
      *
      * @param      item  The item
      */
-    virtual void merge(fb::game::item& item);
+    virtual async::task<void> merge(fb::game::item& item);
 
 public:
     /**
@@ -263,14 +263,16 @@ struct item::listener : public virtual fb::game::object::listener
      * @param[in]  index  The index
      * @param[in]  attr   The attribute
      */
-    virtual void on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE) = 0;
+    virtual async::task<void> on_item_remove(character&       me,
+                                             uint8_t          index,
+                                             ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE) = 0;
     /**
      * @brief      Called on item update.
      *
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    virtual void on_item_update(character& me, uint8_t index) = 0;
+    virtual async::task<void> on_item_update(character& me, uint8_t index) = 0;
     /**
      * @brief      Called on item swap.
      *
@@ -278,14 +280,14 @@ struct item::listener : public virtual fb::game::object::listener
      * @param[in]  src   The source
      * @param[in]  dst   The destination
      */
-    virtual void on_item_swap(character& me, uint8_t src, uint8_t dst) = 0;
+    virtual async::task<void> on_item_swap(character& me, uint8_t src, uint8_t dst) = 0;
     /**
      * @brief      Called on item active.
      *
      * @param      me    { parameter_description }
      * @param      item  The item
      */
-    virtual void on_item_active(character& me, item& item) = 0;
+    virtual async::task<void> on_item_active(character& me, item& item) = 0;
     /**
      * @brief      Called on item throws.
      *
@@ -293,7 +295,7 @@ struct item::listener : public virtual fb::game::object::listener
      * @param      item  The item
      * @param[in]  to    { parameter_description }
      */
-    virtual void on_item_throws(character& me, item& item, const point16_t& to) = 0;
+    virtual async::task<void> on_item_throws(character& me, item& item, const point16_t& to) = 0;
 };
 
 /**
@@ -336,7 +338,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<fb::game::cash*> replace(uint32_t value);
+    [[nodiscard]] async::task<fb::game::cash*> replace(uint32_t value);
     /**
      * @brief      { function_description }
      *
@@ -344,7 +346,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t reduce(uint32_t value);
+    [[nodiscard]] async::task<uint32_t> reduce(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -391,7 +393,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active();
+    async::task<bool> active() override;
 };
 
 /**
@@ -447,7 +449,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active() final;
+    async::task<bool> active() final;
 };
 
 /**
@@ -494,7 +496,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active();
+    async::task<bool> active() override;
 
 public:
     /**
@@ -555,7 +557,7 @@ struct equipment::listener : public virtual fb::game::item::listener
      * @param      item   The item
      * @param[in]  parts  The parts
      */
-    virtual void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) = 0;
+    virtual async::task<void> on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) = 0;
     /**
      * @brief      Called on equipment off.
      *
@@ -563,7 +565,7 @@ struct equipment::listener : public virtual fb::game::item::listener
      * @param[in]  parts  The parts
      * @param[in]  index  The index
      */
-    virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) = 0;
+    virtual async::task<void> on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) = 0;
 };
 
 /**
@@ -638,11 +640,11 @@ public:
      *
      * @param[in]  name  The name
      */
-    void custom_name(const std::string& name);
+    [[nodiscard]] async::task<void> custom_name(const std::string& name);
     /**
      * @brief      { function_description }
      */
-    void reset_custom_name();
+    [[nodiscard]] async::task<void> reset_custom_name();
     /**
      * @brief      Returns a protocol representation of the object.
      *
@@ -837,7 +839,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> equipment_off(EQUIPMENT_PARTS parts);
+    [[nodiscard]] async::task<uint8_t> equipment_off(EQUIPMENT_PARTS parts);
 
 public:
     /**
@@ -847,7 +849,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(fb::game::item& item);
+    [[nodiscard]] async::task<uint8_t> add(fb::game::item& item) override;
     /**
      * @brief      Adds the specified item.
      *
@@ -855,7 +857,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(fb::game::item* item);
+    [[nodiscard]] async::task<uint8_t> add(fb::game::item* item);
     /**
      * @brief      { function_description }
      *
@@ -864,7 +866,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<std::vector<uint8_t>> add(const std::vector<fb::game::item*>& items, bool stop_if_remained = false);
+    [[nodiscard]] async::task<std::vector<uint8_t>> add(const std::vector<fb::game::item*>& items,
+                                                        bool                                stop_if_remained = false);
     /**
      * @brief      { function_description }
      *
@@ -873,7 +876,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(fb::game::item& item, uint8_t index);
+    [[nodiscard]] async::task<uint8_t> add(fb::game::item& item, uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -881,7 +884,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<fb::game::item*> active(uint8_t index);
+    [[nodiscard]] async::task<fb::game::item*> active(uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -889,7 +892,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> inactive(EQUIPMENT_PARTS parts);
+    [[nodiscard]] async::task<uint8_t> inactive(EQUIPMENT_PARTS parts);
     /**
      * @brief      { function_description }
      *
@@ -922,7 +925,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::equipment* wear(EQUIPMENT_PARTS parts, fb::game::equipment* item);
+    async::task<fb::game::equipment*> wear(EQUIPMENT_PARTS parts, fb::game::equipment* item);
     /**
      * @brief      { function_description }
      *
@@ -936,7 +939,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::weapon* weapon(fb::game::weapon* weapon);
+    [[nodiscard]] async::task<fb::game::weapon*> weapon(fb::game::weapon* weapon);
     /**
      * @brief      { function_description }
      *
@@ -950,7 +953,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::armor* armor(fb::game::armor* armor);
+    [[nodiscard]] async::task<fb::game::armor*> armor(fb::game::armor* armor);
     /**
      * @brief      { function_description }
      *
@@ -964,7 +967,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::shield* shield(fb::game::shield* shield);
+    [[nodiscard]] async::task<fb::game::shield*> shield(fb::game::shield* shield);
     /**
      * @brief      { function_description }
      *
@@ -978,7 +981,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::helmet* helmet(fb::game::helmet* helmet);
+    [[nodiscard]] async::task<fb::game::helmet*> helmet(fb::game::helmet* helmet);
     /**
      * @brief      { function_description }
      *
@@ -994,7 +997,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::ring* ring(fb::game::ring* ring);
+    [[nodiscard]] async::task<fb::game::ring*> ring(fb::game::ring* ring);
     /**
      * @brief      { function_description }
      *
@@ -1003,7 +1006,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::ring* ring(fb::game::ring* ring, EQUIPMENT_POSITION position);
+    [[nodiscard]] async::task<fb::game::ring*> ring(fb::game::ring* ring, EQUIPMENT_POSITION position);
     /**
      * @brief      { function_description }
      *
@@ -1019,7 +1022,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::auxiliary* auxiliary(fb::game::auxiliary* auxiliary);
+    [[nodiscard]] async::task<fb::game::auxiliary*> auxiliary(fb::game::auxiliary* auxiliary);
     /**
      * @brief      { function_description }
      *
@@ -1028,7 +1031,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::auxiliary* auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position);
+    [[nodiscard]] async::task<fb::game::auxiliary*> auxiliary(fb::game::auxiliary* auxiliary,
+                                                              EQUIPMENT_POSITION   position);
     /**
      * @brief      Searches for the first match.
      *
@@ -1061,7 +1065,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<fb::game::item*> drop(uint8_t index, uint8_t count);
+    [[nodiscard]] async::task<fb::game::item*> drop(uint8_t index, uint8_t count);
     /**
      * @brief      { function_description }
      *
@@ -1069,7 +1073,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> pickup(bool boost);
+    [[nodiscard]] async::task<void> pickup(bool boost);
     /**
      * @brief      { function_description }
      *
@@ -1077,7 +1081,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> throws(uint8_t index);
+    [[nodiscard]] async::task<bool> throws(uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -1092,7 +1096,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool swap(uint8_t src, uint8_t dst) override;
+    [[nodiscard]] async::task<bool> swap(uint8_t src, uint8_t dst) override;
 
     /**
      * @brief      { function_description }
@@ -1103,7 +1107,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    [[nodiscard]] async::task<fb::game::item*> remove(uint8_t          index,
+                                                      uint16_t         count = 1,
+                                                      ITEM_DELETE_TYPE attr  = ITEM_DELETE_TYPE::NONE);
     /**
      * @brief      { function_description }
      *
@@ -1113,7 +1119,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    [[nodiscard]] async::task<fb::game::item*> remove(fb::game::item&  item,
+                                                      uint16_t         count = 1,
+                                                      ITEM_DELETE_TYPE attr  = ITEM_DELETE_TYPE::NONE);
 };
 
 }} // namespace fb::game

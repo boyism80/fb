@@ -21,7 +21,7 @@ int fb::game::character::builtin_look(lua_State* lua)
     else
     {
         auto value = (uint16_t)thread->tointeger(2);
-        session->look(value);
+        async::awaitable_get(session->look(value));
         return 0;
     }
 }
@@ -46,7 +46,7 @@ int fb::game::character::builtin_color(lua_State* lua)
     else
     {
         auto value = (uint8_t)thread->tointeger(2);
-        session->color(value);
+        async::awaitable_get(session->color(value));
         return 0;
     }
 }
@@ -71,7 +71,7 @@ int fb::game::character::builtin_money(lua_State* lua)
     else
     {
         auto value = (uint32_t)thread->tointeger(2);
-        session->money(value);
+        async::awaitable_get(session->money(value));
         return 0;
     }
 }
@@ -96,7 +96,7 @@ int fb::game::character::builtin_exp(lua_State* lua)
     else
     {
         auto value = (uint32_t)thread->tointeger(2);
-        session->experience(value);
+        async::awaitable_get(session->experience(value));
         return 0;
     }
 }
@@ -391,9 +391,14 @@ int fb::game::character::builtin_rmitem(lua_State* lua)
             throw std::exception();
         }
 
-        auto dropped = session->items.remove(index, count, delete_attr);
-        if (dropped != nullptr)
-            async::awaitable_get(dropped->destroy());
+        async::awaitable_then(
+            [=]() -> async::task<void> {
+                auto dropped = co_await session->items.remove(index, count, delete_attr);
+                if (dropped != nullptr)
+                    co_await dropped->destroy();
+            }(),
+            [](auto result) {
+            });
     }
     catch (...)
     { }
@@ -420,7 +425,7 @@ int fb::game::character::builtin_state(lua_State* lua)
     else
     {
         auto value = STATE(thread->tointeger(2));
-        session->state(value);
+        async::awaitable_get(session->state(value));
         return 0;
     }
 }
@@ -444,12 +449,12 @@ int fb::game::character::builtin_disguise(lua_State* lua)
     }
     else if (luaL_checkinteger(lua, 2))
     {
-        session->disguise((uint16_t)thread->tointeger(2));
+        async::awaitable_get(session->disguise((uint16_t)thread->tointeger(2)));
         return 0;
     }
     else
     {
-        session->undisguise();
+        async::awaitable_get(session->undisguise());
         return 0;
     }
 }
@@ -493,10 +498,12 @@ int fb::game::character::builtin_class(lua_State* lua)
         else
         {
             auto context = thread->env<fb::game::context>("context");
-            context->send(*session, fb::protocol::game::response::session::id(*session), context::scope::SELF);
-            context->send(*session,
-                          fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
-                          context::scope::SELF);
+            async::awaitable_get(
+                context->send(*session, fb::protocol::game::response::session::id(*session), context::scope::SELF));
+            async::awaitable_get(
+                context->send(*session,
+                              fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
+                              context::scope::SELF));
             thread->pushboolean(true);
         }
     }
@@ -524,12 +531,16 @@ int fb::game::character::builtin_level(lua_State* lua)
     else
     {
         auto level = std::max(0, std::min((int)thread->tointeger(2), 255));
-        session->level(level);
+        async::awaitable_then(session->level(level), [](auto result) {
+        });
 
         auto context = thread->env<fb::game::context>("context");
-        context->send(*session,
-                      fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
-                      context::scope::SELF);
+        async::awaitable_then(
+            context->send(*session,
+                          fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
+                          context::scope::SELF),
+            [](auto result) {
+            });
         return 0;
     }
 }
@@ -713,7 +724,7 @@ int fb::game::character::builtin_deposit_item(lua_State* lua)
     }
     else
     {
-        thread->pushboolean(session->deposit_item(index, count));
+        thread->pushboolean(async::awaitable_get(session->deposit_item(index, count)));
     }
 
     return 1;

@@ -51,7 +51,7 @@ public:
     welcome() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
     }
@@ -83,7 +83,7 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -95,7 +95,7 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         reader.read<uint8_t>();
@@ -134,7 +134,7 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         // 서버정보를 바이너리 형식으로 변환
@@ -163,7 +163,7 @@ public:
         writer.write(compressed.data(), compressed.size() + 1);
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         // TODO: 파싱해서 데이터 적재

@@ -174,9 +174,12 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto duration = argc < 3 ? static_cast<int>(DURATION::SPELL) : thread->tointeger(3);
     auto sound    = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
 
-    context->send(*life,
-                  fb::protocol::game::response::life::action{*life, ACTION(action), DURATION(duration), sound},
-                  context::scope::PIVOT);
+    async::awaitable_then(
+        context->send(*life,
+                      fb::protocol::game::response::life::action{*life, ACTION(action), DURATION(duration), sound},
+                      context::scope::PIVOT),
+        [](auto result) {
+        });
     return 0;
 }
 

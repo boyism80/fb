@@ -28,7 +28,7 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     auto task = thread->dispatch([this, &model, &map]() -> async::task<void> {
         auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[model.npc]);
         async::awaitable_get(npc->map(&map, model.position));
-        npc->direction(model.direction);
+        std::ignore = co_await npc->direction(model.direction);
         co_return;
     });
     async::awaitable_get(task);

@@ -85,7 +85,7 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
     	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -95,7 +95,7 @@ public:
         writer.write(this->parameter);
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->ip   = reader.read<uint32_t>();

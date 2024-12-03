@@ -283,8 +283,10 @@ std::vector<fb::game::object*> fb::game::map::activateds(OBJECT_TYPE type)
         return this->_sectors->activated_objects(type);
 }
 
-void fb::game::map::on_timer(uint64_t elapsed_milliseconds)
-{ }
+async::task<void> fb::game::map::on_timer(uint64_t elapsed_milliseconds)
+{
+    co_return;
+}
 
 fb::game::map::tile* fb::game::map::operator() (uint16_t x, uint16_t y) const
 {

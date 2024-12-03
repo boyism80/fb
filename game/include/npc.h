@@ -63,7 +63,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool buy(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count, bool bought);
+    [[nodiscard]] async::task<bool>
+    buy(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count, bool bought);
     /**
      * @brief      { function_description }
      *
@@ -74,7 +75,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool sell(fb::game::character& session, const fb::model::item* item, uint16_t count, bool sold);
+    [[nodiscard]] async::task<bool>
+    sell(fb::game::character& session, const fb::model::item* item, uint16_t count, bool sold);
     /**
      * @brief      { function_description }
      *
@@ -84,7 +86,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool repair(fb::game::character& session, const fb::model::item* item, bool done);
+    [[nodiscard]] async::task<bool> repair(fb::game::character& session, const fb::model::item* item, bool done);
     /**
      * @brief      { function_description }
      *
@@ -93,7 +95,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool hold_money(fb::game::character& session, std::optional<uint32_t> money);
+    [[nodiscard]] async::task<bool> hold_money(fb::game::character& session, std::optional<uint32_t> money);
     /**
      * @brief      Returns a money.
      *
@@ -102,7 +104,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool return_money(fb::game::character& session, std::optional<uint32_t> money);
+    [[nodiscard]] async::task<bool> return_money(fb::game::character& session, std::optional<uint32_t> money);
     /**
      * @brief      { function_description }
      *
@@ -112,7 +114,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool hold_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count);
+    [[nodiscard]] async::task<bool> hold_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count);
     /**
      * @brief      Returns an item.
      *
@@ -122,29 +124,29 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> return_item(fb::game::character&    session,
-                                  const fb::model::item*  item,
-                                  std::optional<uint16_t> count);
+    [[nodiscard]] async::task<bool> return_item(fb::game::character&    session,
+                                                const fb::model::item*  item,
+                                                std::optional<uint16_t> count);
     /**
      * @brief      { function_description }
      */
-    void sell_list();
+    [[nodiscard]] async::task<void> sell_list();
     /**
      * @brief      { function_description }
      */
-    void buy_list();
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  item  The item
-     */
-    void sell_price(const fb::model::item* item);
+    [[nodiscard]] async::task<void> buy_list();
     /**
      * @brief      { function_description }
      *
      * @param[in]  item  The item
      */
-    void buy_price(const fb::model::item* item);
+    [[nodiscard]] async::task<void> sell_price(const fb::model::item* item);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  item  The item
+     */
+    [[nodiscard]] async::task<void> buy_price(const fb::model::item* item);
     /**
      * @brief      { function_description }
      *
@@ -152,7 +154,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool deposited_money(const fb::game::character& session);
+    [[nodiscard]] async::task<bool> deposited_money(const fb::game::character& session);
     /**
      * @brief      { function_description }
      *
@@ -162,7 +164,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool rename_weapon(fb::game::character& session, const fb::model::item* item, const std::string& name);
+    [[nodiscard]] async::task<bool> rename_weapon(fb::game::character& session, const fb::model::item* item, const std::string& name);
     /**
      * @brief      { function_description }
      *
@@ -170,7 +172,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool hold_item_list(const fb::game::character& session);
+    [[nodiscard]] async::task<bool> hold_item_list(const fb::game::character& session);
     /**
      * @brief      { function_description }
      *
@@ -179,7 +181,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool hold_item_count(const fb::game::character& session, const fb::model::item* item);
+    [[nodiscard]] async::task<bool> hold_item_count(const fb::game::character& session, const fb::model::item* item);
 
 public:
     /**

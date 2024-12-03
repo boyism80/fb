@@ -73,27 +73,27 @@ inline async::task<uint8_t> fb::game::inventory<T>::add(T& element, uint8_t inde
 }
 
 template <typename T>
-inline bool fb::game::inventory<T>::remove(uint8_t index)
+inline async::task<bool> fb::game::inventory<T>::remove(uint8_t index)
 {
     auto element = this->at(index);
     if (element == nullptr)
-        return false;
+        co_return false;
 
     this->_elements[index] = nullptr;
-    return true;
+    co_return true;
 }
 
 template <typename T>
-inline bool fb::game::inventory<T>::swap(uint8_t src, uint8_t dst)
+inline async::task<bool> fb::game::inventory<T>::swap(uint8_t src, uint8_t dst)
 {
     if (src == dst)
-        return false;
+        co_return false;
 
     if (src > CONTAINER_CAPACITY - 1 || dst > CONTAINER_CAPACITY - 1)
-        return false;
+        co_return false;
 
     std::swap(this->_elements[src], this->_elements[dst]);
-    return true;
+    co_return true;
 }
 
 template <typename T>

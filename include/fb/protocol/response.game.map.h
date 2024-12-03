@@ -48,7 +48,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -109,7 +109,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
@@ -153,7 +153,7 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
         auto building = enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
@@ -165,7 +165,7 @@ public:
         writer.write<std::string, uint16_t>(this->map.model.name);
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->id          = reader.read<uint16_t>();
@@ -195,7 +195,7 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);

@@ -53,7 +53,7 @@ public:
     }
 
     template <typename ReturnType>
-    async::task<ReturnType> lock(const std::function<async::task<ReturnType>(ValueType&)>& fn)
+    [[nodiscard]] async::task<ReturnType> lock(const std::function<async::task<ReturnType>(ValueType&)>& fn)
     {
         auto _ = std::unique_lock(this->_mutex);
 
@@ -84,7 +84,7 @@ public:
     }
 
     template <typename ReturnType>
-    async::task<ReturnType> read(const std::function<async::task<ReturnType>(const ValueType&)>& fn)
+    [[nodiscard]] async::task<ReturnType> read(const std::function<async::task<ReturnType>(const ValueType&)>& fn)
     {
         auto _ = std::shared_lock(this->_mutex);
 

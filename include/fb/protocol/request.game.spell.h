@@ -24,7 +24,7 @@ public:
     use() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->_reader = &reader;

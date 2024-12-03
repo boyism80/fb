@@ -51,7 +51,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(const fb::model::spell& element);
+    [[nodiscard]] async::task<uint8_t> add(const fb::model::spell& element) override;
     /**
      * @brief      { function_description }
      *
@@ -60,7 +60,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(const fb::model::spell& element, uint8_t index);
+    [[nodiscard]] async::task<uint8_t> add(const fb::model::spell& element, uint8_t index) override;
     /**
      * @brief      Removes the specified index.
      *
@@ -68,7 +68,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool remove(uint8_t index);
+    [[nodiscard]] async::task<bool> remove(uint8_t index) override;
     /**
      * @brief      { function_description }
      *
@@ -77,7 +77,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool swap(uint8_t src, uint8_t dst);
+    [[nodiscard]] async::task<bool> swap(uint8_t src, uint8_t dst) override;
 };
 
 /**
@@ -91,14 +91,14 @@ struct spells::listener
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    virtual void on_spell_update(life& me, uint8_t index) = 0;
+    virtual async::task<void> on_spell_update(life& me, uint8_t index) = 0;
     /**
      * @brief      Called on spell remove.
      *
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    virtual void on_spell_remove(life& me, uint8_t index) = 0;
+    virtual async::task<void> on_spell_remove(life& me, uint8_t index) = 0;
 };
 
 /**
@@ -218,7 +218,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<buff*> push_back(const fb::model::spell& spell, uint32_t seconds);
+    [[nodiscard]] async::task<buff*> push_back(const fb::model::spell& spell, uint32_t seconds);
     /**
      * @brief      Removes the specified identifier.
      *
@@ -226,7 +226,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool remove(uint32_t id);
+    [[nodiscard]] async::task<bool> remove(uint32_t id);
     /**
      * @brief      Removes the specified spell.
      *
@@ -234,7 +234,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool remove(const fb::model::spell& spell);
+    [[nodiscard]] async::task<bool> remove(const fb::model::spell& spell);
 
 public:
     /**

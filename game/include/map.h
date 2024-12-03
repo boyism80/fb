@@ -401,7 +401,7 @@ public:
      *
      * @param[in]  elapsed_milliseconds  The elapsed milliseconds
      */
-    void on_timer(uint64_t elapsed_milliseconds);
+    [[nodiscard]] async::task<void> on_timer(uint64_t elapsed_milliseconds);
 
 public:
     /**

@@ -86,11 +86,11 @@ public:
     }
 
 public:
-    async::task<void> dispatch(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
+    [[nodiscard]] async::task<void> dispatch(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
     void              post(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
-    async::task<void> dispatch(uint32_t priority = 0);
+    [[nodiscard]] async::task<void> dispatch(uint32_t priority = 0);
     void settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable = false);
-    async::task<void> sleep(const fb::model::timespan& duration);
+    [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
 };
 
 class threads
@@ -129,7 +129,7 @@ public:
     size_t            size() const;
 
 public:
-    async::task<void> dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay);
+    [[nodiscard]] async::task<void> dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay);
     void              settimer(const fb::timer_callback& fn, const fb::model::timespan& duration);
     void              exit();
 

@@ -166,7 +166,7 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    virtual void send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    virtual async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -174,7 +174,7 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    virtual void send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
+    virtual async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -231,7 +231,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    void chat(const std::string& message, bool shout = false);
+    [[nodiscard]] async::task<void> chat(const std::string& message, bool shout = false);
     /**
      * @brief      { function_description }
      *
@@ -261,7 +261,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual bool position(uint16_t x, uint16_t y, bool refresh = false);
+    virtual async::task<bool> position(uint16_t x, uint16_t y, bool refresh = false);
     /**
      * @brief      { function_description }
      *
@@ -270,13 +270,13 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual bool position(const point16_t position, bool refresh = false);
+    virtual async::task<bool> position(const point16_t position, bool refresh = false);
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    bool move();
+    [[nodiscard]] async::task<bool> move();
     /**
      * @brief      { function_description }
      *
@@ -284,7 +284,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool move(DIRECTION direction);
+    [[nodiscard]] async::task<bool> move(DIRECTION direction);
     /**
      * @brief      { function_description }
      *
@@ -298,7 +298,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool x(uint16_t value);
+    [[nodiscard]] async::task<bool> x(uint16_t value);
     /**
      * @brief      { function_description }
      *
@@ -312,7 +312,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool y(uint16_t value);
+    [[nodiscard]] async::task<bool> y(uint16_t value);
     /**
      * @brief      { function_description }
      *
@@ -326,7 +326,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool direction(DIRECTION value);
+    [[nodiscard]] async::task<bool> direction(DIRECTION value);
     /**
      * @brief      { function_description }
      *
@@ -507,25 +507,25 @@ public:
      *
      * @param[in]  elapsed_milliseconds  The elapsed milliseconds
      */
-    virtual void on_timer(uint64_t elapsed_milliseconds);
+    virtual async::task<void> on_timer(uint64_t elapsed_milliseconds);
     /**
      * @brief      Called on kill.
      *
      * @param      you   You
      */
-    virtual void on_kill(fb::game::life& you);
+    virtual async::task<void> on_kill(fb::game::life& you);
 
 protected:
     /**
      * @brief      Called on hold.
      */
-    virtual void on_hold();
+    virtual async::task<void> on_hold();
     /**
      * @brief      Called when map changed.
      *
      * @param      <unnamed>  { parameter_description }
      */
-    virtual void on_map_changed(fb::game::map*);
+    virtual async::task<void> on_map_changed(fb::game::map*);
 
 public:
     /**
@@ -720,20 +720,20 @@ struct object::listener
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    virtual void on_chat(fb::game::object& me, const std::string& message, bool shout) = 0;
+    virtual async::task<void> on_chat(fb::game::object& me, const std::string& message, bool shout) = 0;
     /**
      * @brief      Called on direction.
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_direction(fb::game::object& me) = 0;
+    virtual async::task<void> on_direction(fb::game::object& me) = 0;
     /**
      * @brief      Called on show.
      *
      * @param      me     { parameter_description }
      * @param[in]  light  The light
      */
-    virtual void on_show(fb::game::object& me, bool light) = 0;
+    virtual async::task<void> on_show(fb::game::object& me, bool light) = 0;
     /**
      * @brief      Called on show.
      *
@@ -741,14 +741,14 @@ struct object::listener
      * @param      you    You
      * @param[in]  light  The light
      */
-    virtual void on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
+    virtual async::task<void> on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
     /**
      * @brief      Called on hide.
      *
      * @param      me            { parameter_description }
      * @param[in]  destroy_type  The destroy type
      */
-    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
+    virtual async::task<void> on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
     /**
      * @brief      Called on hide.
      *
@@ -756,21 +756,21 @@ struct object::listener
      * @param      you           You
      * @param[in]  destroy_type  The destroy type
      */
-    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
+    virtual async::task<void> on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
     /**
      * @brief      Called on move.
      *
      * @param      me      { parameter_description }
      * @param[in]  before  The before
      */
-    virtual void on_move(fb::game::object& me, const point16_t& before) = 0;
+    virtual async::task<void> on_move(fb::game::object& me, const point16_t& before) = 0;
     /**
      * @brief      Called on unbuff.
      *
      * @param      me    { parameter_description }
      * @param      buff  The buffer
      */
-    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+    virtual async::task<void> on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
     /**
      * @brief      Called when map changed.
      *
@@ -778,19 +778,19 @@ struct object::listener
      * @param      before  The before
      * @param      after   The after
      */
-    virtual void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
+    virtual async::task<void> on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
     /**
      * @brief      Called on create.
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_create(fb::game::object& me) = 0;
+    virtual async::task<void> on_create(fb::game::object& me) = 0;
     /**
      * @brief      Called on destroy.
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_destroy(fb::game::object& me) = 0;
+    virtual async::task<void> on_destroy(fb::game::object& me) = 0;
 };
 
 /**

@@ -21,12 +21,14 @@ std::optional<uint32_t> fb::game::item::durability() const
 void fb::game::item::durability(uint32_t value)
 { }
 
-void fb::game::item::on_map_changed(fb::game::map* map)
+async::task<void> fb::game::item::on_map_changed(fb::game::map* map)
 {
     if (map == nullptr)
         this->_dropped_time = std::nullopt;
     else
         this->_dropped_time = datetime();
+
+    co_return;
 }
 
 std::string fb::game::item::tip_message() const
@@ -108,12 +110,12 @@ void fb::game::item::owner(fb::game::character* owner)
     this->_owner = owner;
 }
 
-bool fb::game::item::active()
+async::task<bool> fb::game::item::active()
 {
     if (this->empty())
-        this->_owner->items.remove(*this);
+        std::ignore = co_await this->_owner->items.remove(*this);
 
-    return false;
+    co_return false;
 }
 
 fb::game::item* fb::game::item::split(uint16_t count)
@@ -130,14 +132,14 @@ fb::game::item* fb::game::item::split(uint16_t count)
     }
 }
 
-void fb::game::item::merge(fb::game::item& item)
+async::task<void> fb::game::item::merge(fb::game::item& item)
 {
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-        return;
+        co_return;
 
     if (model != item.based())
-        return;
+        co_return;
 
     auto before = this->_count;
     auto remain = this->fill(item.count());
@@ -148,10 +150,10 @@ void fb::game::item::merge(fb::game::item& item)
     if (listener != nullptr)
     {
         if (before != this->_count)
-            listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
+            co_await listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
 
         if (remain > 0 && this->_count == model.capacity)
-            listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
+            co_await listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
     }
 }
 

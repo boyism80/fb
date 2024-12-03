@@ -34,17 +34,25 @@ public:
 
 private:
     template <typename T>
-    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
-                                    const async_wait_func<T>&                         fn,
-                                    fb::dead_lock_detector&                           current,
-                                    const std::string                                 key,
-                                    std::mutex&                                       mutex)
+    [[nodiscard]] async::task<T> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
+                                               const async_wait_func<T>&                         fn,
+                                               fb::dead_lock_detector&                           current,
+                                               const std::string                                 key,
+                                               std::mutex&                                       mutex)
     {
         {
             auto _ = std::lock_guard(mutex);
             try
             {
-                promise->set_value(co_await fn(current));
+                if constexpr (std::is_same_v<T, void>)
+                {
+                    co_await fn(current);
+                    promise->set_value();
+                }
+                else
+                {
+                    promise->set_value(co_await fn(current));
+                }
 
                 concurrent::add(current);
             }
@@ -52,32 +60,6 @@ private:
             {
                 promise->set_exception(std::make_exception_ptr(e));
             }
-        }
-    }
-
-    template <typename T>
-    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
-                                    const async_peek_func<T>&                         fn,
-                                    const std::string                                 key,
-                                    std::mutex&                                       mutex)
-    {
-        if (mutex.try_lock())
-        {
-            try
-            {
-                auto& result = co_await fn();
-                promise->set_result(result);
-            }
-            catch (std::exception& e)
-            {
-                promise->set_error(e);
-            }
-
-            mutex.unlock();
-        }
-        else
-        {
-            promise->set_error(fb::lock_error());
         }
     }
 
@@ -118,11 +100,11 @@ private:
     }
 
     template <typename T>
-    bool lock(const std::string&                                key,
-              std::shared_ptr<async::task_completion_source<T>> promise,
-              const async_wait_func<T>&                         fn,
-              fb::thread*                                       thread,
-              fb::dead_lock_detector&                           trans)
+    async::task<bool> lock(const std::string&                                key,
+                           std::shared_ptr<async::task_completion_source<T>> promise,
+                           const async_wait_func<T>&                         fn,
+                           fb::thread*                                       thread,
+                           fb::dead_lock_detector&                           trans)
     {
         std::mutex* mutex = nullptr;
         {
@@ -141,22 +123,25 @@ private:
         catch (std::exception& e)
         {
             promise->set_exception(std::make_exception_ptr(e));
-            return false;
+            co_return false;
         }
 
         if (thread != nullptr)
         {
-            thread->dispatch([this, promise, &fn, &current, key, mutex]() mutable -> async::task<void> {
-                this->handle_locked(promise, fn, current, key, *mutex);
-                co_return;
-            });
+            async::awaitable_then(
+                thread->dispatch([this, promise, &fn, &current, key, mutex]() mutable -> async::task<void> {
+                    co_await this->handle_locked(promise, fn, current, key, *mutex);
+                    co_return;
+                }),
+                [](auto result) {
+                });
         }
         else
         {
-            this->handle_locked(promise, fn, current, key, *mutex);
+            co_await this->handle_locked(promise, fn, current, key, *mutex);
         }
 
-        return true;
+        co_return true;
     }
 
     template <typename T>
@@ -221,7 +206,9 @@ private:
 
 public:
     template <typename T>
-    async::task<T> sync(const std::string& key, const async_wait_func<T>& fn, fb::dead_lock_detector& trans)
+    [[nodiscard]] async::task<T> sync(const std::string&        key,
+                                      const async_wait_func<T>& fn,
+                                      fb::dead_lock_detector&   trans)
     {
         auto thread  = this->_owner.current_thread();
         auto promise = std::make_shared<async::task_completion_source<T>>();
@@ -231,9 +218,16 @@ public:
     }
 
     template <typename T>
-    async::task<T> sync(const std::string& key, const async_wait_func<T>& fn)
+    [[nodiscard]] async::task<T> sync(const std::string& key, const async_wait_func<T>& fn)
     {
-        co_return co_await this->sync(key, fn, this->root);
+        if constexpr (std::is_same_v<T, void>)
+        {
+            co_await this->sync(key, fn, this->root);
+        }
+        else
+        {
+            co_return co_await this->sync(key, fn, this->root);
+        }
     }
 
     template <typename T>

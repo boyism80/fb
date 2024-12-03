@@ -42,11 +42,13 @@ int fb::model::item::builtin_make(lua_State* lua)
     if (lua_istable(lua, 3))
     {
         lua_rawgeti(lua, 3, 1);
-        object->x((uint16_t)thread->tointeger(-1));
+        async::awaitable_then(object->x((uint16_t)thread->tointeger(-1)), [](auto result) {
+        });
         lua_remove(lua, -1);
 
         lua_rawgeti(lua, 3, 2);
-        object->y((uint16_t)thread->tointeger(-1));
+        async::awaitable_then(object->y((uint16_t)thread->tointeger(-1)), [](auto result) {
+        });
         lua_remove(lua, -1);
     }
     else

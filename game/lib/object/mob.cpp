@@ -20,40 +20,40 @@ void fb::game::rezen::decrease()
     this->_count = std::max(0, this->_count - 1);
 }
 
-void fb::game::rezen::spawn(std::thread::id thread_id)
+async::task<void> fb::game::rezen::spawn(std::thread::id thread_id)
 {
     if (this->_context.maps.contains(this->_model.parent) == false)
-        return;
+        co_return;
 
     auto& map = this->_context.maps[this->_model.parent];
     if (map.active == false)
-        return;
+        co_return;
 
     if (map.activated() == false)
-        return;
+        co_return;
 
     auto thread = this->_context.thread(map);
     if (thread == nullptr || thread->id() != thread_id)
-        return;
+        co_return;
 
     auto now = datetime();
     if (!this->_respawn_time.has_value())
-        return;
+        co_return;
 
     if (now < this->_respawn_time)
-        return;
+        co_return;
 
     auto spawn_count = this->_model.count - this->_count;
     if (spawn_count < 1)
-        return;
+        co_return;
 
     for (int i = 0; i < spawn_count; i++)
     {
         auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
                                                       fb::game::mob::config{.alive = true, .rezen = this});
 
-        mob->direction(DIRECTION(std::rand() % 4));
-        mob->hp_up(mob->base_hp());
+        std::ignore = co_await mob->direction(DIRECTION(std::rand() % 4));
+        std::ignore = co_await mob->hp_up(mob->base_hp());
 
         while (true)
         {
@@ -229,48 +229,48 @@ bool fb::game::mob::near_target(DIRECTION& out) const
     return false;
 }
 
-void fb::game::mob::AI(const datetime& now)
+async::task<void> fb::game::mob::AI(const datetime& now)
 {
     try
     {
         auto& model = this->based<fb::model::mob>();
         if (now < this->_action_time + model.speed)
-            return;
+            co_return;
 
         // 유효한 타겟이 없으면 고쳐준다.
         auto direction = DIRECTION::BOTTOM;
         if (this->fix() == nullptr)
         {
-            this->move(DIRECTION(std::rand() % 4));
+            std::ignore = co_await this->move(DIRECTION(std::rand() % 4));
         }
         else if (this->near_target(direction))
         {
-            this->direction(direction);
-            this->attack();
+            std::ignore = co_await this->direction(direction);
+            co_await this->attack();
         }
         else
         {
             auto x_axis = bool(std::rand() % 2);
             if (x_axis)
             {
-                if (this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))
+                if (this->_position.x > this->_target->x() && co_await this->move(DIRECTION::LEFT))
                     throw nullptr;
-                if (this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))
+                if (this->_position.x < this->_target->x() && co_await this->move(DIRECTION::RIGHT))
                     throw nullptr;
-                if (this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))
+                if (this->_position.y > this->_target->y() && co_await this->move(DIRECTION::TOP))
                     throw nullptr;
-                if (this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM))
+                if (this->_position.y < this->_target->y() && co_await this->move(DIRECTION::BOTTOM))
                     throw nullptr;
             }
             else
             {
-                if (this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))
+                if (this->_position.y > this->_target->y() && co_await this->move(DIRECTION::TOP))
                     throw nullptr;
-                if (this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM))
+                if (this->_position.y < this->_target->y() && co_await this->move(DIRECTION::BOTTOM))
                     throw nullptr;
-                if (this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))
+                if (this->_position.x > this->_target->x() && co_await this->move(DIRECTION::LEFT))
                     throw nullptr;
-                if (this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))
+                if (this->_position.x < this->_target->x() && co_await this->move(DIRECTION::RIGHT))
                     throw nullptr;
             }
 
@@ -278,7 +278,7 @@ void fb::game::mob::AI(const datetime& now)
             auto random_direction = std::rand() % 4;
             for (int i = 0; i < 4; i++)
             {
-                if (this->move(DIRECTION((random_direction + i) % 4)))
+                if (co_await this->move(DIRECTION((random_direction + i) % 4)))
                     throw nullptr;
             }
         }
@@ -294,16 +294,16 @@ bool fb::game::mob::available() const
     return this->alive();
 }
 
-uint32_t fb::game::mob::on_calculate_damage(bool critical) const
+async::task<uint32_t> fb::game::mob::on_calculate_damage(bool critical) const
 {
     auto& model      = this->based<fb::model::mob>();
     auto  difference = model.damage.max - model.damage.min;
-    return model.damage.min + (std::rand() % difference);
+    co_return model.damage.min + (std::rand() % difference);
 }
 
-void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
+async::task<void> fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
-    fb::game::life::on_damaged(from, damage, critical);
+    co_await fb::game::life::on_damaged(from, damage, critical);
 
     auto& model = this->based<fb::model::mob>();
     if (model.attack_type != MOB_ATTACK_TYPE::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
@@ -318,9 +318,9 @@ uint32_t fb::game::mob::on_exp() const
     return model.exp;
 }
 
-void fb::game::mob::on_die(fb::game::object* from)
+async::task<void> fb::game::mob::on_die(fb::game::object* from)
 {
-    fb::game::life::on_die(from);
+    co_await fb::game::life::on_die(from);
 
     // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();

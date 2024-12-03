@@ -73,12 +73,14 @@ int fb::game::item::builtin_rename(lua_State* lua)
         if (thread->is_str(2))
         {
             auto name = thread->tostring(2);
-            weapon->custom_name(name);
+            async::awaitable_then(weapon->custom_name(name), [](auto result) {
+            });
             return 0;
         }
         else if (thread->is_nil(2))
         {
-            weapon->reset_custom_name();
+            async::awaitable_then(weapon->reset_custom_name(), [](auto result) {
+            });
             return 0;
         }
         else

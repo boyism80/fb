@@ -23,7 +23,7 @@ public:
     active() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->index = reader.read<uint8_t>() - 1;
@@ -42,7 +42,7 @@ public:
     inactive() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->parts = EQUIPMENT_PARTS(reader.read<uint8_t>());
@@ -62,7 +62,7 @@ public:
     drop() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->index = reader.read<uint8_t>() - 1;
@@ -82,7 +82,7 @@ public:
     drop_cash() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->chunk = reader.read<uint32_t>();
@@ -101,7 +101,7 @@ public:
     mix() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         auto count = reader.read<uint8_t>();
@@ -123,7 +123,7 @@ public:
     throws() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->all   = reader.read<uint8_t>();
@@ -144,7 +144,7 @@ public:
     info() = default;
 
 public:
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->position = reader.read<uint16_t>();

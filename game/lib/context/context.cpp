@@ -365,18 +365,19 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     fb::logger::info("{}님이 접속을 종료했습니다.", session->name());
 
     co_await this->save(*session);
-    co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
-                                                                      "/in-game/logout",
-                                                                      internal_reqs::Logout{session->name()});
+    std::ignore =
+        co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
+                                                                          "/in-game/logout",
+                                                                          internal_reqs::Logout{session->name()});
     co_await session->destroy();
     socket.data(nullptr);
     co_return true;
 }
 
-void context::handle_timer(uint64_t elapsed_milliseconds)
+async::task<void> context::handle_timer(uint64_t elapsed_milliseconds)
 {
     for (auto& [key, value] : this->maps)
-        value.on_timer(elapsed_milliseconds);
+        co_await value.on_timer(elapsed_milliseconds);
 }
 
 std::string context::elapsed_message(const std::string& dt)
@@ -427,26 +428,26 @@ async::task<bool> context::init_ch(const internal::Character&           response
     session.pw(response.pw);
     session.updated_date(datetime(response.updated_date));
     session.admin(response.admin);
-    session.color(response.color);
-    session.direction(DIRECTION(response.direction));
-    session.look(response.look);
-    session.money(response.money);
+    co_await session.color(response.color);
+    std::ignore = co_await session.direction(DIRECTION(response.direction));
+    co_await session.look(response.look);
+    co_await session.money(response.money);
     session.deposited_money(response.deposited_money);
     session.sex(SEX(response.sex));
     session.base_hp(response.base_hp);
-    session.hp(response.hp);
+    co_await session.hp(response.hp);
     session.base_mp(response.base_mp);
-    session.mp(response.mp);
-    session.experience(response.exp);
-    session.state(STATE(response.state));
+    co_await session.mp(response.mp);
+    co_await session.experience(response.exp);
+    co_await session.state(STATE(response.state));
 
     if (response.armor_color.has_value())
-        session.armor_color(response.armor_color.value());
+        co_await session.armor_color(response.armor_color.value());
 
     if (response.disguise.has_value())
-        session.disguise(response.disguise.value());
+        co_await session.disguise(response.disguise.value());
     else
-        session.undisguise();
+        co_await session.undisguise();
 
     if (this->maps.contains(map) == false)
         co_return false;
@@ -502,22 +503,22 @@ async::task<bool> context::init_ch(const internal::Character&           response
     co_return co_await session.map(&this->maps[map], point16_t(position_x, position_y));
 }
 
-void context::init_option(const internal::Option& response, fb::game::character& session)
+async::task<void> context::init_option(const internal::Option& response, fb::game::character& session)
 {
-    session.option(SETTING::WHISPER, response.whisper, false);
-    session.option(SETTING::GROUP, response.group, false);
-    session.option(SETTING::ROAR, response.roar, false);
-    session.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
-    session.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
-    session.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
-    session.option(SETTING::FIXED_MOVE, response.fixed_move, false);
-    session.option(SETTING::TRADE, response.trade, false);
-    session.option(SETTING::FAST_MOVE, response.fast_move, false);
-    session.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
-    session.option(SETTING::PK_PROTECT, response.pk_protect, false);
+    co_await session.option(SETTING::WHISPER, response.whisper, false);
+    co_await session.option(SETTING::GROUP, response.group, false);
+    co_await session.option(SETTING::ROAR, response.roar, false);
+    co_await session.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
+    co_await session.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
+    co_await session.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
+    co_await session.option(SETTING::FIXED_MOVE, response.fixed_move, false);
+    co_await session.option(SETTING::TRADE, response.trade, false);
+    co_await session.option(SETTING::FAST_MOVE, response.fast_move, false);
+    co_await session.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
+    co_await session.option(SETTING::PK_PROTECT, response.pk_protect, false);
 }
 
-void context::init_items(const std::vector<internal::Item>& response, character& session)
+async::task<void> context::init_items(const std::vector<internal::Item>& response, character& session)
 {
     for (auto& x : response)
     {
@@ -528,18 +529,18 @@ void context::init_items(const std::vector<internal::Item>& response, character&
             item->durability(x.durability.value());
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            static_cast<weapon*>(item)->custom_name(x.custom_name.value());
+            co_await static_cast<weapon*>(item)->custom_name(x.custom_name.value());
 
         if (x.deposited != -1)
-            session.deposit_item(*item);
+            std::ignore = co_await session.deposit_item(*item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            session.items.add(*item, x.index);
+            std::ignore = co_await session.items.add(*item, x.index);
         else
             session.items.wear((EQUIPMENT_PARTS)x.parts, static_cast<equipment*>(item));
     }
 }
 
-void context::init_spells(const std::vector<internal::Spell>& response, character& session)
+async::task<void> context::init_spells(const std::vector<internal::Spell>& response, character& session)
 {
     for (auto& x : response)
     {
@@ -547,7 +548,7 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
             continue;
 
         auto& model = this->model.spell[x.model];
-        session.spells.add(model, x.slot);
+        std::ignore = co_await session.spells.add(model, x.slot);
     }
 }
 
@@ -574,23 +575,23 @@ character* context::handle_accepted(fb::socket<character>& socket)
     return this->make<character>(socket);
 }
 
-void context::send(object&                           object,
-                   const fb::protocol::base::header& header,
-                   context::scope                    scope,
-                   bool                              exclude_self,
-                   bool                              encrypt)
+async::task<void> context::send(object&                           object,
+                                const fb::protocol::base::header& header,
+                                context::scope                    scope,
+                                bool                              exclude_self,
+                                bool                              encrypt)
 {
     switch (scope)
     {
     case context::scope::SELF:
-        object.send(header, encrypt);
+        co_await object.send(header, encrypt);
         break;
 
     case context::scope::PIVOT:
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
         if (!exclude_self)
-            object.send(header, encrypt);
+            co_await object.send(header, encrypt);
 
         for (auto& x : nears)
             x->send(header, encrypt);
@@ -610,7 +611,7 @@ void context::send(object&                           object,
         //    group->read<void>([&header, encrypt](const auto& g) {
         //        for (auto ch : g.active_members())
         //        {
-        //            ch->send(header, encrypt);
+        //            co_await ch->send(header, encrypt);
         //        }
         //    });
         //}
@@ -620,42 +621,43 @@ void context::send(object&                           object,
     {
         auto map = object.map();
         if (map == nullptr)
-            return;
+            co_return;
 
         for (const auto& [seq, obj] : object.map()->objects)
         {
             if (exclude_self && obj == object)
                 continue;
 
-            obj.send(header, encrypt);
+            co_await obj.send(header, encrypt);
         }
     }
     break;
 
     case context::scope::WORLD:
     {
-        this->send(header, encrypt);
+        co_await this->send(header, encrypt);
     }
     break;
     }
 }
 
-void context::send(object& object, const protocol_generator& fn, context::scope scope, bool exclude_self, bool encrypt)
+async::task<void>
+context::send(object& object, const protocol_generator& fn, context::scope scope, bool exclude_self, bool encrypt)
 {
     switch (scope)
     {
     case context::scope::SELF:
-        object.send(*fn(object).get(), encrypt);
+        co_await object.send(*fn(object).get(), encrypt);
         break;
 
     case context::scope::PIVOT:
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
         if (!exclude_self)
-            object.send(*fn(object).get(), encrypt);
+            co_await object.send(*fn(object).get(), encrypt);
 
         for (auto& x : nears)
-            x->send(*fn(*x).get(), encrypt);
+            co_await x->send(*fn(*x).get(), encrypt);
     }
     break;
 
@@ -672,7 +674,7 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
         //    group->lock<void>([&fn, encrypt](auto& g) {
         //        for (auto ch : g.active_members())
         //        {
-        //            ch->send(*fn(*ch).get(), encrypt);
+        //            co_await ch->send(*fn(*ch).get(), encrypt);
         //        }
         //    });
         //}
@@ -685,37 +687,37 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
             if (exclude_self && obj == object)
                 continue;
 
-            obj.send(*fn(obj).get(), encrypt);
+            co_await obj.send(*fn(obj).get(), encrypt);
         }
     }
     break;
 
     case context::scope::WORLD:
     {
-        this->sockets.each([&fn, encrypt](auto& socket) {
-            socket.send(*fn(*socket.data()).get(), encrypt);
+        co_await this->sockets.each([&fn, encrypt](auto& socket) -> async::task<void> {
+            co_await socket.send(*fn(*socket.data()).get(), encrypt);
         });
     }
     break;
     }
 }
 
-void context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
+async::task<void> context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
 {
-    this->sockets.each([&response, &map, encrypt](auto& socket) {
+    co_await this->sockets.each([&response, &map, encrypt](auto& socket) -> async::task<void> {
         auto session = socket.data();
         if (session->map() != &map)
-            return;
+            co_return;
 
-        socket.send(response, encrypt);
+        co_await socket.send(response, encrypt);
     });
 }
 
-void context::send(const fb::protocol::base::header& response, bool encrypt)
+async::task<void> context::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    this->sockets.each([&response, encrypt](auto& socket) {
+    co_await this->sockets.each([&response, encrypt](auto& socket) -> async::task<void> {
         auto session = socket.data();
-        session->send(response, encrypt);
+        co_await session->send(response, encrypt);
     });
 }
 
@@ -830,6 +832,7 @@ void context::amqp_thread()
                 if (response.host == config["id"].asUInt())
                     co_return;
 
+                auto error = std::string();
                 try
                 {
                     this->assert_whisper(response);
@@ -837,13 +840,18 @@ void context::amqp_thread()
                     if (you == nullptr)
                         throw std::runtime_error(std::format("cannot find whisper target user : {}", response.to));
 
-                    you->message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
+                    co_await you->message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
                 }
                 catch (std::exception& e)
                 {
+                    error = e.what();
+                }
+
+                if (error.empty() == false)
+                {
                     auto me = this->find(response.from);
                     if (me != nullptr)
-                        me->message(e.what(), MESSAGE_TYPE::NOTIFY);
+                        co_await me->message(error, MESSAGE_TYPE::NOTIFY);
                 }
             });
 
@@ -866,7 +874,7 @@ void context::amqp_thread()
                 if (response.host == fb::config::get()["id"].asUInt())
                     co_return;
 
-                this->on_leave_group(response);
+                co_await this->on_leave_group(response);
             });
         }
         catch (std::exception& e)
@@ -892,9 +900,9 @@ void context::amqp_thread()
 }
 
 // TODO : 클릭도 인터페이스로
-void context::handle_click_mob(character& session, mob& mob)
+async::task<void> context::handle_click_mob(character& session, mob& mob)
 {
-    this->send(session, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    co_await this->send(session, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
 void context::handle_click_npc(character& session, npc& npc)
@@ -961,23 +969,23 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (co_await this->init_ch(response.character, *session, transfer) == false)
             co_return false;
 
-        this->init_option(response.option, *session);
-        this->send(*session, fb_resp::init(), scope::SELF);
-        this->send(*session, fb_resp::time(this->_time.hours()), scope::SELF);
-        this->send(*session, fb_resp::session::state(*session, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+        co_await this->init_option(response.option, *session);
+        co_await this->send(*session, fb_resp::init(), scope::SELF);
+        co_await this->send(*session, fb_resp::time(this->_time.hours()), scope::SELF);
+        co_await this->send(*session, fb_resp::session::state(*session, STATE_LEVEL::LEVEL_MIN), scope::SELF);
 
         if (from == internal::services::LOGIN)
         {
             auto msg = this->elapsed_message(response.character.updated_date);
             if (msg.empty() == false)
-                session->message(msg, MESSAGE_TYPE::STATE);
+                co_await session->message(msg, MESSAGE_TYPE::STATE);
         }
 
-        this->send(*session, fb_resp::session::state(*session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
-        this->send(*session, fb_resp::session::option(*session), scope::SELF);
+        co_await this->send(*session, fb_resp::session::state(*session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+        co_await this->send(*session, fb_resp::session::option(*session), scope::SELF);
 
-        this->init_items(response.items, *session);
-        this->init_spells(response.spells, *session);
+        co_await this->init_items(response.items, *session);
+        co_await this->init_spells(response.spells, *session);
     }
     catch (std::exception& /*e*/)
     {
@@ -996,7 +1004,7 @@ async::task<bool> context::handle_direction(fb::socket<character>& socket, const
     if (session->inited() == false)
         co_return true;
 
-    if (session->direction(request.value) == false)
+    if (co_await session->direction(request.value) == false)
         co_return false;
 
     co_return true;
@@ -1009,7 +1017,10 @@ async::task<bool> context::handle_logout(fb::socket<character>& socket, const fb
         co_return true;
 
     const auto& config = fb::config::get();
-    this->transfer(socket, config["login"]["ip"].asString(), config["login"]["port"].asInt(), internal::services::GAME);
+    co_await this->transfer(socket,
+                            config["login"]["ip"].asString(),
+                            config["login"]["port"].asInt(),
+                            internal::services::GAME);
     co_return true;
 }
 
@@ -1035,8 +1046,8 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         if (session->condition(warp->condition) == false)
         {
             // 메시지 보냄
-            session->message("감히 접근할 수 없습니다.");
-            this->send(*session, fb_resp::session::position(*session), scope::SELF);
+            co_await session->message("감히 접근할 수 없습니다.");
+            co_await this->send(*session, fb_resp::session::position(*session), scope::SELF);
             co_return true;
         }
 
@@ -1046,7 +1057,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             auto  params = dsl::map(warp->dest.params);
             auto& map    = this->maps[params.id];
-            co_await session->map(&map, point16_t(params.x, params.y));
+            std::ignore  = co_await session->map(&map, point16_t(params.x, params.y));
         }
         break;
 
@@ -1054,7 +1065,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             auto  params = dsl::world(warp->dest.params);
             auto& world  = this->model.world[params.id][params.index];
-            session->send(fb_resp::map::worlds(this->model, params.id, params.index));
+            co_await session->send(fb_resp::map::worlds(this->model, params.id, params.index));
         }
         break;
 
@@ -1064,7 +1075,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
     }
     else
     {
-        session->move(request.direction, request.position);
+        std::ignore = co_await session->move(request.direction, request.position);
     }
     co_return true;
 }
@@ -1080,7 +1091,7 @@ async::task<bool> context::handle_update_move(fb::socket<character>& socket, con
         co_return true;
 
     if (co_await this->handle_move(socket, request))
-        this->send(*session, fb_resp::map::update(*map, request.begin, request.size), scope::SELF);
+        co_await this->send(*session, fb_resp::map::update(*map, request.begin, request.size), scope::SELF);
 
     co_return true;
 }
@@ -1091,7 +1102,7 @@ async::task<bool> context::handle_attack(fb::socket<character>& socket, const fb
     if (session->inited() == false)
         co_return true;
 
-    session->attack();
+    co_await session->attack();
     co_return true;
 }
 
@@ -1101,7 +1112,7 @@ async::task<bool> context::handle_pickup(fb::socket<character>& socket, const fb
     if (session->inited() == false)
         co_return true;
 
-    session->items.pickup(request.boost);
+    co_await session->items.pickup(request.boost);
     co_return true;
 }
 
@@ -1111,7 +1122,7 @@ async::task<bool> context::handle_emotion(fb::socket<character>& socket, const f
     if (session->inited() == false)
         co_return true;
 
-    session->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
+    co_await session->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
     co_return true;
 }
 
@@ -1125,7 +1136,7 @@ async::task<bool> context::handle_update_map(fb::socket<character>& socket, cons
     if (map == nullptr)
         co_return true;
 
-    this->send(*session, fb_resp::map::update(*map, request.position, request.size), scope::SELF);
+    co_await this->send(*session, fb_resp::map::update(*map, request.position, request.size), scope::SELF);
     co_return true;
 }
 
@@ -1135,7 +1146,7 @@ async::task<bool> context::handle_refresh(fb::socket<character>& socket, const f
     if (session->inited() == false)
         co_return true;
 
-    this->send(*session, fb_resp::session::position(*session), scope::SELF);
+    co_await this->send(*session, fb_resp::session::position(*session), scope::SELF);
     co_return true;
 }
 
@@ -1145,7 +1156,7 @@ async::task<bool> context::handle_active_item(fb::socket<character>& socket, con
     if (session->inited() == false)
         co_return true;
 
-    session->items.active(request.index);
+    std::ignore = co_await session->items.active(request.index);
     co_return true;
 }
 
@@ -1155,7 +1166,7 @@ async::task<bool> context::handle_inactive_item(fb::socket<character>& socket, c
     if (session->inited() == false)
         co_return true;
 
-    session->items.inactive(request.parts);
+    std::ignore = co_await session->items.inactive(request.parts);
     co_return true;
 }
 
@@ -1165,7 +1176,7 @@ async::task<bool> context::handle_drop_item(fb::socket<character>& socket, const
     if (session->inited() == false)
         co_return true;
 
-    session->items.drop(request.index, request.all ? -1 : 1);
+    std::ignore = co_await session->items.drop(request.index, request.all ? -1 : 1);
     co_return true;
 }
 
@@ -1181,7 +1192,7 @@ async::task<bool> context::handle_drop_cash(fb::socket<character>& socket, const
 
     auto chunk = std::min(session->money(), request.chunk);
 
-    session->money_drop(chunk);
+    std::ignore = co_await session->money_drop(chunk);
     co_return true;
 }
 
@@ -1202,7 +1213,7 @@ async::task<bool> context::handle_front_info(fb::socket<character>& socket, cons
         auto object  = *i;
         auto message = object->is(OBJECT_TYPE::ITEM) ? static_cast<item*>(*i)->inven_name() : (*i)->name();
 
-        session->message(message, MESSAGE_TYPE::STATE);
+        co_await session->message(message, MESSAGE_TYPE::STATE);
     }
 
     co_return true;
@@ -1214,10 +1225,10 @@ async::task<bool> context::handle_self_info(fb::socket<character>& socket, const
     if (session->inited() == false)
         co_return true;
 
-    this->send(*session, fb_resp::session::internal_info(*session, this->model), scope::SELF);
+    co_await this->send(*session, fb_resp::session::internal_info(*session, this->model), scope::SELF);
 
     for (auto& [id, buff] : session->buffs)
-        this->send(*session, fb_resp::spell::buff(*buff), scope::SELF);
+        co_await this->send(*session, fb_resp::spell::buff(*buff), scope::SELF);
     co_return true;
 }
 
@@ -1241,7 +1252,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         break;
 
     default:
-        auto enabled = session->option_toggle(option);
+        auto enabled = co_await session->option_toggle(option);
         if (option == SETTING::GROUP && !enabled)
         {
             auto&& response = co_await this->post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
@@ -1249,7 +1260,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
                 "/in-game/group/leave",
                 internal_reqs::LeaveGroup{session->name()});
 
-            this->on_leave_group(response);
+            co_await this->on_leave_group(response);
         }
 
         auto&& response = co_await this->post<internal_reqs::SetOption, internal_resp::SetOption>(
@@ -1258,7 +1269,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
             internal_reqs::SetOption{session->id(), static_cast<uint8_t>(option), enabled});
 
         if (response.success == false)
-            session->message("설정을 변경하지 못했습니다.");
+            co_await session->message("설정을 변경하지 못했습니다.");
         break;
     }
     co_return true;
@@ -1290,13 +1301,13 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
         switch (you->what())
         {
         case OBJECT_TYPE::CHARACTER:
-            this->send(*session,
-                       fb_resp::session::external_info(static_cast<character&>(*you), this->model),
-                       scope::SELF);
+            co_await this->send(*session,
+                                fb_resp::session::external_info(static_cast<character&>(*you), this->model),
+                                scope::SELF);
             break;
 
         case OBJECT_TYPE::MOB:
-            this->handle_click_mob(*session, static_cast<mob&>(*you));
+            co_await this->handle_click_mob(*session, static_cast<mob&>(*you));
             break;
 
         case OBJECT_TYPE::NPC:
@@ -1319,7 +1330,7 @@ async::task<bool> context::handle_item_info(fb::socket<character>& socket, const
     if (item == nullptr)
         co_return false;
 
-    this->send(*session, fb_resp::item::tip(request.position, item->tip_message()), scope::SELF);
+    co_await this->send(*session, fb_resp::item::tip(request.position, item->tip_message()), scope::SELF);
     co_return true;
 }
 
@@ -1362,7 +1373,7 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
                 throw std::runtime_error("no match exception");
 
             auto count   = item->count();
-            auto deleted = session->items.remove(*item, count);
+            auto deleted = co_await session->items.remove(*item, count);
             if (deleted != nullptr)
                 co_await deleted->destroy();
 
@@ -1383,15 +1394,15 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
             auto item  = this->make<fb::game::item>(this->model.item[params.id]);
             auto count = std::min<uint16_t>(model.capacity, remain);
             item->count(count);
-            session->items.add(item);
-            remain -= count;
+            std::ignore  = co_await session->items.add(item);
+            remain      -= count;
         }
     }
 
     if (listener != nullptr)
     {
         auto& message = success ? message::mix::SUCCESS : message::mix::FAILED;
-        listener->on_notify(*session, message);
+        co_await listener->on_notify(*session, message);
     }
 
     co_return true;
@@ -1415,7 +1426,7 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     {
     case trade::state::REQUEST:
     {
-        me->trade.begin(*you);
+        std::ignore = co_await me->trade.begin(*you);
         break;
     }
 
@@ -1425,32 +1436,32 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
         if (item == nullptr)
             break;
 
-        me->trade.up(*item);
+        std::ignore = co_await me->trade.up(*item);
         break;
     }
 
     case trade::state::ITEM_COUNT: // 아이템 갯수까지 해서 올릴 때
     {
-        me->trade.count(request.parameter.count);
+        std::ignore = co_await me->trade.count(request.parameter.count);
         break;
     }
 
     case trade::state::UP_MONEY: // 금전 올릴 때
     {
         // 클라이언트가 입력한 금전 양
-        me->trade.up(request.parameter.money);
+        std::ignore = co_await me->trade.up(request.parameter.money);
         break;
     }
 
     case trade::state::CANCEL: // 취소한 경우
     {
-        me->trade.cancel();
+        std::ignore = co_await me->trade.cancel();
         break;
     }
 
     case trade::state::LOCK:
     {
-        me->trade.lock();
+        std::ignore = co_await me->trade.lock();
         break;
     }
     }
@@ -1533,7 +1544,8 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
             auto map    = ch->map();
             auto thread = this->thread(*map);
 
-            thread->dispatch([this, ch, group, response, &characters]() -> async::task<void> {
+            // TODO: 좀 단순화해야함
+            async::awaitable_then(thread->dispatch([this, ch, group, response, &characters]() -> async::task<void> {
                 ch->group(group);
 
                 switch (response.action)
@@ -1541,27 +1553,29 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
                 case GroupAction::Enter:
                 {
                     if (ch->name() != response.member)
-                        ch->message(std::format("{}님 그룹에 참여", response.member), MESSAGE_TYPE::STATE);
+                        co_await ch->message(std::format("{}님 그룹에 참여", response.member), MESSAGE_TYPE::STATE);
                     else
-                        ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
+                        co_await ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
                 }
                 break;
 
                 case GroupAction::Kick:
                 {
-                    ch->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
+                    co_await ch->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
 
                     if (characters.contains(response.member))
                     {
                         characters[response.member]->group(nullptr);
-                        characters[response.member]->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+                        co_await characters[response.member]->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
                     }
                 }
                 break;
                 }
 
                 co_return;
-            });
+            }),
+                                  [](auto result) {
+                                  });
         }
     });
 
@@ -1636,73 +1650,75 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
     //});
 }
 
-void context::on_leave_group(const internal_resp::LeaveGroup& response)
+async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& response)
 {
     this->assert_group(response.error, response.member);
 
-    auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
-        if (groups.contains(response.group.id))
-            groups.erase(response.group.id);
+    // auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
+    //     if (groups.contains(response.group.id))
+    //         groups.erase(response.group.id);
 
-        groups.insert({response.group.id,
-                       std::make_unique<fb::locker<fb::game::group>>(*this,
-                                                                     response.group.id,
-                                                                     response.group.master,
-                                                                     response.group.members)});
-        return groups[response.group.id].get();
-    });
+    //    groups.insert({response.group.id,
+    //                   std::make_unique<fb::locker<fb::game::group>>(*this,
+    //                                                                 response.group.id,
+    //                                                                 response.group.master,
+    //                                                                 response.group.members)});
+    //    return groups[response.group.id].get();
+    //});
 
-    group->lock<void>([this, &response, group](auto& g) {
-        this->_characters.lock<void>([this, &response, &g, group](auto& characters) {
-            auto members = std::vector<fb::game::character*>();
+    // group->lock<void>([this, &response, group](auto& g) {
+    //     this->_characters.lock<void>([this, &response, &g, group](auto& characters) {
+    //         auto members = std::vector<fb::game::character*>();
 
-            if (characters.contains(response.group.master))
-                members.push_back(characters[response.group.master]);
+    //        if (characters.contains(response.group.master))
+    //            members.push_back(characters[response.group.master]);
 
-            for (auto& uid : response.group.members)
-            {
-                if (characters.contains(uid))
-                    members.push_back(characters[uid]);
-            }
+    //        for (auto& uid : response.group.members)
+    //        {
+    //            if (characters.contains(uid))
+    //                members.push_back(characters[uid]);
+    //        }
 
-            switch (response.action)
-            {
-            case GroupAction::Leave:
-            {
-                for (auto member : members)
-                {
-                    member->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
-                }
+    //        switch (response.action)
+    //        {
+    //        case GroupAction::Leave:
+    //        {
+    //            for (auto member : members)
+    //            {
+    //                co_await member->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
+    //            }
 
-                if (characters.contains(response.member))
-                {
-                    characters[response.member]->group(nullptr);
-                    characters[response.member]->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
-                }
-            }
-            break;
+    //            if (characters.contains(response.member))
+    //            {
+    //                characters[response.member]->group(nullptr);
+    //                co_await characters[response.member]->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+    //            }
+    //        }
+    //        break;
 
-            case GroupAction::BreakUp:
-            {
-                for (auto member : members)
-                {
-                    member->group(nullptr);
-                    member->message(std::format("그룹 해체", response.member), MESSAGE_TYPE::STATE);
-                }
+    //        case GroupAction::BreakUp:
+    //        {
+    //            for (auto member : members)
+    //            {
+    //                member->group(nullptr);
+    //                co_await member->message(std::format("그룹 해체", response.member), MESSAGE_TYPE::STATE);
+    //            }
 
-                this->_groups.lock<void>([this, &response](auto& groups) {
-                    switch (response.action)
-                    {
-                    case GroupAction::BreakUp:
-                        groups.erase(response.group.id);
-                        break;
-                    }
-                });
-            }
-            break;
-            }
-        });
-    });
+    //            this->_groups.lock<void>([this, &response](auto& groups) {
+    //                switch (response.action)
+    //                {
+    //                case GroupAction::BreakUp:
+    //                    groups.erase(response.group.id);
+    //                    break;
+    //                }
+    //            });
+    //        }
+    //        break;
+    //        }
+    //    });
+    //});
+
+    co_return;
 }
 
 async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_reqs::group& request)
@@ -1710,6 +1726,8 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     auto me = socket.data();
     if (me->inited() == false)
         co_return true;
+
+    auto error = std::string();
 
     try
     {
@@ -1725,8 +1743,11 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     }
     catch (std::exception& e)
     {
-        this->send(*me, fb_resp::message(e.what(), MESSAGE_TYPE::STATE), scope::SELF);
+        error = e.what();
     }
+
+    if (error.empty() == false)
+        co_await this->send(*me, fb_resp::message(error, MESSAGE_TYPE::STATE), scope::SELF);
 
     co_return true;
 }
@@ -1737,7 +1758,7 @@ async::task<bool> context::handle_user_list(fb::socket<character>& socket, const
     if (session->inited() == false)
         co_return true;
 
-    this->send(*session, fb_resp::user_list(*session, this->sockets), scope::SELF);
+    co_await this->send(*session, fb_resp::user_list(*session, this->sockets), scope::SELF);
     co_return true;
 }
 
@@ -1750,7 +1771,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (session->admin() && co_await handle_command(*session, request.message))
         co_return true;
 
-    session->chat(request.message, request.shout);
+    co_await session->chat(request.message, request.shout);
 
     auto npcs = std::vector<npc*>();
     if (request.shout)
@@ -1769,7 +1790,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         }
     }
 
-    session->inline_interaction(request.message, npcs);
+    std::ignore = co_await session->inline_interaction(request.message, npcs);
 
     co_return true;
 }
@@ -1785,12 +1806,13 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     {
     case BOARD_ACTION::SECTIONS:
     {
-        this->send(*session, fb_resp::board::sections(this->model), scope::SELF);
+        co_await this->send(*session, fb_resp::board::sections(this->model), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::ARTICLES:
     {
+        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -1821,17 +1843,21 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto button_flags = BOARD_BUTTON_ENABLE::UP;
             if (session->condition(section->condition) == false)
                 button_flags |= BOARD_BUTTON_ENABLE::WRITE;
-            this->send(*session, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
+            co_await this->send(*session, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*session, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            error = e.what();
         }
+
+        if (error.empty() == false)
+            co_await this->send(*session, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::ARTICLE:
     {
+        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -1846,9 +1872,9 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
             if (response.success == false)
             {
-                this->send(*session,
-                           fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false),
-                           scope::SELF);
+                co_await this->send(*session,
+                                    fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false),
+                                    scope::SELF);
                 co_return true;
             }
 
@@ -1868,17 +1894,21 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                                           (uint8_t)dt.month(),
                                           (uint8_t)dt.day(),
                                           response.article.contents};
-            this->send(*session, fb_resp::board::article(article, button_flags), scope::SELF);
+            co_await this->send(*session, fb_resp::board::article(article, button_flags), scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*session, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            error = e.what();
         }
+
+        if (error.empty() == false)
+            co_await this->send(*session, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::WRITE:
     {
+        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -1905,17 +1935,19 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (response.success == false)
                 throw std::runtime_error("게시글 작성 실패");
 
-            this->send(*session, fb_resp::board::message(message::board::WRITE, true, true), scope::SELF);
+            co_await this->send(*session, fb_resp::board::message(message::board::WRITE, true, true), scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*session, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            error = e.what();
         }
+        co_await this->send(*session, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::DELETE:
     {
+        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -1945,12 +1977,17 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(message::board::NOT_AUTH);
             }
 
-            this->send(*session, fb_resp::board::message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
+            co_await this->send(*session,
+                                fb_resp::board::message(message::board::SUCCESS_DELETE, true, false),
+                                scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*session, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            error = e.what();
         }
+
+        if (error.empty() == false)
+            co_await this->send(*session, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
@@ -1971,13 +2008,13 @@ async::task<bool> context::handle_swap(fb::socket<character>& socket, const fb_r
     {
     case SWAP_TYPE::SPELL:
     {
-        session->spells.swap(request.src - 1, request.dst - 1);
+        std::ignore = co_await session->spells.swap(request.src - 1, request.dst - 1);
         break;
     }
 
     case SWAP_TYPE::ITEM:
     {
-        session->items.swap(request.src - 1, request.dst - 1);
+        std::ignore = co_await session->items.swap(request.src - 1, request.dst - 1);
         break;
     }
 
@@ -2055,7 +2092,7 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
     if (session->inited() == false)
         co_return true;
 
-    session->items.throws(request.index);
+    std::ignore = co_await session->items.throws(request.index);
     co_return true;
 }
 
@@ -2115,12 +2152,13 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     auto& from    = me->name();
     auto  to      = std::string(request.name);
     auto  message = std::string(request.message);
+    auto  error   = std::string();
     try
     {
         if (me->option(SETTING::WHISPER) == false)
             throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
 
-        me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
+        co_await me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
         auto you = this->find(to);
         if (you != nullptr)
         {
@@ -2135,7 +2173,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
                 response.error = static_cast<uint32_t>(ERROR_CODE::DISABLED_WHISPER_TARGET);
 
             this->assert_whisper(response);
-            you->message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
+            co_await you->message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
         }
         else
         {
@@ -2154,8 +2192,10 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        me->message(e.what(), MESSAGE_TYPE::NOTIFY);
+        error = e.what();
     }
+    if (error.empty() == false)
+        co_await me->message(error, MESSAGE_TYPE::NOTIFY);
     co_return true;
 }
 
@@ -2171,17 +2211,17 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
 
     if (session->map() == &this->maps[after.map])
     {
-        session->refresh_map();
+        co_await session->refresh_map();
     }
     else
     {
-        co_await session->map(&this->maps[after.map], after.position);
-        this->save(*session);
+        std::ignore = co_await session->map(&this->maps[after.map], after.position);
+        co_await this->save(*session);
     }
     co_return true;
 }
 
-void context::handle_mob_action(const datetime& now, std::thread::id id)
+async::task<void> context::handle_mob_action(const datetime& now, std::thread::id id)
 {
     for (auto& [_, map] : this->maps)
     {
@@ -2207,20 +2247,22 @@ void context::handle_mob_action(const datetime& now, std::thread::id id)
             if (mob->action())
                 continue;
 
-            mob->AI(now);
+            co_await mob->AI(now);
         }
     }
+    co_return;
 }
 
-void context::handle_mob_respawn(const datetime& now, std::thread::id id)
+async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::id id)
 {
     for (auto& rezen : this->rezen)
     {
         rezen.spawn(id);
     }
+    co_return;
 }
 
-void context::handle_buff_timer(const datetime& now, std::thread::id id)
+async::task<void> context::handle_buff_timer(const datetime& now, std::thread::id id)
 {
     for (auto& [_, map] : this->maps)
     {
@@ -2248,12 +2290,14 @@ void context::handle_buff_timer(const datetime& now, std::thread::id id)
             }
 
             for (auto& buff : ended_buffs)
-                obj.buffs.remove(buff->model);
+                std::ignore = co_await obj.buffs.remove(buff->model);
         }
     }
+
+    co_return;
 }
 
-void context::handle_save_timer(const datetime& now, std::thread::id id)
+async::task<void> context::handle_save_timer(const datetime& now, std::thread::id id)
 {
     for (auto& [_, map] : this->maps)
     {
@@ -2273,16 +2317,16 @@ void context::handle_save_timer(const datetime& now, std::thread::id id)
                 continue;
 
             auto session = static_cast<character*>(&obj);
-            this->save(*session);
+            co_await this->save(*session);
         }
     }
 }
 
-void context::handle_time(const datetime& now, std::thread::id id)
+async::task<void> context::handle_time(const datetime& now, std::thread::id id)
 {
     auto updated = datetime();
     if (this->_time.hours() != updated.hours())
-        this->send(fb_resp::time(updated.hours()));
+        co_await this->send(fb_resp::time(updated.hours()));
 
     this->_time = updated;
 }

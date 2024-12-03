@@ -72,11 +72,11 @@ private:
     /**
      * @brief      { function_description }
      */
-    void restore();
+    [[nodiscard]] async::task<void> restore();
     /**
      * @brief      Flushes the object.
      */
-    void flush();
+    [[nodiscard]] async::task<void> flush();
     /**
      * @brief      { function_description }
      *
@@ -102,7 +102,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool begin(character& you);
+    [[nodiscard]] async::task<bool> begin(character& you);
     /**
      * @brief      { function_description }
      *
@@ -116,7 +116,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool up(fb::game::item& item);
+    [[nodiscard]] async::task<bool> up(fb::game::item& item);
     /**
      * @brief      { function_description }
      *
@@ -124,7 +124,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool up(uint8_t money);
+    [[nodiscard]] async::task<bool> up(uint8_t money);
     /**
      * @brief      { function_description }
      *
@@ -138,19 +138,19 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool count(uint16_t count);
+    [[nodiscard]] async::task<bool> count(uint16_t count);
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    bool cancel();
+    [[nodiscard]] async::task<bool> cancel();
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    bool lock();
+    [[nodiscard]] async::task<bool> lock();
     /**
      * @brief      { function_description }
      *
@@ -191,13 +191,13 @@ struct trade::listener
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    virtual void on_trade_begin(character& me, character& you) = 0;
+    virtual async::task<void> on_trade_begin(character& me, character& you) = 0;
     /**
      * @brief      Called on trade bundle.
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_trade_bundle(character& me) = 0;
+    virtual async::task<void> on_trade_bundle(character& me) = 0;
     /**
      * @brief      Called on trade item.
      *
@@ -205,40 +205,40 @@ struct trade::listener
      * @param      from   The from
      * @param[in]  index  The index
      */
-    virtual void on_trade_item(character& me, character& from, uint8_t index) = 0;
+    virtual async::task<void> on_trade_item(character& me, character& from, uint8_t index) = 0;
     /**
      * @brief      Called on trade money.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    virtual void on_trade_money(character& me, character& from) = 0;
+    virtual async::task<void> on_trade_money(character& me, character& from) = 0;
     /**
      * @brief      Called on trade cancel.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    virtual void on_trade_cancel(character& me, character& from) = 0;
+    virtual async::task<void> on_trade_cancel(character& me, character& from) = 0;
     /**
      * @brief      Called on trade lock.
      *
      * @param      me    { parameter_description }
      * @param[in]  mine  The mine
      */
-    virtual void on_trade_lock(character& me, bool mine) = 0;
+    virtual async::task<void> on_trade_lock(character& me, bool mine) = 0;
     /**
      * @brief      Called when trade failed.
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_trade_failed(character& me) = 0;
+    virtual async::task<void> on_trade_failed(character& me) = 0;
     /**
      * @brief      Called on trade success.
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_trade_success(character& me) = 0;
+    virtual async::task<void> on_trade_success(character& me) = 0;
 };
 
 }} // namespace fb::game

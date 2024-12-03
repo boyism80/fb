@@ -94,9 +94,9 @@ private:
      *
      * @return     The internal.
      */
-    async::task<httplib::Result> get_internal(const std::string& host,
-                                              const std::string& path,
-                                              httplib::Headers   headers)
+    [[nodiscard]] async::task<httplib::Result> get_internal(const std::string& host,
+                                                            const std::string& path,
+                                                            httplib::Headers   headers)
     {
         headers.insert({"Content-Type", "application/octet-stream"});
 
@@ -118,7 +118,7 @@ private:
      * @return     The internal.
      */
     template <typename Response>
-    async::task<Response> get_internal(const std::string& host, const std::string& path)
+    [[nodiscard]] async::task<Response> get_internal(const std::string& host, const std::string& path)
     {
         auto   headers = httplib::Headers();
         auto&& res     = co_await this->get_internal(host, path, headers);
@@ -151,7 +151,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <typename Response>
-    async::task<Response> get(const std::string& route, const std::string& path)
+    [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
     {
         auto& config = fb::config::get();
         auto  host   = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
@@ -170,11 +170,11 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<httplib::Result> post_internal(const std::string& host,
-                                               const std::string& path,
-                                               httplib::Headers   headers,
-                                               const void*        bytes,
-                                               size_t             size)
+    [[nodiscard]] async::task<httplib::Result> post_internal(const std::string& host,
+                                                             const std::string& path,
+                                                             httplib::Headers   headers,
+                                                             const void*        bytes,
+                                                             size_t             size)
     {
         auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
         auto buffer  = std::vector<uint8_t>(size);
@@ -203,7 +203,9 @@ private:
      * @return     { description_of_the_return_value }
      */
     template <typename Request, typename Response>
-    async::task<Response> post_internal(const std::string& host, const std::string& path, const Request& body)
+    [[nodiscard]] async::task<Response> post_internal(const std::string& host,
+                                                      const std::string& path,
+                                                      const Request&     body)
     {
         auto headers    = httplib::Headers();
         auto serialized = body.Serialize();
@@ -244,7 +246,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <typename Request, typename Response>
-    async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
+    [[nodiscard]] async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
     {
         auto& config = fb::config::get();
         auto  host   = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
@@ -262,7 +264,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> dispatch(fb::socket<T>& socket, const dispatch_callback& fn, uint32_t priority = 0)
+    [[nodiscard]] async::task<void> dispatch(fb::socket<T>& socket, const dispatch_callback& fn, uint32_t priority = 0)
     {
         auto id     = this->thread_id(socket);
         auto thread = this->_threads[id];
@@ -282,7 +284,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> dispatch(fb::socket<T>& socket, uint32_t priority = 0)
+    [[nodiscard]] async::task<void> dispatch(fb::socket<T>& socket, uint32_t priority = 0)
     {
         auto id     = this->thread_id(socket);
         auto thread = this->_threads[id];
@@ -300,7 +302,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> execute_bound_handler(fb::socket<T>& socket, fb::stream& stream)
+    [[nodiscard]] async::task<bool> execute_bound_handler(fb::socket<T>& socket, fb::stream& stream)
     {
         static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
         auto                     reader    = fb::stream_reader<big_endian>(stream);
@@ -371,7 +373,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> handle_work(fb::socket<T>& socket)
+    [[nodiscard]] async::task<void> handle_work(fb::socket<T>& socket)
     {
         if (this->_running == false)
             co_return;
@@ -417,7 +419,7 @@ private:
 
             auto& casted = static_cast<fb::socket<T>&>(socket);
             co_await this->dispatch(casted);
-            co_await this->handle_disconnected(casted);
+            std::ignore = co_await this->handle_disconnected(casted);
             this->sockets.erase(casted);
         };
 
@@ -458,7 +460,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
+    [[nodiscard]] async::task<void>
+    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
     {
         auto& crt    = socket.crt();
         auto  params = fb::stream();
@@ -477,7 +480,7 @@ public:
         }
 
         crt.wrap(stream);
-        socket.send(stream, false, false);
+        co_await socket.send(stream, false, false);
     }
 
 public:
@@ -491,7 +494,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void>
+    [[nodiscard]] async::task<void>
     transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
     {
         co_await this->transfer(socket, inet_addr(ip.c_str()), port, from);
@@ -509,11 +512,11 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> transfer(fb::socket<T>&                   socket,
-                               uint32_t                         ip,
-                               uint16_t                         port,
-                               fb::protocol::internal::services from,
-                               const fb::stream&                parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                   socket,
+                                             uint32_t                         ip,
+                                             uint16_t                         port,
+                                             fb::protocol::internal::services from,
+                                             const fb::stream&                parameter)
     {
         auto& crt    = socket.crt();
         auto  header = fb::stream();
@@ -533,7 +536,7 @@ public:
         }
 
         crt.wrap(stream);
-        socket.send(stream, false, false);
+        co_await socket.send(stream, false, false);
     }
 
 public:
@@ -548,11 +551,11 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> transfer(fb::socket<T>&                   socket,
-                               const std::string&               ip,
-                               uint16_t                         port,
-                               fb::protocol::internal::services from,
-                               const fb::stream&                parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                   socket,
+                                             const std::string&               ip,
+                                             uint16_t                         port,
+                                             fb::protocol::internal::services from,
+                                             const fb::stream&                parameter)
     {
         co_await this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
     }
@@ -775,7 +778,8 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    async::task<void> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    [[nodiscard]] async::task<void>
+    send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         if (stream.empty())
             co_return;
@@ -792,7 +796,7 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    async::task<void>
+    [[nodiscard]] async::task<void>
     send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
@@ -872,7 +876,7 @@ protected:
      * @return     { description_of_the_return_value }
      */
     template <typename R>
-    async::task<R> background(const std::function<async::task<R>()>& func)
+    [[nodiscard]] async::task<R> background(const std::function<async::task<R>()>& func)
     {
         auto _       = std::lock_guard(this->_background_queue_mutex);
         auto promise = std::make_shared<async::task_completion_source<R>>();
@@ -954,7 +958,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> sleep(const fb::model::timespan& duration)
+    [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration)
     {
         auto thread = this->_threads.current();
         if (thread != nullptr)

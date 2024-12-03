@@ -25,7 +25,7 @@ std::string fb::game::equipment::trade_name() const
     return sstream.str();
 }
 
-bool fb::game::equipment::active()
+async::task<bool> fb::game::equipment::active()
 {
     fb::game::item* before = nullptr;
     auto            parts  = EQUIPMENT_PARTS::UNKNOWN;
@@ -33,22 +33,22 @@ bool fb::game::equipment::active()
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:
-        before = this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
+        before = co_await this->_owner->items.weapon(static_cast<fb::game::weapon*>(this));
         parts  = EQUIPMENT_PARTS::WEAPON;
         break;
 
     case ITEM_ATTRIBUTE::ARMOR:
-        before = this->_owner->items.armor(static_cast<fb::game::armor*>(this));
+        before = co_await this->_owner->items.armor(static_cast<fb::game::armor*>(this));
         parts  = EQUIPMENT_PARTS::ARMOR;
         break;
 
     case ITEM_ATTRIBUTE::SHIELD:
-        before = this->_owner->items.shield(static_cast<fb::game::shield*>(this));
+        before = co_await this->_owner->items.shield(static_cast<fb::game::shield*>(this));
         parts  = EQUIPMENT_PARTS::SHIELD;
         break;
 
     case ITEM_ATTRIBUTE::HELMET:
-        before = this->_owner->items.helmet(static_cast<fb::game::helmet*>(this));
+        before = co_await this->_owner->items.helmet(static_cast<fb::game::helmet*>(this));
         parts  = EQUIPMENT_PARTS::HELMET;
         break;
 
@@ -62,7 +62,7 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_HAND;
         }
 
-        before = this->_owner->items.ring(static_cast<fb::game::ring*>(this));
+        before = co_await this->_owner->items.ring(static_cast<fb::game::ring*>(this));
         break;
 
     case ITEM_ATTRIBUTE::AUXILIARY:
@@ -75,7 +75,7 @@ bool fb::game::equipment::active()
             parts = EQUIPMENT_PARTS::RIGHT_AUX;
         }
 
-        before = this->_owner->items.auxiliary(static_cast<fb::game::auxiliary*>(this));
+        before = co_await this->_owner->items.auxiliary(static_cast<fb::game::auxiliary*>(this));
         break;
 
     default:
@@ -84,15 +84,15 @@ bool fb::game::equipment::active()
 
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로
     // id를 유지시켜줘야 한다.
-    this->_owner->items.remove(*this);
+    std::ignore = co_await this->_owner->items.remove(*this);
 
-    this->_owner->items.add(before);
+    std::ignore = co_await this->_owner->items.add(before);
 
     auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
-        listener->on_equipment_on(*this->_owner, *this, parts);
+        co_await listener->on_equipment_on(*this->_owner, *this, parts);
 
-    return true;
+    co_return true;
 }
 
 std::optional<uint32_t> fb::game::equipment::durability() const

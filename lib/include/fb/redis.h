@@ -107,7 +107,7 @@ public:
 
 private:
     template <typename T>
-    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>>             promise,
+    [[nodiscard]] async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>>             promise,
                                     const std::function<async::task<T>(fb::dead_lock_detector&)>& fn,
                                     fb::dead_lock_detector&                                       current,
                                     const std::string                                             key,
@@ -138,7 +138,7 @@ private:
     }
 
     template <typename T>
-    async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
+    [[nodiscard]] async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
                                     const std::function<async::task<T>(void)>&        fn,
                                     const std::string                                 key,
                                     const std::string                                 uuid,
@@ -241,7 +241,7 @@ private:
 
 public:
     template <typename T>
-    async::task_completion_source<T> sync(const std::string&                                            key,
+    [[nodiscard]] async::task_completion_source<T> sync(const std::string&                                            key,
                                           const std::function<async::task<T>(fb::dead_lock_detector&)>& fn,
                                           fb::dead_lock_detector&                                       trans)
     {
@@ -268,14 +268,14 @@ public:
     }
 
     template <typename T>
-    async::task_completion_source<T> sync(const std::string&                                            key,
+    [[nodiscard]] async::task_completion_source<T> sync(const std::string&                                            key,
                                           const std::function<async::task<T>(fb::dead_lock_detector&)>& fn)
     {
         return this->sync(key, fn, this->root);
     }
 
     template <typename T>
-    async::task_completion_source<T> try_sync(const std::string& key, const std::function<async::task<T>(void)>& fn)
+    [[nodiscard]] async::task_completion_source<T> try_sync(const std::string& key, const std::function<async::task<T>(void)>& fn)
     {
         return async::task_completion_source<T>([this, key, &fn](auto& promise) mutable {
             auto conn   = this->conn.get();

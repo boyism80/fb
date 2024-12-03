@@ -15,15 +15,15 @@ public:
     init() = default;
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x06);
         writer.write<uint8_t>(0x00);
     }
 #ifdef BOT
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         reader.read<uint8_t>();
@@ -58,15 +58,15 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<std::string, uint16_t>(this->text);
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->type = (MESSAGE_TYPE)reader.read<uint8_t>();
@@ -94,15 +94,15 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint16_t>((uint16_t)sockets.size());
         writer.write<uint16_t>((uint16_t)sockets.size());
         writer.write<uint8_t>(0x00);
 
-        this->sockets.each([this, &writer](auto& socket) {
+        co_await this->sockets.each([this, &writer](auto& socket) -> async::task<void> {
             auto  user = socket.data();
             auto& name = user->name();
 
@@ -110,6 +110,7 @@ public:
             writer.write<uint8_t>(0x10 * static_cast<int>(user->promotion()));
             writer.write<uint8_t>((&this->me == user) ? 0x88 : 0x0F);
             writer.write<std::string, uint8_t>(name);
+            co_return;
         });
     }
 };
@@ -143,16 +144,16 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<uint32_t>(this->me.sequence());
         writer.write<std::string>(this->text);
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->type     = (CHAT_TYPE)reader.read<uint8_t>();
@@ -185,16 +186,16 @@ public:
 
 public:
 #ifndef BOT
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->hours % 24); // hours
         writer.write<uint8_t>(0x00);             // Unknown
-        writer.write<uint8_t>(0x00);            // Unknown
+        writer.write<uint8_t>(0x00);             // Unknown
     }
 #else
-    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
         this->hours = reader.read<uint8_t>();
@@ -218,9 +219,9 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->value));
         writer.write<uint8_t>(0x00);
@@ -241,9 +242,9 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(std::max(0, 20 - this->value));
@@ -266,9 +267,9 @@ public:
     { }
 
 public:
-    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<uint32_t>(this->time);

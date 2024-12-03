@@ -11,29 +11,22 @@ fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
 fb::gateway::context::~context()
 { }
 
-async::task<bool> fb::gateway::context::load_entries()
+async::task<void> fb::gateway::context::load_entries()
 {
-    try
+    // Load gateway list
+    auto& entrypoints = fb::config::get()["entrypoints"];
+    for (auto i = entrypoints.begin(); i != entrypoints.end(); i++)
     {
-        // Load gateway list
-        auto& entrypoints = fb::config::get()["entrypoints"];
-        for (auto i = entrypoints.begin(); i != entrypoints.end(); i++)
-        {
-            this->_entrypoints.push_back(entry(cp949((*i)["name"].asCString()),
-                                               cp949((*i)["desc"].asCString()),
-                                               (*i)["ip"].asCString(),
-                                               (*i)["port"].asInt()));
-        }
+        this->_entrypoints.push_back(entry(cp949((*i)["name"].asCString()),
+                                           cp949((*i)["desc"].asCString()),
+                                           (*i)["ip"].asCString(),
+                                           (*i)["port"].asInt()));
+    }
 
-        auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
-        co_await fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
-        this->_entry_crc32_cache = this->_entry_stream_cache.crc();
-        co_return true;
-    }
-    catch (...)
-    {
-        co_return false;
-    }
+    auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
+    co_await fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
+    this->_entry_crc32_cache = this->_entry_stream_cache.crc();
+    co_return true;
 }
 
 fb::stream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
@@ -84,7 +77,7 @@ fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gatew
 
 async::task<bool> fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& socket)
 {
-    socket.send(this->_connection_cache, false);
+    co_await socket.send(this->_connection_cache, false);
 
     fb::logger::info("{}님이 접속했습니다.", socket.IP());
     co_return true;
@@ -107,7 +100,7 @@ fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>&    
         auto crt = cryptor::generate();
         socket.crt(crt);
 
-        this->send(socket, fb::protocol::gateway::response::crt(crt, this->_entry_crc32_cache), false);
+        co_await this->send(socket, fb::protocol::gateway::response::crt(crt, this->_entry_crc32_cache), false);
         co_return true;
     }
     catch (std::exception& e)
@@ -124,13 +117,13 @@ async::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway
     case 0x00:
     {
         const auto& entry = this->_entrypoints[request.index];
-        this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::services::GATEWAY);
+        co_await this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::services::GATEWAY);
         co_return true;
     }
 
     case 0x01:
     {
-        this->send(socket, this->_entry_stream_cache);
+        co_await this->send(socket, this->_entry_stream_cache);
         co_return true;
     }
 

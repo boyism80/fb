@@ -24,16 +24,16 @@ fb::game::character* fb::game::trade::you() const
     return this->_you;
 }
 
-bool fb::game::trade::begin(fb::game::character& you)
+async::task<bool> fb::game::trade::begin(fb::game::character& you)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-
+    auto error    = std::string();
     try
     {
         if (this->_owner.id() == you.id())
         {
             // 자기 자신과 거래를 하려고 시도하는 경우
-            return false;
+            co_return false;
         }
 
         if (this->_owner.option(SETTING::TRADE) == false)
@@ -51,7 +51,7 @@ bool fb::game::trade::begin(fb::game::character& you)
 
         if (this->trading())
         {
-            return false;
+            co_return false;
         }
 
         if (you.trade.trading())
@@ -81,18 +81,20 @@ bool fb::game::trade::begin(fb::game::character& you)
         you.trade._you = &this->_owner;
         if (listener != nullptr)
         {
-            listener->on_trade_begin(this->_owner, you);
-            listener->on_trade_begin(you, this->_owner);
+            co_await listener->on_trade_begin(this->_owner, you);
+            co_await listener->on_trade_begin(you, this->_owner);
         }
 
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        co_await listener->on_notify(this->_owner, error, MESSAGE_TYPE::STATE);
+    co_return false;
 }
 
 void fb::game::trade::end()
@@ -112,11 +114,11 @@ bool fb::game::trade::trading() const
     return this->_you != nullptr;
 }
 
-bool fb::game::trade::up(fb::game::item& item)
+async::task<bool> fb::game::trade::up(fb::game::item& item)
 {
     auto  listener = this->_owner.get_listener<fb::game::character>();
     auto& model    = item.based<fb::model::item>();
-
+    auto  error    = std::string();
     try
     {
         if (this->trading() == false)
@@ -130,35 +132,38 @@ bool fb::game::trade::up(fb::game::item& item)
             // 묶음 단위의 아이템 형식 거래 시도
             this->_selected = &item;
             if (listener != nullptr)
-                listener->on_trade_bundle(this->_owner);
+                co_await listener->on_trade_bundle(this->_owner);
         }
         else
         {
             // 일반 아이템의 거래 시도
-            auto splitted = this->_owner.items.remove(item);
+            auto splitted = co_await this->_owner.items.remove(item);
             auto index    = this->add(*splitted);
             if (index == 0xFF)
-                return false;
+                co_return false;
 
             if (listener != nullptr)
-                listener->on_trade_item(this->_owner, this->_owner, index);
+                co_await listener->on_trade_item(this->_owner, this->_owner, index);
             if (listener != nullptr)
-                listener->on_trade_item(*this->_you, this->_owner, index);
+                co_await listener->on_trade_item(*this->_you, this->_owner, index);
         }
 
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        co_await listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+    co_return false;
 }
 
-bool fb::game::trade::up(uint8_t money)
+async::task<bool> fb::game::trade::up(uint8_t money)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
+    auto error    = std::string();
 
     try
     {
@@ -168,24 +173,26 @@ bool fb::game::trade::up(uint8_t money)
         if (money > total)
             money = total;
 
-        this->_owner.money(total - money);
+        co_await this->_owner.money(total - money);
         this->_money = money;
 
         if (listener != nullptr)
         {
-            listener->on_trade_money(this->_owner, this->_owner);
-            listener->on_trade_money(this->_owner, this->_owner);
+            co_await listener->on_trade_money(this->_owner, this->_owner);
+            co_await listener->on_trade_money(this->_owner, this->_owner);
         }
 
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        co_await listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+
+    co_return false;
 }
 
 uint32_t fb::game::trade::money() const
@@ -193,9 +200,10 @@ uint32_t fb::game::trade::money() const
     return this->_money;
 }
 
-bool fb::game::trade::count(uint16_t count)
+async::task<bool> fb::game::trade::count(uint16_t count)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
+    auto error    = std::string();
 
     try
     {
@@ -212,53 +220,58 @@ bool fb::game::trade::count(uint16_t count)
         if (this->_selected->count() < count)
             throw std::runtime_error(message::trade::INVALID_COUNT);
 
-        auto splitted = this->_owner.items.remove(*this->_selected, count);
+        auto splitted = co_await this->_owner.items.remove(*this->_selected, count);
         auto index    = this->add(*splitted);
 
         if (listener != nullptr)
         {
-            listener->on_trade_item(this->_owner, this->_owner, index);
-            listener->on_trade_item(*this->_you, this->_owner, index);
+            co_await listener->on_trade_item(this->_owner, this->_owner, index);
+            co_await listener->on_trade_item(*this->_you, this->_owner, index);
         }
 
         this->_selected = nullptr;
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        co_await listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+    co_return false;
 }
 
-bool fb::game::trade::cancel()
+async::task<bool> fb::game::trade::cancel()
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-
+    auto error    = std::string();
     try
     {
         if (this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
-        this->restore();
-        this->_you->trade.restore();
+        co_await this->restore();
+        co_await this->_you->trade.restore();
 
         if (listener != nullptr)
         {
-            listener->on_trade_cancel(this->_owner, this->_owner);
-            listener->on_trade_cancel(*this->_you, this->_owner);
+            co_await listener->on_trade_cancel(this->_owner, this->_owner);
+            co_await listener->on_trade_cancel(*this->_you, this->_owner);
         }
 
         this->end();
-        return true;
+        co_return true;
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        co_await listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+
+    co_return false;
 }
 
 uint8_t fb::game::trade::add(fb::game::item& item)
@@ -279,21 +292,21 @@ uint8_t fb::game::trade::add(fb::game::item& item)
     return uint8_t(this->_items.size() - 1);
 }
 
-void fb::game::trade::restore()
+async::task<void> fb::game::trade::restore()
 {
-    this->_owner.items.add(this->_items);
+    co_await this->_owner.items.add(this->_items);
     this->_items.clear();
 
-    this->_owner.money_add(this->_money);
+    std::ignore  = co_await this->_owner.money_add(this->_money);
     this->_money = 0;
 }
 
-void fb::game::trade::flush()
+async::task<void> fb::game::trade::flush()
 {
-    this->_you->items.add(this->_items);
+    std::ignore = co_await this->_you->items.add(this->_items);
     this->_items.clear();
 
-    this->_you->money_add(this->_money);
+    std::ignore  = co_await this->_you->money_add(this->_money);
     this->_money = 0;
 }
 
@@ -332,10 +345,10 @@ bool fb::game::trade::flushable() const
     return true;
 }
 
-bool fb::game::trade::lock()
+async::task<bool> fb::game::trade::lock()
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-
+    auto error    = std::string();
     try
     {
         if (this->trading() == false)
@@ -343,47 +356,49 @@ bool fb::game::trade::lock()
 
         this->_locked = true;
         if (listener != nullptr)
-            listener->on_trade_lock(this->_owner, true);
+            co_await listener->on_trade_lock(this->_owner, true);
 
         if (this->_you->trade._locked == false) // 상대방이 이미 교환 확인을 누른 경우
         {
             if (listener != nullptr)
-                listener->on_trade_lock(*this->_you, false);
-            return true;
+                co_await listener->on_trade_lock(*this->_you, false);
+            co_return true;
         }
         else if (!this->flushable() || !this->_you->trade.flushable()) // 교환이 불가능한 경우
         {
-            this->restore();
-            this->_you->trade.restore();
+            co_await this->restore();
+            co_await this->_you->trade.restore();
 
             if (listener != nullptr)
             {
-                listener->on_trade_failed(this->_owner);
-                listener->on_trade_failed(*this->_you);
+                co_await listener->on_trade_failed(this->_owner);
+                co_await listener->on_trade_failed(*this->_you);
             }
             this->end();
-            return false;
+            co_return false;
         }
         else
         {
-            this->flush();
-            this->_you->trade.flush();
+            co_await this->flush();
+            co_await this->_you->trade.flush();
 
             if (listener != nullptr)
             {
-                listener->on_trade_success(this->_owner);
-                listener->on_trade_success(*this->_you);
+                co_await listener->on_trade_success(this->_owner);
+                co_await listener->on_trade_success(*this->_you);
             }
             this->end();
-            return true;
+            co_return true;
         }
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        co_await listener->on_notify(this->_owner, error, MESSAGE_TYPE::STATE);
+    co_return false;
 }
 
 const std::vector<fb::game::item*>& fb::game::trade::items() const

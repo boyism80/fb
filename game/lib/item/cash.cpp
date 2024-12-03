@@ -56,12 +56,12 @@ async::task<fb::game::cash*> fb::game::cash::replace(uint32_t value)
     co_return result;
 }
 
-uint32_t fb::game::cash::reduce(uint32_t value)
+async::task<uint32_t> fb::game::cash::reduce(uint32_t value)
 {
     uint32_t reduce = std::min<uint32_t>(this->value, value);
 
-    this->replace(this->value - reduce);
-    return this->value;
+    std::ignore = co_await this->replace(this->value - reduce);
+    co_return this->value;
 }
 
 bool fb::game::cash::empty() const

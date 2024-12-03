@@ -28,16 +28,14 @@ int fb::game::context::builtin_sleep(lua_State* lua)
     thread->pending(true);
 
     auto context = thread->env<fb::game::context>("context");
-    context->threads().dispatch(
-        [lua]() -> async::task<void> {
-            auto thread = fb::game::lua::get(lua);
-            if (thread == nullptr)
-                co_return;
+    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
+        auto thread = fb::game::lua::get(lua);
+        if (thread == nullptr)
+            return;
 
-            thread->pending(false);
-            thread->resume(0);
-        },
-        std::chrono::milliseconds(ms));
+        thread->pending(false);
+        thread->resume(0);
+    });
     return thread->yield(0);
 }
 
@@ -269,7 +267,11 @@ int fb::game::context::builtin_timer(lua_State* lua)
     auto value    = (uint32_t)thread->tointeger(1);
     auto decrease = thread->toboolean(2);
 
-    context->send(fb::protocol::game::response::timer(value, decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE));
+    async::awaitable_then(
+        context->send(
+            fb::protocol::game::response::timer(value, decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE)),
+        [](auto result) {
+        });
     return 0;
 }
 
@@ -282,7 +284,8 @@ int fb::game::context::builtin_weather(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto value   = (uint32_t)thread->tointeger(1);
 
-    context->send(fb::protocol::game::response::weather(WEATHER_TYPE(value)));
+    async::awaitable_then(context->send(fb::protocol::game::response::weather(WEATHER_TYPE(value))), [](auto result) {
+    });
     return 0;
 }
 

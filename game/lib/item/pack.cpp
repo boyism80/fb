@@ -37,10 +37,10 @@ std::string fb::game::pack::inven_name() const
     return sstream.str();
 }
 
-bool fb::game::pack::active()
+async::task<bool> fb::game::pack::active()
 {
     if (this->_durability <= 0)
-        return false;
+        co_return false;
 
     this->_durability--;
     if (this->_durability <= 0)
@@ -48,10 +48,10 @@ bool fb::game::pack::active()
 
     auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
-        listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
+        co_await listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
     if (this->empty())
-        this->_owner->items.remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
+        std::ignore = co_await this->_owner->items.remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 
-    return true;
+    co_return true;
 }
