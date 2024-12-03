@@ -32,8 +32,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         auto size = this->model.board.size();
 
         writer.write<uint8_t>(header);
@@ -47,8 +48,9 @@ public:
         }
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         reader.read<uint8_t>();
         auto size = reader.read<uint16_t>();
         for (auto i = 0; i < size; i++)
@@ -91,8 +93,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x02);
         writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
@@ -144,8 +147,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
@@ -181,8 +185,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->refresh ? 0x06 : 0x07); // mail 관련 0x06인 것 같다. 확인 필요
         writer.write<uint8_t>(this->deleted);

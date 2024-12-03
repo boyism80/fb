@@ -5,6 +5,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 #include <fb/stream.h>
+#include <async/task.h>
 
 #define BIND_ID(n) static constexpr uint8_t id = (n);
 
@@ -41,10 +42,14 @@ public:
     ~header() = default;
 
 public:
-    virtual void serialize(fb::stream_writer<big_endian>& writer) const
-    { }
-    virtual void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    virtual async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    {
+        co_return;
+    }
+    virtual async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_return;
+    }
 };
 
 } // namespace fb::protocol::base
@@ -80,8 +85,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->ip);
         writer.write<uint16_t>(this->port);
@@ -89,8 +95,9 @@ public:
         writer.write(this->parameter);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->ip   = reader.read<uint32_t>();
         this->port = reader.read<uint16_t>();
 

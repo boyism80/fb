@@ -27,8 +27,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<std::string, uint16_t>(this->text);
@@ -75,11 +76,12 @@ private:
     }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto map = this->session.map();
         if (map == nullptr)
-            return;
+            co_return;
 
         if (this->light == false)
         {
@@ -191,8 +193,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->session.sequence());
         writer.write<uint32_t>(static_cast<uint32_t>(this->session.direction())); // side
@@ -201,8 +204,9 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->sequence  = reader.read<uint32_t>();
         this->direction = reader.read<uint32_t>();
         this->cls       = reader.read<uint8_t>();
@@ -250,8 +254,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->level));
 
@@ -299,8 +304,9 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->STATE_LEVEL = static_cast<fb::model::enum_value::STATE_LEVEL>(reader.read<uint8_t>());
         if (enum_in(this->STATE_LEVEL, STATE_LEVEL::BASED))
         {
@@ -377,8 +383,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(this->session.x()); // 실제 x 좌표
         writer.write<uint16_t>(this->session.y()); // 실제 y 좌표
@@ -406,8 +413,9 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->abs.x = reader.read<uint16_t>();
         this->abs.y = reader.read<uint16_t>();
         this->rel.x = reader.read<uint16_t>();
@@ -432,8 +440,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto clan = this->session.clan();
         writer.write<uint8_t>(header);
         writer.write<uint8_t>((uint8_t)this->session.defensive_physical());
@@ -518,8 +527,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string>(this->session.title());
         writer.write("클랜 이름");
@@ -635,8 +645,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->session.option(SETTING::WEATHER_EFFECT)); // weather
         writer.write<uint8_t>(this->session.option(SETTING::MAGIC_EFFECT));   // magic effect
@@ -646,8 +657,9 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->weather_effect = reader.read<uint8_t>();
         this->magic_effect   = reader.read<uint8_t>();
         this->roar_worlds    = reader.read<uint8_t>();
@@ -676,8 +688,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->session.sequence());
         writer.write<uint16_t>(this->item.look());
@@ -713,8 +726,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->me.sequence());
         writer.write<uint8_t>(static_cast<uint8_t>(this->value));      // type

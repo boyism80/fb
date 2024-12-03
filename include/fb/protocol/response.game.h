@@ -15,15 +15,17 @@ public:
     init() = default;
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x06);
         writer.write<uint8_t>(0x00);
     }
 #ifdef BOT
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         reader.read<uint8_t>();
         reader.read<uint8_t>();
     }
@@ -56,15 +58,17 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<std::string, uint16_t>(this->text);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->type = (MESSAGE_TYPE)reader.read<uint8_t>();
         this->text = reader.read<std::string, uint16_t>();
     }
@@ -90,8 +94,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint16_t>((uint16_t)sockets.size());
         writer.write<uint16_t>((uint16_t)sockets.size());
@@ -138,16 +143,18 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<uint32_t>(this->me.sequence());
         writer.write<std::string>(this->text);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->type     = (CHAT_TYPE)reader.read<uint8_t>();
         this->sequence = reader.read<uint32_t>();
         this->text     = reader.read<std::string, uint8_t>();
@@ -178,16 +185,18 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->hours % 24); // hours
         writer.write<uint8_t>(0x00);             // Unknown
         writer.write<uint8_t>(0x00);            // Unknown
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->hours = reader.read<uint8_t>();
         reader.read<uint8_t>();
         reader.read<uint8_t>();
@@ -209,8 +218,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->value));
         writer.write<uint8_t>(0x00);
@@ -231,8 +241,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(std::max(0, 20 - this->value));
@@ -255,8 +266,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<uint32_t>(this->time);

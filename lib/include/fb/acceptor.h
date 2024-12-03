@@ -35,7 +35,7 @@ template <typename T>
 class acceptor : public icontext
 {
 private:
-    using handle_func     = std::function<async::task<bool>(fb::socket<T>&, const std::function<void()>&)>;
+    using handle_func     = std::function<async::task<bool>(fb::socket<T>&, const std::function<async::task<void>()>&)>;
     using background_func = std::function<async::task<void>()>;
 
 private:
@@ -335,9 +335,10 @@ private:
 
                 reader.flush(); // remove magic code and size
                 auto before = this->thread_id(socket);
-                auto result = co_await this->_handler[cmd](socket, [&reader, size] {
+                auto result = co_await this->_handler[cmd](socket, [&reader, size]() -> async::task<void> {
                     reader.seek(size - sizeof(uint8_t));
                     reader.flush();
+                    co_return;
                 });
                 auto after  = this->thread_id(socket);
 
@@ -375,10 +376,9 @@ private:
         if (this->_running == false)
             co_return;
 
-        auto switched = co_await socket.template stream<async::task<bool>>(
-            [this, &socket](fb::stream& stream) -> async::task<bool> {
-                co_return co_await this->execute_bound_handler(socket, stream);
-            });
+        auto switched = co_await socket.template stream<bool>([this, &socket](fb::stream& stream) -> async::task<bool> {
+            co_return co_await this->execute_bound_handler(socket, stream);
+        });
 
         if (switched == false)
             co_return;
@@ -455,8 +455,10 @@ public:
      * @param[in]  ip      { parameter_description }
      * @param[in]  port    The port
      * @param[in]  from    The from
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
+    async::task<void> transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
     {
         auto& crt    = socket.crt();
         auto  params = fb::stream();
@@ -471,7 +473,7 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            fb::protocol::response::transfer(ip, port, params).serialize(writer);
+            co_await fb::protocol::response::transfer(ip, port, params).serialize(writer);
         }
 
         crt.wrap(stream);
@@ -486,10 +488,13 @@ public:
      * @param[in]  ip      { parameter_description }
      * @param[in]  port    The port
      * @param[in]  from    The from
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
+    async::task<void>
+    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
     {
-        this->transfer(socket, inet_addr(ip.c_str()), port, from);
+        co_await this->transfer(socket, inet_addr(ip.c_str()), port, from);
     }
 
 public:
@@ -501,12 +506,14 @@ public:
      * @param[in]  port       The port
      * @param[in]  from       The from
      * @param[in]  parameter  The parameter
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>&                   socket,
-                  uint32_t                         ip,
-                  uint16_t                         port,
-                  fb::protocol::internal::services from,
-                  const fb::stream&                parameter)
+    async::task<void> transfer(fb::socket<T>&                   socket,
+                               uint32_t                         ip,
+                               uint16_t                         port,
+                               fb::protocol::internal::services from,
+                               const fb::stream&                parameter)
     {
         auto& crt    = socket.crt();
         auto  header = fb::stream();
@@ -522,7 +529,7 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            fb::protocol::response::transfer(ip, port, header).serialize(writer);
+            co_await fb::protocol::response::transfer(ip, port, header).serialize(writer);
         }
 
         crt.wrap(stream);
@@ -538,14 +545,16 @@ public:
      * @param[in]  port       The port
      * @param[in]  from       The from
      * @param[in]  parameter  The parameter
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>&                   socket,
-                  const std::string&               ip,
-                  uint16_t                         port,
-                  fb::protocol::internal::services from,
-                  const fb::stream&                parameter)
+    async::task<void> transfer(fb::socket<T>&                   socket,
+                               const std::string&               ip,
+                               uint16_t                         port,
+                               fb::protocol::internal::services from,
+                               const fb::stream&                parameter)
     {
-        this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
+        co_await this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
     }
 
 protected:
@@ -706,17 +715,17 @@ protected:
     void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&), uint8_t header)
     {
         auto bound_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
-        this->_handler.insert(
-            {header, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
-                 return socket.template stream<async::task<bool>>(
-                     [this, &bound_func, &socket, &callback](fb::stream& stream) {
-                         auto protocol = Request();
-                         auto reader   = fb::stream_reader<big_endian>(stream);
-                         protocol.deserialize(reader);
-                         callback();
-                         return bound_func(socket, protocol);
-                     });
-             }});
+        this->_handler.insert({header, [this, bound_func](auto& socket, const auto& callback) -> async::task<bool> {
+                                   auto fn = [this, &bound_func, &socket, &callback](
+                                                 fb::stream& stream) -> async::task<bool> {
+                                       auto protocol = Request();
+                                       auto reader   = fb::stream_reader<big_endian>(stream);
+                                       co_await protocol.deserialize(reader);
+                                       callback();
+                                       co_return co_await bound_func(socket, protocol);
+                                   };
+                                   co_return co_await socket.template stream<bool>(fn);
+                               }});
     }
 
 protected:
@@ -766,12 +775,12 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    void send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    async::task<void> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         if (stream.empty())
-            return;
+            co_return;
 
-        socket.send(stream, encrypt, wrap);
+        co_await socket.send(stream, encrypt, wrap);
     }
 
 public:
@@ -783,15 +792,16 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    void send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
+    async::task<void>
+    send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
-        response.serialize(writer);
+        co_await response.serialize(writer);
         if (stream.empty())
-            return;
+            co_return;
 
-        socket.send(stream, encrypt, wrap);
+        co_await socket.send(stream, encrypt, wrap);
     }
 
 public:

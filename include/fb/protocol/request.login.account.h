@@ -31,15 +31,17 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string, uint8_t>(this->id);
         writer.write<std::string, uint8_t>(this->pw);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->id = reader.read<std::string, uint8_t>();
         this->pw = reader.read<std::string, uint8_t>();
     }
@@ -78,8 +80,9 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->hair);
         writer.write<uint8_t>(this->sex);
@@ -87,8 +90,9 @@ public:
         writer.write<uint8_t>(this->creature);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->hair     = reader.read<uint8_t>();
         this->sex      = reader.read<uint8_t>();
         this->nation   = reader.read<uint8_t>();
@@ -129,8 +133,9 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string, uint8_t>(this->name);
         writer.write<std::string, uint8_t>(this->pw);
@@ -138,8 +143,9 @@ public:
         writer.write<uint32_t>(this->birthday);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->name     = reader.read<std::string, uint8_t>();
         this->pw       = reader.read<std::string, uint8_t>();
         this->new_pw   = reader.read<std::string, uint8_t>();

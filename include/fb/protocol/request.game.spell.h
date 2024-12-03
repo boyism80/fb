@@ -24,8 +24,9 @@ public:
     use() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->_reader = &reader;
         this->slot    = reader.read<uint8_t>() - 1;
     }

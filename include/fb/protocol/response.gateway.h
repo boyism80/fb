@@ -51,8 +51,10 @@ public:
     welcome() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class crt : public fb::protocol::base::header
@@ -81,8 +83,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);
         writer.write<uint32_t>(this->entry_crc);
@@ -92,8 +95,9 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         reader.read<uint8_t>();
 
         auto entry_crc = reader.read<uint32_t>();
@@ -130,8 +134,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         // 서버정보를 바이너리 형식으로 변환
         auto formats = fb::stream();
         {
@@ -158,8 +163,9 @@ public:
         writer.write(compressed.data(), compressed.size() + 1);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         // TODO: 파싱해서 데이터 적재
         auto count = reader.read<uint8_t>();
     }

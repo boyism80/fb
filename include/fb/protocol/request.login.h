@@ -31,15 +31,17 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string, uint8_t>(this->id);
         writer.write<std::string, uint8_t>(this->pw);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->id = reader.read<std::string, uint8_t>();
         this->pw = reader.read<std::string, uint8_t>();
     }
@@ -75,16 +77,18 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->enc_type);
         writer.write<uint8_t>(this->enc_key_size);
         writer.write((const void*)this->enc_key, this->enc_key_size);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->enc_type     = reader.read<uint8_t>();
         this->enc_key_size = reader.read<uint8_t>();
         reader.read(this->enc_key, this->enc_key_size);

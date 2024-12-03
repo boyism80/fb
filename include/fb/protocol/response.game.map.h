@@ -48,8 +48,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
 
         if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
@@ -88,7 +89,7 @@ public:
         }
 
         if (crc == now_crc)
-            return;
+            co_return;
     }
 };
 
@@ -108,8 +109,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
 
         writer.write<uint8_t>(0x01);
@@ -151,8 +153,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto building = enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(this->map.model.id); // id
@@ -162,8 +165,9 @@ public:
         writer.write<std::string, uint16_t>(this->map.model.name);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->id          = reader.read<uint16_t>();
         this->size.width  = reader.read<uint16_t>();
         this->size.height = reader.read<uint16_t>();
@@ -191,8 +195,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
 
         auto& attr   = this->model.world_attribute[this->id];

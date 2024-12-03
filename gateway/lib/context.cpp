@@ -3,14 +3,6 @@
 fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<fb::gateway::session>(context, port)
 {
-    static constexpr const char* message = "CONNECTED SERVER\n";
-
-    auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
-    writer.write<uint8_t>(0x7E);
-    writer.write<uint8_t>(0x1B);
-    writer.write((const void*)message, strlen(message));
-    this->load_entries();
-
     // Register event handler
     this->bind(&context::handle_check_version);
     this->bind(&context::handle_entry_list);
@@ -19,7 +11,7 @@ fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
 fb::gateway::context::~context()
 { }
 
-bool fb::gateway::context::load_entries()
+async::task<bool> fb::gateway::context::load_entries()
 {
     try
     {
@@ -34,13 +26,13 @@ bool fb::gateway::context::load_entries()
         }
 
         auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
-        fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
+        co_await fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
         this->_entry_crc32_cache = this->_entry_stream_cache.crc();
-        return true;
+        co_return true;
     }
     catch (...)
     {
-        return false;
+        co_return false;
     }
 }
 
@@ -69,6 +61,17 @@ bool fb::gateway::context::decrypt_policy(uint8_t cmd) const
     default:
         return true;
     }
+}
+
+async::task<void> fb::gateway::context::handle_start()
+{
+    static constexpr const char* message = "CONNECTED SERVER\n";
+
+    auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
+    writer.write<uint8_t>(0x7E);
+    writer.write<uint8_t>(0x1B);
+    writer.write((const void*)message, strlen(message));
+    co_await this->load_entries();
 }
 
 fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gateway::session>& socket)

@@ -76,26 +76,26 @@ protected:
     }
 
 public:
-    void send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         static auto empty_fn = [](const boost::system::error_code ec, size_t size) {
 
         };
-        this->send(stream, encrypt, wrap, empty_fn);
+        co_await this->send(stream, encrypt, wrap, empty_fn);
     }
 
 public:
-    void send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
+    async::task<void> send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
         if (stream.empty())
-            return;
+            co_return;
 
         auto clone = fb::stream(stream);
         if (encrypt && this->on_encrypt(clone) == false)
-            return;
+            co_return;
 
         if (wrap && this->on_wrap(clone) == false)
-            return;
+            co_return;
 
         auto buffer = boost::asio::buffer(clone.data(), clone.size());
         {
@@ -105,20 +105,21 @@ public:
     }
 
 public:
-    void send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
+    async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         static auto empty_fn = [](const boost::system::error_code&, size_t) {
         };
-        this->send(response, encrypt, wrap, empty_fn);
+        co_await this->send(response, encrypt, wrap, empty_fn);
     }
 
 public:
-    void send(const fb::protocol::base::header& response, bool encrypt, bool wrap, const boost_send_callback& callback)
+    async::task<void>
+    send(const fb::protocol::base::header& response, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
-        response.serialize(writer);
-        this->send(stream, encrypt, wrap, callback);
+        co_await response.serialize(writer);
+        co_await this->send(stream, encrypt, wrap, callback);
     }
 
 public:
@@ -130,10 +131,12 @@ public:
             {
                 auto bytes_transferred =
                     co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
-                this->stream<void>([this, bytes_transferred](fb::stream& stream) {
-                    auto writer = fb::stream_writer<big_endian>(stream);
-                    writer.write(this->_buffer.data(), bytes_transferred);
-                });
+                async::awaitable_get(
+                    this->stream<void>([this, bytes_transferred](fb::stream& stream) -> async::task<void> {
+                        auto writer = fb::stream_writer<big_endian>(stream);
+                        writer.write(this->_buffer.data(), bytes_transferred);
+                        co_return;
+                    }));
 
                 async::awaitable_get(this->_handle_received(*this));
                 if (this->is_open() == false)
@@ -222,15 +225,15 @@ public:
 
 public:
     template <typename R = void>
-    R stream(const std::function<R(fb::stream& stream)>& func)
+    async::task<R> stream(const std::function<async::task<R>(fb::stream& stream)>& func)
     {
         if constexpr (std::is_void_v<T>)
         {
-            func(this->_stream);
+            co_await func(this->_stream);
         }
         else
         {
-            return func(this->_stream);
+            co_return co_await func(this->_stream);
         }
     }
 };

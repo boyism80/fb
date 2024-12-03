@@ -51,7 +51,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool load_entries();
+    async::task<bool> load_entries();
 
 private:
     /**
@@ -74,6 +74,14 @@ protected:
      * @return     { description_of_the_return_value }
      */
     bool decrypt_policy(uint8_t) const final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> handle_start() final;
+
     /**
      * @brief      { function_description }
      *

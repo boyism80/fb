@@ -25,8 +25,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(this->position);
         writer.write<std::string, uint16_t>(this->message);
@@ -50,11 +51,12 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto item = this->me.items.at(index);
         if (item == nullptr)
-            return;
+            co_return;
 
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->index + 1);
@@ -83,8 +85,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         fb::game::item* item;
 
         switch (parts)
@@ -122,11 +125,11 @@ public:
             break;
 
         default:
-            return;
+            co_return;
         }
 
         if (item == nullptr)
-            return;
+            co_return;
 
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(item->look());
@@ -153,8 +156,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->index + 1);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
@@ -176,8 +180,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->parts));
         writer.write<uint8_t>(0x00);
