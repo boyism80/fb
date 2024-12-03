@@ -14,11 +14,14 @@
 #include <fb/amqp.h>
 #include <listener.h>
 #include <fb/locker.h>
+#include <thread_params.h>
 
 using namespace fb::protocol::internal;
 namespace fb_reqs  = fb::protocol::game::request;
 namespace fb_resp  = fb::protocol::game::response;
 namespace internal = fb::protocol::internal;
+namespace internal_reqs = fb::protocol::internal::request;
+namespace internal_resp = fb::protocol::internal::response;
 
 namespace fb { namespace game {
 
@@ -199,9 +202,27 @@ private:
     /**
      * @brief      { function_description }
      *
+     * @param[in]  error  The error
+     * @param[in]  actor  The actor
+     */
+    void assert_group(uint32_t error, const std::string& actor) const;
+
+    /**
+     * @brief      Called on enter group.
+     *
+     * @param[in]  response  The response
+     *                       Don't change to reference value.
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> on_enter_group(internal_resp::EnterGroup response);
+
+    /**
+     * @brief      Called on leave group.
+     *
      * @param[in]  response  The response
      */
-    void assert_group(const internal::response::CreateGroup& response) const;
+    void on_leave_group(const internal_resp::LeaveGroup& response);
 
 public:
     /**

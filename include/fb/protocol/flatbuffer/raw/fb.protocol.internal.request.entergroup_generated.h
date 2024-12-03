@@ -25,25 +25,20 @@ struct EnterGroupBuilder;
 struct EnterGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef EnterGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ID = 4,
-    VT_MEMBER = 6,
-    VT_HOST = 8
+    VT_MASTER = 4,
+    VT_MEMBER = 6
   };
-  const ::flatbuffers::String *id() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_ID);
+  uint32_t master() const {
+    return GetField<uint32_t>(VT_MASTER, 0);
   }
-  uint32_t member() const {
-    return GetField<uint32_t>(VT_MEMBER, 0);
-  }
-  uint32_t host() const {
-    return GetField<uint32_t>(VT_HOST, 0);
+  const ::flatbuffers::String *member() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_ID) &&
-           verifier.VerifyString(id()) &&
-           VerifyField<uint32_t>(verifier, VT_MEMBER, 4) &&
-           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
+           VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
+           VerifyOffset(verifier, VT_MEMBER) &&
+           verifier.VerifyString(member()) &&
            verifier.EndTable();
   }
 };
@@ -52,14 +47,11 @@ struct EnterGroupBuilder {
   typedef EnterGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(::flatbuffers::Offset<::flatbuffers::String> id) {
-    fbb_.AddOffset(EnterGroup::VT_ID, id);
+  void add_master(uint32_t master) {
+    fbb_.AddElement<uint32_t>(EnterGroup::VT_MASTER, master, 0);
   }
-  void add_member(uint32_t member) {
-    fbb_.AddElement<uint32_t>(EnterGroup::VT_MEMBER, member, 0);
-  }
-  void add_host(uint32_t host) {
-    fbb_.AddElement<uint32_t>(EnterGroup::VT_HOST, host, 0);
+  void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
+    fbb_.AddOffset(EnterGroup::VT_MEMBER, member);
   }
   explicit EnterGroupBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -74,27 +66,23 @@ struct EnterGroupBuilder {
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    ::flatbuffers::Offset<::flatbuffers::String> id = 0,
-    uint32_t member = 0,
-    uint32_t host = 0) {
+    uint32_t master = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> member = 0) {
   EnterGroupBuilder builder_(_fbb);
-  builder_.add_host(host);
   builder_.add_member(member);
-  builder_.add_id(id);
+  builder_.add_master(master);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    const char *id = nullptr,
-    uint32_t member = 0,
-    uint32_t host = 0) {
-  auto id__ = id ? _fbb.CreateString(id) : 0;
+    uint32_t master = 0,
+    const char *member = nullptr) {
+  auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::request::raw::CreateEnterGroup(
       _fbb,
-      id__,
-      member,
-      host);
+      master,
+      member__);
 }
 
 inline const fb::protocol::internal::request::raw::EnterGroup *GetEnterGroup(const void *buf) {

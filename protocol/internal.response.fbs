@@ -122,27 +122,18 @@ table GetGroup {
   error: uint;
 }
 
-table CreateGroup {
+table EnterGroup {
   group: fb.protocol.internal.Group;
   member: string;
-  host: uint;
   action: fb.protocol.internal.GroupAction;
-  error: uint;
-}
-
-
-table EnterGroup {
-  id: uint;
-  member: string;
   host: uint;
   error: uint;
 }
 
 table LeaveGroup {
-  id: uint;
   group: fb.protocol.internal.Group;
   member: string;
-  break_up: bool;
+  action: fb.protocol.internal.GroupAction;
   host: uint;
   error: uint;
 }

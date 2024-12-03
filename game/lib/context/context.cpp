@@ -171,22 +171,29 @@ context::context(boost::asio::io_context& context, uint16_t port) : // clang-for
 {
     this->bind_timer(
         [this]() -> async::task<void> {
-            auto&  config = fb::config::get();
-            auto&& response =
-                co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
-                    "internal",
-                    "/in-game/ping",
-                    fb::protocol::internal::request::Ping{this->id(),
-                                                          this->name(),
-                                                          this->service(),
-                                                          config["ip"].asString(),
-                                                          (uint16_t)config["port"].asUInt()});
+            auto&  config   = fb::config::get();
+            auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
+                "internal",
+                "/in-game/ping",
+                internal_reqs::Ping{this->id(),
+                                    this->name(),
+                                    this->service(),
+                                    config["ip"].asString(),
+                                    (uint16_t)config["port"].asUInt()});
         },
         1s);
 }
 
 context::~context()
-{ }
+{
+    auto& threads = this->threads();
+    for (int i = 0; i < threads.count(); i++)
+    {
+        auto thread = threads.at(i);
+        auto params = thread->data<thread_params>();
+        delete params;
+    }
+}
 
 async::task<void> context::handle_start()
 {
@@ -232,6 +239,8 @@ async::task<void> context::handle_start()
     for (int i = 0; i < threads.count(); i++)
     {
         auto thread = threads.at(i);
+        thread->data(new thread_params{});
+
         co_await thread->dispatch([]() -> async::task<void> {
             auto& ist  = lua::container::ist();
             auto& main = ist.get();
@@ -341,9 +350,11 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto group = session->group();
     if (group != nullptr)
     {
-        group->lock<void>([this, &session](auto& g) {
-            g.leave_active_member(*session);
-        });
+        auto active_thread = this->threads().current();
+        auto group_thread  = this->threads().modular(group->id());
+        co_await group_thread->dispatch();
+        group->leave_active_member(*session);
+        co_await active_thread->dispatch();
     }
 
     this->_characters.lock<void>([name = session->name()](auto& characters) {
@@ -354,10 +365,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     fb::logger::info("{}님이 접속을 종료했습니다.", session->name());
 
     co_await this->save(*session);
-    co_await this->post<internal::request::Logout, internal::response::Logout>(
-        "internal",
-        "/in-game/logout",
-        internal::request::Logout{session->name()});
+    co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
+                                                                      "/in-game/logout",
+                                                                      internal_reqs::Logout{session->name()});
     co_await session->destroy();
     socket.data(nullptr);
     co_return true;
@@ -398,17 +408,18 @@ std::string context::elapsed_message(const std::string& dt)
 
 character* context::find(const std::string& name)
 {
-    return this->_characters.lock<fb::game::character*>([this, &name](auto& characters) -> fb::game::character* {
-        if (characters.contains(name))
-            return characters[name];
+    return this->_characters.read<fb::game::character*>([this, &name](const auto& characters) -> fb::game::character* {
+        auto i = characters.find(name);
+        if (i == characters.end())
+            return nullptr;
 
-        return nullptr;
+        return i->second;
     });
 }
 
-async::task<bool> context::init_ch(const fb::protocol::internal::Character& response,
-                                   character&                               session,
-                                   const std::optional<transfer_param>&     transfer)
+async::task<bool> context::init_ch(const internal::Character&           response,
+                                   character&                           session,
+                                   const std::optional<transfer_param>& transfer)
 {
     auto map = response.map;
     session.id(response.id);
@@ -451,54 +462,47 @@ async::task<bool> context::init_ch(const fb::protocol::internal::Character& resp
 
     if (response.group.has_value())
     {
-        auto group = co_await this->_groups.lock<fb::locker<fb::game::group>*>(
-            [this, &response, &session](auto& groups) -> async::task<fb::locker<fb::game::group>*> {
-                if (groups.contains(response.group.value()) == false)
-                {
-                    auto&& group_resp = co_await this->get<internal::response::GetGroup>(
-                        "internal",
-                        std::format("/in-game/group/{}", response.group.value()));
+        // auto group = co_await this->_groups.lock<fb::locker<fb::game::group>*>(
+        //     [this, &response, &session](auto& groups) -> async::task<fb::locker<fb::game::group>*> {
+        //         if (groups.contains(response.group.value()))
+        //             co_return groups[response.group.value()].get();
 
-                    switch (static_cast<ERROR_CODE>(group_resp.error))
-                    {
-                    case ERROR_CODE::NONE:
-                        break;
+        //        auto&& group_resp = co_await this->get<internal_resp::GetGroup>(
+        //            "internal",
+        //            std::format("/in-game/group/{}", response.group.value()));
 
-                    default:
-                        throw std::runtime_error(std::format("cannot get group (error : {})", group_resp.error));
-                    }
+        //        switch (static_cast<ERROR_CODE>(group_resp.error))
+        //        {
+        //        case ERROR_CODE::NONE:
+        //            break;
 
-                    co_return this->_characters.lock<fb::locker<fb::game::group>*>(
-                        [this, &groups, &group_resp](auto& characters) {
-                            auto members = std::vector<std::string>();
-                            for (auto& x : group_resp.group.members)
-                                members.push_back(x);
+        //        default:
+        //            throw std::runtime_error(std::format("cannot get group (error : {})", group_resp.error));
+        //        }
 
-                            groups.insert({group_resp.group.id,
-                                           std::make_unique<fb::locker<fb::game::group>>(*this,
-                                                                                         group_resp.group.id,
-                                                                                         group_resp.group.master,
-                                                                                         members)});
+        //        auto members = std::vector<std::string>();
+        //        for (auto& x : group_resp.group.members)
+        //            members.push_back(x);
 
-                            return groups[group_resp.group.id].get();
-                        });
-                }
-                else
-                {
-                    co_return groups[response.group.value()].get();
-                }
-            });
+        //        groups.insert({group_resp.group.id,
+        //                       std::make_unique<fb::locker<fb::game::group>>(*this,
+        //                                                                     group_resp.group.id,
+        //                                                                     group_resp.group.master,
+        //                                                                     members)});
 
-        group->template lock<void>([&session, group](auto& g) {
-            g.enter(session);
-            session.group(group);
-        });
+        //        co_return groups[group_resp.group.id].get();
+        //    });
+
+        // group->template lock<void>([&session, group](auto& g) {
+        //     g.enter(session);
+        //     session.group(group);
+        // });
     }
 
     co_return co_await session.map(&this->maps[map], point16_t(position_x, position_y));
 }
 
-void context::init_option(const fb::protocol::internal::Option& response, fb::game::character& session)
+void context::init_option(const internal::Option& response, fb::game::character& session)
 {
     session.option(SETTING::WHISPER, response.whisper, false);
     session.option(SETTING::GROUP, response.group, false);
@@ -513,7 +517,7 @@ void context::init_option(const fb::protocol::internal::Option& response, fb::ga
     session.option(SETTING::PK_PROTECT, response.pk_protect, false);
 }
 
-void context::init_items(const std::vector<fb::protocol::internal::Item>& response, character& session)
+void context::init_items(const std::vector<internal::Item>& response, character& session)
 {
     for (auto& x : response)
     {
@@ -535,7 +539,7 @@ void context::init_items(const std::vector<fb::protocol::internal::Item>& respon
     }
 }
 
-void context::init_spells(const std::vector<fb::protocol::internal::Spell>& response, character& session)
+void context::init_spells(const std::vector<internal::Spell>& response, character& session)
 {
     for (auto& x : response)
     {
@@ -547,7 +551,7 @@ void context::init_spells(const std::vector<fb::protocol::internal::Spell>& resp
     }
 }
 
-void context::assert_whisper(const internal::response::Whisper& response) const
+void context::assert_whisper(const internal_resp::Whisper& response) const
 {
     switch (static_cast<ERROR_CODE>(response.error))
     {
@@ -593,24 +597,24 @@ void context::send(object&                           object,
     }
     break;
 
-    case context::scope::GROUP:
-    {
-        if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            return;
+        // case context::scope::GROUP:
+        //{
+        //     if (object.is(OBJECT_TYPE::CHARACTER) == false)
+        //         return;
 
-        auto& session = static_cast<character&>(object);
-        auto  group   = session.group();
-        if (group == nullptr)
-            return;
+        //    auto& session = static_cast<character&>(object);
+        //    auto  group   = session.group();
+        //    if (group == nullptr)
+        //        return;
 
-        group->lock<void>([&header, encrypt](auto& g) {
-            for (auto ch : g.active_members())
-            {
-                ch->send(header, encrypt);
-            }
-        });
-    }
-    break;
+        //    group->read<void>([&header, encrypt](const auto& g) {
+        //        for (auto ch : g.active_members())
+        //        {
+        //            ch->send(header, encrypt);
+        //        }
+        //    });
+        //}
+        // break;
 
     case context::scope::MAP:
     {
@@ -655,24 +659,24 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
     }
     break;
 
-    case context::scope::GROUP:
-    {
-        if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            return;
+        // case context::scope::GROUP:
+        //{
+        //     if (object.is(OBJECT_TYPE::CHARACTER) == false)
+        //         return;
 
-        auto& session = static_cast<character&>(object);
-        auto  group   = session.group();
-        if (group == nullptr)
-            return;
+        //    auto& session = static_cast<character&>(object);
+        //    auto  group   = session.group();
+        //    if (group == nullptr)
+        //        return;
 
-        group->lock<void>([&fn, encrypt](auto& g) {
-            for (auto ch : g.active_members())
-            {
-                ch->send(*fn(*ch).get(), encrypt);
-            }
-        });
-    }
-    break;
+        //    group->lock<void>([&fn, encrypt](auto& g) {
+        //        for (auto ch : g.active_members())
+        //        {
+        //            ch->send(*fn(*ch).get(), encrypt);
+        //        }
+        //    });
+        //}
+        // break;
 
     case context::scope::MAP:
     {
@@ -717,7 +721,7 @@ void context::send(const fb::protocol::base::header& response, bool encrypt)
 
 async::task<void> context::save(character& session)
 {
-    auto items = std::vector<fb::protocol::internal::Item>();
+    auto items = std::vector<internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto item = session.items[i];
@@ -746,20 +750,20 @@ async::task<void> context::save(character& session)
         items.push_back(protocol);
     }
 
-    auto spells = std::vector<fb::protocol::internal::Spell>();
+    auto spells = std::vector<internal::Spell>();
     for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
     {
         auto spell = session.spells[i];
         if (spell == nullptr)
             continue;
 
-        spells.push_back(fb::protocol::internal::Spell{session.id(), i, spell->id});
+        spells.push_back(internal::Spell{session.id(), i, spell->id});
     }
 
-    auto&& response = co_await this->post<internal::request::Save, internal::response::Save>(
+    auto&& response = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
-        internal::request::Save{session.to_protocol(), items, spells});
+        internal_reqs::Save{session.to_protocol(), items, spells});
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const
@@ -806,10 +810,10 @@ void context::amqp_thread()
 
             auto& queue1 = this->_amqp->declare_queue();
             queue1.bind("amq.direct", std::format("fb.game.{}", config["id"].asInt()));
-            queue1.handler<internal::response::Pong>([](auto& response) -> async::task<void> {
+            queue1.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
                 co_return;
             });
-            queue1.handler<internal::response::KickOut>([this](auto& response) -> async::task<void> {
+            queue1.handler<internal_resp::KickOut>([this](auto& response) -> async::task<void> {
                 auto socket = this->sockets.find([uid = response.uid](fb::socket<character>& socket) {
                     auto data = socket.data();
                     return data->id() == uid;
@@ -821,7 +825,7 @@ void context::amqp_thread()
                 socket->cancel();
             });
 
-            queue1.handler<internal::response::Whisper>([this](auto& response) -> async::task<void> {
+            queue1.handler<internal_resp::Whisper>([this](auto& response) -> async::task<void> {
                 auto& config = fb::config::get();
                 if (response.host == config["id"].asUInt())
                     co_return;
@@ -845,79 +849,24 @@ void context::amqp_thread()
 
             auto& queue2 = this->_amqp->declare_queue();
             queue2.bind("amq.direct", "fb.global");
-            queue2.handler<internal::response::Pong>([](auto& response) -> async::task<void> {
+            queue2.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
                 co_return;
             });
 
             auto& queue3 = this->_amqp->declare_queue();
             queue3.bind("amq.direct", "fb.group");
-            queue3.handler<internal::response::CreateGroup>([this](internal::response::CreateGroup& response)
-                                                                -> async::task<void> {
-                this->assert_group(response);
+            queue3.handler<internal_resp::EnterGroup>([this](internal_resp::EnterGroup& response) -> async::task<void> {
+                if (response.host == fb::config::get()["id"].asUInt())
+                    co_return;
 
-                auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
-                    if (groups.contains(response.group.id))
-                        groups.erase(response.group.id);
+                co_await this->on_enter_group(response);
+            });
 
-                    groups.insert({response.group.id,
-                                   std::make_unique<fb::locker<fb::game::group>>(*this,
-                                                                                 response.group.id,
-                                                                                 response.group.master,
-                                                                                 response.group.members)});
-                    return groups[response.group.id].get();
-                });
+            queue3.handler<internal_resp::LeaveGroup>([this](internal_resp::LeaveGroup& response) -> async::task<void> {
+                if (response.host == fb::config::get()["id"].asUInt())
+                    co_return;
 
-                group->lock<void>([this, &response, group](auto& g) {
-                    this->_characters.lock<void>([&response, &g, group](auto& characters) {
-                        auto members = std::vector<fb::game::character*>();
-
-                        if (characters.contains(response.group.master))
-                            members.push_back(characters[response.group.master]);
-
-                        for (auto& member : response.group.members)
-                        {
-                            if (characters.contains(member))
-                                members.push_back(characters[member]);
-                        }
-
-                        for (auto ch : members)
-                        {
-                            g.enter(*ch);
-                            ch->group(group);
-                        }
-
-                        switch (response.action)
-                        {
-                        case GroupAction::Enter:
-                        {
-                            for (auto ch : members)
-                            {
-                                if (ch->name() != response.member)
-                                    ch->message(std::format("{}님 그룹에 참여", response.member), MESSAGE_TYPE::STATE);
-                                else
-                                    ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
-                            }
-                        }
-                        break;
-
-                        case GroupAction::Kick:
-                        {
-                            for (auto ch : members)
-                            {
-                                ch->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
-                            }
-
-                            if (characters.contains(response.member))
-                            {
-                                characters[response.member]->group(nullptr);
-                                characters[response.member]->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
-                            }
-                        }
-                        break;
-                        }
-                    });
-                });
-                co_return;
+                this->on_leave_group(response);
             });
         }
         catch (std::exception& e)
@@ -993,14 +942,14 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        auto&& login_resp = co_await this->post<internal::request::Login, internal::response::Login>(
+        auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
             "internal",
             "/in-game/login",
-            internal::request::Login{id, name, (uint8_t)config["id"].asUInt()});
+            internal_reqs::Login{id, name, (uint8_t)config["id"].asUInt()});
         if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
             co_return false;
 
-        auto&& response = co_await this->get<internal::response::Init>("internal", std::format("/user/init/{}", id));
+        auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
         if (this->sockets.contains(fd) == false)
             co_return false;
 
@@ -1292,13 +1241,21 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         break;
 
     default:
-        auto   enabled = session->option_toggle(option);
-        auto&& response =
-            co_await this
-                ->post<fb::protocol::internal::request::SetOption, fb::protocol::internal::response::SetOption>(
-                    "internal",
-                    "/user/option",
-                    fb::protocol::internal::request::SetOption{session->id(), static_cast<uint8_t>(option), enabled});
+        auto enabled = session->option_toggle(option);
+        if (option == SETTING::GROUP && !enabled)
+        {
+            auto&& response = co_await this->post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
+                "internal",
+                "/in-game/group/leave",
+                internal_reqs::LeaveGroup{session->name()});
+
+            this->on_leave_group(response);
+        }
+
+        auto&& response = co_await this->post<internal_reqs::SetOption, internal_resp::SetOption>(
+            "internal",
+            "/user/option",
+            internal_reqs::SetOption{session->id(), static_cast<uint8_t>(option), enabled});
 
         if (response.success == false)
             session->message("설정을 변경하지 못했습니다.");
@@ -1501,9 +1458,9 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     co_return true;
 }
 
-void context::assert_group(const internal::response::CreateGroup& response) const
+void context::assert_group(uint32_t error, const std::string& actor) const
 {
-    switch (static_cast<ERROR_CODE>(response.error))
+    switch (static_cast<ERROR_CODE>(error))
     {
     case ERROR_CODE::NONE:
         return;
@@ -1515,23 +1472,237 @@ void context::assert_group(const internal::response::CreateGroup& response) cons
         throw std::runtime_error("이미 그룹에 참여중입니다.");
 
     case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", response.member));
+        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", actor));
 
     case ERROR_CODE::GROUP_TARGET_ALREADY_JOINED:
-        throw std::runtime_error(std::format("{}님은 이미 그룹에 참여중입니다.", response.member));
+        throw std::runtime_error(std::format("{}님은 이미 그룹에 참여중입니다.", actor));
 
     case ERROR_CODE::DISABLED_GROUP:
         throw std::runtime_error("그룹 참여 거부중입니다.");
 
     case ERROR_CODE::DISABLED_GROUP_TARGET:
-        throw std::runtime_error(std::format("{}님은 그룹 참여 거부중입니다.", response.member));
+        throw std::runtime_error(std::format("{}님은 그룹 참여 거부중입니다.", actor));
 
     case ERROR_CODE::NOT_GROUP_MASTER:
         throw std::runtime_error("당신은 그룹장이 아닙니다.");
 
     default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
+        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
     }
+}
+
+async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
+{
+    this->assert_group(response.error, response.member);
+
+    auto& threads       = this->threads();
+    auto  active_thread = threads.current();
+
+    // switch thread that matched with group id
+    auto group_thread = threads.modular(response.group.id);
+    co_await group_thread->dispatch();
+
+    auto params = group_thread->data<thread_params>();
+    if (params->groups.contains(response.group.id) == false)
+    {
+        params->groups.insert(
+            {response.group.id,
+             std::make_unique<group>(response.group.id, response.group.master, response.group.members)});
+    }
+
+    auto group = params->groups[response.group.id].get();
+    this->_characters.lock<void>([this, &response, group](auto& characters) {
+        auto members = std::vector<fb::game::character*>();
+
+        if (characters.contains(response.group.master))
+            members.push_back(characters[response.group.master]);
+
+        for (auto& member : response.group.members)
+        {
+            if (characters.contains(member))
+                members.push_back(characters[member]);
+        }
+
+        for (auto ch : members)
+        {
+            group->enter(*ch);
+        }
+
+        for (auto ch : members)
+        {
+            auto map    = ch->map();
+            auto thread = this->thread(*map);
+
+            thread->dispatch([this, ch, group, response, &characters]() -> async::task<void> {
+                ch->group(group);
+
+                switch (response.action)
+                {
+                case GroupAction::Enter:
+                {
+                    if (ch->name() != response.member)
+                        ch->message(std::format("{}님 그룹에 참여", response.member), MESSAGE_TYPE::STATE);
+                    else
+                        ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
+                }
+                break;
+
+                case GroupAction::Kick:
+                {
+                    ch->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
+
+                    if (characters.contains(response.member))
+                    {
+                        characters[response.member]->group(nullptr);
+                        characters[response.member]->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+                    }
+                }
+                break;
+                }
+
+                co_return;
+            });
+        }
+    });
+
+    co_await active_thread->dispatch();
+
+    // auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
+    //     if (groups.contains(response.group.id))
+    //         groups.erase(response.group.id);
+
+    //    groups.insert({response.group.id,
+    //                   std::make_unique<fb::locker<fb::game::group>>(*this,
+    //                                                                 response.group.id,
+    //                                                                 response.group.master,
+    //                                                                 response.group.members)});
+    //    return groups[response.group.id].get();
+    //});
+
+    // group->lock<void>([this, &response, group](auto& g) {
+    //     this->_characters.lock<void>([this, &response, &g, group](auto& characters) {
+    //         auto members = std::vector<fb::game::character*>();
+
+    //        if (characters.contains(response.group.master))
+    //            members.push_back(characters[response.group.master]);
+
+    //        for (auto& member : response.group.members)
+    //        {
+    //            if (characters.contains(member))
+    //                members.push_back(characters[member]);
+    //        }
+
+    //        for (auto ch : members)
+    //        {
+    //            g.enter(*ch);
+    //            auto map    = ch->map();
+    //            auto thread = this->thread(*map);
+
+    //            thread->dispatch([this, ch, group]() -> async::task<void> {
+    //                ch->group(group);
+    //            });
+    //        }
+
+    //        switch (response.action)
+    //        {
+    //        case GroupAction::Enter:
+    //        {
+    //            for (auto ch : members)
+    //            {
+    //                if (ch->name() != response.member)
+    //                    ch->message(std::format("{}님 그룹에 참여", response.member), MESSAGE_TYPE::STATE);
+    //                else
+    //                    ch->message("그룹에 참여했습니다.", MESSAGE_TYPE::STATE);
+    //            }
+    //        }
+    //        break;
+
+    //        case GroupAction::Kick:
+    //        {
+    //            for (auto ch : members)
+    //            {
+    //                ch->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
+    //            }
+
+    //            if (characters.contains(response.member))
+    //            {
+    //                characters[response.member]->group(nullptr);
+    //                characters[response.member]->message("그룹에서 추방당했습니다.", MESSAGE_TYPE::STATE);
+    //            }
+    //        }
+    //        break;
+    //        }
+    //    });
+    //});
+}
+
+void context::on_leave_group(const internal_resp::LeaveGroup& response)
+{
+    this->assert_group(response.error, response.member);
+
+    auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
+        if (groups.contains(response.group.id))
+            groups.erase(response.group.id);
+
+        groups.insert({response.group.id,
+                       std::make_unique<fb::locker<fb::game::group>>(*this,
+                                                                     response.group.id,
+                                                                     response.group.master,
+                                                                     response.group.members)});
+        return groups[response.group.id].get();
+    });
+
+    group->lock<void>([this, &response, group](auto& g) {
+        this->_characters.lock<void>([this, &response, &g, group](auto& characters) {
+            auto members = std::vector<fb::game::character*>();
+
+            if (characters.contains(response.group.master))
+                members.push_back(characters[response.group.master]);
+
+            for (auto& uid : response.group.members)
+            {
+                if (characters.contains(uid))
+                    members.push_back(characters[uid]);
+            }
+
+            switch (response.action)
+            {
+            case GroupAction::Leave:
+            {
+                for (auto member : members)
+                {
+                    member->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
+                }
+
+                if (characters.contains(response.member))
+                {
+                    characters[response.member]->group(nullptr);
+                    characters[response.member]->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+                }
+            }
+            break;
+
+            case GroupAction::BreakUp:
+            {
+                for (auto member : members)
+                {
+                    member->group(nullptr);
+                    member->message(std::format("그룹 해체", response.member), MESSAGE_TYPE::STATE);
+                }
+
+                this->_groups.lock<void>([this, &response](auto& groups) {
+                    switch (response.action)
+                    {
+                    case GroupAction::BreakUp:
+                        groups.erase(response.group.id);
+                        break;
+                    }
+                });
+            }
+            break;
+            }
+        });
+    });
 }
 
 async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_reqs::group& request)
@@ -1545,71 +1716,12 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
         if (me->option(SETTING::GROUP) == false)
             throw std::runtime_error(message::group::DISABLED_MINE);
 
-        auto&& response = co_await this->post<fb::protocol::internal::request::CreateGroup,
-                                              fb::protocol::internal::response::CreateGroup>(
+        auto&& response = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
             "internal",
             "/in-game/group/create",
-            fb::protocol::internal::request::CreateGroup{me->id(), request.name, fb::config::get()["id"].asUInt()});
+            internal_reqs::EnterGroup{me->id(), request.name});
 
-        this->assert_group(response);
-
-        // if (you->option(SETTING::GROUP) == false)
-        //{
-        //     throw std::runtime_error(message::group::DISABLED_TARGET);
-        // }
-
-        // auto mine = me->group();
-        // auto your = you->group();
-
-        // if (mine == nullptr) // 새로 그룹 만들기
-        //{
-        //     if (your != nullptr)
-        //     {
-        //         sstream << request.name << message::group::ALREADY_JOINED;
-        //         throw std::runtime_error(sstream.str());
-        //     }
-
-        //    mine = group::create(*me);
-        //    mine->enter(*you);
-
-        //    sstream << me->name() << message::group::JOINED;
-        //    this->send(*me, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
-
-        //    sstream.str("");
-        //    sstream << request.name << message::group::JOINED;
-        //    this->send(*me, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
-        //}
-        // else // 기존 그룹에 초대하기
-        //{
-        //    auto& leader = mine->leader();
-        //    if (me != &leader)
-        //    {
-        //        throw std::runtime_error(message::group::NOT_OWNER);
-        //    }
-
-        //    if (mine != your && your != nullptr)
-        //    {
-        //        sstream << request.name << message::group::ALREADY_JOINED;
-        //        throw std::runtime_error(sstream.str());
-        //    }
-
-        //    if (mine == your)
-        //    {
-        //        sstream << request.name << message::group::LEFT;
-        //        this->send(*me, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
-        //        mine->leave(*you);
-        //        co_return true;
-        //    }
-
-        //    if (mine->enter(*you) == nullptr)
-        //    {
-        //        throw std::runtime_error(message::group::FULL_MEMBER);
-        //    }
-
-        //    sstream << request.name << message::group::JOINED;
-        //    this->send(*me, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
-        //    this->send(leader, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::GROUP);
-        //}
+        co_await this->on_enter_group(response);
     }
     catch (std::exception& e)
     {
@@ -1687,7 +1799,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto section = &this->model.board[request.section];
             auto offset  = request.offset;
 
-            auto&& response = co_await this->get<internal::response::GetArticleList>(
+            auto&& response = co_await this->get<internal_resp::GetArticleList>(
                 "internal",
                 std::format("/board/{}&offset={}", section->id, offset));
             if (this->sockets.contains(fd) == false)
@@ -1726,7 +1838,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(message::board::SECTION_NOT_EXIST);
 
             auto   section  = &this->model.board[request.section]; // 코루틴땜시 포인터로
-            auto&& response = co_await this->get<internal::response::GetArticle>(
+            auto&& response = co_await this->get<internal_resp::GetArticle>(
                 "internal",
                 std::format("/board/{}/{}", section->id, request.article));
             if (this->sockets.contains(fd) == false)
@@ -1782,10 +1894,10 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (request.contents.length() > 256)
                 throw std::runtime_error(message::board::TOO_LONG_CONTENTS);
 
-            auto&& response = co_await this->post<internal::request::WriteArticle, internal::response::WriteArticle>(
+            auto&& response = co_await this->post<internal_reqs::WriteArticle, internal_resp::WriteArticle>(
                 "internal",
                 "/board/write",
-                internal::request::WriteArticle{section->id, session->id(), request.title, request.contents});
+                internal_reqs::WriteArticle{section->id, session->id(), request.title, request.contents});
 
             if (this->sockets.contains(fd) == false)
                 co_return false;
@@ -1813,10 +1925,10 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (session->condition(section->condition) == false)
                 throw std::runtime_error(message::board::NOT_AUTH);
 
-            auto&& response = co_await this->post<internal::request::DeleteArticle, internal::response::DeleteArticle>(
+            auto&& response = co_await this->post<internal_reqs::DeleteArticle, internal_resp::DeleteArticle>(
                 "internal",
                 "/board/delete",
-                internal::request::DeleteArticle{request.article, session->id()});
+                internal_reqs::DeleteArticle{request.article, session->id()});
 
             if (this->sockets.contains(fd) == false)
                 co_return false;
@@ -2012,7 +2124,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         auto you = this->find(to);
         if (you != nullptr)
         {
-            auto response    = internal::response::Whisper{};
+            auto response    = internal_resp::Whisper{};
             response.from    = from;
             response.to      = me->id();
             response.message = message;
@@ -2027,10 +2139,10 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         }
         else
         {
-            auto&& response = co_await this->post<internal::request::Whisper, internal::response::Whisper>(
+            auto&& response = co_await this->post<internal_reqs::Whisper, internal_resp::Whisper>(
                 "internal",
                 "/in-game/whisper",
-                internal::request::Whisper{from, to, message});
+                internal_reqs::Whisper{from, to, message});
             if (this->sockets.contains(fd) == false)
                 co_return false;
 

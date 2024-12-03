@@ -54,6 +54,7 @@ private:
 private:
     std::vector<std::unique_ptr<timer>> _timers;
     std::recursive_mutex                _mutex_timer;
+    void*                               _data = nullptr;
 
 private:
     fb::queue<fb::thread::task> _queue;
@@ -76,6 +77,13 @@ public:
     std::thread::id id() const;
     uint8_t         index() const;
     void            exit();
+    void            data(void* value);
+    void*           data() const;
+    template <typename ReturnType>
+    ReturnType* data() const
+    {
+        return static_cast<ReturnType*>(this->_data);
+    }
 
 public:
     async::task<void> dispatch(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
@@ -110,6 +118,7 @@ public:
 public:
     fb::thread*       at(uint8_t index) const;
     fb::thread*       at(std::thread::id id) const;
+    fb::thread*       modular(uint32_t id) const;
     fb::thread*       current();
     const fb::thread* current() const;
     uint8_t           count() const;

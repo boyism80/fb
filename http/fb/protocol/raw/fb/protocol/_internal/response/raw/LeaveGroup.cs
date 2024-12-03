@@ -20,43 +20,39 @@ public struct LeaveGroup : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public LeaveGroup __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public fb.protocol._internal.raw.Group? Group { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.Group?)(new fb.protocol._internal.raw.Group()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public string Member { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public fb.protocol._internal.raw.Group? Group { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.Group?)(new fb.protocol._internal.raw.Group()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public string Member { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMemberBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetMemberBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(8); }
-  public bool BreakUp { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public uint Host { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Error { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(6); }
+  public fb.protocol._internal.raw.GroupAction Action { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.GroupAction)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.GroupAction.Enter; } }
+  public uint Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.LeaveGroup> CreateLeaveGroup(FlatBufferBuilder builder,
-      uint id = 0,
       Offset<fb.protocol._internal.raw.Group> groupOffset = default(Offset<fb.protocol._internal.raw.Group>),
       StringOffset memberOffset = default(StringOffset),
-      bool break_up = false,
+      fb.protocol._internal.raw.GroupAction action = fb.protocol._internal.raw.GroupAction.Enter,
       uint host = 0,
       uint error = 0) {
-    builder.StartTable(6);
+    builder.StartTable(5);
     LeaveGroup.AddError(builder, error);
     LeaveGroup.AddHost(builder, host);
     LeaveGroup.AddMember(builder, memberOffset);
     LeaveGroup.AddGroup(builder, groupOffset);
-    LeaveGroup.AddId(builder, id);
-    LeaveGroup.AddBreakUp(builder, break_up);
+    LeaveGroup.AddAction(builder, action);
     return LeaveGroup.EndLeaveGroup(builder);
   }
 
-  public static void StartLeaveGroup(FlatBufferBuilder builder) { builder.StartTable(6); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
-  public static void AddGroup(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Group> groupOffset) { builder.AddOffset(1, groupOffset.Value, 0); }
-  public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(2, memberOffset.Value, 0); }
-  public static void AddBreakUp(FlatBufferBuilder builder, bool breakUp) { builder.AddBool(3, breakUp, false); }
-  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(4, host, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(5, error, 0); }
+  public static void StartLeaveGroup(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddGroup(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Group> groupOffset) { builder.AddOffset(0, groupOffset.Value, 0); }
+  public static void AddMember(FlatBufferBuilder builder, StringOffset memberOffset) { builder.AddOffset(1, memberOffset.Value, 0); }
+  public static void AddAction(FlatBufferBuilder builder, fb.protocol._internal.raw.GroupAction action) { builder.AddSbyte(2, (sbyte)action, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(3, host, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.LeaveGroup> EndLeaveGroup(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.LeaveGroup>(o);
@@ -71,12 +67,11 @@ static public class LeaveGroupVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTable(tablePos, 6 /*Group*/, fb.protocol._internal.raw.GroupVerify.Verify, false)
-      && verifier.VerifyString(tablePos, 8 /*Member*/, false)
-      && verifier.VerifyField(tablePos, 10 /*BreakUp*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 12 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 4 /*Group*/, fb.protocol._internal.raw.GroupVerify.Verify, false)
+      && verifier.VerifyString(tablePos, 6 /*Member*/, false)
+      && verifier.VerifyField(tablePos, 8 /*Action*/, 1 /*fb.protocol._internal.raw.GroupAction*/, 1, false)
+      && verifier.VerifyField(tablePos, 10 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

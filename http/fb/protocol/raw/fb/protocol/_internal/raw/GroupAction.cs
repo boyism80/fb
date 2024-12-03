@@ -10,6 +10,7 @@ public enum GroupAction : sbyte
   Enter = 0,
   Leave = 1,
   Kick = 2,
+  BreakUp = 3,
 };
 
 

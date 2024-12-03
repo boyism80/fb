@@ -82,7 +82,7 @@ namespace Internal.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<Response.CreateGroup> Create(Request.CreateGroup request)
+        public async Task<Response.EnterGroup> Create(Request.EnterGroup request)
         {
             try
             {
@@ -160,7 +160,7 @@ namespace Internal.Controllers
                     memberNames.Add(ch.Name);
                 }
 
-                var response = new Response.CreateGroup
+                var response = new Response.EnterGroup
                 {
                     Group = new Protocol.Group
                     {
@@ -180,7 +180,7 @@ namespace Internal.Controllers
             }
             catch (LogicException e)
             {
-                return new Response.CreateGroup
+                return new Response.EnterGroup
                 {
                     Member = request.Member,
                     Error = (uint)e.Error
@@ -188,7 +188,7 @@ namespace Internal.Controllers
             }
             catch (Exception e)
             {
-                return new Response.CreateGroup
+                return new Response.EnterGroup
                 {
                     Member = request.Member,
                     Error = uint.MaxValue
@@ -204,13 +204,13 @@ namespace Internal.Controllers
                 var session = await _sessionService.Get(request.Member) ??
                     throw new LogicException(ErrorCode.Offline);
 
-                var member = await _dbContext.Character.Get(session.Uid) ??
+                var character = await _dbContext.Character.Get(session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                if (_model.Map.TryGetValue(member.Map, out var map) == false)
+                if (_model.Map.TryGetValue(character.Map, out var map) == false)
                     throw new LogicException(ErrorCode.NotFoundMap);
 
-                var groupId = member.Group ??
+                var groupId = character.Group ??
                     throw new LogicException(ErrorCode.GroupNotJoined);
 
                 var group = await _dbContext.Group.Get(groupId) ??
@@ -219,111 +219,76 @@ namespace Internal.Controllers
                 if (group.Deleted)
                     throw new LogicException(ErrorCode.GroupNotFound);
 
-                Response.LeaveGroup response;
+                if (character.Id == group.Master)
+                {
+                    // 그룹장이 길드 해체
+                    var meemberNames = new List<string>();
+                    foreach (var uid in group.Members)
+                    {
+                        var member = await _dbContext.Character.Get(uid) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                // 그룹이 해체되는 경우
-                if (group.Members.Count == 0)
+                        member.Group = null;
+                        _dbContext.Character.Set(member);
+                        meemberNames.Add(member.Name);
+                    }
+                    character.Group = null;
+                    _dbContext.Character.Set(character);
+
+                    group.Deleted = true;
+                    _dbContext.Group.Set(group);
+
+                    await _dbContext.SaveChangesAsync();
+
+                    var response = new Response.LeaveGroup
+                    {
+                        Group = new Group
+                        {
+                            Id = group.Master,
+                            Master = character.Name,
+                            Members = meemberNames,
+                        },
+                        Action = GroupAction.BreakUp,
+                        Member = request.Member,
+                        Host = map.Host
+                    };
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
+                    return response;
+                }
+                else
                 {
                     var master = await _dbContext.Character.Get(group.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                    group.Members.Remove(character.Id);
+                    _dbContext.Group.Set(group);
+
+                    character.Group = null;
+                    _dbContext.Character.Set(character);
 
                     var members = new List<Http.Model.Character>();
                     foreach (var uid in group.Members)
                     {
-                        var ch = await _dbContext.Character.Get(uid);
-                        ch.Group = null;
-                        _dbContext.Character.Set(ch);
-
-                        members.Add(ch);
+                        members.Add(await _dbContext.Character.Get(uid));
                     }
 
-                    group.Deleted = true;
-                    _dbContext.Group.Set(group);
+                    await _dbContext.SaveChangesAsync();
 
-                    response = new Response.LeaveGroup
+                    var response = new Response.LeaveGroup
                     {
-                        Id = groupId,
-                        BreakUp = true,
-                        Group = new Protocol.Group
-                        {
-                            Id = master.Id,
-                            Master = master.Name,
-                            Members = members.ConvertAll(x => x.Name)
-                        },
-                        Host = map.Host,
-                        Member = request.Member
-                    };
-                }
-                // 그룹장이 탈퇴하면서 새 그룹이 구성되어야하는 경우
-                else if (group.Master == member.Id)
-                {
-                    group.Deleted = true;
-                    _dbContext.Group.Set(group);
-
-                    var replaced = new Http.Model.Group
-                    {
-                        Master = group.Members.ElementAt(0),
-                        Members = group.Members.Skip(1).ToList(),
-                        Deleted = false
-                    };
-                    _dbContext.Group.Set(replaced);
-
-                    member.Group = null;
-                    _dbContext.Character.Set(member);
-
-                    var master = await _dbContext.Character.Get(group.Master) ??
-                        throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                    var members = new List<Http.Model.Character>();
-                    foreach (var x in group.Members)
-                    {
-                        members.Add(await _dbContext.Character.Get(x) ?? throw new LogicException(ErrorCode.NotFoundCharacter));
-                    }
-
-                    foreach (var x in members.Concat([master]))
-                    {
-                        x.Group = group.Master;
-                        _dbContext.Character.Set(x);
-                    }
-
-                    response = new Response.LeaveGroup
-                    {
-                        Id = groupId,
-                        Host = map.Host,
+                        Action = GroupAction.Leave,
                         Member = request.Member,
-                        BreakUp = false,
-                        Group = new Protocol.Group
+                        Group = new Group
                         {
                             Id = group.Master,
                             Master = master.Name,
                             Members = members.ConvertAll(x => x.Name)
-                        }
-                    };
-                }
-                else
-                {
-                    group.Members.Remove(member.Id);
-                    _dbContext.Group.Set(group);
-
-                    member.Group = null;
-                    _dbContext.Character.Set(member);
-
-                    response = new Response.LeaveGroup
-                    {
-                        Id = group.Master,
-                        Member = request.Member,
-                        BreakUp = false,
-                        Group = new Protocol.Group
-                        {
-                            Id = group.Master,
                         },
-                        Host = map.Host,
+                        Host = map.Host
                     };
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
+                    return response;
                 }
-
-                await _dbContext.SaveChangesAsync();
-                _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
-                return response;
             }
             catch (LogicException e)
             {

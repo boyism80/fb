@@ -22,31 +22,34 @@ enum GroupAction : int8_t {
   GroupAction_Enter = 0,
   GroupAction_Leave = 1,
   GroupAction_Kick = 2,
+  GroupAction_BreakUp = 3,
   GroupAction_MIN = GroupAction_Enter,
-  GroupAction_MAX = GroupAction_Kick
+  GroupAction_MAX = GroupAction_BreakUp
 };
 
-inline const GroupAction (&EnumValuesGroupAction())[3] {
+inline const GroupAction (&EnumValuesGroupAction())[4] {
   static const GroupAction values[] = {
     GroupAction_Enter,
     GroupAction_Leave,
-    GroupAction_Kick
+    GroupAction_Kick,
+    GroupAction_BreakUp
   };
   return values;
 }
 
 inline const char * const *EnumNamesGroupAction() {
-  static const char * const names[4] = {
+  static const char * const names[5] = {
     "Enter",
     "Leave",
     "Kick",
+    "BreakUp",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameGroupAction(GroupAction e) {
-  if (::flatbuffers::IsOutRange(e, GroupAction_Enter, GroupAction_Kick)) return "";
+  if (::flatbuffers::IsOutRange(e, GroupAction_Enter, GroupAction_BreakUp)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesGroupAction()[index];
 }

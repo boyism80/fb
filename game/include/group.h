@@ -14,6 +14,8 @@ private:
     std::vector<character*>  _active_members;
 
 public:
+    group(uint32_t id)
+    {}
     group(uint32_t id, const std::string& master, const std::vector<std::string>& members) :
         _id(id),
         _master(master),
@@ -32,6 +34,21 @@ public:
     uint32_t id() const
     {
         return this->_id;
+    }
+
+    void master(const std::string& name)
+    {
+        this->_master = name;
+    }
+
+    bool inited() const
+    {
+        return !this->_master.empty();
+    }
+
+    const std::string& master() const
+    {
+        return this->_master;
     }
 
     void enter(const std::string& name)
@@ -73,11 +90,6 @@ public:
     std::vector<fb::game::character*> active_members() const
     {
         return this->_active_members;
-    }
-
-    std::string master() const
-    {
-        return this->_master;
     }
 
     std::vector<std::string> members() const

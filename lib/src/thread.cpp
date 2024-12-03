@@ -9,6 +9,9 @@ fb::thread::thread(uint8_t index) :
 fb::thread::~thread()
 {
     this->exit();
+
+    if (this->_data != nullptr)
+        delete this->_data;
 }
 
 void fb::thread::handle_thread(uint8_t index)
@@ -73,6 +76,16 @@ void fb::thread::exit()
     this->_mutex_timer.lock();
     this->_timers.clear();
     this->_mutex_timer.unlock();
+}
+
+void fb::thread::data(void* value)
+{
+    this->_data = value;
+}
+
+void* fb::thread::data() const
+{
+    return _data;
 }
 
 async::task<void> fb::thread::dispatch(const fb::thread::async_func_type& fn,
@@ -222,6 +235,15 @@ fb::thread* fb::threads::at(std::thread::id id) const
         return nullptr;
     else
         return found->second.get();
+}
+
+fb::thread* fb::threads::modular(uint32_t id) const
+{
+    if (this->_threads.size() == 0)
+        return nullptr;
+
+    auto index = id % this->size();
+    return this->at(index);
 }
 
 fb::thread* fb::threads::current()

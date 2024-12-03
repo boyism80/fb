@@ -14,6 +14,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.group_generated.h"
+#include "fb.protocol.internal.groupaction_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -27,24 +28,20 @@ struct LeaveGroupBuilder;
 struct LeaveGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LeaveGroupBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ID = 4,
-    VT_GROUP = 6,
-    VT_MEMBER = 8,
-    VT_BREAK_UP = 10,
-    VT_HOST = 12,
-    VT_ERROR = 14
+    VT_GROUP = 4,
+    VT_MEMBER = 6,
+    VT_ACTION = 8,
+    VT_HOST = 10,
+    VT_ERROR = 12
   };
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
-  }
   const fb::protocol::internal::raw::Group *group() const {
     return GetPointer<const fb::protocol::internal::raw::Group *>(VT_GROUP);
   }
   const ::flatbuffers::String *member() const {
     return GetPointer<const ::flatbuffers::String *>(VT_MEMBER);
   }
-  bool break_up() const {
-    return GetField<uint8_t>(VT_BREAK_UP, 0) != 0;
+  fb::protocol::internal::raw::GroupAction action() const {
+    return static_cast<fb::protocol::internal::raw::GroupAction>(GetField<int8_t>(VT_ACTION, 0));
   }
   uint32_t host() const {
     return GetField<uint32_t>(VT_HOST, 0);
@@ -54,12 +51,11 @@ struct LeaveGroup FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
            VerifyOffset(verifier, VT_GROUP) &&
            verifier.VerifyTable(group()) &&
            VerifyOffset(verifier, VT_MEMBER) &&
            verifier.VerifyString(member()) &&
-           VerifyField<uint8_t>(verifier, VT_BREAK_UP, 1) &&
+           VerifyField<int8_t>(verifier, VT_ACTION, 1) &&
            VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
@@ -70,17 +66,14 @@ struct LeaveGroupBuilder {
   typedef LeaveGroup Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(LeaveGroup::VT_ID, id, 0);
-  }
   void add_group(::flatbuffers::Offset<fb::protocol::internal::raw::Group> group) {
     fbb_.AddOffset(LeaveGroup::VT_GROUP, group);
   }
   void add_member(::flatbuffers::Offset<::flatbuffers::String> member) {
     fbb_.AddOffset(LeaveGroup::VT_MEMBER, member);
   }
-  void add_break_up(bool break_up) {
-    fbb_.AddElement<uint8_t>(LeaveGroup::VT_BREAK_UP, static_cast<uint8_t>(break_up), 0);
+  void add_action(fb::protocol::internal::raw::GroupAction action) {
+    fbb_.AddElement<int8_t>(LeaveGroup::VT_ACTION, static_cast<int8_t>(action), 0);
   }
   void add_host(uint32_t host) {
     fbb_.AddElement<uint32_t>(LeaveGroup::VT_HOST, host, 0);
@@ -101,10 +94,9 @@ struct LeaveGroupBuilder {
 
 inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     ::flatbuffers::Offset<::flatbuffers::String> member = 0,
-    bool break_up = false,
+    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Enter,
     uint32_t host = 0,
     uint32_t error = 0) {
   LeaveGroupBuilder builder_(_fbb);
@@ -112,26 +104,23 @@ inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroup(
   builder_.add_host(host);
   builder_.add_member(member);
   builder_.add_group(group);
-  builder_.add_id(id);
-  builder_.add_break_up(break_up);
+  builder_.add_action(action);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<LeaveGroup> CreateLeaveGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     const char *member = nullptr,
-    bool break_up = false,
+    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Enter,
     uint32_t host = 0,
     uint32_t error = 0) {
   auto member__ = member ? _fbb.CreateString(member) : 0;
   return fb::protocol::internal::response::raw::CreateLeaveGroup(
       _fbb,
-      id,
       group,
       member__,
-      break_up,
+      action,
       host,
       error);
 }

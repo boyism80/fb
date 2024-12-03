@@ -1033,12 +1033,12 @@ void character::title(const std::string& value)
     this->_title = value;
 }
 
-fb::locker<fb::game::group>* character::group() const
+fb::game::group* character::group() const
 {
     return this->_group;
 }
 
-void character::group(fb::locker<fb::game::group>* value)
+void character::group(fb::game::group* value)
 {
     this->_group = value;
 }
@@ -1544,9 +1544,9 @@ fb::protocol::internal::Character character::to_protocol() const
 
     if (this->_group != nullptr)
     {
-        dto.group = this->_group->lock<std::optional<uint32_t>>([](fb::game::group& g) {
-            return g.id();
-        });
+        // dto.group = this->_group->lock<std::optional<uint32_t>>([](fb::game::group& g) {
+        //     return g.id();
+        // });
     }
     dto.clan = std::nullopt;
     return dto;

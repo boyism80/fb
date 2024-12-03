@@ -118,6 +118,7 @@
     <ClInclude Include="include\regex.h" />
     <ClInclude Include="include\sector.h" />
     <ClInclude Include="include\spell.h" />
+    <ClInclude Include="include\thread_params.h" />
     <ClInclude Include="include\trade.h" />
     <ClInclude Include="include\worker.h" />
     <ClInclude Include="resource.h" />

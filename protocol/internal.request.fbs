@@ -131,19 +131,11 @@ table SetOption {
   enabled: bool;
 }
 
-table CreateGroup {
+table EnterGroup {
   master: uint;
   member: string;
-  host: uint;
-}
-
-table EnterGroup {
-  id: string;
-  member: uint;
-  host: uint;
 }
 
 table LeaveGroup {
   member: string;
-  host: uint;
 }

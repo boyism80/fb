@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <functional>
+#include <shared_mutex>
 #include <async/task.h>
 #include <fb/abstract.h>
 #include <fb/logger.h>
@@ -13,10 +14,9 @@ template <typename ValueType>
 class locker
 {
 private:
-    std::recursive_mutex _mutex;
-    ValueType            _value;
-    fb::icontext&        _context;
-    bool                 _locked = false;
+    std::shared_mutex _mutex;
+    ValueType         _value;
+    fb::icontext&     _context;
 
 public:
     template <typename... Args>
@@ -32,37 +32,31 @@ public:
     template <typename ReturnType>
     ReturnType lock(const std::function<ReturnType(ValueType&)>& fn)
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto _ = std::unique_lock(this->_mutex);
 
-        this->_locked = true;
         if constexpr (std::is_same_v<ReturnType, void>)
         {
             fn(this->_value);
-            this->_locked = false;
         }
         else
         {
-            auto result   = fn(this->_value);
-            this->_locked = false;
-            return result;
+            return fn(this->_value);
         }
+    }
+
+    template <typename ReturnType>
+    ReturnType read(const std::function<ReturnType(const ValueType&)>& fn)
+    {
+        auto _ = std::shared_lock(this->_mutex);
+
+        return fn(this->_value);
     }
 
     template <typename ReturnType>
     async::task<ReturnType> lock(const std::function<async::task<ReturnType>(ValueType&)>& fn)
     {
-        auto _ = std::lock_guard(this->_mutex);
+        auto _ = std::unique_lock(this->_mutex);
 
-        auto thread = this->_context.current_thread();
-        if (thread == nullptr)
-            throw std::runtime_error("cannot find current thread in locker");
-
-        while (this->_locked)
-        {
-            co_await thread->sleep(100ms);
-        }
-
-        this->_locked = true;
         if constexpr (std::is_same_v<ReturnType, void>)
         {
             try
@@ -74,22 +68,34 @@ public:
                 fb::logger::fatal(e.what());
                 throw e;
             }
-            this->_locked = false;
         }
         else
         {
             try
             {
-                auto result   = co_await fn(this->_value);
-                this->_locked = false;
-                co_return result;
+                co_return co_await fn(this->_value);
             }
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
-                this->_locked = false;
                 throw e;
             }
+        }
+    }
+
+    template <typename ReturnType>
+    async::task<ReturnType> read(const std::function<async::task<ReturnType>(const ValueType&)>& fn)
+    {
+        auto _ = std::shared_lock(this->_mutex);
+
+        try
+        {
+            co_return co_await fn(this->_value);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+            throw e;
         }
     }
 };

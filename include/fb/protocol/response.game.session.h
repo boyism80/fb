@@ -443,22 +443,23 @@ public:
         writer.write(clan != nullptr ? clan->title() : "");
         writer.write(this->session.title());
 
-        auto group = this->session.group();
-        if (group != nullptr)
-        {
-            group->lock<void>([&writer](fb::game::group& g) {
-                auto sstream = std::stringstream();
-                sstream << "그룹원" << std::endl << "  * " << g.master() << std::endl;
+        // TODO: serialize coroutine
+        // auto group = this->session.group();
+        // if (group != nullptr)
+        //{
+        //     group->lock<void>([&writer](fb::game::group& g) {
+        //         auto sstream = std::stringstream();
+        //         sstream << "그룹원" << std::endl << "  * " << g.master() << std::endl;
 
-                for (auto& member : g.members())
-                    sstream << "    " << member << std::endl;
-                writer.write<std::string>(sstream.str());
-            });
-        }
-        else
-        {
-            writer.write<std::string>("그룹 없음.");
-        }
+        //        for (auto& member : g.members())
+        //            sstream << "    " << member << std::endl;
+        //        writer.write<std::string>(sstream.str());
+        //    });
+        //}
+        // else
+        //{
+        writer.write<std::string>("그룹 없음.");
+        //}
         writer.write<uint8_t>(this->session.option(SETTING::GROUP));
 
         uint32_t remained_exp = this->session.experience_remained();
