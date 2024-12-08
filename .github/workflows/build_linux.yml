@@ -154,6 +154,7 @@ jobs:
         with:
           node-version: lts/*
           cache: npm
+          cache-dependency-path: infra/pulumi
 
       - name: Installing dependencies
         run: npm install
