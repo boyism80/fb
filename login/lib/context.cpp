@@ -5,8 +5,7 @@
 fb::login::context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<fb::login::session>(context, port)
 {
-    const auto& config = fb::config::get();
-    for (auto& x : config["forbidden"])
+    for (auto& x : fb::config<>("forbidden"))
         this->_forbiddens.push_back(x.asString());
 
     // Register event handler
@@ -18,7 +17,6 @@ fb::login::context::context(boost::asio::io_context& context, uint16_t port) :
 
     this->bind_timer(
         [this]() -> async::task<void> {
-            auto&  config = fb::config::get();
             auto&& response =
                 co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
                     "internal",
@@ -26,8 +24,8 @@ fb::login::context::context(boost::asio::io_context& context, uint16_t port) :
                     fb::protocol::internal::request::Ping{this->id(),
                                                           this->name(),
                                                           this->service(),
-                                                          config["ip"].asString(),
-                                                          (uint16_t)config["port"].asUInt()});
+                                                          fb::config<std::string>("ip"),
+                                                          fb::config<uint16_t>("port")});
         },
         1s);
 }
@@ -56,14 +54,14 @@ bool fb::login::context::is_forbidden(const std::string& str) const
 
 void fb::login::context::assert_account(const std::string& id, const std::string& pw) const
 {
-    const auto& config    = fb::config::get();
-    auto        cp949     = CP949(id);
-    auto        name_size = cp949.length();
-    if (name_size < config["name_size"]["min"].asInt() || name_size > config["name_size"]["max"].asInt())
+    auto cp949     = CP949(id);
+    auto name_size = cp949.length();
+
+    if (name_size < fb::config<int>("name_size:min") || name_size > fb::config<int>("name_size:max"))
         throw id_exception(fb::login::message::account::INVALID_NAME);
 
     // Name must be full-hangul characters
-    if (config["allow other language"].asBool() == false && assert_korean(cp949) == false)
+    if (fb::config<bool>("allow other language") == false && assert_korean(cp949) == false)
         throw id_exception(fb::login::message::account::INVALID_NAME);
 
     // Name cannot contains subcharacters in forbidden list
@@ -71,7 +69,7 @@ void fb::login::context::assert_account(const std::string& id, const std::string
         throw id_exception(fb::login::message::account::INVALID_NAME);
 
     // Read character's password
-    if (pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
+    if (pw.length() < fb::config<int>("pw_size:min") || pw.length() > fb::config<int>("pw_size:max"))
         throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 }
 
@@ -139,8 +137,7 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
         if (response1.uid == -1)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        auto  uid    = response1.uid;
-        auto& config = fb::config::get();
+        auto uid = response1.uid;
         std::srand(std::time(nullptr));
 
         auto&& response2 = co_await this->post<internal::request::InitCharacter, internal::response::InitCharacter>(
@@ -150,12 +147,12 @@ async::task<bool> fb::login::context::handle_create_account(fb::socket<fb::login
                 uid,
                 name,
                 pw,
-                config["init"]["hp"]["base"].asUInt() + std::rand() % config["init"]["hp"]["range"].asUInt(), // hp
-                config["init"]["mp"]["base"].asUInt() + std::rand() % config["init"]["mp"]["range"].asUInt(), // mp
-                (uint16_t)config["init"]["map"].asUInt(),                                                     // map
-                (uint16_t)config["init"]["position"]["x"].asUInt(), // position_x
-                (uint16_t)config["init"]["position"]["y"].asUInt(), // position_y
-                config["admin mode"].asBool(),                      // admin
+                fb::config<uint32_t>("init:hp:base") + std::rand() % fb::config<uint32_t>("init:hp:range"), // hp
+                fb::config<uint32_t>("init:mp:base") + std::rand() % fb::config<uint32_t>("init:mp:range"), // mp
+                fb::config<uint16_t>("init:map"),                                                           // map
+                fb::config<uint16_t>("init:position:x"), // position_x
+                fb::config<uint16_t>("init:position:y"), // position_y
+                fb::config<bool>("admin mode"),          // admin
             });
 
         // 여기서 새로운 promise handler
@@ -236,7 +233,7 @@ async::task<bool> fb::login::context::handle_account_complete(fb::socket<fb::log
 async::task<bool> fb::login::context::handle_login(fb::socket<fb::login::session>& socket,
                                                    const request::login&           request)
 {
-    auto delay      = fb::config::get()["transfer delay"].asInt();
+    auto delay      = fb::config<uint32_t>("transfer delay");
     auto name       = std::string(request.id);
     auto pw         = std::string(request.pw);
     auto error      = std::string();
@@ -342,26 +339,24 @@ async::task<bool> fb::login::context::handle_change_password(fb::socket<fb::logi
         auto new_pw   = std::string(request.new_pw);
         auto birthday = request.birthday;
 
-        auto delay = fb::config::get()["transfer delay"].asInt();
+        auto delay = fb::config<uint32_t>("transfer delay");
         co_await this->sleep(std::chrono::seconds(delay));
 
-        const auto& config = fb::config::get();
-        if (name.length() < config["name_size"]["min"].asInt() || name.length() > config["name_size"]["max"].asInt())
+        if (name.length() < fb::config("name_size:min").asInt() || name.length() > fb::config("name_size:max").asInt())
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         // Name must be full-hangul characters
-        if (fb::config::get()["login"]["account option"]["allow other language"].asBool() == false &&
-            assert_korean(name) == false)
+        if (fb::config<bool>("login:account option:allow other language") == false && assert_korean(name) == false)
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
         // Name cannot contains subcharacters in forbidden list
         if (this->is_forbidden(name))
             throw id_exception(fb::login::message::account::INVALID_NAME);
 
-        if (pw.length() < config["pw_size"]["min"].asInt() || pw.length() > config["pw_size"]["max"].asInt())
+        if (pw.length() < fb::config("pw_size:min").asInt() || pw.length() > fb::config("pw_size:max").asInt())
             throw pw_exception(fb::login::message::account::PASSWORD_SIZE);
 
-        if (new_pw.length() < config["pw_size"]["min"].asInt() || new_pw.length() > config["pw_size"]["max"].asInt())
+        if (new_pw.length() < fb::config("pw_size:min").asInt() || new_pw.length() > fb::config("pw_size:max").asInt())
             throw newpw_exception(fb::login::message::account::PASSWORD_SIZE);
 
         // TODO : 너무 쉬운 비밀번호인지 체크

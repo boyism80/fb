@@ -41,11 +41,8 @@ int main(int argc, const char** argv)
         console::position(0, height + 1);
 
         // Execute acceptor
-        auto& config = fb::config::get();
-
-        // Execute acceptor
         auto io_context = boost::asio::io_context{};
-        auto context    = std::make_unique<fb::login::context>(io_context, config["port"].asInt());
+        auto context    = std::make_unique<fb::login::context>(io_context, fb::config<uint16_t>("port"));
         fb::model::loader(context->model).run();
         context->run();
     }

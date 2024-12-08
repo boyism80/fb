@@ -165,21 +165,20 @@ END_LUA_EXTENSION
 
 context::context(boost::asio::io_context& context, uint16_t port) : // clang-format on
     fb::acceptor<character>(context, port),
-    maps(*this, fb::config::get()["id"].asUInt()),
+    maps(*this, fb::config<uint32_t>("id")),
     _characters(*this),
     _groups(*this)
 {
     this->bind_timer(
         [this]() -> async::task<void> {
-            auto&  config   = fb::config::get();
             auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
                 "internal",
                 "/in-game/ping",
                 internal_reqs::Ping{this->id(),
                                     this->name(),
                                     this->service(),
-                                    config["ip"].asString(),
-                                    (uint16_t)config["port"].asUInt()});
+                                    fb::config<std::string>("ip"),
+                                    fb::config<uint16_t>("port")});
         },
         1s);
 }
@@ -197,8 +196,6 @@ context::~context()
 async::task<void> context::handle_start()
 {
     co_await fb::acceptor<character>::handle_start();
-
-    const auto& config = fb::config::get();
 
     lua::env<context>("context", this);
     lua::build<lua::luable>();
@@ -289,11 +286,11 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
 
-    this->timer(&context::handle_mob_action, 100ms);                                        // 몹 행동 타이머
-    this->timer(&context::handle_mob_respawn, 60s);                                         // 몹 리젠 타이머
-    this->timer(&context::handle_buff_timer, 1s);                                           // 버프 타이머
-    this->timer(&context::handle_save_timer, std::chrono::seconds(config["save"].asInt())); // DB 저장 타이머
-    this->timer(&context::handle_time, 1min);                                               // 세계 시간 타이머
+    this->timer(&context::handle_mob_action, 100ms);                                              // 몹 행동 타이머
+    this->timer(&context::handle_mob_respawn, 60s);                                               // 몹 리젠 타이머
+    this->timer(&context::handle_buff_timer, 1s);                                                 // 버프 타이머
+    this->timer(&context::handle_save_timer, std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
+    this->timer(&context::handle_time, 1min);                                                     // 세계 시간 타이머
 
     this->command("맵이동", &context::handle_command_map, true);
     this->command("사운드", &context::handle_command_sound, true);
@@ -346,8 +343,7 @@ async::task<bool> context::handle_connected(fb::socket<character>& socket)
 
 async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 {
-    auto& config  = fb::config::get();
-    auto  session = socket.data();
+    auto session = socket.data();
     if (session == nullptr)
         co_return false;
 
@@ -796,21 +792,20 @@ fb::thread* context::thread(const map& map)
 
 void context::amqp_thread()
 {
-    auto& config  = fb::config::get();
-    auto  timeout = timeval{5, 0};
+    auto timeout = timeval{5, 0};
     while (this->running())
     {
         try
         {
             this->_amqp = std::make_unique<fb::amqp::socket>();
-            this->_amqp->connect(config["amqp"]["ip"].asString(),
-                                 config["amqp"]["port"].asUInt(),
-                                 config["amqp"]["uid"].asString(),
-                                 config["amqp"]["pwd"].asString(),
+            this->_amqp->connect(fb::config<std::string>("amqp:ip"),
+                                 fb::config<uint16_t>("amqp:port"),
+                                 fb::config<std::string>("amqp:uid"),
+                                 fb::config<std::string>("amqp:pwd"),
                                  "/");
 
             auto& queue1 = this->_amqp->declare_queue();
-            queue1.bind("amq.direct", std::format("fb.game.{}", config["id"].asInt()));
+            queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
             queue1.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
                 co_return;
             });
@@ -827,8 +822,7 @@ void context::amqp_thread()
             });
 
             queue1.handler<internal_resp::Whisper>([this](auto& response) -> async::task<void> {
-                auto& config = fb::config::get();
-                if (response.host == config["id"].asUInt())
+                if (response.host == fb::config<uint16_t>("id"))
                     co_return;
 
                 auto error = std::string();
@@ -863,14 +857,14 @@ void context::amqp_thread()
             auto& queue3 = this->_amqp->declare_queue();
             queue3.bind("amq.direct", "fb.group");
             queue3.handler<internal_resp::EnterGroup>([this](internal_resp::EnterGroup& response) -> async::task<void> {
-                if (response.host == fb::config::get()["id"].asUInt())
+                if (response.host == fb::config<uint32_t>("id"))
                     co_return;
 
                 co_await this->on_enter_group(response);
             });
 
             queue3.handler<internal_resp::LeaveGroup>([this](internal_resp::LeaveGroup& response) -> async::task<void> {
-                if (response.host == fb::config::get()["id"].asUInt())
+                if (response.host == fb::config<uint32_t>("id"))
                     co_return;
 
                 co_await this->on_leave_group(response);
@@ -939,12 +933,11 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     try
     {
-        auto  id       = request.id;
-        auto  name     = std::string(request.name);
-        auto  from     = request.from;
-        auto  transfer = request.transfer;
-        auto& config   = fb::config::get();
-        auto  delay    = config["delay"].asInt();
+        auto id       = request.id;
+        auto name     = std::string(request.name);
+        auto from     = request.from;
+        auto transfer = request.transfer;
+        auto delay    = fb::config<uint32_t>("delay");
         co_await this->sleep(std::chrono::seconds(delay));
         if (this->sockets.contains(fd) == false)
             co_return false;
@@ -952,7 +945,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
             "internal",
             "/in-game/login",
-            internal_reqs::Login{id, name, (uint8_t)config["id"].asUInt()});
+            internal_reqs::Login{id, name, fb::config<uint8_t>("id")});
         if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
             co_return false;
 
@@ -1015,10 +1008,9 @@ async::task<bool> context::handle_logout(fb::socket<character>& socket, const fb
     if (session->inited() == false)
         co_return true;
 
-    const auto& config = fb::config::get();
     co_await this->transfer(socket,
-                            config["login"]["ip"].asString(),
-                            config["login"]["port"].asInt(),
+                            fb::config<std::string>("login:ip"),
+                            fb::config<uint16_t>("login:port"),
                             internal::services::GAME);
     co_return true;
 }
@@ -2165,7 +2157,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
             response.from    = from;
             response.to      = me->id();
             response.message = message;
-            response.host    = fb::config::get()["id"].asUInt();
+            response.host    = fb::config<uint32_t>("id");
             if (you->option(SETTING::WHISPER))
                 response.error = static_cast<uint32_t>(ERROR_CODE::NONE);
             else

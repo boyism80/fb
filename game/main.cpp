@@ -12,8 +12,6 @@ using namespace fb::model::enum_value;
 
 int main(int argc, const char** argv)
 {
-    auto& config = fb::config::get();
-
     auto height = 9;
     console::box(console::width() - 1, height);
 
@@ -43,9 +41,8 @@ int main(int argc, const char** argv)
         flatbuffers::option::decoding(cp949);
 #endif
 
-        auto  io_context = boost::asio::io_context{};
-        auto& config     = fb::config::get();
-        auto  context    = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
+        auto io_context = boost::asio::io_context{};
+        auto context    = std::make_unique<fb::game::context>(io_context, fb::config<uint16_t>("port"));
         context->model.mob_spawn.hook.built =
             [&context](const fb::model::array_container<fb::model::mob_spawn>& model) {
                 for (auto& spawn : model)

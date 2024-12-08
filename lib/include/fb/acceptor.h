@@ -65,9 +65,7 @@ protected:
      */
     acceptor(boost::asio::io_context& context, uint16_t port) :
         fb::context(context, port),
-        _redis(*this,
-               fb::config::get()["redis"]["default"]["ip"].asString(),
-               fb::config::get()["redis"]["default"]["port"].asUInt()),
+        _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
     {
         this->accept();
@@ -151,8 +149,8 @@ public:
     template <typename Response>
     [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
     {
-        auto& config = fb::config::get();
-        auto  host   = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
+        auto& config = fb::config<>(route);
+        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         co_return co_await this->get_internal<Response>(host, path);
     }
 
@@ -246,8 +244,8 @@ public:
     template <typename Request, typename Response>
     [[nodiscard]] async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
     {
-        auto& config = fb::config::get();
-        auto  host   = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
+        auto& config = fb::config<>(route);
+        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         co_return co_await this->post_internal<Request, Response>(host, path, body);
     }
 
@@ -602,7 +600,7 @@ protected:
      */
     virtual uint8_t id() const
     {
-        return (uint8_t)fb::config::get()["id"].asUInt();
+        return fb::config<uint8_t>("id");
     }
 
 protected:
@@ -613,7 +611,7 @@ protected:
      */
     virtual std::string name() const
     {
-        return fb::config::get()["name"].asString();
+        return fb::config<std::string>("name");
     }
 
 protected:
@@ -813,18 +811,17 @@ public:
      */
     void run()
     {
-        auto& config  = fb::config::get();
-        auto  threads = std::vector<std::thread>();
+        auto threads = std::vector<std::thread>();
 
         this->_running = true;
-        for (int i = 0; i < config["thread"]["io"].asUInt(); i++)
+        for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
         {
             threads.push_back(std::thread([this]() {
                 this->_boost_context.run();
             }));
         }
 
-        for (int i = 0; i < config["thread"]["background"].asUInt(); i++)
+        for (int i = 0; i < fb::config<uint32_t>("thread:background"); i++)
         {
             threads.push_back(std::thread([this]() {
                 this->handle_background();

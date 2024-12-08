@@ -94,7 +94,14 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\*.cpp" />
+    <ClCompile Include="src\amqp.queue.cpp" />
+    <ClCompile Include="src\amqp.socket.cpp" />
+    <ClCompile Include="src\cryptor.cpp" />
+    <ClCompile Include="src\dead_lock.cpp" />
+    <ClCompile Include="src\encoding.cpp" />
+    <ClCompile Include="src\logger.cpp" />
+    <ClCompile Include="src\table.cpp" />
+    <ClCompile Include="src\thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\fb\abstract.h" />

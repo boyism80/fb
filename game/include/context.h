@@ -394,7 +394,7 @@ protected:
      */
     uint8_t id() const
     {
-        return fb::config::get()["id"].asUInt();
+        return fb::config<uint8_t>("id");
     }
     /**
      * @brief      { function_description }

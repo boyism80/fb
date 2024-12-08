@@ -15,9 +15,8 @@ fb::logger& fb::logger::get()
     static std::unique_ptr<fb::logger> ist;
 
     std::call_once(flag, [] {
-        auto& config = fb::config::get();
-        auto  level  = (int)fb::logger::level::NONE;
-        for (auto& x : config["log"])
+        auto level = (int)fb::logger::level::NONE;
+        for (auto& x : fb::config<>("log"))
         {
             auto value = boost::algorithm::to_lower_copy(x.asString());
             if (value == "debug")

@@ -14,7 +14,7 @@ fb::gateway::context::~context()
 async::task<void> fb::gateway::context::load_entries()
 {
     // Load gateway list
-    auto& entrypoints = fb::config::get()["entrypoints"];
+    auto& entrypoints = fb::config<>("entrypoints");
     for (auto i = entrypoints.begin(); i != entrypoints.end(); i++)
     {
         this->_entrypoints.push_back(entry(cp949((*i)["name"].asCString()),

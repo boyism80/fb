@@ -46,8 +46,7 @@ int main(int argc, const char** argv)
 
         // Execute acceptor
         boost::asio::io_context io_context;
-        auto&                   config  = fb::config::get();
-        auto                    context = std::make_unique<fb::gateway::context>(io_context, config["port"].asInt());
+        auto context = std::make_unique<fb::gateway::context>(io_context, fb::config<uint16_t>("port"));
         context->run();
     }
     catch (std::exception& e)

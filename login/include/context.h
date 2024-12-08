@@ -130,8 +130,7 @@ public:
     using unique_session = std::unique_ptr<fb::login::session>;
 
 private:
-    fb::protocol::login::response::agreement _agreement =
-        CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
+    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::Both);
     std::vector<std::string>                 _forbiddens;
     std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
