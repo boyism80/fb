@@ -158,7 +158,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     /**
      * @brief      { function_description }
      *
@@ -166,7 +166,7 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    virtual async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    [[nodiscard]] virtual async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -174,7 +174,7 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    virtual async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
+    [[nodiscard]] virtual async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -514,25 +514,25 @@ public:
      *
      * @param[in]  elapsed_milliseconds  The elapsed milliseconds
      */
-    virtual async::task<void> on_timer(uint64_t elapsed_milliseconds);
+    [[nodiscard]] virtual async::task<void> on_timer(uint64_t elapsed_milliseconds);
     /**
      * @brief      Called on kill.
      *
      * @param      you   You
      */
-    virtual async::task<void> on_kill(fb::game::life& you);
+    [[nodiscard]] virtual async::task<void> on_kill(fb::game::life& you);
 
 protected:
     /**
      * @brief      Called on hold.
      */
-    virtual async::task<void> on_hold();
+    [[nodiscard]] virtual async::task<void> on_hold();
     /**
      * @brief      Called when map changed.
      *
      * @param      <unnamed>  { parameter_description }
      */
-    virtual async::task<void> on_map_changed(fb::game::map*);
+    [[nodiscard]] virtual async::task<void> on_map_changed(fb::game::map*);
 
 public:
     /**
@@ -727,20 +727,20 @@ struct object::listener
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    virtual async::task<void> on_chat(fb::game::object& me, const std::string& message, bool shout) = 0;
+    [[nodiscard]] virtual async::task<void> on_chat(fb::game::object& me, const std::string& message, bool shout) = 0;
     /**
      * @brief      Called on direction.
      *
      * @param      me    { parameter_description }
      */
-    virtual async::task<void> on_direction(fb::game::object& me) = 0;
+    [[nodiscard]] virtual async::task<void> on_direction(fb::game::object& me) = 0;
     /**
      * @brief      Called on show.
      *
      * @param      me     { parameter_description }
      * @param[in]  light  The light
      */
-    virtual async::task<void> on_show(fb::game::object& me, bool light) = 0;
+    [[nodiscard]] virtual async::task<void> on_show(fb::game::object& me, bool light) = 0;
     /**
      * @brief      Called on show.
      *
@@ -748,14 +748,14 @@ struct object::listener
      * @param      you    You
      * @param[in]  light  The light
      */
-    virtual async::task<void> on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
+    [[nodiscard]] virtual async::task<void> on_show(fb::game::object& me, fb::game::object& you, bool light) = 0;
     /**
      * @brief      Called on hide.
      *
      * @param      me            { parameter_description }
      * @param[in]  destroy_type  The destroy type
      */
-    virtual async::task<void> on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
+    [[nodiscard]] virtual async::task<void> on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
     /**
      * @brief      Called on hide.
      *
@@ -763,21 +763,21 @@ struct object::listener
      * @param      you           You
      * @param[in]  destroy_type  The destroy type
      */
-    virtual async::task<void> on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
+    [[nodiscard]] virtual async::task<void> on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
     /**
      * @brief      Called on move.
      *
      * @param      me      { parameter_description }
      * @param[in]  before  The before
      */
-    virtual async::task<void> on_move(fb::game::object& me, const point16_t& before) = 0;
+    [[nodiscard]] virtual async::task<void> on_move(fb::game::object& me, const point16_t& before) = 0;
     /**
      * @brief      Called on unbuff.
      *
      * @param      me    { parameter_description }
      * @param      buff  The buffer
      */
-    virtual async::task<void> on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+    [[nodiscard]] virtual async::task<void> on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
     /**
      * @brief      Called when map changed.
      *
@@ -785,19 +785,19 @@ struct object::listener
      * @param      before  The before
      * @param      after   The after
      */
-    virtual async::task<void> on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
+    [[nodiscard]] virtual async::task<void> on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
     /**
      * @brief      Called on create.
      *
      * @param      me    { parameter_description }
      */
-    virtual async::task<void> on_create(fb::game::object& me) = 0;
+    [[nodiscard]] virtual async::task<void> on_create(fb::game::object& me) = 0;
     /**
      * @brief      Called on destroy.
      *
      * @param      me    { parameter_description }
      */
-    virtual async::task<void> on_destroy(fb::game::object& me) = 0;
+    [[nodiscard]] virtual async::task<void> on_destroy(fb::game::object& me) = 0;
 };
 
 /**

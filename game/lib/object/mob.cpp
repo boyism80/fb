@@ -107,6 +107,8 @@ fb::game::mob::~mob()
 
 bool fb::game::mob::action()
 {
+    this->assert_thread();
+
     this->fix();
 
     auto& model = this->based<fb::model::mob>();
@@ -148,26 +150,36 @@ bool fb::game::mob::action()
 
 const datetime& fb::game::mob::action_time() const
 {
+    this->assert_thread();
+
     return this->_action_time;
 }
 
 void fb::game::mob::action_time(const datetime& dt)
 {
+    this->assert_thread();
+
     this->_action_time = dt;
 }
 
 fb::game::life* fb::game::mob::target() const
 {
+    this->assert_thread();
+
     return this->_target;
 }
 
 void fb::game::mob::target(fb::game::life* value)
 {
+    this->assert_thread();
+
     this->_target = value;
 }
 
 fb::game::life* fb::game::mob::fix()
 {
+    this->assert_thread();
+
     try
     {
         if (this->_target == nullptr)
@@ -193,6 +205,8 @@ fb::game::life* fb::game::mob::fix()
 
 fb::game::life* fb::game::mob::find_target()
 {
+    this->assert_thread();
+
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
@@ -216,6 +230,8 @@ fb::game::life* fb::game::mob::find_target()
 
 bool fb::game::mob::near_target(DIRECTION& out) const
 {
+    this->assert_thread();
+
     for (int i = 0; i < 4; i++)
     {
         auto direction = DIRECTION(i);
@@ -231,6 +247,8 @@ bool fb::game::mob::near_target(DIRECTION& out) const
 
 async::task<void> fb::game::mob::AI(const datetime& now)
 {
+    this->assert_thread();
+
     try
     {
         auto& model = this->based<fb::model::mob>();
@@ -291,11 +309,15 @@ async::task<void> fb::game::mob::AI(const datetime& now)
 
 bool fb::game::mob::available() const
 {
+    this->assert_thread();
+
     return this->alive();
 }
 
 async::task<uint32_t> fb::game::mob::on_calculate_damage(bool critical) const
 {
+    this->assert_thread();
+
     auto& model      = this->based<fb::model::mob>();
     auto  difference = model.damage.max - model.damage.min;
     co_return model.damage.min + (std::rand() % difference);
@@ -303,6 +325,8 @@ async::task<uint32_t> fb::game::mob::on_calculate_damage(bool critical) const
 
 async::task<void> fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
+    this->assert_thread();
+
     co_await fb::game::life::on_damaged(from, damage, critical);
 
     auto& model = this->based<fb::model::mob>();
@@ -314,12 +338,16 @@ async::task<void> fb::game::mob::on_damaged(fb::game::object* from, uint32_t dam
 
 uint32_t fb::game::mob::on_exp() const
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::mob>();
     return model.exp;
 }
 
 async::task<void> fb::game::mob::on_die(fb::game::object* from)
 {
+    this->assert_thread();
+
     co_await fb::game::life::on_die(from);
 
     // 드롭 아이템 떨구기
@@ -344,5 +372,5 @@ async::task<void> fb::game::mob::on_die(fb::game::object* from)
         }
     }
 
-    this->destroy(DESTROY_TYPE::DEAD);
+    co_await this->destroy(DESTROY_TYPE::DEAD);
 }

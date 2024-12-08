@@ -46,73 +46,101 @@ fb::game::object::~object()
 
 const fb::model::object& fb::game::object::based() const
 {
+    this->assert_thread();
+
     return this->_model;
 }
 
 bool fb::game::object::is(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     auto mine = this->what();
     return (type & mine) == mine;
 }
 
 const std::string& fb::game::object::name() const
 {
+    this->assert_thread();
+
     return this->_model.name;
 }
 
 uint16_t fb::game::object::look() const
 {
+    this->assert_thread();
+
     return this->_model.look;
 }
 
 uint8_t fb::game::object::color() const
 {
+    this->assert_thread();
+
     return this->_model.color;
 }
 
 OBJECT_TYPE fb::game::object::what() const
 {
+    this->assert_thread();
+
     return this->_model.what();
 }
 
 async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
+
     co_await this->context.destroy(*this, destroy_type);
 }
 
 async::task<void> fb::game::object::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
+    this->assert_thread();
+
     co_return;
 }
 
 async::task<void> fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
+    this->assert_thread();
+
     co_return;
 }
 
 uint32_t fb::game::object::sequence() const
 {
+    this->assert_thread();
+
     return this->_sequence;
 }
 
 void fb::game::object::sequence(uint32_t value)
 {
+    this->assert_thread();
+
     this->_sequence = value;
 }
 
 async::task<void> fb::game::object::chat(const std::string& message, bool shout)
 {
+    this->assert_thread();
+
     if (this->_listener != nullptr)
         co_await this->_listener->on_chat(*this, message, shout);
 }
 
 const point16_t& fb::game::object::position() const
 {
+    this->assert_thread();
+
     return this->_position;
 }
 
 async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         co_return false;
 
@@ -124,7 +152,7 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     if (refresh)
-        this->on_hold();
+        co_await this->on_hold();
 
     this->_map->update(*this);
 
@@ -226,16 +254,22 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
 
 async::task<bool> fb::game::object::position(const point16_t position, bool refresh)
 {
+    this->assert_thread();
+
     co_return co_await this->position(position.x, position.y, refresh);
 }
 
 async::task<bool> fb::game::object::move()
 {
+    this->assert_thread();
+
     co_return co_await this->move(this->_direction);
 }
 
 async::task<bool> fb::game::object::move(DIRECTION direction)
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         co_return false;
 
@@ -275,11 +309,15 @@ async::task<bool> fb::game::object::move(DIRECTION direction)
 
 const point16_t fb::game::object::position_forward() const
 {
+    this->assert_thread();
+
     return this->position_forward(this->_direction);
 }
 
 const point16_t fb::game::object::position_forward(DIRECTION direction) const
 {
+    this->assert_thread();
+
     auto current = point16_t(this->_position);
     auto forward = point16_t(current);
     forward.forward(direction);
@@ -306,31 +344,43 @@ const point16_t fb::game::object::position_forward(DIRECTION direction) const
 
 uint16_t fb::game::object::x() const
 {
+    this->assert_thread();
+
     return this->_position.x;
 }
 
 async::task<bool> fb::game::object::x(uint16_t value)
 {
+    this->assert_thread();
+
     co_return co_await this->position(value, this->_position.y);
 }
 
 uint16_t fb::game::object::y() const
 {
+    this->assert_thread();
+
     return this->_position.y;
 }
 
 async::task<bool> fb::game::object::y(uint16_t value)
 {
+    this->assert_thread();
+
     co_return co_await this->position(this->_position.x, value);
 }
 
 DIRECTION fb::game::object::direction() const
 {
+    this->assert_thread();
+
     return this->_direction;
 }
 
 async::task<bool> fb::game::object::direction(DIRECTION value)
 {
+    this->assert_thread();
+
     if (value != DIRECTION::LEFT && value != DIRECTION::TOP && value != DIRECTION::RIGHT && value != DIRECTION::BOTTOM)
         co_return false;
 
@@ -346,16 +396,22 @@ async::task<bool> fb::game::object::direction(DIRECTION value)
 
 fb::game::map* fb::game::object::map() const
 {
+    this->assert_thread();
+
     return this->_map;
 }
 
 bool fb::game::object::sight(const point16_t& position) const
 {
+    this->assert_thread();
+
     return fb::game::object::sight(this->_position, position, this->_map);
 }
 
 bool fb::game::object::sight(const fb::game::object& object) const
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return false;
 
@@ -370,6 +426,8 @@ bool fb::game::object::sight(const fb::game::object& object) const
 
 bool fb::game::object::sector(fb::game::sector* sector)
 {
+    this->assert_thread();
+
     if (this->_sector == sector)
         return false;
 
@@ -384,6 +442,8 @@ bool fb::game::object::sector(fb::game::sector* sector)
 
 fb::game::sector* fb::game::object::sector()
 {
+    this->assert_thread();
+
     return this->_sector;
 }
 
@@ -428,6 +488,9 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
+    if (this->_map != nullptr)
+        this->assert_thread();
+
     try
     {
         if (this->_map_lock)
@@ -437,7 +500,6 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         {
             if (this->_map != nullptr)
             {
-                this->_map->objects.pop(*this);
                 if (this->_listener != nullptr)
                 {
                     for (auto x : this->_map->nears(this->_position))
@@ -446,12 +508,13 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
                             co_await this->_listener->on_hide(*x, *this, destroy_type);
                     }
                 }
+                co_await this->on_map_changed(this->_map);
 
+                this->_map->objects.pop(*this);
+                this->sector(nullptr);
                 this->_map = nullptr;
-                this->on_map_changed(this->_map);
             }
             this->_position = point16_t(1, 1); // 가상계 위치
-            this->sector(nullptr);
             co_return true;
         }
 
@@ -481,9 +544,11 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
                 co_await thread->switching();
         }
 
-        this->_map      = map;
+        this->_map = map;
+        this->assert_thread();
+
         this->_position = position_x;
-        this->on_map_changed(this->_map);
+        co_await this->on_map_changed(this->_map);
         this->_map->update(*this);
         this->_map->objects.push(*this);
         if (this->_listener != nullptr)
@@ -516,11 +581,15 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
 async::task<bool> fb::game::object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
+
     co_return co_await this->map(map, point16_t(0, 0), destroy_type);
 }
 
 fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
@@ -558,6 +627,8 @@ fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) 
 
 std::vector<fb::game::object*> fb::game::object::sides(DIRECTION direction, OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     auto result = std::vector<fb::game::object*>();
     try
     {
@@ -601,16 +672,22 @@ std::vector<fb::game::object*> fb::game::object::sides(DIRECTION direction, OBJE
 
 fb::game::object* fb::game::object::forward(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     return this->side(this->_direction, type);
 }
 
 std::vector<fb::game::object*> fb::game::object::forwards(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     return this->sides(this->_direction, type);
 }
 
 std::vector<fb::game::object*> fb::game::object::showns(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return std::vector<fb::game::object*>{};
 
@@ -621,6 +698,8 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
                                                         const point16_t&            position,
                                                         OBJECT_TYPE                 type) const
 {
+    this->assert_thread();
+
     auto objects = std::vector<fb::game::object*>();
     if (this->_map == nullptr)
         return objects;
@@ -643,6 +722,8 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
 
 std::vector<fb::game::object*> fb::game::object::showings(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return std::vector<object*>{};
     else
@@ -653,6 +734,8 @@ std::vector<fb::game::object*> fb::game::object::showings(const std::vector<obje
                                                           const point16_t&            position,
                                                           OBJECT_TYPE                 type) const
 {
+    this->assert_thread();
+
     auto objects = std::vector<fb::game::object*>();
     if (this->_map == nullptr)
         return objects;
@@ -675,11 +758,15 @@ std::vector<fb::game::object*> fb::game::object::showings(const std::vector<obje
 
 bool fb::game::object::visible() const
 {
+    this->assert_thread();
+
     return this->_visible;
 }
 
 void fb::game::object::visible(bool value)
 {
+    this->assert_thread();
+
     if (this->_visible == value)
         return;
 
@@ -688,60 +775,80 @@ void fb::game::object::visible(bool value)
 
 double fb::game::object::distance(const object& right) const
 {
+    this->assert_thread();
+
     return std::sqrt(this->distance_sqrt(right));
 }
 
 uint32_t fb::game::object::distance_sqrt(const object& right) const
 {
+    this->assert_thread();
+
     return (uint32_t)std::pow(this->_position.x - right._position.x, 2) +
            (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 bool fb::game::object::condition(const std::vector<fb::model::dsl>& conditions) const
 {
+    this->assert_thread();
+
     return true;
 }
 
 bool fb::game::object::available() const
 {
+    this->assert_thread();
+
     return true;
 }
 
 fb::thread* fb::game::object::thread() const
 {
     if (this->_map == nullptr)
-        return nullptr;
-
-    return this->context.threads.modular(this->_map->model.id);
+        return this->context.threads.modular(this->_sequence);
+    else
+        return this->context.threads.modular(this->_map->model.id);
 }
 
 async::task<void> fb::game::object::on_timer(uint64_t elapsed_milliseconds)
 {
+    this->assert_thread();
+
     co_return;
 }
 
 async::task<void> fb::game::object::on_kill(fb::game::life& you)
 {
+    this->assert_thread();
+
     co_return;
 }
 
 async::task<void> fb::game::object::on_hold()
 {
+    this->assert_thread();
+
     co_return;
 }
 
 async::task<void> fb::game::object::on_map_changed(fb::game::map*)
 {
+    this->assert_thread();
+
     co_return;
 }
 
 bool fb::game::object::operator== (const object& right) const
 {
+    this->assert_thread();
+
     return this->_map == right._map && this->sequence() == right.sequence();
 }
 
 bool fb::game::object::operator!= (const object& right) const
 {
+    this->assert_thread();
+
     return !((*this) == right);
 }
 
@@ -755,6 +862,8 @@ int fb::game::object::builtin_model(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto& model = object->based();
     thread->pushobject(model);
@@ -772,6 +881,8 @@ int fb::game::object::builtin_id(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     thread->pushinteger(object->sequence());
     return 1;
 }
@@ -787,10 +898,12 @@ int fb::game::object::builtin_eq(lua_State* lua)
     auto me      = thread->touserdata<fb::game::object>(1);
     if (me == nullptr)
         return 0;
+    me->assert_thread();
 
     auto you = thread->touserdata<fb::game::object>(2);
     if (you == nullptr)
         return 0;
+    you->assert_thread();
 
     thread->pushboolean(me->sequence() == you->sequence());
     return 1;
@@ -806,6 +919,7 @@ int fb::game::object::builtin_tostring(lua_State* lua)
     auto me      = thread->touserdata<fb::game::object>(1);
     if (me == nullptr)
         return 0;
+    me->assert_thread();
 
     thread->pushstring(me->name());
     return 1;
@@ -822,6 +936,8 @@ int fb::game::object::builtin_name(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     thread->pushstring(object->name());
     return 1;
 }
@@ -836,6 +952,8 @@ int fb::game::object::builtin_sound(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto sound = thread->tointeger(2);
 
@@ -859,6 +977,8 @@ int fb::game::object::builtin_position(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     if (argc == 1)
     {
@@ -933,6 +1053,8 @@ int fb::game::object::builtin_direction(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     if (argc == 1)
     {
         thread->pushinteger(object->_direction);
@@ -967,6 +1089,8 @@ int fb::game::object::builtin_chat(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto message  = thread->tostring(2);
     auto type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
@@ -1005,6 +1129,8 @@ int fb::game::object::builtin_message(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     auto message = thread->tostring(2);
     auto type    = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
 
@@ -1030,6 +1156,8 @@ int fb::game::object::builtin_buff(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto spell = thread->touserdata<fb::model::spell>(2);
     if (spell == nullptr)
@@ -1058,6 +1186,8 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     if (thread->is_str(2))
     {
@@ -1095,6 +1225,8 @@ int fb::game::object::builtin_isbuff(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     if (thread->is_str(2))
     {
         auto name  = thread->tostring(2);
@@ -1129,6 +1261,8 @@ int fb::game::object::builtin_effect(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto effect = (uint8_t)thread->tointeger(2);
 
@@ -1228,8 +1362,9 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    auto name = thread->tostring(2);
+    object->assert_thread();
 
+    auto name  = thread->tostring(2);
     auto model = context->model.item.name2item(name);
     if (model == nullptr)
     {
@@ -1263,6 +1398,8 @@ int fb::game::object::builtin_showings(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
 
     thread->new_table();
@@ -1288,6 +1425,8 @@ int fb::game::object::builtin_showns(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
 
@@ -1315,6 +1454,8 @@ int fb::game::object::builtin_front(lua_State* lua)
     if (object == nullptr)
         return 0;
 
+    object->assert_thread();
+
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
     auto front  = object->forward(filter);
     if (front == nullptr)
@@ -1336,6 +1477,8 @@ int fb::game::object::builtin_is(lua_State* lua)
     auto object  = thread->touserdata<fb::game::object>(1);
     if (object == nullptr)
         return 0;
+
+    object->assert_thread();
 
     auto type = thread->tointeger(2);
     thread->pushboolean(object->is(OBJECT_TYPE(type)));

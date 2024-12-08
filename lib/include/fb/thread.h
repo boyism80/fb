@@ -15,8 +15,6 @@
 #include <async/awaitable_then.h>
 #include <fb/model/datetime.h>
 
-#define MUTEX_GUARD(x) auto _ = std::lock_guard(x);
-
 namespace fb {
 
 using queue_callback = std::function<void(uint8_t)>;
@@ -34,6 +32,7 @@ public:
 
 public:
     virtual fb::thread* thread() const = 0;
+    void                assert_thread() const;
 };
 
 class thread

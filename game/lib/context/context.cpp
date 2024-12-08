@@ -246,6 +246,13 @@ async::task<void> context::handle_start()
         });
     }
 
+    for (auto& [id, map] : this->maps)
+    {
+        auto thread = this->threads.modular(id);
+        auto params = thread->data<thread_params>();
+        params->maps.insert({id, &map});
+    }
+
     this->_amqp_thread = std::make_unique<std::thread>(&context::amqp_thread, this);
 
     this->bind(&context::handle_login);          // 게임서버 접속 핸들러
@@ -591,7 +598,7 @@ async::task<void> context::send(object&                           object,
             co_await object.send(header, encrypt);
 
         for (auto& x : nears)
-            x->send(header, encrypt);
+            co_await x->send(header, encrypt);
     }
     break;
 
@@ -2215,16 +2222,15 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
 
 async::task<void> context::handle_mob_action(const datetime& now, std::thread::id id)
 {
-    for (auto& [_, map] : this->maps)
+    auto thread = this->threads.at(id);
+    auto params = thread->data<thread_params>();
+
+    for (auto& [_, map] : params->maps)
     {
-        if (map.active == false)
+        if (map->active == false)
             continue;
 
-        auto thread = this->thread(map);
-        if (thread != nullptr && thread->id() != id)
-            continue;
-
-        const auto mobs = map.activateds(OBJECT_TYPE::MOB);
+        const auto mobs = map->activateds(OBJECT_TYPE::MOB);
 
         for (auto x : mobs)
         {
@@ -2233,7 +2239,7 @@ async::task<void> context::handle_mob_action(const datetime& now, std::thread::i
                 continue;
 
             auto target = mob->target();
-            if (target == nullptr || map.objects.contains(*target) == false || target->alive() == false)
+            if (target == nullptr || map->objects.contains(*target) == false || target->alive() == false)
                 mob->target(nullptr);
 
             if (mob->action())

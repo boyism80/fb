@@ -188,7 +188,6 @@ private:
     boost::asio::io_context&                    _context;
     std::map<uint16_t, base_bot*>               _bots;
     fb::threads                                 _threads;
-    //std::mutex                                  _bots_lock;
     bool                                        _exit = false;
 
 public:
@@ -200,8 +199,7 @@ public:
 
     template <typename T>
     T* create()
-    {/*   MUTEX_GUARD(this->_bots_lock)*/
-        
+    {
         auto id = this->_sequence++;
         auto bot = new T(*this, id);
         this->_bots.insert({ bot->id, bot });
@@ -210,8 +208,7 @@ public:
 
     template <typename T>
     T* create(const fb::stream& params)
-    {/*   MUTEX_GUARD(this->_bots_lock)*/
-        
+    {
         auto id = this->_sequence++;
         auto bot = new T(*this, id, params);
         this->_bots.insert({ bot->id, bot });

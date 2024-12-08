@@ -138,10 +138,6 @@ public:
         {
             while (true)
             {
-                // 1. bytes 읽고 stream에 push
-                // 2. 즉시 매칭되는 핸들러를 획득
-                // 3. 핸들러가 있다면 소켓에 대응되는 스레드를 획득
-                // 4. 스레드가 있다면 해당 스레드의 작업큐에 enqueue, 없으면 바로 실행
                 auto bytes_transferred =
                     co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
 
@@ -153,10 +149,8 @@ public:
                     throw std::runtime_error("disconnected");
             }
         }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-        }
+        catch (boost::system::system_error& e)
+        { }
         catch (boost::system::error_code& e)
         {
             auto ec = e.value();
@@ -178,6 +172,10 @@ public:
             default:
                 break;
             }
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
         }
         catch (...)
         { }

@@ -308,10 +308,10 @@ private:
             reader.flush(); // remove magic code and size
 
             if (this->_deserializer.contains(cmd) == false)
-                throw std::runtime_error(std::format("정의되지 않은 프로토콜입니다. [{:#x}]"));
+                throw std::runtime_error(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
 
             if (this->_handler.contains(cmd) == false)
-                throw std::runtime_error(std::format("정의되지 않은 핸들러입니다. [{:#x}]"));
+                throw std::runtime_error(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
 
             auto protocol = co_await this->_deserializer[cmd](reader);
             this->threads.enqueue(
@@ -324,7 +324,7 @@ private:
                     return false;
                 },
                 [this, cmd, &socket, protocol]() -> async::task<void> { // fn
-                    co_await this->_handler[cmd](socket, *protocol);
+                    std::ignore = co_await this->_handler[cmd](socket, *protocol);
                 },
                 [](auto& error) { // error
                     fb::logger::fatal(error.what());

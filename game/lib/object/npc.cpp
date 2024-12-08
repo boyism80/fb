@@ -19,8 +19,9 @@ async::task<bool> fb::game::npc::buy(fb::game::character&    session,
                                      std::optional<uint16_t> count,
                                      bool                    bought)
 {
-    auto error = std::string();
+    this->assert_thread();
 
+    auto error = std::string();
     try
     {
         auto& model = this->based<fb::model::npc>();
@@ -107,6 +108,8 @@ async::task<bool> fb::game::npc::buy(fb::game::character&    session,
 async::task<bool>
 fb::game::npc::sell(fb::game::character& session, const fb::model::item* item_model, uint16_t count, bool sold)
 {
+    this->assert_thread();
+
     auto error = std::string();
     try
     {
@@ -170,8 +173,9 @@ fb::game::npc::sell(fb::game::character& session, const fb::model::item* item_mo
 
 async::task<bool> fb::game::npc::repair(fb::game::character& session, const fb::model::item* item_model, bool done)
 {
-    auto error = std::string();
+    this->assert_thread();
 
+    auto error = std::string();
     try
     {
         auto& model = this->based<fb::model::npc>();
@@ -283,6 +287,8 @@ async::task<bool> fb::game::npc::repair(fb::game::character& session, const fb::
 
 async::task<bool> fb::game::npc::hold_money(fb::game::character& session, std::optional<uint32_t> money)
 {
+    this->assert_thread();
+
     auto error = std::string();
     try
     {
@@ -320,6 +326,8 @@ async::task<bool> fb::game::npc::hold_money(fb::game::character& session, std::o
 
 async::task<bool> fb::game::npc::return_money(fb::game::character& session, std::optional<uint32_t> money)
 {
+    this->assert_thread();
+
     auto error = std::string();
     try
     {
@@ -359,6 +367,8 @@ async::task<bool> fb::game::npc::hold_item(fb::game::character&    session,
                                            const fb::model::item*  item,
                                            std::optional<uint16_t> count)
 {
+    this->assert_thread();
+
     auto error = std::string();
     try
     {
@@ -418,6 +428,8 @@ async::task<bool> fb::game::npc::return_item(fb::game::character&    session,
                                              const fb::model::item*  item,
                                              std::optional<uint16_t> count)
 {
+    this->assert_thread();
+
     auto error = std::string();
     try
     {
@@ -474,6 +486,8 @@ async::task<bool> fb::game::npc::return_item(fb::game::character&    session,
 
 async::task<void> fb::game::npc::sell_list()
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.sell.size() == 0)
         co_return;
@@ -505,6 +519,8 @@ async::task<void> fb::game::npc::sell_list()
 
 async::task<void> fb::game::npc::buy_list()
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.buy.has_value() == false)
         co_return;
@@ -533,6 +549,8 @@ async::task<void> fb::game::npc::buy_list()
 
 async::task<void> fb::game::npc::sell_price(const fb::model::item* item)
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.sell.size() == 0)
         co_return;
@@ -562,6 +580,8 @@ async::task<void> fb::game::npc::sell_price(const fb::model::item* item)
 
 async::task<void> fb::game::npc::buy_price(const fb::model::item* item)
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.buy.has_value() == false)
         co_return;
@@ -591,6 +611,8 @@ async::task<void> fb::game::npc::buy_price(const fb::model::item* item)
 
 async::task<bool> fb::game::npc::deposited_money(const fb::game::character& session)
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.hold_money == false)
         co_return false;
@@ -608,6 +630,8 @@ async::task<bool> fb::game::npc::rename_weapon(fb::game::character&   session,
                                                const fb::model::item* item,
                                                const std::string&     name)
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.rename == false)
         co_return false;
@@ -661,6 +685,8 @@ async::task<bool> fb::game::npc::rename_weapon(fb::game::character&   session,
 
 async::task<bool> fb::game::npc::hold_item_list(const fb::game::character& session)
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.hold_item == false)
         co_return false;
@@ -704,6 +730,8 @@ async::task<bool> fb::game::npc::hold_item_list(const fb::game::character& sessi
 
 async::task<bool> fb::game::npc::hold_item_count(const fb::game::character& session, const fb::model::item* item)
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::npc>();
     if (model.hold_item == false)
         co_return false;
