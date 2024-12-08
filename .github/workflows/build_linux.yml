@@ -140,7 +140,7 @@ jobs:
           cache-to: type=gha,scope=game,mode=max
           file: game/Dockerfile
 
-  game:
+  deploy:
     runs-on: [self-hosted, linux, x64, build]
     needs: [internal, gateway, login, game]
     steps:
