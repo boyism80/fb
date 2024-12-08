@@ -149,7 +149,17 @@ jobs:
         with:
           submodules: true
 
-      - name: Build game server
+      - name: Setup Node LTS
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Installing dependencies
+        run: npm install
+        working-directory: infra/pulumi
+
+      - name: Deploy server
         uses: pulumi/actions@v6
         id: pulumi
         env:
