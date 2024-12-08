@@ -1,10 +1,10 @@
-name: C/C++ CI
+name: build fb
 
 on:
   - push
 
 jobs:
-  build:
+  base:
     runs-on: [self-hosted, linux, x64, build]
     steps:
       - name: Checkout repository
@@ -30,33 +30,10 @@ jobs:
           cache-to: type=gha,scope=build,mode=max
           file: Dockerfile
 
-      - name: Build gateway server
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: cshyeon/fb:gateway
-          cache-from: type=gha,scope=gateway
-          cache-to: type=gha,scope=gateway,mode=max
-          file: gateway/Dockerfile
-
-      - name: Build login server
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: cshyeon/fb:login
-          cache-from: type=gha,scope=login
-          cache-to: type=gha,scope=login,mode=max
-          file: login/Dockerfile
-
-      - name: Build game server
-        uses: docker/build-push-action@v6
-        with:
-          push: true
-          tags: cshyeon/fb:game
-          cache-from: type=gha,scope=game
-          cache-to: type=gha,scope=game,mode=max
-          file: game/Dockerfile
-
+  internal:
+    runs-on: [self-hosted, linux, x64, build]
+    needs: base
+    steps:
       - name: Build internal server
         uses: docker/build-push-action@v6
         with:
@@ -67,3 +44,42 @@ jobs:
           file: http/Dockerfile
           build-args: |
             SERVICE=internal
+
+  gateway:
+    runs-on: [self-hosted, linux, x64, build]
+    needs: base
+    steps:
+      - name: Build gateway server
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: cshyeon/fb:gateway
+          cache-from: type=gha,scope=gateway
+          cache-to: type=gha,scope=gateway,mode=max
+          file: gateway/Dockerfile
+
+  login:
+    runs-on: [self-hosted, linux, x64, build]
+    needs: base
+    steps:
+      - name: Build login server
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: cshyeon/fb:login
+          cache-from: type=gha,scope=login
+          cache-to: type=gha,scope=login,mode=max
+          file: login/Dockerfile
+
+  game:
+    runs-on: [self-hosted, linux, x64, build]
+    needs: base
+    steps:
+      - name: Build game server
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: cshyeon/fb:game
+          cache-from: type=gha,scope=game
+          cache-to: type=gha,scope=game,mode=max
+          file: game/Dockerfile
