@@ -150,7 +150,7 @@ jobs:
           submodules: true
 
       - name: Build game server
-      - uses: pulumi/actions@v6
+        uses: pulumi/actions@v6
         id: pulumi
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
