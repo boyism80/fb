@@ -186,10 +186,9 @@ context::context(boost::asio::io_context& context, uint16_t port) : // clang-for
 
 context::~context()
 {
-    auto& threads = this->threads();
     for (int i = 0; i < threads.count(); i++)
     {
-        auto thread = threads.at(i);
+        auto thread = this->threads.at(i);
         auto params = thread->data<thread_params>();
         delete params;
     }
@@ -235,10 +234,9 @@ async::task<void> context::handle_start()
     lua::build("assert_korean", builtin_assert_korean);
     lua::build("CP949", builtin_cp949);
 
-    auto& threads = this->threads();
-    for (int i = 0; i < threads.count(); i++)
+    for (int i = 0; i < this->threads.count(); i++)
     {
-        auto thread = threads.at(i);
+        auto thread = this->threads.at(i);
         thread->data(new thread_params{});
 
         co_await thread->dispatch([]() -> async::task<void> {
@@ -350,11 +348,10 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto group = session->group();
     if (group != nullptr)
     {
-        auto active_thread = this->threads().current();
-        auto group_thread  = this->threads().modular(group->id());
-        co_await group_thread->dispatch();
+        co_await group->thread()->switching();
         group->leave_active_member(*session);
-        co_await active_thread->dispatch();
+
+        co_await session->thread()->switching();
     }
 
     this->_characters.lock<void>([name = session->name()](auto& characters) {
@@ -783,16 +780,11 @@ uint32_t context::thread_id(const fb::socket<character>& socket) const
 
 fb::thread* context::thread(const map& map)
 {
-    auto count = this->threads().count();
+    auto count = this->threads.count();
     if (count == 0)
         return nullptr;
 
-    return this->threads().at(map.model.id % count);
-}
-
-const fb::thread* context::current_thread() const
-{
-    return this->threads().current();
+    return this->threads.at(map.model.id % count);
 }
 
 void context::amqp_thread()
@@ -1506,19 +1498,19 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
 {
     this->assert_group(response.error, response.member);
 
-    auto& threads       = this->threads();
+    auto& threads       = this->threads;
     auto  active_thread = threads.current();
 
     // switch thread that matched with group id
     auto group_thread = threads.modular(response.group.id);
-    co_await group_thread->dispatch();
+    co_await group_thread->switching();
 
     auto params = group_thread->data<thread_params>();
     if (params->groups.contains(response.group.id) == false)
     {
         params->groups.insert(
             {response.group.id,
-             std::make_unique<group>(response.group.id, response.group.master, response.group.members)});
+             std::make_unique<group>(*this, response.group.id, response.group.master, response.group.members)});
     }
 
     auto group = params->groups[response.group.id].get();
@@ -1579,7 +1571,7 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
         }
     });
 
-    co_await active_thread->dispatch();
+    co_await active_thread->switching();
 
     // auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
     //     if (groups.contains(response.group.id))

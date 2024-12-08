@@ -191,7 +191,7 @@ public:
 /**
  * @brief      This class describes a map of .
  */
-class map : public lua::luable
+class map : public lua::luable, public fb::thread_switchable
 {
 public:
     LUA_PROTOTYPE
@@ -234,7 +234,7 @@ public:
      * @param[in]  data     The data
      * @param[in]  size     The size
      */
-    map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
+    map(fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
     /**
      * @brief      Constructs a new instance.
      *
@@ -395,6 +395,13 @@ public:
      */
     std::vector<object*> activateds(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override;
+
 public:
     /**
      * @brief      Called on timer.
@@ -500,8 +507,8 @@ private:
     std::mutex _mutex;
 
 public:
-    const fb::game::context& context;
-    const uint32_t           host;
+    fb::game::context& context;
+    const uint32_t     host;
 
 public:
     /**
@@ -510,7 +517,7 @@ public:
      * @param[in]  context  The context
      * @param[in]  host     The host
      */
-    maps(const fb::game::context& context, uint32_t host);
+    maps(fb::game::context& context, uint32_t host);
     /**
      * @brief      Destroys the object.
      */

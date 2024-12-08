@@ -476,9 +476,9 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
         if (map != nullptr)
         {
-            auto thread = this->context.thread(*map);
-            if (thread != nullptr && thread != this->context.current_thread())
-                co_await thread->dispatch(uint32_t(-1));
+            auto thread = map->thread();
+            if (thread != nullptr && thread != this->context.threads.current())
+                co_await thread->switching();
         }
 
         this->_map      = map;
@@ -705,6 +705,14 @@ bool fb::game::object::condition(const std::vector<fb::model::dsl>& conditions) 
 bool fb::game::object::available() const
 {
     return true;
+}
+
+fb::thread* fb::game::object::thread() const
+{
+    if (this->_map == nullptr)
+        return nullptr;
+
+    return this->context.threads.modular(this->_map->model.id);
 }
 
 async::task<void> fb::game::object::on_timer(uint64_t elapsed_milliseconds)

@@ -27,11 +27,14 @@ int fb::model::npc::builtin_input(lua_State* lua)
         auto maxlen      = argc < 6 ? 0xFF : (int)thread->tointeger(6);
         auto prev        = argc < 7 ? false : thread->toboolean(7);
 
-        async::awaitable_then(session->dialog.input(*npc, message, message_top, message_bot, maxlen, prev), [](auto result) {});
+        async::awaitable_then(session->dialog.input(*npc, message, message_top, message_bot, maxlen, prev),
+                              [](auto result) {
+                              });
     }
     else
     {
-        async::awaitable_then(session->dialog.input(*npc, message), [](auto result) {});
+        async::awaitable_then(session->dialog.input(*npc, message), [](auto result) {
+        });
     }
     return thread->yield(1);
 }
@@ -63,7 +66,8 @@ int fb::model::npc::builtin_menu(lua_State* lua)
         menus.push_back(thread->tostring(-1));
     }
 
-    async::awaitable_then(session->dialog.show(*npc, message, menus), [](auto result) {});
+    async::awaitable_then(session->dialog.show(*npc, message, menus), [](auto result) {
+    });
     return thread->yield(1);
 }
 
@@ -128,7 +132,8 @@ int fb::model::npc::builtin_item(lua_State* lua)
         thread->pop(1);
     }
 
-    async::awaitable_then(session->dialog.show(*npc, message, items), [](auto result){});
+    async::awaitable_then(session->dialog.show(*npc, message, items), [](auto result) {
+    });
     return thread->yield(1);
 }
 
@@ -158,7 +163,8 @@ int fb::model::npc::builtin_slot(lua_State* lua)
         thread->pop(1);
     }
 
-    async::awaitable_then(session->dialog.show(*npc, message, slots), [](auto result) {});
+    async::awaitable_then(session->dialog.show(*npc, message, slots), [](auto result) {
+    });
     return thread->yield(1);
 }
 

@@ -1,11 +1,11 @@
 #include <context.h>
 #include <map.h>
 
-fb::game::map::map(const fb::game::context& context,
-                   const fb::model::map&    model,
-                   bool                     active,
-                   const void*              data,
-                   size_t                   size) :
+fb::game::map::map(fb::game::context&    context,
+                   const fb::model::map& model,
+                   bool                  active,
+                   const void*           data,
+                   size_t                size) :
     context(context),
     model(model),
     active(active),
@@ -283,6 +283,11 @@ std::vector<fb::game::object*> fb::game::map::activateds(OBJECT_TYPE type)
         return this->_sectors->activated_objects(type);
 }
 
+fb::thread* fb::game::map::thread() const
+{
+    return this->context.threads.modular(this->model.id);
+}
+
 async::task<void> fb::game::map::on_timer(uint64_t elapsed_milliseconds)
 {
     co_return;
@@ -475,7 +480,7 @@ int fb::game::map::builtin_contains(lua_State* lua)
     return 1;
 }
 
-fb::game::maps::maps(const fb::game::context& context, uint32_t host) :
+fb::game::maps::maps(fb::game::context& context, uint32_t host) :
     context(context),
     host(host)
 { }

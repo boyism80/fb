@@ -48,7 +48,7 @@ class sectors;
 /**
  * @brief      This class describes an object.
  */
-class object : public lua::luable
+class object : public lua::luable, public fb::thread_switchable
 {
 public:
     /**
@@ -500,6 +500,13 @@ public:
     std::vector<object*> showns(const std::vector<object*>& source,
                                 const point16_t&            position,
                                 OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override;
 
 public:
     /**

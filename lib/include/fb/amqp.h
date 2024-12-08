@@ -70,10 +70,10 @@ public:
     ~queue();
 
 public:
-    bool               bind(const std::string& exchange, const std::string& binding_key);
-    const std::string& name() const;
-    const std::string& consumer_tag() const;
-    [[nodiscard]] async::task<void>  invoke(const std::vector<uint8_t>& message);
+    bool                            bind(const std::string& exchange, const std::string& binding_key);
+    const std::string&              name() const;
+    const std::string&              consumer_tag() const;
+    [[nodiscard]] async::task<void> invoke(const std::vector<uint8_t>& message);
 
     template <typename R>
     void handler(const std::function<async::task<void>(R&)>& fn)

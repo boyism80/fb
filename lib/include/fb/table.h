@@ -5,7 +5,7 @@
 #include <fstream>
 #include <sstream>
 #include <functional>
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <queue>
 #include <mutex>
 #include <future>

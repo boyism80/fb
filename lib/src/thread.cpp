@@ -9,9 +9,6 @@ fb::thread::thread(uint8_t index) :
 fb::thread::~thread()
 {
     this->exit();
-
-    if (this->_data != nullptr)
-        delete this->_data;
 }
 
 void fb::thread::handle_thread(uint8_t index)
@@ -20,21 +17,30 @@ void fb::thread::handle_thread(uint8_t index)
 
     while (!this->_exit)
     {
-        auto completed = this->_queue.dequeue([this](auto&& x) mutable {
-            async::awaitable_then(x.func(), [callback = x.callback](async::awaitable_result<void> result) {
-                if (callback != nullptr)
-                    callback();
-            });
-        });
-        if (completed)
-            continue;
+        std::function<void()> func;
+        {
+            auto _ = std::lock_guard(this->_mutex_queue);
 
-        auto begin = fb::model::datetime();
-        this->handle_idle();
-        auto elapsed = fb::model::datetime() - begin;
+            if (this->_queue.empty() == false)
+            {
+                func = this->_queue.front();
+                this->_queue.pop();
+            }
+        }
 
-        if (elapsed < term)
-            std::this_thread::sleep_for(std::chrono::milliseconds((term - elapsed).total_milliseconds()));
+        if (func != nullptr)
+        {
+            func();
+        }
+        else
+        {
+            auto begin = fb::model::datetime();
+            this->handle_idle();
+            auto elapsed = fb::model::datetime() - begin;
+
+            if (elapsed < term)
+                std::this_thread::sleep_for(std::chrono::milliseconds((term - elapsed).total_milliseconds()));
+        }
     }
 }
 
@@ -88,65 +94,6 @@ void* fb::thread::data() const
     return _data;
 }
 
-async::task<void> fb::thread::dispatch(const fb::thread::async_func_type& fn,
-                                       const fb::model::timespan&         delay,
-                                       uint32_t                           priority)
-{
-    auto promise = std::make_shared<async::task_completion_source<void>>();
-    if (delay > 0s)
-    {
-        this->settimer(
-            [this, priority, promise, fn](auto time, auto id) mutable -> async::task<void> {
-                this->_queue.enqueue(fb::thread::task(fn,
-                                                      [promise]() {
-                                                          promise->set_value();
-                                                      }),
-                                     priority);
-                co_return;
-            },
-            delay,
-            true);
-    }
-    else
-    {
-        this->_queue.enqueue(fb::thread::task(fn,
-                                              [promise]() {
-                                                  promise->set_value();
-                                              }),
-                             priority);
-    }
-
-    return promise->task();
-}
-
-void fb::thread::post(const fb::thread::async_func_type& fn, const fb::model::timespan& delay, uint32_t priority)
-{
-    if (delay > 0s)
-    {
-        this->settimer(
-            [this, priority, fn](auto time, auto id) mutable -> async::task<void> {
-                this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
-                co_return;
-            },
-            delay,
-            true);
-    }
-    else
-    {
-        this->_queue.enqueue(fb::thread::task(fn, nullptr), priority);
-    }
-}
-
-async::task<void> fb::thread::dispatch(uint32_t priority)
-{
-    co_await this->dispatch(
-        []() -> async::task<void> {
-            co_return;
-        },
-        0s,
-        priority);
-}
-
 void fb::thread::settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable)
 {
     auto _ = std::lock_guard(this->_mutex_timer);
@@ -163,34 +110,16 @@ void fb::thread::settimer(const fb::timer_callback& fn, const fb::model::timespa
 
 async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
 {
-    co_await this->dispatch(
-        []() -> async::task<void> {
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    this->settimer(
+        [promise](auto& datetime, auto thread_id) -> async::task<void> {
+            promise->set_value();
             co_return;
         },
-        delay);
-}
+        delay,
+        true);
 
-fb::thread::task::task(const fb::thread::async_func_type& func) :
-    func(func)
-{ }
-
-fb::thread::task::task(const fb::thread::async_func_type& func, const fb::thread::func_type& callback) :
-    func(func),
-    callback(callback)
-{ }
-
-fb::thread::task::task(fb::thread::task&& r) noexcept :
-    func(std::move(r.func)),
-    callback(std::move(r.callback))
-{ }
-
-fb::thread::task::~task()
-{ }
-
-void fb::thread::task::operator= (fb::thread::task&& r) noexcept
-{
-    this->func     = std::move(r.func);
-    this->callback = std::move(r.callback);
+    return promise->task();
 }
 
 std::thread::id fb::thread::id() const
@@ -215,7 +144,7 @@ fb::threads::threads(boost::asio::io_context& context) :
         auto ptr       = std::make_unique<fb::thread>(i);
         auto id        = ptr->id();
         this->_keys[i] = id;
-        this->_threads.insert(std::make_pair(id, std::move(ptr)));
+        this->_threads.insert({id, std::move(ptr)});
     }
 }
 
@@ -302,13 +231,6 @@ bool fb::threads::valid(fb::thread& thread) const
 size_t fb::threads::size() const
 {
     return this->_threads.size();
-}
-
-async::task<void> fb::threads::dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay)
-{
-    auto current = this->current();
-    if (current != nullptr)
-        co_await current->dispatch(fn, delay);
 }
 
 void fb::threads::settimer(const fb::timer_callback& fn, const fb::model::timespan& duration)

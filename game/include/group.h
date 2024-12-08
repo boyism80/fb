@@ -5,97 +5,133 @@
 
 namespace fb::game {
 
-class group
+/**
+ * @brief      This class describes a group.
+ */
+class group : public fb::thread_switchable
 {
 private:
+    context&                 _context;
     uint32_t                 _id;
     std::string              _master;
     std::vector<std::string> _members;
     std::vector<character*>  _active_members;
 
 public:
-    group(uint32_t id)
-    {}
-    group(uint32_t id, const std::string& master, const std::vector<std::string>& members) :
-        _id(id),
-        _master(master),
-        _members(members)
-    { }
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      context  The context
+     * @param[in]  id       The identifier
+     */
+    group(context& context, uint32_t id);
+
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      context  The context
+     * @param[in]  id       The identifier
+     * @param[in]  master   The master
+     * @param[in]  members  The members
+     */
+    group(context& context, uint32_t id, const std::string& master, const std::vector<std::string>& members);
+
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     */
     group(const group&) = delete;
-    group(group&& g) :
-        _id(g._id),
-        _master(g._master),
-        _members(std::move(g._members)),
-        _active_members(std::move(g._active_members))
-    { }
+
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      g     { parameter_description }
+     */
+    group(group&& g);
+
+    /**
+     * @brief      Destroys the object.
+     */
     ~group() = default;
 
 public:
-    uint32_t id() const
-    {
-        return this->_id;
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t id() const;
 
-    void master(const std::string& name)
-    {
-        this->_master = name;
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     */
+    void master(const std::string& name);
 
-    bool inited() const
-    {
-        return !this->_master.empty();
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool inited() const;
 
-    const std::string& master() const
-    {
-        return this->_master;
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::string& master() const;
 
-    void enter(const std::string& name)
-    {
-        auto i = std::find(this->_members.begin(), this->_members.end(), name);
-        if (i != this->_members.end())
-            return;
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     */
+    void enter(const std::string& name);
 
-        this->_members.push_back(name);
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch    { parameter_description }
+     */
+    void enter(fb::game::character& ch);
 
-    void enter(fb::game::character& ch)
-    {
-        auto i = std::find(this->_active_members.begin(), this->_active_members.end(), &ch);
-        if (i != this->_active_members.end())
-            return;
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch    { parameter_description }
+     */
+    void leave_active_member(fb::game::character& ch);
 
-        this->_active_members.push_back(&ch);
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     */
+    void leave(const std::string& name);
 
-    void leave_active_member(fb::game::character& ch)
-    {
-        auto i = std::find(this->_active_members.begin(), _active_members.end(), &ch);
-        if (i == this->_active_members.end())
-            return;
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::vector<fb::game::character*> active_members() const;
 
-        this->_active_members.erase(i);
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::vector<std::string> members() const;
 
-    void leave(const std::string& name)
-    {
-        auto i = std::find(this->_members.begin(), this->_members.end(), name);
-        if (i == this->_members.end())
-            return;
-
-        this->_members.erase(i);
-    }
-
-    std::vector<fb::game::character*> active_members() const
-    {
-        return this->_active_members;
-    }
-
-    std::vector<std::string> members() const
-    {
-        return std::vector<std::string>(this->_members);
-    }
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override;
 };
 
 } // namespace fb::game

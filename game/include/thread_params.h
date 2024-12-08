@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 namespace fb::game {
-    
+
 class thread_params
 {
 public:
@@ -15,6 +15,6 @@ public:
     group_container groups;
 };
 
-}
+} // namespace fb::game
 
 #endif

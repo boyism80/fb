@@ -98,7 +98,8 @@ int fb::model::object::builtin_dialog(lua_State* lua)
         auto button_prev = argc < 4 ? false : thread->toboolean(4);
         auto button_next = argc < 5 ? false : thread->toboolean(5);
 
-        async::awaitable_then(session->dialog.show(*object, message, button_prev, button_next), [](auto reesult) {});
+        async::awaitable_then(session->dialog.show(*object, message, button_prev, button_next), [](auto reesult) {
+        });
         return thread->yield(1);
     }
     catch (std::exception&)

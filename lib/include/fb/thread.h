@@ -21,30 +21,26 @@ namespace fb {
 
 using queue_callback = std::function<void(uint8_t)>;
 
+class thread;
+class threads;
+
+class thread_switchable
+{
+protected:
+    thread_switchable() = default;
+
+public:
+    virtual ~thread_switchable() = default;
+
+public:
+    virtual fb::thread* thread() const = 0;
+};
+
 class thread
 {
 public:
     using async_func_type = std::function<async::task<void>()>;
     using func_type       = std::function<void()>;
-
-public:
-    class task
-    {
-    public:
-        fb::thread::async_func_type func;
-        fb::thread::func_type       callback;
-
-    public:
-        task(const fb::thread::async_func_type& func);
-        task(const fb::thread::async_func_type& func, const fb::thread::func_type& callback);
-        task(const task&) = delete;
-        task(task&&) noexcept;
-        ~task();
-
-    public:
-        void operator= (const task&) = delete;
-        void operator= (task&& r) noexcept;
-    };
 
 private:
     uint8_t           _index = 0;
@@ -57,7 +53,8 @@ private:
     void*                               _data = nullptr;
 
 private:
-    fb::queue<fb::thread::task> _queue;
+    std::queue<std::function<void()>> _queue;
+    std::mutex                        _mutex_queue;
 
 public:
     thread(uint8_t index);
@@ -86,18 +83,110 @@ public:
     }
 
 public:
-    [[nodiscard]] async::task<void> dispatch(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
-    void              post(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
-    [[nodiscard]] async::task<void> dispatch(uint32_t priority = 0);
     void settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable = false);
     [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
+
+    template <typename ReturnType>
+    void enqueue(const std::function<async::task<ReturnType>()>& fn,
+                 const std::function<void(std::exception&)>&     error,
+                 const std::function<void(ReturnType&& value)>&  callback)
+    {
+        this->_queue.push([=]() {
+            async::awaitable_then(fn(), [&](async::awaitable_result<ReturnType> result) {
+                try
+                {
+                    callback(result());
+                }
+                catch (std::exception& e)
+                {
+                    error(e);
+                }
+                catch (...)
+                {
+                    try
+                    {
+                        std::rethrow_exception(std::current_exception());
+                    }
+                    catch (std::exception& e)
+                    {
+                        error(e);
+                    }
+                }
+            });
+        });
+    }
+
+    void enqueue(const std::function<async::task<void>()>&   fn,
+                 const std::function<void(std::exception&)>& error,
+                 const std::function<void()>&                callback)
+    {
+        this->_queue.push([=]() {
+            async::awaitable_then(fn(), [=](async::awaitable_result<void> result) {
+                try
+                {
+                    callback();
+                }
+                catch (std::exception& e)
+                {
+                    error(e);
+                }
+                catch (...)
+                {
+                    try
+                    {
+                        std::rethrow_exception(std::current_exception());
+                    }
+                    catch (std::exception& e)
+                    {
+                        error(e);
+                    }
+                }
+            });
+        });
+    }
+
+    template <typename ReturnType>
+    [[nodiscard]] async::task<ReturnType> dispatch(const std::function<async::task<ReturnType>()>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<void>>();
+        this->enqueue<ReturnType>(
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise](ReturnType&& value) {
+                promise->set_value(value);
+            });
+        return promise->task();
+    }
+
+    [[nodiscard]] async::task<void> dispatch(const std::function<async::task<void>()>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<void>>();
+        this->enqueue(
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise]() {
+                promise->set_value();
+            });
+        return promise->task();
+    }
+
+    [[nodiscard]] async::task<void> switching()
+    {
+        return this->dispatch([]() -> async::task<void> {
+            co_return;
+        });
+    }
 };
 
 class threads
 {
 public:
     using unique_thread  = std::unique_ptr<fb::thread>;
-    using unique_threads = std::map<std::thread::id, unique_thread>;
+    using unique_threads = std::unordered_map<std::thread::id, unique_thread>;
     using unique_id_list = std::unique_ptr<std::thread::id[]>;
 
 private:
@@ -129,9 +218,207 @@ public:
     size_t            size() const;
 
 public:
-    [[nodiscard]] async::task<void> dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay);
-    void              settimer(const fb::timer_callback& fn, const fb::model::timespan& duration);
-    void              exit();
+    template <typename ReturnType>
+    void enqueue(thread_switchable&                              pivot,
+                 const std::function<bool()>&                    condition,
+                 const std::function<async::task<ReturnType>()>& fn,
+                 const std::function<void(std::exception&)>&     error,
+                 const std::function<void(ReturnType&&)>&        callback)
+    {
+        auto thread = pivot.thread();
+        if (thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        thread->enqueue<ReturnType>(
+            [=, this]() -> async::task<void> {
+                if (condition() == false)
+                    throw std::runtime_error("condition not satisfied");
+
+                auto active_thread  = pivot.thread();
+                auto current_thread = this->current();
+                if (active_thread != current_thread)
+                {
+                    this->enqueue(pivot, condition, fn);
+                    throw std::runtime_error("active thread not matched");
+                }
+
+                co_return co_await fn();
+            },
+            error,
+            callback);
+    }
+
+    void enqueue(thread_switchable&                          pivot,
+                 const std::function<bool()>&                condition,
+                 const std::function<async::task<void>()>&   fn,
+                 const std::function<void(std::exception&)>& error,
+                 const std::function<void()>&                callback)
+    {
+        auto thread = pivot.thread();
+        if (thread == nullptr)
+            throw std::runtime_error("no matched thread");
+
+        thread->enqueue(
+            [=, &pivot, this]() -> async::task<void> {
+                if (condition() == false)
+                    throw std::runtime_error("condition not satisfied");
+
+                auto active_thread  = pivot.thread();
+                auto current_thread = this->current();
+                if (active_thread != current_thread)
+                {
+                    this->enqueue(pivot, condition, fn);
+                    throw std::runtime_error("active thread not matched");
+                }
+
+                co_return co_await fn();
+            },
+            error,
+            callback);
+    }
+
+    template <typename ReturnType>
+    void enqueue(thread_switchable&                              pivot,
+                 const std::function<bool()>&                    condition,
+                 const std::function<async::task<ReturnType>()>& fn)
+    {
+        return this->enqueue<ReturnType>(
+            pivot,
+            condition,
+            fn,
+            [](std::exception& e) {
+            },
+            [](ReturnType&& value) {
+            });
+    }
+
+    void enqueue(thread_switchable&                        pivot,
+                 const std::function<bool()>&              condition,
+                 const std::function<async::task<void>()>& fn)
+    {
+        return this->enqueue(
+            pivot,
+            condition,
+            fn,
+            [](std::exception& e) {
+            },
+            []() {
+            });
+    }
+
+    template <typename ReturnType>
+    void enqueue(thread_switchable& pivot, const std::function<async::task<ReturnType>()>& fn)
+    {
+        return this->enqueue(
+            pivot,
+            []() -> bool {
+                return true;
+            },
+            fn,
+            [](std::exception& e) {
+            },
+            [](ReturnType&& value) {
+            });
+    }
+
+    void enqueue(thread_switchable& pivot, const std::function<async::task<void>()>& fn)
+    {
+        return this->enqueue(
+            pivot,
+            []() -> bool {
+                return true;
+            },
+            fn,
+            [](std::exception& e) {
+            },
+            []() {
+            });
+    }
+
+    template <typename ReturnType>
+    [[nodiscard]] async::task<void> dispatch(thread_switchable&                              pivot,
+                                             const std::function<bool()>&                    condition,
+                                             const std::function<async::task<ReturnType>()>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<void>>();
+        this->enqueue(
+            pivot,
+            condition,
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise](ReturnType&& value) {
+                promise->set_value(value);
+            });
+        return promise->task();
+    }
+
+    [[nodiscard]] async::task<void> dispatch(thread_switchable&                        pivot,
+                                             const std::function<bool()>&              condition,
+                                             const std::function<async::task<void>()>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<void>>();
+        this->enqueue(
+            pivot,
+            condition,
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise]() {
+                promise->set_value();
+            });
+        return promise->task();
+    }
+
+    template <typename ReturnType>
+    [[nodiscard]] async::task<void> dispatch(thread_switchable&                              pivot,
+                                             const std::function<async::task<ReturnType>()>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
+        this->enqueue(
+            pivot,
+            []() -> bool {
+                return true;
+            },
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise](ReturnType&& value) {
+                promise->set_value(value);
+            });
+        return promise->task();
+    }
+
+    [[nodiscard]] async::task<void> dispatch(thread_switchable& pivot, const std::function<async::task<void>()>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<void>>();
+        this->enqueue(
+            pivot,
+            []() -> bool {
+                return true;
+            },
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise]() {
+                promise->set_value();
+            });
+        return promise->task();
+    }
+
+    [[nodiscard]] async::task<void> switching(thread_switchable& pivot)
+    {
+        co_await this->dispatch(pivot, []() -> async::task<void> {
+            co_return;
+        });
+    }
+
+    void settimer(const fb::timer_callback& fn, const fb::model::timespan& duration);
+    void exit();
 
 public:
     fb::thread* operator[] (uint8_t index) const;

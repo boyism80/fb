@@ -26,7 +26,6 @@ async::task<void> fb::gateway::context::load_entries()
     auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
     co_await fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
     this->_entry_crc32_cache = this->_entry_stream_cache.crc();
-    co_return true;
 }
 
 fb::stream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)

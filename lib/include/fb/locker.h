@@ -16,11 +16,11 @@ class locker
 private:
     std::shared_mutex _mutex;
     ValueType         _value;
-    fb::icontext&     _context;
+    fb::context&      _context;
 
 public:
     template <typename... Args>
-    locker(fb::icontext& context, Args&&... args) :
+    locker(fb::context& context, Args&&... args) :
         _context(context),
         _value(std::forward<Args>(args)...)
     { }

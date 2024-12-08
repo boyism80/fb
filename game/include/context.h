@@ -2,7 +2,7 @@
 #define __FB_GAME_H__
 
 #include <boost/algorithm/string/join.hpp>
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 #include <fstream>
 #include <fb/acceptor.h>
 #include <character.h>
@@ -166,8 +166,7 @@ private:
     template <typename Func>
     void timer(Func&& func, const std::chrono::steady_clock::duration& duration)
     {
-        auto& threads = this->threads();
-        threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
+        this->threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
     }
 
 private:
@@ -338,12 +337,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::thread* thread(const fb::game::map& map);
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::thread* current_thread() const;
+
     /**
      * @brief      { function_description }
      */

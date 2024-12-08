@@ -16,6 +16,7 @@ extern "C"
 #include <fb/socket.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
+#include <fb/abstract.h>
 
 #define LUA_PROTOTYPE                                \
     static const struct luaL_Reg LUA_METHODS[];      \
@@ -112,12 +113,15 @@ public:
 protected:
     /**
      * @brief      Constructs a new instance.
+     *
+     * @param      context  The context
      */
     luable();
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  id    The identifier
+     * @param      context  The context
+     * @param[in]  id       The identifier
      */
     luable(uint32_t id);
 

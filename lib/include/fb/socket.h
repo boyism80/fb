@@ -16,22 +16,26 @@
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <async/awaitable_get.h>
+#include <fb/abstract.h>
+#include <fb/thread.h>
 
 namespace fb {
 
 template <typename T = void*>
-class socket : public boost::asio::ip::tcp::socket
+class socket : public boost::asio::ip::tcp::socket, public thread_switchable
 {
 public:
+    using handle_read_event   = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
     using handler_event       = std::function<async::task<void>(fb::socket<T>&)>;
     using boost_send_callback = std::function<void(const boost::system::error_code&, size_t)>;
 
 private:
-    fb::cryptor   _crt;
-    handler_event _handle_received;
-    handler_event _handle_closed;
-    uint32_t      _fd = 0xFFFFFFFF;
-    fb::stream    _stream;
+    context&          _context;
+    fb::cryptor       _crt;
+    handle_read_event _handle_received;
+    handler_event     _handle_closed;
+    uint32_t          _fd = 0xFFFFFFFF;
+    fb::stream        _stream;
 
 protected:
     std::array<char, 256> _buffer;
@@ -39,18 +43,20 @@ protected:
     std::recursive_mutex  _boost_mutex;
 
 public:
-    socket(boost::asio::io_context& context, const handler_event& handle_received, const handler_event& handle_closed) :
+    socket(context& context, const handle_read_event& handle_received, const handler_event& handle_closed) :
         boost::asio::ip::tcp::socket(context),
+        _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed)
     { }
 
 public:
-    socket(boost::asio::io_context& context,
+    socket(context&                 context,
            const fb::cryptor&       crt,
-           const handler_event&     handle_received,
+           const handle_read_event& handle_received,
            const handler_event&     handle_closed) :
         boost::asio::ip::tcp::socket(context),
+        _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
         _crt(crt)
@@ -85,7 +91,8 @@ public:
     }
 
 public:
-    [[nodiscard]] async::task<void> send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
+    [[nodiscard]] async::task<void>
+    send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
     {
         if (stream.empty())
             co_return;
@@ -105,7 +112,9 @@ public:
     }
 
 public:
-    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
+    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& response,
+                                         bool                              encrypt = true,
+                                         bool                              wrap    = true)
     {
         static auto empty_fn = [](const boost::system::error_code&, size_t) {
         };
@@ -129,16 +138,17 @@ public:
         {
             while (true)
             {
+                // 1. bytes 읽고 stream에 push
+                // 2. 즉시 매칭되는 핸들러를 획득
+                // 3. 핸들러가 있다면 소켓에 대응되는 스레드를 획득
+                // 4. 스레드가 있다면 해당 스레드의 작업큐에 enqueue, 없으면 바로 실행
                 auto bytes_transferred =
                     co_await this->async_read_some(boost::asio::buffer(this->_buffer), boost::asio::use_awaitable);
-                async::awaitable_get(
-                    this->stream<void>([this, bytes_transferred](fb::stream& stream) -> async::task<void> {
-                        auto writer = fb::stream_writer<big_endian>(stream);
-                        writer.write(this->_buffer.data(), bytes_transferred);
-                        co_return;
-                    }));
 
-                async::awaitable_get(this->_handle_received(*this));
+                auto writer = fb::stream_writer<big_endian>(this->_stream);
+                writer.write(this->_buffer.data(), bytes_transferred);
+
+                this->_handle_received(*this, this->_stream);
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");
             }
@@ -224,16 +234,18 @@ public:
     }
 
 public:
-    template <typename R = void>
-    [[nodiscard]] async::task<R> stream(const std::function<async::task<R>(fb::stream& stream)>& func)
+    virtual fb::thread* thread() const override
     {
-        if constexpr (std::is_void_v<T>)
+        if constexpr (std::is_base_of_v<fb::thread_switchable, T>)
         {
-            co_await func(this->_stream);
+            if (this->_data != nullptr)
+                return this->_data->thread();
+            else
+                return this->_context.threads.modular(this->fd());
         }
         else
         {
-            co_return co_await func(this->_stream);
+            return this->_context.threads.modular(this->fd());
         }
     }
 };

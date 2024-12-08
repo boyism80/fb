@@ -73,7 +73,7 @@ public:
 class redis : public fb::concurrent
 {
 private:
-    icontext&                          _owner;
+    fb::context&                       _owner;
     uint8_t                            _timeout;
     std::map<std::string, std::string> _scripts;
     std::set<std::string>              _routes;
@@ -83,7 +83,7 @@ public:
     redis_pool<cpp_redis::client>     conn;
 
 public:
-    redis(icontext& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) :
+    redis(fb::context& owner, const std::string& ip = "127.0.0.1", uint16_t port = 6379, uint8_t timeout = 5) :
         _owner(owner),
         subs(ip, port),
         conn(ip, port),
@@ -108,12 +108,12 @@ public:
 private:
     template <typename T>
     [[nodiscard]] async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>>             promise,
-                                    const std::function<async::task<T>(fb::dead_lock_detector&)>& fn,
-                                    fb::dead_lock_detector&                                       current,
-                                    const std::string                                             key,
-                                    const std::string                                             uuid,
-                                    std::shared_ptr<cpp_redis::client>                            conn,
-                                    std::shared_ptr<cpp_redis::subscriber>                        subs)
+                                                  const std::function<async::task<T>(fb::dead_lock_detector&)>& fn,
+                                                  fb::dead_lock_detector&                                       current,
+                                                  const std::string                                             key,
+                                                  const std::string                                             uuid,
+                                                  std::shared_ptr<cpp_redis::client>                            conn,
+                                                  std::shared_ptr<cpp_redis::subscriber>                        subs)
     {
         try
         {
@@ -139,10 +139,10 @@ private:
 
     template <typename T>
     [[nodiscard]] async::task<void> handle_locked(std::shared_ptr<async::task_completion_source<T>> promise,
-                                    const std::function<async::task<T>(void)>&        fn,
-                                    const std::string                                 key,
-                                    const std::string                                 uuid,
-                                    std::shared_ptr<cpp_redis::client>                conn)
+                                                  const std::function<async::task<T>(void)>&        fn,
+                                                  const std::string                                 key,
+                                                  const std::string                                 uuid,
+                                                  std::shared_ptr<cpp_redis::client>                conn)
     {
         try
         {
@@ -241,13 +241,14 @@ private:
 
 public:
     template <typename T>
-    [[nodiscard]] async::task_completion_source<T> sync(const std::string&                                            key,
-                                          const std::function<async::task<T>(fb::dead_lock_detector&)>& fn,
-                                          fb::dead_lock_detector&                                       trans)
+    [[nodiscard]] async::task_completion_source<T>
+    sync(const std::string&                                            key,
+         const std::function<async::task<T>(fb::dead_lock_detector&)>& fn,
+         fb::dead_lock_detector&                                       trans)
     {
         auto conn    = this->conn.get();
         auto subs    = this->subs.get();
-        auto thread  = this->_owner.current_thread();
+        auto thread  = this->_owner.threads.current();
         auto uuid    = boost::uuids::to_string(boost::uuids::random_generator()());
         auto promise = std::make_shared<async::task_completion_source<T>>();
 
@@ -268,18 +269,19 @@ public:
     }
 
     template <typename T>
-    [[nodiscard]] async::task_completion_source<T> sync(const std::string&                                            key,
-                                          const std::function<async::task<T>(fb::dead_lock_detector&)>& fn)
+    [[nodiscard]] async::task_completion_source<T>
+    sync(const std::string& key, const std::function<async::task<T>(fb::dead_lock_detector&)>& fn)
     {
         return this->sync(key, fn, this->root);
     }
 
     template <typename T>
-    [[nodiscard]] async::task_completion_source<T> try_sync(const std::string& key, const std::function<async::task<T>(void)>& fn)
+    [[nodiscard]] async::task_completion_source<T> try_sync(const std::string&                         key,
+                                                            const std::function<async::task<T>(void)>& fn)
     {
         return async::task_completion_source<T>([this, key, &fn](auto& promise) mutable {
             auto conn   = this->conn.get();
-            auto thread = this->_owner.current_thread();
+            auto thread = this->_owner.threads.current();
             auto uuid   = boost::uuids::to_string(boost::uuids::random_generator()());
             this->try_lock(key, promise, fn, uuid, conn, thread);
         });

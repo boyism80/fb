@@ -39,7 +39,7 @@ protected:
     header() = default;
 
 public:
-    ~header() = default;
+    virtual ~header() = default;
 
 public:
     virtual async::task<void> serialize(fb::stream_writer<big_endian>& writer) const

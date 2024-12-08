@@ -6,18 +6,29 @@
 
 namespace fb {
 
-class icontext : public boost::asio::ip::tcp::acceptor
+class context : public boost::asio::ip::tcp::acceptor
 {
 protected:
-    icontext(boost::asio::io_context& context, uint16_t port) :
-        boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
+    boost::asio::io_context& _boost_context;
+
+public:
+    fb::threads threads;
+
+protected:
+    context(boost::asio::io_context& context, uint16_t port) :
+        boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+        _boost_context(context),
+        threads(context)
     { }
 
 public:
-    ~icontext() = default;
+    ~context() = default;
 
 public:
-    virtual fb::thread* current_thread() = 0;
+    inline operator boost::asio::io_context& () const
+    {
+        return this->_boost_context;
+    }
 };
 
 } // namespace fb

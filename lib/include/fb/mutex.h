@@ -22,12 +22,12 @@ private:
     using sync_peek_func = std::function<T(void)>;
 
 private:
-    icontext&  _owner;
-    mutex_pool _pool;
-    std::mutex _mutex;
+    fb::context& _owner;
+    mutex_pool   _pool;
+    std::mutex   _mutex;
 
 public:
-    mutex(icontext& owner) :
+    mutex(fb::context& owner) :
         _owner(owner)
     { }
     ~mutex() = default;
@@ -210,7 +210,7 @@ public:
                                       const async_wait_func<T>& fn,
                                       fb::dead_lock_detector&   trans)
     {
-        auto thread  = this->_owner.current_thread();
+        auto thread  = this->_owner.threads.current();
         auto promise = std::make_shared<async::task_completion_source<T>>();
 
         this->lock(key, promise, fn, thread, trans);
@@ -246,7 +246,7 @@ public:
     T try_sync(const std::string& key, const async_peek_func<T>& fn)
     {
         return async::task_completion_source<T>([this, key, &fn](auto& promise) mutable {
-            auto thread = this->_owner.current_thread();
+            auto thread = this->_owner.threads.current();
             this->try_lock(key, promise, fn, thread);
         });
     }

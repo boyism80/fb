@@ -45,13 +45,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
@@ -132,12 +132,13 @@
   <ItemGroup>
     <ClCompile Include="lib\board.cpp" />
     <ClCompile Include="lib\clan.cpp" />
-    <ClCompile Include="lib\context\command.cpp" />
+    <ClCompile Include="lib\context\context.command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />
-    <ClCompile Include="lib\context\handler.cpp" />
+    <ClCompile Include="lib\context\context.handler.cpp" />
     <ClCompile Include="lib\dialog.cpp" />
     <ClCompile Include="lib\door.builtin.cpp" />
     <ClCompile Include="lib\door.cpp" />
+    <ClCompile Include="lib\group.cpp" />
     <ClCompile Include="lib\item\armor.cpp" />
     <ClCompile Include="lib\item\auxiliary.cpp" />
     <ClCompile Include="lib\item\bow.cpp" />

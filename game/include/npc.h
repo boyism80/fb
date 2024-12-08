@@ -114,7 +114,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> hold_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count);
+    [[nodiscard]] async::task<bool> hold_item(fb::game::character&    session,
+                                              const fb::model::item*  item,
+                                              std::optional<uint16_t> count);
     /**
      * @brief      Returns an item.
      *
@@ -164,7 +166,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> rename_weapon(fb::game::character& session, const fb::model::item* item, const std::string& name);
+    [[nodiscard]] async::task<bool> rename_weapon(fb::game::character&   session,
+                                                  const fb::model::item* item,
+                                                  const std::string&     name);
     /**
      * @brief      { function_description }
      *
