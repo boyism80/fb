@@ -33,21 +33,22 @@ bool fb::login::context::decrypt_policy(uint8_t cmd) const
 
 async::task<void> fb::login::context::handle_start()
 {
-    this->bind_timer(
-        [this]() -> async::task<void> {
-            auto&& response =
-                co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
-                    "internal",
-                    "/in-game/ping",
-                    fb::protocol::internal::request::Ping{this->id(),
-                                                          this->name(),
-                                                          this->service(),
-                                                          fb::config<std::string>("ip"),
-                                                          fb::config<uint16_t>("port")});
-        },
-        1s);
+    this->bind_timer(&context::handle_heart_beat, 1s);
 
     co_await fb::acceptor<fb::login::session>::handle_start();
+}
+
+async::task<void> fb::login::context::handle_heart_beat()
+{
+    auto&& response =
+        co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
+            "internal",
+            "/in-game/ping",
+            fb::protocol::internal::request::Ping{this->id(),
+                                                  this->name(),
+                                                  this->service(),
+                                                  fb::config<std::string>("ip"),
+                                                  fb::config<uint16_t>("port")});
 }
 
 bool fb::login::context::is_forbidden(const std::string& str) const

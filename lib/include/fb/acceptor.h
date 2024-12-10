@@ -306,29 +306,36 @@ private:
                 reader.flush(); // remove magic code and size
 
                 if (this->_deserializer.contains(cmd) == false)
-                    throw std::runtime_error(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
+                {
+                    fb::logger::fatal(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
+                }
+                else if (this->_handler.contains(cmd) == false)
+                {
+                    fb::logger::fatal(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
+                }
+                else
+                {
+                    auto protocol =
+                        std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
+                    this->threads.enqueue(
+                        socket,                                        // pivot
+                        [this, protocol, fd = socket.fd()]() -> bool { // condition
+                            if (this->sockets.contains(fd))
+                                return true;
 
-                if (this->_handler.contains(cmd) == false)
-                    throw std::runtime_error(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
+                            return false;
+                        },
+                        [this, cmd, &socket, protocol]() -> async::task<void> { // fn
+                            std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                        },
+                        [](auto& error) { // error
+                            fb::logger::fatal(error.what());
+                        },
+                        []() { // success
 
-                auto protocol = std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
-                this->threads.enqueue(
-                    socket,                                        // pivot
-                    [this, protocol, fd = socket.fd()]() -> bool { // condition
-                        if (this->sockets.contains(fd))
-                            return true;
+                        });
+                }
 
-                        return false;
-                    },
-                    [this, cmd, &socket, protocol]() -> async::task<void> { // fn
-                        std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
-                    },
-                    [](auto& error) { // error
-                        fb::logger::fatal(error.what());
-                    },
-                    []() { // success
-
-                    });
                 reader.seek(size - sizeof(uint8_t));
                 reader.flush(); // remove packet body
             }
@@ -683,12 +690,14 @@ protected:
      * @param[in]  fn        The function
      * @param[in]  duration  The duration
      */
-    void bind_timer(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& duration)
+    template <typename Class>
+    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
     {
+        auto cfunc = std::bind(fn, static_cast<Class*>(this));
         auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
         auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
         auto callback     = [=](const boost::system::error_code&) {
-            async::awaitable_then(fn(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
+            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
                 timer->expires_at(timer->expires_at() +
                                   boost::posix_time::milliseconds(
                                       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));

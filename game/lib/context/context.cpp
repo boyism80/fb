@@ -182,19 +182,7 @@ context::~context()
 
 async::task<void> context::handle_start()
 {
-    this->bind_timer(
-        [this]() -> async::task<void> {
-            auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
-                "internal",
-                "/in-game/ping",
-                internal_reqs::Ping{this->id(),
-                                    this->name(),
-                                    this->service(),
-                                    fb::config<std::string>("ip"),
-                                    fb::config<uint16_t>("port")});
-        },
-        1s);
-
+    this->bind_timer(&context::handle_heart_beat, 1s);
     co_await fb::acceptor<character>::handle_start();
 
     lua::env<context>("context", this);
@@ -294,11 +282,12 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
 
-    this->timer(&context::handle_mob_action, 100ms);                                              // 몹 행동 타이머
-    this->timer(&context::handle_mob_respawn, 60s);                                               // 몹 리젠 타이머
-    this->timer(&context::handle_buff_timer, 1s);                                                 // 버프 타이머
-    this->timer(&context::handle_save_timer, std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
-    this->timer(&context::handle_time, 1min);                                                     // 세계 시간 타이머
+    this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
+    this->bind_thread_timer(&context::handle_mob_respawn, 60s);  // 몹 리젠 타이머
+    this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머
+    this->bind_thread_timer(&context::handle_save_timer,
+                            std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
+    this->bind_timer(&context::handle_time, 1min);                               // 세계 시간 타이머
 
     this->command("맵이동", &context::handle_command_map, true);
     this->command("사운드", &context::handle_command_sound, true);
@@ -2300,6 +2289,8 @@ async::task<void> context::handle_buff_timer(const datetime& now, std::thread::i
 
 async::task<void> context::handle_save_timer(const datetime& now, std::thread::id id)
 {
+    // TODO: thread_params에 세션 넣고 동기화
+    // map에서 탐색하지 않고 직접 저장
     for (auto& [_, map] : this->maps)
     {
         if (map.active == false)
@@ -2323,13 +2314,25 @@ async::task<void> context::handle_save_timer(const datetime& now, std::thread::i
     }
 }
 
-async::task<void> context::handle_time(const datetime& now, std::thread::id id)
+async::task<void> context::handle_time()
 {
     auto updated = datetime();
     if (this->_time.hours() != updated.hours())
         co_await this->send(fb_resp::time(updated.hours()));
 
     this->_time = updated;
+}
+
+async::task<void> context::handle_heart_beat()
+{
+    auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
+        "internal",
+        "/in-game/ping",
+        internal_reqs::Ping{this->id(),
+                            this->name(),
+                            this->service(),
+                            fb::config<std::string>("ip"),
+                            fb::config<uint16_t>("port")});
 }
 
 async::task<bool> context::handle_command(character& session, const std::string& message)

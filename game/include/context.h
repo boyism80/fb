@@ -162,7 +162,7 @@ private:
      * @tparam     Func      { description }
      */
     template <typename Func>
-    void timer(Func&& func, const std::chrono::steady_clock::duration& duration)
+    void bind_thread_timer(Func&& func, const std::chrono::steady_clock::duration& duration)
     {
         this->threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
     }
@@ -791,7 +791,15 @@ public:
      * @param[in]  now   The now
      * @param[in]  id    The identifier
      */
-    [[nodiscard]] async::task<void> handle_time(const datetime& now, std::thread::id id);
+    [[nodiscard]] async::task<void> handle_time();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_heart_beat();
+
     /**
      * @brief      { function_description }
      *

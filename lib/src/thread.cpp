@@ -112,8 +112,7 @@ void fb::thread::settimer(const fb::timer_callback& fn, const fb::model::timespa
 
     auto timer = new fb::timer(
         [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-            fn(fb::model::datetime(), this->_thread.get_id());
-            co_return;
+            co_await fn(fb::model::datetime(), this->_thread.get_id());
         },
         duration,
         disposable);
@@ -131,6 +130,73 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
         delay,
         true);
 
+    return promise->task();
+}
+
+void fb::thread::enqueue(const std::function<async::task<void>()>&   fn,
+                         const std::function<void(std::exception&)>& error,
+                         const std::function<void()>&                callback)
+{
+    auto _ = std::lock_guard(_mutex_queue);
+
+    this->_queue.push([=]() {
+        async::awaitable_then(fn(), [=](async::awaitable_result<void> result) {
+            try
+            {
+                callback();
+            }
+            catch (std::exception& e)
+            {
+                error(e);
+            }
+            catch (...)
+            {
+                try
+                {
+                    std::rethrow_exception(std::current_exception());
+                }
+                catch (std::exception& e)
+                {
+                    error(e);
+                }
+            }
+        });
+    });
+}
+
+async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn)
+{
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    this->enqueue(
+        fn,
+        [promise](std::exception& e) {
+            promise->set_exception(std::make_exception_ptr(e));
+        },
+        [promise]() {
+            promise->set_value();
+        });
+    return promise->task();
+}
+
+async::task<void> fb::thread::switching()
+{
+    return this->dispatch([]() -> async::task<void> {
+        co_return;
+    });
+}
+
+template <typename ReturnType>
+async::task<ReturnType> dispatch(const std::function<async::task<ReturnType>()>& fn)
+{
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    this->enqueue<ReturnType>(
+        fn,
+        [promise](std::exception& e) {
+            promise->set_exception(std::make_exception_ptr(e));
+        },
+        [promise](ReturnType&& value) {
+            promise->set_value(value);
+        });
     return promise->task();
 }
 
@@ -158,6 +224,106 @@ fb::threads::threads(boost::asio::io_context& context) :
         this->_keys[i] = id;
         this->_threads.insert({id, std::move(ptr)});
     }
+}
+
+void fb::threads::enqueue(thread_switchable&                          pivot,
+                          const std::function<bool()>&                condition,
+                          const std::function<async::task<void>()>&   fn,
+                          const std::function<void(std::exception&)>& error,
+                          const std::function<void()>&                callback)
+{
+    auto thread = pivot.thread();
+    if (thread == nullptr)
+        throw std::runtime_error("no matched thread");
+
+    thread->enqueue(
+        [=, &pivot, this]() -> async::task<void> {
+            if (condition() == false)
+                throw std::runtime_error("condition not satisfied");
+
+            auto active_thread  = pivot.thread();
+            auto current_thread = this->current();
+            if (active_thread != current_thread)
+            {
+                this->enqueue(pivot, condition, fn);
+                throw std::runtime_error("active thread not matched");
+            }
+
+            co_return co_await fn();
+        },
+        error,
+        callback);
+}
+
+void fb::threads::enqueue(thread_switchable&                        pivot,
+                          const std::function<bool()>&              condition,
+                          const std::function<async::task<void>()>& fn)
+{
+    return this->enqueue(
+        pivot,
+        condition,
+        fn,
+        [](std::exception& e) {
+        },
+        []() {
+        });
+}
+
+void fb::threads::enqueue(thread_switchable& pivot, const std::function<async::task<void>()>& fn)
+{
+    return this->enqueue(
+        pivot,
+        []() -> bool {
+            return true;
+        },
+        fn,
+        [](std::exception& e) {
+        },
+        []() {
+        });
+}
+
+async::task<void> fb::threads::dispatch(thread_switchable&                        pivot,
+                                        const std::function<bool()>&              condition,
+                                        const std::function<async::task<void>()>& fn)
+{
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    this->enqueue(
+        pivot,
+        condition,
+        fn,
+        [promise](std::exception& e) {
+            promise->set_exception(std::make_exception_ptr(e));
+        },
+        [promise]() {
+            promise->set_value();
+        });
+    return promise->task();
+}
+
+async::task<void> fb::threads::dispatch(thread_switchable& pivot, const std::function<async::task<void>()>& fn)
+{
+    auto promise = std::make_shared<async::task_completion_source<void>>();
+    this->enqueue(
+        pivot,
+        []() -> bool {
+            return true;
+        },
+        fn,
+        [promise](std::exception& e) {
+            promise->set_exception(std::make_exception_ptr(e));
+        },
+        [promise]() {
+            promise->set_value();
+        });
+    return promise->task();
+}
+
+async::task<void> fb::threads::switching(thread_switchable& pivot)
+{
+    co_await this->dispatch(pivot, []() -> async::task<void> {
+        co_return;
+    });
 }
 
 fb::thread* fb::threads::at(uint8_t index) const
