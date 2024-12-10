@@ -14,20 +14,6 @@ fb::login::context::context(boost::asio::io_context& context, uint16_t port) :
     this->bind(&context::handle_create_account);
     this->bind(&context::handle_account_complete);
     this->bind(&context::handle_change_password);
-
-    this->bind_timer(
-        [this]() -> async::task<void> {
-            auto&& response =
-                co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
-                    "internal",
-                    "/in-game/ping",
-                    fb::protocol::internal::request::Ping{this->id(),
-                                                          this->name(),
-                                                          this->service(),
-                                                          fb::config<std::string>("ip"),
-                                                          fb::config<uint16_t>("port")});
-        },
-        1s);
 }
 
 fb::login::context::~context()
@@ -43,6 +29,25 @@ bool fb::login::context::decrypt_policy(uint8_t cmd) const
     default:
         return true;
     }
+}
+
+async::task<void> fb::login::context::handle_start()
+{
+    this->bind_timer(
+        [this]() -> async::task<void> {
+            auto&& response =
+                co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
+                    "internal",
+                    "/in-game/ping",
+                    fb::protocol::internal::request::Ping{this->id(),
+                                                          this->name(),
+                                                          this->service(),
+                                                          fb::config<std::string>("ip"),
+                                                          fb::config<uint16_t>("port")});
+        },
+        1s);
+
+    co_await fb::acceptor<fb::login::session>::handle_start();
 }
 
 bool fb::login::context::is_forbidden(const std::string& str) const

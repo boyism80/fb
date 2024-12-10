@@ -12,10 +12,12 @@ class thread_params
 public:
     using group_container = std::unordered_map<uint32_t, std::unique_ptr<group>>;
     using map_container   = std::unordered_map<uint32_t, fb::game::map*>;
+    using rezen_container = std::vector<fb::game::rezen>;
 
 public:
     group_container groups;
     map_container   maps;
+    rezen_container rezens;
 };
 
 } // namespace fb::game

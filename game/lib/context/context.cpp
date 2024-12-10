@@ -168,20 +168,7 @@ context::context(boost::asio::io_context& context, uint16_t port) : // clang-for
     maps(*this, fb::config<uint32_t>("id")),
     _characters(*this),
     _groups(*this)
-{
-    this->bind_timer(
-        [this]() -> async::task<void> {
-            auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
-                "internal",
-                "/in-game/ping",
-                internal_reqs::Ping{this->id(),
-                                    this->name(),
-                                    this->service(),
-                                    fb::config<std::string>("ip"),
-                                    fb::config<uint16_t>("port")});
-        },
-        1s);
-}
+{ }
 
 context::~context()
 {
@@ -195,6 +182,19 @@ context::~context()
 
 async::task<void> context::handle_start()
 {
+    this->bind_timer(
+        [this]() -> async::task<void> {
+            auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
+                "internal",
+                "/in-game/ping",
+                internal_reqs::Ping{this->id(),
+                                    this->name(),
+                                    this->service(),
+                                    fb::config<std::string>("ip"),
+                                    fb::config<uint16_t>("port")});
+        },
+        1s);
+
     co_await fb::acceptor<character>::handle_start();
 
     lua::env<context>("context", this);
@@ -248,6 +248,14 @@ async::task<void> context::handle_start()
         auto thread = this->threads.modular(id);
         auto params = thread->data<thread_params>();
         params->maps.insert({id, &map});
+
+        if (this->model.mob_spawn.contains(id))
+        {
+            for (auto& spawn : this->model.mob_spawn[id])
+            {
+                params->rezens.push_back(fb::game::rezen(*this, spawn));
+            }
+        }
     }
 
     this->_amqp_thread = std::make_unique<std::thread>(&context::amqp_thread, this);
@@ -2245,9 +2253,12 @@ async::task<void> context::handle_mob_action(const datetime& now, std::thread::i
 
 async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::id id)
 {
-    for (auto& rezen : this->rezen)
+    auto thread = this->threads.at(id);
+    auto params = thread->data<thread_params>();
+
+    for (auto& rezen : params->rezens)
     {
-        rezen.spawn(id);
+        co_await rezen.spawn(id);
     }
     co_return;
 }

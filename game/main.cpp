@@ -43,14 +43,6 @@ int main(int argc, const char** argv)
 
         auto io_context = boost::asio::io_context{};
         auto context    = std::make_unique<fb::game::context>(io_context, fb::config<uint16_t>("port"));
-        context->model.mob_spawn.hook.built =
-            [&context](const fb::model::array_container<fb::model::mob_spawn>& model) {
-                for (auto& spawn : model)
-                {
-                    context->rezen.push_back(fb::game::rezen(*context.get(), spawn));
-                }
-            };
-
         context->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)

@@ -90,6 +90,8 @@ public:
                  const std::function<void(std::exception&)>&     error,
                  const std::function<void(ReturnType&& value)>&  callback)
     {
+        auto _ = std::lock_guard(_mutex_queue);
+
         this->_queue.push([=]() {
             async::awaitable_then(fn(), [&](async::awaitable_result<ReturnType> result) {
                 try
@@ -119,6 +121,8 @@ public:
                  const std::function<void(std::exception&)>& error,
                  const std::function<void()>&                callback)
     {
+        auto _ = std::lock_guard(_mutex_queue);
+
         this->_queue.push([=]() {
             async::awaitable_then(fn(), [=](async::awaitable_result<void> result) {
                 try

@@ -144,7 +144,7 @@ public:
                 auto writer = fb::stream_writer<big_endian>(this->_stream);
                 writer.write(this->_buffer.data(), bytes_transferred);
 
-                this->_handle_received(*this, this->_stream);
+                async::awaitable_get(this->_handle_received(*this, this->_stream));
                 if (this->is_open() == false)
                     throw std::runtime_error("disconnected");
             }

@@ -47,7 +47,7 @@ public:
      *
      * @param[in]  thread_id  The thread identifier
      */
-    async::task<void> spawn(std::thread::id thread_id);
+    [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
 };
 
 /**

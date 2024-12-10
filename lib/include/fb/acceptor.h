@@ -67,9 +67,7 @@ protected:
         fb::context(context, port),
         _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
-    {
-        this->accept();
-    }
+    { }
 
 public:
     /**
@@ -285,53 +283,55 @@ private:
         auto reader = fb::stream_reader<big_endian>(stream);
         try
         {
-            if (reader.readable_size() < base_size)
-                co_return;
-
-            auto head = reader.read<uint8_t>();
-            if (head != 0xAA)
-                throw std::runtime_error("magic code mismatch");
-
-            auto size = reader.read<uint16_t>();
-            if (reader.readable_size() < size)
+            while (!stream.empty())
             {
-                reader.seek(0);
-                co_return;
+                if (reader.readable_size() < base_size)
+                    co_return;
+
+                auto head = reader.read<uint8_t>();
+                if (head != 0xAA)
+                    throw std::runtime_error("magic code mismatch");
+
+                auto size = reader.read<uint16_t>();
+                if (reader.readable_size() < size)
+                {
+                    reader.seek(0);
+                    co_return;
+                }
+
+                auto cmd = reader.read<uint8_t>();
+                if (this->decrypt_policy(cmd))
+                    size = socket.crt().decrypt(stream, reader.seek() - 1, size);
+
+                reader.flush(); // remove magic code and size
+
+                if (this->_deserializer.contains(cmd) == false)
+                    throw std::runtime_error(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
+
+                if (this->_handler.contains(cmd) == false)
+                    throw std::runtime_error(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
+
+                auto protocol = std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
+                this->threads.enqueue(
+                    socket,                                        // pivot
+                    [this, protocol, fd = socket.fd()]() -> bool { // condition
+                        if (this->sockets.contains(fd))
+                            return true;
+
+                        return false;
+                    },
+                    [this, cmd, &socket, protocol]() -> async::task<void> { // fn
+                        std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                    },
+                    [](auto& error) { // error
+                        fb::logger::fatal(error.what());
+                    },
+                    []() { // success
+
+                    });
+                reader.seek(size - sizeof(uint8_t));
+                reader.flush(); // remove packet body
             }
-
-            auto cmd = reader.read<uint8_t>();
-            if (this->decrypt_policy(cmd))
-                size = socket.crt().decrypt(stream, reader.seek() - 1, size);
-
-            reader.flush(); // remove magic code and size
-
-            if (this->_deserializer.contains(cmd) == false)
-                throw std::runtime_error(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
-
-            if (this->_handler.contains(cmd) == false)
-                throw std::runtime_error(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
-
-            auto protocol = co_await this->_deserializer[cmd](reader);
-            this->threads.enqueue(
-                socket,                                        // pivot
-                [this, protocol, fd = socket.fd()]() -> bool { // condition
-                    if (this->sockets.contains(fd))
-                        return true;
-
-                    delete protocol;
-                    return false;
-                },
-                [this, cmd, &socket, protocol]() -> async::task<void> { // fn
-                    std::ignore = co_await this->_handler[cmd](socket, *protocol);
-                },
-                [](auto& error) { // error
-                    fb::logger::fatal(error.what());
-                },
-                []() { // success
-
-                });
-            reader.seek(size - sizeof(uint8_t));
-            reader.flush(); // remove packet body
         }
         catch (std::exception& e)
         {
@@ -811,20 +811,21 @@ public:
      */
     void run()
     {
-        auto threads = std::vector<std::thread>();
-
         this->_running = true;
-        for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
-        {
-            threads.push_back(std::thread([this]() {
-                this->_boost_context.run();
-            }));
-        }
+        this->accept();
 
+        auto threads = std::vector<std::thread>();
         for (int i = 0; i < fb::config<uint32_t>("thread:background"); i++)
         {
             threads.push_back(std::thread([this]() {
                 this->handle_background();
+            }));
+        }
+
+        for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
+        {
+            threads.push_back(std::thread([this]() {
+                this->_boost_context.run();
             }));
         }
 

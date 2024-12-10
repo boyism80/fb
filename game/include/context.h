@@ -61,7 +61,6 @@ public:
 public:
     using object_set          = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param      = fb::protocol::game::request::login::transfer_param;
-    using rezen_container     = std::vector<fb::game::rezen>;
     using protocol_generator  = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
     using character_container = fb::locker<std::unordered_map<std::string, fb::game::character*>>;
     using group_container     = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::locker<fb::game::group>>>>;
@@ -77,7 +76,6 @@ private:
 public:
     fb::model::model model;
     fb::game::maps   maps;
-    rezen_container  rezen;
 
 public:
     /**
