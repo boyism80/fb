@@ -60,6 +60,12 @@ module.exports = {
                             containers: [{
                                 name: "internal",
                                 image: "cshyeon/fb:internal",
+                                imagePullPolicy: "Always",
+                                securityContext: {
+                                    capabilities: {
+                                        add: ["SYS_PTRACE"]
+                                    }
+                                },
                                 ports: [{ containerPort: 80, name: `internal-${index}` }],
                                 env: [
                                 {

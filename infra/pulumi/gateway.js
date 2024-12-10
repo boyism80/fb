@@ -68,6 +68,12 @@ module.exports = function () {
                                 {
                                     name: "gateway",
                                     image: "cshyeon/fb:gateway",
+                                    imagePullPolicy: "Always",
+                                    securityContext: {
+                                        capabilities: {
+                                            add: ["SYS_PTRACE"]
+                                        }
+                                    },
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
                                     ],

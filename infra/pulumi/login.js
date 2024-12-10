@@ -94,6 +94,12 @@ module.exports = function () {
                                     {
                                         name: "login",
                                         image: "cshyeon/fb:login",
+                                        imagePullPolicy: "Always",
+                                        securityContext: {
+                                            capabilities: {
+                                                add: ["SYS_PTRACE"]
+                                            }
+                                        },
                                         ports: [
                                             { containerPort: sectionConf.port, name: `login-${index}` },
                                         ],

@@ -57,7 +57,6 @@ IF(WIN32)
                                 ws2_32)
 ELSE()
   set(CMAKE_CXX_FLAGS_DEBUG "-g")
-  set(CMAKE_CXX_FLAGS_RELEASE "-O3")
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   find_package(Threads REQUIRED)
   target_link_libraries(${DEST} fb

@@ -75,6 +75,12 @@ module.exports = function () {
                                         {
                                             name: "game",
                                             image: "cshyeon/fb:game",
+                                            imagePullPolicy: "Always",
+                                            securityContext: {
+                                                capabilities: {
+                                                    add: ["SYS_PTRACE"]
+                                                }
+                                            },
                                             ports: [
                                                 { containerPort: container.port, name: `game-${index}` },
                                             ],
