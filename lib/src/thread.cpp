@@ -185,21 +185,6 @@ async::task<void> fb::thread::switching()
     });
 }
 
-template <typename ReturnType>
-async::task<ReturnType> dispatch(const std::function<async::task<ReturnType>()>& fn)
-{
-    auto promise = std::make_shared<async::task_completion_source<void>>();
-    this->enqueue<ReturnType>(
-        fn,
-        [promise](std::exception& e) {
-            promise->set_exception(std::make_exception_ptr(e));
-        },
-        [promise](ReturnType&& value) {
-            promise->set_value(value);
-        });
-    return promise->task();
-}
-
 std::thread::id fb::thread::id() const
 {
     return this->_thread.get_id();
