@@ -160,6 +160,16 @@ jobs:
         run: npm install
         working-directory: infra/pulumi
 
+      - name: Shutdown server
+        uses: pulumi/actions@v6
+        id: pulumi
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+        with:
+          work-dir: infra/pulumi
+          command: destroy
+          stack-name: dev
+
       - name: Deploy server
         uses: pulumi/actions@v6
         id: pulumi
