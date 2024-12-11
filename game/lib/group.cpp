@@ -38,37 +38,37 @@ async::task<void> group::update(const std::string& master, const std::vector<std
     this->_master = master;
 
     this->_members.clear();
-    for(auto& member : members)
+    for (auto& member : members)
     {
         this->_members.push_back(member);
     }
 
     this->_active_members.clear();
-    auto g = std::unordered_map<thread*, std::vector<std::string>>();
+    auto g = std::unordered_map<fb::thread*, std::vector<std::string>>();
 
     auto concated = std::vector<std::string>(members);
     concated.push_back(master);
-    for(auto& name : concated)
+    for (auto& name : concated)
     {
-        auto hash = std::hash<std::string>{}(name);
-        auto thread = this->threads.modular(hash);
+        auto hash   = std::hash<std::string>{}(name);
+        auto thread = this->_context.threads.modular(hash);
 
-        if(g.contains(thread) == false)
+        if (g.contains(thread) == false)
             g.insert({thread, std::vector<std::string>{}});
 
         g[thread].push_back(name);
     }
 
-    for(auto& [thread, names] : g)
+    for (auto& [thread, names] : g)
     {
-        if(names.size() == 0)
+        if (names.size() == 0)
             continue;
 
         co_await thread->switching();
         auto params = thread->data<thread_params>();
-        for(auto& name : names)
+        for (auto& name : names)
         {
-            if(params->characters.contains(name) == false)
+            if (params->characters.contains(name) == false)
                 continue;
 
             // ... 다시 생각해볼 필요가 있음;;

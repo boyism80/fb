@@ -189,7 +189,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (group != nullptr)
     {
         co_await group->thread()->switching();
-        group->leave_active_member(*ch);
+        group->leave(*ch);
 
         co_await ch->thread()->switching();
     }
@@ -804,7 +804,7 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
     {
         params->groups.insert(
             {response.group.id,
-             std::make_unique<group>(*this, response.group.id, response.group.master, response.group.members)});
+             std::make_unique<group>(*this, response.group.id)});
     }
 
     // update inserted group data
