@@ -496,11 +496,6 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         if (this->_map_lock)
             co_return false;
 
-        if (map->active == false)
-        {
-            co_return false;
-        }
-
         if (this->_map == map)
         {
             this->position(position, true);
@@ -532,6 +527,9 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             this->_position = point16_t(1, 1);
             co_return true;
         }
+
+        if(map->active == false)
+            co_return false;
 
         // here the character is on some map.
         // set map to null.
