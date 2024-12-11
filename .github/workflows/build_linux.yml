@@ -1,7 +1,9 @@
 name: build fb
 
 on:
-  - push
+  push:
+    branches:
+      - develop
 
 jobs:
   base:
