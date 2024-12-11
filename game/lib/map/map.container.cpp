@@ -12,7 +12,7 @@ map_container::~map_container()
 
 bool map_container::load_data(uint32_t id, std::vector<char>& buffer)
 {
-    auto fname = std::format("map_container/{:06}.map", id);
+    auto fname = std::format("maps/{:06}.map", id);
     auto file  = std::ifstream(fname, std::ios::binary);
     if (file.is_open() == false)
         return false;
@@ -25,7 +25,7 @@ bool map_container::load_data(uint32_t id, std::vector<char>& buffer)
 
 bool map_container::load_block(uint32_t id, Json::Value& buffer)
 {
-    auto          fname = std::format("map_container/{:06}.block", id);
+    auto          fname = std::format("maps/{:06}.block", id);
     std::ifstream file(fname);
     if (file.is_open() == false)
         return false;
