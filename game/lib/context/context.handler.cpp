@@ -67,8 +67,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             [](std::exception& e) {
                 fb::logger::warn(e.what());
             },
-            [name = ch->name()]() {
-                fb::logger::info("{} attaches into matched thread", name);
+            []() {
             });
 
         co_await this->init_option(response.option, *ch);
