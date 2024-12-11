@@ -21,8 +21,6 @@ context::~context()
 
 async::task<void> context::handle_start()
 {
-    this->bind_timer(&context::handle_heart_beat, 1s);
-    this->bind_timer(&context::handle_time, 1min); // 세계 시간 타이머
     co_await fb::acceptor<character>::handle_start();
 
     lua::env<context>("context", this);
@@ -122,6 +120,9 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
 
+    this->bind_timer(&context::handle_heart_beat, 1s);
+    this->bind_timer(&context::handle_time, 1min); // 세계 시간 타이머
+
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
     this->bind_thread_timer(&context::handle_mob_respawn, 60s);  // 몹 리젠 타이머
     this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머
@@ -179,33 +180,38 @@ async::task<bool> context::handle_connected(fb::socket<character>& socket)
 
 async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 {
-    auto session = socket.data();
-    if (session == nullptr)
+    auto ch = socket.data();
+    if (ch == nullptr)
         co_return false;
 
-    session->init(false);
-    auto group = session->group();
+    ch->init(false);
+    auto group = ch->group();
     if (group != nullptr)
     {
         co_await group->thread()->switching();
-        group->leave_active_member(*session);
+        group->leave_active_member(*ch);
 
-        co_await session->thread()->switching();
+        co_await ch->thread()->switching();
     }
 
-    this->_characters.lock<void>([name = session->name()](auto& characters) {
+    this->_characters.lock<void>([name = ch->name()](auto& characters) {
         if (characters.contains(name))
             characters.erase(name);
     });
 
-    fb::logger::info("{}님이 접속을 종료했습니다.", session->name());
+    auto thread = this->threads.modular(std::hash<std::string>{}(ch->name()));
+    co_await thread->switching();
+    auto params = thread->data<thread_params>();
+    params->characters.erase(ch->name());
+    co_await ch->thread()->switching();
 
-    co_await this->save(*session);
-    std::ignore =
-        co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
-                                                                          "/in-game/logout",
-                                                                          internal_reqs::Logout{session->name()});
-    co_await session->destroy();
+    fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
+
+    co_await this->save(*ch);
+    std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
+                                                                                    "/in-game/logout",
+                                                                                    internal_reqs::Logout{ch->name()});
+    co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
 }
@@ -255,35 +261,35 @@ character* context::find(const std::string& name)
 }
 
 async::task<bool> context::init_ch(const internal::Character&           response,
-                                   character&                           session,
+                                   character&                           ch,
                                    const std::optional<transfer_param>& transfer)
 {
     auto map = response.map;
-    session.id(response.id);
-    session.name(response.name);
-    session.pw(response.pw);
-    session.updated_date(datetime(response.updated_date));
-    session.admin(response.admin);
-    co_await session.color(response.color);
-    std::ignore = co_await session.direction(DIRECTION(response.direction));
-    co_await session.look(response.look);
-    co_await session.money(response.money);
-    session.deposited_money(response.deposited_money);
-    session.sex(SEX(response.sex));
-    session.base_hp(response.base_hp);
-    co_await session.hp(response.hp);
-    session.base_mp(response.base_mp);
-    co_await session.mp(response.mp);
-    co_await session.experience(response.exp);
-    co_await session.state(STATE(response.state));
+    ch.id(response.id);
+    ch.name(response.name);
+    ch.pw(response.pw);
+    ch.updated_date(datetime(response.updated_date));
+    ch.admin(response.admin);
+    co_await ch.color(response.color);
+    std::ignore = co_await ch.direction(DIRECTION(response.direction));
+    co_await ch.look(response.look);
+    co_await ch.money(response.money);
+    ch.deposited_money(response.deposited_money);
+    ch.sex(SEX(response.sex));
+    ch.base_hp(response.base_hp);
+    co_await ch.hp(response.hp);
+    ch.base_mp(response.base_mp);
+    co_await ch.mp(response.mp);
+    co_await ch.experience(response.exp);
+    co_await ch.state(STATE(response.state));
 
     if (response.armor_color.has_value())
-        co_await session.armor_color(response.armor_color.value());
+        co_await ch.armor_color(response.armor_color.value());
 
     if (response.disguise.has_value())
-        co_await session.disguise(response.disguise.value());
+        co_await ch.disguise(response.disguise.value());
     else
-        co_await session.undisguise();
+        co_await ch.undisguise();
 
     if (this->maps.contains(map) == false)
         co_return false;
@@ -300,7 +306,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     if (response.group.has_value())
     {
         // auto group = co_await this->_groups.lock<fb::locker<fb::game::group>*>(
-        //     [this, &response, &session](auto& groups) -> async::task<fb::locker<fb::game::group>*> {
+        //     [this, &response, &ch](auto& groups) -> async::task<fb::locker<fb::game::group>*> {
         //         if (groups.contains(response.group.value()))
         //             co_return groups[response.group.value()].get();
 
@@ -330,31 +336,31 @@ async::task<bool> context::init_ch(const internal::Character&           response
         //        co_return groups[group_resp.group.id].get();
         //    });
 
-        // group->template lock<void>([&session, group](auto& g) {
-        //     g.enter(session);
-        //     session.group(group);
+        // group->template lock<void>([&ch, group](auto& g) {
+        //     g.enter(ch);
+        //     ch.group(group);
         // });
     }
 
-    co_return co_await session.map(&this->maps[map], point16_t(position_x, position_y));
+    co_return co_await ch.map(&this->maps[map], point16_t(position_x, position_y));
 }
 
-async::task<void> context::init_option(const internal::Option& response, fb::game::character& session)
+async::task<void> context::init_option(const internal::Option& response, fb::game::character& ch)
 {
-    co_await session.option(SETTING::WHISPER, response.whisper, false);
-    co_await session.option(SETTING::GROUP, response.group, false);
-    co_await session.option(SETTING::ROAR, response.roar, false);
-    co_await session.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
-    co_await session.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
-    co_await session.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
-    co_await session.option(SETTING::FIXED_MOVE, response.fixed_move, false);
-    co_await session.option(SETTING::TRADE, response.trade, false);
-    co_await session.option(SETTING::FAST_MOVE, response.fast_move, false);
-    co_await session.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
-    co_await session.option(SETTING::PK_PROTECT, response.pk_protect, false);
+    co_await ch.option(SETTING::WHISPER, response.whisper, false);
+    co_await ch.option(SETTING::GROUP, response.group, false);
+    co_await ch.option(SETTING::ROAR, response.roar, false);
+    co_await ch.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
+    co_await ch.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
+    co_await ch.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
+    co_await ch.option(SETTING::FIXED_MOVE, response.fixed_move, false);
+    co_await ch.option(SETTING::TRADE, response.trade, false);
+    co_await ch.option(SETTING::FAST_MOVE, response.fast_move, false);
+    co_await ch.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
+    co_await ch.option(SETTING::PK_PROTECT, response.pk_protect, false);
 }
 
-async::task<void> context::init_items(const std::vector<internal::Item>& response, character& session)
+async::task<void> context::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -368,15 +374,15 @@ async::task<void> context::init_items(const std::vector<internal::Item>& respons
             co_await static_cast<weapon*>(item)->custom_name(x.custom_name.value());
 
         if (x.deposited != -1)
-            std::ignore = co_await session.deposit_item(*item);
+            std::ignore = co_await ch.deposit_item(*item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            std::ignore = co_await session.items.add(*item, x.index);
+            std::ignore = co_await ch.items.add(*item, x.index);
         else
-            session.items.wear((EQUIPMENT_PARTS)x.parts, static_cast<equipment*>(item));
+            ch.items.wear((EQUIPMENT_PARTS)x.parts, static_cast<equipment*>(item));
     }
 }
 
-async::task<void> context::init_spells(const std::vector<internal::Spell>& response, character& session)
+async::task<void> context::init_spells(const std::vector<internal::Spell>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -384,7 +390,7 @@ async::task<void> context::init_spells(const std::vector<internal::Spell>& respo
             continue;
 
         auto& model = this->model.spell[x.model];
-        std::ignore = co_await session.spells.add(model, x.slot);
+        std::ignore = co_await ch.spells.add(model, x.slot);
     }
 }
 
@@ -439,8 +445,8 @@ async::task<void> context::send(object&                           object,
         //     if (object.is(OBJECT_TYPE::CHARACTER) == false)
         //         return;
 
-        //    auto& session = static_cast<character&>(object);
-        //    auto  group   = session.group();
+        //    auto& ch = static_cast<character&>(object);
+        //    auto  group   = ch.group();
         //    if (group == nullptr)
         //        return;
 
@@ -502,8 +508,8 @@ context::send(object& object, const protocol_generator& fn, context::scope scope
         //     if (object.is(OBJECT_TYPE::CHARACTER) == false)
         //         return;
 
-        //    auto& session = static_cast<character&>(object);
-        //    auto  group   = session.group();
+        //    auto& ch = static_cast<character&>(object);
+        //    auto  group   = ch.group();
         //    if (group == nullptr)
         //        return;
 
@@ -541,8 +547,8 @@ context::send(object& object, const protocol_generator& fn, context::scope scope
 async::task<void> context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
 {
     co_await this->sockets.each([&response, &map, encrypt](auto& socket) -> async::task<void> {
-        auto session = socket.data();
-        if (session->map() != &map)
+        auto ch = socket.data();
+        if (ch->map() != &map)
             co_return;
 
         co_await socket.send(response, encrypt);
@@ -552,17 +558,17 @@ async::task<void> context::send(const fb::protocol::base::header& response, cons
 async::task<void> context::send(const fb::protocol::base::header& response, bool encrypt)
 {
     co_await this->sockets.each([&response, encrypt](auto& socket) -> async::task<void> {
-        auto session = socket.data();
-        co_await session->send(response, encrypt);
+        auto ch = socket.data();
+        co_await ch->send(response, encrypt);
     });
 }
 
-async::task<void> context::save(character& session)
+async::task<void> context::save(character& ch)
 {
     auto items = std::vector<internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto item = session.items[i];
+        auto item = ch.items[i];
         if (item == nullptr)
             continue;
 
@@ -571,7 +577,7 @@ async::task<void> context::save(character& session)
         items.push_back(protocol);
     }
 
-    for (auto& [parts, equipment] : session.items.equipments())
+    for (auto& [parts, equipment] : ch.items.equipments())
     {
         if (equipment == nullptr)
             continue;
@@ -579,7 +585,7 @@ async::task<void> context::save(character& session)
         items.push_back(equipment->to_protocol());
     }
 
-    auto& deposited_items = session.deposited_items();
+    auto& deposited_items = ch.deposited_items();
     for (int i = 0; i < deposited_items.size(); i++)
     {
         auto item          = deposited_items.at(i);
@@ -591,17 +597,17 @@ async::task<void> context::save(character& session)
     auto spells = std::vector<internal::Spell>();
     for (uint8_t i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto spell = session.spells[i];
+        auto spell = ch.spells[i];
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{session.id(), i, spell->id});
+        spells.push_back(internal::Spell{ch.id(), i, spell->id});
     }
 
     auto&& response = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
-        internal_reqs::Save{session.to_protocol(), items, spells});
+        internal_reqs::Save{ch.to_protocol(), items, spells});
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const
@@ -729,22 +735,22 @@ void context::amqp_thread()
 }
 
 // TODO : 클릭도 인터페이스로
-async::task<void> context::handle_click_mob(character& session, mob& mob)
+async::task<void> context::handle_click_mob(character& ch, mob& mob)
 {
-    co_await this->send(session, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    co_await this->send(ch, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
-void context::handle_click_npc(character& session, npc& npc)
+void context::handle_click_npc(character& ch, npc& npc)
 {
     auto& model = npc.based<fb::model::npc>();
     if (model.script.empty())
         return;
 
-    session.dialog.release();
+    ch.dialog.release();
 
-    session.dialog.from(model.script.c_str())
+    ch.dialog.from(model.script.c_str())
         .func("on_interact")
-        .pushobject(session)
+        .pushobject(ch)
         .pushobject(npc.based<fb::model::npc>())
         .resume(2);
 }
@@ -786,7 +792,7 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
 {
     this->assert_group(response.error, response.member);
 
-    auto  active_thread = this->threads.current();
+    auto active_thread = this->threads.current();
 
     // switch thread that matched with group id
     auto group_thread = threads.modular(response.group.id);
@@ -1002,7 +1008,7 @@ async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& respo
     co_return;
 }
 
-async::task<bool> context::handle_command(character& session, const std::string& message)
+async::task<bool> context::handle_command(character& ch, const std::string& message)
 {
     if (message.starts_with('/') == false)
         co_return false;
@@ -1022,7 +1028,7 @@ async::task<bool> context::handle_command(character& session, const std::string&
     if (found == this->_commands.end())
         co_return false;
 
-    if (found->second.admin && session.admin() == false)
+    if (found->second.admin && ch.admin() == false)
         co_return false;
 
     Json::Value parameters;
@@ -1037,5 +1043,5 @@ async::task<bool> context::handle_command(character& session, const std::string&
             parameters.append(*i);
     }
 
-    co_return co_await found->second.fn(session, parameters);
+    co_return co_await found->second.fn(ch, parameters);
 }

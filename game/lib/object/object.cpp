@@ -507,19 +507,11 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             co_return true;
         }
 
-        // if destination is null, erase cache of map, thread parameters
+        // if destination is null, erase cache of map
         // and broadcast all near characters
         // and set default map(id = 0) and position(1, 1)
         if (map == nullptr)
         {
-            // erase thread parameter
-            if (this->is(OBJECT_TYPE::CHARACTER))
-            {
-                auto thread = this->_map->thread();
-                auto params = thread->data<thread_params>();
-                params->characters.erase(this->name());
-            }
-
             // broadcast near characters
             if (this->_listener != nullptr)
             {
@@ -555,12 +547,6 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         {
             if (thread != this->context.threads.current())
                 co_await thread->switching();
-
-            if (this->is(OBJECT_TYPE::CHARACTER))
-            {
-                auto params = thread->data<thread_params>();
-                params->characters.insert({this->name(), static_cast<character*>(this)});
-            }
         }
 
         // update destination map and position
