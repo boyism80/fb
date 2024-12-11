@@ -1,17 +1,9 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
-#include <stdint.h>
-#include <string>
-#include <stdexcept>
-#include <sstream>
-#include <zlib.h>
-#include <memory>
-#include <door.h>
-#include <sector.h>
-#include <fb/stream.h>
-#include <fb/config.h>
+#include <door/container.h>
 #include <object/container.h>
+#include <sector.h>
 
 namespace fb::game {
 
@@ -45,11 +37,11 @@ private:
     unique_sector _sectors;
 
 public:
-    const context&        context;
-    const fb::model::map& model;
-    object_container      objects = object_container(*this);
-    doors                 doors;
-    const bool            active;
+    const fb::game::context& context;
+    const fb::model::map&    model;
+    object_container         objects = object_container(*this);
+    door_container           doors;
+    const bool               active;
 
 public:
     /**

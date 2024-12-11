@@ -3,18 +3,11 @@
 
 #include <algorithm>
 #include <dialog.h>
-#include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/socket.h>
 #include <fb/string.h>
 #include <fb/locker.h>
 #include <iostream>
-#include <item.h>
 #include <mob.h>
-#include <npc.h>
-#include <optional>
-#include <spell.h>
 #include <sstream>
-#include <stdint.h>
 #include <trade.h>
 
 namespace fb { namespace game {

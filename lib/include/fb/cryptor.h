@@ -3,6 +3,7 @@
 
 #include <fb/stream.h>
 #include <algorithm>
+#include <cstring>
 
 namespace fb {
 

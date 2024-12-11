@@ -1,7 +1,6 @@
 #ifndef __MOB_H__
 #define __MOB_H__
 
-#include <chrono>
 #include <life.h>
 #include <item.h>
 

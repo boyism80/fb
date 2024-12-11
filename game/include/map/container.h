@@ -15,8 +15,8 @@ private:
     std::mutex _mutex;
 
 public:
-    context&       context;
-    const uint32_t host;
+    fb::game::context& context;
+    const uint32_t     host;
 
 public:
     /**

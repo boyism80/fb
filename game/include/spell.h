@@ -1,7 +1,6 @@
 #ifndef __SPELL_H__
 #define __SPELL_H__
 
-#include <vector>
 #include <chrono>
 #include <mmo.h>
 #include <inventory.h>

@@ -1,12 +1,8 @@
 #ifndef __DIALOG_H__
 #define __DIALOG_H__
 
-#include <stdint.h>
-#include <string>
 #include <stack>
 #include <npc.h>
-#include <item.h>
-#include <fb/model/model.h>
 
 namespace fb { namespace game {
 

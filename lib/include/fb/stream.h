@@ -4,6 +4,7 @@
 #include <stdexcept>
 #include <vector>
 #include <zlib.h>
+#include <cstdint>
 #ifdef __linux__
 #include <sys/types.h>
 #endif

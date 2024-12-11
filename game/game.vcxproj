@@ -142,6 +142,7 @@
     <ClCompile Include="lib\context\context.timer.thread.cpp" />
     <ClCompile Include="lib\dialog.cpp" />
     <ClCompile Include="lib\door.builtin.cpp" />
+    <ClCompile Include="lib\door.container.cpp" />
     <ClCompile Include="lib\door.cpp" />
     <ClCompile Include="lib\group.cpp" />
     <ClCompile Include="lib\item\armor.cpp" />

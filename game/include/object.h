@@ -1,11 +1,8 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
-#include <mmo.h>
 #include <spell.h>
 #include <lua.h>
-#include <fb/stream.h>
-#include <fb/model/model.h>
 
 using namespace fb::model;
 using namespace fb::model::enum_value;
