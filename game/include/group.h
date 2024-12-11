@@ -2,6 +2,7 @@
 #define __GROUP_H__
 
 #include <character.h>
+#include <async/task.h>
 
 namespace fb::game {
 
@@ -29,16 +30,6 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The context
-     * @param[in]  id       The identifier
-     * @param[in]  master   The master
-     * @param[in]  members  The members
-     */
-    group(context& context, uint32_t id, const std::string& master, const std::vector<std::string>& members);
-
-    /**
-     * @brief      Constructs a new instance.
-     *
      * @param[in]  <unnamed>  { parameter_description }
      */
     group(const group&) = delete;
@@ -59,16 +50,31 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
+     * @param      ch    { parameter_description }
      */
-    uint32_t id() const;
+    void enter(fb::game::character& ch);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  name  The name
+     * @param      ch    { parameter_description }
      */
-    void master(const std::string& name);
+    void leave(fb::game::character& ch);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  master   The master
+     * @param[in]  members  The members
+     */
+    async::task<void> update(const std::string& master, const std::vector<std::string>& members);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t id() const;
 
     /**
      * @brief      { function_description }
@@ -87,37 +93,9 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  name  The name
-     */
-    void enter(const std::string& name);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch    { parameter_description }
-     */
-    void enter(fb::game::character& ch);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch    { parameter_description }
-     */
-    void leave_active_member(fb::game::character& ch);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name  The name
-     */
-    void leave(const std::string& name);
-
-    /**
-     * @brief      { function_description }
-     *
      * @return     { description_of_the_return_value }
      */
-    std::vector<fb::game::character*> active_members() const;
+    std::vector<fb::game::character*> characters() const;
 
     /**
      * @brief      { function_description }

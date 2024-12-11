@@ -1,19 +1,13 @@
-#include "group.h"
-#include "context.h"
+#include <group.h>
+#include <context.h>
 
-fb::game::group::group(context& context, uint32_t id) :
+using namespace fb::game;
+
+group::group(context& context, uint32_t id) :
     _context(context)
 { }
-fb::game::group::group(context&                        context,
-                       uint32_t                        id,
-                       const std::string&              master,
-                       const std::vector<std::string>& members) :
-    _context(context),
-    _id(id),
-    _master(master),
-    _members(members)
-{ }
-fb::game::group::group(group&& g) :
+
+group::group(group&& g) :
     _context(g._context),
     _id(g._id),
     _master(g._master),
@@ -21,36 +15,7 @@ fb::game::group::group(group&& g) :
     _active_members(std::move(g._active_members))
 { }
 
-uint32_t fb::game::group::id() const
-{
-    return this->_id;
-}
-
-void fb::game::group::master(const std::string& name)
-{
-    this->_master = name;
-}
-
-bool fb::game::group::inited() const
-{
-    return !this->_master.empty();
-}
-
-const std::string& fb::game::group::master() const
-{
-    return this->_master;
-}
-
-void fb::game::group::enter(const std::string& name)
-{
-    auto i = std::find(this->_members.begin(), this->_members.end(), name);
-    if (i != this->_members.end())
-        return;
-
-    this->_members.push_back(name);
-}
-
-void fb::game::group::enter(fb::game::character& ch)
+void group::enter(character& ch)
 {
     auto i = std::find(this->_active_members.begin(), this->_active_members.end(), &ch);
     if (i != this->_active_members.end())
@@ -59,7 +24,7 @@ void fb::game::group::enter(fb::game::character& ch)
     this->_active_members.push_back(&ch);
 }
 
-void fb::game::group::leave_active_member(fb::game::character& ch)
+void group::leave(character& ch)
 {
     auto i = std::find(this->_active_members.begin(), _active_members.end(), &ch);
     if (i == this->_active_members.end())
@@ -68,26 +33,75 @@ void fb::game::group::leave_active_member(fb::game::character& ch)
     this->_active_members.erase(i);
 }
 
-void fb::game::group::leave(const std::string& name)
+async::task<void> group::update(const std::string& master, const std::vector<std::string>& members)
 {
-    auto i = std::find(this->_members.begin(), this->_members.end(), name);
-    if (i == this->_members.end())
-        return;
+    this->_master = master;
 
-    this->_members.erase(i);
+    this->_members.clear();
+    for(auto& member : members)
+    {
+        this->_members.push_back(member);
+    }
+
+    this->_active_members.clear();
+    auto g = std::unordered_map<thread*, std::vector<std::string>>();
+
+    auto concated = std::vector<std::string>(members);
+    concated.push_back(master);
+    for(auto& name : concated)
+    {
+        auto hash = std::hash<std::string>{}(name);
+        auto thread = this->threads.modular(hash);
+
+        if(g.contains(thread) == false)
+            g.insert({thread, std::vector<std::string>{}});
+
+        g[thread].push_back(name);
+    }
+
+    for(auto& [thread, names] : g)
+    {
+        if(names.size() == 0)
+            continue;
+
+        co_await thread->switching();
+        auto params = thread->data<thread_params>();
+        for(auto& name : names)
+        {
+            if(params->characters.contains(name) == false)
+                continue;
+
+            // ... 다시 생각해볼 필요가 있음;;
+        }
+    }
 }
 
-std::vector<fb::game::character*> fb::game::group::active_members() const
+uint32_t group::id() const
+{
+    return this->_id;
+}
+
+bool group::inited() const
+{
+    return !this->_master.empty();
+}
+
+const std::string& group::master() const
+{
+    return this->_master;
+}
+
+std::vector<character*> group::characters() const
 {
     return this->_active_members;
 }
 
-std::vector<std::string> fb::game::group::members() const
+std::vector<std::string> group::members() const
 {
     return std::vector<std::string>(this->_members);
 }
 
-fb::thread* fb::game::group::thread() const
+fb::thread* group::thread() const
 {
     return this->_context.threads.modular(this->_id);
 }
