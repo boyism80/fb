@@ -510,6 +510,26 @@ async::task<void> context::on_level_up(character& me)
 
 async::task<void> context::on_map_changed(object& me, map* before, map* after)
 {
+    // if(me.is(OBJECT_TYPE::CHARACTER))
+    // {
+    //     auto before_thread = before != nullptr ? before->thread() : nullptr;
+    //     auto after_thread = after != nullptr ? after->thread() : nullptr;
+    //     if(before_thread != after_thread)
+    //     {
+    //         if(before_thread != nullptr)
+    //         {
+    //             auto params = before_thread->data<thread_params>();
+    //             params.characters.remove(me.name());
+    //         }
+
+    //         if(after_thread != nullptr)
+    //         {
+    //             auto params = after_thread->data<thread_params>();
+    //             params.characters.insert({me.name(), static_cast<character*>(&me)});
+    //         }
+    //     }
+    // }
+
     if (after == nullptr)
         co_return;
 

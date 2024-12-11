@@ -496,26 +496,9 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         if (this->_map_lock)
             co_return false;
 
-        if (map == nullptr)
+        if (map->active == false)
         {
-            if (this->_map != nullptr)
-            {
-                if (this->_listener != nullptr)
-                {
-                    for (auto x : this->_map->nears(this->_position))
-                    {
-                        if (x != this)
-                            co_await this->_listener->on_hide(*x, *this, destroy_type);
-                    }
-                }
-                co_await this->on_map_changed(this->_map);
-
-                this->_map->objects.pop(*this);
-                this->sector(nullptr);
-                this->_map = nullptr;
-            }
-            this->_position = point16_t(1, 1); // 가상계 위치
-            co_return true;
+            co_return false;
         }
 
         if (this->_map == map)
@@ -524,35 +507,78 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             co_return true;
         }
 
-        if (map->active == false)
+        // if destination is null, erase cache of map, thread parameters
+        // and broadcast all near characters
+        // and set default map(id = 0) and position(1, 1)
+        if (map == nullptr)
         {
-            co_return false;
+            // erase thread parameter
+            if (this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto thread = this->_map->thread();
+                auto params = thread->data<thread_params>();
+                params->characters.erase(this->name());
+            }
+
+            // broadcast near characters
+            if (this->_listener != nullptr)
+            {
+                for (auto x : this->_map->nears(this->_position))
+                {
+                    if (x != this)
+                        co_await this->_listener->on_hide(*x, *this, destroy_type);
+                }
+            }
+            co_await this->on_map_changed(this->_map);
+
+            // erase cache of map
+            this->_map->objects.pop(*this);
+
+            // reset default map and position
+            this->sector(nullptr);
+            this->_map      = nullptr;
+            this->_position = point16_t(1, 1);
+            co_return true;
         }
 
-        auto before     = this->_map;
-        auto position_x = position;
-        if (this->_map != nullptr)
-        {
-            std::ignore = co_await this->map(nullptr);
-        }
-        this->_map_lock = true;
+        // here the character is on some map.
+        // set map to null.
+        auto before_map      = this->_map;
+        auto before_position = position;
+        std::ignore          = co_await this->map(nullptr);
+        this->_map_lock      = true;
 
-        if (map != nullptr)
+        // switch thread of destination map
+        // and insert character into thread cache.
+        auto thread = map->thread();
+        if (thread != nullptr)
         {
-            auto thread = map->thread();
-            if (thread != nullptr && thread != this->context.threads.current())
+            if (thread != this->context.threads.current())
                 co_await thread->switching();
+
+            if (this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto params = thread->data<thread_params>();
+                params->characters.insert({this->name(), static_cast<character*>(this)});
+            }
         }
 
+        // update destination map and position
         this->_map = map;
         this->assert_thread();
 
-        this->_position = position_x;
+        this->_position = before_position;
         co_await this->on_map_changed(this->_map);
+
+        // update section
         this->_map->update(*this);
+
+        // insert character into map cache
         this->_map->objects.push(*this);
+
+        // broadcast near characters
         if (this->_listener != nullptr)
-            co_await this->_listener->on_map_changed(*this, before, map);
+            co_await this->_listener->on_map_changed(*this, before_map, map);
 
         for (auto x : map->nears(this->_position))
         {

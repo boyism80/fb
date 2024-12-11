@@ -47,19 +47,18 @@ async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::
 
 async::task<void> context::handle_buff_timer(const datetime& now, std::thread::id id)
 {
-    for (auto& [_, map] : this->maps)
+    auto thread = this->threads.at(id);
+    auto params = thread->data<thread_params>();
+
+    for (auto& [_, map] : params->maps)
     {
-        if (map.active == false)
+        if (map->active == false)
             continue;
 
-        auto thread = this->thread(map);
-        if (thread != nullptr && thread->id() != id)
+        if (map->objects.size() == 0)
             continue;
 
-        if (map.objects.size() == 0)
-            continue;
-
-        for (auto& [fd, obj] : map.objects)
+        for (auto& [fd, obj] : map->objects)
         {
             if (obj.buffs.size() == 0)
                 continue;
@@ -82,27 +81,11 @@ async::task<void> context::handle_buff_timer(const datetime& now, std::thread::i
 
 async::task<void> context::handle_save_timer(const datetime& now, std::thread::id id)
 {
-    // TODO: thread_params에 세션 넣고 동기화
-    // map에서 탐색하지 않고 직접 저장
-    for (auto& [_, map] : this->maps)
+    auto thread = this->threads.at(id);
+    auto params = thread->data<thread_params>();
+
+    for (auto& [_, character] : params->characters)
     {
-        if (map.active == false)
-            continue;
-
-        auto thread = this->thread(map);
-        if (thread != nullptr && thread->id() != id)
-            continue;
-
-        if (map.objects.size() == 0)
-            continue;
-
-        for (auto& [fd, obj] : map.objects)
-        {
-            if (obj.is(OBJECT_TYPE::CHARACTER) == false)
-                continue;
-
-            auto session = static_cast<character*>(&obj);
-            co_await this->save(*session);
-        }
+        co_await this->save(*character);
     }
 }

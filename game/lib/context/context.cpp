@@ -786,13 +786,13 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
 {
     this->assert_group(response.error, response.member);
 
-    auto& threads       = this->threads;
-    auto  active_thread = threads.current();
+    auto  active_thread = this->threads.current();
 
     // switch thread that matched with group id
     auto group_thread = threads.modular(response.group.id);
     co_await group_thread->switching();
 
+    // insert group if not exists in matched thread
     auto params = group_thread->data<thread_params>();
     if (params->groups.contains(response.group.id) == false)
     {
@@ -801,6 +801,7 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
              std::make_unique<group>(*this, response.group.id, response.group.master, response.group.members)});
     }
 
+    // update inserted group data
     auto group = params->groups[response.group.id].get();
     this->_characters.lock<void>([this, &response, group](auto& characters) {
         auto members = std::vector<fb::game::character*>();
