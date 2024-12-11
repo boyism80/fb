@@ -9,9 +9,6 @@ fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready
 {
     for (auto& [map, spawns] : this->_context.model.npc_spawn)
     {
-        if (this->_context.maps[map].active == false)
-            continue;
-
         for (auto& spawn : spawns)
             co_yield spawn;
     }
@@ -19,16 +16,25 @@ fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready
 
 void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& value)
 {
-    auto& model  = value.get();
-    auto& map    = this->_context.maps[model.parent];
-    auto  thread = this->_context.thread(map);
+    auto& spawn_model = value.get();
+    auto& npc_model   = this->_context.model.npc[spawn_model.npc];
+    auto& map_model   = this->_context.model.map[spawn_model.parent];
+    if (this->_context.maps.contains(spawn_model.parent) == false)
+        throw std::runtime_error(
+            std::format("NPC {}를 배치할 수 없습니다. {} 맵이 로드되지 않았습니다.", npc_model.name, map_model.name));
+
+    auto& map = this->_context.maps[spawn_model.parent];
+    if (map.active == false)
+        return;
+
+    auto thread = this->_context.thread(map);
     if (thread == nullptr)
         throw std::runtime_error("thread exception");
 
-    auto task = thread->dispatch([this, &model, &map]() -> async::task<void> {
-        auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[model.npc]);
-        async::awaitable_get(npc->map(&map, model.position));
-        std::ignore = co_await npc->direction(model.direction);
+    auto task = thread->dispatch([this, &spawn_model, &map]() -> async::task<void> {
+        auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[spawn_model.npc]);
+        async::awaitable_get(npc->map(&map, spawn_model.position));
+        std::ignore = co_await npc->direction(spawn_model.direction);
         co_return;
     });
     async::awaitable_get(task);

@@ -46,10 +46,12 @@ void map_container::load(const fb::model::map& model)
     if (active)
     {
         if (load_data(model.id, binary) == false)
-            throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA);
+            throw std::runtime_error(
+                std::format("{} ({})", const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA, model.name));
 
         if (load_block(model.id, blocks) == false)
-            throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK);
+            throw std::runtime_error(
+                std::format("{} ({})", const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK, model.name));
     }
 
     auto map = new fb::game::map(this->context, model, active, binary.data(), binary.size());
