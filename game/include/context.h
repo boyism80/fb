@@ -15,6 +15,7 @@
 #include <listener.h>
 #include <fb/locker.h>
 #include <thread_params.h>
+#include <map/container.h>
 
 using namespace fb::protocol::internal;
 namespace fb_reqs       = fb::protocol::game::request;
@@ -59,23 +60,24 @@ public:
     };
 
 public:
-    using object_set          = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using object_set          = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param      = fb::protocol::game::request::login::transfer_param;
     using protocol_generator  = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
     using character_container = fb::locker<std::unordered_map<std::string, fb::game::character*>>;
     using group_container     = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::locker<fb::game::group>>>>;
+    using command_container   = std::unordered_map<std::string, command_config>;
 
 private:
-    std::map<std::string, command_config> _commands;
-    datetime                              _time;
-    std::unique_ptr<fb::amqp::socket>     _amqp;
-    std::unique_ptr<std::thread>          _amqp_thread;
-    character_container                   _characters;
-    group_container                       _groups;
+    command_container                 _commands;
+    datetime                          _time;
+    std::unique_ptr<fb::amqp::socket> _amqp;
+    std::unique_ptr<std::thread>      _amqp_thread;
+    character_container               _characters;
+    group_container                   _groups;
 
 public:
-    fb::model::model model;
-    fb::game::maps   maps;
+    fb::model::model        model;
+    fb::game::map_container maps;
 
 public:
     /**
@@ -1296,15 +1298,14 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    [[nodiscard]] async::task<void> on_item_get(character& me, const std::map<uint8_t, fb::game::item*>& items) final;
+    [[nodiscard]] async::task<void> on_item_get(character& me, const item::container& items) final;
     /**
      * @brief      Called when item changed.
      *
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    [[nodiscard]] async::task<void> on_item_changed(character&                                me,
-                                                    const std::map<uint8_t, fb::game::item*>& items) final;
+    [[nodiscard]] async::task<void> on_item_changed(character& me, const item::container& items) final;
     /**
      * @brief      Called on item lost.
      *

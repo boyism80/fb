@@ -412,7 +412,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void>
-    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
+    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
     {
         auto& crt    = socket.crt();
         auto  params = fb::stream();
@@ -446,7 +446,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void>
-    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
+    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
     {
         co_await this->transfer(socket, inet_addr(ip.c_str()), port, from);
     }
@@ -463,11 +463,11 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                   socket,
-                                             uint32_t                         ip,
-                                             uint16_t                         port,
-                                             fb::protocol::internal::services from,
-                                             const fb::stream&                parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
+                                             uint32_t                        ip,
+                                             uint16_t                        port,
+                                             fb::protocol::internal::Service from,
+                                             const fb::stream&               parameter)
     {
         auto& crt    = socket.crt();
         auto  header = fb::stream();
@@ -502,11 +502,11 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                   socket,
-                                             const std::string&               ip,
-                                             uint16_t                         port,
-                                             fb::protocol::internal::services from,
-                                             const fb::stream&                parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
+                                             const std::string&              ip,
+                                             uint16_t                        port,
+                                             fb::protocol::internal::Service from,
+                                             const fb::stream&               parameter)
     {
         co_await this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
     }

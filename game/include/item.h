@@ -28,6 +28,7 @@ class item : public object
 {
 public:
     using model_type = fb::model::item;
+    using container  = std::unordered_map<uint8_t, fb::game::item*>;
 
 public:
     friend class items;

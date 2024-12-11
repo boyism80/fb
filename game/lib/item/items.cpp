@@ -123,7 +123,7 @@ async::task<uint8_t> fb::game::items::add(fb::game::item* item)
 async::task<std::vector<uint8_t>> fb::game::items::add(const std::vector<fb::game::item*>& items, bool stop_if_remained)
 {
     auto indices  = std::vector<uint8_t>();
-    auto updates  = std::map<uint8_t, fb::game::item*>();
+    auto updates  = fb::game::item::container();
     auto listener = this->_owner.get_listener<fb::game::character>();
 
     for (auto item : items)
@@ -677,7 +677,7 @@ async::task<fb::game::item*> fb::game::items::remove(uint8_t index, uint16_t cou
             co_await listener->on_item_lost(this->_owner, std::vector<uint8_t>{index});
         else
             co_await listener->on_item_changed(this->_owner,
-                                               std::map<uint8_t, fb::game::item*>{
+                                               fb::game::item::container{
                                                    {index, current}
             });
     }

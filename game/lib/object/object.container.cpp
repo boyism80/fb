@@ -1,12 +1,12 @@
-#include <map.h>
+#include <object/container.h>
 
 using namespace fb::game;
 
-objects::objects(fb::game::map& map) :
+object_container::object_container(fb::game::map& map) :
     owner(map)
 { }
 
-uint32_t objects::empty_seq()
+uint32_t object_container::empty_seq()
 {
 
     for (int i = this->_sequence; i < 0xFFFF; i++)
@@ -30,37 +30,37 @@ uint32_t objects::empty_seq()
     return 0xFFFF;
 }
 
-objects::iterator objects::begin()
+object_container::iterator object_container::begin()
 {
     return this->_refs.begin();
 }
 
-objects::iterator objects::end()
+object_container::iterator object_container::end()
 {
     return this->_refs.end();
 }
 
-objects::const_iterator objects::begin() const
+object_container::const_iterator object_container::begin() const
 {
     return this->_refs.cbegin();
 }
 
-objects::const_iterator objects::end() const
+object_container::const_iterator object_container::end() const
 {
     return this->_refs.cend();
 }
 
-uint32_t objects::size() const
+uint32_t object_container::size() const
 {
     return this->_refs.size();
 }
 
-fb::game::object& objects::at(uint32_t i)
+fb::game::object& object_container::at(uint32_t i)
 {
     return this->_refs.at(i);
 }
 
-void objects::push(fb::game::object& obj)
+void object_container::push(fb::game::object& obj)
 {
     auto seq = this->empty_seq();
     obj.sequence(seq);
@@ -69,7 +69,7 @@ void objects::push(fb::game::object& obj)
     this->_refs.insert({seq, obj});
 }
 
-fb::game::object& objects::pop(uint32_t seq)
+fb::game::object& object_container::pop(uint32_t seq)
 {
     auto raw = this->try_pop(seq);
     if (raw == nullptr)
@@ -78,12 +78,12 @@ fb::game::object& objects::pop(uint32_t seq)
     return *raw;
 }
 
-fb::game::object& objects::pop(fb::game::object& obj)
+fb::game::object& object_container::pop(fb::game::object& obj)
 {
     return this->pop(obj.sequence());
 }
 
-fb::game::object* objects::try_pop(uint32_t seq)
+fb::game::object* object_container::try_pop(uint32_t seq)
 {
     if (this->_ptrs.contains(seq) == false)
         return nullptr;
@@ -97,12 +97,12 @@ fb::game::object* objects::try_pop(uint32_t seq)
     return raw;
 }
 
-fb::game::object* objects::try_pop(fb::game::object& obj)
+fb::game::object* object_container::try_pop(fb::game::object& obj)
 {
     return this->try_pop(obj.sequence());
 }
 
-fb::game::object* objects::operator[] (uint32_t seq)
+fb::game::object* object_container::operator[] (uint32_t seq)
 {
     if (this->_ptrs.contains(seq) == false)
         return nullptr;
@@ -111,7 +111,7 @@ fb::game::object* objects::operator[] (uint32_t seq)
     return ptr.get();
 }
 
-void objects::foreach (OBJECT_TYPE type, const objects::filter_func& fn)
+void object_container::foreach (OBJECT_TYPE type, const object_container::handle_predicate_type& fn)
 {
     for (auto& [seq, obj] : *this)
     {
@@ -123,7 +123,7 @@ void objects::foreach (OBJECT_TYPE type, const objects::filter_func& fn)
     }
 }
 
-bool objects::contains(const fb::game::object& x) const
+bool object_container::contains(const fb::game::object& x) const
 {
     for (auto& [seq, obj] : *this)
     {
@@ -134,7 +134,7 @@ bool objects::contains(const fb::game::object& x) const
     return false;
 }
 
-bool objects::contains(uint32_t fd) const
+bool object_container::contains(uint32_t fd) const
 {
     for (auto& [seq, obj] : *this)
     {

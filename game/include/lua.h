@@ -657,8 +657,8 @@ public:
 class main : public context
 {
 public:
-    using unique_lua_map = std::map<lua_State*, std::unique_ptr<thread>>;
-    using bytecode_set   = std::map<std::string, std::vector<char>>;
+    using unique_lua_map = std::unordered_map<lua_State*, std::unique_ptr<thread>>;
+    using bytecode_set   = std::unordered_map<std::string, std::vector<char>>;
 
 private:
     bytecode_set _bytecodes;

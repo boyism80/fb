@@ -16,22 +16,22 @@ void fb::dead_lock_detector::assert_circulated_lock() const
                 auto& begin = (*i1).get();
                 auto& end   = (*i2).get();
 
-                if (begin.data == end.data)
-                {
-                    auto sstream = std::stringstream();
-                    for (auto& n : route)
-                    {
-                        auto& key = n.get().data;
-                        if (key == begin.data || key == end.data)
-                            sstream << '[' << key << ']';
-                        else
-                            sstream << key;
+                if (begin.data != end.data)
+                    continue;
 
-                        if (key != (*last).get().data)
-                            sstream << '-';
-                    }
-                    errors.push_back(sstream.str());
+                auto sstream = std::stringstream();
+                for (auto& n : route)
+                {
+                    auto& key = n.get().data;
+                    if (key == begin.data || key == end.data)
+                        sstream << '[' << key << ']';
+                    else
+                        sstream << key;
+
+                    if (key != (*last).get().data)
+                        sstream << '-';
                 }
+                errors.push_back(sstream.str());
             }
         }
 
@@ -79,22 +79,25 @@ void fb::dead_lock_detector::assert_dead_lock(const fb::dead_lock_detector& node
                 auto& end   = (*i2).get();
 
                 auto found = this->search(end);
-                if (found != nullptr && found->search(begin) != nullptr)
-                {
-                    auto sstream = std::stringstream();
-                    for (auto& n : route)
-                    {
-                        auto& key = n.get().data;
-                        if (key == begin.data || key == end.data)
-                            sstream << '[' << key << ']';
-                        else
-                            sstream << key;
+                if (found == nullptr)
+                    continue;
 
-                        if (key != (*last).get().data)
-                            sstream << '-';
-                    }
-                    errors.push_back(sstream.str());
+                if (found->search(begin) == nullptr)
+                    continue;
+
+                auto sstream = std::stringstream();
+                for (auto& n : route)
+                {
+                    auto& key = n.get().data;
+                    if (key == begin.data || key == end.data)
+                        sstream << '[' << key << ']';
+                    else
+                        sstream << key;
+
+                    if (key != (*last).get().data)
+                        sstream << '-';
                 }
+                errors.push_back(sstream.str());
             }
         }
 

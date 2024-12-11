@@ -2,7 +2,7 @@
 #define __ABSTRACT_H__
 
 #include <boost/asio.hpp>
-#include <fb/thread.h>
+#include <fb/thread_container.h>
 
 namespace fb {
 
@@ -12,23 +12,16 @@ protected:
     boost::asio::io_context& _boost_context;
 
 public:
-    fb::threads threads;
+    thread_container threads;
 
 protected:
-    context(boost::asio::io_context& context, uint16_t port) :
-        boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
-        _boost_context(context),
-        threads(context)
-    { }
+    context(boost::asio::io_context& context, uint16_t port);
 
 public:
     ~context() = default;
 
 public:
-    inline operator boost::asio::io_context& () const
-    {
-        return this->_boost_context;
-    }
+    operator boost::asio::io_context& () const;
 };
 
 } // namespace fb

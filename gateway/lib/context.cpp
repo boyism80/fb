@@ -1,17 +1,20 @@
 #include <context.h>
 
-fb::gateway::context::context(boost::asio::io_context& context, uint16_t port) :
-    fb::acceptor<fb::gateway::session>(context, port)
+using namespace fb::gateway;
+using namespace fb::protocol::gateway;
+
+context::context(boost::asio::io_context& context, uint16_t port) :
+    fb::acceptor<session>(context, port)
 {
     // Register event handler
     this->bind(&context::handle_check_version);
     this->bind(&context::handle_entry_list);
 }
 
-fb::gateway::context::~context()
+context::~context()
 { }
 
-async::task<void> fb::gateway::context::load_entries()
+async::task<void> context::load_entries()
 {
     // Load gateway list
     auto& entrypoints = fb::config<>("entrypoints");
@@ -24,11 +27,11 @@ async::task<void> fb::gateway::context::load_entries()
     }
 
     auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
-    co_await fb::protocol::gateway::response::hosts(this->_entrypoints).serialize(writer);
+    co_await response::hosts(this->_entrypoints).serialize(writer);
     this->_entry_crc32_cache = this->_entry_stream_cache.crc();
 }
 
-fb::stream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
+fb::stream context::make_crt_stream(const fb::cryptor& crt)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
@@ -43,7 +46,7 @@ fb::stream fb::gateway::context::make_crt_stream(const fb::cryptor& crt)
     return stream;
 }
 
-bool fb::gateway::context::decrypt_policy(uint8_t cmd) const
+bool context::decrypt_policy(uint8_t cmd) const
 {
     switch (cmd)
     {
@@ -55,7 +58,7 @@ bool fb::gateway::context::decrypt_policy(uint8_t cmd) const
     }
 }
 
-async::task<void> fb::gateway::context::handle_start()
+async::task<void> context::handle_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
 
@@ -66,15 +69,15 @@ async::task<void> fb::gateway::context::handle_start()
     co_await this->load_entries();
 }
 
-fb::gateway::session* fb::gateway::context::handle_accepted(fb::socket<fb::gateway::session>& socket)
+session* context::handle_accepted(fb::socket<session>& socket)
 {
-    auto session = std::make_unique<fb::gateway::session>();
-    auto ptr     = session.get();
-    this->_sessions.push_back(std::move(session));
+    auto uptr = std::make_unique<session>();
+    auto ptr  = uptr.get();
+    this->_sessions.push_back(std::move(uptr));
     return ptr;
 }
 
-async::task<bool> fb::gateway::context::handle_connected(fb::socket<fb::gateway::session>& socket)
+async::task<bool> context::handle_connected(fb::socket<session>& socket)
 {
     co_await socket.send(this->_connection_cache, false);
 
@@ -82,15 +85,13 @@ async::task<bool> fb::gateway::context::handle_connected(fb::socket<fb::gateway:
     co_return true;
 }
 
-async::task<bool> fb::gateway::context::handle_disconnected(fb::socket<fb::gateway::session>& socket)
+async::task<bool> context::handle_disconnected(fb::socket<session>& socket)
 {
     fb::logger::info("{}님의 연결이 끊어졌습니다.", socket.IP());
     co_return false;
 }
 
-async::task<bool>
-fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>&                     socket,
-                                           const fb::protocol::gateway::request::assert_version& request)
+async::task<bool> context::handle_check_version(fb::socket<session>& socket, const request::assert_version& request)
 {
     try
     {
@@ -99,7 +100,7 @@ fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>&    
         auto crt = cryptor::generate();
         socket.crt(crt);
 
-        co_await this->send(socket, fb::protocol::gateway::response::crt(crt, this->_entry_crc32_cache), false);
+        co_await this->send(socket, response::crt(crt, this->_entry_crc32_cache), false);
         co_return true;
     }
     catch (std::exception& e)
@@ -108,15 +109,14 @@ fb::gateway::context::handle_check_version(fb::socket<fb::gateway::session>&    
     }
 }
 
-async::task<bool> fb::gateway::context::handle_entry_list(fb::socket<fb::gateway::session>&                 socket,
-                                                          const fb::protocol::gateway::request::entry_list& request)
+async::task<bool> context::handle_entry_list(fb::socket<session>& socket, const request::entry_list& request)
 {
     switch (request.action)
     {
     case 0x00:
     {
         const auto& entry = this->_entrypoints[request.index];
-        co_await this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::services::GATEWAY);
+        co_await this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::Service::Gateway);
         co_return true;
     }
 

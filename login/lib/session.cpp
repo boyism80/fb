@@ -1,7 +1,9 @@
 #include <session.h>
 
-fb::login::session::session()
+using namespace fb::login;
+
+session::session()
 { }
 
-fb::login::session::~session()
+session::~session()
 { }

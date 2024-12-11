@@ -2,6 +2,7 @@
 #define __FB_CRYPTOR_H__
 
 #include <fb/stream.h>
+#include <algorithm>
 
 namespace fb {
 

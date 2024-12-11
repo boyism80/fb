@@ -28,7 +28,7 @@ public:
     uint8_t                       enc_type;
     uint8_t                       key_size;
     uint8_t                       enc_key[0x09];
-    internal::services            from;
+    internal::Service             from;
     uint32_t                      id;
     std::string                   name;
     std::optional<transfer_param> transfer;
@@ -73,7 +73,7 @@ public:
         this->enc_type = reader.read<uint8_t>();
         this->key_size = reader.read<uint8_t>();
         reader.read((void*)this->enc_key, this->key_size);
-        this->from = (fb::protocol::internal::services)reader.read<uint8_t>();
+        this->from = (fb::protocol::internal::Service)reader.read<uint8_t>();
 
         // additional parameters
         this->id      = reader.read<uint32_t>();

@@ -1,6 +1,8 @@
 #include <context.h>
 #include <map.h>
 
+using namespace fb::game;
+
 fb::game::map::map(fb::game::context&    context,
                    const fb::model::map& model,
                    bool                  active,
@@ -37,7 +39,7 @@ fb::game::map::map(fb::game::context&    context,
         this->_tiles[i].object = reader.read<uint16_t>();
     }
 
-    this->_sectors = std::make_unique<fb::game::sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->_sectors = std::make_unique<sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
     this->update_door();
 }
 
@@ -179,7 +181,7 @@ bool fb::game::map::movable(const point16_t position) const
     return true;
 }
 
-bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction) const
+bool fb::game::map::movable(const object& object, DIRECTION direction) const
 {
     point16_t position = object.position();
 
@@ -208,7 +210,7 @@ bool fb::game::map::movable(const fb::game::object& object, DIRECTION direction)
     return true;
 }
 
-bool fb::game::map::movable_forward(const fb::game::object& object, uint16_t step) const
+bool fb::game::map::movable_forward(const object& object, uint16_t step) const
 {
     return this->movable(object, object.direction());
 }
@@ -228,7 +230,7 @@ const fb::model::warp* fb::game::map::warpable(const point16_t& position) const
     return nullptr;
 }
 
-bool fb::game::map::update(fb::game::object& object)
+bool fb::game::map::update(object& object)
 {
     if (this->_sectors == nullptr)
         return false;
@@ -303,252 +305,4 @@ fb::game::map::tile* fb::game::map::operator() (uint16_t x, uint16_t y) const
 
     auto i = this->index(fb::model::point16_t(x, y));
     return &this->_tiles[i];
-}
-
-int fb::game::map::builtin_width(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    thread->pushinteger(map->width());
-    return 1;
-}
-
-int fb::game::map::builtin_height(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    thread->pushinteger(map->height());
-    return 1;
-}
-
-int fb::game::map::builtin_area(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    thread->pushinteger(map->width());
-    thread->pushinteger(map->height());
-    return 2;
-}
-
-int fb::game::map::builtin_objects(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    thread->new_table();
-    const auto& objects = map->objects;
-
-    for (int i = 0; i < objects.size(); i++)
-    {
-        thread->pushobject(map->objects[i]);
-        lua_rawseti(lua, -2, i + 1);
-    }
-
-    return 1;
-}
-
-int fb::game::map::builtin_movable(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    auto position = point16_t();
-
-    if (lua_istable(lua, 2))
-    {
-        lua_rawgeti(lua, 2, 1);
-        position.x = (uint16_t)thread->tointeger(-1);
-        lua_remove(lua, -1);
-
-        lua_rawgeti(lua, 2, 2);
-        position.y = (uint16_t)thread->tointeger(-1);
-        lua_remove(lua, -1);
-    }
-    else if (lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
-    {
-        position.x = (uint16_t)thread->tointeger(2);
-        position.y = (uint16_t)thread->tointeger(3);
-    }
-    else
-    {
-        thread->pushboolean(false);
-        return 1;
-    }
-
-    thread->pushboolean(map->movable(position));
-    return 1;
-}
-
-int fb::game::map::builtin_door(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto map     = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
-        return 0;
-
-    auto door = map->doors.find(*session);
-    if (door == nullptr)
-        thread->pushnil();
-    else
-        thread->pushobject(door);
-
-    return 1;
-}
-
-int fb::game::map::builtin_doors(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    thread->new_table();
-
-    auto i = 0;
-    for (const auto& door : map->doors)
-    {
-        thread->pushobject(door.second);
-        lua_rawseti(lua, -2, i + 1);
-    }
-
-    return 1;
-}
-
-int fb::game::map::builtin_contains(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto map = thread->touserdata<fb::game::map>(1);
-    if (map == nullptr)
-        return 0;
-
-    auto you = thread->touserdata<fb::game::object>(1);
-    if (you == nullptr)
-        return 0;
-
-    for (auto& [fd, obj] : map->objects)
-    {
-        if (obj == *you)
-        {
-            thread->pushboolean(true);
-            return 1;
-        }
-    }
-
-    thread->pushboolean(false);
-    return 1;
-}
-
-fb::game::maps::maps(fb::game::context& context, uint32_t host) :
-    context(context),
-    host(host)
-{ }
-
-fb::game::maps::~maps()
-{ }
-
-bool fb::game::maps::load_data(uint32_t id, std::vector<char>& buffer)
-{
-    auto fname = std::format("maps/{:06}.map", id);
-    auto file  = std::ifstream(fname, std::ios::binary);
-    if (file.is_open() == false)
-        return false;
-
-    buffer = std::vector<char>(std::istreambuf_iterator<char>(file), {});
-    file.close();
-
-    return true;
-}
-
-bool fb::game::maps::load_block(uint32_t id, Json::Value& buffer)
-{
-    auto          fname = std::format("maps/{:06}.block", id);
-    std::ifstream file(fname);
-    if (file.is_open() == false)
-        return false;
-
-    Json::Reader reader;
-    if (reader.parse(file, buffer) == false)
-        return false;
-
-    file.close();
-    return true;
-}
-
-void fb::game::maps::load(const fb::model::map& model)
-{
-    auto active = (model.host == this->host);
-    auto binary = std::vector<char>();
-    auto blocks = Json::Value();
-    if (active)
-    {
-        if (load_data(model.id, binary) == false)
-            throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_DATA);
-
-        if (load_block(model.id, blocks) == false)
-            throw std::runtime_error(const_value::string::MESSAGE_ASSET_CANNOT_LOAD_MAP_BLOCK);
-    }
-
-    auto map = new fb::game::map(this->context, model, active, binary.data(), binary.size());
-    for (const auto& block : blocks)
-    {
-        map->block(block["x"].asInt(), block["y"].asInt(), true);
-    }
-
-    {
-        auto _ = std::lock_guard(this->_mutex);
-        this->push(model.id, map);
-    }
-}
-
-fb::game::map* fb::game::maps::name2map(const std::string& name) const
-{
-    for (const auto& [id, map] : *this)
-    {
-        if (map.model.name == name)
-            return &map;
-    }
-
-    return nullptr;
 }

@@ -4,32 +4,9 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <fb/stream.h>
 #include <async/task.h>
-
-#define BIND_ID(n) static constexpr uint8_t id = (n);
-
-namespace fb::protocol::internal {
-
-enum class services : uint8_t
-{
-    GATEWAY,
-    LOGIN,
-    GAME
-};
-
-enum id : uint8_t
-{
-    SUBSCRIBE,
-    TRANSFER,
-    LOGIN,
-    LOGOUT,
-    WHISPER,
-    MESSAGE,
-    SHUTDOWN,
-};
-
-} // namespace fb::protocol::internal
+#include <fb/stream_writer.h>
+#include <fb/stream_reader.h>
 
 namespace fb::protocol::base {
 
@@ -87,7 +64,7 @@ public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->ip);
         writer.write<uint16_t>(this->port);

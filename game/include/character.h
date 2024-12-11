@@ -1560,7 +1560,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    virtual async::task<void> on_item_get(character& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual async::task<void> on_item_get(character& me, const item::container& items) = 0;
 
     /**
      * @brief      Called when item changed.
@@ -1568,7 +1568,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    virtual async::task<void> on_item_changed(character& me, const std::map<uint8_t, fb::game::item*>& items) = 0;
+    virtual async::task<void> on_item_changed(character& me, const item::container& items) = 0;
 
     /**
      * @brief      Called on item lost.
