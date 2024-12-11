@@ -184,7 +184,6 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch == nullptr)
         co_return false;
 
-    ch->init(false);
     auto group = ch->group();
     if (group != nullptr)
     {
@@ -199,10 +198,11 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
             characters.erase(name);
     });
 
+    auto name   = ch->name();
     auto thread = this->threads.modular(std::hash<std::string>{}(ch->name()));
     co_await thread->switching();
     auto params = thread->data<thread_params>();
-    params->characters.erase(ch->name());
+    params->characters.erase(name);
     co_await ch->thread()->switching();
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
@@ -211,6 +211,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
+    ch->init(false);
     co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
@@ -565,6 +566,9 @@ async::task<void> context::send(const fb::protocol::base::header& response, bool
 
 async::task<void> context::save(character& ch)
 {
+    if (ch.inited() == false)
+        co_return;
+
     auto items = std::vector<internal::Item>();
     for (auto i = 0; i < CONTAINER_CAPACITY; i++)
     {
@@ -802,9 +806,7 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
     auto params = group_thread->data<thread_params>();
     if (params->groups.contains(response.group.id) == false)
     {
-        params->groups.insert(
-            {response.group.id,
-             std::make_unique<group>(*this, response.group.id)});
+        params->groups.insert({response.group.id, std::make_unique<group>(*this, response.group.id)});
     }
 
     // update inserted group data

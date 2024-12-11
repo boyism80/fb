@@ -505,6 +505,11 @@ public:
      */
     fb::thread* thread() const override;
 
+    /**
+     * @brief      { function_description }
+     */
+    void assert_thread() const override;
+
 public:
     /**
      * @brief      Called on timer.

@@ -47,18 +47,12 @@ async::task<void> character::send(const fb::stream& stream, bool encrypt, bool w
 {
     this->assert_thread();
 
-    if (this->inited() == false)
-        co_return;
-
     co_await this->_socket.send(stream, encrypt, wrap);
 }
 
 async::task<void> character::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
-
-    if (this->inited() == false)
-        co_return;
 
     co_await this->_socket.send(response, encrypt, wrap);
 }
@@ -1517,6 +1511,11 @@ async::task<void> character::message(const std::string& message, MESSAGE_TYPE ty
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
         co_await listener->on_notify(*this, message, type);
+}
+
+void character::assert_thread() const
+{
+    fb::game::object::assert_thread();
 }
 
 async::task<bool> character::inline_sell(const std::string& message, const std::vector<npc*>& npcs)

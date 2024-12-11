@@ -1033,6 +1033,11 @@ public:
      */
     [[nodiscard]] async::task<void> message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
 
+    /**
+     * @brief      { function_description }
+     */
+    void assert_thread() const final;
+
 private:
     /**
      * @brief      { function_description }

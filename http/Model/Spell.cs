@@ -15,11 +15,5 @@ namespace Http.Model
     public class Spell : SpellKey, IModel
     {
         public required int Model { get; set; }
-
-        public SpellKey Key => new SpellKey
-        {
-            Owner = Owner,
-            Slot = Slot,
-        };
     }
 }

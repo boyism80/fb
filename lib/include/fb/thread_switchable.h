@@ -42,7 +42,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    void assert_thread() const;
+    virtual void assert_thread() const;
 };
 
 } // namespace fb

@@ -361,17 +361,31 @@ private:
     void accept()
     {
         auto callback_received = [this](fb::socket<T>& socket, fb::stream& stream) -> async::task<void> {
-            co_await this->execute_handler(socket, stream);
+            try
+            {
+                co_await this->execute_handler(socket, stream);
+            }
+            catch(std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+            }
         };
 
         auto callback_closed = [this](fb::socket<T>& socket) -> async::task<void> {
-            if (socket.data() == nullptr)
-                co_return;
+            try
+            {
+                if (socket.data() == nullptr)
+                    co_return;
 
-            auto& casted = static_cast<fb::socket<T>&>(socket);
-            co_await this->threads.switching(casted);
-            std::ignore = co_await this->handle_disconnected(casted);
-            this->sockets.erase(casted);
+                auto& casted = static_cast<fb::socket<T>&>(socket);
+                co_await this->threads.switching(casted);
+                std::ignore = co_await this->handle_disconnected(casted);
+                this->sockets.erase(casted);
+            }
+            catch(std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+            }
         };
 
         auto socket = std::make_unique<fb::socket<T>>(*this, callback_received, callback_closed);
@@ -393,9 +407,9 @@ private:
                 boost::asio::co_spawn(*this, ptr->recv(), boost::asio::detached);
                 this->accept();
             }
-            catch (std::exception& /*e*/)
+            catch (std::exception& e)
             {
-                // std::cout << e.what() << std::endl;
+                fb::logger::fatal(e.what());
             }
         });
     }

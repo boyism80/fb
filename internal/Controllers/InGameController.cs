@@ -1,5 +1,4 @@
-﻿using fb.protocol._internal;
-using Fb.Model.EnumValue;
+﻿using Fb.Model.EnumValue;
 using Http;
 using Http.Model.Redis;
 using Http.Redis;

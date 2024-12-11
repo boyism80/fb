@@ -11,7 +11,6 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     // Set crypt data
     socket.crt(request.enc_type, request.enc_key);
-    ch->init(true);
 
     // Where login from?
     auto from = request.from;
@@ -51,22 +50,25 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (co_await this->init_ch(response.character, *ch, transfer) == false)
             co_return false;
 
+        co_await this->init_items(response.items, *ch);
+        co_await this->init_spells(response.spells, *ch);
+
         auto hash   = std::hash<std::string>{}(ch->name());
         auto thread = this->threads.modular(hash);
         thread->enqueue(
-            [this, fd, ch, thread]() -> async::task<void> {
+            [this, fd, ch, name = ch->name(), thread]() -> async::task<void> {
                 if (this->sockets.contains(fd) == false)
                     throw std::runtime_error(std::format("{} socket cannot attached into matched thread.", fd));
 
                 auto params = thread->data<thread_params>();
-                params->characters.insert({ch->name(), ch});
+                params->characters.insert({name, ch});
                 co_return;
             },
             [](std::exception& e) {
                 fb::logger::warn(e.what());
             },
-            [ch]() {
-                fb::logger::info("{} attaches into matched thread", ch->name());
+            [name = ch->name()]() {
+                fb::logger::info("{} attaches into matched thread", name);
             });
 
         co_await this->init_option(response.option, *ch);
@@ -84,8 +86,8 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_await this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
         co_await this->send(*ch, fb_resp::session::option(*ch), scope::SELF);
 
-        co_await this->init_items(response.items, *ch);
-        co_await this->init_spells(response.spells, *ch);
+        ch->init(true);
+        co_return true;
     }
     catch (std::exception& /*e*/)
     {
@@ -94,8 +96,6 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
         socket.close();
     }
-
-    co_return true;
 }
 
 async::task<bool> context::handle_direction(fb::socket<character>& socket, const fb_reqs::direction& request)

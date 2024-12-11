@@ -5,7 +5,6 @@
 
 using namespace fb::model::enum_value;
 
-// fb::game::object
 fb::game::object::object(fb::game::context&              context,
                          const fb::model::object&        model,
                          const fb::game::object::config& c) :
@@ -528,7 +527,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             co_return true;
         }
 
-        if(map->active == false)
+        if (map->active == false)
             co_return false;
 
         // here the character is on some map.
@@ -818,6 +817,14 @@ fb::thread* fb::game::object::thread() const
         return this->context.threads.modular(this->_sequence);
     else
         return this->context.threads.modular(this->_map->model.id);
+}
+
+void fb::game::object::assert_thread() const
+{
+    if (this->_map == nullptr)
+        return;
+
+    fb::thread_switchable::assert_thread();
 }
 
 async::task<void> fb::game::object::on_timer(uint64_t elapsed_milliseconds)
