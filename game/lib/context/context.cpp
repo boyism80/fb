@@ -238,10 +238,10 @@ std::string context::elapsed_message(const std::string& dt)
 
         auto minutes = elapsed.minutes();
         if (minutes > 0)
-            sstream << minutes << "분만에 바람으로...";
+            sstream << minutes << "분";
+        sstream << "만에 바람으로...";
 
-        auto msg = sstream.str();
-        return msg;
+        return sstream.str();
     }
     else
     {
