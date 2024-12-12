@@ -15,11 +15,16 @@ console::console()
     if (_tty)
     {
 #ifdef _WIN32
-        CONSOLE_SCREEN_BUFFER_INFO screen;
-        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screen);
-
+        auto hwnd   = GetStdHandle(STD_OUTPUT_HANDLE);
+        auto screen = CONSOLE_SCREEN_BUFFER_INFO{};
+        GetConsoleScreenBufferInfo(hwnd, &screen);
         _width  = screen.dwSize.X;
         _height = screen.dwSize.Y;
+
+        auto cursor_info = CONSOLE_CURSOR_INFO{};
+        GetConsoleCursorInfo(hwnd, &cursor_info);
+        cursor_info.bVisible = false;
+        SetConsoleCursorInfo(hwnd, &cursor_info);
 #else
         setlocale(LC_ALL, "C.UTF-8");
         initscr();
@@ -147,4 +152,5 @@ void console::clear(uint16_t line)
     position(nullptr, &y);
     position(0, y);
     raw_put(std::string(_width, ' '), 0, y);
+    position(0, y);
 }

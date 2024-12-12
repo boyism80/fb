@@ -128,6 +128,7 @@ namespace Internal.Controllers
                 Map = request.Map,
                 PositionX = request.X,
                 PositionY = request.Y,
+                Direction = (byte)Direction.Bottom,
                 Admin = request.Admin
             };
             _dbContext.Character.Set(ch);

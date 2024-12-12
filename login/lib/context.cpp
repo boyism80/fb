@@ -146,6 +146,10 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         auto uid = response1.uid;
         std::srand(std::time(nullptr));
 
+        auto i      = std::rand() % config<>("init:position").size();
+        auto init_x = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
+        auto init_y = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
+
         auto&& response2 = co_await this->post<internal::request::InitCharacter, internal::response::InitCharacter>(
             "internal",
             "/user/init-ch",
@@ -156,9 +160,9 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
                 fb::config<uint32_t>("init:hp:base") + std::rand() % fb::config<uint32_t>("init:hp:range"), // hp
                 fb::config<uint32_t>("init:mp:base") + std::rand() % fb::config<uint32_t>("init:mp:range"), // mp
                 fb::config<uint16_t>("init:map"),                                                           // map
-                fb::config<uint16_t>("init:position:x"), // position_x
-                fb::config<uint16_t>("init:position:y"), // position_y
-                fb::config<bool>("admin mode"),          // admin
+                init_x,                         // position_x
+                init_y,                         // position_y
+                fb::config<bool>("admin mode"), // admin
             });
 
         // 여기서 새로운 promise handler
