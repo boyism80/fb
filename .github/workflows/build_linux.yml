@@ -4,7 +4,7 @@ on:
   - push
 
 env:
-  REGISTRY: ghcr.io/boyism80/fb
+  REGISTRY: ghcr.io
 
 jobs:
   base:
@@ -32,14 +32,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/build
+          images: ${{ env.REGISTRY }}/boyism80/fb/build
 
       - name: Build based builder image
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/build:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=build
           cache-to: type=gha,scope=build,mode=max
           file: Dockerfile
@@ -70,14 +69,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/internal
+          images: ${{ env.REGISTRY }}/boyism80/fb/internal
 
       - name: Build internal server
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/internal:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=internal
           cache-to: type=gha,scope=internal,mode=max
           file: http/Dockerfile
@@ -110,14 +108,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/gateway
+          images: ${{ env.REGISTRY }}/boyism80/fb/gateway
 
       - name: Build gateway server
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/gateway:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=gateway
           cache-to: type=gha,scope=gateway,mode=max
           file: gateway/Dockerfile
@@ -148,14 +145,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/login
+          images: ${{ env.REGISTRY }}/boyism80/fb/login
 
       - name: Build login server
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/login:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=login
           cache-to: type=gha,scope=login,mode=max
           file: login/Dockerfile
@@ -186,14 +182,13 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/game
+          images: ${{ env.REGISTRY }}/boyism80/fb/game
 
       - name: Build game server
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/game:latest
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=game
           cache-to: type=gha,scope=game,mode=max
           file: game/Dockerfile
