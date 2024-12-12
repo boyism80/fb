@@ -95,7 +95,7 @@ module.exports = function () {
                                 containers: [
                                     {
                                         name: "login",
-                                        image: "cshyeon/fb:login",
+                                        image: "ghcr.io/boyism80/fb/login:latest",
                                         imagePullPolicy: "Always",
                                         securityContext: {
                                             capabilities: {

@@ -74,7 +74,7 @@ module.exports = function () {
                                     containers: [
                                         {
                                             name: "game",
-                                            image: "cshyeon/fb:game",
+                                            image: "ghcr.io/boyism80/fb/game:latest",
                                             imagePullPolicy: "Always",
                                             securityContext: {
                                                 capabilities: {

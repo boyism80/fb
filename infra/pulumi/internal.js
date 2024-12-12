@@ -59,7 +59,7 @@ module.exports = {
                         spec: {
                             containers: [{
                                 name: "internal",
-                                image: "cshyeon/fb:internal",
+                                image: "ghcr.io/boyism80/fb/internal:latest",
                                 imagePullPolicy: "Always",
                                 securityContext: {
                                     capabilities: {

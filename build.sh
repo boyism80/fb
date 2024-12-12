@@ -1,14 +1,14 @@
-docker build --tag cshyeon/fb:build -f Dockerfile .
-docker push cshyeon/fb:build
+docker build --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
+docker push ghcr.io/boyism80/fb/build:latest
 
-docker build --tag cshyeon/fb:gateway -f gateway/Dockerfile .
-docker push cshyeon/fb:gateway
+docker build --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .
+docker push ghcr.io/boyism80/fb/gateway:latest
 
-docker build --tag cshyeon/fb:login -f login/Dockerfile .
-docker push cshyeon/fb:login
+docker build --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .
+docker push ghcr.io/boyism80/fb/login:latest
 
-docker build --tag cshyeon/fb:game -f game/Dockerfile .
-docker push cshyeon/fb:game
+docker build --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .
+docker push ghcr.io/boyism80/fb/game:latest
 
-docker build --tag cshyeon/fb:internal -f http/Dockerfile --build-arg SERVICE=internal .
-docker push cshyeon/fb:internal
+docker build --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
+docker push ghcr.io/boyism80/fb/internal:latest
