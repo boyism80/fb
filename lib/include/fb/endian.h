@@ -136,6 +136,6 @@ public:
     }
 };
 
-}
+} // namespace fb
 
 #endif

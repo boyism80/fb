@@ -103,11 +103,6 @@ module.exports = function () {
                                         ports: [
                                             { containerPort: sectionConf.port, name: `login-${index}` },
                                         ],
-                                        env: [
-                                        {
-                                            name: "KUBERNETES",
-                                            value: "enabled"
-                                        }],
                                         volumeMounts: [{
                                             name: "config-volume",
                                             mountPath: "/app/config/config.json",

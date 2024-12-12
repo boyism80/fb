@@ -23,11 +23,8 @@ stream stream::compress() const
     uint32_t dst_size = this->size() * 2;
     uint8_t* buffer   = new uint8_t[dst_size];
 
-    if (compress2(buffer,
-                  (uLongf*)&dst_size,
-                  vector<uint8_t>::data(),
-                  uint32_t(this->size()),
-                  Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
+    if (compress2(buffer, (uLongf*)&dst_size, vector<uint8_t>::data(), uint32_t(this->size()), Z_BEST_COMPRESSION) ==
+        Z_STREAM_ERROR)
         throw std::runtime_error("cannot compress data");
 
     auto compressed = stream(buffer, dst_size);

@@ -24,8 +24,8 @@ int main(int argc, const char** argv)
         flatbuffers::option::decoding(cp949);
 #endif
 
-        auto io_context = boost::asio::io_context{};
-        auto context    = std::make_unique<fb::game::context>(io_context, config<uint16_t>("port"));
+        auto io_context                = boost::asio::io_context{};
+        auto context                   = std::make_unique<fb::game::context>(io_context, config<uint16_t>("port"));
         context->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)
@@ -64,7 +64,7 @@ int main(int argc, const char** argv)
     }
     catch (std::exception& e)
     {
-        fb::logger::fatal(e.what());
+        fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
 #ifndef _WIN32
         void*  array[10];
         size_t size;

@@ -1,4 +1,4 @@
-#ifndef	__STREAM_READER_H__
+#ifndef __STREAM_READER_H__
 #define __STREAM_READER_H__
 
 #include <fb/stream.h>
@@ -31,8 +31,8 @@ public:
      * @param      stream  The stream
      */
     stream_reader(std::vector<uint8_t>& stream) :
-    _stream(stream)
-{ }
+        _stream(stream)
+    { }
 
 public:
     /**
@@ -94,13 +94,13 @@ public:
      * @param[in]  size    The size
      */
     void read(void* buffer, size_t size)
-{
-    if (buffer == nullptr)
-        return;
+    {
+        if (buffer == nullptr)
+            return;
 
-    memcpy(buffer, this->_stream.data() + this->_seek, size);
-    this->_seek += size;
-}
+        memcpy(buffer, this->_stream.data() + this->_seek, size);
+        this->_seek += size;
+    }
 
     /**
      * @brief      { function_description }
@@ -108,9 +108,9 @@ public:
      * @return     { description_of_the_return_value }
      */
     uint32_t readable_size() const
-{
-    return std::max(uint32_t(0), uint32_t(this->_stream.size() - this->_seek));
-}
+    {
+        return std::max(uint32_t(0), uint32_t(this->_stream.size() - this->_seek));
+    }
 
     /**
      * @brief      { function_description }
@@ -118,9 +118,9 @@ public:
      * @return     { description_of_the_return_value }
      */
     uint32_t seek() const
-{
-    return this->_seek;
-}
+    {
+        return this->_seek;
+    }
 
     /**
      * @brief      { function_description }
@@ -128,29 +128,29 @@ public:
      * @param[in]  value  The value
      */
     void seek(uint32_t value)
-{
-    this->_seek = value;
-}
+    {
+        this->_seek = value;
+    }
 
     /**
      * @brief      Flushes the object.
      */
     void flush()
-{
-    this->_stream.erase(this->_stream.begin(), this->_stream.begin() + this->_seek);
-    this->_seek = 0;
-}
+    {
+        this->_stream.erase(this->_stream.begin(), this->_stream.begin() + this->_seek);
+        this->_seek = 0;
+    }
 
     /**
      * @brief      Clears the object.
      */
     void clear()
-{
-    this->_stream.clear();
-    this->_seek = 0;
-}
+    {
+        this->_stream.clear();
+        this->_seek = 0;
+    }
 };
 
-}
+} // namespace fb
 
 #endif

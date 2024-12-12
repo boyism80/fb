@@ -14,4 +14,4 @@ WORKDIR /app
 COPY --from=build /app/gateway/build/app .
 
 WORKDIR /app
-ENTRYPOINT ./app
+CMD ./app

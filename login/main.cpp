@@ -31,7 +31,7 @@ int main(int argc, const char** argv)
     }
     catch (std::exception& e)
     {
-        fb::logger::fatal(e.what());
+        fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
 #ifndef _WIN32
         void*  array[10];
         size_t size;

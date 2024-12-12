@@ -84,11 +84,6 @@ module.exports = function () {
                                             ports: [
                                                 { containerPort: container.port, name: `game-${index}` },
                                             ],
-                                            env: [
-                                            {
-                                                name: "KUBERNETES",
-                                                value: "enabled"
-                                            }],
                                             volumeMounts: [{
                                                 name: "config-volume",
                                                 mountPath: "/app/config/config.json",

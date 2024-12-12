@@ -15,4 +15,4 @@ COPY --from=build /app/login/build/app .
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-ENTRYPOINT ./app
+CMD ./app

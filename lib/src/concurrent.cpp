@@ -2,8 +2,9 @@
 
 using namespace fb;
 
-lock_error::lock_error() : std::runtime_error("lock failed")
-{}
+lock_error::lock_error() :
+    std::runtime_error("lock failed")
+{ }
 
 void concurrent::add(fb::dead_lock_detector& node)
 {

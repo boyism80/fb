@@ -27,7 +27,7 @@ public:
     /**
      * @brief      Destroys the object.
      */
-    ~dead_lock_detector()                         = default;
+    ~dead_lock_detector() = default;
 
 public:
     /**

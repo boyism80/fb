@@ -77,11 +77,6 @@ module.exports = function () {
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
                                     ],
-                                    env: [
-                                    {
-                                        name: "KUBERNETES",
-                                        value: "enabled"
-                                    }],
                                     volumeMounts: [{
                                         name: "config-volume",
                                         mountPath: "/app/config/config.json",

@@ -3,10 +3,14 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <io.h>
 #else
 #include <locale.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
+#include <ncursesw/curses.h>
 #endif
+#include <iostream>
 #include <stdarg.h>
 #include <sstream>
 #include <cstring>
@@ -50,6 +54,7 @@ private:
     inline static std::recursive_mutex _mutex;
     inline static uint16_t             _comment_line;
     inline static uint16_t             _width, _height;
+    inline static bool                 _tty;
 
 public:
     /**
@@ -70,6 +75,16 @@ private:
      * @param[in]  y     { parameter_description }
      */
     static void raw_put(const std::string& text, uint16_t x, uint16_t y);
+
+public:
+    /**
+     * @brief      reference : https://github.com/jupyter-xeus/cpp-terminal
+     *
+     * @param[in]  fd    { parameter_description }
+     *
+     * @return     True if the specified fd is a tty, False otherwise.
+     */
+    static bool is_tty();
 
 public:
     /**
@@ -134,6 +149,11 @@ public:
         position(0, y);
         clear();
         raw_put(text, x, y);
+
+        if (!_tty)
+        {
+            newline();
+        }
     }
 
     /**
@@ -154,7 +174,10 @@ public:
     static void puts(align_type align, const std::string& fmt, Args&&... args)
     {
         put(align, fmt, std::forward<Args>(args)...);
-        newline();
+        if (_tty)
+        {
+            newline();
+        }
     }
 
     /**

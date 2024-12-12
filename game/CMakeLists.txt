@@ -67,5 +67,6 @@ ELSE()
                                 boost_program_options
                                 cpp_redis
                                 tacopie
-                                rabbitmq)
+                                rabbitmq
+                                ncursesw)
 ENDIF(WIN32)

@@ -15,7 +15,7 @@ public:
     thread_container threads;
 
 protected:
-    context(boost::asio::io_context& context, uint16_t port);
+    context(boost::asio::io_context& context, const std::string& name, uint16_t port);
 
 public:
     ~context() = default;

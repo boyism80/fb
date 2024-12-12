@@ -7,17 +7,30 @@ console::console()
     static constexpr uint32_t max_width = 120;
 
 #ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO screen;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screen);
-
-    _width  = screen.dwSize.X;
-    _height = screen.dwSize.Y;
+    _tty = static_cast<bool>(_isatty(_fileno(const_cast<FILE*>(stdin))));
 #else
-    setlocale(LC_ALL, "C.UTF-8");
-    initscr();
-    getmaxyx(stdscr, _height, _width);
-    noecho();
+    _tty = ::isatty(::fileno(const_cast<FILE*>(stdin)));
 #endif
+
+    if (_tty)
+    {
+#ifdef _WIN32
+        CONSOLE_SCREEN_BUFFER_INFO screen;
+        GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screen);
+
+        _width  = screen.dwSize.X;
+        _height = screen.dwSize.Y;
+#else
+        setlocale(LC_ALL, "C.UTF-8");
+        initscr();
+        getmaxyx(stdscr, _height, _width);
+        noecho();
+#endif
+    }
+    else
+    {
+        _width = max_width;
+    }
 
     _width = max_width > _width ? max_width : _width;
 }
@@ -31,21 +44,36 @@ void console::raw_put(const std::string& text, uint16_t x, uint16_t y)
 {
     auto _ = std::lock_guard(_mutex);
 
+    if (_tty)
+    {
 #ifdef _WIN32
-    DWORD written;
-    ::WriteConsoleOutputCharacterA(GetStdHandle(STD_OUTPUT_HANDLE),
-                                   text.c_str(),
-                                   text.length(),
-                                   COORD{(SHORT)x, (SHORT)y},
-                                   &written);
+        DWORD written;
+        ::WriteConsoleOutputCharacterA(GetStdHandle(STD_OUTPUT_HANDLE),
+                                       text.c_str(),
+                                       text.length(),
+                                       COORD{(SHORT)x, (SHORT)y},
+                                       &written);
 #else
-    ::mvprintw(y, x, text.c_str());
-    ::refresh();
+        ::mvprintw(y, x, text.c_str());
+        ::refresh();
 #endif
+    }
+    else
+    {
+        std::cout << text;
+    }
+}
+
+bool console::is_tty()
+{
+    return _tty;
 }
 
 void console::position(uint16_t x, uint16_t y)
 {
+    if (!_tty)
+        return;
+
     auto _ = std::lock_guard(_mutex);
 
 #ifdef _WIN32
@@ -58,6 +86,17 @@ void console::position(uint16_t x, uint16_t y)
 
 void console::position(uint16_t* x, uint16_t* y)
 {
+    if (!_tty)
+    {
+        if (x != nullptr)
+            *x = 0;
+
+        if (y != nullptr)
+            *y = 0;
+
+        return;
+    }
+
     auto _ = std::lock_guard(_mutex);
 
 #ifdef _WIN32
@@ -83,15 +122,25 @@ void console::newline()
 {
     auto _ = std::lock_guard(_mutex);
 
-    uint16_t y;
-    position(nullptr, &y);
+    if (_tty)
+    {
+        uint16_t y;
+        position(nullptr, &y);
 
-    position(0, y + _comment_line + 1);
-    _comment_line = 0;
+        position(0, y + _comment_line + 1);
+        _comment_line = 0;
+    }
+    else
+    {
+        std::cout << std::endl;
+    }
 }
 
 void console::clear(uint16_t line)
 {
+    if (!_tty)
+        return;
+
     auto _ = std::lock_guard(_mutex);
 
     uint16_t y;

@@ -78,7 +78,7 @@ std::wstring W(const std::string& m);
  *
  * @return     { description_of_the_return_value }
  */
-std::string  M(const std::wstring& w);
+std::string M(const std::wstring& w);
 
 /**
  * @brief      { function_description }

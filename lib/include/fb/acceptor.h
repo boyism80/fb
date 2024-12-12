@@ -64,20 +64,10 @@ protected:
      * @param[in]  port     The port
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
-        fb::context(context, port),
+        fb::context(context, name, port),
         _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
-    {
-        console::puts(std::format("tty : {}", console::is_tty(stdin)));
-        
-        console::newline();
-        console::puts(console::align_type::center, "The Kingdom of the wind [{}]", name);
-        console::newline();
-        console::puts(console::align_type::right, "https://github.com/boyism80/fb");
-        console::puts(console::align_type::right, "made by cshyeon");
-        console::newline();
-        console::puts("Listen port : {}", port);
-    }
+    { }
 
 public:
     /**
@@ -375,7 +365,7 @@ private:
             {
                 co_await this->execute_handler(socket, stream);
             }
-            catch(std::exception& e)
+            catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
             }
@@ -392,7 +382,7 @@ private:
                 std::ignore = co_await this->handle_disconnected(casted);
                 this->sockets.erase(casted);
             }
-            catch(std::exception& e)
+            catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
             }
