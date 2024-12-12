@@ -9,6 +9,9 @@ env:
 jobs:
   base:
     runs-on: [self-hosted, linux, x64, build]
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,6 +46,9 @@ jobs:
 
   internal:
     runs-on: [self-hosted, linux, x64, build]
+    permissions:
+      contents: read
+      packages: write
     needs: base
     steps:
       - name: Checkout repository
@@ -80,6 +86,9 @@ jobs:
 
   gateway:
     runs-on: [self-hosted, linux, x64, build]
+    permissions:
+      contents: read
+      packages: write
     needs: base
     steps:
       - name: Checkout repository
@@ -115,6 +124,9 @@ jobs:
 
   login:
     runs-on: [self-hosted, linux, x64, build]
+    permissions:
+      contents: read
+      packages: write
     needs: base
     steps:
       - name: Checkout repository
@@ -150,6 +162,9 @@ jobs:
 
   game:
     runs-on: [self-hosted, linux, x64, build]
+    permissions:
+      contents: read
+      packages: write
     needs: base
     steps:
       - name: Checkout repository
@@ -185,6 +200,9 @@ jobs:
 
   deploy:
     runs-on: [self-hosted, linux, x64, build]
+    permissions:
+      contents: read
+      packages: write
     needs: [internal, gateway, login, game]
     steps:
       - name: Checkout repository
