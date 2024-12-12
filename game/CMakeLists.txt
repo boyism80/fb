@@ -47,7 +47,6 @@ IF(WIN32)
   set_property(TARGET ${DEST} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   target_link_libraries(${DEST} fb$<$<CONFIG:Debug>:d>.lib
                                 jsoncpp$<$<CONFIG:Debug>:d>.lib
-                                cpp-terminal$<$<CONFIG:Debug>:d>.lib
                                 librabbitmq.4$<$<CONFIG:Debug>:d>.lib
                                 lua$<$<CONFIG:Debug>:d>.lib
                                 zlib$<$<CONFIG:Debug>:d>.lib
@@ -68,6 +67,5 @@ ELSE()
                                 boost_program_options
                                 cpp_redis
                                 tacopie
-                                rabbitmq
-                                cpp-terminal)
+                                rabbitmq)
 ENDIF(WIN32)

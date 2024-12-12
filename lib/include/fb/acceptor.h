@@ -63,11 +63,21 @@ protected:
      * @param      context  The context
      * @param[in]  port     The port
      */
-    acceptor(boost::asio::io_context& context, uint16_t port) :
+    acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
         fb::context(context, port),
         _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
-    { }
+    {
+        console::puts(std::format("tty : {}", console::is_tty(stdin)));
+        
+        console::newline();
+        console::puts(console::align_type::center, "The Kingdom of the wind [{}]", name);
+        console::newline();
+        console::puts(console::align_type::right, "https://github.com/boyism80/fb");
+        console::puts(console::align_type::right, "made by cshyeon");
+        console::newline();
+        console::puts("Listen port : {}", port);
+    }
 
 public:
     /**

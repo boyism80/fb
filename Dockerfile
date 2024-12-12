@@ -27,13 +27,6 @@ RUN cmake --build . --config Release --parallel
 RUN make install
 
 WORKDIR /app
-RUN git clone https://github.com/jupyter-xeus/cpp-terminal
-WORKDIR /app/cpp-terminal/build
-RUN cmake .. -DCPPTERMINAL_ENABLE_TESTING=OFF -DCPPTERMINAL_BUILD_EXAMPLES=OFF -DCPPTERMINAL_ENABLE_DOCS=OFF
-RUN cmake --build . --config Release --parallel
-RUN make install
-
-WORKDIR /app
 RUN git clone https://github.com/alanxz/rabbitmq-c
 WORKDIR /app/rabbitmq-c
 RUN git checkout v0.14.0

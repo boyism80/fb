@@ -27,26 +27,8 @@ int main(int argc, const char** argv)
         flatbuffers::option::decoding(cp949);
 #endif
 
-        auto height = 9;
-        console::box(console::width() - 1, height);
-
-        auto header = "The Kingdom of the wind [GATEWAY]";
-        console::cursor((console::width() - 1 - strlen(header)) / 2, 3);
-        console::render(header);
-
-        auto github = "https://github.com/boyism80/fb";
-        console::cursor(console::width() - 1 - strlen(github) - 3, 5);
-        console::render(github);
-
-        auto madeby = "made by cshyeon";
-        console::cursor(console::width() - 1 - strlen(madeby) - 3, 6);
-        console::render(madeby);
-
-        console::position(0, height + 1);
-
-        // Execute acceptor
-        boost::asio::io_context io_context;
-        auto context = std::make_unique<fb::gateway::context>(io_context, fb::config<uint16_t>("port"));
+        auto io_context = boost::asio::io_context{};
+        auto context    = std::make_unique<fb::gateway::context>(io_context, config<uint16_t>("port"));
         context->run();
     }
     catch (std::exception& e)

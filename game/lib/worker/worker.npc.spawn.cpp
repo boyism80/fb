@@ -52,5 +52,5 @@ void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& in
 
 void fb::game::npc_spawner::on_finish()
 {
-    fb::console::next();
+    fb::console::newline();
 }

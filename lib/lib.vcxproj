@@ -98,6 +98,7 @@
     <ClCompile Include="src\amqp.queue.cpp" />
     <ClCompile Include="src\amqp.socket.cpp" />
     <ClCompile Include="src\concurrent.cpp" />
+    <ClCompile Include="src\console.cpp" />
     <ClCompile Include="src\cryptor.cpp" />
     <ClCompile Include="src\dead_lock.cpp" />
     <ClCompile Include="src\encoding.cpp" />

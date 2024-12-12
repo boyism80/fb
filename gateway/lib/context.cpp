@@ -4,7 +4,7 @@ using namespace fb::gateway;
 using namespace fb::protocol::gateway;
 
 context::context(boost::asio::io_context& context, uint16_t port) :
-    fb::acceptor<session>(context, port)
+    fb::acceptor<session>(context, "GATEWAY", port)
 {
     // Register event handler
     this->bind(&context::handle_check_version);

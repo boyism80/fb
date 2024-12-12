@@ -5,7 +5,6 @@
 - [boost asio 1.84](https://github.com/boostorg/boost)
 - [lua 5.3](https://github.com/lua/lua)
 - [jsoncpp](https://github.com/open-source-parsers/jsoncpp)
-- [cpp-terminal](https://github.com/jupyter-xeus/cpp-terminal)
 - [cpp_redis](https://github.com/cpp-redis/cpp_redis)
 - [cpp-httplib](https://github.com/yhirose/cpp-httplib)
 - [cpp-async](https://github.com/microsoft/cpp-async)

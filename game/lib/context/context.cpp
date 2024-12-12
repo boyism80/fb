@@ -3,7 +3,7 @@ using namespace fb::game;
 using namespace std::chrono_literals;
 
 context::context(boost::asio::io_context& context, uint16_t port) :
-    fb::acceptor<character>(context, port),
+    fb::acceptor<character>(context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
     _characters(*this),
     _groups(*this)

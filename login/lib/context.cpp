@@ -5,7 +5,7 @@
 using namespace fb::login;
 
 context::context(boost::asio::io_context& context, uint16_t port) :
-    fb::acceptor<session>(context, port)
+    fb::acceptor<session>(context, "LOGIN", port)
 {
     for (auto& x : fb::config<>("forbidden"))
         this->_forbiddens.push_back(x.asString());

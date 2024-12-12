@@ -12,23 +12,6 @@ using namespace fb::model::enum_value;
 
 int main(int argc, const char** argv)
 {
-    auto height = 9;
-    console::box(console::width() - 1, height);
-
-    auto header = "The Kingdom of the wind [GAME]";
-    console::cursor((console::width() - 1 - strlen(header)) / 2, 3);
-    console::render(header);
-
-    auto github = "https://github.com/boyism80/fb";
-    console::cursor(console::width() - 1 - strlen(github) - 3, 5);
-    console::render(github);
-
-    auto madeby = "made by cshyeon";
-    console::cursor(console::width() - 1 - strlen(madeby) - 3, 6);
-    console::render(madeby);
-
-    console::position(0, height + 1);
-
     try
     {
         //_CrtSetBreakAlloc(7997394);
@@ -42,7 +25,7 @@ int main(int argc, const char** argv)
 #endif
 
         auto io_context = boost::asio::io_context{};
-        auto context    = std::make_unique<fb::game::context>(io_context, fb::config<uint16_t>("port"));
+        auto context    = std::make_unique<fb::game::context>(io_context, config<uint16_t>("port"));
         context->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)
