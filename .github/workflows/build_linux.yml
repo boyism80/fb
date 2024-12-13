@@ -32,7 +32,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/boyism80/fb/build
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/build
 
       - name: Build based builder image
         uses: docker/build-push-action@v6
@@ -70,7 +70,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/boyism80/fb/internal
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/internal
 
       - name: Build internal server
         uses: docker/build-push-action@v6
@@ -110,7 +110,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/boyism80/fb/gateway
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/gateway
 
       - name: Build gateway server
         uses: docker/build-push-action@v6
@@ -148,7 +148,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/boyism80/fb/login
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/login
 
       - name: Build login server
         uses: docker/build-push-action@v6
@@ -186,7 +186,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/boyism80/fb/game
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/game
 
       - name: Build game server
         uses: docker/build-push-action@v6
