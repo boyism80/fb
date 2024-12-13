@@ -171,7 +171,7 @@ public:
         for (auto ptr : ptrs)
         {
             if (this->_ptrs.contains(ptr) == false)
-                throw std::runtime_error(std::format("ptr {:p} does not contains in thread", (uint32_t)ptr));
+                throw std::runtime_error(std::format("ptr {:p} does not contains in thread", ptr));
         }
     }
 
