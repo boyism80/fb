@@ -1,4 +1,4 @@
-FROM cshyeon/fb:build AS build
+FROM ghcr.io/boyism80/fb/build AS build
 
 WORKDIR /app
 COPY include ./include
@@ -9,7 +9,7 @@ WORKDIR /app/gateway/build
 RUN cmake ..
 RUN cmake --build . --config Release --parallel
 
-FROM cshyeon/fb:build
+FROM ghcr.io/boyism80/fb/build
 WORKDIR /app
 COPY --from=build /app/gateway/build/app .
 
