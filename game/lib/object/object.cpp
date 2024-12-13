@@ -506,6 +506,9 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         // and set default map(id = 0) and position(1, 1)
         if (map == nullptr)
         {
+            auto thread = this->_map->thread();
+            thread->pop_ptr(this);
+
             // broadcast near characters
             if (this->_listener != nullptr)
             {
@@ -544,6 +547,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         {
             if (thread != this->context.threads.current())
                 co_await thread->switching();
+            thread->push_ptr(this);
         }
 
         // update destination map and position

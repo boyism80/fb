@@ -70,6 +70,12 @@ void fb::thread::handle_idle()
     }
 }
 
+void fb::thread::assert_exec() const
+{
+    if(std::this_thread::get_id() != this->id())
+        throw std::runtime_error("cannot push pointer value. thread mismatched.");
+}
+
 void fb::thread::exit()
 {
     if (this->_exit)
@@ -86,12 +92,26 @@ void fb::thread::exit()
 
 void fb::thread::data(void* value)
 {
+    this->assert_exec();
     this->_data = value;
 }
 
 void* fb::thread::data() const
 {
+    this->assert_exec();
     return _data;
+}
+
+void fb::thread::push_ptr(void* ptr)
+{
+    this->assert_exec();
+    this->_ptrs.insert(static_cast<void*>(ptr));
+}
+
+void fb::thread::pop_ptr(void* ptr)
+{
+    this->assert_exec();
+    this->_ptrs.erase(static_cast<void*>(ptr));
 }
 
 void fb::thread::settimer(const fb::timer::handle_callback_type& fn,

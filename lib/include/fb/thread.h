@@ -12,6 +12,7 @@
 #include <async/task_completion_source.h>
 #include <async/awaitable_then.h>
 #include <fb/model/datetime.h>
+#include <unordered_set>
 
 namespace fb {
 
@@ -30,6 +31,7 @@ private:
     std::thread       _thread;
 
 private:
+    std::unordered_set<void*>           _ptrs;
     std::vector<std::unique_ptr<timer>> _timers;
     std::recursive_mutex                _mutex_timer;
     void*                               _data = nullptr;
@@ -92,6 +94,11 @@ private:
      */
     void handle_idle();
 
+    /**
+     * @brief      { function_description }
+     */
+    void assert_exec() const;
+
 public:
     /**
      * @brief      { function_description }
@@ -131,7 +138,41 @@ public:
     template <typename ReturnType>
     ReturnType* data() const
     {
+        this->assert_exec();
         return static_cast<ReturnType*>(this->_data);
+    }
+
+    /**
+     * @brief      Pushes a pointer.
+     *
+     * @param      ptr   The pointer
+     */
+    void push_ptr(void* ptr);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ptr   The pointer
+     */
+    void pop_ptr(void* ptr);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  args  The arguments
+     *
+     * @tparam     T     { description }
+     */
+    template <typename... T>
+    void assert_ptr(T... args) const
+    {
+        this->assert_exec();
+        std::vector<void*> ptrs = {args...};
+        for (auto ptr : ptrs)
+        {
+            if (this->_ptrs.contains(ptr) == false)
+                throw std::runtime_error(std::format("ptr {:#x} does not contains in thread", ptr));
+        }
     }
 
 public:

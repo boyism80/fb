@@ -31,8 +31,8 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     if (thread == nullptr)
         throw std::runtime_error("thread exception");
 
-    this->_context.threads.enqueue(*npc,, [this, &map, &spawn_model]() -> async::task<void> {
-        auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[spawn_model.npc]);
+    auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[spawn_model.npc]);
+    this->_context.threads.enqueue(*npc, [this, npc, &map, &spawn_model]() -> async::task<void> {
         std::ignore = co_await npc->map(&map, spawn_model.position);
         std::ignore = co_await npc->direction(spawn_model.direction);
     });

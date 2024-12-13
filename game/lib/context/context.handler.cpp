@@ -12,89 +12,93 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     // Set crypt data
     socket.crt(request.enc_type, request.enc_key);
 
-    // Where login from?
-    auto from = request.from;
-
     ch->name(request.name);
     fb::logger::info("{}님이 접속했습니다.", request.name);
 
-    auto fd = socket.fd();
+    auto fd       = socket.fd();
+    auto id       = request.id;
+    auto name     = std::string(request.name);
+    auto from     = request.from;
+    auto transfer = request.transfer;
+    auto delay    = fb::config<uint32_t>("delay");
+    co_await this->sleep(std::chrono::seconds(delay));
+    if (this->sockets.contains(fd) == false)
+        co_return false;
 
-    try
-    {
-        auto id       = request.id;
-        auto name     = std::string(request.name);
-        auto from     = request.from;
-        auto transfer = request.transfer;
-        auto delay    = fb::config<uint32_t>("delay");
-        co_await this->sleep(std::chrono::seconds(delay));
-        if (this->sockets.contains(fd) == false)
-            co_return false;
+    auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
+        "internal",
+        "/in-game/login",
+        internal_reqs::Login{id, name, fb::config<uint8_t>("id")});
+    if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
+        co_return false;
 
-        auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
-            "internal",
-            "/in-game/login",
-            internal_reqs::Login{id, name, fb::config<uint8_t>("id")});
-        if (login_resp.error != (uint32_t)ERROR_CODE::NONE)
-            co_return false;
+    auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
+    if (this->sockets.contains(fd) == false)
+        co_return false;
 
-        auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
-        if (this->sockets.contains(fd) == false)
-            co_return false;
+    this->_characters.lock<void>([name, ch](auto& characters) {
+        if (characters.contains(name) == false)
+            characters.insert({name, ch});
+    });
 
-        this->_characters.lock<void>([name, ch](auto& characters) {
-            if (characters.contains(name) == false)
-                characters.insert({name, ch});
+    if (co_await this->init_ch(response.character, *ch, transfer) == false)
+        co_return false;
+    auto thread = ch->thread();
+
+    co_await this->init_items(response.items, *ch);
+    thread->assert_ptr(ch);
+
+    co_await this->init_spells(response.spells, *ch);
+    thread->assert_ptr(ch);
+
+    auto name_hash   = std::hash<std::string>{}(ch->name());
+    auto name_thread = this->threads.modular(name_hash);
+    name_thread->enqueue(
+        [this, fd, ch, name = ch->name(), name_thread]() -> async::task<void> {
+            if (this->sockets.contains(fd) == false)
+                throw std::runtime_error(
+                    std::format("{} socket cannot attached into matched name_matched_thread.", fd));
+
+            auto params = name_thread->data<thread_params>();
+            params->characters.insert({name, ch});
+            co_return;
+        },
+        [](std::exception& e) {
+            fb::logger::warn(e.what());
+        },
+        []() {
         });
 
-        if (co_await this->init_ch(response.character, *ch, transfer) == false)
-            co_return false;
+    co_await this->init_option(response.option, *ch);
+    thread->assert_ptr(ch);
 
-        co_await this->init_items(response.items, *ch);
-        co_await this->init_spells(response.spells, *ch);
+    co_await this->send(*ch, fb_resp::init(), scope::SELF);
+    thread->assert_ptr(ch);
 
-        auto hash   = std::hash<std::string>{}(ch->name());
-        auto thread = this->threads.modular(hash);
-        thread->enqueue(
-            [this, fd, ch, name = ch->name(), thread]() -> async::task<void> {
-                if (this->sockets.contains(fd) == false)
-                    throw std::runtime_error(std::format("{} socket cannot attached into matched thread.", fd));
+    co_await this->send(*ch, fb_resp::time(this->_time.hours()), scope::SELF);
+    thread->assert_ptr(ch);
 
-                auto params = thread->data<thread_params>();
-                params->characters.insert({name, ch});
-                co_return;
-            },
-            [](std::exception& e) {
-                fb::logger::warn(e.what());
-            },
-            []() {
-            });
+    co_await this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+    thread->assert_ptr(ch);
 
-        co_await this->init_option(response.option, *ch);
-        co_await this->send(*ch, fb_resp::init(), scope::SELF);
-        co_await this->send(*ch, fb_resp::time(this->_time.hours()), scope::SELF);
-        co_await this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
-
-        if (from == internal::Service::Login)
-        {
-            auto msg = this->elapsed_message(response.character.updated_date);
-            if (msg.empty() == false)
-                co_await ch->message(msg, MESSAGE_TYPE::STATE);
-        }
-
-        co_await this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
-        co_await this->send(*ch, fb_resp::session::option(*ch), scope::SELF);
-
-        ch->init(true);
-        co_return true;
-    }
-    catch (std::exception& /*e*/)
+    if (from == internal::Service::Login)
     {
-        if (this->sockets.contains(fd) == false)
-            co_return false;
-
-        socket.close();
+        auto msg = this->elapsed_message(response.character.updated_date);
+        if (msg.empty() == false)
+        {
+            co_await ch->message(msg, MESSAGE_TYPE::STATE);
+            thread->assert_ptr(ch);
+        }
     }
+
+    co_await this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    thread->assert_ptr(ch);
+
+    co_await this->send(*ch, fb_resp::session::option(*ch), scope::SELF);
+    thread->assert_ptr(ch);
+
+    ch->init(true);
+    co_return true;
 }
 
 async::task<bool> context::handle_direction(fb::socket<character>& socket, const fb_reqs::direction& request)
