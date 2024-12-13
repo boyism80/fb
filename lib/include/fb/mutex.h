@@ -129,7 +129,7 @@ private:
         if (thread != nullptr)
         {
             async::awaitable_then(
-                thread->dispatch([this, promise, &fn, &current, key, mutex]() mutable -> async::task<void> {
+                thread->dispatch([this, promise, &fn, &current, key, mutex](auto& thread) mutable -> async::task<void> {
                     co_await this->handle_locked(promise, fn, current, key, *mutex);
                     co_return;
                 }),

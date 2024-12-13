@@ -20,7 +20,7 @@ thread_container::thread_container(boost::asio::io_context& context) :
 
 void thread_container::enqueue(thread_switchable&                          pivot,
                                const std::function<bool()>&                condition,
-                               const std::function<async::task<void>()>&   fn,
+                               const thread::handle_func_type<void>&       fn,
                                const std::function<void(std::exception&)>& error,
                                const std::function<void()>&                callback)
 {
@@ -29,27 +29,26 @@ void thread_container::enqueue(thread_switchable&                          pivot
         throw std::runtime_error("no matched thread");
 
     thread->enqueue(
-        [=, &pivot, this]() -> async::task<void> {
+        [=, &pivot, this](auto& thread) -> async::task<void> {
             if (condition() == false)
                 throw std::runtime_error("condition not satisfied");
 
-            auto active_thread  = pivot.thread();
-            auto current_thread = this->current();
-            if (active_thread != current_thread)
+            auto active_thread = pivot.thread();
+            if (active_thread != &thread)
             {
                 this->enqueue(pivot, condition, fn);
                 throw std::runtime_error("active thread not matched");
             }
 
-            co_return co_await fn();
+            co_return co_await fn(*active_thread);
         },
         error,
         callback);
 }
 
-void thread_container::enqueue(thread_switchable&                        pivot,
-                               const std::function<bool()>&              condition,
-                               const std::function<async::task<void>()>& fn)
+void thread_container::enqueue(thread_switchable&                    pivot,
+                               const std::function<bool()>&          condition,
+                               const thread::handle_func_type<void>& fn)
 {
     return this->enqueue(
         pivot,
@@ -61,7 +60,7 @@ void thread_container::enqueue(thread_switchable&                        pivot,
         });
 }
 
-void thread_container::enqueue(thread_switchable& pivot, const std::function<async::task<void>()>& fn)
+void thread_container::enqueue(thread_switchable& pivot, const thread::handle_func_type<void>& fn)
 {
     return this->enqueue(
         pivot,
@@ -75,9 +74,9 @@ void thread_container::enqueue(thread_switchable& pivot, const std::function<asy
         });
 }
 
-async::task<void> thread_container::dispatch(thread_switchable&                        pivot,
-                                             const std::function<bool()>&              condition,
-                                             const std::function<async::task<void>()>& fn)
+async::task<void> thread_container::dispatch(thread_switchable&                    pivot,
+                                             const std::function<bool()>&          condition,
+                                             const thread::handle_func_type<void>& fn)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     this->enqueue(
@@ -93,7 +92,7 @@ async::task<void> thread_container::dispatch(thread_switchable&                 
     return promise->task();
 }
 
-async::task<void> thread_container::dispatch(thread_switchable& pivot, const std::function<async::task<void>()>& fn)
+async::task<void> thread_container::dispatch(thread_switchable& pivot, const thread::handle_func_type<void>& fn)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     this->enqueue(
@@ -113,7 +112,7 @@ async::task<void> thread_container::dispatch(thread_switchable& pivot, const std
 
 async::task<void> thread_container::switching(thread_switchable& pivot)
 {
-    co_await this->dispatch(pivot, []() -> async::task<void> {
+    co_await this->dispatch(pivot, [](auto&) -> async::task<void> {
         co_return;
     });
 }

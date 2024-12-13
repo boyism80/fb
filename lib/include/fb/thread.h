@@ -22,8 +22,9 @@ namespace fb {
 class thread
 {
 public:
-    using async_func_type = std::function<async::task<void>()>;
-    using func_type       = std::function<void()>;
+    template <typename ReturnType>
+    using handle_func_type  = std::function<async::task<ReturnType>(fb::thread&)>;
+    using handle_error_type = std::function<void(std::exception&)>;
 
 private:
     uint8_t           _index = 0;
@@ -37,8 +38,8 @@ private:
     void*                               _data = nullptr;
 
 private:
-    std::queue<func_type> _queue;
-    std::mutex            _mutex_queue;
+    std::queue<std::function<void()>> _queue;
+    std::mutex                        _mutex_queue;
 
 public:
     /**
@@ -205,14 +206,14 @@ public:
      * @tparam     ReturnType  { description }
      */
     template <typename ReturnType>
-    void enqueue(const std::function<async::task<ReturnType>()>& fn,
-                 const std::function<void(std::exception&)>&     error,
-                 const std::function<void(ReturnType&& value)>&  callback)
+    void enqueue(const handle_func_type<ReturnType>&      fn,
+                 const handle_error_type&                 error,
+                 const std::function<void(ReturnType&&)>& callback)
     {
         auto _ = std::lock_guard(_mutex_queue);
 
-        this->_queue.push([=]() {
-            async::awaitable_then(fn(), [&](async::awaitable_result<ReturnType> result) {
+        this->_queue.push([=, this]() {
+            async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
                 try
                 {
                     callback(result());
@@ -243,9 +244,9 @@ public:
      * @param[in]  error     The error
      * @param[in]  callback  The callback
      */
-    void enqueue(const async_func_type&                      fn,
-                 const std::function<void(std::exception&)>& error,
-                 const func_type&                            callback);
+    void enqueue(const handle_func_type<void>& fn,
+                 const handle_error_type&      error,
+                 const std::function<void()>&  callback);
 
     /**
      * @brief      { function_description }
@@ -257,7 +258,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <typename ReturnType>
-    async::task<ReturnType> dispatch(const std::function<async::task<ReturnType>()>& fn)
+    async::task<ReturnType> dispatch(const handle_func_type<ReturnType>& fn)
     {
         auto promise = std::make_shared<async::task_completion_source<void>>();
         this->enqueue<ReturnType>(
@@ -278,7 +279,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> dispatch(const async_func_type& fn);
+    [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
 
     /**
      * @brief      { function_description }

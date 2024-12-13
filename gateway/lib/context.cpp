@@ -81,13 +81,11 @@ async::task<bool> context::handle_connected(fb::socket<session>& socket)
 {
     co_await socket.send(this->_connection_cache, false);
 
-    fb::logger::info("{}님이 접속했습니다.", socket.IP());
     co_return true;
 }
 
 async::task<bool> context::handle_disconnected(fb::socket<session>& socket)
 {
-    fb::logger::info("{}님의 연결이 끊어졌습니다.", socket.IP());
     co_return false;
 }
 

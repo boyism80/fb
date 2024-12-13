@@ -325,7 +325,7 @@ private:
 
                             return false;
                         },
-                        [this, cmd, &socket, protocol]() -> async::task<void> { // fn
+                        [this, cmd, &socket, protocol](auto&) -> async::task<void> { // fn
                             std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
                         },
                         [](auto& error) { // error

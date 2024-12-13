@@ -51,15 +51,14 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     co_await this->init_spells(response.spells, *ch);
     thread->assert_ptr(ch);
 
-    auto name_hash   = std::hash<std::string>{}(ch->name());
-    auto name_thread = this->threads.modular(name_hash);
-    name_thread->enqueue(
-        [this, fd, ch, name = ch->name(), name_thread]() -> async::task<void> {
+    auto name_hash = std::hash<std::string>{}(ch->name());
+    this->threads.modular(name_hash)->enqueue(
+        [this, fd, ch, name = ch->name()](auto& thread) -> async::task<void> {
             if (this->sockets.contains(fd) == false)
                 throw std::runtime_error(
                     std::format("{} socket cannot attached into matched name_matched_thread.", fd));
 
-            auto params = name_thread->data<thread_params>();
+            auto params = thread.data<thread_params>();
             params->characters.insert({name, ch});
             co_return;
         },

@@ -72,7 +72,7 @@ void fb::thread::handle_idle()
 
 void fb::thread::assert_exec() const
 {
-    if(std::this_thread::get_id() != this->id())
+    if (std::this_thread::get_id() != this->id())
         throw std::runtime_error("cannot push pointer value. thread mismatched.");
 }
 
@@ -143,14 +143,14 @@ async::task<void> fb::thread::sleep(const fb::model::timespan& delay)
     return promise->task();
 }
 
-void fb::thread::enqueue(const std::function<async::task<void>()>&   fn,
-                         const std::function<void(std::exception&)>& error,
-                         const std::function<void()>&                callback)
+void fb::thread::enqueue(const handle_func_type<void>& fn,
+                         const handle_error_type&      error,
+                         const std::function<void()>&  callback)
 {
     auto _ = std::lock_guard(_mutex_queue);
 
-    this->_queue.push([=]() {
-        async::awaitable_then(fn(), [=](async::awaitable_result<void> result) {
+    this->_queue.push([=, this]() {
+        async::awaitable_then(fn(*this), [=](async::awaitable_result<void> result) {
             try
             {
                 callback();
@@ -174,7 +174,7 @@ void fb::thread::enqueue(const std::function<async::task<void>()>&   fn,
     });
 }
 
-async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>& fn)
+async::task<void> fb::thread::dispatch(const handle_func_type<void>& fn)
 {
     auto promise = std::make_shared<async::task_completion_source<void>>();
     this->enqueue(
@@ -190,7 +190,7 @@ async::task<void> fb::thread::dispatch(const std::function<async::task<void>()>&
 
 async::task<void> fb::thread::switching()
 {
-    return this->dispatch([]() -> async::task<void> {
+    return this->dispatch([](auto& thread) -> async::task<void> {
         co_return;
     });
 }

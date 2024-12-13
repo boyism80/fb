@@ -57,31 +57,46 @@ async::task<void> context::handle_start()
     lua::build("assert_korean", builtin_assert_korean);
     lua::build("CP949", builtin_cp949);
 
+    auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
-        thread->data(new thread_params{});
-
-        co_await thread->dispatch([]() -> async::task<void> {
-            auto& ist  = lua::container::ist();
-            auto& main = ist.get();
-            co_return;
-        });
+        maps_division.insert({thread, std::vector<fb::game::map*>{}});
     }
 
     for (auto& [id, map] : this->maps)
     {
         auto thread = this->threads.modular(id);
-        auto params = thread->data<thread_params>();
-        params->maps.insert({id, &map});
+        maps_division[thread].push_back(&map);
+    }
 
-        if (this->model.mob_spawn.contains(id))
-        {
-            for (auto& spawn : this->model.mob_spawn[id])
+    auto async_tasks = std::vector<async::task<void>>();
+    for (auto& [thread, maps] : maps_division)
+    {
+        async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
+            auto& ist  = lua::container::ist();
+            auto& main = ist.get();
+
+            auto params = new thread_params{};
+            for (auto map : maps)
             {
-                params->rezens.push_back(fb::game::rezen(*this, spawn));
+                params->maps.insert({map->model.id, map});
+                if (this->model.mob_spawn.contains(map->model.id))
+                {
+                    for (auto& spawn : this->model.mob_spawn[map->model.id])
+                    {
+                        params->rezens.push_back(fb::game::rezen(*this, spawn));
+                    }
+                }
             }
-        }
+            thread.data(params);
+            co_return;
+        }));
+    }
+
+    for (auto& async_task : async_tasks)
+    {
+        async::awaitable_get(async_task);
     }
 
     this->_amqp_thread = std::make_unique<std::thread>(&context::amqp_thread, this);
@@ -174,7 +189,6 @@ bool context::decrypt_policy(uint8_t cmd) const
 
 async::task<bool> context::handle_connected(fb::socket<character>& socket)
 {
-    fb::logger::info("{}님이 접속했습니다.", socket.IP());
     co_return true;
 }
 
@@ -834,7 +848,8 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup response)
             auto thread = this->thread(*map);
 
             // TODO: 좀 단순화해야함
-            async::awaitable_then(thread->dispatch([this, ch, group, response, &characters]() -> async::task<void> {
+            async::awaitable_then(thread->dispatch([this, ch, group, response, &characters](
+                                                       auto& thread) -> async::task<void> {
                 ch->group(group);
 
                 switch (response.action)
