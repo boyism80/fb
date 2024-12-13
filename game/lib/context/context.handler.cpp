@@ -58,7 +58,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(
                     std::format("{} socket cannot attached into matched name_matched_thread.", fd));
 
-            auto params = thread.data<thread_params>();
+            auto params = thread.template data<thread_params>();
             params->characters.insert({name, ch});
             co_return;
         },
