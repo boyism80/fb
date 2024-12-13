@@ -821,9 +821,6 @@ fb::thread* fb::game::object::thread() const
 
 void fb::game::object::assert_thread() const
 {
-    if (this->_map == nullptr)
-        return;
-
     fb::thread_switchable::assert_thread();
 }
 

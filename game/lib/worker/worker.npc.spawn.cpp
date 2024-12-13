@@ -31,13 +31,11 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     if (thread == nullptr)
         throw std::runtime_error("thread exception");
 
-    auto task = thread->dispatch([this, &spawn_model, &map]() -> async::task<void> {
+    this->_context.threads.enqueue(*npc,, [this, &map, &spawn_model]() -> async::task<void> {
         auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[spawn_model.npc]);
-        async::awaitable_get(npc->map(&map, spawn_model.position));
+        std::ignore = co_await npc->map(&map, spawn_model.position);
         std::ignore = co_await npc->direction(spawn_model.direction);
-        co_return;
     });
-    async::awaitable_get(task);
 }
 
 void fb::game::npc_spawner::on_worked(const fb::game::npc_spawner::input_type& input, double percent)
