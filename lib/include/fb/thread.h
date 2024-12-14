@@ -13,6 +13,7 @@
 #include <async/awaitable_then.h>
 #include <fb/model/datetime.h>
 #include <unordered_set>
+#include <fb/lua.h>
 
 namespace fb {
 

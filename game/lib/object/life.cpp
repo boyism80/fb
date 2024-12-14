@@ -241,7 +241,7 @@ bool fb::game::life::active(const fb::model::spell& spell, const std::string& me
 {
     this->assert_thread();
 
-    auto thread = fb::game::lua::get();
+    auto thread = fb::lua::get();
     if (thread == nullptr)
         return false;
 
@@ -272,7 +272,7 @@ bool fb::game::life::active(const fb::model::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
 
-    auto thread = fb::game::lua::get();
+    auto thread = fb::lua::get();
     if (thread == nullptr)
         return false;
 
@@ -299,7 +299,7 @@ bool fb::game::life::active(const fb::model::spell& spell)
 {
     this->assert_thread();
 
-    auto thread = fb::game::lua::get();
+    auto thread = fb::lua::get();
     if (thread == nullptr)
         return false;
 

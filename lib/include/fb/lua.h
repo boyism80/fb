@@ -13,10 +13,11 @@ extern "C"
 #include <map>
 #include <list>
 #include <random>
-#include <fb/socket.h>
+#include <functional>
+#include <mutex>
+#include <format>
 #include <fb/encoding.h>
 #include <fb/logger.h>
-#include <fb/abstract.h>
 
 #define LUA_PROTOTYPE                                \
     static const struct luaL_Reg LUA_METHODS[];      \
@@ -47,7 +48,7 @@ extern "C"
 
 #define LUA_PENDING (LUA_ERRERR + 1)
 
-namespace fb { namespace game { namespace lua {
+namespace fb::lua {
 
 constexpr auto DEFAULT_POOL_SIZE = 1000;
 
@@ -102,12 +103,14 @@ void load(const std::string& path);
 class luable
 {
 public:
+    LUA_PROTOTYPE
+
+public:
     /**
      * @brief      { function_description }
      *
      * @param      ctx   The context
      */
-    LUA_PROTOTYPE
     void to_lua(lua_State* ctx) const;
 
 protected:
@@ -754,12 +757,14 @@ public:
     template <typename T>
     void build()
     {
-        luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str()); // [mt]
-        lua_pushvalue(*this, -1);                                // [mt, mt]
-                                                                 // mt.__index = mt
-        lua_setfield(*this, -2, "__index");                      // [mt]
-                                                                 // [mt.functions = ...]
-        luaL_setfuncs(*this, T::LUA_METHODS, 0);                 // []
+        auto metaname = T::LUA_METATABLE_NAME.c_str();
+        luaL_newmetatable(*this, metaname); // [mt]
+        lua_pushvalue(*this, -1);           // [mt, mt]
+                                            // mt.__index = mt
+        lua_setfield(*this, -2, "__index"); // [mt]
+                                            // [mt.functions = ...]
+        auto metafuncs = T::LUA_METHODS;
+        luaL_setfuncs(*this, metafuncs, 0); // []
     }
 
     /**
@@ -771,15 +776,19 @@ public:
     template <typename T, typename B>
     void build()
     {
-        luaL_newmetatable(*this, T::LUA_METATABLE_NAME.c_str()); // [mt]
-        luaL_getmetatable(*this, B::LUA_METATABLE_NAME.c_str()); // [mt, bt]
-                                                                 // mt.__metatable = bt
-        lua_setmetatable(*this, -2);                             // [mt]
-        lua_pushvalue(*this, -1);                                // [mt, mt]
-                                                                 // mt.__index = mt
-        lua_setfield(*this, -2, "__index");                      // [mt]
-                                                                 // mt.functions = ...
-        luaL_setfuncs(*this, T::LUA_METHODS, 0);                 // []
+        auto child_metaname = T::LUA_METATABLE_NAME.c_str();
+        luaL_newmetatable(*this, child_metaname); // [mt]
+
+        auto parent_metaname = B::LUA_METATABLE_NAME.c_str();
+        luaL_getmetatable(*this, parent_metaname); // [mt, bt]
+                                                   // mt.__metatable = bt
+        lua_setmetatable(*this, -2);               // [mt]
+        lua_pushvalue(*this, -1);                  // [mt, mt]
+                                                   // mt.__index = mt
+        lua_setfield(*this, -2, "__index");        // [mt]
+                                                   // mt.functions = ...
+        auto child_metafuncs = T::LUA_METHODS;
+        luaL_setfuncs(*this, child_metafuncs, 0); // []
     }
 
     /**
@@ -929,7 +938,7 @@ void env(const char* key, T* data)
     });
 }
 
-}}} // namespace fb::game::lua
+} // namespace fb::lua
 
 /**
  * @brief      { function_description }
@@ -976,13 +985,13 @@ inline void to_lua(lua_State* ctx, const T* self)
  * @return     { description_of_the_return_value }
  */
 template <class... Args>
-fb::game::lua::context& fb::game::lua::context::from(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::from(const std::string& fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
 #if defined DEBUG || defined _DEBUG
     luaL_dofile(*this, fname.c_str());
 #else
-    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    auto main = static_cast<fb::lua::main*>(this->owner);
     main->load_file(fname);
     if (main->_bytecodes.contains(fname) == false)
     {
@@ -1012,7 +1021,7 @@ fb::game::lua::context& fb::game::lua::context::from(const std::string& fmt, Arg
  * @return     { description_of_the_return_value }
  */
 template <class... Args>
-fb::game::lua::context& fb::game::lua::context::func(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::func(const std::string& fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
     lua_getglobal(*this, fname.c_str());

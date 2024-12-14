@@ -103,6 +103,7 @@
     <ClCompile Include="src\dead_lock.cpp" />
     <ClCompile Include="src\encoding.cpp" />
     <ClCompile Include="src\logger.cpp" />
+    <ClCompile Include="src\lua.cpp" />
     <ClCompile Include="src\stream.cpp" />
     <ClCompile Include="src\table.cpp" />
     <ClCompile Include="src\thread.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="include\fb\leak.h" />
     <ClInclude Include="include\fb\locker.h" />
     <ClInclude Include="include\fb\logger.h" />
+    <ClInclude Include="include\fb\lua.h" />
     <ClInclude Include="include\fb\mst.h" />
     <ClInclude Include="include\fb\mutex.h" />
     <ClInclude Include="include\fb\parallel_worker.h" />

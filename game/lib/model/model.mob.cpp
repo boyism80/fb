@@ -5,7 +5,7 @@
 
 int fb::model::mob::builtin_speed(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

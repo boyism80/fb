@@ -76,8 +76,14 @@ async::task<void> context::handle_start()
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto& ist  = lua::container::ist();
             auto& main = ist.get();
+            fb::model::lua::map_enum(main);
+            main.load_file("scripts/script.lua");
+            main.load_file("scripts/common/npc.lua");
+            main.load_file("scripts/common/door.lua");
+            main.load_file("scripts/common/pickup.lua");
+            main.load_file("scripts/common/attack.lua");
 
-            auto params = new thread_params{};
+            auto params = new thread_params();
             for (auto map : maps)
             {
                 params->maps.insert({map->model.id, map});

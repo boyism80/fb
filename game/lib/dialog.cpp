@@ -10,7 +10,7 @@ fb::game::dialog::~dialog()
     this->release();
 }
 
-fb::game::lua::context* fb::game::dialog::current() const
+fb::lua::context* fb::game::dialog::current() const
 {
     if (this->_scripts.size() == 0)
         return nullptr;
@@ -154,7 +154,7 @@ fb::game::dialog& fb::game::dialog::pushboolean(bool value)
     return *this;
 }
 
-fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable* object)
+fb::game::dialog& fb::game::dialog::pushobject(const fb::lua::luable* object)
 {
     auto ctx = this->current();
     if (ctx == nullptr)
@@ -164,7 +164,7 @@ fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable* obje
     return *this;
 }
 
-fb::game::dialog& fb::game::dialog::pushobject(const fb::game::lua::luable& object)
+fb::game::dialog& fb::game::dialog::pushobject(const fb::lua::luable& object)
 {
     auto ctx = this->current();
     if (ctx == nullptr)

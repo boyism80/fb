@@ -2,7 +2,7 @@
 #define __OBJECT_H__
 
 #include <spell.h>
-#include <lua.h>
+#include <fb/lua.h>
 
 using namespace fb::model;
 using namespace fb::model::enum_value;
@@ -717,6 +717,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_is(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_ptr(lua_State* lua);
 };
 
 /**

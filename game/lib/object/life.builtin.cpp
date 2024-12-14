@@ -4,7 +4,7 @@
 
 int fb::game::life::builtin_hp(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -29,7 +29,7 @@ int fb::game::life::builtin_hp(lua_State* lua)
 
 int fb::game::life::builtin_mp(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -54,7 +54,7 @@ int fb::game::life::builtin_mp(lua_State* lua)
 
 int fb::game::life::builtin_base_hp(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -71,7 +71,7 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
 
 int fb::game::life::builtin_base_mp(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -88,7 +88,7 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
 
 int fb::game::life::builtin_hp_inc(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -106,7 +106,7 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
 
 int fb::game::life::builtin_hp_dec(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -124,7 +124,7 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
 
 int fb::game::life::builtin_mp_inc(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -142,7 +142,7 @@ int fb::game::life::builtin_mp_inc(lua_State* lua)
 
 int fb::game::life::builtin_mp_dec(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -160,7 +160,7 @@ int fb::game::life::builtin_mp_dec(lua_State* lua)
 
 int fb::game::life::builtin_action(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -185,7 +185,7 @@ int fb::game::life::builtin_action(lua_State* lua)
 
 int fb::game::life::builtin_spell(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -203,7 +203,7 @@ int fb::game::life::builtin_spell(lua_State* lua)
 
 int fb::game::life::builtin_damage(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -229,7 +229,7 @@ int fb::game::life::builtin_damage(lua_State* lua)
 
 int fb::game::life::builtin_cast(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

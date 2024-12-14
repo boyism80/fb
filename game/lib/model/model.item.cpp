@@ -28,7 +28,7 @@ fb::model::item* fb::model::__item::name2item(const std::string& name) const
 
 int fb::model::item::builtin_make(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -62,7 +62,7 @@ int fb::model::item::builtin_make(lua_State* lua)
 
 int fb::model::item::builtin_attr(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -75,7 +75,7 @@ int fb::model::item::builtin_attr(lua_State* lua)
 
 int fb::model::item::builtin_capacity(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -86,7 +86,7 @@ int fb::model::item::builtin_capacity(lua_State* lua)
 
 int fb::model::item::builtin_price(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -97,7 +97,7 @@ int fb::model::item::builtin_price(lua_State* lua)
 
 int fb::model::item::builtin_durability(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -122,7 +122,7 @@ int fb::model::item::builtin_durability(lua_State* lua)
 
 int fb::model::item::builtin_repair_price(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -145,7 +145,7 @@ int fb::model::item::builtin_repair_price(lua_State* lua)
 
 int fb::model::item::builtin_rename_price(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -168,7 +168,7 @@ int fb::model::item::builtin_rename_price(lua_State* lua)
 
 int fb::model::item::builtin_deposit_price(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

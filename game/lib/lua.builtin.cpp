@@ -1,5 +1,5 @@
 #include <context.h>
-#include <lua.h>
+#include <fb/lua.h>
 
 using namespace fb::game;
 
@@ -9,7 +9,7 @@ int fb::game::context::builtin_seed(lua_State* lua)
     static std::mt19937       gen(random());
     static auto               distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
 
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -20,7 +20,7 @@ int fb::game::context::builtin_seed(lua_State* lua)
 
 int fb::game::context::builtin_sleep(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -29,7 +29,7 @@ int fb::game::context::builtin_sleep(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
-        auto thread = fb::game::lua::get(lua);
+        auto thread = fb::lua::get(lua);
         if (thread == nullptr)
             return;
 
@@ -41,7 +41,7 @@ int fb::game::context::builtin_sleep(lua_State* lua)
 
 int fb::game::context::builtin_name2mob(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -62,7 +62,7 @@ int fb::game::context::builtin_name2mob(lua_State* lua)
 
 int fb::game::context::builtin_name2npc(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -83,7 +83,7 @@ int fb::game::context::builtin_name2npc(lua_State* lua)
 
 int fb::game::context::builtin_name2map(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -104,7 +104,7 @@ int fb::game::context::builtin_name2map(lua_State* lua)
 
 int fb::game::context::builtin_name2item(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -125,7 +125,7 @@ int fb::game::context::builtin_name2item(lua_State* lua)
 
 int fb::game::context::builtin_pursuit_sell(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -162,7 +162,7 @@ int fb::game::context::builtin_pursuit_sell(lua_State* lua)
 
 int fb::game::context::builtin_pursuit_buy(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -198,7 +198,7 @@ int fb::game::context::builtin_pursuit_buy(lua_State* lua)
 
 int fb::game::context::builtin_sell_price(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -228,7 +228,7 @@ int fb::game::context::builtin_sell_price(lua_State* lua)
 
 int fb::game::context::builtin_buy_price(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -259,7 +259,7 @@ int fb::game::context::builtin_buy_price(lua_State* lua)
 
 int fb::game::context::builtin_timer(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -277,7 +277,7 @@ int fb::game::context::builtin_timer(lua_State* lua)
 
 int fb::game::context::builtin_weather(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -291,7 +291,7 @@ int fb::game::context::builtin_weather(lua_State* lua)
 
 int fb::game::context::builtin_name_with(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -313,7 +313,7 @@ int fb::game::context::builtin_name_with(lua_State* lua)
 
 int fb::game::context::builtin_assert_korean(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -325,7 +325,7 @@ int fb::game::context::builtin_assert_korean(lua_State* lua)
 
 int fb::game::context::builtin_cp949(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

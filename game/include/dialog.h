@@ -393,7 +393,7 @@ template <class... Args>
 fb::game::dialog& fb::game::dialog::from(const std::string& fmt, Args&&... args)
 {
     auto buffer = std::vformat(fmt, std::make_format_args(args...));
-    auto ctx    = fb::game::lua::get();
+    auto ctx    = fb::lua::get();
     ctx->from(buffer.c_str());
     this->_scripts.push(ctx);
     return *this;

@@ -2,7 +2,7 @@
 #define __DOOR_H__
 
 #include <mmo.h>
-#include <lua.h>
+#include <fb/lua.h>
 #include <fb/model/model.h>
 
 using namespace fb::model;

@@ -1,24 +1,20 @@
-#include <item.h>
-#include <lua.h>
-#include <mob.h>
-#include <object.h>
-#include <fb/model/model.h>
+#include <fb/lua.h>
 
-using namespace fb::game::lua;
+using namespace fb::lua;
 
-context* fb::game::lua::get()
+context* fb::lua::get()
 {
     auto& main = container::ist().get();
     return main.pop();
 }
 
-context* fb::game::lua::get(lua_State* ctx)
+context* fb::lua::get(lua_State* ctx)
 {
     auto& main = container::ist().get();
     return main.get(*ctx);
 }
 
-void fb::game::lua::build(const std::string& name, lua_CFunction fn)
+void fb::lua::build(const std::string& name, lua_CFunction fn)
 {
     auto& ist = container::ist();
     ist.init_fn([name, fn](main& m) {
@@ -27,7 +23,7 @@ void fb::game::lua::build(const std::string& name, lua_CFunction fn)
     // lua_register(main::get(), name.c_str(), fn);
 }
 
-void fb::game::lua::load(const std::string& path)
+void fb::lua::load(const std::string& path)
 {
     auto& ist = container::ist();
     ist.load(path);
@@ -35,7 +31,7 @@ void fb::game::lua::load(const std::string& path)
 
 void luable::to_lua(lua_State* ctx) const
 {
-    if (const auto context = fb::game::lua::get(ctx); context == nullptr)
+    if (const auto context = fb::lua::get(ctx); context == nullptr)
         return;
 
     const auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**))); // [val]
@@ -154,7 +150,7 @@ bool context::resume(int argc, bool auto_release)
     if (this->owner == nullptr)
         throw std::runtime_error("this context is not lua thread");
 
-    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    auto main = static_cast<fb::lua::main*>(this->owner);
     if (main != &lua::container::ist().get())
     {
         // thread mismatch
@@ -197,7 +193,7 @@ int context::state() const
 
 void context::release()
 {
-    auto main = static_cast<fb::game::lua::main*>(this->owner);
+    auto main = static_cast<fb::lua::main*>(this->owner);
     switch (this->_state)
     {
     case LUA_OK:
@@ -224,12 +220,6 @@ main::main() :
     context(::luaL_newstate())
 {
     luaL_openlibs(*this);
-    fb::model::lua::map_enum(*this);
-    this->load_file("scripts/script.lua");
-    this->load_file("scripts/common/npc.lua");
-    this->load_file("scripts/common/door.lua");
-    this->load_file("scripts/common/pickup.lua");
-    this->load_file("scripts/common/attack.lua");
 }
 
 main::~main()
@@ -346,7 +336,7 @@ thread::~thread()
     luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
 }
 
-fb::game::lua::container::container()
+fb::lua::container::container()
 {
     this->init_fn([this](main& m) {
         for (auto& path : this->_scripts)
@@ -354,10 +344,10 @@ fb::game::lua::container::container()
     });
 }
 
-fb::game::lua::container::~container()
+fb::lua::container::~container()
 { }
 
-main& fb::game::lua::container::get()
+main& fb::lua::container::get()
 {
     std::lock_guard gd(this->_mutex);
 
@@ -375,12 +365,12 @@ main& fb::game::lua::container::get()
     return *this->_mains[id];
 }
 
-void fb::game::lua::container::init_fn(init_func&& fn)
+void fb::lua::container::init_fn(init_func&& fn)
 {
     this->_init_funcs.push_back(fn);
 }
 
-void fb::game::lua::container::load(const std::string& path)
+void fb::lua::container::load(const std::string& path)
 {
     std::lock_guard gd(this->_mutex);
 
@@ -390,7 +380,7 @@ void fb::game::lua::container::load(const std::string& path)
     this->_scripts.push_back(path);
 }
 
-fb::game::lua::container& fb::game::lua::container::ist()
+fb::lua::container& fb::lua::container::ist()
 {
     static std::once_flag             _flag;
     static std::unique_ptr<container> _ist;

@@ -626,3 +626,20 @@ int fb::game::object::builtin_is(lua_State* lua)
     thread->pushboolean(obj->is(OBJECT_TYPE(type)));
     return 1;
 }
+
+int fb::game::object::builtin_ptr(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto ctx  = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto obj  = thread->touserdata<object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    obj->assert_thread();
+    thread->pushinteger((uint64_t)(void*)obj);
+    return 1;
+}

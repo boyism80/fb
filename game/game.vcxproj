@@ -106,7 +106,6 @@
     <ClInclude Include="include\item.h" />
     <ClInclude Include="include\life.h" />
     <ClInclude Include="include\listener.h" />
-    <ClInclude Include="include\lua.h" />
     <ClInclude Include="include\map.h" />
     <ClInclude Include="include\mmo.h" />
     <ClInclude Include="include\mob.h" />
@@ -160,8 +159,7 @@
     <ClCompile Include="lib\item\shield.cpp" />
     <ClCompile Include="lib\item\weapon.cpp" />
     <ClCompile Include="lib\listener.cpp" />
-    <ClCompile Include="lib\lua\lua.builtin.cpp" />
-    <ClCompile Include="lib\lua\lua.cpp" />
+    <ClCompile Include="lib\lua.builtin.cpp" />
     <ClCompile Include="lib\map\map.builtin.cpp" />
     <ClCompile Include="lib\map\map.container.cpp" />
     <ClCompile Include="lib\map\map.cpp" />
