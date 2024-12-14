@@ -90,18 +90,6 @@ void fb::thread::exit()
     this->_mutex_timer.unlock();
 }
 
-void fb::thread::data(void* value)
-{
-    this->assert_exec();
-    this->_data = value;
-}
-
-void* fb::thread::data() const
-{
-    this->assert_exec();
-    return _data;
-}
-
 void fb::thread::push_ptr(void* ptr)
 {
     this->assert_exec();
@@ -112,6 +100,13 @@ void fb::thread::pop_ptr(void* ptr)
 {
     this->assert_exec();
     this->_ptrs.erase(static_cast<void*>(ptr));
+}
+
+void fb::thread::assert_ptr(void* ptr) const
+{
+    this->assert_exec();
+    if (this->_ptrs.contains(ptr) == false)
+        throw std::runtime_error(std::format("ptr {:p} does not contains in thread", ptr));
 }
 
 void fb::thread::settimer(const fb::timer::handle_callback_type& fn,

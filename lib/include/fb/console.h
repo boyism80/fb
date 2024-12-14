@@ -2,7 +2,6 @@
 #define __CONSOLE_H__
 
 #ifdef _WIN32
-#include <Windows.h>
 #include <io.h>
 #else
 #include <locale.h>
@@ -19,20 +18,7 @@
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
-inline static bool SetConsoleIcon(int id)
-{
-    auto hwnd = ::GetConsoleWindow();
-    if (hwnd == nullptr)
-        return false;
-
-    auto icon = ::LoadIcon(::GetModuleHandle(NULL), MAKEINTRESOURCE(id));
-    if (icon == nullptr)
-        return false;
-
-    ::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icon);
-    ::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icon);
-    return true;
-}
+bool SetConsoleIcon(int id);
 #endif
 
 namespace fb {

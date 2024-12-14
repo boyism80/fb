@@ -1,3 +1,4 @@
+#include <Windows.h>
 #include <fb/encoding.h>
 
 std::string fb::cp949(const std::string& utf8)

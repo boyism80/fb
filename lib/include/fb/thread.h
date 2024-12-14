@@ -121,14 +121,15 @@ public:
      * @brief      { function_description }
      *
      * @param      value  The value
-     */
-    void data(void* value);
-    /**
-     * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
+     * @tparam     T      { description }
      */
-    void* data() const;
+    template <typename T>
+    void data(T* value)
+    {
+        this->assert_exec();
+        this->_data = static_cast<void*>(value);
+    }
     /**
      * @brief      { function_description }
      *
@@ -160,21 +161,9 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  args  The arguments
-     *
-     * @tparam     T     { description }
+     * @param      ptr   The pointer
      */
-    template <typename... T>
-    void assert_ptr(T... args) const
-    {
-        this->assert_exec();
-        std::vector<void*> ptrs = {args...};
-        for (auto ptr : ptrs)
-        {
-            if (this->_ptrs.contains(ptr) == false)
-                throw std::runtime_error(std::format("ptr {:p} does not contains in thread", ptr));
-        }
-    }
+    void assert_ptr(void* ptr) const;
 
 public:
     /**

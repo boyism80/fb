@@ -12,6 +12,7 @@
 #include <optional>
 #include <chrono>
 #include <json/json.h>
+#include <fstream>
 #include <unordered_map>
 #include <model.additional.h>
 #ifdef LUA
@@ -4635,16 +4636,7 @@ private:
             throw std::runtime_error(sstream.str());
         }
 
-        Json::Reader            reader;
-        if (reader.parse(ifstream, json) == false)
-        {
-            ifstream.close();
-
-            auto sstream = std::stringstream();
-            sstream << "cannot parse json file : " << fname;
-            throw std::runtime_error(sstream.str());
-        }
-
+        ifstream >> json;
         ifstream.close();
         this->load(json);
     }

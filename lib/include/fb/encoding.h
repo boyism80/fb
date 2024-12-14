@@ -1,9 +1,7 @@
 #ifndef __ENCODING_H__
 #define __ENCODING_H__
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
+#ifndef _WIN32
 #include <locale>
 #include <iconv.h>
 #include <codecvt>

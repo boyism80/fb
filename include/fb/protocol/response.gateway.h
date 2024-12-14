@@ -4,7 +4,11 @@
 #include <fb/protocol/protocol.h>
 #include <fb/cryptor.h>
 #include <format>
-#ifndef _WIN32
+#ifdef _WIN32
+#ifndef _WINSOCK2API_
+#include <WinSock2.h>
+#endif
+#else
 #include <arpa/inet.h>
 #endif
 
@@ -38,7 +42,7 @@ public:
     { }
 };
 
-}// namespace fb::protocol::gateway
+} // namespace fb::protocol::gateway
 
 namespace fb::protocol::gateway::response {
 
@@ -85,7 +89,7 @@ public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);
         writer.write<uint32_t>(this->entry_crc);
@@ -136,7 +140,7 @@ public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         // 서버정보를 바이너리 형식으로 변환
         auto formats = fb::stream();
         {
@@ -172,6 +176,6 @@ public:
 #endif
 };
 
-}// namespace fb::protocol::gateway::response
+} // namespace fb::protocol::gateway::response
 
 #endif // !__PROTOCOL_RESPONSE_GATEWAY_H__

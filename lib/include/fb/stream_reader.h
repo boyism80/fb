@@ -5,6 +5,10 @@
 #include <fb/endian.h>
 #include <fb/encoding.h>
 
+#ifdef max
+#undef max
+#endif
+
 namespace fb {
 
 /**
