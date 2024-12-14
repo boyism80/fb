@@ -2,6 +2,18 @@
 
 using namespace fb::game;
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
+{"width",               fb::game::map::builtin_width},
+{"height",              fb::game::map::builtin_height},
+{"area",                fb::game::map::builtin_area},
+{"objects",             fb::game::map::builtin_objects},
+{"movable",             fb::game::map::builtin_movable},
+{"door",                fb::game::map::builtin_door},
+{"doors",               fb::game::map::builtin_doors},
+{"contains",            fb::game::map::builtin_contains},
+END_LUA_EXTENSION; // clang-format on
+
 int fb::game::map::builtin_width(lua_State* lua)
 {
     auto thread = lua::get(lua);

@@ -20,8 +20,11 @@ namespace fb {
 /**
  * @brief      This class describes a thread.
  */
-class thread
+class thread : public fb::lua::luable
 {
+public:
+    LUA_PROTOTYPE
+
 public:
     template <typename ReturnType>
     using handle_func_type  = std::function<async::task<ReturnType>(fb::thread&)>;
@@ -277,6 +280,9 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> switching();
+
+public:
+    static int builtin_assert_ptr(lua_State* lua);
 };
 
 } // namespace fb

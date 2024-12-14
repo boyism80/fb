@@ -57,15 +57,27 @@ void fb::thread::handle_idle()
         if (timer->duration > elapsed)
             continue;
 
-        try
-        {
-            timer->fn(now, this->_thread.get_id());
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-        }
-        if (timer->disposable)
+        auto disposable = timer->disposable;
+        auto fn         = fb::timer::handle_callback_type{timer->fn};
+        async::awaitable_then(fn(now, this->_thread.get_id()), [](auto result) {
+            try
+            {
+                result();
+            }
+            catch (...)
+            {
+                try
+                {
+                    std::rethrow_exception(std::current_exception());
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal(e.what());
+                }
+            }
+        });
+
+        if (disposable)
             this->_timers.erase(this->_timers.begin() + i);
     }
 }

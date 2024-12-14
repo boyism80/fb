@@ -556,6 +556,8 @@ protected:
      */
     virtual async::task<void> handle_start()
     {
+        lua::build<lua::luable>();
+        lua::build<fb::thread, lua::luable>();
         co_return;
     }
 

@@ -36,7 +36,8 @@ private:
     timer& operator= (const timer&) = delete;
 
 public:
-    ~timer() = default;
+    ~timer()
+    { }
 };
 
 } // namespace fb

@@ -159,12 +159,12 @@
     <ClCompile Include="lib\item\shield.cpp" />
     <ClCompile Include="lib\item\weapon.cpp" />
     <ClCompile Include="lib\listener.cpp" />
-    <ClCompile Include="lib\lua.builtin.cpp" />
     <ClCompile Include="lib\map\map.builtin.cpp" />
     <ClCompile Include="lib\map\map.container.cpp" />
     <ClCompile Include="lib\map\map.cpp" />
     <ClCompile Include="lib\map\sector.cpp" />
     <ClCompile Include="lib\mmo.cpp" />
+    <ClCompile Include="lib\model.additional.cpp" />
     <ClCompile Include="lib\model\const.regex.cpp" />
     <ClCompile Include="lib\model\model.buy.cpp" />
     <ClCompile Include="lib\model\model.door.cpp" />
@@ -183,7 +183,9 @@
     <ClCompile Include="lib\object\character.cpp" />
     <ClCompile Include="lib\object\life.builtin.cpp" />
     <ClCompile Include="lib\object\life.cpp" />
+    <ClCompile Include="lib\object\mob.builtin.cpp" />
     <ClCompile Include="lib\object\mob.cpp" />
+    <ClCompile Include="lib\object\npc.builtin.cpp" />
     <ClCompile Include="lib\object\npc.cpp" />
     <ClCompile Include="lib\object\object.builtin.cpp" />
     <ClCompile Include="lib\object\object.container.cpp" />

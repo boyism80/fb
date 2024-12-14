@@ -2,6 +2,23 @@
 #include <life.h>
 #include <map.h>
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
+{"__eq",                fb::game::object::builtin_eq},
+{"hp",                  fb::game::life::builtin_hp},
+{"mp",                  fb::game::life::builtin_mp},
+{"hp_inc",              fb::game::life::builtin_hp_inc},
+{"mp_inc",              fb::game::life::builtin_mp_inc},
+{"hp_dec",              fb::game::life::builtin_hp_dec},
+{"mp_dec",              fb::game::life::builtin_mp_dec},
+{"base_hp",             fb::game::life::builtin_base_hp},
+{"base_mp",             fb::game::life::builtin_base_mp},
+{"action",              fb::game::life::builtin_action},
+{"spell",               fb::game::life::builtin_spell},
+{"damage",              fb::game::life::builtin_damage},
+{"cast",                fb::game::life::builtin_cast},
+END_LUA_EXTENSION; // clang-format on
+
 int fb::game::life::builtin_hp(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

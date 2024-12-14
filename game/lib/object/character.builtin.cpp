@@ -1,6 +1,34 @@
 #include <character.h>
 #include <context.h>
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::character, "fb.game.character")
+{"__eq",                fb::game::object::builtin_eq},
+{"look",                fb::game::character::builtin_look},
+{"color",               fb::game::character::builtin_color},
+{"money",               fb::game::character::builtin_money},
+{"exp",                 fb::game::character::builtin_exp},
+{"base_hp",             fb::game::character::builtin_base_hp},
+{"base_mp",             fb::game::character::builtin_base_mp},
+{"str",                 fb::game::character::builtin_strength},
+{"dex",                 fb::game::character::builtin_dexterity},
+{"int",                 fb::game::character::builtin_intelligence},
+{"item",                fb::game::character::builtin_item},
+{"items",               fb::game::character::builtin_items},
+{"dropitem",            fb::game::character::builtin_item_drop},
+{"mkitem",              fb::game::character::builtin_mkitem},
+{"rmitem",              fb::game::character::builtin_rmitem},
+{"state",               fb::game::character::builtin_state},
+{"disguise",            fb::game::character::builtin_disguise},
+{"class",               fb::game::character::builtin_class},
+{"level",               fb::game::character::builtin_level},
+{"assert",              fb::game::character::builtin_assert},
+{"deposited_money",     fb::game::character::builtin_deposited_money},
+{"deposited_item",      fb::game::character::builtin_deposited_item},
+{"deposit_item",        fb::game::character::builtin_deposit_item},
+{"withdraw_item",       fb::game::character::builtin_withdraw_item},
+END_LUA_EXTENSION; // clang-format on
+
 int fb::game::character::builtin_look(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

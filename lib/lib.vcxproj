@@ -103,9 +103,11 @@
     <ClCompile Include="src\dead_lock.cpp" />
     <ClCompile Include="src\encoding.cpp" />
     <ClCompile Include="src\logger.cpp" />
+    <ClCompile Include="src\lua.builtin.cpp" />
     <ClCompile Include="src\lua.cpp" />
     <ClCompile Include="src\stream.cpp" />
     <ClCompile Include="src\table.cpp" />
+    <ClCompile Include="src\thread.builtin.cpp" />
     <ClCompile Include="src\thread.cpp" />
     <ClCompile Include="src\thread_container.cpp" />
     <ClCompile Include="src\thread_switchable.cpp" />

@@ -198,10 +198,16 @@
     <ClCompile Include="lib\door.container.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\lua.builtin.cpp">
+    <ClCompile Include="lib\context\context.builtin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\context\context.builtin.cpp">
+    <ClCompile Include="lib\object\npc.builtin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\object\mob.builtin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\model.additional.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

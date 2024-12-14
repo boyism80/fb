@@ -43,8 +43,7 @@ extern "C"
     {                     \
         NULL, NULL        \
     }                     \
-    }                     \
-    ;
+    }
 
 #define LUA_PENDING (LUA_ERRERR + 1)
 

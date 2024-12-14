@@ -24,7 +24,6 @@ async::task<void> context::handle_start()
     co_await fb::acceptor<character>::handle_start();
 
     lua::env<context>("context", this);
-    lua::build<lua::luable>();
     lua::build<map, lua::luable>();
     lua::build<door, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();

@@ -1,6 +1,14 @@
 #include <context.h>
 #include <item.h>
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+{"model",               fb::game::item::builtin_model},
+{"count",               fb::game::item::builtin_count},
+{"durability",          fb::game::item::builtin_durability},
+{"rename",              fb::game::item::builtin_rename},
+END_LUA_EXTENSION; // clang-format on
+
 int fb::game::item::builtin_model(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
