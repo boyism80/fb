@@ -57,6 +57,7 @@ IF(WIN32)
 ELSE()
   set(CMAKE_CXX_FLAGS_DEBUG "-g")
   set(THREADS_PREFER_PTHREAD_FLAG ON)
+  add_compile_definitions(NCURSES_NOMACROS)
   find_package(Threads REQUIRED)
   target_link_libraries(${DEST} fb
                                 jsoncpp

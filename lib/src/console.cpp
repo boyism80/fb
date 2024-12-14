@@ -1,4 +1,6 @@
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 #include <fb/console.h>
 
 using namespace fb;
@@ -77,8 +79,8 @@ void console::raw_put(const std::string& text, uint16_t x, uint16_t y)
                                        COORD{(SHORT)x, (SHORT)y},
                                        &written);
 #else
-        ::mvprintw(y, x, text.c_str());
-        ::refresh();
+        mvaddstr(y, x, text.c_str());
+        refresh();
 #endif
     }
     else

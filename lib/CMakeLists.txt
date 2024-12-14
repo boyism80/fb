@@ -41,6 +41,7 @@ IF(WIN32)
   add_compile_definitions(AMQP_STATIC)
 ELSE()
   set(CMAKE_CXX_FLAGS_DEBUG "-g")
+  add_compile_definitions(NCURSES_NOMACROS)
 ENDIF(WIN32)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
