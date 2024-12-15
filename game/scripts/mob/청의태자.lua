@@ -3,6 +3,10 @@ function on_attack(me, you)
     -- if math.random() > 0.01 then
     --     return false
     -- end
+    
+    if you == nil then
+        return true
+    end
 
     local ptr_me = me:ptr()
     local ptr_you = you:ptr()

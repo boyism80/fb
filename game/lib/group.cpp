@@ -68,8 +68,8 @@ async::task<void> group::update(const std::string& master, const std::vector<std
         auto params = thread->data<thread_params>();
         for (auto& name : names)
         {
-            if (params->characters.contains(name) == false)
-                continue;
+            // if (params->characters.contains(name) == false)
+            //     continue;
 
             // ... 다시 생각해볼 필요가 있음;;
         }

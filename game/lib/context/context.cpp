@@ -220,8 +220,8 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto name   = ch->name();
     auto thread = this->threads.modular(std::hash<std::string>{}(ch->name()));
     co_await thread->switching();
-    auto params = thread->data<thread_params>();
-    params->characters.erase(name);
+    // auto params = thread->data<thread_params>();
+    // params->characters.erase(name);
     co_await ch->thread()->switching();
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());

@@ -508,6 +508,11 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         {
             auto thread = this->_map->thread();
             thread->pop_ptr(this);
+            if(this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto params = thread->data<thread_params>();
+                params->characters.erase(static_cast<character*>(this)->id());
+            }
 
             // broadcast near characters
             if (this->_listener != nullptr)
@@ -548,6 +553,13 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             if (thread != this->context.threads.current())
                 co_await thread->switching();
             thread->push_ptr(this);
+
+            if(this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto params = thread->data<thread_params>();
+                auto ch = static_cast<character*>(this);
+                params->characters.insert({ch->id(), ch});
+            }
         }
 
         // update destination map and position

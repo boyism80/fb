@@ -14,7 +14,7 @@ public:
     using group_container     = std::unordered_map<uint32_t, std::unique_ptr<group>>;
     using map_container       = std::unordered_map<uint32_t, fb::game::map*>;
     using rezen_container     = std::vector<fb::game::rezen>;
-    using character_container = std::unordered_map<std::string, fb::game::character*>;
+    using character_container = std::unordered_map<uint32_t, fb::game::character*>;
 
 public:
     group_container     groups;

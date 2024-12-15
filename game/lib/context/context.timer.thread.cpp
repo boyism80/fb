@@ -84,8 +84,10 @@ async::task<void> context::handle_save_timer(const datetime& now, std::thread::i
     auto thread = this->threads.at(id);
     auto params = thread->data<thread_params>();
 
-    for (auto& [_, character] : params->characters)
+    for (auto& [id, character] : params->characters)
     {
-        co_await this->save(*character);
+        std::ignore = this->save(*character);
     }
+
+    co_return;
 }

@@ -79,6 +79,8 @@ void fb::thread::handle_idle()
 
         if (disposable)
             this->_timers.erase(this->_timers.begin() + i);
+        else
+            timer->begin = fb::model::datetime();
     }
 }
 

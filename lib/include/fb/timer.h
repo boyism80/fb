@@ -23,9 +23,9 @@ public:
 
 public:
     const handle_callback_type fn;
-    const fb::model::datetime  begin;
     const fb::model::timespan  duration;
     const bool                 disposable = false;
+    fb::model::datetime        begin;
 
 private:
     timer(const handle_callback_type& fn, const fb::model::timespan& duration, bool disposable);

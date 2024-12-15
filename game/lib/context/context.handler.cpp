@@ -51,22 +51,22 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     co_await this->init_spells(response.spells, *ch);
     thread->assert_ptr(ch);
 
-    auto name_hash = std::hash<std::string>{}(ch->name());
-    this->threads.modular(name_hash)->enqueue(
-        [this, fd, ch, name = ch->name()](auto& thread) -> async::task<void> {
-            if (this->sockets.contains(fd) == false)
-                throw std::runtime_error(
-                    std::format("{} socket cannot attached into matched name_matched_thread.", fd));
+    // auto name_hash = std::hash<std::string>{}(ch->name());
+    // this->threads.modular(name_hash)->enqueue(
+    //     [this, fd, ch, name = ch->name()](auto& thread) -> async::task<void> {
+    //         if (this->sockets.contains(fd) == false)
+    //             throw std::runtime_error(
+    //                 std::format("{} socket cannot attached into matched name_matched_thread.", fd));
 
-            auto params = thread.template data<thread_params>();
-            params->characters.insert({name, ch});
-            co_return;
-        },
-        [](std::exception& e) {
-            fb::logger::warn(e.what());
-        },
-        []() {
-        });
+    //        auto params = thread.template data<thread_params>();
+    //        params->characters.insert({name, ch});
+    //        co_return;
+    //    },
+    //    [](std::exception& e) {
+    //        fb::logger::warn(e.what());
+    //    },
+    //    []() {
+    //    });
 
     co_await this->init_option(response.option, *ch);
     thread->assert_ptr(ch);

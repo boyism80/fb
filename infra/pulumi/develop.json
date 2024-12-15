@@ -203,9 +203,6 @@
             "redis": "section-1",
             "rabbitmq": "section-1",
             "containers": {
-                "0": {
-                    "port": 30030
-                },
                 "1": {
                     "port": 30031
                 },
