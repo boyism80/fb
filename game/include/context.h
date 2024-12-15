@@ -66,7 +66,7 @@ private:
     datetime                          _time;
     std::unique_ptr<fb::amqp::socket> _amqp;
     std::unique_ptr<std::thread>      _amqp_thread;
-    character_container               _characters;
+    character_container               _characters; // TODO: 제거
     group_container                   _groups;
 
 public:

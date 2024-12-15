@@ -1,7 +1,9 @@
 name: build fb
 
 on:
-  - push
+  push:
+    branches:
+      - develop
 
 env:
   REGISTRY: ghcr.io

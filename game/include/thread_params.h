@@ -5,6 +5,7 @@
 #include <map.h>
 #include <character.h>
 #include <unordered_map>
+#include <async/task.h>
 
 namespace fb::game {
 
@@ -12,15 +13,16 @@ class thread_params
 {
 public:
     using group_container     = std::unordered_map<uint32_t, std::unique_ptr<group>>;
-    using map_container       = std::unordered_map<uint32_t, fb::game::map*>;
-    using rezen_container     = std::vector<fb::game::rezen>;
-    using character_container = std::unordered_map<uint32_t, fb::game::character*>;
+    using map_container       = std::unordered_map<uint32_t, map*>;
+    using rezen_container     = std::vector<rezen>;
+    using character_container = std::unordered_map<uint32_t, character*>;
 
 public:
     group_container     groups;
     map_container       maps;
     rezen_container     rezens;
     character_container characters;
+    std::unordered_map<std::string, character*> characters_named;
 };
 
 } // namespace fb::game

@@ -144,7 +144,7 @@ async::task<void> context::handle_start()
     this->bind_timer(&context::handle_time, 1min); // 세계 시간 타이머
 
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
-    this->bind_thread_timer(&context::handle_mob_respawn, 1s);  // 몹 리젠 타이머
+    this->bind_thread_timer(&context::handle_mob_respawn, 1s);   // 몹 리젠 타이머
     this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머
     this->bind_thread_timer(&context::handle_save_timer,
                             std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
@@ -208,20 +208,13 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     {
         co_await group->thread()->switching();
         group->leave(*ch);
-
-        co_await ch->thread()->switching();
     }
-
-    this->_characters.lock<void>([name = ch->name()](auto& characters) {
-        if (characters.contains(name))
-            characters.erase(name);
-    });
 
     auto name   = ch->name();
     auto thread = this->threads.modular(std::hash<std::string>{}(ch->name()));
     co_await thread->switching();
-    // auto params = thread->data<thread_params>();
-    // params->characters.erase(name);
+    auto params = thread->data<thread_params>();
+    params->characters_named.erase(name);
     co_await ch->thread()->switching();
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
@@ -290,26 +283,26 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.pw(response.pw);
     ch.updated_date(datetime(response.updated_date));
     ch.admin(response.admin);
-    co_await ch.color(response.color);
-    std::ignore = co_await ch.direction(DIRECTION(response.direction));
-    co_await ch.look(response.look);
-    co_await ch.money(response.money);
+    std::ignore = ch.color(response.color);
+    std::ignore = ch.direction(DIRECTION(response.direction));
+    std::ignore = ch.look(response.look);
+    std::ignore = ch.money(response.money);
     ch.deposited_money(response.deposited_money);
     ch.sex(SEX(response.sex));
     ch.base_hp(response.base_hp);
-    co_await ch.hp(response.hp);
+    std::ignore = ch.hp(response.hp);
     ch.base_mp(response.base_mp);
-    co_await ch.mp(response.mp);
-    co_await ch.experience(response.exp);
-    co_await ch.state(STATE(response.state));
+    std::ignore = ch.mp(response.mp);
+    std::ignore = ch.experience(response.exp);
+    std::ignore = ch.state(STATE(response.state));
 
     if (response.armor_color.has_value())
-        co_await ch.armor_color(response.armor_color.value());
+        std::ignore = ch.armor_color(response.armor_color.value());
 
     if (response.disguise.has_value())
-        co_await ch.disguise(response.disguise.value());
+        std::ignore = ch.disguise(response.disguise.value());
     else
-        co_await ch.undisguise();
+        std::ignore = ch.undisguise();
 
     if (this->maps.contains(map) == false)
         co_return false;
@@ -325,41 +318,34 @@ async::task<bool> context::init_ch(const internal::Character&           response
 
     if (response.group.has_value())
     {
-        // auto group = co_await this->_groups.lock<fb::locker<fb::game::group>*>(
-        //     [this, &response, &ch](auto& groups) -> async::task<fb::locker<fb::game::group>*> {
-        //         if (groups.contains(response.group.value()))
-        //             co_return groups[response.group.value()].get();
+        auto group_id     = response.group.value();
+        auto group_thread = this->threads.modular(group_id);
+        co_await group_thread->switching();
 
-        //        auto&& group_resp = co_await this->get<internal_resp::GetGroup>(
-        //            "internal",
-        //            std::format("/in-game/group/{}", response.group.value()));
+        auto params = group_thread->data<thread_params>();
+        if (params->groups.contains(group_id) == false)
+        {
+            params->groups.insert({group_id, std::make_unique<group>(*this, group_id)});
+            auto&& group_resp =
+                co_await this->get<internal_resp::GetGroup>("internal", std::format("/in-game/group/{}", group_id));
 
-        //        switch (static_cast<ERROR_CODE>(group_resp.error))
-        //        {
-        //        case ERROR_CODE::NONE:
-        //            break;
+            switch (static_cast<ERROR_CODE>(group_resp.error))
+            {
+            case ERROR_CODE::NONE:
+                break;
 
-        //        default:
-        //            throw std::runtime_error(std::format("cannot get group (error : {})", group_resp.error));
-        //        }
+            default:
+                throw std::runtime_error(std::format("cannot get group (error : {})", group_resp.error));
+            }
 
-        //        auto members = std::vector<std::string>();
-        //        for (auto& x : group_resp.group.members)
-        //            members.push_back(x);
+            params->groups[group_id]->update(group_resp.group.master, group_resp.group.members);
+        }
 
-        //        groups.insert({group_resp.group.id,
-        //                       std::make_unique<fb::locker<fb::game::group>>(*this,
-        //                                                                     group_resp.group.id,
-        //                                                                     group_resp.group.master,
-        //                                                                     members)});
+        auto& group = params->groups[group_id];
+        group->enter(ch);
 
-        //        co_return groups[group_resp.group.id].get();
-        //    });
-
-        // group->template lock<void>([&ch, group](auto& g) {
-        //     g.enter(ch);
-        //     ch.group(group);
-        // });
+        ch.thread()->switching();
+        ch.group(group.get());
     }
 
     co_return co_await ch.map(&this->maps[map], point16_t(position_x, position_y));
