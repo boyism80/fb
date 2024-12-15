@@ -48,39 +48,23 @@ void fb::thread::handle_idle()
 {
     auto _ = std::lock_guard(this->_mutex_timer);
 
-    auto indices = std::vector<uint32_t>();
-    auto now     = fb::model::datetime();
+    auto now = fb::model::datetime();
     for (int i = this->_timers.size() - 1; i >= 0; i--)
     {
-        auto& timer   = this->_timers[i];
-        auto  elapsed = fb::model::datetime() - timer->begin;
+        auto timer   = this->_timers[i].get();
+        auto elapsed = fb::model::datetime() - timer->begin;
         if (timer->duration > elapsed)
             continue;
 
         auto disposable = timer->disposable;
         auto fn         = fb::timer::handle_callback_type{timer->fn};
-        async::awaitable_then(fn(now, this->_thread.get_id()), [](auto result) {
-            try
-            {
-                result();
-            }
-            catch (...)
-            {
-                try
-                {
-                    std::rethrow_exception(std::current_exception());
-                }
-                catch (std::exception& e)
-                {
-                    fb::logger::fatal(e.what());
-                }
-            }
+        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, disposable](auto result) {
+            if (!disposable)
+                timer->begin = fb::model::datetime();
         });
 
         if (disposable)
             this->_timers.erase(this->_timers.begin() + i);
-        else
-            timer->begin = fb::model::datetime();
     }
 }
 
