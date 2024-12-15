@@ -27,7 +27,7 @@ async::task<void> context::handle_mob_action(const datetime& now, std::thread::i
             if (mob->action())
                 continue;
 
-            co_await mob->AI(now);
+            std::ignore = mob->AI(now);
         }
     }
     co_return;
@@ -40,7 +40,7 @@ async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::
 
     for (auto& rezen : params->rezens)
     {
-        co_await rezen.spawn(id);
+        std::ignore = rezen.spawn(id);
     }
     co_return;
 }
@@ -72,7 +72,7 @@ async::task<void> context::handle_buff_timer(const datetime& now, std::thread::i
             }
 
             for (auto& buff : ended_buffs)
-                std::ignore = co_await obj.buffs.remove(buff->model);
+                std::ignore = obj.buffs.remove(buff->model);
         }
     }
 
