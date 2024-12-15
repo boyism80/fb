@@ -1,8 +1,8 @@
 function on_attack(me, you)
-    -- math.randomseed(seed())
-    -- if math.random() > 0.01 then
-    --     return false
-    -- end
+    math.randomseed(seed())
+    if math.random() > 0.01 then
+        return false
+    end
     
     if you == nil then
         return true
