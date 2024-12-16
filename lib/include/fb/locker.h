@@ -31,14 +31,14 @@ public:
     {
         auto _ = std::unique_lock(this->_mutex);
 
-        if constexpr (std::is_same_v<ReturnType, void>)
-        {
-            fn(this->_value);
-        }
-        else
-        {
-            return fn(this->_value);
-        }
+        return fn(this->_value);
+    }
+
+    void lock(const std::function<void(ValueType&)>& fn)
+    {
+        auto _ = std::unique_lock(this->_mutex);
+
+        fn(this->_value);
     }
 };
 

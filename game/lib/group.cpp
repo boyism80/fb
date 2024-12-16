@@ -65,7 +65,7 @@ async::task<void> group::update(const std::string& master, const std::vector<std
             continue;
 
         co_await thread->switching();
-        auto params = thread->data<thread_params>();
+        auto params = thread->template data<thread_params>();
         for (auto& name : names)
         {
             // if (params->characters.contains(name) == false)

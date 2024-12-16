@@ -5,7 +5,7 @@ using namespace fb::game;
 async::task<void> context::handle_mob_action(const datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
-    auto params = thread->data<thread_params>();
+    auto params = thread->template data<thread_params>();
 
     for (auto& [_, map] : params->maps)
     {
@@ -36,7 +36,7 @@ async::task<void> context::handle_mob_action(const datetime& now, std::thread::i
 async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
-    auto params = thread->data<thread_params>();
+    auto params = thread->template data<thread_params>();
 
     for (auto& rezen : params->rezens)
     {
@@ -48,7 +48,7 @@ async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::
 async::task<void> context::handle_buff_timer(const datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
-    auto params = thread->data<thread_params>();
+    auto params = thread->template data<thread_params>();
 
     for (auto& [_, map] : params->maps)
     {
@@ -82,7 +82,7 @@ async::task<void> context::handle_buff_timer(const datetime& now, std::thread::i
 async::task<void> context::handle_save_timer(const datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
-    auto params = thread->data<thread_params>();
+    auto params = thread->template data<thread_params>();
 
     for (auto& [id, character] : params->characters)
     {

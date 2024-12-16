@@ -1,14 +1,60 @@
-docker build --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
-docker push ghcr.io/boyism80/fb/build:latest
+#!/bin/bash
 
-docker build --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .
-docker push ghcr.io/boyism80/fb/gateway:latest
+sudo docker build --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/build failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/build:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/build failed"
+    exit $?
+fi
 
-docker build --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .
-docker push ghcr.io/boyism80/fb/login:latest
+sudo docker build --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/gateway failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/gateway:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/gateway failed"
+    exit $?
+fi
 
-docker build --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .
-docker push ghcr.io/boyism80/fb/game:latest
+sudo docker build --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/login failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/login:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/login failed"
+    exit $?
+fi
 
-docker build --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
-docker push ghcr.io/boyism80/fb/internal:latest
+sudo docker build --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/game failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/game:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/game failed"
+    exit $?
+fi
+
+sudo docker build --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
+if [ $? -ne 0 ]; then
+    echo "build fb/internal failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/internal:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/internal failed"
+    exit $?
+fi
+
+pushd infra/pulumi
+pulumi down -y && pulumi up -y
+popd

@@ -455,7 +455,7 @@ public:
         auto& shared_group_lock = this->session.group();
         if (shared_group_lock != nullptr)
         {
-            shared_group_lock->lock<void>([&writer](fb::game::group& g) {
+            shared_group_lock->lock([&writer](fb::game::group& g) {
                 auto sstream = std::stringstream();
                 sstream << "그룹원" << std::endl << "  * " << g.master() << std::endl;
 

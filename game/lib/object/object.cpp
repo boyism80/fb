@@ -510,7 +510,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             thread->pop_ptr(this);
             if (this->is(OBJECT_TYPE::CHARACTER))
             {
-                auto params = thread->data<thread_params>();
+                auto params = thread->template data<thread_params>();
                 params->characters.erase(static_cast<character*>(this)->id());
             }
 
@@ -556,7 +556,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
             if (this->is(OBJECT_TYPE::CHARACTER))
             {
-                auto params = thread->data<thread_params>();
+                auto params = thread->template data<thread_params>();
                 auto ch     = static_cast<character*>(this);
                 params->characters.insert({ch->id(), ch});
             }

@@ -36,7 +36,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     if (this->sockets.contains(fd) == false)
         co_return false;
 
-    this->_shard[name]->characters.lock<void>([&name, ch](auto& characters) {
+    this->_shard[name]->characters.lock([&name, ch](auto& characters) {
         if (characters.contains(name) == false)
             characters.insert({name, ch});
     });

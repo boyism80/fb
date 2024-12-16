@@ -518,13 +518,13 @@ async::task<void> context::on_map_changed(object& me, map* before, map* after)
     //     {
     //         if(before_thread != nullptr)
     //         {
-    //             auto params = before_thread->data<thread_params>();
+    //             auto params = before_thread->template data<thread_params>();
     //             params.characters.remove(me.name());
     //         }
 
     //         if(after_thread != nullptr)
     //         {
-    //             auto params = after_thread->data<thread_params>();
+    //             auto params = after_thread->template data<thread_params>();
     //             params.characters.insert({me.name(), static_cast<character*>(&me)});
     //         }
     //     }
