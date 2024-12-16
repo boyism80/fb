@@ -10,6 +10,7 @@
 #include <listener.h>
 #include <thread_params.h>
 #include <map/container.h>
+#include <shard.h>
 
 using namespace fb::protocol::internal;
 namespace fb_reqs       = fb::protocol::game::request;
@@ -66,8 +67,7 @@ private:
     datetime                          _time;
     std::unique_ptr<fb::amqp::socket> _amqp;
     std::unique_ptr<std::thread>      _amqp_thread;
-    character_container               _characters; // TODO: 제거
-    group_container                   _groups;
+    fb::game::shard                   _shard;
 
 public:
     fb::model::model        model;
@@ -101,14 +101,75 @@ private:
      * @return     { description_of_the_return_value }
      */
     std::string elapsed_message(const std::string& datetime);
+
     /**
-     * @brief      Searches for the first match.
+     * @brief      { function_description }
+     *
+     * @param[in]  gid      The gid
+     * @param[in]  master   The master
+     * @param[in]  members  The members
+     */
+    void update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  gid   The gid
+     * @param[in]  fn    The function
+     */
+    void upsert_group_then(uint32_t gid, const std::function<void(fb::game::group&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  gid      The gid
+     * @param[in]  master   The master
+     * @param[in]  members  The members
+     * @param[in]  fn       The function
+     */
+    void upsert_group_then(uint32_t                                     gid,
+                           const std::string&                           master,
+                           const std::vector<std::string>&              members,
+                           const std::function<void(fb::game::group&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     * @param[in]  miss   The miss
+     */
+    void broadcast(const std::vector<std::string>&                     names,
+                   const std::function<void(fb::game::character&)>&    fn,
+                   const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     */
+    void broadcast(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
+
+    /**
+     * @brief      { function_description }
      *
      * @param[in]  name  The name
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  fn    The function
+     * @param[in]  miss  The miss
      */
-    fb::game::character* find(const std::string& name);
+    void broadcast(const std::string&                                  name,
+                   const std::function<void(fb::game::character&)>&    fn,
+                   const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     * @param[in]  fn    The function
+     */
+    void broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn);
+
     /**
      * @brief      Initializes the ch.
      *
@@ -206,12 +267,11 @@ private:
     /**
      * @brief      Called on enter group.
      *
-     * @param[in]  response  The response
-     *                       Don't change to reference value.
+     * @param[in]  resp  The response
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> on_enter_group(internal_resp::EnterGroup response);
+    [[nodiscard]] async::task<void> on_enter_group(internal_resp::EnterGroup resp);
 
     /**
      * @brief      Called on leave group.

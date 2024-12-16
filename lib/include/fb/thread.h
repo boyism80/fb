@@ -253,7 +253,7 @@ public:
     template <typename ReturnType>
     async::task<ReturnType> dispatch(const handle_func_type<ReturnType>& fn)
     {
-        auto promise = std::make_shared<async::task_completion_source<void>>();
+        auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
         this->enqueue<ReturnType>(
             fn,
             [promise](std::exception& e) {

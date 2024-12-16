@@ -36,7 +36,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     if (this->sockets.contains(fd) == false)
         co_return false;
 
-    this->_characters.lock<void>([name, ch](auto& characters) {
+    this->_shard[name]->characters.lock<void>([&name, ch](auto& characters) {
         if (characters.contains(name) == false)
             characters.insert({name, ch});
     });
@@ -58,15 +58,15 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(
                     std::format("{} socket cannot attached into matched name_matched_thread.", fd));
 
-           auto params = thread.template data<thread_params>();
-           params->characters_named.insert({name, ch});
-           co_return;
-       },
-       [](std::exception& e) {
-           fb::logger::warn(e.what());
-       },
-       []() {
-       });
+            auto params = thread.template data<thread_params>();
+            params->characters_named.insert({name, ch});
+            co_return;
+        },
+        [](std::exception& e) {
+            fb::logger::warn(e.what());
+        },
+        []() {
+        });
 
     std::ignore = this->init_option(response.option, *ch);
     std::ignore = this->send(*ch, fb_resp::init(), scope::SELF);
@@ -1013,33 +1013,40 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
             throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
 
         co_await me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
-        auto you = this->find(to);
-        if (you != nullptr)
-        {
-            auto response    = internal_resp::Whisper{};
-            response.from    = from;
-            response.to      = me->id();
-            response.message = message;
-            response.host    = fb::config<uint32_t>("id");
-            if (you->option(SETTING::WHISPER))
-                response.error = static_cast<uint32_t>(ERROR_CODE::NONE);
-            else
-                response.error = static_cast<uint32_t>(ERROR_CODE::DISABLED_WHISPER_TARGET);
+        this->broadcast(
+            to,
+            [this, from, to = me->id(), message](auto& you) {
+                auto response    = internal_resp::Whisper{};
+                response.from    = from;
+                response.to      = to;
+                response.message = message;
+                response.host    = fb::config<uint32_t>("id");
+                if (you.option(SETTING::WHISPER))
+                    response.error = static_cast<uint32_t>(ERROR_CODE::NONE);
+                else
+                    response.error = static_cast<uint32_t>(ERROR_CODE::DISABLED_WHISPER_TARGET);
 
-            this->assert_whisper(response);
-            co_await you->message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
-        }
-        else
-        {
-            auto&& response = co_await this->post<internal_reqs::Whisper, internal_resp::Whisper>(
-                "internal",
-                "/in-game/whisper",
-                internal_reqs::Whisper{from, to, message});
-            if (this->sockets.contains(fd) == false)
-                co_return false;
+                this->assert_whisper(response);
+                std::ignore = you.message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
+            },
+            [this, from, message, fd](const auto& to) {
+                async::awaitable_then(this->post<internal_reqs::Whisper, internal_resp::Whisper>(
+                                          "internal",
+                                          "/in-game/whisper",
+                                          internal_reqs::Whisper{from, to, message}),
+                                      [this, fd](auto result) {
+                                          if (this->sockets.contains(fd) == false)
+                                              return;
 
-            this->assert_whisper(response);
-        }
+                                          try
+                                          {
+                                              auto&& resp = result();
+                                              this->assert_whisper(resp);
+                                          }
+                                          catch (std::exception& e)
+                                          { }
+                                      });
+            });
     }
     catch (std::exception& e)
     {

@@ -117,6 +117,7 @@
     <ClInclude Include="include\object_container.h" />
     <ClInclude Include="include\regex.h" />
     <ClInclude Include="include\sector.h" />
+    <ClInclude Include="include\shard.h" />
     <ClInclude Include="include\spell.h" />
     <ClInclude Include="include\thread_params.h" />
     <ClInclude Include="include\trade.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="lib\object\object.builtin.cpp" />
     <ClCompile Include="lib\object\object.container.cpp" />
     <ClCompile Include="lib\object\object.cpp" />
+    <ClCompile Include="lib\shard.cpp" />
     <ClCompile Include="lib\spell.builtin.cpp" />
     <ClCompile Include="lib\spell.cpp" />
     <ClCompile Include="lib\trade.cpp" />

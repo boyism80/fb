@@ -318,8 +318,8 @@ private:
                     auto protocol =
                         std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
                     this->threads.enqueue(
-                        socket,                                        // pivot
-                        [this, protocol, fd = socket.fd()]() -> bool { // condition
+                        socket,                                                    // pivot
+                        [this, protocol, fd = socket.fd()](auto& thread) -> bool { // condition
                             if (this->sockets.contains(fd))
                                 return true;
 

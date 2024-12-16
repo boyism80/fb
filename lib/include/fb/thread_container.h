@@ -159,7 +159,7 @@ public:
      */
     template <typename ReturnType>
     void enqueue(thread_switchable&                                         pivot,
-                 const std::function<bool()>&                               condition,
+                 const std::function<bool(fb::thread&)>&                    condition,
                  const std::function<async::task<ReturnType>(fb::thread&)>& fn,
                  const std::function<void(std::exception&)>&                error,
                  const std::function<void(ReturnType&&)>&                   callback)
@@ -170,7 +170,7 @@ public:
 
         thread->enqueue<ReturnType>(
             [=, this]() -> async::task<void> {
-                if (condition() == false)
+                if (condition(*thread) == false)
                     throw std::runtime_error("condition not satisfied");
 
                 auto active_thread  = pivot.thread();
@@ -181,7 +181,7 @@ public:
                     throw std::runtime_error("active thread not matched");
                 }
 
-                co_return co_await fn();
+                co_return co_await fn(*thread);
             },
             error,
             callback);
@@ -197,7 +197,7 @@ public:
      * @param[in]  callback   The callback
      */
     void enqueue(thread_switchable&                                   pivot,
-                 const std::function<bool()>&                         condition,
+                 const std::function<bool(fb::thread&)>&              condition,
                  const std::function<async::task<void>(fb::thread&)>& fn,
                  const std::function<void(std::exception&)>&          error,
                  const std::function<void()>&                         callback);
@@ -213,7 +213,7 @@ public:
      */
     template <typename ReturnType>
     void enqueue(thread_switchable&                                         pivot,
-                 const std::function<bool()>&                               condition,
+                 const std::function<bool(fb::thread&)>&                    condition,
                  const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
         return this->enqueue<ReturnType>(
@@ -234,7 +234,7 @@ public:
      * @param[in]  fn         The function
      */
     void enqueue(thread_switchable&                                   pivot,
-                 const std::function<bool()>&                         condition,
+                 const std::function<bool(fb::thread&)>&              condition,
                  const std::function<async::task<void>(fb::thread&)>& fn);
 
     /**
@@ -281,7 +281,7 @@ public:
      */
     template <typename ReturnType>
     [[nodiscard]] async::task<void> dispatch(thread_switchable&                                         pivot,
-                                             const std::function<bool()>&                               condition,
+                                             const std::function<bool(fb::thread&)>&                    condition,
                                              const std::function<async::task<ReturnType>(fb::thread&)>& fn)
     {
         auto promise = std::make_shared<async::task_completion_source<void>>();
@@ -308,7 +308,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> dispatch(thread_switchable&                                   pivot,
-                                             const std::function<bool()>&                         condition,
+                                             const std::function<bool(fb::thread&)>&              condition,
                                              const std::function<async::task<void>(fb::thread&)>& fn);
     /**
      * @brief      { function_description }
