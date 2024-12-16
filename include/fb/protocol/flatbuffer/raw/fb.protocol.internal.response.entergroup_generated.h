@@ -96,7 +96,7 @@ inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroup(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     ::flatbuffers::Offset<::flatbuffers::String> member = 0,
-    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Enter,
+    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Create,
     uint32_t host = 0,
     uint32_t error = 0) {
   EnterGroupBuilder builder_(_fbb);
@@ -112,7 +112,7 @@ inline ::flatbuffers::Offset<EnterGroup> CreateEnterGroupDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0,
     const char *member = nullptr,
-    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Enter,
+    fb::protocol::internal::raw::GroupAction action = fb::protocol::internal::raw::GroupAction_Create,
     uint32_t host = 0,
     uint32_t error = 0) {
   auto member__ = member ? _fbb.CreateString(member) : 0;

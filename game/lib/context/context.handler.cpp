@@ -580,7 +580,7 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
             "/in-game/group/create",
             internal_reqs::EnterGroup{me->id(), request.name});
 
-        co_await this->on_enter_group(response);
+        this->on_enter_group(response);
     }
     catch (std::exception& e)
     {

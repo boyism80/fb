@@ -28,14 +28,14 @@ public struct EnterGroup : IFlatbufferObject
   public ArraySegment<byte>? GetMemberBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetMemberArray() { return __p.__vector_as_array<byte>(6); }
-  public fb.protocol._internal.raw.GroupAction Action { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.GroupAction)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.GroupAction.Enter; } }
+  public fb.protocol._internal.raw.GroupAction Action { get { int o = __p.__offset(8); return o != 0 ? (fb.protocol._internal.raw.GroupAction)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.GroupAction.Create; } }
   public uint Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.EnterGroup> CreateEnterGroup(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Group> groupOffset = default(Offset<fb.protocol._internal.raw.Group>),
       StringOffset memberOffset = default(StringOffset),
-      fb.protocol._internal.raw.GroupAction action = fb.protocol._internal.raw.GroupAction.Enter,
+      fb.protocol._internal.raw.GroupAction action = fb.protocol._internal.raw.GroupAction.Create,
       uint host = 0,
       uint error = 0) {
     builder.StartTable(5);

@@ -1905,6 +1905,7 @@ namespace fb.protocol._internal
     }
     public enum GroupAction
     {
+        Create,
         Enter,
         Leave,
         Kick,

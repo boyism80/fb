@@ -19,16 +19,18 @@ namespace internal {
 namespace raw {
 
 enum GroupAction : int8_t {
-  GroupAction_Enter = 0,
-  GroupAction_Leave = 1,
-  GroupAction_Kick = 2,
-  GroupAction_BreakUp = 3,
-  GroupAction_MIN = GroupAction_Enter,
+  GroupAction_Create = 0,
+  GroupAction_Enter = 1,
+  GroupAction_Leave = 2,
+  GroupAction_Kick = 3,
+  GroupAction_BreakUp = 4,
+  GroupAction_MIN = GroupAction_Create,
   GroupAction_MAX = GroupAction_BreakUp
 };
 
-inline const GroupAction (&EnumValuesGroupAction())[4] {
+inline const GroupAction (&EnumValuesGroupAction())[5] {
   static const GroupAction values[] = {
+    GroupAction_Create,
     GroupAction_Enter,
     GroupAction_Leave,
     GroupAction_Kick,
@@ -38,7 +40,8 @@ inline const GroupAction (&EnumValuesGroupAction())[4] {
 }
 
 inline const char * const *EnumNamesGroupAction() {
-  static const char * const names[5] = {
+  static const char * const names[6] = {
+    "Create",
     "Enter",
     "Leave",
     "Kick",
@@ -49,7 +52,7 @@ inline const char * const *EnumNamesGroupAction() {
 }
 
 inline const char *EnumNameGroupAction(GroupAction e) {
-  if (::flatbuffers::IsOutRange(e, GroupAction_Enter, GroupAction_BreakUp)) return "";
+  if (::flatbuffers::IsOutRange(e, GroupAction_Create, GroupAction_BreakUp)) return "";
   const size_t index = static_cast<size_t>(e);
   return EnumNamesGroupAction()[index];
 }

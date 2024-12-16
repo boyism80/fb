@@ -105,6 +105,7 @@ namespace Internal.Controllers
                     throw new Exception($"user {request.Member} not found");
 
                 var group = master.Group != null ? await _dbContext.Group.Get(master.Group.Value) : null;
+                var isCreated = false;
                 if (group == null)
                 {
                     group = new Http.Model.Group
@@ -113,6 +114,7 @@ namespace Internal.Controllers
                     };
                     master.Group = group.Master;
                     _dbContext.Character.Set(master);
+                    isCreated = true;
                 }
                 group.Deleted = false;
 
@@ -145,7 +147,7 @@ namespace Internal.Controllers
 
                     group.Members.Add(member.Id);
                     member.Group = group.Master;
-                    action = GroupAction.Enter;
+                    action = isCreated ? GroupAction.Create : GroupAction.Enter;
                 }
 
                 _dbContext.Group.Set(group);

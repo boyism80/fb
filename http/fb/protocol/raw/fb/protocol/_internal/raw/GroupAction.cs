@@ -7,10 +7,11 @@ namespace fb.protocol._internal.raw
 
 public enum GroupAction : sbyte
 {
-  Enter = 0,
-  Leave = 1,
-  Kick = 2,
-  BreakUp = 3,
+  Create = 0,
+  Enter = 1,
+  Leave = 2,
+  Kick = 3,
+  BreakUp = 4,
 };
 
 

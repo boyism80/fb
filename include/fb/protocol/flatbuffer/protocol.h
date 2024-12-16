@@ -389,6 +389,7 @@ enum class Service : int8_t
 };
 enum class GroupAction : int8_t
 {
+    Create = fb::protocol::internal::raw::GroupAction::GroupAction_Create,
     Enter = fb::protocol::internal::raw::GroupAction::GroupAction_Enter,
     Leave = fb::protocol::internal::raw::GroupAction::GroupAction_Leave,
     Kick = fb::protocol::internal::raw::GroupAction::GroupAction_Kick,

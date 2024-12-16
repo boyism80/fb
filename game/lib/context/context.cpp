@@ -897,41 +897,56 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
     this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group_lock_ptr) {
         auto members = std::vector<std::string>{resp.group.members};
         members.push_back(resp.group.master);
+        if (resp.action == GroupAction::Kick)
+            members.push_back(resp.member);
 
         this->broadcast(members, [action = resp.action, member = resp.member, &group_lock_ptr](auto& character) {
-            if (character.name() == member)
+            switch (action)
             {
-                switch (action)
+            case GroupAction::Create:
+                group_lock_ptr->lock<void>([&character](auto& group) {
+                    group.enter(character);
+                });
+                character.group(group_lock_ptr);
+                if (character.name() == member)
                 {
-                case GroupAction::Enter:
+                    std::ignore = character.message("그룹에 참여했습니다.");
+                }
+                else
+                {
+                    std::ignore = character.message(std::format("{}님 그룹 참여", member));
+                }
+                break;
+
+            case GroupAction::Enter:
+                if (character.name() == member)
+                {
+                    std::ignore = character.message("그룹에 참여했습니다.");
                     group_lock_ptr->lock<void>([&character](auto& group) {
                         group.enter(character);
                     });
                     character.group(group_lock_ptr);
-                    std::ignore = character.message("그룹에 참여했습니다.");
-                    break;
+                }
+                else
+                {
+                    std::ignore = character.message(std::format("{}님 그룹 참여", member));
+                }
+                break;
 
-                case GroupAction::Leave:
+            case GroupAction::Kick:
+                if (character.name() == member)
+                {
                     group_lock_ptr->lock<void>([&character](auto& group) {
                         group.leave(character);
                     });
                     character.group().reset();
                     std::ignore = character.message("그룹에서 추방당했습니다.");
-                    break;
                 }
-            }
-            else
-            {
-                switch (action)
+                else
                 {
-                case GroupAction::Enter:
-                    std::ignore = character.message(std::format("{}님 그룹 참여", member));
-                    break;
-
-                case GroupAction::Kick:
                     std::ignore = character.message(std::format("{}님 그룹 탈퇴", member));
-                    break;
                 }
+                break;
             }
         });
     });
