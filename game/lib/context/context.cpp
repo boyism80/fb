@@ -201,19 +201,16 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch == nullptr)
         co_return false;
 
-    auto group = ch->group();
+    auto& group = ch->group();
     if (group != nullptr)
     {
-        co_await group->thread()->switching();
-        group->leave(*ch);
+        group->lock<void>([this, ch](auto& group_ptr) {
+            group_ptr.leave(*ch);
+        });
+        group.reset();
     }
 
-    auto name   = ch->name();
-    auto thread = this->threads.modular(std::hash<std::string>{}(ch->name()));
-    co_await thread->switching();
-    auto params = thread->data<thread_params>();
-    params->characters_named.erase(name);
-    co_await ch->thread()->switching();
+    // TODO: shard에 character 제거
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
@@ -263,12 +260,12 @@ std::string context::elapsed_message(const std::string& dt)
 void context::update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members)
 { }
 
-void context::upsert_group_then(uint32_t gid, const std::function<void(fb::game::group&)>& fn)
+void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
 {
     this->_shard[gid]->groups.lock<void>([this, gid, &fn](auto& groups) {
         if (groups.contains(gid) == false)
         {
-            groups.insert({gid, std::make_unique<fb::game::group>(*this, gid)});
+            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
             async::awaitable_then(this->get<internal_resp::GetGroup>("internal", std::format("/in-game/group/{}", gid)),
                                   [this, gid](auto result) {
                                       try
@@ -288,8 +285,10 @@ void context::upsert_group_then(uint32_t gid, const std::function<void(fb::game:
                                               if (!groups.contains(gid))
                                                   return;
 
-                                              auto& group = groups.at(gid);
-                                              group->update(resp.group.master, resp.group.members);
+                                              auto& group_lock_ptr = groups.at(gid);
+                                              group_lock_ptr->lock<void>([&resp](auto& group) {
+                                                  group.update(resp.group.master, resp.group.members);
+                                              });
                                           });
                                       }
                                       catch (std::exception& e)
@@ -299,22 +298,26 @@ void context::upsert_group_then(uint32_t gid, const std::function<void(fb::game:
                                   });
         }
 
-        fn(*groups.at(gid));
+        fn(groups.at(gid));
     });
 }
 
-void context::upsert_group_then(uint32_t                                     gid,
-                                const std::string&                           master,
-                                const std::vector<std::string>&              members,
-                                const std::function<void(fb::game::group&)>& fn)
+void context::upsert_group_then(uint32_t                                       gid,
+                                const std::string&                             master,
+                                const std::vector<std::string>&                members,
+                                const std::function<void(shared_group_lock&)>& fn)
 {
     this->_shard[gid]->groups.lock<void>([this, gid, &fn, &master, &members](auto& groups) {
         if (groups.contains(gid) == false)
         {
-            groups.insert({gid, std::make_unique<fb::game::group>(*this, gid)});
+            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
         }
-        groups.at(gid)->update(master, members);
-        fn(*groups.at(gid));
+
+        auto& group_lock_ptr = groups.at(gid);
+        group_lock_ptr->lock<void>([&master, &members](auto& group) {
+            group.update(master, members);
+        });
+        fn(group_lock_ptr);
     });
 }
 
@@ -430,9 +433,11 @@ async::task<bool> context::init_ch(const internal::Character&           response
     if (response.group.has_value())
     {
         auto gid = response.group.value();
-        this->upsert_group_then(gid, [&ch](auto& group) {
-            group.enter(ch);
-            ch.group(&group);
+        this->upsert_group_then(gid, [&ch](auto& group_lock_ptr) {
+            group_lock_ptr->lock<void>([&ch](auto& group) {
+                group.enter(ch);
+            });
+            ch.group(group_lock_ptr);
         });
     }
 
@@ -798,7 +803,7 @@ void context::amqp_thread()
                 if (response.host == fb::config<uint32_t>("id"))
                     co_return;
 
-                co_await this->on_enter_group(response);
+                this->on_enter_group(response);
             });
 
             queue3.handler<internal_resp::LeaveGroup>([this](internal_resp::LeaveGroup& response) -> async::task<void> {
@@ -884,27 +889,33 @@ void context::assert_group(uint32_t error, const std::string& actor) const
     }
 }
 
-async::task<void> context::on_enter_group(internal_resp::EnterGroup resp)
+void context::on_enter_group(internal_resp::EnterGroup resp)
 {
+    this->assert_group(resp.error, resp.member);
+
     auto gid = resp.group.id;
-    this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group) {
+    this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group_lock_ptr) {
         auto members = std::vector<std::string>{resp.group.members};
         members.push_back(resp.group.master);
 
-        this->broadcast(members, [action = resp.action, member = resp.member, &group](auto& character) {
+        this->broadcast(members, [action = resp.action, member = resp.member, &group_lock_ptr](auto& character) {
             if (character.name() == member)
             {
                 switch (action)
                 {
                 case GroupAction::Enter:
-                    group.enter(character);
-                    character.group(&group);
+                    group_lock_ptr->lock<void>([&character](auto& group) {
+                        group.enter(character);
+                    });
+                    character.group(group_lock_ptr);
                     std::ignore = character.message("그룹에 참여했습니다.");
                     break;
 
                 case GroupAction::Leave:
-                    group.leave(character);
-                    character.group(nullptr);
+                    group_lock_ptr->lock<void>([&character](auto& group) {
+                        group.leave(character);
+                    });
+                    character.group().reset();
                     std::ignore = character.message("그룹에서 추방당했습니다.");
                     break;
                 }
@@ -924,14 +935,6 @@ async::task<void> context::on_enter_group(internal_resp::EnterGroup resp)
             }
         });
     });
-
-    auto member_name = std::string{resp.member};
-    auto group_id    = resp.group.id;
-    auto master      = std::string{resp.group.master};
-    auto members     = std::vector<std::string>{resp.group.members};
-    this->assert_group(resp.error, member_name);
-
-    co_return;
 }
 
 async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& response)

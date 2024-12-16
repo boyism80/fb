@@ -55,12 +55,10 @@ public:
     };
 
 public:
-    using object_set          = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
-    using transfer_param      = fb::protocol::game::request::login::transfer_param;
-    using protocol_generator  = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
-    using character_container = fb::locker<std::unordered_map<std::string, fb::game::character*>>;
-    using group_container     = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::locker<fb::game::group>>>>;
-    using command_container   = std::unordered_map<std::string, command_config>;
+    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using transfer_param     = fb::protocol::game::request::login::transfer_param;
+    using protocol_generator = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
+    using command_container  = std::unordered_map<std::string, command_config>;
 
 private:
     command_container                 _commands;
@@ -117,7 +115,7 @@ private:
      * @param[in]  gid   The gid
      * @param[in]  fn    The function
      */
-    void upsert_group_then(uint32_t gid, const std::function<void(fb::game::group&)>& fn);
+    void upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn);
 
     /**
      * @brief      { function_description }
@@ -127,10 +125,10 @@ private:
      * @param[in]  members  The members
      * @param[in]  fn       The function
      */
-    void upsert_group_then(uint32_t                                     gid,
-                           const std::string&                           master,
-                           const std::vector<std::string>&              members,
-                           const std::function<void(fb::game::group&)>& fn);
+    void upsert_group_then(uint32_t                                       gid,
+                           const std::string&                             master,
+                           const std::vector<std::string>&                members,
+                           const std::function<void(shared_group_lock&)>& fn);
 
     /**
      * @brief      { function_description }
@@ -268,10 +266,8 @@ private:
      * @brief      Called on enter group.
      *
      * @param[in]  resp  The response
-     *
-     * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> on_enter_group(internal_resp::EnterGroup resp);
+    void on_enter_group(internal_resp::EnterGroup resp);
 
     /**
      * @brief      Called on leave group.

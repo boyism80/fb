@@ -13,8 +13,7 @@ namespace fb::game {
 class shard_params
 {
 public:
-    using unique_group_ptr    = std::unique_ptr<fb::game::group>;
-    using group_container     = std::unordered_map<uint32_t, unique_group_ptr>;
+    using group_container     = std::unordered_map<uint32_t, shared_group_lock>;
     using character_container = std::unordered_map<std::string, fb::game::character*>;
 
 public:

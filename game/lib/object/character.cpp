@@ -1249,14 +1249,21 @@ void character::title(const std::string& value)
     this->_title = value;
 }
 
-fb::game::group* character::group() const
+const shared_group_lock& character::group() const
 {
     this->assert_thread();
 
     return this->_group;
 }
 
-void character::group(fb::game::group* value)
+shared_group_lock& character::group()
+{
+    this->assert_thread();
+
+    return this->_group;
+}
+
+void character::group(shared_group_lock& value)
 {
     this->assert_thread();
 

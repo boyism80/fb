@@ -64,15 +64,15 @@ private:
         // TODO: to 에게 걸린 버프가 있어서 그게 투명 다 감지하는 버프면
         // return true
 
-        auto mine = this->session.group();
+        auto& mine = this->session.group();
         if (mine == nullptr)
             return false;
 
-        auto your = static_cast<const fb::game::character&>(this->to).group();
+        auto& your = static_cast<const fb::game::character&>(this->to).group();
         if (your == nullptr)
             return false;
 
-        return mine == your;
+        return mine.get() == your.get();
     }
 
 public:

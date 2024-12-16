@@ -2,10 +2,10 @@
 
 using namespace fb::game;
 
-shard_params::shard_params() : groups(), characters()
-{
-
-}
+shard_params::shard_params() :
+    groups(),
+    characters()
+{ }
 
 shard::shard()
 {

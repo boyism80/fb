@@ -22,7 +22,6 @@ public:
     map_container       maps;
     rezen_container     rezens;
     character_container characters;
-    std::unordered_map<std::string, character*> characters_named;
 };
 
 } // namespace fb::game

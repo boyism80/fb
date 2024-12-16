@@ -25,6 +25,9 @@ class clan;
  */
 class group;
 
+using group_lock        = fb::locker<fb::game::group>;
+using shared_group_lock = std::shared_ptr<group_lock>;
+
 /**
  * @brief      This class describes a character.
  */
@@ -91,7 +94,7 @@ private:
     uint32_t                _deposited_money = 0;
     std::vector<item*>      _deposited_items;
     std::string             _title;
-    fb::game::group*        _group             = nullptr;
+    shared_group_lock       _group             = nullptr;
     fb::game::clan*         _clan              = nullptr;
     bool                    _options[0x0B + 1] = {
         0,
@@ -930,7 +933,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::group* group() const;
+    const shared_group_lock& group() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    shared_group_lock& group();
 
     /**
      * @brief      { function_description }
@@ -939,7 +949,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    void group(fb::game::group* value);
+    void group(shared_group_lock& value);
 
     /**
      * @brief      { function_description }
