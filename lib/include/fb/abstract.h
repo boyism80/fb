@@ -1,22 +1,27 @@
 #ifndef __ABSTRACT_H__
 #define __ABSTRACT_H__
 
-#include <fb/thread.h>
+#include <boost/asio.hpp>
+#include <fb/thread_container.h>
 
 namespace fb {
 
-class icontext : public boost::asio::ip::tcp::acceptor
+class context : public boost::asio::ip::tcp::acceptor
 {
 protected:
-    icontext(boost::asio::io_context& context, uint16_t port) :
-        boost::asio::ip::tcp::acceptor(context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))
-    { }
+    boost::asio::io_context& _boost_context;
 
 public:
-    ~icontext() = default;
+    thread_container threads;
+
+protected:
+    context(boost::asio::io_context& context, const std::string& name, uint16_t port);
 
 public:
-    virtual fb::thread* current_thread() = 0;
+    ~context() = default;
+
+public:
+    operator boost::asio::io_context& () const;
 };
 
 } // namespace fb

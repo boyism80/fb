@@ -5,7 +5,7 @@
 #include <fb/protocol/protocol.h>
 #include <spell.h>
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace spell {
+namespace fb::protocol::game::response::spell {
 
 class buff : public fb::protocol::base::header
 {
@@ -27,8 +27,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string>(this->name);
         writer.write<uint32_t>(static_cast<uint32_t>(this->time.count() / 1000));
@@ -49,8 +50,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string>(this->buff.model.name);
         writer.write<uint32_t>(0x00);
@@ -85,11 +87,12 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto spell = this->me.spells.at(index);
         if (spell == nullptr)
-            return;
+            co_return;
 
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->index + 1);
@@ -100,8 +103,9 @@ public:
             writer.write<std::string>(spell->message);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->index = reader.read<uint8_t>();
         this->type  = reader.read<uint8_t>();
         this->name  = reader.read<std::string, uint8_t>();
@@ -127,11 +131,12 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto spell = this->me.spells.at(index);
         if (spell != nullptr)
-            return;
+            co_return;
 
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->index + 1);
@@ -139,6 +144,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::spell
+} // namespace fb::protocol::game::response::spell
 
 #endif // !__PROTOCOL_RESPONSE_GAME_SPELL_H__

@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace gateway { namespace request {
+namespace fb::protocol::gateway::request {
 
 class assert_version : public fb::protocol::base::header
 {
@@ -25,15 +25,17 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(this->version);
         writer.write<uint8_t>(this->national_key);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->version      = reader.read<uint16_t>();
         this->national_key = reader.read<uint8_t>();
     }
@@ -61,8 +63,9 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->action);
 
@@ -70,8 +73,9 @@ public:
             writer.write<uint8_t>(this->index);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->action = reader.read<uint8_t>();
         if (action == 0x00)
             this->index = reader.read<uint8_t>();
@@ -79,6 +83,6 @@ public:
 #endif
 };
 
-}}}} // namespace fb::protocol::gateway::request
+} // namespace fb::protocol::gateway::request
 
 #endif // !__PROTOCOL_REQUEST_GATEWAY_H__

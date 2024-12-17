@@ -1,0 +1,46 @@
+#ifndef __AMQP_SOCKET_H__
+#define __AMQP_SOCKET_H__
+
+#ifdef _WIN32
+#include <WinSock2.h>
+#else
+#include <sys/time.h>
+#endif
+#include <stdexcept>
+#include <string>
+#include <vector>
+#include <memory>
+#include <rabbitmq-c/amqp.h>
+#include <rabbitmq-c/tcp_socket.h>
+#include <async/awaitable_then.h>
+
+namespace fb::amqp {
+class queue;
+
+class socket
+{
+private:
+    amqp_socket_t*                      _socket = nullptr;
+    amqp_connection_state_t             _conn   = nullptr;
+    std::vector<std::unique_ptr<queue>> _queues;
+
+public:
+    socket();
+    ~socket();
+
+public:
+    bool   connect(const std::string& hostname,
+                   uint16_t           port,
+                   const std::string& id,
+                   const std::string& pw,
+                   const std::string& vhost);
+    queue& declare_queue();
+    bool   select(const timeval* timeout = nullptr);
+
+public:
+    operator amqp_connection_state_t ();
+};
+
+} // namespace fb::amqp
+
+#endif

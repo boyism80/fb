@@ -84,9 +84,9 @@ bool fb::game::equipment::active()
 
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로
     // id를 유지시켜줘야 한다.
-    this->_owner->items.remove(*this);
+    std::ignore = this->_owner->items.remove(*this);
 
-    this->_owner->items.add(before);
+    std::ignore = this->_owner->items.add(before);
 
     auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)

@@ -1,4 +1,4 @@
-#include <fb/amqp.h>
+#include <fb/amqp/queue.h>
 
 using namespace fb::amqp;
 

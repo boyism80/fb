@@ -41,7 +41,7 @@ std::string fb::game::cash::inven_name() const
     return sstream.str();
 }
 
-async::task<fb::game::cash*> fb::game::cash::replace(uint32_t value)
+fb::game::cash* fb::game::cash::replace(uint32_t value)
 {
     fb::game::cash* result = nullptr;
     if (this->empty())
@@ -52,8 +52,8 @@ async::task<fb::game::cash*> fb::game::cash::replace(uint32_t value)
     {
         result = this->context.make<fb::game::cash>(value);
     }
-    co_await this->destroy();
-    co_return result;
+    std::ignore = this->destroy();
+    return result;
 }
 
 uint32_t fb::game::cash::reduce(uint32_t value)

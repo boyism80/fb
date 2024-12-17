@@ -26,10 +26,6 @@ module.exports = function () {
                             ip: "internal", 
                             port: conf.internal[sectionConf.internal].port.cluster
                         },
-                        db: { 
-                            ip: "db", 
-                            port: conf.internal[sectionConf.db].port.cluster
-                        },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },
                         redis: {
                             default: 
@@ -78,15 +74,16 @@ module.exports = function () {
                                     containers: [
                                         {
                                             name: "game",
-                                            image: "cshyeon/fb:game",
+                                            image: "ghcr.io/boyism80/fb/game:latest",
+                                            imagePullPolicy: "Always",
+                                            securityContext: {
+                                                capabilities: {
+                                                    add: ["SYS_PTRACE"]
+                                                }
+                                            },
                                             ports: [
                                                 { containerPort: container.port, name: `game-${index}` },
                                             ],
-                                            env: [
-                                            {
-                                                name: "KUBERNETES",
-                                                value: "enabled"
-                                            }],
                                             volumeMounts: [{
                                                 name: "config-volume",
                                                 mountPath: "/app/config/config.json",

@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace login { namespace response {
+namespace fb::protocol::login::response {
 
 class agreement : public fb::protocol::base::header
 {
@@ -28,8 +28,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         auto compressed = fb::stream((uint8_t*)this->contents.data(), this->contents.size()).compress();
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x01);
@@ -37,8 +38,9 @@ public:
         writer.write(compressed.data(), (uint16_t)compressed.size());
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         reader.read<uint8_t>();
         auto size   = reader.read<uint16_t>();
         auto buffer = new uint8_t[size];
@@ -79,21 +81,23 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->type);
         writer.write<std::string, uint8_t>(this->text);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->type = reader.read_8();
         this->text = reader.read<std::string, uint8_t>();
     }
 #endif
 };
 
-}}}} // namespace fb::protocol::login::response
+}// namespace fb::protocol::login::response
 
 #endif // !__PROTOCOL_RESPONSE_LOGIN_H__

@@ -2,7 +2,9 @@
 #include <fb/leak.h>
 #include <fb/mst.h>
 #include <worker.h>
-#ifndef _WIN32
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <execinfo.h>
 #else
 #include "resource.h"
@@ -13,25 +15,6 @@ using namespace fb::model::enum_value;
 
 int main(int argc, const char** argv)
 {
-    auto& config = fb::config::get();
-
-    auto height = 9;
-    console::box(console::width() - 1, height);
-
-    auto header = "The Kingdom of the wind [GAME]";
-    console::cursor((console::width() - 1 - strlen(header)) / 2, 3);
-    console::render(header);
-
-    auto github = "https://github.com/boyism80/fb";
-    console::cursor(console::width() - 1 - strlen(github) - 3, 5);
-    console::render(github);
-
-    auto madeby = "made by cshyeon";
-    console::cursor(console::width() - 1 - strlen(madeby) - 3, 6);
-    console::render(madeby);
-
-    console::position(0, height + 1);
-
     try
     {
         //_CrtSetBreakAlloc(7997394);
@@ -44,17 +27,8 @@ int main(int argc, const char** argv)
         flatbuffers::option::decoding(cp949);
 #endif
 
-        auto  io_context = boost::asio::io_context{};
-        auto& config     = fb::config::get();
-        auto  context    = std::make_unique<fb::game::context>(io_context, config["port"].asInt());
-        context->model.mob_spawn.hook.built =
-            [&context](const fb::model::array_container<fb::model::mob_spawn>& model) {
-                for (auto& spawn : model)
-                {
-                    context->rezen.push_back(fb::game::rezen(*context.get(), spawn));
-                }
-            };
-
+        auto io_context                = boost::asio::io_context{};
+        auto context                   = std::make_unique<fb::game::context>(io_context, config<uint16_t>("port"));
         context->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)
@@ -93,7 +67,7 @@ int main(int argc, const char** argv)
     }
     catch (std::exception& e)
     {
-        fb::logger::fatal(e.what());
+        fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
 #ifndef _WIN32
         void*  array[10];
         size_t size;

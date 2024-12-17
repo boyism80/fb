@@ -1,6 +1,9 @@
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 #include <fb/encoding.h>
 
-std::string cp949(const std::string& utf8)
+std::string fb::cp949(const std::string& utf8)
 {
     if (utf8.empty())
         return std::string();
@@ -36,7 +39,7 @@ std::string cp949(const std::string& utf8)
 #endif
 }
 
-std::string utf8(const std::string& cp949)
+std::string fb::utf8(const std::string& cp949)
 {
     if (cp949.empty())
         return std::string();
@@ -72,7 +75,7 @@ std::string utf8(const std::string& cp949)
 #endif
 }
 
-std::string CP949(const std::string& utf8, PLATFORM p)
+std::string fb::CP949(const std::string& utf8, PLATFORM p)
 {
     switch (p)
     {
@@ -98,7 +101,7 @@ std::string CP949(const std::string& utf8, PLATFORM p)
     }
 }
 
-std::string UTF8(const std::string& cp949, PLATFORM p)
+std::string fb::UTF8(const std::string& cp949, PLATFORM p)
 {
     switch (p)
     {
@@ -124,7 +127,7 @@ std::string UTF8(const std::string& cp949, PLATFORM p)
     }
 }
 
-std::wstring W(const std::string& m)
+std::wstring fb::W(const std::string& m)
 {
 #ifdef _WIN32
     auto wide_size = MultiByteToWideChar(CP_ACP, 0, m.c_str(), m.length(), nullptr, 0) + 1;
@@ -139,7 +142,7 @@ std::wstring W(const std::string& m)
 #endif
 }
 
-std::string M(const std::wstring& w)
+std::string fb::M(const std::wstring& w)
 {
 #ifdef _WIN32
     auto mbs_size = WideCharToMultiByte(CP_ACP, 0, w.c_str(), -1, nullptr, 0, nullptr, nullptr);
@@ -154,12 +157,12 @@ std::string M(const std::wstring& w)
 #endif
 }
 
-std::string name_with(const std::string& name)
+std::string fb::name_with(const std::string& name)
 {
     return name_with(name, {"을", "를"});
 }
 
-std::string name_with(const std::string& name, const std::pair<std::string, std::string>& postfix)
+std::string fb::name_with(const std::string& name, const std::pair<std::string, std::string>& postfix)
 {
     auto wide = W(name);
     auto last = wide.at(wide.size() - 1);
@@ -174,7 +177,7 @@ std::string name_with(const std::string& name, const std::pair<std::string, std:
 
 // 참고자료
 // https://gala04.tistory.com/entry/%EC%A0%9C%EB%AA%A9%EC%9D%84-%EC%9E%85%EB%A0%A5%ED%95%B4-%EC%A3%BC%EC%84%B8%EC%9A%94
-bool assert_korean(const std::string& str)
+bool fb::assert_korean(const std::string& str)
 {
     auto len = str.length();
     if (len % 2 > 0)

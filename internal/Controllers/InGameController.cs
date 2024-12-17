@@ -1,10 +1,9 @@
-﻿using fb.protocol._internal;
-using http.Redis;
-using http.Service;
-using Internal.Model.Redis;
-using Internal.Redis;
-using Internal.Redis.Key;
-using Internal.Service;
+﻿using Fb.Model.EnumValue;
+using Http;
+using Http.Model.Redis;
+using Http.Redis;
+using Http.Redis.Key;
+using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -17,74 +16,82 @@ namespace Internal.Controllers
     [Route("in-game")]
     public class InGameController : ControllerBase
     {
-        private readonly ILogger<TransferController> _logger;
+        private readonly ILogger<InGameController> _logger;
         private readonly RedisService _redisService;
         private readonly Fb.Model.Model _dataSet;
         private readonly RabbitMqService _rabbitMqService;
         private readonly SessionService _sessionService;
+        private readonly DbContext _dbContext;
 
-        public InGameController(ILogger<TransferController> logger,
+        public InGameController(ILogger<InGameController> logger,
             RedisService redisService,
             Fb.Model.Model dataSet,
             RabbitMqService rabbitMqService,
-            SessionService sessionService)
+            SessionService sessionService,
+            DbContext dbContext)
         {
             _logger = logger;
             _redisService = redisService;
             _dataSet = dataSet;
             _rabbitMqService = rabbitMqService;
             _sessionService = sessionService;
+            _dbContext = dbContext;
         }
 
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
         {
-            var connection = _redisService.Connection;
-            var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
-            if (config == null)
+            try
             {
+                var connection = _redisService.Connection;
+                var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
+                if (config == null)
+                    throw new LogicException(ErrorCode.ServerNotReady);
+
+                var redisResult = await connection.ScriptEvaluateAsync("login.lua", new
+                {
+                    key = new RedisKey(new SessionKey { }.Key),
+                    name = request.Name,
+                    session = JsonConvert.SerializeObject(new Session
+                    {
+                        Uid = request.Uid,
+                        Host = request.Host
+                    }),
+                });
+
+                var success = (bool)redisResult[0];
+                if (success == false)
+                {
+                    var session = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
+                    _rabbitMqService.Publish(new Response.KickOut
+                    {
+                        Uid = session.Uid
+                    }, "amq.direct", $"fb.game.{session.Host}");
+                    throw new LogicException(ErrorCode.AlreadyLogin);
+                }
+
                 return new Response.Login
                 {
-                    Success = false,
                     Logon = false,
+                    Ip = config.IP,
+                    Port = config.Port
                 };
             }
-
-            var redisResult = await connection.ScriptEvaluateAsync("login.lua", new
+            catch (LogicException e)
             {
-                key = new RedisKey(new SessionKey { }.Key),
-                name = request.Name,
-                session = JsonConvert.SerializeObject(new Session
-                {
-                    Uid = request.Uid,
-                    Host = request.Host
-                }),
-            });
-
-            var success = (bool)redisResult[0];
-            if (success == false)
-            {
-                var session = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
-                _rabbitMqService.Publish(new Response.KickOut
-                {
-                    Uid = session.Uid
-                }, "amq.direct", $"fb.game.{session.Host}");
                 return new Response.Login
                 {
-                    Success = false,
-                    Logon = true,
-                    Ip = string.Empty,
-                    Port = 0
+                    Error = (uint)e.Error
                 };
             }
-
-            return new Response.Login
+            catch (Exception e)
             {
-                Success = success,
-                Logon = false,
-                Ip = config.IP,
-                Port = config.Port
-            };
+                _logger.LogError(e.Message);
+                return new Response.Login
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
         }
 
         [HttpPost("logout")]
@@ -102,41 +109,50 @@ namespace Internal.Controllers
         [HttpPost("transfer")]
         public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
-            var connection = _redisService.Connection;
-            var connectedGameConf = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
-            if (connectedGameConf.IsNull)
+            try
+            {
+                var connection = _redisService.Connection;
+                var connectedGameConf = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
+                if (connectedGameConf.IsNull)
+                    throw new LogicException(ErrorCode.ServerNotReady);
+
+                if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
+                {
+                    // TODO: 루아스크립트
+                    var session = await connection.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
+                    if (session != null)
+                    {
+                        await connection.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
+                        _rabbitMqService.Publish(new Response.KickOut
+                        {
+                            Uid = session.Uid
+                        }, "amq.direct", $"fb.game.{session.Host}");
+                        throw new LogicException(ErrorCode.AlreadyLogin);
+                    }
+                }
+
+                var config = JsonConvert.DeserializeObject<HostConfig>(connectedGameConf.ToString());
+                return new Response.Transfer
+                {
+                    Ip = config.IP,
+                    Port = config.Port
+                };
+            }
+            catch (LogicException e)
             {
                 return new Response.Transfer
                 {
-                    Code = TransferResult.Failed,
+                    Error = (uint)e.Error
                 };
             }
-
-            if (string.IsNullOrEmpty(request.Name) == false)
+            catch (Exception e)
             {
-                // TODO: 루아스크립트
-                var session = await connection.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
-                if (session != null)
+                _logger.LogError(e.Message);
+                return new Response.Transfer
                 {
-                    await connection.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
-                    _rabbitMqService.Publish(new Response.KickOut
-                    {
-                        Uid = session.Uid
-                    }, "amq.direct", $"fb.game.{session.Host}");
-                    return new Response.Transfer
-                    {
-                        Code = TransferResult.LoggedIn
-                    };
-                }
+                    Error = (uint)ErrorCode.Unhandled
+                };
             }
-
-            var config = JsonConvert.DeserializeObject<HostConfig>(connectedGameConf.ToString());
-            return new Response.Transfer
-            {
-                Code = TransferResult.Success,
-                Ip = config.IP,
-                Port = config.Port
-            };
         }
 
         [HttpPost("ping")]
@@ -161,19 +177,53 @@ namespace Internal.Controllers
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
-            var you = await _sessionService.Get(request.To);
-            if (you == null)
-                return new Response.Whisper { Success = false };
-
-            var response = new Response.Whisper
+            try
             {
-                Success = true,
-                From = request.From,
-                To = you.Uid,
-                Message = request.Message
-            };
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.game.{you.Host}");
-            return response;
+                var session = await _sessionService.Get(request.From) ??
+                    throw new LogicException(ErrorCode.Offline);
+
+                var targetSession = await _sessionService.Get(request.To);
+                if (targetSession == null)
+                    throw new LogicException(ErrorCode.Offline);
+
+                var target = await _dbContext.Character.Get(targetSession.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                var targetOption = await _dbContext.Option.Get(targetSession.Uid) ??
+                    throw new LogicException(ErrorCode.NotFoundOption);
+
+                if (!targetOption.Whisper)
+                    throw new LogicException(ErrorCode.DisabledWhisperTarget);
+
+                var response = new Response.Whisper
+                {
+                    Host = session.Host,
+                    From = request.From,
+                    To = target.Name,
+                    Message = request.Message
+                };
+                _rabbitMqService.Publish(response, "amq.direct", $"fb.game.{targetSession.Host}");
+                return response;
+            }
+            catch (LogicException e)
+            {
+                return new Response.Whisper
+                {
+                    From = request.From,
+                    To = request.To,
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+                return new Response.Whisper
+                {
+                    From = request.From,
+                    To = request.To,
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
         }
     }
 }

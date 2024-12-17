@@ -4,11 +4,15 @@
 #include <fb/protocol/protocol.h>
 #include <fb/cryptor.h>
 #include <format>
-#ifndef _WIN32
+#ifdef _WIN32
+#ifndef _WINSOCK2API_
+#include <WinSock2.h>
+#endif
+#else
 #include <arpa/inet.h>
 #endif
 
-namespace fb { namespace protocol { namespace gateway {
+namespace fb::protocol::gateway {
 
 class entry
 {
@@ -38,9 +42,9 @@ public:
     { }
 };
 
-}}} // namespace fb::protocol::gateway
+} // namespace fb::protocol::gateway
 
-namespace fb { namespace protocol { namespace gateway { namespace response {
+namespace fb::protocol::gateway::response {
 
 class welcome : public fb::protocol::base::header
 {
@@ -51,8 +55,10 @@ public:
     welcome() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class crt : public fb::protocol::base::header
@@ -81,8 +87,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);
         writer.write<uint32_t>(this->entry_crc);
@@ -92,8 +99,9 @@ public:
         writer.write<uint8_t>(0x00);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         reader.read<uint8_t>();
 
         auto entry_crc = reader.read<uint32_t>();
@@ -130,8 +138,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         // 서버정보를 바이너리 형식으로 변환
         auto formats = fb::stream();
         {
@@ -158,14 +167,15 @@ public:
         writer.write(compressed.data(), compressed.size() + 1);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         // TODO: 파싱해서 데이터 적재
         auto count = reader.read<uint8_t>();
     }
 #endif
 };
 
-}}}} // namespace fb::protocol::gateway::response
+} // namespace fb::protocol::gateway::response
 
 #endif // !__PROTOCOL_RESPONSE_GATEWAY_H__

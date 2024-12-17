@@ -45,7 +45,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool load_entries();
+    [[nodiscard]] async::task<void> load_entries();
 
 private:
     /**
@@ -68,6 +68,14 @@ protected:
      * @return     { description_of_the_return_value }
      */
     bool decrypt_policy(uint8_t) const final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_start() final;
+
     /**
      * @brief      { function_description }
      *
@@ -83,7 +91,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_connected(fb::socket<fb::gateway::session>& session) final;
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::gateway::session>& session) final;
     /**
      * @brief      { function_description }
      *
@@ -91,7 +99,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_disconnected(fb::socket<fb::gateway::session>& session) final;
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::gateway::session>& session) final;
 
     // for heart-beat
 
@@ -115,8 +123,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_check_version(fb::socket<fb::gateway::session>& session,
-                                           const fb::protocol::gateway::request::assert_version&);
+    [[nodiscard]] async::task<bool> handle_check_version(fb::socket<fb::gateway::session>& session,
+                                                         const fb::protocol::gateway::request::assert_version&);
     /**
      * @brief      { function_description }
      *
@@ -125,8 +133,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>& session,
-                                        const fb::protocol::gateway::request::entry_list&);
+    [[nodiscard]] async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>& session,
+                                                      const fb::protocol::gateway::request::entry_list&);
 };
 
 }} // namespace fb::gateway

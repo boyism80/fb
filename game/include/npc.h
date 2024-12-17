@@ -2,6 +2,8 @@
 #define __NPC_H__
 
 #include <item.h>
+#include <format>
+#include <optional>
 
 namespace fb { namespace game {
 
@@ -118,9 +120,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> return_item(fb::game::character&    session,
-                                  const fb::model::item*  item,
-                                  std::optional<uint16_t> count);
+    bool return_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count);
     /**
      * @brief      { function_description }
      */

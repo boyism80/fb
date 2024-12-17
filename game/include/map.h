@@ -1,190 +1,16 @@
 #ifndef __MAP_H__
 #define __MAP_H__
 
-#include <stdexcept>
-#include <door.h>
+#include <door/container.h>
+#include <object/container.h>
 #include <sector.h>
-#include <fb/container.h>
 
-namespace fb { namespace game {
-
-/**
- * @brief      This class describes an object.
- */
-class object;
-/**
- * @brief      This class describes a map of .
- */
-class map;
-/**
- * @brief      This class describes a mob.
- */
-class mob;
-/**
- * @brief      This class describes a character.
- */
-class character;
-/**
- * @brief      This class describes a context.
- */
-class context;
-
-/**
- * @brief      This class describes objects.
- */
-class objects
-{
-public:
-    using ptrs           = std::unordered_map<uint32_t, std::unique_ptr<object>>;
-    using refs           = std::unordered_map<uint32_t, object&>;
-    using iterator       = refs::iterator;
-    using const_iterator = refs::const_iterator;
-    using filter_func    = std::function<bool(object&)>;
-
-private:
-    ptrs     _ptrs;
-    refs     _refs;
-    uint32_t _sequence = 1;
-
-public:
-    fb::game::map& owner;
-
-public:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param      map   The map
-     */
-    objects(fb::game::map& map);
-    /**
-     * @brief      Destroys the object.
-     */
-    ~objects() = default;
-
-private:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t empty_seq();
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    iterator begin();
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    iterator end();
-    /**
-     * @brief      { function_description }
-     *
-     * @return     The constant iterator.
-     */
-    const_iterator begin() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @return     The constant iterator.
-     */
-    const_iterator end() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t size() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  i     { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    object& at(uint32_t i);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      obj   The object
-     */
-    void push(object& obj);
-    /**
-     * @brief      Pops the given fd.
-     *
-     * @param[in]  fd    { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    object& pop(uint32_t fd);
-    /**
-     * @brief      Pops the given object.
-     *
-     * @param      obj   The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    object& pop(object& obj);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fd    { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    object* try_pop(uint32_t fd);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      obj   The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    object* try_pop(object& obj);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  type  The type
-     * @param[in]  fn    The function
-     */
-    void foreach (OBJECT_TYPE type, const filter_func& fn);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  obj   The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool contains(const object& obj) const;
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fd    { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool contains(uint32_t fd) const;
-
-public:
-    /**
-     * @brief      Array indexer operator.
-     *
-     * @param[in]  fd    { parameter_description }
-     *
-     * @return     The result of the array indexer
-     */
-    object* operator[] (uint32_t fd);
-};
+namespace fb::game {
 
 /**
  * @brief      This class describes a map of .
  */
-class map : public lua::luable
+class map : public lua::luable, public fb::thread_switchable
 {
 public:
     LUA_PROTOTYPE
@@ -203,7 +29,7 @@ public:
 
 public:
     using unique_tiles  = std::unique_ptr<tile[]>;
-    using unique_sector = std::unique_ptr<fb::game::sectors>;
+    using unique_sector = std::unique_ptr<sectors>;
 
 private:
     size16_t      _size  = size16_t(0, 0);
@@ -213,8 +39,8 @@ private:
 public:
     const fb::game::context& context;
     const fb::model::map&    model;
-    fb::game::objects        objects = fb::game::objects(*this);
-    fb::game::doors          doors;
+    object_container         objects = object_container(*this);
+    door_container           doors;
     const bool               active;
 
 public:
@@ -227,13 +53,13 @@ public:
      * @param[in]  data     The data
      * @param[in]  size     The size
      */
-    map(const fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
+    map(fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  <unnamed>  { parameter_description }
      */
-    map(const map&) = delete;
+    map(const fb::game::map&) = delete;
     /**
      * @brief      Destroys the object.
      */
@@ -329,7 +155,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool movable(const fb::game::object& object, DIRECTION direction) const;
+    bool movable(const object& object, DIRECTION direction) const;
     /**
      * @brief      { function_description }
      *
@@ -338,7 +164,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool movable_forward(const fb::game::object& object, uint16_t step = 1) const;
+    bool movable_forward(const object& object, uint16_t step = 1) const;
     /**
      * @brief      { function_description }
      *
@@ -354,7 +180,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool update(fb::game::object& object);
+    bool update(object& object);
     /**
      * @brief      { function_description }
      *
@@ -388,13 +214,20 @@ public:
      */
     std::vector<object*> activateds(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override;
+
 public:
     /**
      * @brief      Called on timer.
      *
      * @param[in]  elapsed_milliseconds  The elapsed milliseconds
      */
-    void on_timer(uint64_t elapsed_milliseconds);
+    [[nodiscard]] async::task<void> on_timer(uint64_t elapsed_milliseconds);
 
 public:
     /**
@@ -484,68 +317,6 @@ struct map::tile
     bool     blocked;
 };
 
-/**
- * @brief      This class describes maps.
- */
-class maps : public fb::kv_container<uint32_t, fb::game::map>
-{
-private:
-    std::mutex _mutex;
-
-public:
-    const fb::game::context& context;
-    const uint32_t           host;
-
-public:
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  context  The context
-     * @param[in]  host     The host
-     */
-    maps(const fb::game::context& context, uint32_t host);
-    /**
-     * @brief      Destroys the object.
-     */
-    ~maps();
-
-private:
-    /**
-     * @brief      Loads a data.
-     *
-     * @param[in]  id      The identifier
-     * @param      buffer  The buffer
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static bool load_data(uint32_t id, std::vector<char>& buffer);
-    /**
-     * @brief      Loads a block.
-     *
-     * @param[in]  id      The identifier
-     * @param      buffer  The buffer
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static bool load_block(uint32_t id, Json::Value& buffer);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  moel  The moel
-     */
-    void load(const fb::model::map& moel);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name  The name
-     *
-     * @return     { description_of_the_return_value }
-     */
-    fb::game::map* name2map(const std::string& name) const;
-};
-
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__MAP_H__

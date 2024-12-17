@@ -1,6 +1,6 @@
 @ECHO OFF
 
-git submodule update --recursive --remote data-converter
+rem git submodule update --recursive --remote data-converter
 SET SOURCE=D:\Users\CSHYEON\Data\git\game\c++\fb
 PUSHD data-converter
 CALL dotnet publish -c Release -o "bin"
@@ -24,10 +24,8 @@ XCOPY "tools\data-converter\bin\output\json\server\*.json" "login\json\*.json"
 
 DEL /s /q "http\Model\Model.cs"
 RMDIR /s /q "internal\json"
-RMDIR /s /q "db\json"
 XCOPY "tools\data-converter\bin\output\C#\server\*.cs" "http\Model\*.cs"
 XCOPY "tools\data-converter\bin\output\json\server\*.json" "internal\json\*.json"
-XCOPY "tools\data-converter\bin\output\json\server\*.json" "db\json\*.json"
 POPD
 
 GOTO SKIP_PAUSE

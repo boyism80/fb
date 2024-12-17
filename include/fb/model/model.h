@@ -11,7 +11,8 @@
 #include <any>
 #include <optional>
 #include <chrono>
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
+#include <fstream>
 #include <unordered_map>
 #include <model.additional.h>
 #ifdef LUA
@@ -950,6 +951,101 @@ inline const char* enum_tostring<EQUIPMENT_POSITION>(EQUIPMENT_POSITION k)
     {
         { EQUIPMENT_POSITION::LEFT, "LEFT" }, 
         { EQUIPMENT_POSITION::RIGHT, "RIGHT" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class ERROR_CODE
+{
+    NONE = 0, 
+    UNHANDLED = 1, 
+    GROUP_ALREADY_JOINED = 2, 
+    GROUP_TARGET_ALREADY_JOINED = 3, 
+    DISABLED_GROUP = 4, 
+    DISABLED_GROUP_TARGET = 5, 
+    PASSWORD_NOT_MATCHED = 6, 
+    BIRTHDAY_NOT_MATCHED = 7, 
+    OFFLINE = 8, 
+    SERVER_NOT_READY = 9, 
+    ALREADY_LOGIN = 10, 
+    NOT_FOUND_CHARACTER = 11, 
+    NOT_FOUND_OPTION = 12, 
+    DISABLED_WHISPER = 13, 
+    DISABLED_WHISPER_TARGET = 14, 
+    DISTRIBUTED_LOCK_FAILED = 15, 
+    GROUP_NOT_JOINED = 16, 
+    GROUP_NOT_FOUND = 17, 
+    CANNOT_GROUP_SELF = 18, 
+    NOT_FOUND_MAP = 19, 
+    NOT_GROUP_MASTER = 20
+}; // end of enum 'ERROR_CODE'
+
+template <>
+inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
+{
+    static const std::unordered_map<std::string, ERROR_CODE> enums
+    {
+        { "NONE", ERROR_CODE::NONE }, 
+        { "UNHANDLED", ERROR_CODE::UNHANDLED }, 
+        { "GROUP_ALREADY_JOINED", ERROR_CODE::GROUP_ALREADY_JOINED }, 
+        { "GROUP_TARGET_ALREADY_JOINED", ERROR_CODE::GROUP_TARGET_ALREADY_JOINED }, 
+        { "DISABLED_GROUP", ERROR_CODE::DISABLED_GROUP }, 
+        { "DISABLED_GROUP_TARGET", ERROR_CODE::DISABLED_GROUP_TARGET }, 
+        { "PASSWORD_NOT_MATCHED", ERROR_CODE::PASSWORD_NOT_MATCHED }, 
+        { "BIRTHDAY_NOT_MATCHED", ERROR_CODE::BIRTHDAY_NOT_MATCHED }, 
+        { "OFFLINE", ERROR_CODE::OFFLINE }, 
+        { "SERVER_NOT_READY", ERROR_CODE::SERVER_NOT_READY }, 
+        { "ALREADY_LOGIN", ERROR_CODE::ALREADY_LOGIN }, 
+        { "NOT_FOUND_CHARACTER", ERROR_CODE::NOT_FOUND_CHARACTER }, 
+        { "NOT_FOUND_OPTION", ERROR_CODE::NOT_FOUND_OPTION }, 
+        { "DISABLED_WHISPER", ERROR_CODE::DISABLED_WHISPER }, 
+        { "DISABLED_WHISPER_TARGET", ERROR_CODE::DISABLED_WHISPER_TARGET }, 
+        { "DISTRIBUTED_LOCK_FAILED", ERROR_CODE::DISTRIBUTED_LOCK_FAILED }, 
+        { "GROUP_NOT_JOINED", ERROR_CODE::GROUP_NOT_JOINED }, 
+        { "GROUP_NOT_FOUND", ERROR_CODE::GROUP_NOT_FOUND }, 
+        { "CANNOT_GROUP_SELF", ERROR_CODE::CANNOT_GROUP_SELF }, 
+        { "NOT_FOUND_MAP", ERROR_CODE::NOT_FOUND_MAP }, 
+        { "NOT_GROUP_MASTER", ERROR_CODE::NOT_GROUP_MASTER }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
+{
+    static const std::unordered_map<ERROR_CODE, const char*> enums
+    {
+        { ERROR_CODE::NONE, "NONE" }, 
+        { ERROR_CODE::UNHANDLED, "UNHANDLED" }, 
+        { ERROR_CODE::GROUP_ALREADY_JOINED, "GROUP_ALREADY_JOINED" }, 
+        { ERROR_CODE::GROUP_TARGET_ALREADY_JOINED, "GROUP_TARGET_ALREADY_JOINED" }, 
+        { ERROR_CODE::DISABLED_GROUP, "DISABLED_GROUP" }, 
+        { ERROR_CODE::DISABLED_GROUP_TARGET, "DISABLED_GROUP_TARGET" }, 
+        { ERROR_CODE::PASSWORD_NOT_MATCHED, "PASSWORD_NOT_MATCHED" }, 
+        { ERROR_CODE::BIRTHDAY_NOT_MATCHED, "BIRTHDAY_NOT_MATCHED" }, 
+        { ERROR_CODE::OFFLINE, "OFFLINE" }, 
+        { ERROR_CODE::SERVER_NOT_READY, "SERVER_NOT_READY" }, 
+        { ERROR_CODE::ALREADY_LOGIN, "ALREADY_LOGIN" }, 
+        { ERROR_CODE::NOT_FOUND_CHARACTER, "NOT_FOUND_CHARACTER" }, 
+        { ERROR_CODE::NOT_FOUND_OPTION, "NOT_FOUND_OPTION" }, 
+        { ERROR_CODE::DISABLED_WHISPER, "DISABLED_WHISPER" }, 
+        { ERROR_CODE::DISABLED_WHISPER_TARGET, "DISABLED_WHISPER_TARGET" }, 
+        { ERROR_CODE::DISTRIBUTED_LOCK_FAILED, "DISTRIBUTED_LOCK_FAILED" }, 
+        { ERROR_CODE::GROUP_NOT_JOINED, "GROUP_NOT_JOINED" }, 
+        { ERROR_CODE::GROUP_NOT_FOUND, "GROUP_NOT_FOUND" }, 
+        { ERROR_CODE::CANNOT_GROUP_SELF, "CANNOT_GROUP_SELF" }, 
+        { ERROR_CODE::NOT_FOUND_MAP, "NOT_FOUND_MAP" }, 
+        { ERROR_CODE::NOT_GROUP_MASTER, "NOT_GROUP_MASTER" }
     };
 
     auto i = enums.find(k);
@@ -2416,6 +2512,48 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "EQUIPMENT_POSITION_LEFT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::EQUIPMENT_POSITION::RIGHT);
     lua_setglobal(lua, "EQUIPMENT_POSITION_RIGHT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NONE);
+    lua_setglobal(lua, "ERROR_CODE_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::UNHANDLED);
+    lua_setglobal(lua, "ERROR_CODE_UNHANDLED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_ALREADY_JOINED);
+    lua_setglobal(lua, "ERROR_CODE_GROUP_ALREADY_JOINED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_TARGET_ALREADY_JOINED);
+    lua_setglobal(lua, "ERROR_CODE_GROUP_TARGET_ALREADY_JOINED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_GROUP);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_GROUP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_GROUP_TARGET);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_GROUP_TARGET");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::PASSWORD_NOT_MATCHED);
+    lua_setglobal(lua, "ERROR_CODE_PASSWORD_NOT_MATCHED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::BIRTHDAY_NOT_MATCHED);
+    lua_setglobal(lua, "ERROR_CODE_BIRTHDAY_NOT_MATCHED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::OFFLINE);
+    lua_setglobal(lua, "ERROR_CODE_OFFLINE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::SERVER_NOT_READY);
+    lua_setglobal(lua, "ERROR_CODE_SERVER_NOT_READY");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::ALREADY_LOGIN);
+    lua_setglobal(lua, "ERROR_CODE_ALREADY_LOGIN");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_CHARACTER);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CHARACTER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_OPTION);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_OPTION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_WHISPER);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_WHISPER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISABLED_WHISPER_TARGET);
+    lua_setglobal(lua, "ERROR_CODE_DISABLED_WHISPER_TARGET");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::DISTRIBUTED_LOCK_FAILED);
+    lua_setglobal(lua, "ERROR_CODE_DISTRIBUTED_LOCK_FAILED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_NOT_JOINED);
+    lua_setglobal(lua, "ERROR_CODE_GROUP_NOT_JOINED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::GROUP_NOT_FOUND);
+    lua_setglobal(lua, "ERROR_CODE_GROUP_NOT_FOUND");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CANNOT_GROUP_SELF);
+    lua_setglobal(lua, "ERROR_CODE_CANNOT_GROUP_SELF");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_MAP);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_MAP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_GROUP_MASTER);
+    lua_setglobal(lua, "ERROR_CODE_NOT_GROUP_MASTER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);
@@ -4498,16 +4636,7 @@ private:
             throw std::runtime_error(sstream.str());
         }
 
-        Json::Reader            reader;
-        if (reader.parse(ifstream, json) == false)
-        {
-            ifstream.close();
-
-            auto sstream = std::stringstream();
-            sstream << "cannot parse json file : " << fname;
-            throw std::runtime_error(sstream.str());
-        }
-
+        ifstream >> json;
         ifstream.close();
         this->load(json);
     }

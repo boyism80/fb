@@ -3,7 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace map {
+namespace fb::protocol::game::request::map {
 
 class update : public fb::protocol::base::header
 {
@@ -19,8 +19,9 @@ public:
     update() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->position.x  = reader.read<uint16_t>();
         this->position.y  = reader.read<uint16_t>();
         this->size.width  = reader.read<uint8_t>();
@@ -43,14 +44,15 @@ public:
     world() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->value  = reader.read<uint16_t>();
         this->before = reader.read<uint16_t>();
         this->after  = reader.read<uint16_t>();
     }
 };
 
-}}}}} // namespace fb::protocol::game::request::map
+} // namespace fb::protocol::game::request::map
 
 #endif // !__PROTOCOL_REQUEST_GAME_MAP_H__

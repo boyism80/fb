@@ -89,7 +89,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint8_t> add(T& element);
+    virtual uint8_t add(T& element);
     /**
      * @brief      { function_description }
      *
@@ -98,7 +98,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint8_t> add(T& element, uint8_t index);
+    virtual uint8_t add(T& element, uint8_t index);
     /**
      * @brief      Removes the specified index.
      *

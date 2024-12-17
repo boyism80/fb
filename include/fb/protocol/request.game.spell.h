@@ -4,7 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <spell.h>
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace spell {
+namespace fb::protocol::game::request::spell {
 
 class use : public fb::protocol::base::header
 {
@@ -24,8 +24,9 @@ public:
     use() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->_reader = &reader;
         this->slot    = reader.read<uint8_t>() - 1;
     }
@@ -51,6 +52,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::request::spell
+} // namespace fb::protocol::game::request::spell
 
 #endif // !__PROTOCOL_REQUEST_GAME_SPELL_H__

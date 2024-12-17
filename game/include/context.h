@@ -1,17 +1,23 @@
 #ifndef __FB_GAME_H__
 #define __FB_GAME_H__
 
+#include <boost/algorithm/string/join.hpp>
+#include <json/json.h>
+#include <fstream>
 #include <fb/acceptor.h>
-#include <group.h>
 #include <fb/protocol/game.h>
 #include <fb/amqp.h>
 #include <listener.h>
+#include <thread_params.h>
+#include <map/container.h>
+#include <shard.h>
 
 using namespace fb::protocol::internal;
-namespace fb_reqs  = fb::protocol::game::request;
-namespace fb_resp  = fb::protocol::game::response;
-namespace db       = fb::protocol::db;
-namespace internal = fb::protocol::internal;
+namespace fb_reqs       = fb::protocol::game::request;
+namespace fb_resp       = fb::protocol::game::response;
+namespace internal      = fb::protocol::internal;
+namespace internal_reqs = fb::protocol::internal::request;
+namespace internal_resp = fb::protocol::internal::response;
 
 namespace fb { namespace game {
 
@@ -49,21 +55,21 @@ public:
     };
 
 public:
-    using object_set         = std::map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
+    using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param     = fb::protocol::game::request::login::transfer_param;
-    using rezen_container    = std::vector<fb::game::rezen>;
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::base::header>(const fb::game::object&)>;
+    using command_container  = std::unordered_map<std::string, command_config>;
 
 private:
-    std::map<std::string, command_config> _commands;
-    datetime                              _time;
-    std::unique_ptr<fb::amqp::socket>     _amqp;
-    std::unique_ptr<std::thread>          _amqp_thread;
+    command_container                 _commands;
+    datetime                          _time;
+    std::unique_ptr<fb::amqp::socket> _amqp;
+    std::unique_ptr<std::thread>      _amqp_thread;
+    fb::game::shard                   _shard;
 
 public:
-    fb::model::model model;
-    fb::game::maps   maps;
-    rezen_container  rezen;
+    fb::model::model        model;
+    fb::game::map_container maps;
 
 public:
     /**
@@ -93,14 +99,75 @@ private:
      * @return     { description_of_the_return_value }
      */
     std::string elapsed_message(const std::string& datetime);
+
     /**
-     * @brief      Searches for the first match.
+     * @brief      { function_description }
+     *
+     * @param[in]  gid      The gid
+     * @param[in]  master   The master
+     * @param[in]  members  The members
+     */
+    void update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  gid   The gid
+     * @param[in]  fn    The function
+     */
+    void upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  gid      The gid
+     * @param[in]  master   The master
+     * @param[in]  members  The members
+     * @param[in]  fn       The function
+     */
+    void upsert_group_then(uint32_t                                       gid,
+                           const std::string&                             master,
+                           const std::vector<std::string>&                members,
+                           const std::function<void(shared_group_lock&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     * @param[in]  miss   The miss
+     */
+    void broadcast(const std::vector<std::string>&                     names,
+                   const std::function<void(fb::game::character&)>&    fn,
+                   const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     */
+    void broadcast(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
+
+    /**
+     * @brief      { function_description }
      *
      * @param[in]  name  The name
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  fn    The function
+     * @param[in]  miss  The miss
      */
-    fb::game::character* find(const std::string& name);
+    void broadcast(const std::string&                                  name,
+                   const std::function<void(fb::game::character&)>&    fn,
+                   const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     * @param[in]  fn    The function
+     */
+    void broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn);
+
     /**
      * @brief      Initializes the ch.
      *
@@ -110,9 +177,9 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool init_ch(const fb::protocol::db::Character&   response,
-                 fb::game::character&                 session,
-                 const std::optional<transfer_param>& transfer);
+    [[nodiscard]] async::task<bool> init_ch(const fb::protocol::internal::Character& response,
+                                            fb::game::character&                     session,
+                                            const std::optional<transfer_param>&     transfer);
 
     /**
      * @brief      Initializes the option.
@@ -120,7 +187,7 @@ private:
      * @param[in]  response  The response
      * @param      session   The session
      */
-    void init_option(const fb::protocol::db::Option& response, fb::game::character& session);
+    void init_option(const fb::protocol::internal::Option& response, fb::game::character& session);
 
     /**
      * @brief      Initializes the items.
@@ -128,14 +195,14 @@ private:
      * @param[in]  response  The response
      * @param      session   The session
      */
-    void init_items(const std::vector<fb::protocol::db::Item>& response, fb::game::character& session);
+    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& session);
     /**
      * @brief      Initializes the spells.
      *
      * @param[in]  response  The response
      * @param      session   The session
      */
-    void init_spells(const std::vector<fb::protocol::db::Spell>& response, fb::game::character& session);
+    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& session);
 
 private:
     /**
@@ -147,10 +214,9 @@ private:
      * @tparam     Func      { description }
      */
     template <typename Func>
-    void timer(Func&& func, const std::chrono::steady_clock::duration& duration)
+    void bind_thread_timer(Func&& func, const std::chrono::steady_clock::duration& duration)
     {
-        auto& threads = this->threads();
-        threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
+        this->threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
     }
 
 private:
@@ -171,6 +237,41 @@ private:
             command_config{.fn = std::bind(func, this, std::placeholders::_1, std::placeholders::_2), .admin = admin}
         });
     }
+
+private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  me       { parameter_description }
+     * @param[in]  you      You
+     * @param[in]  error    The error
+     * @param      message  The message
+     *
+     * @return     { description_of_the_return_value }
+     */
+    void assert_whisper(const internal::response::Whisper& response) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  error  The error
+     * @param[in]  actor  The actor
+     */
+    void assert_group(uint32_t error, const std::string& actor) const;
+
+    /**
+     * @brief      Called on enter group.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_enter_group(internal_resp::EnterGroup resp);
+
+    /**
+     * @brief      Called on leave group.
+     *
+     * @param[in]  response  The response
+     */
+    void on_leave_group(const internal_resp::LeaveGroup& response);
 
 public:
     /**
@@ -205,7 +306,7 @@ public:
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            co_await obj.map(nullptr, destroy_type);
+            std::ignore = co_await obj.map(nullptr, destroy_type);
         }
         delete &obj;
         co_return;
@@ -281,12 +382,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::thread* thread(const fb::game::map& map);
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::thread* current_thread() const;
+
     /**
      * @brief      { function_description }
      */
@@ -314,7 +410,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_connected(fb::socket<fb::game::character>& session) final;
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::game::character>& session) final;
     /**
      * @brief      { function_description }
      *
@@ -322,7 +418,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_disconnected(fb::socket<fb::game::character>& session) final;
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::game::character>& session) final;
     /**
      * @brief      { function_description }
      *
@@ -343,7 +439,7 @@ protected:
      */
     uint8_t id() const
     {
-        return fb::config::get()["id"].asUInt();
+        return fb::config<uint8_t>("id");
     }
     /**
      * @brief      { function_description }
@@ -379,7 +475,7 @@ public:
      *
      * @param[in]  elapsed_milliseconds  The elapsed milliseconds
      */
-    void handle_timer(uint64_t elapsed_milliseconds);
+    async::task<void> handle_timer(uint64_t elapsed_milliseconds);
 
     // game event method
 
@@ -392,7 +488,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_login(fb::socket<fb::game::character>&, const fb::protocol::game::request::login&);
+    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::game::character>&,
+                                                 const fb::protocol::game::request::login&);
     /**
      * @brief      { function_description }
      *
@@ -401,7 +498,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_direction(fb::socket<fb::game::character>&, const fb::protocol::game::request::direction&);
+    [[nodiscard]] async::task<bool> handle_direction(fb::socket<fb::game::character>&,
+                                                     const fb::protocol::game::request::direction&);
     /**
      * @brief      { function_description }
      *
@@ -410,7 +508,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_logout(fb::socket<fb::game::character>&, const fb::protocol::game::request::exit&);
+    [[nodiscard]] async::task<bool> handle_logout(fb::socket<fb::game::character>&,
+                                                  const fb::protocol::game::request::exit&);
     /**
      * @brief      { function_description }
      *
@@ -419,7 +518,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_move(fb::socket<fb::game::character>&, const fb::protocol::game::request::move&);
+    [[nodiscard]] async::task<bool> handle_move(fb::socket<fb::game::character>&,
+                                                const fb::protocol::game::request::move&);
     /**
      * @brief      { function_description }
      *
@@ -428,8 +528,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_update_move(fb::socket<fb::game::character>&,
-                                         const fb::protocol::game::request::update_move&);
+    [[nodiscard]] async::task<bool> handle_update_move(fb::socket<fb::game::character>&,
+                                                       const fb::protocol::game::request::update_move&);
     /**
      * @brief      { function_description }
      *
@@ -438,7 +538,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_attack(fb::socket<fb::game::character>&, const fb::protocol::game::request::attack&);
+    [[nodiscard]] async::task<bool> handle_attack(fb::socket<fb::game::character>&,
+                                                  const fb::protocol::game::request::attack&);
     /**
      * @brief      { function_description }
      *
@@ -447,7 +548,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_pickup(fb::socket<fb::game::character>&, const fb::protocol::game::request::pick_up&);
+    [[nodiscard]] async::task<bool> handle_pickup(fb::socket<fb::game::character>&,
+                                                  const fb::protocol::game::request::pick_up&);
     /**
      * @brief      { function_description }
      *
@@ -456,7 +558,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_emotion(fb::socket<fb::game::character>&, const fb::protocol::game::request::emotion&);
+    [[nodiscard]] async::task<bool> handle_emotion(fb::socket<fb::game::character>&,
+                                                   const fb::protocol::game::request::emotion&);
     /**
      * @brief      { function_description }
      *
@@ -465,8 +568,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_update_map(fb::socket<fb::game::character>&,
-                                        const fb::protocol::game::request::map::update&);
+    [[nodiscard]] async::task<bool> handle_update_map(fb::socket<fb::game::character>&,
+                                                      const fb::protocol::game::request::map::update&);
     /**
      * @brief      { function_description }
      *
@@ -475,7 +578,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_refresh(fb::socket<fb::game::character>&, const fb::protocol::game::request::refresh&);
+    [[nodiscard]] async::task<bool> handle_refresh(fb::socket<fb::game::character>&,
+                                                   const fb::protocol::game::request::refresh&);
     /**
      * @brief      { function_description }
      *
@@ -484,8 +588,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_active_item(fb::socket<fb::game::character>&,
-                                         const fb::protocol::game::request::item::active&);
+    [[nodiscard]] async::task<bool> handle_active_item(fb::socket<fb::game::character>&,
+                                                       const fb::protocol::game::request::item::active&);
     /**
      * @brief      { function_description }
      *
@@ -494,8 +598,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_inactive_item(fb::socket<fb::game::character>&,
-                                           const fb::protocol::game::request::item::inactive&);
+    [[nodiscard]] async::task<bool> handle_inactive_item(fb::socket<fb::game::character>&,
+                                                         const fb::protocol::game::request::item::inactive&);
     /**
      * @brief      { function_description }
      *
@@ -504,8 +608,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_drop_item(fb::socket<fb::game::character>&,
-                                       const fb::protocol::game::request::item::drop&);
+    [[nodiscard]] async::task<bool> handle_drop_item(fb::socket<fb::game::character>&,
+                                                     const fb::protocol::game::request::item::drop&);
     /**
      * @brief      { function_description }
      *
@@ -514,8 +618,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_drop_cash(fb::socket<fb::game::character>&,
-                                       const fb::protocol::game::request::item::drop_cash&);
+    [[nodiscard]] async::task<bool> handle_drop_cash(fb::socket<fb::game::character>&,
+                                                     const fb::protocol::game::request::item::drop_cash&);
     /**
      * @brief      { function_description }
      *
@@ -524,8 +628,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_front_info(fb::socket<fb::game::character>&,
-                                        const fb::protocol::game::request::front_info&);
+    [[nodiscard]] async::task<bool> handle_front_info(fb::socket<fb::game::character>&,
+                                                      const fb::protocol::game::request::front_info&);
     /**
      * @brief      { function_description }
      *
@@ -534,7 +638,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_self_info(fb::socket<fb::game::character>&, const fb::protocol::game::request::self_info&);
+    [[nodiscard]] async::task<bool> handle_self_info(fb::socket<fb::game::character>&,
+                                                     const fb::protocol::game::request::self_info&);
     /**
      * @brief      { function_description }
      *
@@ -543,8 +648,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_option_changed(fb::socket<fb::game::character>&,
-                                            const fb::protocol::game::request::change_option&);
+    [[nodiscard]] async::task<bool> handle_option_changed(fb::socket<fb::game::character>&,
+                                                          const fb::protocol::game::request::change_option&);
     /**
      * @brief      { function_description }
      *
@@ -553,7 +658,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_click_object(fb::socket<fb::game::character>&, const fb::protocol::game::request::click&);
+    [[nodiscard]] async::task<bool> handle_click_object(fb::socket<fb::game::character>&,
+                                                        const fb::protocol::game::request::click&);
     /**
      * @brief      { function_description }
      *
@@ -562,8 +668,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_item_info(fb::socket<fb::game::character>&,
-                                       const fb::protocol::game::request::item::info&);
+    [[nodiscard]] async::task<bool> handle_item_info(fb::socket<fb::game::character>&,
+                                                     const fb::protocol::game::request::item::info&);
     /**
      * @brief      { function_description }
      *
@@ -572,7 +678,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_itemmix(fb::socket<fb::game::character>&, const fb::protocol::game::request::item::mix&);
+    [[nodiscard]] async::task<bool> handle_itemmix(fb::socket<fb::game::character>&,
+                                                   const fb::protocol::game::request::item::mix&);
     /**
      * @brief      { function_description }
      *
@@ -581,7 +688,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_trade(fb::socket<fb::game::character>&, const fb::protocol::game::request::trade&);
+    [[nodiscard]] async::task<bool> handle_trade(fb::socket<fb::game::character>&,
+                                                 const fb::protocol::game::request::trade&);
     /**
      * @brief      { function_description }
      *
@@ -590,7 +698,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_group(fb::socket<fb::game::character>&, const fb::protocol::game::request::group&);
+    [[nodiscard]] async::task<bool> handle_group(fb::socket<fb::game::character>&,
+                                                 const fb::protocol::game::request::group&);
     /**
      * @brief      { function_description }
      *
@@ -599,7 +708,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_user_list(fb::socket<fb::game::character>&, const fb::protocol::game::request::user_list&);
+    [[nodiscard]] async::task<bool> handle_user_list(fb::socket<fb::game::character>&,
+                                                     const fb::protocol::game::request::user_list&);
     /**
      * @brief      { function_description }
      *
@@ -608,7 +718,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_chat(fb::socket<fb::game::character>&, const fb::protocol::game::request::chat&);
+    [[nodiscard]] async::task<bool> handle_chat(fb::socket<fb::game::character>&,
+                                                const fb::protocol::game::request::chat&);
     /**
      * @brief      { function_description }
      *
@@ -617,7 +728,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_board(fb::socket<fb::game::character>&, const fb::protocol::game::request::board::board&);
+    [[nodiscard]] async::task<bool> handle_board(fb::socket<fb::game::character>&,
+                                                 const fb::protocol::game::request::board::board&);
     /**
      * @brief      { function_description }
      *
@@ -626,7 +738,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_swap(fb::socket<fb::game::character>&, const fb::protocol::game::request::swap&);
+    [[nodiscard]] async::task<bool> handle_swap(fb::socket<fb::game::character>&,
+                                                const fb::protocol::game::request::swap&);
     /**
      * @brief      { function_description }
      *
@@ -635,7 +748,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_dialog(fb::socket<fb::game::character>&, const fb::protocol::game::request::dialog&);
+    [[nodiscard]] async::task<bool> handle_dialog(fb::socket<fb::game::character>&,
+                                                  const fb::protocol::game::request::dialog&);
     // async::task<bool>       handle_dialog_1(fb::socket<fb::game::character>&,
     // const fb::protocol::game::request::dialog1&); async::task<bool>
     // handle_dialog_2(fb::socket<fb::game::character>&, const
@@ -646,8 +760,8 @@ public:
     //
     // @return     { description_of_the_return_value }
     //
-    async::task<bool> handle_throw_item(fb::socket<fb::game::character>&,
-                                        const fb::protocol::game::request::item::throws&);
+    [[nodiscard]] async::task<bool> handle_throw_item(fb::socket<fb::game::character>&,
+                                                      const fb::protocol::game::request::item::throws&);
     /**
      * @brief      { function_description }
      *
@@ -656,7 +770,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_spell(fb::socket<fb::game::character>&, const fb::protocol::game::request::spell::use&);
+    [[nodiscard]] async::task<bool> handle_spell(fb::socket<fb::game::character>&,
+                                                 const fb::protocol::game::request::spell::use&);
     /**
      * @brief      { function_description }
      *
@@ -665,7 +780,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_door(fb::socket<fb::game::character>&, const fb::protocol::game::request::door&);
+    [[nodiscard]] async::task<bool> handle_door(fb::socket<fb::game::character>&,
+                                                const fb::protocol::game::request::door&);
     /**
      * @brief      { function_description }
      *
@@ -674,7 +790,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_whisper(fb::socket<fb::game::character>&, const fb::protocol::game::request::whisper&);
+    [[nodiscard]] async::task<bool> handle_whisper(fb::socket<fb::game::character>&,
+                                                   const fb::protocol::game::request::whisper&);
     /**
      * @brief      { function_description }
      *
@@ -683,7 +800,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_world(fb::socket<fb::game::character>&, const fb::protocol::game::request::map::world&);
+    [[nodiscard]] async::task<bool> handle_world(fb::socket<fb::game::character>&,
+                                                 const fb::protocol::game::request::map::world&);
 
 public:
     /**
@@ -692,35 +810,43 @@ public:
      * @param[in]  now   The now
      * @param[in]  id    The identifier
      */
-    void handle_mob_action(const datetime& now, std::thread::id id);
+    [[nodiscard]] async::task<void> handle_mob_action(const datetime& now, std::thread::id id);
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      * @param[in]  id    The identifier
      */
-    void handle_mob_respawn(const datetime& now, std::thread::id id);
+    [[nodiscard]] async::task<void> handle_mob_respawn(const datetime& now, std::thread::id id);
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      * @param[in]  id    The identifier
      */
-    void handle_buff_timer(const datetime& now, std::thread::id id);
+    [[nodiscard]] async::task<void> handle_buff_timer(const datetime& now, std::thread::id id);
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      * @param[in]  id    The identifier
      */
-    void handle_save_timer(const datetime& now, std::thread::id id);
+    [[nodiscard]] async::task<void> handle_save_timer(const datetime& now, std::thread::id id);
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      * @param[in]  id    The identifier
      */
-    void handle_time(const datetime& now, std::thread::id id);
+    [[nodiscard]] async::task<void> handle_time();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_heart_beat();
+
     /**
      * @brief      { function_description }
      *
@@ -729,7 +855,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command(fb::game::character& session, const std::string& message);
+    [[nodiscard]] async::task<bool> handle_command(fb::game::character& session, const std::string& message);
 
 public:
     /**
@@ -740,7 +866,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_map(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_map(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -749,7 +875,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_sound(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_sound(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -758,7 +884,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_action(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_action(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -767,7 +893,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_weather(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_weather(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -776,7 +902,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_bright(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_bright(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -785,7 +911,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_timer(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_timer(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -794,7 +920,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_effect(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_effect(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -803,7 +929,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_disguise(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_disguise(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -812,7 +938,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_undisguise(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_undisguise(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -821,7 +947,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_mob(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_mob(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -830,7 +956,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_class(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_class(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -839,7 +965,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_level(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_level(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -848,7 +974,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_spell(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_spell(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -857,7 +983,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_item(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_item(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -866,7 +992,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_world(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_world(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -875,7 +1001,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_script(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_script(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -884,7 +1010,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_hair(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_hair(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -893,7 +1019,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_hair_color(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_hair_color(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -902,7 +1028,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_armor_color(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_armor_color(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -911,7 +1037,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_exit(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_exit(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -920,7 +1046,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_tile(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_tile(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -929,7 +1055,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_save(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_save(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -938,7 +1064,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_mapobj(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_mapobj(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -947,7 +1073,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_randmap(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_randmap(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -956,7 +1082,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_npc(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_npc(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -965,7 +1091,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_durability(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_durability(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -974,7 +1100,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_concurrency(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_concurrency(fb::game::character& session, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -983,7 +1109,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_command_sleep(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_sleep(fb::game::character& session, Json::Value& parameters);
 
     /**
      * @brief      { function_description }
@@ -993,7 +1119,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_map_tile(character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_map_tile(character& session, Json::Value& parameters);
 
 public:
     // listener : object
@@ -1205,21 +1331,21 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> on_transfer(character& me, fb::game::map& map, const point16_t& position) final;
+    [[nodiscard]] async::task<bool> on_transfer(character& me, fb::game::map& map, const point16_t& position) final;
     /**
      * @brief      Called on item get.
      *
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    void on_item_get(character& me, const std::map<uint8_t, fb::game::item*>& items) final;
+    void on_item_get(character& me, const item::container& items) final;
     /**
      * @brief      Called when item changed.
      *
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    void on_item_changed(character& me, const std::map<uint8_t, fb::game::item*>& items) final;
+    void on_item_changed(character& me, const item::container& items) final;
     /**
      * @brief      Called on item lost.
      *

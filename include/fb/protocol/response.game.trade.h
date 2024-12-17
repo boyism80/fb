@@ -5,7 +5,7 @@
 #include <trade.h>
 #include <fb/model/model.h>
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace trade {
+namespace fb::protocol::game::response::trade {
 
 class dialog : public fb::protocol::base::header
 {
@@ -23,8 +23,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         const auto& cname = model.promotion[me.cls()][me.promotion()].name;
 
         std::stringstream sstream;
@@ -56,8 +57,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         const auto item = this->me.trade.item(this->index);
 
         writer.write<uint8_t>(header);
@@ -80,8 +82,9 @@ public:
     bundle() = default;
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x01);
         writer.write<uint8_t>(0x00);
@@ -104,8 +107,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(this->mine ? 0x00 : 0x01);
@@ -128,8 +132,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x04);
         writer.write<std::string, uint16_t>(this->message);
@@ -146,14 +151,15 @@ public:
     lock() = default;
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x05);
         writer.write<uint8_t>(0x00);
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::trade
+} // namespace fb::protocol::game::response::trade
 
 #endif // !__PROTOCOL_RESPONSE_GAME_TRADE_H__

@@ -20,41 +20,51 @@ public struct Whisper : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Whisper __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public string From { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string From { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetFromBytes() { return __p.__vector_as_span<byte>(6, 1); }
+  public Span<byte> GetFromBytes() { return __p.__vector_as_span<byte>(4, 1); }
 #else
-  public ArraySegment<byte>? GetFromBytes() { return __p.__vector_as_arraysegment(6); }
+  public ArraySegment<byte>? GetFromBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
-  public byte[] GetFromArray() { return __p.__vector_as_array<byte>(6); }
-  public uint To { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Message { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetFromArray() { return __p.__vector_as_array<byte>(4); }
+  public string To { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(10, 1); }
+  public Span<byte> GetToBytes() { return __p.__vector_as_span<byte>(6, 1); }
 #else
-  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetToBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
-  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(10); }
+  public byte[] GetToArray() { return __p.__vector_as_array<byte>(6); }
+  public string Message { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetMessageBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetMessageBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetMessageArray() { return __p.__vector_as_array<byte>(8); }
+  public uint Host { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.Whisper> CreateWhisper(FlatBufferBuilder builder,
-      bool success = false,
       StringOffset fromOffset = default(StringOffset),
-      uint to = 0,
-      StringOffset messageOffset = default(StringOffset)) {
-    builder.StartTable(4);
+      StringOffset toOffset = default(StringOffset),
+      StringOffset messageOffset = default(StringOffset),
+      uint host = 0,
+      uint error = 0) {
+    builder.StartTable(5);
+    Whisper.AddError(builder, error);
+    Whisper.AddHost(builder, host);
     Whisper.AddMessage(builder, messageOffset);
-    Whisper.AddTo(builder, to);
+    Whisper.AddTo(builder, toOffset);
     Whisper.AddFrom(builder, fromOffset);
-    Whisper.AddSuccess(builder, success);
     return Whisper.EndWhisper(builder);
   }
 
-  public static void StartWhisper(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
-  public static void AddFrom(FlatBufferBuilder builder, StringOffset fromOffset) { builder.AddOffset(1, fromOffset.Value, 0); }
-  public static void AddTo(FlatBufferBuilder builder, uint to) { builder.AddUint(2, to, 0); }
-  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(3, messageOffset.Value, 0); }
+  public static void StartWhisper(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddFrom(FlatBufferBuilder builder, StringOffset fromOffset) { builder.AddOffset(0, fromOffset.Value, 0); }
+  public static void AddTo(FlatBufferBuilder builder, StringOffset toOffset) { builder.AddOffset(1, toOffset.Value, 0); }
+  public static void AddMessage(FlatBufferBuilder builder, StringOffset messageOffset) { builder.AddOffset(2, messageOffset.Value, 0); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(3, host, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.Whisper> EndWhisper(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Whisper>(o);
@@ -69,10 +79,11 @@ static public class WhisperVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyString(tablePos, 6 /*From*/, false)
-      && verifier.VerifyField(tablePos, 8 /*To*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 10 /*Message*/, false)
+      && verifier.VerifyString(tablePos, 4 /*From*/, false)
+      && verifier.VerifyString(tablePos, 6 /*To*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Message*/, false)
+      && verifier.VerifyField(tablePos, 10 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -30,5 +30,5 @@ void fb::game::map_loader::on_error(const fb::game::map_loader::input_type& inpu
 
 void fb::game::map_loader::on_finish()
 {
-    fb::console::next();
+    fb::console::newline();
 }

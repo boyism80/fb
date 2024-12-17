@@ -1,5 +1,5 @@
 ﻿using fb.protocol._internal.response;
-using Internal.Service;
+using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using RabbitMQ.Client;
 

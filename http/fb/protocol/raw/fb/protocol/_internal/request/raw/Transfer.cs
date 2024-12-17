@@ -29,22 +29,26 @@ public struct Transfer : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(8); }
+  public bool ForceShutdown { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<fb.protocol._internal.request.raw.Transfer> CreateTransfer(FlatBufferBuilder builder,
       fb.protocol._internal.raw.Service service = fb.protocol._internal.raw.Service.Gateway,
       byte id = 0,
-      StringOffset nameOffset = default(StringOffset)) {
-    builder.StartTable(3);
+      StringOffset nameOffset = default(StringOffset),
+      bool force_shutdown = false) {
+    builder.StartTable(4);
     Transfer.AddName(builder, nameOffset);
+    Transfer.AddForceShutdown(builder, force_shutdown);
     Transfer.AddId(builder, id);
     Transfer.AddService(builder, service);
     return Transfer.EndTransfer(builder);
   }
 
-  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddService(FlatBufferBuilder builder, fb.protocol._internal.raw.Service service) { builder.AddSbyte(0, (sbyte)service, 0); }
   public static void AddId(FlatBufferBuilder builder, byte id) { builder.AddByte(1, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(2, nameOffset.Value, 0); }
+  public static void AddForceShutdown(FlatBufferBuilder builder, bool forceShutdown) { builder.AddBool(3, forceShutdown, false); }
   public static Offset<fb.protocol._internal.request.raw.Transfer> EndTransfer(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.Transfer>(o);
@@ -62,6 +66,7 @@ static public class TransferVerify
       && verifier.VerifyField(tablePos, 4 /*Service*/, 1 /*fb.protocol._internal.raw.Service*/, 1, false)
       && verifier.VerifyField(tablePos, 6 /*Id*/, 1 /*byte*/, 1, false)
       && verifier.VerifyString(tablePos, 8 /*Name*/, false)
+      && verifier.VerifyField(tablePos, 10 /*ForceShutdown*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

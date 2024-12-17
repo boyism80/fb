@@ -23,10 +23,6 @@ module.exports = function () {
                         ip: "internal",
                         port: conf.internal[sectionConf.internal].port.cluster
                     },
-                    db: {
-                        ip: "db",
-                        port: conf.internal[sectionConf.db].port.cluster
-                    },
                     'transfer delay': 0,
                     'allow other language': true,
                     forbidden: [ "김대중", "노무현" ],
@@ -43,10 +39,12 @@ module.exports = function () {
                     log: ["debug", "info", "warn", "fatal"],
                     init: {
                         map: 1,
-                        position: {
-                            x: 0,
-                            y: 0
-                        },
+                        position: [
+                            { x: 6, y: 6 },
+                            { x: 14, y: 6 },
+                            { x: 6, y: 12 },
+                            { x: 14, y: 12 }
+                        ],
                         hp: {
                             base: 50,
                             range: 10
@@ -97,15 +95,16 @@ module.exports = function () {
                                 containers: [
                                     {
                                         name: "login",
-                                        image: "cshyeon/fb:login",
+                                        image: "ghcr.io/boyism80/fb/login:latest",
+                                        imagePullPolicy: "Always",
+                                        securityContext: {
+                                            capabilities: {
+                                                add: ["SYS_PTRACE"]
+                                            }
+                                        },
                                         ports: [
                                             { containerPort: sectionConf.port, name: `login-${index}` },
                                         ],
-                                        env: [
-                                        {
-                                            name: "KUBERNETES",
-                                            value: "enabled"
-                                        }],
                                         volumeMounts: [{
                                             name: "config-volume",
                                             mountPath: "/app/config/config.json",

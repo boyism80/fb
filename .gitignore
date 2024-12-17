@@ -23,3 +23,5 @@ internal/json
 db/json
 .vscode
 login/json
+build
+tools/modules

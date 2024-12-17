@@ -8,7 +8,7 @@
 #include <fb/protocol/protocol.h>
 #include <board.h>
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace board {
+namespace fb::protocol::game::request::board {
 
 class board : public fb::protocol::base::header
 {
@@ -53,8 +53,9 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>((uint8_t)this->action);
         switch (this->action)
@@ -82,8 +83,9 @@ public:
         }
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->action = (BOARD_ACTION)reader.read<uint8_t>();
 
         switch (this->action)
@@ -113,6 +115,6 @@ public:
 #endif
 };
 
-}}}}} // namespace fb::protocol::game::request::board
+} // namespace fb::protocol::game::request::board
 
 #endif // !__PROTOCOL_RESPONSE_BOARD_H__

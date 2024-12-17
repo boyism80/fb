@@ -2,113 +2,116 @@
 #define __GROUP_H__
 
 #include <character.h>
+#include <async/task.h>
 
-namespace fb { namespace game {
-
-/**
- * @brief      This class describes a character.
- */
-class character;
+namespace fb::game {
 
 /**
  * @brief      This class describes a group.
  */
-class group : public lua::luable
+class group : public fb::thread_switchable
 {
+private:
+    context&                 _context;
+    uint32_t                 _id;
+    std::string              _master;
+    std::vector<std::string> _members;
+    std::vector<character*>  _active_members;
+
 public:
-    LUA_PROTOTYPE
-
-private:
-    character*           _leader;
-    character::container _members;
-
-private:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      leader  The leader
+     * @param      context  The context
+     * @param[in]  id       The identifier
      */
-    group(character& leader);
+    group(context& context, uint32_t id);
 
-public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     */
+    group(const group&) = delete;
+
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      g     { parameter_description }
+     */
+    group(group&& g);
+
     /**
      * @brief      Destroys the object.
      */
-    ~group();
+    ~group() = default;
 
 public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
-     *
-     * @return     { description_of_the_return_value }
+     * @param      ch    { parameter_description }
      */
-    character* enter(character& session);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      session  The session
-     *
-     * @return     { description_of_the_return_value }
-     */
-    character* leave(character& session);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      session  The session
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool contains(character& session);
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    character& leader() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const character::container& members() const;
+    void enter(fb::game::character& ch);
 
-public:
     /**
      * @brief      { function_description }
      *
-     * @param      leader  The leader
-     *
-     * @return     { description_of_the_return_value }
+     * @param      ch    { parameter_description }
      */
-    static fb::game::group* create(character& leader);
-    /**
-     * @brief      Destroys the given group.
-     *
-     * @param      group  The group
-     */
-    static void destroy(fb::game::group& group);
+    void leave(fb::game::character& ch);
 
-public:
     /**
      * @brief      { function_description }
      *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  master   The master
+     * @param[in]  members  The members
      */
-    static int builtin_members(lua_State* lua);
+    async::task<void> update(const std::string& master, const std::vector<std::string>& members);
+
     /**
      * @brief      { function_description }
      *
-     * @param      lua   The lua
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t id() const;
+
+    /**
+     * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_leader(lua_State* lua);
+    bool inited() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::string& master() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::vector<fb::game::character*> characters() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::vector<std::string> members() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__GROUP_H__

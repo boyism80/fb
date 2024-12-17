@@ -19,26 +19,26 @@ namespace fb {
  * @tparam     T     { description }
  */
 template <typename T>
-class acceptor : public icontext
+class acceptor : public fb::context
 {
 private:
-    using handle_func     = std::function<async::task<bool>(fb::socket<T>&, const std::function<void()>&)>;
+    using handle_func     = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::base::header&)>;
+    using deserilze_func  = std::function<async::task<fb::protocol::base::header*>(fb::stream_reader<big_endian>&)>;
     using background_func = std::function<async::task<void>()>;
 
 private:
-    std::map<uint8_t, handle_func> _handler;
-    fb::threads                    _threads;
-    std::mutex                     _mutex_exit;
-    bool                           _running = false;
+    std::unordered_map<uint8_t, handle_func>    _handler;
+    std::unordered_map<uint8_t, deserilze_func> _deserializer;
+    std::mutex                                  _mutex_exit;
+    bool                                        _running = false;
 
 protected:
     std::queue<background_func> _background_queue;
     std::mutex                  _background_queue_mutex;
 
 protected:
-    boost::asio::io_context& _context;
-    fb::redis                _redis;
-    fb::mutex                _mutex;
+    fb::redis _redis;
+    fb::mutex _mutex;
 
 public:
     fb::socket_container<T> sockets;
@@ -50,17 +50,11 @@ protected:
      * @param      context  The context
      * @param[in]  port     The port
      */
-    acceptor(boost::asio::io_context& context, uint16_t port) :
-        icontext(context, port),
-        _context(context),
-        _threads(context),
-        _redis(*this,
-               fb::config::get()["redis"]["default"]["ip"].asString(),
-               fb::config::get()["redis"]["default"]["port"].asUInt()),
+    acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
+        fb::context(context, name, port),
+        _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
-    {
-        this->accept();
-    }
+    { }
 
 public:
     /**
@@ -81,9 +75,9 @@ private:
      *
      * @return     The internal.
      */
-    async::task<httplib::Result> get_internal(const std::string& host,
-                                              const std::string& path,
-                                              httplib::Headers   headers)
+    [[nodiscard]] async::task<httplib::Result> get_internal(const std::string& host,
+                                                            const std::string& path,
+                                                            httplib::Headers   headers)
     {
         headers.insert({"Content-Type", "application/octet-stream"});
 
@@ -105,7 +99,7 @@ private:
      * @return     The internal.
      */
     template <typename Response>
-    async::task<Response> get_internal(const std::string& host, const std::string& path)
+    [[nodiscard]] async::task<Response> get_internal(const std::string& host, const std::string& path)
     {
         auto   headers = httplib::Headers();
         auto&& res     = co_await this->get_internal(host, path, headers);
@@ -138,10 +132,10 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <typename Response>
-    async::task<Response> get(const std::string& route, const std::string& path)
+    [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
     {
-        auto& config = fb::config::get();
-        auto  host   = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
+        auto& config = fb::config<>(route);
+        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         co_return co_await this->get_internal<Response>(host, path);
     }
 
@@ -157,11 +151,11 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<httplib::Result> post_internal(const std::string& host,
-                                               const std::string& path,
-                                               httplib::Headers   headers,
-                                               const void*        bytes,
-                                               size_t             size)
+    [[nodiscard]] async::task<httplib::Result> post_internal(const std::string& host,
+                                                             const std::string& path,
+                                                             httplib::Headers   headers,
+                                                             const void*        bytes,
+                                                             size_t             size)
     {
         auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
         auto buffer  = std::vector<uint8_t>(size);
@@ -190,7 +184,9 @@ private:
      * @return     { description_of_the_return_value }
      */
     template <typename Request, typename Response>
-    async::task<Response> post_internal(const std::string& host, const std::string& path, const Request& body)
+    [[nodiscard]] async::task<Response> post_internal(const std::string& host,
+                                                      const std::string& path,
+                                                      const Request&     body)
     {
         auto headers    = httplib::Headers();
         auto serialized = body.Serialize();
@@ -231,10 +227,10 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <typename Request, typename Response>
-    async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
+    [[nodiscard]] async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
     {
-        auto& config = fb::config::get();
-        auto  host   = std::format("http://{}:{}", config[route]["ip"].asCString(), config[route]["port"].asUInt());
+        auto& config = fb::config<>(route);
+        auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
         co_return co_await this->post_internal<Request, Response>(host, path, body);
     }
 
@@ -249,129 +245,100 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> dispatch(fb::socket<T>& socket, const dispatch_callback& fn, uint32_t priority = 0)
+    [[nodiscard]] async::task<void> dispatch(fb::socket<T>& socket, const dispatch_callback& fn, uint32_t priority = 0)
     {
         auto id     = this->thread_id(socket);
-        auto thread = this->_threads[id];
+        auto thread = this->threads[id];
 
         if (thread == nullptr)
             throw std::runtime_error("thread does not exists");
 
-        co_await this->_threads[id]->dispatch(fn, 0s, priority);
-    }
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      socket    The socket
-     * @param[in]  priority  The priority
-     *
-     * @return     { description_of_the_return_value }
-     */
-    async::task<void> dispatch(fb::socket<T>& socket, uint32_t priority = 0)
-    {
-        auto id     = this->thread_id(socket);
-        auto thread = this->_threads[id];
-
-        if (thread != nullptr)
-            co_await this->_threads[id]->dispatch(priority);
+        co_await this->threads[id]->dispatch(fn, 0s, priority);
     }
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      This method must be call by i/o thread.
      *
-     * @param      socket     The socket
-     * @param      reader  The stream to read data from
-     *
-     * @return     { description_of_the_return_value }
+     * @param      socket  The socket
+     * @param      stream  The stream
      */
-    async::task<bool> execute_bound_handler(fb::socket<T>& socket, fb::stream& stream)
+    async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
         static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
-        auto                     reader    = fb::stream_reader<big_endian>(stream);
-        while (true)
+
+        auto reader = fb::stream_reader<big_endian>(stream);
+        try
         {
-            try
+            while (!stream.empty())
             {
                 if (reader.readable_size() < base_size)
-                    break;
+                    co_return;
 
-                // Read base head and check it is 0xAA
                 auto head = reader.read<uint8_t>();
                 if (head != 0xAA)
-                    throw std::exception();
+                    throw std::runtime_error("magic code mismatch");
 
                 auto size = reader.read<uint16_t>();
                 if (reader.readable_size() < size)
-                    break;
+                {
+                    reader.seek(0);
+                    co_return;
+                }
 
                 auto cmd = reader.read<uint8_t>();
                 if (this->decrypt_policy(cmd))
                     size = socket.crt().decrypt(stream, reader.seek() - 1, size);
 
-                // Call function that matched by command byte
-                if (this->_handler.contains(cmd) == false)
+                reader.flush(); // remove magic code and size
+
+                if (this->_deserializer.contains(cmd) == false)
                 {
-                    fb::logger::warn("정의되지 않은 요청입니다. [{:#x}]", cmd);
-                    reader.seek(base_size + size);
-                    reader.flush();
-                    continue;
+                    fb::logger::fatal(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
+                }
+                else if (this->_handler.contains(cmd) == false)
+                {
+                    fb::logger::fatal(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
+                }
+                else
+                {
+                    auto protocol =
+                        std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
+                    this->threads.enqueue(
+                        socket,                                                    // pivot
+                        [this, protocol, fd = socket.fd()](auto& thread) -> bool { // condition
+                            if (this->sockets.contains(fd))
+                                return true;
+
+                            return false;
+                        },
+                        [this, cmd, &socket, protocol](auto&) -> async::task<void> { // fn
+                            std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                        },
+                        [](auto& error) { // error
+                            fb::logger::fatal(error.what());
+                        },
+                        []() { // success
+
+                        });
                 }
 
-                reader.flush(); // remove magic code and size
-                auto before = this->thread_id(socket);
-                auto result = co_await this->_handler[cmd](socket, [&reader, size] {
-                    reader.seek(size - sizeof(uint8_t));
-                    reader.flush();
-                });
-                auto after  = this->thread_id(socket);
-
-                // 콜백 조건이 만족하지 못하는 경우 즉시 종료
-                if (before != after)
-                    co_return true;
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-                reader.clear();
-                break;
-            }
-            catch (...)
-            {
-                reader.clear();
-                break;
+                reader.seek(size - sizeof(uint8_t));
+                reader.flush(); // remove packet body
             }
         }
-
-        reader.seek(0);
-        co_return false;
-    }
-
-private:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      socket  The socket
-     *
-     * @return     { description_of_the_return_value }
-     */
-    async::task<void> handle_work(fb::socket<T>& socket)
-    {
-        if (this->_running == false)
-            co_return;
-
-        auto switched = co_await socket.template stream<async::task<bool>>(
-            [this, &socket](fb::stream& stream) -> async::task<bool> {
-                co_return co_await this->execute_bound_handler(socket, stream);
-            });
-
-        if (switched == false)
-            co_return;
-
-        co_await this->dispatch(socket);
-        co_await this->handle_work(socket);
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+            reader.seek(0);
+            reader.clear();
+        }
+        catch (...)
+        {
+            fb::logger::fatal("unhandled exception while parse packet");
+            reader.seek(0);
+            reader.clear();
+        }
     }
 
 private:
@@ -380,35 +347,35 @@ private:
      */
     void accept()
     {
-        auto callback_received = [this](fb::socket<T>& socket) -> async::task<void> {
-            if (this->_running == false)
-                throw std::runtime_error("acceptor closed");
-
-            auto& casted = static_cast<fb::socket<T>&>(socket);
-            auto  id     = this->thread_id(casted);
-
-            if (id == 0xFF)
+        auto callback_received = [this](fb::socket<T>& socket, fb::stream& stream) -> async::task<void> {
+            try
             {
-                co_await this->handle_work(casted);
+                co_await this->execute_handler(socket, stream);
             }
-            else
+            catch (std::exception& e)
             {
-                co_await this->dispatch(socket);
-                co_await this->handle_work(casted);
+                fb::logger::fatal(e.what());
             }
         };
 
         auto callback_closed = [this](fb::socket<T>& socket) -> async::task<void> {
-            if (socket.data() == nullptr)
-                co_return;
+            try
+            {
+                if (socket.data() == nullptr)
+                    co_return;
 
-            auto& casted = static_cast<fb::socket<T>&>(socket);
-            co_await this->dispatch(casted);
-            co_await this->handle_disconnected(casted);
-            this->sockets.erase(casted);
+                auto& casted = static_cast<fb::socket<T>&>(socket);
+                co_await this->threads.switching(casted);
+                std::ignore = co_await this->handle_disconnected(casted);
+                this->sockets.erase(casted);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+            }
         };
 
-        auto socket = std::make_unique<fb::socket<T>>(this->_context, callback_received, callback_closed);
+        auto socket = std::make_unique<fb::socket<T>>(*this, callback_received, callback_closed);
         auto ptr    = socket.get();
         this->async_accept(*ptr, [this, socket = std::move(socket), ptr](boost::system::error_code error) mutable {
             try
@@ -427,9 +394,9 @@ private:
                 boost::asio::co_spawn(*this, ptr->recv(), boost::asio::detached);
                 this->accept();
             }
-            catch (std::exception& /*e*/)
+            catch (std::exception& e)
             {
-                // std::cout << e.what() << std::endl;
+                fb::logger::fatal(e.what());
             }
         });
     }
@@ -442,8 +409,11 @@ public:
      * @param[in]  ip      { parameter_description }
      * @param[in]  port    The port
      * @param[in]  from    The from
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::services from)
+    [[nodiscard]] async::task<void>
+    transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
     {
         auto& crt    = socket.crt();
         auto  params = fb::stream();
@@ -458,11 +428,11 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            fb::protocol::response::transfer(ip, port, params).serialize(writer);
+            co_await fb::protocol::response::transfer(ip, port, params).serialize(writer);
         }
 
         crt.wrap(stream);
-        socket.send(stream, false, false);
+        std::ignore = co_await socket.send(stream, false, false);
     }
 
 public:
@@ -473,10 +443,13 @@ public:
      * @param[in]  ip      { parameter_description }
      * @param[in]  port    The port
      * @param[in]  from    The from
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::services from)
+    [[nodiscard]] async::task<void>
+    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
     {
-        this->transfer(socket, inet_addr(ip.c_str()), port, from);
+        co_await this->transfer(socket, inet_addr(ip.c_str()), port, from);
     }
 
 public:
@@ -488,12 +461,14 @@ public:
      * @param[in]  port       The port
      * @param[in]  from       The from
      * @param[in]  parameter  The parameter
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>&                   socket,
-                  uint32_t                         ip,
-                  uint16_t                         port,
-                  fb::protocol::internal::services from,
-                  const fb::stream&                parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
+                                             uint32_t                        ip,
+                                             uint16_t                        port,
+                                             fb::protocol::internal::Service from,
+                                             const fb::stream&               parameter)
     {
         auto& crt    = socket.crt();
         auto  header = fb::stream();
@@ -509,11 +484,11 @@ public:
         auto stream = fb::stream();
         {
             auto writer = fb::stream_writer<big_endian>(stream);
-            fb::protocol::response::transfer(ip, port, header).serialize(writer);
+            co_await fb::protocol::response::transfer(ip, port, header).serialize(writer);
         }
 
         crt.wrap(stream);
-        socket.send(stream, false, false);
+        std::ignore = co_await socket.send(stream, false, false);
     }
 
 public:
@@ -525,14 +500,16 @@ public:
      * @param[in]  port       The port
      * @param[in]  from       The from
      * @param[in]  parameter  The parameter
+     *
+     * @return     { description_of_the_return_value }
      */
-    void transfer(fb::socket<T>&                   socket,
-                  const std::string&               ip,
-                  uint16_t                         port,
-                  fb::protocol::internal::services from,
-                  const fb::stream&                parameter)
+    [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
+                                             const std::string&              ip,
+                                             uint16_t                        port,
+                                             fb::protocol::internal::Service from,
+                                             const fb::stream&               parameter)
     {
-        this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
+        co_await this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
     }
 
 protected:
@@ -566,6 +543,8 @@ protected:
      */
     virtual async::task<void> handle_start()
     {
+        lua::build<lua::luable>();
+        lua::build<fb::thread, lua::luable>();
         co_return;
     }
 
@@ -603,26 +582,13 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t thread_id(const fb::socket<T>& socket) const
-    {
-        return socket.fd();
-    }
-
-protected:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  socket  The socket
-     *
-     * @return     { description_of_the_return_value }
-     */
     fb::thread* thread(const fb::socket<T>& socket) const
     {
-        auto count = this->_threads.count();
+        auto count = this->threads.count();
         if (count == 0)
             return 0xFF;
 
-        return this->_threads[this->thread_id(socket) % count];
+        return this->threads[this->thread_id(socket) % count];
     }
 
 protected:
@@ -644,7 +610,7 @@ protected:
      */
     virtual uint8_t id() const
     {
-        return (uint8_t)fb::config::get()["id"].asUInt();
+        return fb::config<uint8_t>("id");
     }
 
 protected:
@@ -655,7 +621,7 @@ protected:
      */
     virtual std::string name() const
     {
-        return fb::config::get()["name"].asString();
+        return fb::config<std::string>("name");
     }
 
 protected:
@@ -692,18 +658,17 @@ protected:
     template <typename Class, typename Request>
     void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&), uint8_t header)
     {
-        auto bound_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
-        this->_handler.insert(
-            {header, [this, bound_func](fb::socket<T>& socket, const std::function<void()>& callback) {
-                 return socket.template stream<async::task<bool>>(
-                     [this, &bound_func, &socket, &callback](fb::stream& stream) {
-                         auto protocol = Request();
-                         auto reader   = fb::stream_reader<big_endian>(stream);
-                         protocol.deserialize(reader);
-                         callback();
-                         return bound_func(socket, protocol);
-                     });
-             }});
+        this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::base::header*> {
+                                        auto protocol = new Request();
+                                        co_await protocol->deserialize(reader);
+                                        co_return protocol;
+                                    }});
+
+        auto func_bound = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
+        this->_handler.insert({header, [func_bound](auto& socket, auto& header) -> async::task<bool> {
+                                   auto protocol = static_cast<Request&>(header);
+                                   co_return co_await func_bound(socket, protocol);
+                               }});
     }
 
 protected:
@@ -728,12 +693,14 @@ protected:
      * @param[in]  fn        The function
      * @param[in]  duration  The duration
      */
-    void bind_timer(const std::function<async::task<void>()>& fn, const std::chrono::steady_clock::duration& duration)
+    template <typename Class>
+    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
     {
-        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_context, boost::posix_time::seconds(1));
+        auto cfunc = std::bind(fn, static_cast<Class*>(this));
+        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
         auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
         auto callback     = [=](const boost::system::error_code&) {
-            async::awaitable_then(fn(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
+            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
                 timer->expires_at(timer->expires_at() +
                                   boost::posix_time::milliseconds(
                                       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
@@ -753,12 +720,12 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    void send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    async::task<size_t> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         if (stream.empty())
-            return;
+            co_return 0;
 
-        socket.send(stream, encrypt, wrap);
+        co_return co_await socket.send(stream, encrypt, wrap);
     }
 
 public:
@@ -770,48 +737,16 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    void send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
+    async::task<size_t>
+    send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
-        response.serialize(writer);
+        co_await response.serialize(writer);
         if (stream.empty())
-            return;
+            co_return 0;
 
-        socket.send(stream, encrypt, wrap);
-    }
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    fb::threads& threads()
-    {
-        return this->_threads;
-    }
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::threads& threads() const
-    {
-        return this->_threads;
-    }
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    fb::thread* current_thread()
-    {
-        return this->_threads.current();
+        co_return co_await socket.send(stream, encrypt, wrap);
     }
 
 protected:
@@ -849,11 +784,11 @@ protected:
      * @return     { description_of_the_return_value }
      */
     template <typename R>
-    async::task<R> background(const std::function<async::task<R>()>& func)
+    [[nodiscard]] async::task<R> background(const std::function<async::task<R>()>& func)
     {
         auto _       = std::lock_guard(this->_background_queue_mutex);
         auto promise = std::make_shared<async::task_completion_source<R>>();
-        auto thread  = this->current_thread();
+        auto thread  = this->threads.current();
         this->_background_queue.push([this, promise, thread, func]() -> async::task<void> {
             try
             {
@@ -861,14 +796,14 @@ protected:
                 {
                     co_await func();
                     if (thread != nullptr)
-                        co_await thread->dispatch();
+                        co_await thread->switching();
                     promise->set_value();
                 }
                 else
                 {
                     R result = co_await func();
                     if (thread != nullptr)
-                        co_await thread->dispatch();
+                        co_await thread->switching();
                     promise->set_value(std::move(result));
                 }
             }
@@ -887,21 +822,21 @@ public:
      */
     void run()
     {
-        auto& config  = fb::config::get();
-        auto  threads = std::vector<std::thread>();
-
         this->_running = true;
-        for (int i = 0; i < config["thread"]["io"].asUInt(); i++)
-        {
-            threads.push_back(std::thread([this]() {
-                this->_context.run();
-            }));
-        }
+        this->accept();
 
-        for (int i = 0; i < config["thread"]["background"].asUInt(); i++)
+        auto threads = std::vector<std::thread>();
+        for (int i = 0; i < fb::config<uint32_t>("thread:background"); i++)
         {
             threads.push_back(std::thread([this]() {
                 this->handle_background();
+            }));
+        }
+
+        for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
+        {
+            threads.push_back(std::thread([this]() {
+                this->_boost_context.run();
             }));
         }
 
@@ -931,9 +866,9 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> sleep(const fb::model::timespan& duration)
+    [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration)
     {
-        auto thread = this->_threads.current();
+        auto thread = this->threads.current();
         if (thread != nullptr)
             co_await thread->sleep(duration);
     }
@@ -949,18 +884,12 @@ public:
         if (this->_running == false)
             return;
 
-        this->_threads.exit();
+        this->threads.exit();
 
         async::awaitable_get(this->handle_exit());
         this->cancel();
         this->sockets.close();
         this->_running = false;
-    }
-
-public:
-    inline operator boost::asio::io_context& () const
-    {
-        return this->_context;
     }
 };
 

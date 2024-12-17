@@ -9,7 +9,7 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace game { namespace request {
+namespace fb::protocol::game::request {
 
 class login : public fb::protocol::base::header
 {
@@ -28,7 +28,7 @@ public:
     uint8_t                       enc_type;
     uint8_t                       key_size;
     uint8_t                       enc_key[0x09];
-    internal::services            from;
+    internal::Service             from;
     uint32_t                      id;
     std::string                   name;
     std::optional<transfer_param> transfer;
@@ -46,8 +46,9 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->enc_type);
         writer.write<uint8_t>(this->key_size);
@@ -65,13 +66,14 @@ public:
         }
     }
 #endif
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         // base
         this->enc_type = reader.read<uint8_t>();
         this->key_size = reader.read<uint8_t>();
         reader.read((void*)this->enc_key, this->key_size);
-        this->from = (fb::protocol::internal::services)reader.read<uint8_t>();
+        this->from = (fb::protocol::internal::Service)reader.read<uint8_t>();
 
         // additional parameters
         this->id      = reader.read<uint32_t>();
@@ -110,14 +112,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>((uint8_t)this->value);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->value = DIRECTION(reader.read<uint8_t>());
     }
 #endif
@@ -132,8 +136,10 @@ public:
     exit() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class move : public fb::protocol::base::header
@@ -159,8 +165,9 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->direction);
         writer.write<uint8_t>(this->sequence);
@@ -168,8 +175,9 @@ public:
         writer.write<uint16_t>(this->position.y);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->direction  = DIRECTION(reader.read<uint8_t>());
         this->sequence   = reader.read<uint8_t>();
         this->position.x = reader.read<uint16_t>();
@@ -192,9 +200,10 @@ public:
     update_move() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
-        move::deserialize(reader);
+        co_await header::deserialize(reader);
+        co_await move::deserialize(reader);
 
         this->begin.x     = reader.read<uint16_t>();
         this->begin.y     = reader.read<uint16_t>();
@@ -214,13 +223,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 #endif
 };
 
@@ -247,14 +259,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->boost);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->boost = bool(reader.read<uint8_t>());
     }
 #endif
@@ -283,14 +297,16 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->value);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->value = reader.read<uint8_t>();
     }
 #endif
@@ -305,8 +321,10 @@ public:
     refresh() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class front_info : public fb::protocol::base::header
@@ -318,8 +336,10 @@ public:
     front_info() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class self_info : public fb::protocol::base::header
@@ -331,8 +351,10 @@ public:
     self_info() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class change_option : public fb::protocol::base::header
@@ -348,8 +370,9 @@ public:
     change_option() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->option = static_cast<SETTING>(reader.read<uint8_t>());
         if (this->option == SETTING::EXTENSION)
         {
@@ -370,8 +393,9 @@ public:
     click() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         auto unknown = reader.read<uint8_t>();
         this->fd     = reader.read<uint32_t>();
     }
@@ -400,8 +424,9 @@ public:
     trade() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->action = reader.read<uint8_t>();
         this->fd     = reader.read<uint32_t>();
         switch (static_cast<fb::game::trade::state>(this->action))
@@ -433,8 +458,9 @@ public:
     group() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->name = reader.read<std::string, uint8_t>();
     }
 };
@@ -448,8 +474,9 @@ public:
     user_list() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         auto unknown = reader.read<uint8_t>();
     }
 };
@@ -481,15 +508,17 @@ public:
 
 public:
 #ifdef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->shout);
         writer.write<std::string, uint8_t>(this->message);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->shout   = reader.read<uint8_t>();
         this->message = reader.read<std::string, uint8_t>();
     }
@@ -510,8 +539,9 @@ public:
     swap() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->type = SWAP_TYPE(reader.read<uint8_t>());
         this->src  = reader.read<uint8_t>();
         this->dst  = reader.read<uint8_t>();
@@ -535,8 +565,9 @@ public:
     dialog() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->interaction = static_cast<fb::game::dialog::interaction>(reader.read<uint8_t>());
         switch (static_cast<fb::game::dialog::interaction>(this->interaction))
         {
@@ -602,8 +633,10 @@ public:
     door() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+    }
 };
 
 class whisper : public fb::protocol::base::header
@@ -619,13 +652,14 @@ public:
     whisper() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->name    = reader.read<std::string, uint8_t>();
         this->message = reader.read<std::string, uint8_t>();
     }
 };
 
-}}}} // namespace fb::protocol::game::request
+} // namespace fb::protocol::game::request
 
 #endif // !__PROTOCOL_REQUEST_GAME_H__

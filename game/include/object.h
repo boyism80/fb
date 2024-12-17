@@ -2,7 +2,7 @@
 #define __OBJECT_H__
 
 #include <spell.h>
-#include <lua.h>
+#include <fb/lua.h>
 
 using namespace fb::model;
 using namespace fb::model::enum_value;
@@ -45,7 +45,7 @@ class sectors;
 /**
  * @brief      This class describes an object.
  */
-class object : public lua::luable
+class object : public lua::luable, public fb::thread_switchable
 {
 public:
     /**
@@ -57,7 +57,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct config;
+    struct initial_params;
 
 public:
     LUA_PROTOTYPE
@@ -90,7 +90,7 @@ protected:
      * @param[in]  model    The model
      * @param[in]  c        { parameter_description }
      */
-    object(fb::game::context& context, const fb::model::object& model, const config& c);
+    object(fb::game::context& context, const fb::model::object& model, const initial_params& c);
     /**
      * @brief      Constructs a new instance.
      *
@@ -155,7 +155,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+    [[nodiscard]] virtual async::task<void> destroy(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     /**
      * @brief      { function_description }
      *
@@ -163,7 +163,7 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    virtual void send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
+    virtual async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -171,7 +171,7 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    virtual void send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
+    virtual async::task<size_t> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -498,6 +498,18 @@ public:
                                 const point16_t&            position,
                                 OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override;
+
+    /**
+     * @brief      { function_description }
+     */
+    void assert_thread() const override;
+
 public:
     /**
      * @brief      Called on timer.
@@ -703,6 +715,33 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_is(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_thread(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_ptr(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_near(lua_State* lua);
 };
 
 /**
@@ -793,7 +832,7 @@ struct object::listener
 /**
  * @brief      { struct_description }
  */
-struct object::config
+struct object::initial_params
 {
 public:
     uint32_t        id        = 0xFFFFFFFF;

@@ -4,7 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <npc.h>
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace dialog {
+namespace fb::protocol::game::response::dialog {
 
 class common : public fb::protocol::base::header
 {
@@ -40,8 +40,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);                                    // unknown
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction)); // interaction
@@ -83,8 +84,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x01);
         writer.write<uint8_t>(static_cast<uint8_t>(interaction));
@@ -140,8 +142,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x05);
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -189,8 +192,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x04);
         writer.write<uint8_t>(static_cast<uint8_t>(interaction));
@@ -240,8 +244,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -290,8 +295,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x04);
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -314,6 +320,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::dialog
+} // namespace fb::protocol::game::response::dialog
 
 #endif // !__PROTOCOL_RESPONSE_DIALOG_ITEM_H__

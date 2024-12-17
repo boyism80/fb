@@ -1,6 +1,6 @@
 ﻿using System.IO.Compression;
 
-namespace http.Util
+namespace Http.Util
 {
     public static class GZip
     {

@@ -27,7 +27,7 @@ fb::game::character* fb::game::trade::you() const
 bool fb::game::trade::begin(fb::game::character& you)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-
+    auto error    = std::string();
     try
     {
         if (this->_owner.id() == you.id())
@@ -89,10 +89,12 @@ bool fb::game::trade::begin(fb::game::character& you)
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        listener->on_notify(this->_owner, error, MESSAGE_TYPE::STATE);
+    return false;
 }
 
 void fb::game::trade::end()
@@ -116,7 +118,7 @@ bool fb::game::trade::up(fb::game::item& item)
 {
     auto  listener = this->_owner.get_listener<fb::game::character>();
     auto& model    = item.based<fb::model::item>();
-
+    auto  error    = std::string();
     try
     {
         if (this->trading() == false)
@@ -150,15 +152,18 @@ bool fb::game::trade::up(fb::game::item& item)
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+    return false;
 }
 
 bool fb::game::trade::up(uint8_t money)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
+    auto error    = std::string();
 
     try
     {
@@ -181,11 +186,13 @@ bool fb::game::trade::up(uint8_t money)
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+
+    return false;
 }
 
 uint32_t fb::game::trade::money() const
@@ -196,6 +203,7 @@ uint32_t fb::game::trade::money() const
 bool fb::game::trade::count(uint16_t count)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
+    auto error    = std::string();
 
     try
     {
@@ -226,16 +234,18 @@ bool fb::game::trade::count(uint16_t count)
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+    return false;
 }
 
 bool fb::game::trade::cancel()
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-
+    auto error    = std::string();
     try
     {
         if (this->trading() == false)
@@ -255,10 +265,13 @@ bool fb::game::trade::cancel()
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
+
+    return false;
 }
 
 uint8_t fb::game::trade::add(fb::game::item& item)
@@ -335,7 +348,7 @@ bool fb::game::trade::flushable() const
 bool fb::game::trade::lock()
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-
+    auto error    = std::string();
     try
     {
         if (this->trading() == false)
@@ -380,10 +393,12 @@ bool fb::game::trade::lock()
     }
     catch (std::exception& e)
     {
-        if (listener != nullptr)
-            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
-        return false;
+        error = e.what();
     }
+
+    if (listener != nullptr)
+        listener->on_notify(this->_owner, error, MESSAGE_TYPE::STATE);
+    return false;
 }
 
 const std::vector<fb::game::item*>& fb::game::trade::items() const

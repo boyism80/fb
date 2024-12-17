@@ -1,8 +1,8 @@
-﻿namespace Internal.Model.Redis
+﻿namespace Http.Model.Redis
 {
     public class Session
     {
         public uint Uid { get; set; }
-        public int Host { get; set; }
+        public uint Host { get; set; }
     }
 }

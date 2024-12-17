@@ -4,6 +4,8 @@
 #include <fb/parallel_worker.h>
 #include <fb/model/model.h>
 
+using namespace fb;
+
 namespace fb::model {
 
 class context;
@@ -25,8 +27,9 @@ public:
      *
      * @param      context  The context
      */
-    loader(fb::model::model& data) : _model(data)
-    {}
+    loader(fb::model::model& data) :
+        _model(data)
+    { }
 
     /**
      * @brief      Destroys the object.
@@ -61,7 +64,7 @@ protected:
     {
         value.get().load();
     }
-    
+
     /**
      * @brief      Called when worked.
      *
@@ -70,7 +73,7 @@ protected:
      */
     void on_worked(const input_type& input, double percent)
     {
-        fb::console::put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
+        console::put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
     }
 
     /**
@@ -81,7 +84,7 @@ protected:
      */
     void on_error(const input_type& input, std::exception& e)
     {
-        fb::console::comment("    - {}", e.what());
+        console::comment("    - {}", e.what());
     }
 
     /**
@@ -89,10 +92,10 @@ protected:
      */
     void on_finish()
     {
-        fb::console::next();
+        console::newline();
     }
 };
 
-}
+} // namespace fb::model
 
 #endif

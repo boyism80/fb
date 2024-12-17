@@ -1,11 +1,11 @@
 ﻿using Google.FlatBuffers;
-using http.Util;
+using Http.Util;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text;
 
-namespace http.Formatter
+namespace Http.Formatter
 {
     public abstract class FlatBufferInputFormatter : InputFormatter
     {

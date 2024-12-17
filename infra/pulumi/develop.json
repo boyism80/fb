@@ -1,5 +1,5 @@
 {
-    "host": "172.26.192.45",
+    "host": "192.168.0.181",
     "mysql": {
         "section-1": {
             "-1": {
@@ -263,6 +263,7 @@
                 "cluster": 80,
                 "node": 30050
             },
+            "mysql": "section-1",
             "redis": "section-1",
             "rabbitmq": "section-1"
         },
@@ -271,26 +272,9 @@
                 "cluster": 81,
                 "node": 30051
             },
+            "mysql": "section-2",
             "redis": "section-2",
             "rabbitmq": "section-2"
-        }
-    },
-    "db": {
-        "section-1": {
-            "port": {
-                "cluster": 80,
-                "node": 30060
-            },
-            "mysql": "section-1",
-            "redis": "section-1"
-        },
-        "section-2": {
-            "port": {
-                "cluster": 81,
-                "node": 30061
-            },
-            "mysql": "section-2",
-            "redis": "section-2"
         }
     }
 }

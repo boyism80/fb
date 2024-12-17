@@ -1,7 +1,7 @@
 ﻿using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core.Configuration;
 
-namespace http.Service
+namespace Http.Service
 {
     public class RedisService
     {

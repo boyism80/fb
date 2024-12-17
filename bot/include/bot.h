@@ -150,15 +150,15 @@ public:
 public:
     async::task<void>                              handle_init(const fb::protocol::game::response::init& response);
     async::task<void>                              handle_time(const fb::protocol::game::response::time& response);
-    async::task<void>                              handle_state(const fb::protocol::game::response::session::state& response);
-    async::task<void>                              handle_option(const fb::protocol::game::response::session::option& response);
+    async::task<void>                              handle_state(const fb::protocol::game::response::character::state& response);
+    async::task<void>                              handle_option(const fb::protocol::game::response::character::option& response);
     async::task<void>                              handle_message(const fb::protocol::game::response::message& response);
-    async::task<void>                              handle_sequence(const fb::protocol::game::response::session::id& response);
+    async::task<void>                              handle_sequence(const fb::protocol::game::response::character::id& response);
     async::task<void>                              handle_spell_update(const fb::protocol::game::response::spell::update& response);
     async::task<void>                              handle_chat(const fb::protocol::game::response::chat& response);
     async::task<void>                              handle_action(const fb::protocol::game::response::life::action& response);
     async::task<void>                              handle_direction(const fb::protocol::game::response::object::direction& response);
-    async::task<void>                              handle_position(const fb::protocol::game::response::session::position& response);
+    async::task<void>                              handle_position(const fb::protocol::game::response::character::position& response);
     async::task<void>                              handle_move(const fb::protocol::game::response::object::move& response);
     async::task<void>                              handle_map(const fb::protocol::game::response::map::config& response);
     async::task<void>                              handle_transfer(const fb::protocol::response::transfer& response);
@@ -180,7 +180,6 @@ private:
     boost::asio::io_context&                    _context;
     std::map<uint16_t, base_bot*>               _bots;
     fb::threads                                 _threads;
-    //std::mutex                                  _bots_lock;
     bool                                        _exit = false;
 
 public:
@@ -192,8 +191,7 @@ public:
 
     template <typename T>
     T* create()
-    {/*   MUTEX_GUARD(this->_bots_lock)*/
-        
+    {
         auto id = this->_sequence++;
         auto bot = new T(*this, id);
         this->_bots.insert({ bot->id, bot });
@@ -202,8 +200,7 @@ public:
 
     template <typename T>
     T* create(const fb::stream& params)
-    {/*   MUTEX_GUARD(this->_bots_lock)*/
-        
+    {
         auto id = this->_sequence++;
         auto bot = new T(*this, id, params);
         this->_bots.insert({ bot->id, bot });

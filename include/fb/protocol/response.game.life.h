@@ -6,7 +6,7 @@
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace life {
+namespace fb::protocol::game::response::life {
 
 class action : public fb::protocol::base::header
 {
@@ -40,8 +40,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->me.sequence());
         writer.write<uint8_t>(static_cast<uint8_t>(this->value));      // type
@@ -49,8 +50,9 @@ public:
         writer.write<uint8_t>(this->sound);                            // sound
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->sequence = reader.read<uint32_t>();
         this->value    = (ACTION)reader.read<uint8_t>();
         this->duration = (DURATION)reader.read<uint16_t>();
@@ -79,8 +81,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->me.sequence());
         writer.write<uint8_t>(this->critical);
@@ -107,14 +110,15 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+    	co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->id);
         writer.write<uint8_t>(0x00);
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::life
+} // namespace fb::protocol::game::response::life
 
 #endif // !__PROTOCOL_RESPONSE_GAME_LIFE_H__

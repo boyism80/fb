@@ -20,7 +20,7 @@ public struct Transfer : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public Transfer __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public fb.protocol._internal.raw.TransferResult Code { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.TransferResult)__p.bb.GetSbyte(o + __p.bb_pos) : fb.protocol._internal.raw.TransferResult.Success; } }
+  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string Ip { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
   public Span<byte> GetIpBytes() { return __p.__vector_as_span<byte>(6, 1); }
@@ -31,18 +31,18 @@ public struct Transfer : IFlatbufferObject
   public ushort Port { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.Transfer> CreateTransfer(FlatBufferBuilder builder,
-      fb.protocol._internal.raw.TransferResult code = fb.protocol._internal.raw.TransferResult.Success,
+      uint error = 0,
       StringOffset ipOffset = default(StringOffset),
       ushort port = 0) {
     builder.StartTable(3);
     Transfer.AddIp(builder, ipOffset);
+    Transfer.AddError(builder, error);
     Transfer.AddPort(builder, port);
-    Transfer.AddCode(builder, code);
     return Transfer.EndTransfer(builder);
   }
 
   public static void StartTransfer(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddCode(FlatBufferBuilder builder, fb.protocol._internal.raw.TransferResult code) { builder.AddSbyte(0, (sbyte)code, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
   public static void AddIp(FlatBufferBuilder builder, StringOffset ipOffset) { builder.AddOffset(1, ipOffset.Value, 0); }
   public static void AddPort(FlatBufferBuilder builder, ushort port) { builder.AddUshort(2, port, 0); }
   public static Offset<fb.protocol._internal.response.raw.Transfer> EndTransfer(FlatBufferBuilder builder) {
@@ -59,7 +59,7 @@ static public class TransferVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Code*/, 1 /*fb.protocol._internal.raw.TransferResult*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Ip*/, false)
       && verifier.VerifyField(tablePos, 8 /*Port*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);

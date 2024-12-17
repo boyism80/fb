@@ -1,10 +1,19 @@
 #ifndef __FB_LOGIN_H__
 #define __FB_LOGIN_H__
 
+#include <string>
+#include <iostream>
+#include <memory>
+#include <fstream>
+#include <json/json.h>
 #include <regex>
+#include <ctime>
+#include <zlib.h>
+#include <fb/socket.h>
 #include <session.h>
 #include <gateway.h>
 #include <fb/protocol/login.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/acceptor.h>
 #include <fb/string.h>
 #include <fb/model/model.h>
@@ -12,8 +21,8 @@
 #define MAX_NXCLUB_SIZE 14
 
 using namespace fb::protocol::login;
+using namespace fb::model::enum_value;
 
-namespace db       = fb::protocol::db;
 namespace internal = fb::protocol::internal;
 
 namespace fb { namespace login {
@@ -121,14 +130,13 @@ public:
     using unique_session = std::unique_ptr<fb::login::session>;
 
 private:
-    fb::protocol::login::response::agreement _agreement =
-        CP949(fb::config::get()["agreement"].asString(), PLATFORM::Both);
+    fb::protocol::login::response::agreement _agreement = CP949(fb::config<std::string>("agreement"), PLATFORM::Both);
     std::vector<std::string>                 _forbiddens;
     std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
 
 public:
-    fb::model::model                         model;
+    fb::model::model model;
 
 public:
     /**
@@ -171,6 +179,21 @@ protected:
      * @return     { description_of_the_return_value }
      */
     bool decrypt_policy(uint8_t) const final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_start() final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_heart_beat();
+
     /**
      * @brief      { function_description }
      *
@@ -186,7 +209,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_connected(fb::socket<fb::login::session>&) final;
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::login::session>&) final;
     /**
      * @brief      { function_description }
      *
@@ -194,7 +217,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_disconnected(fb::socket<fb::login::session>&) final;
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::login::session>&) final;
 
     // for heart-beat
 
@@ -218,7 +241,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_agreement(fb::socket<fb::login::session>&, const fb::protocol::login::request::agreement&);
+    [[nodiscard]] async::task<bool> handle_agreement(fb::socket<fb::login::session>&,
+                                                     const fb::protocol::login::request::agreement&);
     /**
      * @brief      { function_description }
      *
@@ -227,8 +251,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_create_account(fb::socket<fb::login::session>&,
-                                            const fb::protocol::login::request::account::create&);
+    [[nodiscard]] async::task<bool> handle_create_account(fb::socket<fb::login::session>&,
+                                                          const fb::protocol::login::request::account::create&);
     /**
      * @brief      { function_description }
      *
@@ -237,8 +261,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_account_complete(fb::socket<fb::login::session>&,
-                                              const fb::protocol::login::request::account::complete&);
+    [[nodiscard]] async::task<bool> handle_account_complete(fb::socket<fb::login::session>&,
+                                                            const fb::protocol::login::request::account::complete&);
     /**
      * @brief      { function_description }
      *
@@ -247,7 +271,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_login(fb::socket<fb::login::session>&, const fb::protocol::login::request::login&);
+    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::login::session>&,
+                                                 const fb::protocol::login::request::login&);
     /**
      * @brief      { function_description }
      *
@@ -256,8 +281,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> handle_change_password(fb::socket<fb::login::session>&,
-                                             const fb::protocol::login::request::account::change_pw&);
+    [[nodiscard]] async::task<bool> handle_change_password(fb::socket<fb::login::session>&,
+                                                           const fb::protocol::login::request::account::change_pw&);
 };
 
 }} // namespace fb::login

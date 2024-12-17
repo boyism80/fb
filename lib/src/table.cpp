@@ -1,5 +1,7 @@
 #include <fb/table.h>
 
+using namespace fb::table;
+
 bool fb::table::load(const std::string& path, Json::Value& json)
 {
     std::ifstream ifstream;
@@ -18,10 +20,8 @@ bool fb::table::load(const std::string& path, Json::Value& json)
     return true;
 }
 
-uint32_t fb::table::load(const std::string&                                                              path,
-                         const std::function<void(Json::Value&, Json::Value&, double)>&                  callback,
-                         const std::function<void(Json::Value&, Json::Value&, const std::string& error)> error,
-                         bool                                                                            async)
+uint32_t
+fb::table::load(const std::string& path, const handle_callback& callback, const handle_error& error, bool async)
 {
     Json::Value data;
     if (fb::table::load(path, data) == false)

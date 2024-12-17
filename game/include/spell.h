@@ -1,6 +1,7 @@
 #ifndef __SPELL_H__
 #define __SPELL_H__
 
+#include <chrono>
 #include <mmo.h>
 #include <inventory.h>
 #include <fb/model/model.h>
@@ -49,7 +50,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(const fb::model::spell& element);
+    uint8_t add(const fb::model::spell& element) override;
     /**
      * @brief      { function_description }
      *
@@ -58,7 +59,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(const fb::model::spell& element, uint8_t index);
+    uint8_t add(const fb::model::spell& element, uint8_t index) override;
     /**
      * @brief      Removes the specified index.
      *
@@ -66,7 +67,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool remove(uint8_t index);
+    bool remove(uint8_t index) override;
     /**
      * @brief      { function_description }
      *
@@ -75,7 +76,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool swap(uint8_t src, uint8_t dst);
+    bool swap(uint8_t src, uint8_t dst) override;
 };
 
 /**
@@ -216,7 +217,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<buff*> push_back(const fb::model::spell& spell, uint32_t seconds);
+    buff* push_back(const fb::model::spell& spell, uint32_t seconds);
     /**
      * @brief      Removes the specified identifier.
      *

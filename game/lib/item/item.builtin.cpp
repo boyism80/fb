@@ -1,9 +1,17 @@
 #include <context.h>
 #include <item.h>
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
+{"model",               fb::game::item::builtin_model},
+{"count",               fb::game::item::builtin_count},
+{"durability",          fb::game::item::builtin_durability},
+{"rename",              fb::game::item::builtin_rename},
+END_LUA_EXTENSION; // clang-format on
+
 int fb::game::item::builtin_model(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -16,7 +24,7 @@ int fb::game::item::builtin_model(lua_State* lua)
 
 int fb::game::item::builtin_count(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -27,7 +35,7 @@ int fb::game::item::builtin_count(lua_State* lua)
 
 int fb::game::item::builtin_durability(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -53,7 +61,7 @@ int fb::game::item::builtin_durability(lua_State* lua)
 
 int fb::game::item::builtin_rename(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

@@ -22,7 +22,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct config : public fb::game::object::config
+    struct initial_params : public fb::game::object::initial_params
     {
     public:
         uint32_t hp  = 0;
@@ -45,7 +45,7 @@ protected:
      * @param[in]  model    The model
      * @param[in]  config   The configuration
      */
-    life(fb::game::context& context, const fb::model::life& model, const fb::game::life::config& config);
+    life(fb::game::context& context, const fb::model::life& model, const initial_params& params);
     /**
      * @brief      Destroys the object.
      */
@@ -108,7 +108,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t experience() const;
+    virtual uint32_t exp() const;
     /**
      * @brief      { function_description }
      *

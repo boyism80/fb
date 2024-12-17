@@ -1,13 +1,13 @@
 #include <context.h>
 #include <item.h>
 
-fb::game::item::item(fb::game::context& context, const fb::model::item& model, const fb::game::item::config& config) :
-    fb::game::object(context, model, config),
-    _count(config.count)
+fb::game::item::item(fb::game::context& context, const fb::model::item& model, const initial_params& params) :
+    fb::game::object(context, model, params),
+    _count(params.count)
 { }
 
 fb::game::item::item(const fb::game::item& right) :
-    fb::game::object(right.context, right._model, fb::game::item::config{.count = right._count})
+    fb::game::object(right.context, right._model, initial_params{.count = right._count})
 { }
 
 fb::game::item::~item()
@@ -111,7 +111,7 @@ void fb::game::item::owner(fb::game::character* owner)
 bool fb::game::item::active()
 {
     if (this->empty())
-        this->_owner->items.remove(*this);
+        std::ignore = this->_owner->items.remove(*this);
 
     return false;
 }
@@ -155,16 +155,16 @@ void fb::game::item::merge(fb::game::item& item)
     }
 }
 
-fb::protocol::db::Item fb::game::item::to_protocol() const
+fb::protocol::internal::Item fb::game::item::to_protocol(EQUIPMENT_PARTS parts) const
 {
     if (this->_owner == nullptr)
         throw std::runtime_error("cannot convert to protocol because owner is empty");
 
     auto& model        = this->based<fb::model::item>();
-    auto  result       = fb::protocol::db::Item();
+    auto  result       = fb::protocol::internal::Item();
     result.user        = this->_owner->id();
     result.index       = -1;
-    result.parts       = (uint16_t)EQUIPMENT_PARTS::UNKNOWN;
+    result.parts       = static_cast<uint16_t>(parts);
     result.deposited   = -1;
     result.model       = model.id;
     result.count       = this->_count;

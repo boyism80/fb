@@ -45,13 +45,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SourcePath)</SourcePath>
   </PropertyGroup>
@@ -69,7 +69,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncppd.lib;cpp-terminald.lib;librabbitmq.4d.lib;luad.lib;zlibd.lib;flatbuffersd.lib;fbd.lib;tacopied.lib;cpp_redisd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncppd.lib;librabbitmq.4d.lib;luad.lib;zlibd.lib;flatbuffersd.lib;fbd.lib;tacopied.lib;cpp_redisd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -90,7 +90,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>ws2_32.lib;jsoncpp.lib;cpp-terminal.lib;librabbitmq.4.lib;lua.lib;zlib.lib;flatbuffers.lib;fb.lib;tacopie.lib;cpp_redis.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ws2_32.lib;jsoncpp.lib;librabbitmq.4.lib;lua.lib;zlib.lib;flatbuffers.lib;fb.lib;tacopie.lib;cpp_redis.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -106,7 +106,6 @@
     <ClInclude Include="include\item.h" />
     <ClInclude Include="include\life.h" />
     <ClInclude Include="include\listener.h" />
-    <ClInclude Include="include\lua.h" />
     <ClInclude Include="include\map.h" />
     <ClInclude Include="include\mmo.h" />
     <ClInclude Include="include\mob.h" />
@@ -115,9 +114,12 @@
     <ClInclude Include="include\mst.recipe.h" />
     <ClInclude Include="include\npc.h" />
     <ClInclude Include="include\object.h" />
+    <ClInclude Include="include\object_container.h" />
     <ClInclude Include="include\regex.h" />
     <ClInclude Include="include\sector.h" />
+    <ClInclude Include="include\shard.h" />
     <ClInclude Include="include\spell.h" />
+    <ClInclude Include="include\thread_params.h" />
     <ClInclude Include="include\trade.h" />
     <ClInclude Include="include\worker.h" />
     <ClInclude Include="resource.h" />
@@ -131,11 +133,16 @@
   <ItemGroup>
     <ClCompile Include="lib\board.cpp" />
     <ClCompile Include="lib\clan.cpp" />
-    <ClCompile Include="lib\context\command.cpp" />
+    <ClCompile Include="lib\context\context.builtin.cpp" />
+    <ClCompile Include="lib\context\context.command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />
-    <ClCompile Include="lib\context\handler.cpp" />
+    <ClCompile Include="lib\context\context.event.cpp" />
+    <ClCompile Include="lib\context\context.handler.cpp" />
+    <ClCompile Include="lib\context\context.timer.cpp" />
+    <ClCompile Include="lib\context\context.timer.thread.cpp" />
     <ClCompile Include="lib\dialog.cpp" />
     <ClCompile Include="lib\door.builtin.cpp" />
+    <ClCompile Include="lib\door.container.cpp" />
     <ClCompile Include="lib\door.cpp" />
     <ClCompile Include="lib\group.cpp" />
     <ClCompile Include="lib\item\armor.cpp" />
@@ -153,12 +160,12 @@
     <ClCompile Include="lib\item\shield.cpp" />
     <ClCompile Include="lib\item\weapon.cpp" />
     <ClCompile Include="lib\listener.cpp" />
-    <ClCompile Include="lib\lua\builtin.cpp" />
-    <ClCompile Include="lib\lua\lua.cpp" />
+    <ClCompile Include="lib\map\map.builtin.cpp" />
+    <ClCompile Include="lib\map\map.container.cpp" />
     <ClCompile Include="lib\map\map.cpp" />
-    <ClCompile Include="lib\map\map.objects.cpp" />
     <ClCompile Include="lib\map\sector.cpp" />
     <ClCompile Include="lib\mmo.cpp" />
+    <ClCompile Include="lib\model.additional.cpp" />
     <ClCompile Include="lib\model\const.regex.cpp" />
     <ClCompile Include="lib\model\model.buy.cpp" />
     <ClCompile Include="lib\model\model.door.cpp" />
@@ -177,9 +184,14 @@
     <ClCompile Include="lib\object\character.cpp" />
     <ClCompile Include="lib\object\life.builtin.cpp" />
     <ClCompile Include="lib\object\life.cpp" />
+    <ClCompile Include="lib\object\mob.builtin.cpp" />
     <ClCompile Include="lib\object\mob.cpp" />
+    <ClCompile Include="lib\object\npc.builtin.cpp" />
     <ClCompile Include="lib\object\npc.cpp" />
+    <ClCompile Include="lib\object\object.builtin.cpp" />
+    <ClCompile Include="lib\object\object.container.cpp" />
     <ClCompile Include="lib\object\object.cpp" />
+    <ClCompile Include="lib\shard.cpp" />
     <ClCompile Include="lib\spell.builtin.cpp" />
     <ClCompile Include="lib\spell.cpp" />
     <ClCompile Include="lib\trade.cpp" />

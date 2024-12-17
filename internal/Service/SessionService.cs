@@ -1,10 +1,10 @@
-﻿using http.Service;
-using Internal.Model.Redis;
-using Internal.Redis.Key;
+﻿using Http.Service;
+using Http.Model.Redis;
+using Http.Redis.Key;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
-namespace Internal.Service
+namespace Http.Service
 {
     public class SessionService
     {

@@ -4,7 +4,7 @@
 int fb::model::npc::builtin_input(lua_State* lua)
 {
     // Ex) npc::input(session, "message")
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -39,7 +39,7 @@ int fb::model::npc::builtin_input(lua_State* lua)
 int fb::model::npc::builtin_menu(lua_State* lua)
 {
     // Ex) npc::menu(session, "hello", {"hello 1", "hello 2", "hello 3"})
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -70,7 +70,7 @@ int fb::model::npc::builtin_menu(lua_State* lua)
 int fb::model::npc::builtin_item(lua_State* lua)
 {
     // Ex) npc::menu(session, "hello", {item1, item2, item3})
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -134,7 +134,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
 
 int fb::model::npc::builtin_slot(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -164,7 +164,7 @@ int fb::model::npc::builtin_slot(lua_State* lua)
 
 int fb::model::npc::builtin_sell(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -216,7 +216,7 @@ int fb::model::npc::builtin_sell(lua_State* lua)
 
 int fb::model::npc::builtin_buy(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -246,7 +246,7 @@ int fb::model::npc::builtin_buy(lua_State* lua)
 
 int fb::model::npc::builtin_repair(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -265,7 +265,7 @@ int fb::model::npc::builtin_repair(lua_State* lua)
 
 int fb::model::npc::builtin_repair_all(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -284,7 +284,7 @@ int fb::model::npc::builtin_repair_all(lua_State* lua)
 
 int fb::model::npc::builtin_hold_money(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -303,7 +303,7 @@ int fb::model::npc::builtin_hold_money(lua_State* lua)
 
 int fb::model::npc::builtin_hold_item(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -322,7 +322,7 @@ int fb::model::npc::builtin_hold_item(lua_State* lua)
 
 int fb::model::npc::builtin_return_money(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -341,7 +341,7 @@ int fb::model::npc::builtin_return_money(lua_State* lua)
 
 int fb::model::npc::builtin_return_item(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -360,7 +360,7 @@ int fb::model::npc::builtin_return_item(lua_State* lua)
 
 int fb::model::npc::builtin_rename_weapon(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

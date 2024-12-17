@@ -9,22 +9,22 @@ fb::game::spells::spells(life& owner) :
 fb::game::spells::~spells()
 { }
 
-async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element)
+uint8_t fb::game::spells::add(const fb::model::spell& element)
 {
-    auto index    = co_await fb::game::inventory<const fb::model::spell>::add(element);
+    auto index    = fb::game::inventory<const fb::model::spell>::add(element);
     auto listener = this->owner().get_listener<fb::game::spells>();
 
     if (index != 0xFF && listener != nullptr)
         listener->on_spell_update(this->owner(), index);
 
-    co_return index;
+    return index;
 }
 
-async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element, uint8_t index)
+uint8_t fb::game::spells::add(const fb::model::spell& element, uint8_t index)
 {
     auto listener = this->owner().get_listener<fb::game::spells>();
 
-    if (co_await fb::game::inventory<const fb::model::spell>::add(element, index) != 0xFF)
+    if (fb::game::inventory<const fb::model::spell>::add(element, index) != 0xFF)
     {
         if (listener != nullptr)
         {
@@ -32,7 +32,7 @@ async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element, uint
         }
     }
 
-    co_return index;
+    return index;
 }
 
 bool fb::game::spells::remove(uint8_t index)
@@ -117,21 +117,21 @@ bool fb::game::buffs::push_back(buff& buff)
     return true;
 }
 
-async::task<fb::game::buff*> fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
+fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
 {
     if (this->contains(model.id))
-        co_return nullptr;
+        return nullptr;
 
     auto& context = this->_owner.context;
     auto  created = context.make<fb::game::buff>(model, seconds);
     if (this->push_back(*created) == false)
     {
-        co_await context.destroy(*created);
-        co_return nullptr;
+        std::ignore = context.destroy(*created);
+        return nullptr;
     }
     else
     {
-        co_return created;
+        return created;
     }
 }
 
@@ -146,7 +146,7 @@ bool fb::game::buffs::remove(uint32_t id)
         listener->on_unbuff(this->_owner, *buff);
 
     this->erase(id);
-    this->_owner.context.destroy(*buff);
+    std::ignore = this->_owner.context.destroy(*buff);
     return true;
 }
 

@@ -50,7 +50,7 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
-                                                      fb::game::mob::config{.alive = true, .rezen = this});
+                                                      fb::game::mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->hp_up(mob->base_hp());
@@ -70,7 +70,7 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
                 continue;
 
             mob->position(position, true);
-            mob->map(&map, position);
+            std::ignore = mob->map(&map, position);
             break;
         }
 
@@ -81,12 +81,12 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     this->_respawn_time.reset();
 }
 
-fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) :
-    life(context, model, config),
-    _rezen(config.rezen)
+fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params) :
+    life(context, model, params),
+    _rezen(params.rezen)
 {
-    this->visible(config.alive);
-    if (config.alive)
+    this->visible(params.alive);
+    if (params.alive)
     {
         this->hp_up(this->base_hp());
         this->mp_up(this->base_mp());
@@ -107,6 +107,8 @@ fb::game::mob::~mob()
 
 bool fb::game::mob::action()
 {
+    this->assert_thread();
+
     this->fix();
 
     auto& model = this->based<fb::model::mob>();
@@ -115,7 +117,7 @@ bool fb::game::mob::action()
 
     if (this->_attack_thread == nullptr)
     {
-        this->_attack_thread = fb::game::lua::get();
+        this->_attack_thread = fb::lua::get();
         if (this->_attack_thread == nullptr)
             return false;
 
@@ -148,26 +150,36 @@ bool fb::game::mob::action()
 
 const datetime& fb::game::mob::action_time() const
 {
+    this->assert_thread();
+
     return this->_action_time;
 }
 
 void fb::game::mob::action_time(const datetime& dt)
 {
+    this->assert_thread();
+
     this->_action_time = dt;
 }
 
 fb::game::life* fb::game::mob::target() const
 {
+    this->assert_thread();
+
     return this->_target;
 }
 
 void fb::game::mob::target(fb::game::life* value)
 {
+    this->assert_thread();
+
     this->_target = value;
 }
 
 fb::game::life* fb::game::mob::fix()
 {
+    this->assert_thread();
+
     try
     {
         if (this->_target == nullptr)
@@ -193,6 +205,8 @@ fb::game::life* fb::game::mob::fix()
 
 fb::game::life* fb::game::mob::find_target()
 {
+    this->assert_thread();
+
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
@@ -216,6 +230,8 @@ fb::game::life* fb::game::mob::find_target()
 
 bool fb::game::mob::near_target(DIRECTION& out) const
 {
+    this->assert_thread();
+
     for (int i = 0; i < 4; i++)
     {
         auto direction = DIRECTION(i);
@@ -231,6 +247,8 @@ bool fb::game::mob::near_target(DIRECTION& out) const
 
 void fb::game::mob::AI(const datetime& now)
 {
+    this->assert_thread();
+
     try
     {
         auto& model = this->based<fb::model::mob>();
@@ -291,11 +309,15 @@ void fb::game::mob::AI(const datetime& now)
 
 bool fb::game::mob::available() const
 {
+    this->assert_thread();
+
     return this->alive();
 }
 
 uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 {
+    this->assert_thread();
+
     auto& model      = this->based<fb::model::mob>();
     auto  difference = model.damage.max - model.damage.min;
     return model.damage.min + (std::rand() % difference);
@@ -303,6 +325,8 @@ uint32_t fb::game::mob::on_calculate_damage(bool critical) const
 
 void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
+    this->assert_thread();
+
     fb::game::life::on_damaged(from, damage, critical);
 
     auto& model = this->based<fb::model::mob>();
@@ -314,12 +338,16 @@ void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool cri
 
 uint32_t fb::game::mob::on_exp() const
 {
+    this->assert_thread();
+
     auto& model = this->based<fb::model::mob>();
     return model.exp;
 }
 
 void fb::game::mob::on_die(fb::game::object* from)
 {
+    this->assert_thread();
+
     fb::game::life::on_die(from);
 
     // 드롭 아이템 떨구기
@@ -337,12 +365,12 @@ void fb::game::mob::on_die(fb::game::object* from)
             if (random > (int)params.percent)
                 continue;
 
-            auto item = this->context.model.item[params.id].make(this->context);
-            async::awaitable_get(item->map(this->map(), this->position()));
+            auto item   = this->context.model.item[params.id].make(this->context);
+            std::ignore = item->map(this->map(), this->position());
         }
         break;
         }
     }
 
-    this->destroy(DESTROY_TYPE::DEAD);
+    std::ignore = this->destroy(DESTROY_TYPE::DEAD);
 }

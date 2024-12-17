@@ -5,105 +5,135 @@
 
 using namespace fb::model::enum_value;
 
-// fb::game::object
-fb::game::object::object(fb::game::context&              context,
-                         const fb::model::object&        model,
-                         const fb::game::object::config& c) :
-    luable(c.id),
+fb::game::object::object(fb::game::context& context, const fb::model::object& model, const initial_params& params) :
+    luable(params.id),
     context(context),
     _listener(&context),
-    _sequence(c.id),
+    _sequence(params.id),
     _model(model),
-    _position(c.position),
-    _direction(c.direction),
-    _map(c.map),
+    _position(params.position),
+    _direction(params.direction),
+    _map(params.map),
     buffs(*this)
 {
     if (this->_listener != nullptr)
+    {
         this->_listener->on_create(*this);
+    }
 }
 
 fb::game::object::object(const object& right) :
     object(right.context,
            right._model,
-           fb::game::object::config{.id        = right._sequence,
-                                    .position  = right._position,
-                                    .direction = right._direction,
-                                    .map       = right._map})
+           initial_params{.id        = right._sequence,
+                          .position  = right._position,
+                          .direction = right._direction,
+                          .map       = right._map})
 { }
 
 fb::game::object::~object()
 {
     if (this->_listener != nullptr)
+    {
         this->_listener->on_destroy(*this);
+    }
 }
 
 const fb::model::object& fb::game::object::based() const
 {
+    this->assert_thread();
+
     return this->_model;
 }
 
 bool fb::game::object::is(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     auto mine = this->what();
     return (type & mine) == mine;
 }
 
 const std::string& fb::game::object::name() const
 {
+    this->assert_thread();
+
     return this->_model.name;
 }
 
 uint16_t fb::game::object::look() const
 {
+    this->assert_thread();
+
     return this->_model.look;
 }
 
 uint8_t fb::game::object::color() const
 {
+    this->assert_thread();
+
     return this->_model.color;
 }
 
 OBJECT_TYPE fb::game::object::what() const
 {
+    this->assert_thread();
+
     return this->_model.what();
 }
 
 async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
+
     co_await this->context.destroy(*this, destroy_type);
 }
 
-void fb::game::object::send(const fb::stream& stream, bool encrypt, bool wrap)
-{ }
+async::task<size_t> fb::game::object::send(const fb::stream& stream, bool encrypt, bool wrap)
+{
+    this->assert_thread();
+    co_return 0;
+}
 
-void fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
-{ }
+async::task<size_t> fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
+{
+    this->assert_thread();
+    co_return 0;
+}
 
 uint32_t fb::game::object::sequence() const
 {
+    this->assert_thread();
+
     return this->_sequence;
 }
 
 void fb::game::object::sequence(uint32_t value)
 {
+    this->assert_thread();
+
     this->_sequence = value;
 }
 
 void fb::game::object::chat(const std::string& message, bool shout)
 {
+    this->assert_thread();
+
     if (this->_listener != nullptr)
-        if (this->_listener != nullptr)
-            this->_listener->on_chat(*this, message, shout);
+        this->_listener->on_chat(*this, message, shout);
 }
 
 const point16_t& fb::game::object::position() const
 {
+    this->assert_thread();
+
     return this->_position;
 }
 
 bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return false;
 
@@ -217,16 +247,22 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 
 bool fb::game::object::position(const point16_t position, bool refresh)
 {
+    this->assert_thread();
+
     return this->position(position.x, position.y, refresh);
 }
 
 bool fb::game::object::move()
 {
+    this->assert_thread();
+
     return this->move(this->_direction);
 }
 
 bool fb::game::object::move(DIRECTION direction)
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return false;
 
@@ -266,11 +302,15 @@ bool fb::game::object::move(DIRECTION direction)
 
 const point16_t fb::game::object::position_forward() const
 {
+    this->assert_thread();
+
     return this->position_forward(this->_direction);
 }
 
 const point16_t fb::game::object::position_forward(DIRECTION direction) const
 {
+    this->assert_thread();
+
     auto current = point16_t(this->_position);
     auto forward = point16_t(current);
     forward.forward(direction);
@@ -297,31 +337,43 @@ const point16_t fb::game::object::position_forward(DIRECTION direction) const
 
 uint16_t fb::game::object::x() const
 {
+    this->assert_thread();
+
     return this->_position.x;
 }
 
 bool fb::game::object::x(uint16_t value)
 {
+    this->assert_thread();
+
     return this->position(value, this->_position.y);
 }
 
 uint16_t fb::game::object::y() const
 {
+    this->assert_thread();
+
     return this->_position.y;
 }
 
 bool fb::game::object::y(uint16_t value)
 {
+    this->assert_thread();
+
     return this->position(this->_position.x, value);
 }
 
 DIRECTION fb::game::object::direction() const
 {
+    this->assert_thread();
+
     return this->_direction;
 }
 
 bool fb::game::object::direction(DIRECTION value)
 {
+    this->assert_thread();
+
     if (value != DIRECTION::LEFT && value != DIRECTION::TOP && value != DIRECTION::RIGHT && value != DIRECTION::BOTTOM)
         return false;
 
@@ -337,16 +389,22 @@ bool fb::game::object::direction(DIRECTION value)
 
 fb::game::map* fb::game::object::map() const
 {
+    this->assert_thread();
+
     return this->_map;
 }
 
 bool fb::game::object::sight(const point16_t& position) const
 {
+    this->assert_thread();
+
     return fb::game::object::sight(this->_position, position, this->_map);
 }
 
 bool fb::game::object::sight(const fb::game::object& object) const
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return false;
 
@@ -361,6 +419,8 @@ bool fb::game::object::sight(const fb::game::object& object) const
 
 bool fb::game::object::sector(fb::game::sector* sector)
 {
+    this->assert_thread();
+
     if (this->_sector == sector)
         return false;
 
@@ -375,6 +435,8 @@ bool fb::game::object::sector(fb::game::sector* sector)
 
 fb::game::sector* fb::game::object::sector()
 {
+    this->assert_thread();
+
     return this->_sector;
 }
 
@@ -419,32 +481,13 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
+    if (this->_map != nullptr)
+        this->assert_thread();
+
     try
     {
         if (this->_map_lock)
             co_return false;
-
-        if (map == nullptr)
-        {
-            if (this->_map != nullptr)
-            {
-                this->_map->objects.pop(*this);
-                if (this->_listener != nullptr)
-                {
-                    for (auto x : this->_map->nears(this->_position))
-                    {
-                        if (x != this)
-                            this->_listener->on_hide(*x, *this, destroy_type);
-                    }
-                }
-
-                this->_map = nullptr;
-                this->on_map_changed(this->_map);
-            }
-            this->_position = point16_t(1, 1); // 가상계 위치
-            this->sector(nullptr);
-            co_return true;
-        }
 
         if (this->_map == map)
         {
@@ -452,33 +495,83 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             co_return true;
         }
 
+        // if destination is null, erase cache of map
+        // and broadcast all near characters
+        // and set default map(id = 0) and position(1, 1)
+        if (map == nullptr)
+        {
+            auto thread = this->_map->thread();
+            thread->pop_ptr(this);
+            if (this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto params = thread->template data<thread_params>();
+                params->characters.erase(static_cast<character*>(this)->id());
+            }
+
+            // broadcast near characters
+            if (this->_listener != nullptr)
+            {
+                for (auto x : this->_map->nears(this->_position))
+                {
+                    if (x != this)
+                        this->_listener->on_hide(*x, *this, destroy_type);
+                }
+            }
+            this->on_map_changed(this->_map);
+
+            // erase cache of map
+            this->_map->objects.pop(*this);
+
+            // reset default map and position
+            this->sector(nullptr);
+            this->_map      = nullptr;
+            this->_position = point16_t(1, 1);
+            co_return true;
+        }
+
         if (map->active == false)
-        {
             co_return false;
-        }
 
-        auto before     = this->_map;
-        auto position_x = position;
-        if (this->_map != nullptr)
+        // here the character is on some map.
+        // set map to null.
+        auto before_map      = this->_map;
+        auto before_position = position;
+        std::ignore          = co_await this->map(nullptr);
+        this->_map_lock      = true;
+
+        // switch thread of destination map
+        // and insert character into thread cache.
+        auto thread = map->thread();
+        if (thread != nullptr)
         {
-            co_await this->map(nullptr);
-        }
-        this->_map_lock = true;
+            if (thread != this->context.threads.current())
+                co_await thread->switching();
+            thread->push_ptr(this);
 
-        if (map != nullptr)
-        {
-            auto thread = this->context.thread(*map);
-            if (thread != nullptr && thread != this->context.current_thread())
-                co_await thread->dispatch(uint32_t(-1));
+            if (this->is(OBJECT_TYPE::CHARACTER))
+            {
+                auto params = thread->template data<thread_params>();
+                auto ch     = static_cast<character*>(this);
+                params->characters.insert({ch->id(), ch});
+            }
         }
 
-        this->_map      = map;
-        this->_position = position_x;
+        // update destination map and position
+        this->_map = map;
+        this->assert_thread();
+
+        this->_position = before_position;
         this->on_map_changed(this->_map);
+
+        // update section
         this->_map->update(*this);
+
+        // insert character into map cache
         this->_map->objects.push(*this);
+
+        // broadcast near characters
         if (this->_listener != nullptr)
-            this->_listener->on_map_changed(*this, before, map);
+            this->_listener->on_map_changed(*this, before_map, map);
 
         for (auto x : map->nears(this->_position))
         {
@@ -507,11 +600,15 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
 async::task<bool> fb::game::object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
+
     co_return co_await this->map(map, point16_t(0, 0), destroy_type);
 }
 
 fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
@@ -549,6 +646,8 @@ fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) 
 
 std::vector<fb::game::object*> fb::game::object::sides(DIRECTION direction, OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     auto result = std::vector<fb::game::object*>();
     try
     {
@@ -592,16 +691,22 @@ std::vector<fb::game::object*> fb::game::object::sides(DIRECTION direction, OBJE
 
 fb::game::object* fb::game::object::forward(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     return this->side(this->_direction, type);
 }
 
 std::vector<fb::game::object*> fb::game::object::forwards(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     return this->sides(this->_direction, type);
 }
 
 std::vector<fb::game::object*> fb::game::object::showns(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return std::vector<fb::game::object*>{};
 
@@ -612,6 +717,8 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
                                                         const point16_t&            position,
                                                         OBJECT_TYPE                 type) const
 {
+    this->assert_thread();
+
     auto objects = std::vector<fb::game::object*>();
     if (this->_map == nullptr)
         return objects;
@@ -634,6 +741,8 @@ std::vector<fb::game::object*> fb::game::object::showns(const std::vector<object
 
 std::vector<fb::game::object*> fb::game::object::showings(OBJECT_TYPE type) const
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return std::vector<object*>{};
     else
@@ -644,6 +753,8 @@ std::vector<fb::game::object*> fb::game::object::showings(const std::vector<obje
                                                           const point16_t&            position,
                                                           OBJECT_TYPE                 type) const
 {
+    this->assert_thread();
+
     auto objects = std::vector<fb::game::object*>();
     if (this->_map == nullptr)
         return objects;
@@ -666,11 +777,15 @@ std::vector<fb::game::object*> fb::game::object::showings(const std::vector<obje
 
 bool fb::game::object::visible() const
 {
+    this->assert_thread();
+
     return this->_visible;
 }
 
 void fb::game::object::visible(bool value)
 {
+    this->assert_thread();
+
     if (this->_visible == value)
         return;
 
@@ -679,601 +794,79 @@ void fb::game::object::visible(bool value)
 
 double fb::game::object::distance(const object& right) const
 {
+    this->assert_thread();
+
     return std::sqrt(this->distance_sqrt(right));
 }
 
 uint32_t fb::game::object::distance_sqrt(const object& right) const
 {
+    this->assert_thread();
+
     return (uint32_t)std::pow(this->_position.x - right._position.x, 2) +
            (uint32_t)std::pow(this->_position.y - right._position.y, 2);
 }
 
 bool fb::game::object::condition(const std::vector<fb::model::dsl>& conditions) const
 {
+    this->assert_thread();
+
     return true;
 }
 
 bool fb::game::object::available() const
 {
+    this->assert_thread();
+
     return true;
 }
 
+fb::thread* fb::game::object::thread() const
+{
+    if (this->_map == nullptr)
+        return this->context.threads.modular(this->_sequence);
+    else
+        return this->context.threads.modular(this->_map->model.id);
+}
+
+void fb::game::object::assert_thread() const
+{
+    if (this->_map == nullptr)
+        return;
+
+    fb::thread_switchable::assert_thread();
+}
+
 void fb::game::object::on_timer(uint64_t elapsed_milliseconds)
-{ }
+{
+    this->assert_thread();
+}
 
 void fb::game::object::on_kill(fb::game::life& you)
-{ }
+{
+    this->assert_thread();
+}
 
 void fb::game::object::on_hold()
-{ }
+{
+    this->assert_thread();
+}
 
 void fb::game::object::on_map_changed(fb::game::map*)
-{ }
+{
+    this->assert_thread();
+}
 
 bool fb::game::object::operator== (const object& right) const
 {
+    this->assert_thread();
+
     return this->_map == right._map && this->sequence() == right.sequence();
 }
 
 bool fb::game::object::operator!= (const object& right) const
 {
+    this->assert_thread();
+
     return !((*this) == right);
-}
-
-int fb::game::object::builtin_model(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto& model = object->based();
-    thread->pushobject(model);
-    return 1;
-}
-
-int fb::game::object::builtin_id(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    thread->pushinteger(object->sequence());
-    return 1;
-}
-
-int fb::game::object::builtin_eq(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto me      = thread->touserdata<fb::game::object>(1);
-    if (me == nullptr)
-        return 0;
-
-    auto you = thread->touserdata<fb::game::object>(2);
-    if (you == nullptr)
-        return 0;
-
-    thread->pushboolean(me->sequence() == you->sequence());
-    return 1;
-}
-
-int fb::game::object::builtin_tostring(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto me      = thread->touserdata<fb::game::object>(1);
-    if (me == nullptr)
-        return 0;
-
-    thread->pushstring(me->name());
-    return 1;
-}
-
-int fb::game::object::builtin_name(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    thread->pushstring(object->name());
-    return 1;
-}
-
-int fb::game::object::builtin_sound(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto sound = thread->tointeger(2);
-
-    context->send(*object, fb::protocol::game::response::object::sound(*object, SOUND(sound)), context::scope::PIVOT);
-    thread->pushinteger(-1);
-    return 1;
-}
-
-int fb::game::object::builtin_position(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    if (argc == 1)
-    {
-        thread->pushinteger(object->_position.x);
-        thread->pushinteger(object->_position.y);
-        return 2;
-    }
-
-    uint16_t x, y;
-    if (thread->is_table(2))
-    {
-        thread->rawgeti(2, 1);
-        x = (uint16_t)thread->tointeger(-1);
-        thread->remove(-1);
-
-        thread->rawgeti(2, 2);
-        y = (uint16_t)thread->tointeger(-1);
-        thread->remove(-1);
-    }
-    else
-    {
-        x = (uint16_t)thread->tointeger(2);
-        y = (uint16_t)thread->tointeger(3);
-    }
-
-    std::vector<fb::game::object*> shows, hides, showings, hiddens;
-    object->position(x, y, true);
-
-    if (object->is(OBJECT_TYPE::CHARACTER))
-    {
-        context->send(
-            *object,
-            [object](const auto& to) {
-                return std::unique_ptr<fb::protocol::base::header>(
-                    new fb::protocol::game::response::session::show(static_cast<fb::game::character&>(*object), to));
-            },
-            context::scope::PIVOT);
-    }
-    else
-    {
-        context->send(*object, fb::protocol::game::response::object::show(*object), context::scope::PIVOT);
-    }
-
-    if (object->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto session = static_cast<fb::game::character*>(object);
-        context->send(*object, fb::protocol::game::response::session::position(*session), context::scope::SELF);
-    }
-
-    return 0;
-}
-
-int fb::game::object::builtin_direction(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    if (argc == 1)
-    {
-        thread->pushinteger(object->_direction);
-        return 1;
-    }
-    else
-    {
-        auto direction = DIRECTION(thread->tointeger(2));
-        object->direction(direction);
-
-        auto context = thread->env<fb::game::context>("context");
-        context->send(*object, fb::protocol::game::response::object::direction(*object), context::scope::PIVOT);
-        return 0;
-    }
-}
-
-int fb::game::object::builtin_chat(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto message  = thread->tostring(2);
-    auto type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
-    auto decorate = argc < 4 ? true : thread->toboolean(4);
-
-    std::stringstream sstream;
-    if (decorate)
-    {
-        if (type == CHAT_TYPE::SHOUT)
-            sstream << object->name() << "! " << message;
-        else
-            sstream << object->name() << ": " << message;
-    }
-    else
-    {
-        sstream << message;
-    }
-
-    context->send(*object,
-                  fb::protocol::game::response::object::chat(*object, type, sstream.str()),
-                  context::scope::PIVOT);
-    return 0;
-}
-
-int fb::game::object::builtin_message(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto message = thread->tostring(2);
-    auto type    = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
-
-    if (object->is(OBJECT_TYPE::CHARACTER))
-        context->send(*object,
-                      fb::protocol::game::response::message(message, MESSAGE_TYPE(type)),
-                      context::scope::SELF);
-
-    return 0;
-}
-
-int fb::game::object::builtin_buff(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto spell = thread->touserdata<fb::model::spell>(2);
-    if (spell == nullptr)
-        return 0;
-
-    auto seconds = (uint32_t)thread->tointeger(3);
-    auto buff    = async::awaitable_get(object->buffs.push_back(*spell, seconds));
-    if (buff == nullptr)
-        thread->pushnil();
-    else
-        context->send(*object, fb::protocol::game::response::spell::buff(*buff), context::scope::SELF);
-
-    return 1;
-}
-
-int fb::game::object::builtin_unbuff(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    if (thread->is_str(2))
-    {
-        auto name  = thread->tostring(2);
-        auto model = context->model.spell.name2spell(name);
-        if (model == nullptr)
-            thread->pushboolean(false);
-        else
-            thread->pushboolean(object->buffs.remove(*model));
-    }
-    else if (thread->is_obj(2))
-    {
-        auto buff = thread->touserdata<fb::model::spell>(2);
-        if (buff == nullptr)
-            return 0;
-
-        thread->pushboolean(object->buffs.remove(*buff));
-    }
-    else
-    {
-        thread->pushboolean(false);
-    }
-
-    return 1;
-}
-
-int fb::game::object::builtin_isbuff(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    if (thread->is_str(2))
-    {
-        auto name  = thread->tostring(2);
-        auto model = context->model.spell.name2spell(name);
-        if (model == nullptr)
-            thread->pushboolean(false);
-        else
-            thread->pushboolean(object->buffs.contains(*model));
-    }
-    else if (thread->is_obj(2))
-    {
-        auto buff = thread->touserdata<fb::model::spell>(2);
-        if (buff == nullptr)
-            return 0;
-
-        thread->pushboolean(object->buffs.contains(*buff));
-    }
-    else
-    {
-        thread->pushboolean(false);
-    }
-    return 1;
-}
-
-int fb::game::object::builtin_effect(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto effect = (uint8_t)thread->tointeger(2);
-
-    if (object->is(OBJECT_TYPE::ITEM) == false)
-        context->send(*object, fb::protocol::game::response::object::effect(*object, effect), context::scope::PIVOT);
-    return 0;
-}
-
-int fb::game::object::builtin_map(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    try
-    {
-        auto argc   = thread->argc();
-        auto object = thread->touserdata<fb::game::object>(1);
-        if (object == nullptr)
-            return 0;
-
-        if (argc == 1)
-        {
-            auto map = object->map();
-            if (map == nullptr)
-                thread->pushnil();
-            else
-                thread->pushobject(map);
-            return 1;
-        }
-
-        fb::game::map* map = nullptr;
-        if (thread->is_obj(2))
-        {
-            map = thread->touserdata<fb::game::map>(2);
-            if (map == nullptr)
-                return 0;
-
-            if (map == nullptr)
-                throw std::exception();
-        }
-        else if (thread->is_str(2))
-        {
-            map = context->maps.name2map(thread->tostring(2));
-            if (map == nullptr)
-                throw std::exception();
-        }
-        else
-        {
-            throw std::exception();
-        }
-
-        point16_t position;
-        if (thread->is_table(3))
-        {
-            thread->rawgeti(3, 1);
-            position.x = (uint16_t)thread->tointeger(-1);
-            thread->remove(-1);
-
-            thread->rawgeti(3, 2);
-            position.y = (uint16_t)thread->tointeger(-1);
-            thread->remove(-1);
-        }
-        else if (thread->is_num(3) && thread->is_num(4))
-        {
-            position.x = (uint16_t)thread->tointeger(3);
-            position.y = (uint16_t)thread->tointeger(4);
-        }
-        else
-        {
-            throw std::exception();
-        }
-
-        async::awaitable_get(object->map(map, position));
-    }
-    catch (...)
-    { }
-
-    return 0;
-}
-
-int fb::game::object::builtin_mkitem(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto name = thread->tostring(2);
-
-    auto model = context->model.item.name2item(name);
-    if (model == nullptr)
-    {
-        thread->pushnil();
-    }
-    else
-    {
-        auto context = thread->env<fb::game::context>("context");
-        auto item    = model->make(*context);
-        async::awaitable_get(item->map(object->_map, object->_position));
-        thread->pushobject(item);
-
-        context->send(*item, fb::protocol::game::response::object::show(*item), context::scope::PIVOT);
-    }
-
-    return 1;
-}
-
-int fb::game::object::builtin_showings(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
-
-    thread->new_table();
-    const auto& objects = object->showns(filter);
-
-    for (int i = 0; i < objects.size(); i++)
-    {
-        thread->pushobject(objects[i]);
-        thread->rawseti(-2, uint64_t(i + 1));
-    }
-
-    return 1;
-}
-
-int fb::game::object::builtin_showns(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
-
-    thread->new_table();
-    const auto& objects = object->showings(filter);
-
-    for (int i = 0; i < objects.size(); i++)
-    {
-        thread->pushobject(objects[i]);
-        thread->rawseti(-2, uint64_t(i + 1));
-    }
-
-    return 1;
-}
-
-int fb::game::object::builtin_front(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
-    auto front  = object->forward(filter);
-    if (front == nullptr)
-        thread->pushnil();
-    else
-        thread->pushobject(front);
-
-    return 1;
-}
-
-int fb::game::object::builtin_is(lua_State* lua)
-{
-    auto thread = fb::game::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::object>(1);
-    if (object == nullptr)
-        return 0;
-
-    auto type = thread->tointeger(2);
-    thread->pushboolean(object->is(OBJECT_TYPE(type)));
-    return 1;
 }

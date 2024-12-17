@@ -1,6 +1,6 @@
 ﻿using Google.FlatBuffers;
 
-namespace http.Util
+namespace Http.Util
 {
     public static class FlatBuffer
     {

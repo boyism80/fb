@@ -1,9 +1,10 @@
-﻿using http.Service;
+﻿using Fb.Model.EnumValue;
+using Http.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
 
-namespace http.Redis
+namespace Http.Redis
 {
     public class RedisCommandQueue
     {
@@ -107,7 +108,7 @@ namespace http.Redis
                 await q.CompleteAsync();
         }
 
-        private static async Task<bool> Lock<T>(this IDatabaseAsync database, string key, TaskCompletionSource<T> tcs, Func<Task<T>> fn, string uuid, ISubscriber sub)
+        private static async Task<bool> Lock<T>(this IDatabaseAsync database, string key, TaskCompletionSource<T> tcs, Func<Task<T>> fn, string uuid, ISubscriber sub = null)
         {
             var success = await database.ScriptEvaluateAsync("redis_lock.lua", new
             {
@@ -120,7 +121,8 @@ namespace http.Redis
                 {
                     var result = await fn();
                     await database.KeyDeleteAsync(key);
-                    await sub.UnsubscribeAsync(key);
+                    if (sub != null)
+                        await sub.UnsubscribeAsync(key);
                     await database.PublishAsync(key, uuid);
                     tcs.SetResult(result);
                     return true;
@@ -153,6 +155,14 @@ namespace http.Redis
             });
 
             await database.Lock(key, tcs, fn, uuid, sub);
+            return await tcs.Task;
+        }
+
+        public static async Task<T> TrySync<T>(this IDatabaseAsync database, string key, Func<Task<T>> fn)
+        {
+            var tcs = new TaskCompletionSource<T>();
+            var uuid = Guid.NewGuid().ToString();
+            await database.Lock(key, tcs, fn, uuid, null);
             return await tcs.Task;
         }
     }

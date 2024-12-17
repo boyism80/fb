@@ -25,13 +25,13 @@ struct LoginBuilder;
 struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LoginBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_SUCCESS = 4,
+    VT_ERROR = 4,
     VT_LOGON = 6,
     VT_IP = 8,
     VT_PORT = 10
   };
-  bool success() const {
-    return GetField<uint8_t>(VT_SUCCESS, 0) != 0;
+  uint32_t error() const {
+    return GetField<uint32_t>(VT_ERROR, 0);
   }
   bool logon() const {
     return GetField<uint8_t>(VT_LOGON, 0) != 0;
@@ -44,7 +44,7 @@ struct Login FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_SUCCESS, 1) &&
+           VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            VerifyField<uint8_t>(verifier, VT_LOGON, 1) &&
            VerifyOffset(verifier, VT_IP) &&
            verifier.VerifyString(ip()) &&
@@ -57,8 +57,8 @@ struct LoginBuilder {
   typedef Login Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_success(bool success) {
-    fbb_.AddElement<uint8_t>(Login::VT_SUCCESS, static_cast<uint8_t>(success), 0);
+  void add_error(uint32_t error) {
+    fbb_.AddElement<uint32_t>(Login::VT_ERROR, error, 0);
   }
   void add_logon(bool logon) {
     fbb_.AddElement<uint8_t>(Login::VT_LOGON, static_cast<uint8_t>(logon), 0);
@@ -82,28 +82,28 @@ struct LoginBuilder {
 
 inline ::flatbuffers::Offset<Login> CreateLogin(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool success = false,
+    uint32_t error = 0,
     bool logon = false,
     ::flatbuffers::Offset<::flatbuffers::String> ip = 0,
     uint16_t port = 0) {
   LoginBuilder builder_(_fbb);
   builder_.add_ip(ip);
+  builder_.add_error(error);
   builder_.add_port(port);
   builder_.add_logon(logon);
-  builder_.add_success(success);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<Login> CreateLoginDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    bool success = false,
+    uint32_t error = 0,
     bool logon = false,
     const char *ip = nullptr,
     uint16_t port = 0) {
   auto ip__ = ip ? _fbb.CreateString(ip) : 0;
   return fb::protocol::internal::response::raw::CreateLogin(
       _fbb,
-      success,
+      error,
       logon,
       ip__,
       port);

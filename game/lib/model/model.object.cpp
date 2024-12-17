@@ -27,7 +27,7 @@ bool fb::model::object::operator!= (const fb::model::object& r) const
 
 int fb::model::object::builtin_name(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -42,7 +42,7 @@ int fb::model::object::builtin_name(lua_State* lua)
 
 int fb::model::object::builtin_look(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -57,7 +57,7 @@ int fb::model::object::builtin_look(lua_State* lua)
 
 int fb::model::object::builtin_color(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -74,7 +74,7 @@ int fb::model::object::builtin_dialog(lua_State* lua)
 {
     // Ex) npc:dialog(session, "hello", true, true);
 
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

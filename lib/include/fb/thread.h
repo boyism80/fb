@@ -1,49 +1,34 @@
 #ifndef __THREAD_H__
 #define __THREAD_H__
 
-#include <boost/asio.hpp>
 #include <thread>
 #include <functional>
-#include <map>
 #include <future>
 #include <atomic>
+#include <queue>
 #include <fb/logger.h>
 #include <fb/timer.h>
-#include <fb/pqueue.h>
 #include <async/task.h>
 #include <async/task_completion_source.h>
 #include <async/awaitable_then.h>
-
-#define MUTEX_GUARD(x) auto _ = std::lock_guard(x);
+#include <fb/model/datetime.h>
+#include <unordered_set>
+#include <fb/lua.h>
 
 namespace fb {
 
-using queue_callback = std::function<void(uint8_t)>;
-
-class thread
+/**
+ * @brief      This class describes a thread.
+ */
+class thread : public fb::lua::luable
 {
 public:
-    using async_func_type = std::function<async::task<void>()>;
-    using func_type       = std::function<void()>;
+    LUA_PROTOTYPE
 
 public:
-    class task
-    {
-    public:
-        fb::thread::async_func_type func;
-        fb::thread::func_type       callback;
-
-    public:
-        task(const fb::thread::async_func_type& func);
-        task(const fb::thread::async_func_type& func, const fb::thread::func_type& callback);
-        task(const task&) = delete;
-        task(task&&) noexcept;
-        ~task();
-
-    public:
-        void operator= (const task&) = delete;
-        void operator= (task&& r) noexcept;
-    };
+    template <typename ReturnType>
+    using handle_func_type  = std::function<async::task<ReturnType>(fb::thread&)>;
+    using handle_error_type = std::function<void(std::exception&)>;
 
 private:
     uint8_t           _index = 0;
@@ -51,81 +36,253 @@ private:
     std::thread       _thread;
 
 private:
+    std::unordered_set<void*>           _ptrs;
     std::vector<std::unique_ptr<timer>> _timers;
     std::recursive_mutex                _mutex_timer;
+    void*                               _data = nullptr;
 
 private:
-    fb::queue<fb::thread::task> _queue;
+    std::queue<std::function<void()>> _queue;
+    std::mutex                        _mutex_queue;
 
 public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  index  The index
+     */
     thread(uint8_t index);
+    /**
+     * @brief      Destroys the object.
+     */
     ~thread();
 
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     */
     thread(const thread&) = delete;
-    thread(thread&&)      = delete;
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      <unnamed>  { parameter_description }
+     */
+    thread(thread&&) = delete;
 
-    thread& operator= (thread&)       = delete;
+    /**
+     * @brief      Assignment operator.
+     *
+     * @param      <unnamed>  { parameter_description }
+     *
+     * @return     The result of the assignment
+     */
+    thread& operator= (thread&) = delete;
+    /**
+     * @brief      Assignment operator.
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @return     The result of the assignment
+     */
     thread& operator= (const thread&) = delete;
 
 private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  index  The index
+     */
     void handle_thread(uint8_t index);
+    /**
+     * @brief      { function_description }
+     */
     void handle_idle();
 
+    /**
+     * @brief      { function_description }
+     */
+    void assert_exec() const;
+
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     std::thread::id id() const;
-    uint8_t         index() const;
-    void            exit();
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t index() const;
+    /**
+     * @brief      { function_description }
+     */
+    void exit();
+    /**
+     * @brief      { function_description }
+     *
+     * @param      value  The value
+     *
+     * @tparam     T      { description }
+     */
+    template <typename T>
+    void data(T* value)
+    {
+        this->assert_exec();
+        this->_data = static_cast<void*>(value);
+    }
+    /**
+     * @brief      { function_description }
+     *
+     * @tparam     ReturnType  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    template <typename ReturnType>
+    ReturnType* data() const
+    {
+        this->assert_exec();
+        return static_cast<ReturnType*>(this->_data);
+    }
+
+    /**
+     * @brief      Pushes a pointer.
+     *
+     * @param      ptr   The pointer
+     */
+    void push_ptr(void* ptr);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ptr   The pointer
+     */
+    void pop_ptr(void* ptr);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ptr   The pointer
+     */
+    void assert_ptr(void* ptr) const;
 
 public:
-    async::task<void> dispatch(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
-    void              post(const async_func_type& fn, const fb::model::timespan& delay = 0s, uint32_t priority = 0);
-    async::task<void> dispatch(uint32_t priority = 0);
-    void settimer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable = false);
-    async::task<void> sleep(const fb::model::timespan& duration);
-};
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn          The function
+     * @param[in]  duration    The duration
+     * @param[in]  disposable  The disposable
+     */
+    void settimer(const fb::timer::handle_callback_type& fn,
+                  const fb::model::timespan&             duration,
+                  bool                                   disposable = false);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  duration  The duration
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
 
-class threads
-{
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn          The function
+     * @param[in]  error       The error
+     * @param[in]  callback    The callback
+     *
+     * @tparam     ReturnType  { description }
+     */
+    template <typename ReturnType>
+    void enqueue(const handle_func_type<ReturnType>&      fn,
+                 const handle_error_type&                 error,
+                 const std::function<void(ReturnType&&)>& callback)
+    {
+        auto _ = std::lock_guard(_mutex_queue);
+
+        this->_queue.push([=, this]() {
+            async::awaitable_then(fn(*this), [&](async::awaitable_result<ReturnType> result) {
+                try
+                {
+                    callback(result());
+                }
+                catch (std::exception& e)
+                {
+                    error(e);
+                }
+                catch (...)
+                {
+                    try
+                    {
+                        std::rethrow_exception(std::current_exception());
+                    }
+                    catch (std::exception& e)
+                    {
+                        error(e);
+                    }
+                }
+            });
+        });
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn        The function
+     * @param[in]  error     The error
+     * @param[in]  callback  The callback
+     */
+    void enqueue(const handle_func_type<void>& fn,
+                 const handle_error_type&      error,
+                 const std::function<void()>&  callback);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn          The function
+     *
+     * @tparam     ReturnType  { description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    template <typename ReturnType>
+    async::task<ReturnType> dispatch(const handle_func_type<ReturnType>& fn)
+    {
+        auto promise = std::make_shared<async::task_completion_source<ReturnType>>();
+        this->enqueue<ReturnType>(
+            fn,
+            [promise](std::exception& e) {
+                promise->set_exception(std::make_exception_ptr(e));
+            },
+            [promise](ReturnType&& value) {
+                promise->set_value(value);
+            });
+        return promise->task();
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn    The function
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> switching();
+
 public:
-    using unique_thread  = std::unique_ptr<fb::thread>;
-    using unique_threads = std::map<std::thread::id, unique_thread>;
-    using unique_id_list = std::unique_ptr<std::thread::id[]>;
-
-private:
-    boost::asio::io_context& _context;
-    unique_threads           _threads;
-    unique_id_list           _keys;
-
-public:
-    threads(boost::asio::io_context& context);
-    ~threads() = default;
-
-    threads(const threads&) = delete;
-    threads(threads&&)      = delete;
-
-    threads& operator= (threads&)       = delete;
-    threads& operator= (const threads&) = delete;
-
-public:
-    fb::thread*       at(uint8_t index) const;
-    fb::thread*       at(std::thread::id id) const;
-    fb::thread*       current();
-    const fb::thread* current() const;
-    uint8_t           count() const;
-    bool              empty() const;
-    bool              valid(uint8_t index) const;
-    bool              valid(fb::thread* thread) const;
-    bool              valid(fb::thread& thread) const;
-    size_t            size() const;
-
-public:
-    async::task<void> dispatch(const fb::thread::async_func_type& fn, const fb::model::timespan& delay);
-    void              settimer(const fb::timer_callback& fn, const fb::model::timespan& duration);
-    void              exit();
-
-public:
-    fb::thread* operator[] (uint8_t index) const;
-    fb::thread* operator[] (std::thread::id id) const;
+    static int builtin_assert_ptr(lua_State* lua);
 };
 
 } // namespace fb

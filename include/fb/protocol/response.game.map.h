@@ -26,7 +26,7 @@ static constexpr uint16_t crc16tab[256] = {
     0x1ce0, 0x0cc1, 0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8, 0x6e17, 0x7e36, 0x4e55, 0x5e74,
     0x2e93, 0x3eb2, 0x0ed1, 0x1ef0};
 
-namespace fb { namespace protocol { namespace game { namespace response { namespace map {
+namespace fb::protocol::game::response::map {
 
 class update : public fb::protocol::base::header
 {
@@ -48,8 +48,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
 
         if (this->map.model.effect == MAP_EFFECT_TYPE::NONE)
@@ -88,7 +89,7 @@ public:
         }
 
         if (crc == now_crc)
-            return;
+            co_return;
     }
 };
 
@@ -108,8 +109,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
 
         writer.write<uint8_t>(0x01);
@@ -151,8 +153,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         auto building = enum_in(this->map.model.option, MAP_OPTION::BUILD_IN) ? 0x04 : 0x05;
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(this->map.model.id); // id
@@ -162,8 +165,9 @@ public:
         writer.write<std::string, uint16_t>(this->map.model.name);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->id          = reader.read<uint16_t>();
         this->size.width  = reader.read<uint16_t>();
         this->size.height = reader.read<uint16_t>();
@@ -191,8 +195,9 @@ public:
     { }
 
 public:
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
 
         auto& attr   = this->model.world_attribute[this->id];
@@ -230,6 +235,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::response::map
+} // namespace fb::protocol::game::response::map
 
 #endif // !__PROTOCOL_RESPONSE_GAME_MAP_H__

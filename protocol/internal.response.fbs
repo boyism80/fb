@@ -9,7 +9,7 @@ table KickOut {
 
 
 table Login {
-  success: bool;
+  error: uint;
   logon: bool;
   ip: string;
   port: ushort;
@@ -30,7 +30,7 @@ table Pong {
 
 
 table Transfer {
-  code: fb.protocol.internal.TransferResult;
+  error: uint;
   ip: string;
   port: ushort;
 }
@@ -38,8 +38,102 @@ table Transfer {
 
 
 table Whisper {
-	success: bool;
 	from : string;
-	to: uint;
+	to: string;
 	message: string;
+  host: uint;
+  error: uint;
+}
+
+table DeleteArticle {
+  result: int;
+}
+
+
+table GetArticle {
+  article: fb.protocol.internal.Article;
+  next: bool;
+  success: bool;
+}
+
+
+table GetArticleList {
+  summary_list: [fb.protocol.internal.ArticleSummary];
+}
+
+
+table WriteArticle {
+  success: bool;
+}
+
+
+table ChangePw {
+  error_code: uint;
+}
+
+
+table GetUid {
+  uid: uint;
+  success: bool;
+}
+
+
+table InitCharacter {
+  success: bool;
+}
+
+
+table Authenticate {
+  map: uint;
+  error_code: uint;
+}
+
+
+table Init {
+  character: fb.protocol.internal.Character;
+  items: [fb.protocol.internal.Item];
+  spells: [fb.protocol.internal.Spell];
+  option: fb.protocol.internal.Option;
+  group: fb.protocol.internal.Group;
+}
+
+
+table MakeCharacter {
+  success: bool;
+}
+
+
+table ReserveName {
+  uid: uint;
+  success: bool;
+}
+
+
+table Save {
+  success: bool;
+}
+
+table SetOption {
+  success: bool;
+}
+
+table GetGroup {
+  group: fb.protocol.internal.Group;
+  error: uint;
+}
+
+table EnterGroup {
+  group: fb.protocol.internal.Group;
+  member: string;
+  action: fb.protocol.internal.GroupAction;
+  host: uint;
+  error: uint;
+}
+
+table LeaveGroup {
+  group: fb.protocol.internal.Group;
+  member: string;
+  action: fb.protocol.internal.GroupAction;
+  host: uint;
+  error: uint;
 }

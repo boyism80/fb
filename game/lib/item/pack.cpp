@@ -30,11 +30,8 @@ void fb::game::pack::durability(uint32_t value)
 
 std::string fb::game::pack::inven_name() const
 {
-    auto& model   = this->based<fb::model::pack>();
-    auto  sstream = std::stringstream();
-    sstream << model.name << " [" << this->_durability << " 잔]";
-
-    return sstream.str();
+    auto& model = this->based<fb::model::pack>();
+    return std::format("{} [{}]잔", model.name, this->_durability);
 }
 
 bool fb::game::pack::active()
@@ -51,7 +48,7 @@ bool fb::game::pack::active()
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
 
     if (this->empty())
-        this->_owner->items.remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
+        std::ignore = this->_owner->items.remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 
     return true;
 }

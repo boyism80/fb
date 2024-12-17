@@ -67,15 +67,16 @@ module.exports = function () {
                             containers: [
                                 {
                                     name: "gateway",
-                                    image: "cshyeon/fb:gateway",
+                                    image: "ghcr.io/boyism80/fb/gateway:latest",
+                                    imagePullPolicy: "Always",
+                                    securityContext: {
+                                        capabilities: {
+                                            add: ["SYS_PTRACE"]
+                                        }
+                                    },
                                     ports: [
                                         { containerPort: conf.gateway.port, name: `gateway` },
                                     ],
-                                    env: [
-                                    {
-                                        name: "KUBERNETES",
-                                        value: "enabled"
-                                    }],
                                     volumeMounts: [{
                                         name: "config-volume",
                                         mountPath: "/app/config/config.json",

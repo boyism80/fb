@@ -9,7 +9,7 @@
 #define LUA
 #endif
 
-#include <lua.h>
+#include <fb/lua.h>
 #include <fb/model/datetime.h>
 #include <enum_ext.h>
 
@@ -78,9 +78,9 @@ public:                                               \
         return this->width == 0 && this->height == 0; \
     }
 
-#define DECLARE_OBJECT_INHERIT  : public fb::game::lua::luable
+#define DECLARE_OBJECT_INHERIT  : public fb::lua::luable
 
-#define DECLARE_SPELL_INHERIT  : public fb::game::lua::luable
+#define DECLARE_SPELL_INHERIT  : public fb::lua::luable
 
 #define DECLARE_OBJECT_EXTENSION                                      \
                                                                       \
@@ -311,7 +311,7 @@ public:                                 \
 public:                                  \
     fb::model::item* name2item(const std::string& name) const;
 
-#define DECLARE_MAP_INHERIT : public fb::game::lua::luable
+#define DECLARE_MAP_INHERIT : public fb::lua::luable
 
 #define DECLARE_MAP_EXTENSION                  \
                                                \

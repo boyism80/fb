@@ -270,6 +270,53 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum ErrorCode
+    {
+        [EnumMember(Value = "NONE")]
+        None = 0, 
+        [EnumMember(Value = "UNHANDLED")]
+        Unhandled = 1, 
+        [EnumMember(Value = "GROUP_ALREADY_JOINED")]
+        GroupAlreadyJoined = 2, 
+        [EnumMember(Value = "GROUP_TARGET_ALREADY_JOINED")]
+        GroupTargetAlreadyJoined = 3, 
+        [EnumMember(Value = "DISABLED_GROUP")]
+        DisabledGroup = 4, 
+        [EnumMember(Value = "DISABLED_GROUP_TARGET")]
+        DisabledGroupTarget = 5, 
+        [EnumMember(Value = "PASSWORD_NOT_MATCHED")]
+        PasswordNotMatched = 6, 
+        [EnumMember(Value = "BIRTHDAY_NOT_MATCHED")]
+        BirthdayNotMatched = 7, 
+        [EnumMember(Value = "OFFLINE")]
+        Offline = 8, 
+        [EnumMember(Value = "SERVER_NOT_READY")]
+        ServerNotReady = 9, 
+        [EnumMember(Value = "ALREADY_LOGIN")]
+        AlreadyLogin = 10, 
+        [EnumMember(Value = "NOT_FOUND_CHARACTER")]
+        NotFoundCharacter = 11, 
+        [EnumMember(Value = "NOT_FOUND_OPTION")]
+        NotFoundOption = 12, 
+        [EnumMember(Value = "DISABLED_WHISPER")]
+        DisabledWhisper = 13, 
+        [EnumMember(Value = "DISABLED_WHISPER_TARGET")]
+        DisabledWhisperTarget = 14, 
+        [EnumMember(Value = "DISTRIBUTED_LOCK_FAILED")]
+        DistributedLockFailed = 15, 
+        [EnumMember(Value = "GROUP_NOT_JOINED")]
+        GroupNotJoined = 16, 
+        [EnumMember(Value = "GROUP_NOT_FOUND")]
+        GroupNotFound = 17, 
+        [EnumMember(Value = "CANNOT_GROUP_SELF")]
+        CannotGroupSelf = 18, 
+        [EnumMember(Value = "NOT_FOUND_MAP")]
+        NotFoundMap = 19, 
+        [EnumMember(Value = "NOT_GROUP_MASTER")]
+        NotGroupMaster = 20
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ItemAttribute
     {
         [EnumMember(Value = "NONE")]

@@ -1,17 +1,60 @@
-docker build --tag cshyeon/fb:build -f Dockerfile .
-docker push cshyeon/fb:build
+#!/bin/bash
 
-docker build --tag cshyeon/fb:gateway -f gateway/Dockerfile .
-docker push cshyeon/fb:gateway
+sudo docker build --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/build failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/build:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/build failed"
+    exit $?
+fi
 
-docker build --tag cshyeon/fb:login -f login/Dockerfile .
-docker push cshyeon/fb:login
+sudo docker build --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/gateway failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/gateway:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/gateway failed"
+    exit $?
+fi
 
-docker build --tag cshyeon/fb:game -f game/Dockerfile .
-docker push cshyeon/fb:game
+sudo docker build --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/login failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/login:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/login failed"
+    exit $?
+fi
 
-docker build --tag cshyeon/fb:internal -f http/Dockerfile --build-arg SERVICE=internal .
-docker push cshyeon/fb:internal
+sudo docker build --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/game failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/game:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/game failed"
+    exit $?
+fi
 
-docker build --tag cshyeon/fb:db -f http/Dockerfile --build-arg SERVICE=db .
-docker push cshyeon/fb:db
+sudo docker build --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
+if [ $? -ne 0 ]; then
+    echo "build fb/internal failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/internal:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/internal failed"
+    exit $?
+fi
+
+pushd infra/pulumi
+pulumi down -y && pulumi up -y
+popd

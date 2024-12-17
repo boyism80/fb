@@ -4,33 +4,11 @@
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <fb/stream.h>
+#include <async/task.h>
+#include <fb/stream_writer.h>
+#include <fb/stream_reader.h>
 
-#define BIND_ID(n) static constexpr uint8_t id = (n);
-
-namespace fb { namespace protocol { namespace internal {
-
-enum class services : uint8_t
-{
-    GATEWAY,
-    LOGIN,
-    GAME
-};
-
-enum id : uint8_t
-{
-    SUBSCRIBE,
-    TRANSFER,
-    LOGIN,
-    LOGOUT,
-    WHISPER,
-    MESSAGE,
-    SHUTDOWN,
-};
-
-}}} // namespace fb::protocol::internal
-
-namespace fb { namespace protocol { namespace base {
+namespace fb::protocol::base {
 
 class header
 {
@@ -38,18 +16,22 @@ protected:
     header() = default;
 
 public:
-    ~header() = default;
+    virtual ~header() = default;
 
 public:
-    virtual void serialize(fb::stream_writer<big_endian>& writer) const
-    { }
-    virtual void deserialize(fb::stream_reader<big_endian>& reader)
-    { }
+    virtual async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    {
+        co_return;
+    }
+    virtual async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_return;
+    }
 };
 
-}}} // namespace fb::protocol::base
+} // namespace fb::protocol::base
 
-namespace fb { namespace protocol { namespace response {
+namespace fb::protocol::response {
 
 class transfer : public fb::protocol::base::header
 {
@@ -80,8 +62,9 @@ public:
 
 public:
 #ifndef BOT
-    void serialize(fb::stream_writer<big_endian>& writer) const
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint32_t>(this->ip);
         writer.write<uint16_t>(this->port);
@@ -89,10 +72,11 @@ public:
         writer.write(this->parameter);
     }
 #else
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
-        this->ip    = reader.read<uint32_t>();
-        this->port  = reader.read<uint16_t>();
+        co_await header::deserialize(reader);
+        this->ip   = reader.read<uint32_t>();
+        this->port = reader.read<uint16_t>();
 
         auto size   = reader.read<uint8_t>();
         auto buffer = new uint8_t[size];
@@ -103,6 +87,6 @@ public:
 #endif
 };
 
-}}} // namespace fb::protocol::response
+} // namespace fb::protocol::response
 
 #endif // !__PROTOCOL_H__

@@ -1,9 +1,17 @@
 #include <context.h>
 #include <door.h>
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
+{"toggle",              fb::game::door::builtin_toggle},
+{"lock",                fb::game::door::builtin_lock},
+{"locked",              fb::game::door::builtin_locked},
+{"opened",              fb::game::door::builtin_opened},
+END_LUA_EXTENSION; // clang-format on
+
 int fb::game::door::builtin_toggle(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -21,7 +29,7 @@ int fb::game::door::builtin_toggle(lua_State* lua)
 
 int fb::game::door::builtin_locked(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -34,7 +42,7 @@ int fb::game::door::builtin_locked(lua_State* lua)
 
 int fb::game::door::builtin_lock(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -49,7 +57,7 @@ int fb::game::door::builtin_lock(lua_State* lua)
 
 int fb::game::door::builtin_opened(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

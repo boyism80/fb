@@ -2,7 +2,7 @@
 
 int fb::model::spell::builtin_type(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -16,7 +16,7 @@ int fb::model::spell::builtin_type(lua_State* lua)
 
 int fb::model::spell::builtin_name(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -30,7 +30,7 @@ int fb::model::spell::builtin_name(lua_State* lua)
 
 int fb::model::spell::builtin_message(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

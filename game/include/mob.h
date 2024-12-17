@@ -70,7 +70,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct config : fb::game::life::config
+    struct initial_params : fb::game::life::initial_params
     {
     public:
         const bool             alive = false;
@@ -92,7 +92,7 @@ public:
      * @param[in]  model    The model
      * @param[in]  config   The configuration
      */
-    mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config);
+    mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
     /**
      * @brief      Constructs a new instance.
      *

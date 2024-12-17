@@ -9,7 +9,7 @@ using namespace fb::model::enum_value;
 
 using namespace fb::game;
 
-namespace fb { namespace protocol { namespace game { namespace request { namespace item {
+namespace fb::protocol::game::request::item {
 
 class active : public fb::protocol::base::header
 {
@@ -23,8 +23,9 @@ public:
     active() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->index = reader.read<uint8_t>() - 1;
     }
 };
@@ -41,8 +42,9 @@ public:
     inactive() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->parts = EQUIPMENT_PARTS(reader.read<uint8_t>());
     }
 };
@@ -60,8 +62,9 @@ public:
     drop() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->index = reader.read<uint8_t>() - 1;
         this->all   = bool(reader.read<uint8_t>());
     }
@@ -79,8 +82,9 @@ public:
     drop_cash() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->chunk = reader.read<uint32_t>();
     }
 };
@@ -97,8 +101,9 @@ public:
     mix() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         auto count = reader.read<uint8_t>();
         for (int i = 0; i < count; i++)
             this->indices.push_back(reader.read<uint8_t>());
@@ -118,8 +123,9 @@ public:
     throws() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->all   = reader.read<uint8_t>();
         this->index = reader.read<uint8_t>() - 1;
     }
@@ -138,8 +144,9 @@ public:
     info() = default;
 
 public:
-    void deserialize(fb::stream_reader<big_endian>& reader)
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
+        co_await header::deserialize(reader);
         this->position = reader.read<uint16_t>();
         auto unknown1  = reader.read<uint8_t>();
         auto unknown2  = reader.read<uint8_t>();
@@ -148,6 +155,6 @@ public:
     }
 };
 
-}}}}} // namespace fb::protocol::game::request::item
+} // namespace fb::protocol::game::request::item
 
 #endif // !__PROTOCOL_REQUEST_GAME_ITEM_H__

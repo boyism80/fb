@@ -2,7 +2,7 @@
 
 int fb::model::life::builtin_hp(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
@@ -16,7 +16,7 @@ int fb::model::life::builtin_hp(lua_State* lua)
 
 int fb::model::life::builtin_mp(lua_State* lua)
 {
-    auto thread = fb::game::lua::get(lua);
+    auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 

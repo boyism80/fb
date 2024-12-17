@@ -1,4 +1,4 @@
-FROM cshyeon/fb:build AS data-build
+FROM ghcr.io/boyism80/fb/build AS data-build
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG SERVICE

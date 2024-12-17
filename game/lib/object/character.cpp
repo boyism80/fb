@@ -5,7 +5,7 @@
 using namespace fb::game;
 
 character::character(fb::game::context& context, fb::socket<character>& socket) :
-    life(context, context.model.life[0], life::config{{.id = (uint32_t)socket.fd()}}),
+    life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
     _socket(socket)
 {
     inline_interaction_funcs.push_back(
@@ -43,29 +43,31 @@ character::character(fb::game::context& context, fb::socket<character>& socket) 
 character::~character()
 { }
 
-void character::send(const fb::stream& stream, bool encrypt, bool wrap)
+async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
-    if (this->inited() == false)
-        return;
+    this->assert_thread();
 
-    this->_socket.send(stream, encrypt, wrap);
+    co_return co_await this->_socket.send(stream, encrypt, wrap);
 }
 
-void character::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
+async::task<size_t> character::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
-    if (this->inited() == false)
-        return;
+    this->assert_thread();
 
-    this->_socket.send(response, encrypt, wrap);
+    co_return co_await this->_socket.send(response, encrypt, wrap);
 }
 
 OBJECT_TYPE character::what() const
 {
+    this->assert_thread();
+
     return OBJECT_TYPE::CHARACTER;
 }
 
 async::task<bool> character::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
+    this->assert_thread();
+
     if (this->_map_lock)
         co_return false;
 
@@ -86,11 +88,28 @@ async::task<bool> character::map(fb::game::map* map, const point16_t& position, 
 
 async::task<bool> character::map(fb::game::map* map, DESTROY_TYPE destroy_type)
 {
-    co_return co_await this->map(map, point16_t(0, 0), destroy_type);
+    this->assert_thread();
+
+    return this->map(map, point16_t(0, 0), destroy_type);
+}
+
+uint32_t character::limited_exp(uint32_t exp) const
+{
+#if defined DEBUG | defined _DEBUG
+    return exp * 100;
+#else
+    if (this->max_level())
+        return exp;
+
+    auto range = this->context.model.ability[this->_class][this->_level].exp;
+    return std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
+#endif
 }
 
 void character::on_hold()
 {
+    this->assert_thread();
+
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
         listener->on_hold(*this);
@@ -98,6 +117,8 @@ void character::on_hold()
 
 void character::on_update()
 {
+    this->assert_thread();
+
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
         listener->on_updated(*this, STATE_LEVEL::LEVEL_MIDDLE);
@@ -105,6 +126,8 @@ void character::on_update()
 
 uint32_t character::on_calculate_damage(bool critical) const
 {
+    this->assert_thread();
+
     auto weapon = this->items.weapon();
     auto model  = weapon != nullptr ? &weapon->based<fb::model::weapon>() : nullptr;
 
@@ -128,6 +151,8 @@ uint32_t character::on_calculate_damage(bool critical) const
 
 void character::on_attack(object* you)
 {
+    this->assert_thread();
+
     life::on_attack(you);
 
     auto thread = lua::get();
@@ -144,72 +169,112 @@ void character::on_attack(object* you)
 
 void character::on_kill(life& you)
 {
+    this->assert_thread();
+
     life::on_kill(you);
 
     auto exp = you.on_exp();
-    if (exp > 0)
+    if (exp == 0)
+        return;
+
+    if (this->_group != nullptr && this->_map != nullptr)
     {
-        auto range = this->context.model.ability[this->_class][this->_level].exp;
-#if defined DEBUG | defined _DEBUG
-        exp *= 100;
-#else
-        if (this->max_level() == false)
-            exp = std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
-#endif
-        this->experience_add(exp, true);
+        this->_group->lock([this, exp](auto& group) {
+            auto nears         = this->_map->nears(this->_position, OBJECT_TYPE::CHARACTER); // same thread
+            auto group_members = group.characters();
+            auto near_members  = std::vector<character*>();
+
+            for (auto ch : nears)
+            {
+                auto i = std::find(group_members.begin(), group_members.end(), ch);
+                if (i != group_members.end())
+                    near_members.push_back(*i);
+            }
+
+            auto size       = near_members.size();
+            auto divide_exp = exp / size;
+            for (auto near_member : near_members)
+            {
+                near_member->add_exp(near_member->limited_exp(divide_exp));
+            }
+        });
+    }
+    else
+    {
+        this->add_exp(this->limited_exp(exp), true);
     }
 }
 
 void character::on_die(object* from)
 {
+    this->assert_thread();
+
     life::on_die(from);
     this->state(STATE::GHOST);
 }
 
 character::operator fb::socket<character>& ()
 {
+    this->assert_thread();
+
     return this->_socket;
 }
 
 bool character::inited() const
 {
+    this->assert_thread();
+
     return this->_init;
 }
 
 void character::init(bool value)
 {
+    this->assert_thread();
+
     this->_init = value;
 }
 
 uint32_t character::id() const
 {
+    this->assert_thread();
+
     return this->_id;
 }
 
 void character::id(uint32_t id)
 {
+    this->assert_thread();
+
     this->_id = id;
 }
 
 uint32_t character::fd()
 {
+    this->assert_thread();
+
     return this->_socket.fd();
 }
 
 bool character::admin() const
 {
+    this->assert_thread();
+
     return this->_admin;
 }
 
 void character::admin(bool value)
 {
+    this->assert_thread();
+
     this->_admin = value;
 }
 
 void character::attack()
 {
-    auto listener = this->get_listener<character>();
+    this->assert_thread();
 
+    auto listener = this->get_listener<character>();
+    auto error    = std::string();
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
@@ -217,14 +282,19 @@ void character::attack()
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.empty() == false)
+        this->message(error);
 }
 
 void character::action(ACTION action, DURATION duration, uint8_t sound)
 {
-    auto listener = this->get_listener<character>();
+    this->assert_thread();
 
+    auto listener = this->get_listener<character>();
+    auto error    = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::RIDING});
@@ -233,42 +303,59 @@ void character::action(ACTION action, DURATION duration, uint8_t sound)
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.empty() == false)
+        this->message(error);
 }
 
 const std::string& character::name() const
 {
+    this->assert_thread();
+
     return this->_name;
 }
 
 void character::name(const std::string& value)
 {
+    this->assert_thread();
+
     this->_name = value;
 }
 
 void character::pw(const std::string& value)
 {
+    this->assert_thread();
+
     this->_pw = value;
 }
 
 const datetime& character::updated_date() const
 {
+    this->assert_thread();
+
     return this->_updated_date;
 }
 
 void character::updated_date(const datetime& value)
 {
+    this->assert_thread();
+
     this->_updated_date = value;
 }
 
 uint16_t character::look() const
 {
+    this->assert_thread();
+
     return this->_look;
 }
 
 void character::look(uint16_t value)
 {
+    this->assert_thread();
+
     this->_look = value;
 
     auto listener = this->get_listener<character>();
@@ -278,11 +365,15 @@ void character::look(uint16_t value)
 
 uint8_t character::color() const
 {
+    this->assert_thread();
+
     return this->_color;
 }
 
 void character::color(uint8_t value)
 {
+    this->assert_thread();
+
     this->_color = value;
 
     auto listener = this->get_listener<character>();
@@ -292,11 +383,15 @@ void character::color(uint8_t value)
 
 std::optional<uint8_t> character::armor_color() const
 {
+    this->assert_thread();
+
     return this->_armor_color;
 }
 
 void character::armor_color(std::optional<uint8_t> value)
 {
+    this->assert_thread();
+
     this->_armor_color = value;
 
     auto listener = this->get_listener<character>();
@@ -306,17 +401,23 @@ void character::armor_color(std::optional<uint8_t> value)
 
 uint8_t character::current_armor_color() const
 {
+    this->assert_thread();
+
     auto armor = this->items.armor();
     return this->_armor_color.value_or(armor != nullptr ? armor->color() : 0x00);
 }
 
 std::optional<uint16_t> character::disguise() const
 {
+    this->assert_thread();
+
     return this->_disguise;
 }
 
 void character::disguise(uint16_t value)
 {
+    this->assert_thread();
+
     this->_disguise = value;
     this->state(STATE::DISGUISE);
 
@@ -327,6 +428,8 @@ void character::disguise(uint16_t value)
 
 void character::undisguise()
 {
+    this->assert_thread();
+
     this->_disguise = std::nullopt;
     if (this->state() == STATE::DISGUISE)
         this->state(STATE::NORMAL);
@@ -338,63 +441,87 @@ void character::undisguise()
 
 uint32_t character::defensive_physical() const
 {
+    this->assert_thread();
+
     return this->_defensive.physical;
 }
 
 void character::defensive_physical(uint8_t value)
 {
+    this->assert_thread();
+
     this->_defensive.physical = value;
 }
 
 uint32_t character::defensive_magical() const
 {
+    this->assert_thread();
+
     return this->_defensive.magical;
 }
 
 void character::defensive_magical(uint8_t value)
 {
+    this->assert_thread();
+
     this->_defensive.magical = value;
 }
 
 void character::base_hp_up(uint32_t value)
 {
+    this->assert_thread();
+
     this->_base_hp += value;
 }
 
 void character::base_mp_up(uint32_t value)
 {
+    this->assert_thread();
+
     this->_base_mp += value;
 }
 
 void character::base_hp(uint32_t value)
 {
+    this->assert_thread();
+
     this->_base_hp = value;
     this->_hp      = std::min(this->_hp, this->_base_hp);
 }
 
 void character::base_mp(uint32_t value)
 {
+    this->assert_thread();
+
     this->_base_mp = value;
     this->_mp      = std::min(this->_mp, this->_base_mp);
 }
 
 uint32_t character::base_hp() const
 {
+    this->assert_thread();
+
     return this->_base_hp;
 }
 
 uint32_t character::base_mp() const
 {
+    this->assert_thread();
+
     return this->_base_mp;
 }
 
 NATION character::nation() const
 {
+    this->assert_thread();
+
     return this->_nation;
 }
 
 bool character::nation(NATION value)
 {
+    this->assert_thread();
+
     if (value != NATION::GOGURYEO && value != NATION::BUYEO)
         return false;
 
@@ -404,11 +531,15 @@ bool character::nation(NATION value)
 
 CREATURE character::creature() const
 {
+    this->assert_thread();
+
     return this->_creature;
 }
 
 bool character::creature(CREATURE value)
 {
+    this->assert_thread();
+
     if (value != CREATURE::DRAGON && value != CREATURE::PHOENIX && value != CREATURE::TIGER &&
         value != CREATURE::TURTLE)
         return false;
@@ -419,11 +550,15 @@ bool character::creature(CREATURE value)
 
 uint8_t character::level() const
 {
+    this->assert_thread();
+
     return this->_level;
 }
 
 void character::level(uint8_t value)
 {
+    this->assert_thread();
+
     auto listener = this->get_listener<character>();
 
     this->_level = value;
@@ -433,6 +568,8 @@ void character::level(uint8_t value)
 
 bool character::level_up()
 {
+    this->assert_thread();
+
     if (this->max_level())
         return false;
 
@@ -458,26 +595,36 @@ bool character::level_up()
 
 bool character::max_level() const
 {
+    this->assert_thread();
+
     return this->context.model.ability[this->_class].contains(this->_level + 1) == false;
 }
 
 SEX character::sex() const
 {
+    this->assert_thread();
+
     return this->_sex;
 }
 
 void character::sex(SEX value)
 {
+    this->assert_thread();
+
     this->_sex = value;
 }
 
 STATE character::state() const
 {
+    this->assert_thread();
+
     return this->_state;
 }
 
 void character::state(STATE value)
 {
+    this->assert_thread();
+
     if (this->_state == value)
         return;
 
@@ -490,76 +637,106 @@ void character::state(STATE value)
 
 CLASS character::cls() const
 {
+    this->assert_thread();
+
     return this->_class;
 }
 
 void character::cls(CLASS value)
 {
+    this->assert_thread();
+
     this->_class = value;
 }
 
 uint8_t character::promotion() const
 {
+    this->assert_thread();
+
     return uint8_t();
 }
 
 void character::promotion(uint8_t value)
 {
+    this->assert_thread();
+
     this->_promotion = value;
 }
 
 uint8_t character::strength() const
 {
+    this->assert_thread();
+
     return this->_strength;
 }
 
 void character::strength(uint8_t value)
 {
+    this->assert_thread();
+
     this->_strength = value;
 }
 
 void character::strength_up(uint8_t value)
 {
+    this->assert_thread();
+
     this->_strength += value;
 }
 
 uint8_t character::intelligence() const
 {
+    this->assert_thread();
+
     return this->_intelligence;
 }
 
 void character::intelligence(uint8_t value)
 {
+    this->assert_thread();
+
     this->_intelligence = value;
 }
 
 void character::intelligence_up(uint8_t value)
 {
+    this->assert_thread();
+
     this->_intelligence += value;
 }
 
 uint8_t character::dexteritry() const
 {
+    this->assert_thread();
+
     return this->_dexteritry;
 }
 
 void character::dexteritry(uint8_t value)
 {
+    this->assert_thread();
+
     this->_dexteritry = value;
 }
 
 void character::dexteritry_up(uint8_t value)
 {
+    this->assert_thread();
+
     this->_dexteritry += value;
 }
 
-uint32_t character::experience() const
+uint32_t character::exp() const
 {
+    this->assert_thread();
+
     return this->_experience;
 }
 
-void character::experience(uint32_t value)
+void character::exp(uint32_t value)
 {
+    this->assert_thread();
+
     if (this->_experience == value)
         return;
 
@@ -570,10 +747,13 @@ void character::experience(uint32_t value)
         listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
 }
 
-uint32_t character::experience_add(uint32_t value, bool notify)
+uint32_t character::add_exp(uint32_t value, bool notify)
 {
+    this->assert_thread();
+
     auto capacity = 0xFFFFFFFF - this->_experience;
     auto lack     = 0;
+    auto error    = std::string();
 
     try
     {
@@ -593,11 +773,11 @@ uint32_t character::experience_add(uint32_t value, bool notify)
             if (value > capacity)
             {
                 lack = value - capacity;
-                this->experience(this->_experience + capacity);
+                this->exp(this->_experience + capacity);
             }
             else
             {
-                this->experience(this->_experience + value);
+                this->exp(this->_experience + value);
             }
 
             if (notify)
@@ -632,14 +812,18 @@ uint32_t character::experience_add(uint32_t value, bool notify)
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+    if (error.empty() == false)
+        this->message(error);
 
     return lack;
 }
 
-uint32_t character::experience_reduce(uint32_t value)
+uint32_t character::reduce_exp(uint32_t value)
 {
+    this->assert_thread();
+
     if (this->_experience < value)
     {
         uint32_t lack     = value - this->_experience;
@@ -655,17 +839,21 @@ uint32_t character::experience_reduce(uint32_t value)
 
 uint32_t character::experience_remained() const
 {
+    this->assert_thread();
+
     if (this->max_level())
         return 0;
 
     if (this->_class == CLASS::NONE && this->_level >= 5)
         return 0;
 
-    return this->context.model.ability[this->_class][this->_level].exp - this->experience();
+    return this->context.model.ability[this->_class][this->_level].exp - this->exp();
 }
 
 float character::experience_percent() const
 {
+    this->assert_thread();
+
     auto current_level = this->level();
     auto next_exp      = this->max_level() ? 0xFFFFFFFF : this->context.model.ability[this->_class][current_level].exp;
     auto prev_exp =
@@ -679,11 +867,15 @@ float character::experience_percent() const
 
 uint32_t character::money() const
 {
+    this->assert_thread();
+
     return this->_money;
 }
 
 void character::money(uint32_t value)
 {
+    this->assert_thread();
+
     this->_money = value;
 
     auto listener = this->get_listener<character>();
@@ -696,6 +888,8 @@ void character::money(uint32_t value)
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
 {
+    this->assert_thread();
+
     uint32_t capacity = 0xFFFFFFFF - this->_money;
     uint32_t lack     = 0;
     if (value > capacity)
@@ -713,6 +907,8 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
 
 uint32_t character::money_reduce(uint32_t value)
 {
+    this->assert_thread();
+
     uint32_t lack = 0;
     if (this->_money < value)
     {
@@ -727,44 +923,55 @@ uint32_t character::money_reduce(uint32_t value)
     return lack;
 }
 
-async::task<uint32_t> character::money_drop(uint32_t value)
+uint32_t character::money_drop(uint32_t value)
 {
+    this->assert_thread();
+
+    auto error = std::string();
     try
     {
         if (value == 0)
-            co_return 0;
+            return 0;
 
         this->assert_state({STATE::RIDING, STATE::GHOST});
 
         auto lack = this->money_reduce(value);
 
         auto cash = this->context.make<fb::game::cash>(value);
-        co_await cash->map(this->_map, this->_position);
+        cash->map(this->_map, this->_position);
 
         this->action(ACTION::PICKUP, DURATION::PICKUP);
         this->message(message::money::DROP);
 
-        co_return lack;
+        return lack;
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
-        co_return 0;
+        error = e.what();
     }
+
+    this->message(error);
+    return 0;
 }
 
 uint32_t character::deposited_money() const
 {
+    this->assert_thread();
+
     return this->_deposited_money;
 }
 
 void character::deposited_money(uint32_t value)
 {
+    this->assert_thread();
+
     this->_deposited_money = value;
 }
 
 uint32_t character::deposit_money(uint32_t value)
 {
+    this->assert_thread();
+
     uint32_t capacity = 0xFFFFFFFF - this->_deposited_money;
     uint32_t lack     = 0;
     if (value > capacity)
@@ -782,6 +989,8 @@ uint32_t character::deposit_money(uint32_t value)
 
 uint32_t character::withdraw_money(uint32_t value)
 {
+    this->assert_thread();
+
     uint32_t lack = 0;
     if (this->_deposited_money < value)
     {
@@ -798,6 +1007,8 @@ uint32_t character::withdraw_money(uint32_t value)
 
 bool character::deposit_item(item& item)
 {
+    this->assert_thread();
+
     item.owner(this);
     if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
@@ -831,6 +1042,8 @@ bool character::deposit_item(item& item)
 
 bool character::deposit_item(uint8_t index, uint16_t count)
 {
+    this->assert_thread();
+
     auto item = this->items.at(index);
     if (item == nullptr)
         return false;
@@ -848,6 +1061,8 @@ bool character::deposit_item(uint8_t index, uint16_t count)
 
 bool character::deposit_item(const std::string& name, uint16_t count)
 {
+    this->assert_thread();
+
     auto item = this->items.find(name);
     if (item == nullptr)
         return false;
@@ -861,6 +1076,8 @@ bool character::deposit_item(const std::string& name, uint16_t count)
 
 fb::game::item* character::deposited_item(const fb::model::item& item) const
 {
+    this->assert_thread();
+
     auto found =
         std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](auto* deposited_item) {
             return deposited_item->template based<fb::model::item>() == item;
@@ -874,43 +1091,47 @@ fb::game::item* character::deposited_item(const fb::model::item& item) const
 
 const std::vector<fb::game::item*>& character::deposited_items() const
 {
+    this->assert_thread();
+
     return this->_deposited_items;
 }
 
-async::task<fb::game::item*> character::withdraw_item(uint8_t index, uint16_t count)
+fb::game::item* character::withdraw_item(uint8_t index, uint16_t count)
 {
+    this->assert_thread();
+
     if (index > this->_deposited_items.size() - 1)
-        co_return nullptr;
+        return nullptr;
 
     if (this->items.free() == false)
-        co_return nullptr;
+        return nullptr;
 
     auto deposited_item  = this->_deposited_items.at(index);
     auto deposited_count = deposited_item->count();
     if (deposited_count < count)
-        co_return nullptr;
+        return nullptr;
 
     auto& model  = deposited_item->based<fb::model::item>();
     auto  exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->items.find(model) : nullptr;
     if (exists != nullptr)
     {
         if (exists->count() + count > model.capacity)
-            co_return nullptr;
+            return nullptr;
 
         deposited_item->count(deposited_count - count);
-        auto added_slot = co_await this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
+        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
         if (deposited_item->empty())
         {
             auto i = this->_deposited_items.begin() + index;
             this->_deposited_items.erase(i);
         }
 
-        co_return this->items.at(added_slot);
+        return this->items.at(added_slot);
     }
     else
     {
         if (this->items.free() == false)
-            co_return nullptr;
+            return nullptr;
 
         deposited_item->count(deposited_count - count);
         if (deposited_item->empty())
@@ -919,14 +1140,16 @@ async::task<fb::game::item*> character::withdraw_item(uint8_t index, uint16_t co
             this->_deposited_items.erase(i);
         }
 
-        auto added_slot = co_await this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
+        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
 
-        co_return this->items.at(added_slot);
+        return this->items.at(added_slot);
     }
 }
 
-async::task<fb::game::item*> character::withdraw_item(const std::string& name, uint16_t count)
+fb::game::item* character::withdraw_item(const std::string& name, uint16_t count)
 {
+    this->assert_thread();
+
     auto found =
         std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](auto* deposited_item) {
             auto& model = deposited_item->template based<fb::model::item>();
@@ -934,14 +1157,16 @@ async::task<fb::game::item*> character::withdraw_item(const std::string& name, u
         });
 
     if (found == this->_deposited_items.end())
-        co_return nullptr;
+        return nullptr;
 
     auto index = std::distance(this->_deposited_items.begin(), found);
-    co_return co_await this->withdraw_item((uint8_t)index, count);
+    return this->withdraw_item((uint8_t)index, count);
 }
 
-async::task<fb::game::item*> character::withdraw_item(const fb::model::item& item, uint16_t count)
+fb::game::item* character::withdraw_item(const fb::model::item& item, uint16_t count)
 {
+    this->assert_thread();
+
     auto found =
         std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto* deposited_item) {
             auto& model = deposited_item->template based<fb::model::item>();
@@ -949,44 +1174,58 @@ async::task<fb::game::item*> character::withdraw_item(const fb::model::item& ite
         });
 
     if (found == this->_deposited_items.end())
-        co_return nullptr;
+        return nullptr;
 
     auto index = std::distance(this->_deposited_items.begin(), found);
-    co_return co_await this->withdraw_item((uint8_t)index, count);
+    return this->withdraw_item((uint8_t)index, count);
 }
 
 uint32_t character::damage() const
 {
+    this->assert_thread();
+
     return this->_damage;
 }
 
 void character::damage(uint8_t value)
 {
+    this->assert_thread();
+
     this->_damage = value;
 }
 
 uint32_t character::hit() const
 {
+    this->assert_thread();
+
     return this->_hit;
 }
 
 void character::hit(uint8_t value)
 {
+    this->assert_thread();
+
     this->_hit = value;
 }
 
 uint32_t character::regenerative() const
 {
+    this->assert_thread();
+
     return this->_regenerative;
 }
 
 void character::regenerative(uint8_t value)
 {
+    this->assert_thread();
+
     this->_regenerative = value;
 }
 
 bool character::option(SETTING key) const
 {
+    this->assert_thread();
+
     auto opt = static_cast<uint8_t>(key);
     if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
@@ -996,6 +1235,8 @@ bool character::option(SETTING key) const
 
 void character::option(SETTING key, bool value, bool notify)
 {
+    this->assert_thread();
+
     auto opt = static_cast<uint8_t>(key);
     if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
         return;
@@ -1015,6 +1256,8 @@ void character::option(SETTING key, bool value, bool notify)
 
 bool character::option_toggle(SETTING key, bool notify)
 {
+    this->assert_thread();
+
     auto opt = static_cast<uint8_t>(key);
     if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
@@ -1025,26 +1268,50 @@ bool character::option_toggle(SETTING key, bool notify)
 
 const std::string& character::title() const
 {
+    this->assert_thread();
+
     return this->_title;
 }
 
 void character::title(const std::string& value)
 {
+    this->assert_thread();
+
     this->_title = value;
 }
 
-group* character::group() const
+const shared_group_lock& character::group() const
 {
+    this->assert_thread();
+
     return this->_group;
+}
+
+shared_group_lock& character::group()
+{
+    this->assert_thread();
+
+    return this->_group;
+}
+
+void character::group(shared_group_lock& value)
+{
+    this->assert_thread();
+
+    this->_group = value;
 }
 
 clan* character::clan() const
 {
+    this->assert_thread();
+
     return this->_clan;
 }
 
 void character::assert_state(STATE value) const
 {
+    this->assert_thread();
+
     static const auto pairs = std::map<STATE, const std::runtime_error>{
         {STATE::GHOST,    ghost_exception()   },
         {STATE::RIDING,   ridding_exception() },
@@ -1057,17 +1324,23 @@ void character::assert_state(STATE value) const
 
 void character::assert_state(const std::vector<STATE>& values) const
 {
+    this->assert_thread();
+
     for (auto value : values)
         this->assert_state(value);
 }
 
 bool character::move(const point16_t& before)
 {
+    this->assert_thread();
+
     return this->move(this->_direction, before);
 }
 
 bool character::move(DIRECTION direction, const point16_t& before)
 {
+    this->assert_thread();
+
     auto listener = this->get_listener<character>();
 
     if (this->_position != before)
@@ -1088,8 +1361,11 @@ bool character::move(DIRECTION direction, const point16_t& before)
     }
 }
 
-async::task<void> character::ride(mob& horse)
+void character::ride(mob& horse)
 {
+    this->assert_thread();
+
+    auto error = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1103,19 +1379,25 @@ async::task<void> character::ride(mob& horse)
         if (horse.map() != this->_map)
             throw std::runtime_error(message::error::UNKNOWN);
 
-        co_await horse.map(nullptr);
+        horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
         this->message(message::ride::ON);
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.empty() == false)
+        this->message(error);
 }
 
-async::task<void> character::ride()
+void character::ride()
 {
+    this->assert_thread();
+
+    auto error = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1124,16 +1406,22 @@ async::task<void> character::ride()
         if (front == nullptr)
             throw character::no_conveyance_exception();
 
-        co_await this->ride(static_cast<mob&>(*front));
+        this->ride(static_cast<mob&>(*front));
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.empty() == false)
+        this->message(error);
 }
 
-async::task<void> character::unride()
+void character::unride()
 {
+    this->assert_thread();
+
+    auto error = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1141,25 +1429,32 @@ async::task<void> character::unride()
             throw std::runtime_error(message::ride::UNRIDE);
 
         auto& model = this->context.model.mob[const_value::mob::horse];
-        auto  horse = this->context.make<mob>(model, mob::config{.alive = true});
-        co_await horse->map(this->_map, this->position_forward());
+        auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
+        horse->map(this->_map, this->position_forward());
 
         this->state(STATE::NORMAL);
         this->message(message::ride::OFF);
     }
     catch (std::exception& e)
     {
-        this->message(e.what());
+        error = e.what();
     }
+
+    if (error.empty() == false)
+        this->message(error);
 }
 
 bool character::alive() const
 {
+    this->assert_thread();
+
     return this->_state != STATE::GHOST;
 }
 
 void character::refresh_map()
 {
+    this->assert_thread();
+
     if (this->_map == nullptr)
         return;
 
@@ -1170,6 +1465,8 @@ void character::refresh_map()
 
 bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 {
+    this->assert_thread();
+
     for (auto& dsl : conditions)
     {
         switch (dsl.header)
@@ -1247,17 +1544,26 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
 void character::message(const std::string& message, MESSAGE_TYPE type)
 {
+    this->assert_thread();
+
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
         listener->on_notify(*this, message, type);
 }
 
-async::task<bool> character::inline_sell(const std::string& message, const std::vector<npc*>& npcs)
+void character::assert_thread() const
 {
+    fb::game::object::assert_thread();
+}
+
+bool character::inline_sell(const std::string& message, const std::vector<npc*>& npcs)
+{
+    this->assert_thread();
+
     auto count = std::optional<uint16_t>();
     auto name  = std::string();
     if (fb::model::const_value::regex::match_sell_message(message, name, count) == false)
-        co_return false;
+        return false;
 
     auto model  = this->context.model.item.name2item(name);
     auto bought = false;
@@ -1267,15 +1573,17 @@ async::task<bool> character::inline_sell(const std::string& message, const std::
             bought = true;
     }
 
-    co_return bought;
+    return bought;
 }
 
-async::task<bool> character::inline_buy(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_buy(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name  = std::string();
     auto count = uint16_t(0);
     if (fb::model::const_value::regex::match_buy_message(message, name, count) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     auto sold  = false;
@@ -1285,14 +1593,16 @@ async::task<bool> character::inline_buy(const std::string& message, const std::v
             sold = true;
     }
 
-    co_return sold;
+    return sold;
 }
 
-async::task<bool> character::inline_repair(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_repair(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name = std::string();
     if (fb::model::const_value::regex::match_repair_message(message, name) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     auto done  = false;
@@ -1302,104 +1612,118 @@ async::task<bool> character::inline_repair(const std::string& message, const std
             done = true;
     }
 
-    co_return done;
+    return done;
 }
 
-async::task<bool> character::inline_deposit_money(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_deposit_money(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto money = std::optional<uint32_t>();
     if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
-        co_return false;
+        return false;
 
     for (auto npc : npcs)
     {
         if (npc->hold_money(*this, money))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_withdraw_money(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_withdraw_money(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto money = std::optional<uint32_t>();
     if (fb::model::const_value::regex::match_withdraw_money_message(message, money) == false)
-        co_return false;
+        return false;
 
     for (auto npc : npcs)
     {
         if (npc->return_money(*this, money))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_deposit_item(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_deposit_item(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name  = std::string();
     auto count = std::optional<uint16_t>(0);
     if (fb::model::const_value::regex::match_deposit_item_message(message, name, count) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         if (npc->hold_item(*this, model, count))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_withdraw_item(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_withdraw_item(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name  = std::string();
     auto count = std::optional<uint16_t>(0);
     if (fb::model::const_value::regex::match_withdraw_item_message(message, name, count) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
-        if (co_await npc->return_item(*this, model, count))
-            co_return true;
+        if (npc->return_item(*this, model, count))
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_sell_list(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_sell_list(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     if (fb::model::const_value::regex::match_sell_list(message) == false)
-        co_return false;
+        return false;
 
     for (auto npc : npcs)
     {
         npc->sell_list();
     }
 
-    co_return true;
+    return true;
 }
 
-async::task<bool> character::inline_buy_list(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_buy_list(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     if (fb::model::const_value::regex::match_buy_list(message) == false)
-        co_return false;
+        return false;
 
     for (auto npc : npcs)
     {
         npc->buy_list();
     }
 
-    co_return true;
+    return true;
 }
 
-async::task<bool> character::inline_sell_price(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_sell_price(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name = std::string();
     if (fb::model::const_value::regex::match_sell_price(message, name) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
@@ -1407,14 +1731,16 @@ async::task<bool> character::inline_sell_price(const std::string& message, const
         npc->sell_price(model);
     }
 
-    co_return true;
+    return true;
 }
 
-async::task<bool> character::inline_buy_price(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_buy_price(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name = std::string();
     if (fb::model::const_value::regex::match_buy_price(message, name) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
@@ -1422,86 +1748,98 @@ async::task<bool> character::inline_buy_price(const std::string& message, const 
         npc->buy_price(model);
     }
 
-    co_return true;
+    return true;
 }
 
-async::task<bool> character::inline_show_deposited_money(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_show_deposited_money(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     if (fb::model::const_value::regex::match_deposited_money(message) == false)
-        co_return false;
+        return false;
 
     for (auto npc : npcs)
     {
         if (npc->deposited_money(*this))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_rename_weapon(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_rename_weapon(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     std::string model_name, custom_name;
     if (fb::model::const_value::regex::match_rename_weapon(message, model_name, custom_name) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(model_name);
     for (auto npc : npcs)
     {
         if (npc->rename_weapon(*this, model, custom_name))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_hold_item_list(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_hold_item_list(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     if (fb::model::const_value::regex::match_hold_item_list(message) == false)
-        co_return false;
+        return false;
 
     for (auto npc : npcs)
     {
         if (npc->hold_item_list(*this))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_hold_item_count(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_hold_item_count(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     auto name = std::string();
     if (fb::model::const_value::regex::match_hold_item_count(message, name) == false)
-        co_return false;
+        return false;
 
     auto model = this->context.model.item.name2item(name);
     for (auto npc : npcs)
     {
         if (npc->hold_item_count(*this, model))
-            co_return true;
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-async::task<bool> character::inline_interaction(const std::string& message, const std::vector<npc*>& npcs)
+bool character::inline_interaction(const std::string& message, const std::vector<npc*>& npcs)
 {
+    this->assert_thread();
+
     if (npcs.size() == 0)
-        co_return false;
+        return false;
 
     for (auto& fn : this->inline_interaction_funcs)
     {
-        if (co_await fn(message, npcs))
-            co_return true;
+        if (fn(message, npcs))
+            return true;
     }
 
-    co_return false;
+    return false;
 }
 
-fb::protocol::db::Character character::to_protocol() const
+fb::protocol::internal::Character character::to_protocol() const
 {
-    auto dto             = fb::protocol::db::Character();
+    this->assert_thread();
+
+    auto dto             = fb::protocol::internal::Character();
     dto.id               = this->_id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
@@ -1513,7 +1851,7 @@ fb::protocol::db::Character character::to_protocol() const
     dto.nation           = (uint16_t)this->_nation;
     dto.creature         = (uint16_t)this->_creature;
     dto.map              = this->_map != nullptr ? this->_map->model.id : 0;
-    dto.position         = fb::protocol::db::Position{this->_position.x, this->_position.y};
+    dto.position         = fb::protocol::internal::Position{this->_position.x, this->_position.y};
     dto.direction        = (uint8_t)this->_direction;
     dto.state            = (uint8_t)this->_state;
     dto.class_type       = (uint8_t)this->_class;
@@ -1536,7 +1874,14 @@ fb::protocol::db::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
-    dto.clan             = std::nullopt;
+
+    if (this->_group != nullptr)
+    {
+        dto.group = this->_group->template lock<uint32_t>([](auto& group) {
+            return group.id();
+        });
+    }
+    dto.clan = std::nullopt;
     return dto;
 }
 

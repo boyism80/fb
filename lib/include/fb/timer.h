@@ -2,6 +2,10 @@
 #define __TIMER_H__
 
 #include <fb/model/datetime.h>
+#include <chrono>
+#include <functional>
+#include <async/task.h>
+#include <thread>
 
 using namespace std::chrono_literals;
 
@@ -9,25 +13,22 @@ namespace fb {
 
 class thread;
 
-using timer_callback = std::function<void(const fb::model::datetime&, std::thread::id)>;
-
 class timer
 {
 public:
     friend class fb::thread;
 
 public:
-    const fb::timer_callback  fn;
-    const fb::model::datetime begin;
-    const fb::model::timespan duration;
-    const bool                disposable = false;
+    using handle_callback_type = std::function<async::task<void>(const fb::model::datetime&, std::thread::id)>;
+
+public:
+    const handle_callback_type fn;
+    const fb::model::timespan  duration;
+    const bool                 disposable = false;
+    fb::model::datetime        begin;
 
 private:
-    timer(const fb::timer_callback& fn, const fb::model::timespan& duration, bool disposable) :
-        fn(fn),
-        duration(duration),
-        disposable(disposable)
-    { }
+    timer(const handle_callback_type& fn, const fb::model::timespan& duration, bool disposable);
     timer(const timer&) = delete;
     timer(timer&&)      = delete;
 
@@ -35,7 +36,8 @@ private:
     timer& operator= (const timer&) = delete;
 
 public:
-    ~timer() = default;
+    ~timer()
+    { }
 };
 
 } // namespace fb

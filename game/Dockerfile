@@ -1,4 +1,4 @@
-FROM cshyeon/fb:build AS build
+FROM ghcr.io/boyism80/fb/build AS build
 
 WORKDIR /app
 COPY include ./include
@@ -7,9 +7,9 @@ COPY game ./game
 
 WORKDIR /app/game/build
 RUN cmake ..
-RUN cmake --build . --config Release --parallel 8
+RUN cmake --build . --config Release --parallel
 
-FROM cshyeon/fb:build
+FROM ghcr.io/boyism80/fb/build
 RUN apt-get install zip unzip -y
 
 WORKDIR /app
@@ -22,4 +22,4 @@ RUN rm -f maps.zip
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-ENTRYPOINT ./app
+CMD ./app

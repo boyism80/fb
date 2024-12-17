@@ -2,7 +2,7 @@
 #include <item.h>
 
 fb::game::consume::consume(fb::game::context& context, const fb::model::consume& model, uint16_t count) :
-    fb::game::item(context, model, fb::game::item::config{.count = count})
+    fb::game::item(context, model, initial_params{.count = count})
 { }
 
 fb::game::consume::consume(const consume& right) :
@@ -27,6 +27,6 @@ bool fb::game::consume::active()
     }
 
     if (this->empty())
-        this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
+        std::ignore = this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
     return true;
 }

@@ -10,7 +10,7 @@
 #undef small
 #endif
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a character.
@@ -28,6 +28,7 @@ class item : public object
 {
 public:
     using model_type = fb::model::item;
+    using container  = std::unordered_map<uint8_t, fb::game::item*>;
 
 public:
     friend class items;
@@ -49,7 +50,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct config : fb::game::object::config
+    struct initial_params : fb::game::object::initial_params
     {
     public:
         uint16_t count = 1;
@@ -72,13 +73,13 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The context
-     * @param[in]  model    The model
-     * @param[in]  config   The configuration
+     * @param      context         The context
+     * @param[in]  model           The model
+     * @param[in]  initial_params  The initial parameters
      */
-    item(fb::game::context&            context,
-         const fb::model::item&        model,
-         const fb::game::item::config& config = fb::game::item::config{.count = 1});
+    item(fb::game::context&     context,
+         const fb::model::item& model,
+         const initial_params&  params = initial_params{.count = 1});
     /**
      * @brief      Constructs a new instance.
      *
@@ -214,7 +215,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    virtual fb::protocol::db::Item to_protocol() const;
+    virtual fb::protocol::internal::Item to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const;
 
 public:
     /**
@@ -336,7 +337,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<fb::game::cash*> replace(uint32_t value);
+    fb::game::cash* replace(uint32_t value);
     /**
      * @brief      { function_description }
      *
@@ -391,7 +392,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active();
+    bool active() override;
 };
 
 /**
@@ -494,7 +495,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active();
+    bool active() override;
 
 public:
     /**
@@ -648,7 +649,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    fb::protocol::db::Item to_protocol() const override;
+    fb::protocol::internal::Item to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const override;
 };
 
 /**
@@ -837,7 +838,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> equipment_off(EQUIPMENT_PARTS parts);
+    uint8_t equipment_off(EQUIPMENT_PARTS parts);
 
 public:
     /**
@@ -847,7 +848,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(fb::game::item& item);
+    uint8_t add(fb::game::item& item) override;
     /**
      * @brief      Adds the specified item.
      *
@@ -855,7 +856,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(fb::game::item* item);
+    uint8_t add(fb::game::item* item);
     /**
      * @brief      { function_description }
      *
@@ -864,7 +865,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<std::vector<uint8_t>> add(const std::vector<fb::game::item*>& items, bool stop_if_remained = false);
+    std::vector<uint8_t> add(const std::vector<fb::game::item*>& items, bool stop_if_remained = false);
     /**
      * @brief      { function_description }
      *
@@ -873,7 +874,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> add(fb::game::item& item, uint8_t index);
+    uint8_t add(fb::game::item& item, uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -881,7 +882,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<fb::game::item*> active(uint8_t index);
+    fb::game::item* active(uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -889,7 +890,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<uint8_t> inactive(EQUIPMENT_PARTS parts);
+    uint8_t inactive(EQUIPMENT_PARTS parts);
     /**
      * @brief      { function_description }
      *
@@ -1061,7 +1062,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<fb::game::item*> drop(uint8_t index, uint8_t count);
+    fb::game::item* drop(uint8_t index, uint8_t count);
     /**
      * @brief      { function_description }
      *
@@ -1069,7 +1070,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> pickup(bool boost);
+    void pickup(bool boost);
     /**
      * @brief      { function_description }
      *
@@ -1077,7 +1078,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> throws(uint8_t index);
+    bool throws(uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -1116,6 +1117,6 @@ public:
     fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__ITEM_H__
