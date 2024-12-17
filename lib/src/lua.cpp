@@ -126,6 +126,11 @@ context& context::pop(int offset)
     return *this;
 }
 
+std::string context::get_type(int offset)
+{
+    return lua_typename(*this, lua_type(*this, offset));
+}
+
 std::string context::tostring(int offset)
 {
     auto x = lua_tostring(*this, offset);

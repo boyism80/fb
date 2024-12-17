@@ -27,6 +27,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::character, "fb.game.character")
 {"deposited_item",      fb::game::character::builtin_deposited_item},
 {"deposit_item",        fb::game::character::builtin_deposit_item},
 {"withdraw_item",       fb::game::character::builtin_withdraw_item},
+{"group",               fb::game::character::builtin_group},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::character::builtin_look(lua_State* lua)
@@ -776,4 +777,22 @@ int fb::game::character::builtin_withdraw_item(lua_State* lua)
     }
 
     return 1;
+}
+
+int fb::game::character::builtin_group(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    thread->pushobject(ch);
+    thread->pushnil();
+    lua_call(lua, 2, 0);
+    return 0;
 }

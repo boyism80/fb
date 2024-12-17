@@ -1,4 +1,12 @@
+function group_lock(me, group)
+    if group == nil then
+        me:chat('그룹이 없어용')
+    end
+end
+
 function func(me)
+    me:group(group_lock)
+    
     local items = me:items()
 
     for slot, item in pairs(items) do
