@@ -40,11 +40,6 @@ console::console()
         GetConsoleScreenBufferInfo(hwnd, &screen);
         _width  = screen.dwSize.X;
         _height = screen.dwSize.Y;
-
-        auto cursor_info = CONSOLE_CURSOR_INFO{};
-        GetConsoleCursorInfo(hwnd, &cursor_info);
-        cursor_info.bVisible = false;
-        SetConsoleCursorInfo(hwnd, &cursor_info);
 #else
         setlocale(LC_ALL, "C.UTF-8");
         initscr();
@@ -57,36 +52,15 @@ console::console()
         _width = max_width;
     }
 
+    // hide cursor
+    std::cout << "\x1B[?25l";
+
     _width = max_width > _width ? max_width : _width;
 }
 
 console::~console()
 {
     newline();
-}
-
-void console::raw_put(const std::string& text, uint16_t x, uint16_t y)
-{
-    auto _ = std::lock_guard(_mutex);
-
-    if (_tty)
-    {
-#ifdef _WIN32
-        DWORD written;
-        ::WriteConsoleOutputCharacterA(GetStdHandle(STD_OUTPUT_HANDLE),
-                                       text.c_str(),
-                                       text.length(),
-                                       COORD{(SHORT)x, (SHORT)y},
-                                       &written);
-#else
-        mvaddstr(y, x, text.c_str());
-        refresh();
-#endif
-    }
-    else
-    {
-        std::cout << text;
-    }
 }
 
 bool console::is_tty()
@@ -101,12 +75,9 @@ void console::position(uint16_t x, uint16_t y)
 
     auto _ = std::lock_guard(_mutex);
 
-#ifdef _WIN32
-    COORD pos = {x, y};
-    ::SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-#else
-    ::move(y, x);
-#endif
+    std::cout << std::format("\x1B[{};{}H", y, x);
+    _x = x;
+    _y = y;
 }
 
 void console::position(uint16_t* x, uint16_t* y)
@@ -124,23 +95,11 @@ void console::position(uint16_t* x, uint16_t* y)
 
     auto _ = std::lock_guard(_mutex);
 
-#ifdef _WIN32
-    CONSOLE_SCREEN_BUFFER_INFO screen;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &screen);
-
     if (x != nullptr)
-        *x = screen.dwCursorPosition.X;
+        *x = _x;
 
     if (y != nullptr)
-        *y = screen.dwCursorPosition.Y;
-#else
-    uint16_t unused_x, unused_y;
-    if (x == nullptr)
-        x = &unused_x;
-    if (y == nullptr)
-        y = &unused_y;
-    getyx(stdscr, *y, *x);
-#endif
+        *y = _y;
 }
 
 void console::newline()
@@ -161,16 +120,11 @@ void console::newline()
     }
 }
 
-void console::clear(uint16_t line)
+void console::clear()
 {
     if (!_tty)
         return;
 
     auto _ = std::lock_guard(_mutex);
-
-    uint16_t y;
-    position(nullptr, &y);
-    position(0, y);
-    raw_put(std::string(_width, ' '), 0, y);
-    position(0, y);
+    std::cout << "\x1b[2K";
 }

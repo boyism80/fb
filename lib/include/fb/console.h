@@ -38,7 +38,8 @@ public:
 
 private:
     inline static std::recursive_mutex _mutex;
-    inline static uint16_t             _comment_line;
+    inline static uint16_t             _comment_line = 0;
+    inline static uint16_t             _x = 1, _y = 1;
     inline static uint16_t             _width, _height;
     inline static bool                 _tty;
 
@@ -51,16 +52,6 @@ public:
      * @brief      Destroys the object.
      */
     ~console();
-
-private:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  text  The text
-     * @param[in]  x     { parameter_description }
-     * @param[in]  y     { parameter_description }
-     */
-    static void raw_put(const std::string& text, uint16_t x, uint16_t y);
 
 public:
     /**
@@ -99,7 +90,7 @@ public:
      *
      * @param[in]  line  The line
      */
-    static void clear(uint16_t line = -1);
+    static void clear();
 
     /**
      * @brief      { function_description }
@@ -132,9 +123,9 @@ public:
             x = 0;
             break;
         }
-        position(0, y);
         clear();
-        raw_put(text, x, y);
+        position(x, y);
+        std::cout << text;
 
         if (!_tty)
         {
