@@ -89,7 +89,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] virtual async::task<uint8_t> add(T& element);
+    virtual uint8_t add(T& element);
     /**
      * @brief      { function_description }
      *
@@ -98,7 +98,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] virtual async::task<uint8_t> add(T& element, uint8_t index);
+    virtual uint8_t add(T& element, uint8_t index);
     /**
      * @brief      Removes the specified index.
      *
@@ -106,7 +106,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] virtual async::task<bool> remove(uint8_t index);
+    virtual bool remove(uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -115,7 +115,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] virtual async::task<bool> swap(uint8_t src, uint8_t dst);
+    virtual bool swap(uint8_t src, uint8_t dst);
     /**
      * @brief      { function_description }
      *

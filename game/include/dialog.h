@@ -56,12 +56,12 @@ public:
          * @param[in]  button_next  The button next
          * @param[in]  interaction  The interaction
          */
-        virtual async::task<void> on_dialog(character&               me,
-                                            const fb::model::object& object,
-                                            const std::string&       message,
-                                            bool                     button_prev,
-                                            bool                     button_next,
-                                            interaction              interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character&               me,
+                               const fb::model::object& object,
+                               const std::string&       message,
+                               bool                     button_prev,
+                               bool                     button_next,
+                               interaction              interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -71,11 +71,11 @@ public:
          * @param[in]  menus        The menus
          * @param[in]  interaction  The interaction
          */
-        virtual async::task<void> on_dialog(character&                      me,
-                                            const fb::model::npc&           npc,
-                                            const std::string&              message,
-                                            const std::vector<std::string>& menus,
-                                            interaction                     interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character&                      me,
+                               const fb::model::npc&           npc,
+                               const std::string&              message,
+                               const std::vector<std::string>& menus,
+                               interaction                     interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -85,11 +85,11 @@ public:
          * @param[in]  item_slots   The item slots
          * @param[in]  interaction  The interaction
          */
-        virtual async::task<void> on_dialog(character&                  me,
-                                            const fb::model::npc&       npc,
-                                            const std::string&          message,
-                                            const std::vector<uint8_t>& item_slots,
-                                            interaction                 interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character&                  me,
+                               const fb::model::npc&       npc,
+                               const std::string&          message,
+                               const std::vector<uint8_t>& item_slots,
+                               interaction                 interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -100,12 +100,12 @@ public:
          * @param[in]  pursuit      The pursuit
          * @param[in]  interaction  The interaction
          */
-        virtual async::task<void> on_dialog(character&            me,
-                                            const fb::model::npc& npc,
-                                            const std::string&    message,
-                                            const item_pairs&     pairs,
-                                            uint16_t              pursuit     = 0xFFFF,
-                                            interaction           interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character&            me,
+                               const fb::model::npc& npc,
+                               const std::string&    message,
+                               const item_pairs&     pairs,
+                               uint16_t              pursuit     = 0xFFFF,
+                               interaction           interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -114,10 +114,10 @@ public:
          * @param[in]  message      The message
          * @param[in]  interaction  The interaction
          */
-        virtual async::task<void> on_dialog(character&            me,
-                                            const fb::model::npc& npc,
-                                            const std::string&    message,
-                                            interaction           interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character&            me,
+                               const fb::model::npc& npc,
+                               const std::string&    message,
+                               interaction           interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -130,14 +130,14 @@ public:
          * @param[in]  prev         The previous
          * @param[in]  interaction  The interaction
          */
-        virtual async::task<void> on_dialog(character&            me,
-                                            const fb::model::npc& npc,
-                                            const std::string&    message,
-                                            const std::string&    top,
-                                            const std::string&    bottom,
-                                            int                   maxlen      = 0xFF,
-                                            bool                  prev        = false,
-                                            interaction           interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character&            me,
+                               const fb::model::npc& npc,
+                               const std::string&    message,
+                               const std::string&    top,
+                               const std::string&    bottom,
+                               int                   maxlen      = 0xFF,
+                               bool                  prev        = false,
+                               interaction           interaction = interaction::NORMAL) = 0;
     };
 
 public:
@@ -289,7 +289,7 @@ public:
      * @param[in]  button_next  The button next
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void> show(const fb::model::object& object,
+    void show(const fb::model::object& object,
                                          const std::string&       message,
                                          bool                     button_prev = false,
                                          bool                     button_next = true,
@@ -302,7 +302,7 @@ public:
      * @param[in]  menus        The menus
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void> show(const fb::model::npc&           npc,
+    void show(const fb::model::npc&           npc,
                                          const std::string&              message,
                                          const std::vector<std::string>& menus,
                                          interaction                     interaction = interaction::MENU);
@@ -314,7 +314,7 @@ public:
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void> show(const fb::model::npc&       npc,
+    void show(const fb::model::npc&       npc,
                                          const std::string&          message,
                                          const std::vector<uint8_t>& item_slots,
                                          interaction                 interaction = interaction::SLOT);
@@ -327,7 +327,7 @@ public:
      * @param[in]  pursuit      The pursuit
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void> show(const fb::model::npc& npc,
+    void show(const fb::model::npc& npc,
                                          const std::string&    message,
                                          const item_pairs&     pairs,
                                          uint16_t              pursuit     = 0xFFFF,
@@ -339,7 +339,7 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void> input(const fb::model::npc& npc,
+    void input(const fb::model::npc& npc,
                                           const std::string&    message,
                                           interaction           interaction = interaction::INPUT);
     /**
@@ -353,7 +353,7 @@ public:
      * @param[in]  prev         The previous
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void> input(const fb::model::npc& npc,
+    void input(const fb::model::npc& npc,
                                           const std::string&    message,
                                           const std::string&    top,
                                           const std::string&    bottom,

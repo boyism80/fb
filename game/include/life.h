@@ -66,7 +66,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    virtual async::task<void> attack();
+    virtual void attack();
     /**
      * @brief      { function_description }
      *
@@ -78,7 +78,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    virtual async::task<void> hp(uint32_t value);
+    virtual void hp(uint32_t value);
     /**
      * @brief      { function_description }
      *
@@ -90,7 +90,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    virtual async::task<void> mp(uint32_t value);
+    virtual void mp(uint32_t value);
     /**
      * @brief      { function_description }
      *
@@ -129,7 +129,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint32_t> hp_up(uint32_t value, fb::game::object* from = nullptr);
+    virtual uint32_t hp_up(uint32_t value, fb::game::object* from = nullptr);
     /**
      * @brief      { function_description }
      *
@@ -139,7 +139,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint32_t> hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
+    virtual uint32_t hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
     /**
      * @brief      { function_description }
      *
@@ -148,7 +148,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint32_t> mp_up(uint32_t value, fb::game::object* from = nullptr);
+    virtual uint32_t mp_up(uint32_t value, fb::game::object* from = nullptr);
     /**
      * @brief      { function_description }
      *
@@ -157,7 +157,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint32_t> mp_down(uint32_t value, fb::game::object* from = nullptr);
+    virtual uint32_t mp_down(uint32_t value, fb::game::object* from = nullptr);
     /**
      * @brief      { function_description }
      *
@@ -197,7 +197,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    [[nodiscard]] async::task<void> kill();
+    [[nodiscard]] void kill();
     /**
      * @brief      { function_description }
      *
@@ -238,7 +238,7 @@ protected:
     /**
      * @brief      Called on update.
      */
-    virtual async::task<void> on_update();
+    virtual void on_update();
     /**
      * @brief      Called on calculate damage.
      *
@@ -246,7 +246,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<uint32_t> on_calculate_damage(bool critical) const = 0;
+    virtual uint32_t on_calculate_damage(bool critical) const = 0;
     /**
      * @brief      Called on calculate critical.
      *
@@ -254,7 +254,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<bool> on_calculate_critical(fb::game::life& you) const;
+    virtual bool on_calculate_critical(fb::game::life& you) const;
     /**
      * @brief      Called on calculate miss.
      *
@@ -262,13 +262,13 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<bool> on_calculate_miss(fb::game::life& you) const;
+    virtual bool on_calculate_miss(fb::game::life& you) const;
     /**
      * @brief      Called on attack.
      *
      * @param      you   You
      */
-    virtual async::task<void> on_attack(fb::game::object* you);
+    virtual void on_attack(fb::game::object* you);
     /**
      * @brief      Called on hit.
      *
@@ -276,7 +276,7 @@ protected:
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    virtual async::task<void> on_hit(fb::game::life& you, uint32_t damage, bool critical);
+    virtual void on_hit(fb::game::life& you, uint32_t damage, bool critical);
     /**
      * @brief      Called when damaged.
      *
@@ -284,13 +284,13 @@ protected:
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    virtual async::task<void> on_damaged(fb::game::object* from, uint32_t damage, bool critical);
+    virtual void on_damaged(fb::game::object* from, uint32_t damage, bool critical);
     /**
      * @brief      Called on die.
      *
      * @param      from  The from
      */
-    virtual async::task<void> on_die(fb::game::object* from);
+    virtual void on_die(fb::game::object* from);
 
 public:
     /**
@@ -304,7 +304,7 @@ public:
      *
      * @param      you   You
      */
-    virtual async::task<void> on_kill(fb::game::life& you);
+    virtual void on_kill(fb::game::life& you);
 
 public:
     /**
@@ -416,7 +416,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    virtual async::task<void> on_attack(life& me, object* you) = 0;
+    virtual void on_attack(life& me, object* you) = 0;
     /**
      * @brief      Called on hit.
      *
@@ -425,14 +425,14 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    virtual async::task<void> on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
+    virtual void on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
     /**
      * @brief      Called on kill.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    virtual async::task<void> on_kill(life& me, life& you) = 0;
+    virtual void on_kill(life& me, life& you) = 0;
     /**
      * @brief      Called when damaged.
      *
@@ -441,14 +441,14 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    virtual async::task<void> on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
     /**
      * @brief      Called on die.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    virtual async::task<void> on_die(life& me, object* you) = 0;
+    virtual void on_die(life& me, object* you) = 0;
     /**
      * @brief      Called on heal hp.
      *
@@ -456,7 +456,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  value  The value
      * @param      from   The from
      */
-    virtual async::task<void> on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
     /**
      * @brief      Called on heal mp.
      *
@@ -464,7 +464,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  value  The value
      * @param      from   The from
      */
-    virtual async::task<void> on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
     /**
      * @brief      Called on hp.
      *
@@ -472,7 +472,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  before   The before
      * @param[in]  current  The current
      */
-    virtual async::task<void> on_hp(life& me, uint32_t before, uint32_t current) = 0;
+    virtual void on_hp(life& me, uint32_t before, uint32_t current) = 0;
     /**
      * @brief      Called on mp.
      *
@@ -480,7 +480,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  before   The before
      * @param[in]  current  The current
      */
-    virtual async::task<void> on_mp(life& me, uint32_t before, uint32_t current) = 0;
+    virtual void on_mp(life& me, uint32_t before, uint32_t current) = 0;
 };
 
 }} // namespace fb::game

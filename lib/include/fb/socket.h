@@ -124,7 +124,7 @@ public:
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         co_await response.serialize(writer);
-        co_await this->send(stream, encrypt, wrap);
+        co_return co_await this->send(stream, encrypt, wrap);
     }
 
 public:

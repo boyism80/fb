@@ -9,66 +9,66 @@ fb::game::spells::spells(life& owner) :
 fb::game::spells::~spells()
 { }
 
-async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element)
+uint8_t fb::game::spells::add(const fb::model::spell& element)
 {
-    auto index    = co_await fb::game::inventory<const fb::model::spell>::add(element);
+    auto index    = fb::game::inventory<const fb::model::spell>::add(element);
     auto listener = this->owner().get_listener<fb::game::spells>();
 
     if (index != 0xFF && listener != nullptr)
-        co_await listener->on_spell_update(this->owner(), index);
+        listener->on_spell_update(this->owner(), index);
 
-    co_return index;
+    return index;
 }
 
-async::task<uint8_t> fb::game::spells::add(const fb::model::spell& element, uint8_t index)
+uint8_t fb::game::spells::add(const fb::model::spell& element, uint8_t index)
 {
     auto listener = this->owner().get_listener<fb::game::spells>();
 
-    if (co_await fb::game::inventory<const fb::model::spell>::add(element, index) != 0xFF)
+    if (fb::game::inventory<const fb::model::spell>::add(element, index) != 0xFF)
     {
         if (listener != nullptr)
         {
-            co_await listener->on_spell_update(this->owner(), index);
+            listener->on_spell_update(this->owner(), index);
         }
     }
 
-    co_return index;
+    return index;
 }
 
-async::task<bool> fb::game::spells::remove(uint8_t index)
+bool fb::game::spells::remove(uint8_t index)
 {
-    auto success  = co_await fb::game::inventory<const fb::model::spell>::remove(index);
+    auto success  = fb::game::inventory<const fb::model::spell>::remove(index);
     auto listener = this->owner().get_listener<fb::game::spells>();
 
     if (success)
         if (listener != nullptr)
-            co_await listener->on_spell_remove(this->owner(), index);
+            listener->on_spell_remove(this->owner(), index);
 
-    co_return success;
+    return success;
 }
 
-async::task<bool> fb::game::spells::swap(uint8_t src, uint8_t dst)
+bool fb::game::spells::swap(uint8_t src, uint8_t dst)
 {
-    if (co_await fb::game::inventory<const fb::model::spell>::swap(src, dst) == false)
-        co_return false;
+    if (fb::game::inventory<const fb::model::spell>::swap(src, dst) == false)
+        return false;
 
     auto listener = this->owner().get_listener<fb::game::spells>();
     if (listener != nullptr)
     {
         const auto right = this->at(src);
         if (right != nullptr)
-            co_await listener->on_spell_update(this->owner(), src);
+            listener->on_spell_update(this->owner(), src);
         else
-            co_await listener->on_spell_remove(this->owner(), src);
+            listener->on_spell_remove(this->owner(), src);
 
         const auto left = this->at(dst);
         if (left != nullptr)
-            co_await listener->on_spell_update(this->owner(), dst);
+            listener->on_spell_update(this->owner(), dst);
         else
-            co_await listener->on_spell_remove(this->owner(), dst);
+            listener->on_spell_remove(this->owner(), dst);
     }
 
-    co_return true;
+    return true;
 }
 
 fb::game::buff::buff(const fb::game::context& context, const fb::model::spell& model, uint32_t seconds) :
@@ -117,42 +117,42 @@ bool fb::game::buffs::push_back(buff& buff)
     return true;
 }
 
-async::task<fb::game::buff*> fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
+fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
 {
     if (this->contains(model.id))
-        co_return nullptr;
+        return nullptr;
 
     auto& context = this->_owner.context;
     auto  created = context.make<fb::game::buff>(model, seconds);
     if (this->push_back(*created) == false)
     {
-        co_await context.destroy(*created);
-        co_return nullptr;
+        std::ignore = context.destroy(*created);
+        return nullptr;
     }
     else
     {
-        co_return created;
+        return created;
     }
 }
 
-async::task<bool> fb::game::buffs::remove(uint32_t id)
+bool fb::game::buffs::remove(uint32_t id)
 {
     auto buff = this->operator[] (id);
     if (buff == nullptr)
-        co_return false;
+        return false;
 
     auto listener = this->_owner.get_listener<fb::game::object>();
     if (listener != nullptr)
-        co_await listener->on_unbuff(this->_owner, *buff);
+        listener->on_unbuff(this->_owner, *buff);
 
     this->erase(id);
-    co_await this->_owner.context.destroy(*buff);
-    co_return true;
+    std::ignore = this->_owner.context.destroy(*buff);
+    return true;
 }
 
-async::task<bool> fb::game::buffs::remove(const fb::model::spell& spell)
+bool fb::game::buffs::remove(const fb::model::spell& spell)
 {
-    co_return co_await this->remove(spell.id);
+    return this->remove(spell.id);
 }
 
 fb::game::buff* fb::game::buffs::operator[] (uint32_t id) const

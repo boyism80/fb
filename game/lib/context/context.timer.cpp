@@ -4,7 +4,7 @@ using namespace fb::game;
 
 async::task<void> context::handle_heart_beat()
 {
-    auto&& response = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
+    std::ignore = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
         "internal",
         "/in-game/ping",
         internal_reqs::Ping{this->id(),
@@ -18,7 +18,8 @@ async::task<void> context::handle_time()
 {
     auto updated = datetime();
     if (this->_time.hours() != updated.hours())
-        co_await this->send(fb_resp::time(updated.hours()));
+        this->send(fb_resp::time(updated.hours()));
 
     this->_time = updated;
+    co_return;
 }

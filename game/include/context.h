@@ -187,8 +187,7 @@ private:
      * @param[in]  response  The response
      * @param      session   The session
      */
-    [[nodiscard]] async::task<void> init_option(const fb::protocol::internal::Option& response,
-                                                fb::game::character&                  session);
+    void init_option(const fb::protocol::internal::Option& response, fb::game::character& session);
 
     /**
      * @brief      Initializes the items.
@@ -196,16 +195,14 @@ private:
      * @param[in]  response  The response
      * @param      session   The session
      */
-    [[nodiscard]] async::task<void> init_items(const std::vector<fb::protocol::internal::Item>& response,
-                                               fb::game::character&                             session);
+    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& session);
     /**
      * @brief      Initializes the spells.
      *
      * @param[in]  response  The response
      * @param      session   The session
      */
-    [[nodiscard]] async::task<void> init_spells(const std::vector<fb::protocol::internal::Spell>& response,
-                                                fb::game::character&                              session);
+    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& session);
 
 private:
     /**
@@ -305,7 +302,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <typename T>
-    [[nodiscard]] async::task<void> destroy(T& obj, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)
+    async::task<void> destroy(T& obj, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT)
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
@@ -325,11 +322,11 @@ public:
      * @param[in]  exclude_self  Indicates if the self is excluded
      * @param[in]  encrypt       The encrypt
      */
-    [[nodiscard]] async::task<void> send(fb::game::object&                 object,
-                                         const fb::protocol::base::header& header,
-                                         context::scope                    scope,
-                                         bool                              exclude_self = false,
-                                         bool                              encrypt      = true);
+    void send(fb::game::object&                 object,
+              const fb::protocol::base::header& header,
+              context::scope                    scope,
+              bool                              exclude_self = false,
+              bool                              encrypt      = true);
     /**
      * @brief      { function_description }
      *
@@ -339,11 +336,11 @@ public:
      * @param[in]  exclude_self  Indicates if the self is excluded
      * @param[in]  encrypt       The encrypt
      */
-    [[nodiscard]] async::task<void> send(fb::game::object&         object,
-                                         const protocol_generator& fn,
-                                         context::scope            scope,
-                                         bool                      exclude_self = false,
-                                         bool                      encrypt      = true);
+    void send(fb::game::object&         object,
+              const protocol_generator& fn,
+              context::scope            scope,
+              bool                      exclude_self = false,
+              bool                      encrypt      = true);
     /**
      * @brief      { function_description }
      *
@@ -351,16 +348,14 @@ public:
      * @param[in]  map      The map
      * @param[in]  encrypt  The encrypt
      */
-    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& header,
-                                         const fb::game::map&              map,
-                                         bool                              encrypt = true);
+    void send(const fb::protocol::base::header& header, const fb::game::map& map, bool encrypt = true);
     /**
      * @brief      { function_description }
      *
      * @param[in]  header   The header
      * @param[in]  encrypt  The encrypt
      */
-    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& header, bool encrypt = true);
+    void send(const fb::protocol::base::header& header, bool encrypt = true);
     /**
      * @brief      { function_description }
      *
@@ -368,7 +363,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> save(fb::game::character& session);
+    async::task<void> save(fb::game::character& session);
 
 public:
     /**
@@ -407,7 +402,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> handle_start() final;
+    async::task<void> handle_start() final;
     /**
      * @brief      { function_description }
      *
@@ -463,7 +458,7 @@ public:
      * @param      session  The session
      * @param      mob      The mob
      */
-    [[nodiscard]] async::task<void> handle_click_mob(fb::game::character& session, fb::game::mob& mob);
+    void handle_click_mob(fb::game::character& session, fb::game::mob& mob);
     /**
      * @brief      { function_description }
      *
@@ -480,7 +475,7 @@ public:
      *
      * @param[in]  elapsed_milliseconds  The elapsed milliseconds
      */
-    [[nodiscard]] async::task<void> handle_timer(uint64_t elapsed_milliseconds);
+    async::task<void> handle_timer(uint64_t elapsed_milliseconds);
 
     // game event method
 
@@ -1131,13 +1126,13 @@ public:
     //
     // @param      me    { parameter_description }
     //
-    [[nodiscard]] async::task<void> on_create(fb::game::object& me) final;
+    void on_create(fb::game::object& me) final;
     /**
      * @brief      Called on destroy.
      *
      * @param      me    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_destroy(fb::game::object& me) final;
+    void on_destroy(fb::game::object& me) final;
     /**
      * @brief      Called on chat.
      *
@@ -1145,20 +1140,20 @@ public:
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    [[nodiscard]] async::task<void> on_chat(fb::game::object& me, const std::string& message, bool shout) final;
+    void on_chat(fb::game::object& me, const std::string& message, bool shout) final;
     /**
      * @brief      Called on direction.
      *
      * @param      me    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_direction(fb::game::object& me) final;
+    void on_direction(fb::game::object& me) final;
     /**
      * @brief      Called on show.
      *
      * @param      me     { parameter_description }
      * @param[in]  light  The light
      */
-    [[nodiscard]] async::task<void> on_show(fb::game::object& me, bool light) final;
+    void on_show(fb::game::object& me, bool light) final;
     /**
      * @brief      Called on show.
      *
@@ -1166,15 +1161,14 @@ public:
      * @param      you    You
      * @param[in]  light  The light
      */
-    [[nodiscard]] async::task<void> on_show(fb::game::object& me, fb::game::object& you, bool light) final;
+    void on_show(fb::game::object& me, fb::game::object& you, bool light) final;
     /**
      * @brief      Called on hide.
      *
      * @param      me            { parameter_description }
      * @param[in]  destroy_type  The destroy type
      */
-    [[nodiscard]] async::task<void> on_hide(fb::game::object& me,
-                                            DESTROY_TYPE      destroy_type = DESTROY_TYPE::DEFAULT) final;
+    void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
     /**
      * @brief      Called on hide.
      *
@@ -1182,23 +1176,21 @@ public:
      * @param      you           You
      * @param[in]  destroy_type  The destroy type
      */
-    [[nodiscard]] async::task<void> on_hide(fb::game::object& me,
-                                            fb::game::object& you,
-                                            DESTROY_TYPE      destroy_type = DESTROY_TYPE::DEFAULT) final;
+    void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
     /**
      * @brief      Called on move.
      *
      * @param      me      { parameter_description }
      * @param[in]  before  The before
      */
-    [[nodiscard]] async::task<void> on_move(fb::game::object& me, const point16_t& before) final;
+    void on_move(fb::game::object& me, const point16_t& before) final;
     /**
      * @brief      Called on unbuff.
      *
      * @param      me    { parameter_description }
      * @param      buff  The buffer
      */
-    [[nodiscard]] async::task<void> on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
+    void on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
     /**
      * @brief      Called when map changed.
      *
@@ -1206,16 +1198,14 @@ public:
      * @param      before  The before
      * @param      after   The after
      */
-    [[nodiscard]] async::task<void> on_map_changed(fb::game::object& me,
-                                                   fb::game::map*    before,
-                                                   fb::game::map*    after) final;
+    void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) final;
 
     // listener : life
     //
     // @param      me    { parameter_description }
     // @param      you   You
     //
-    [[nodiscard]] async::task<void> on_attack(life& me, object* you) final;
+    void on_attack(life& me, object* you) final;
     /**
      * @brief      Called on hit.
      *
@@ -1224,14 +1214,14 @@ public:
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    [[nodiscard]] async::task<void> on_hit(life& me, life& you, uint32_t damage, bool critical) final;
+    void on_hit(life& me, life& you, uint32_t damage, bool critical) final;
     /**
      * @brief      Called on kill.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    [[nodiscard]] async::task<void> on_kill(life& me, life& you) final;
+    void on_kill(life& me, life& you) final;
     /**
      * @brief      Called when damaged.
      *
@@ -1240,14 +1230,14 @@ public:
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    [[nodiscard]] async::task<void> on_damaged(life& me, object* you, uint32_t damage, bool critical) final;
+    void on_damaged(life& me, object* you, uint32_t damage, bool critical) final;
     /**
      * @brief      Called on die.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    [[nodiscard]] async::task<void> on_die(life& me, object* you) final;
+    void on_die(life& me, object* you) final;
 
     /**
      * @brief      Called on heal hp.
@@ -1256,7 +1246,7 @@ public:
      * @param[in]  value  The value
      * @param      from   The from
      */
-    [[nodiscard]] async::task<void> on_heal_hp(life& me, uint32_t value, fb::game::object* from) final;
+    void on_heal_hp(life& me, uint32_t value, fb::game::object* from) final;
     /**
      * @brief      Called on heal mp.
      *
@@ -1264,7 +1254,7 @@ public:
      * @param[in]  value  The value
      * @param      from   The from
      */
-    [[nodiscard]] async::task<void> on_heal_mp(life& me, uint32_t value, fb::game::object* from) final;
+    void on_heal_mp(life& me, uint32_t value, fb::game::object* from) final;
     /**
      * @brief      Called on hp.
      *
@@ -1272,7 +1262,7 @@ public:
      * @param[in]  before   The before
      * @param[in]  current  The current
      */
-    [[nodiscard]] async::task<void> on_hp(life& me, uint32_t before, uint32_t current) final;
+    void on_hp(life& me, uint32_t before, uint32_t current) final;
     /**
      * @brief      Called on mp.
      *
@@ -1280,13 +1270,13 @@ public:
      * @param[in]  before   The before
      * @param[in]  current  The current
      */
-    [[nodiscard]] async::task<void> on_mp(life& me, uint32_t before, uint32_t current) final;
+    void on_mp(life& me, uint32_t before, uint32_t current) final;
 
     // listener : session
     //
     // @param      me    { parameter_description }
     //
-    [[nodiscard]] async::task<void> on_hold(character& me) final;
+    void on_hold(character& me) final;
     /**
      * @brief      Called on action.
      *
@@ -1295,21 +1285,21 @@ public:
      * @param[in]  duration  The duration
      * @param[in]  sound     The sound
      */
-    [[nodiscard]] async::task<void> on_action(character& me, ACTION action, DURATION duration, uint8_t sound) final;
+    void on_action(character& me, ACTION action, DURATION duration, uint8_t sound) final;
     /**
      * @brief      Called when updated.
      *
      * @param      me     { parameter_description }
      * @param[in]  level  The level
      */
-    [[nodiscard]] async::task<void> on_updated(character& me, STATE_LEVEL level) final;
+    void on_updated(character& me, STATE_LEVEL level) final;
     /**
      * @brief      Called when money changed.
      *
      * @param      me     { parameter_description }
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> on_money_changed(character& me, uint32_t value) final;
+    void on_money_changed(character& me, uint32_t value) final;
     /**
      * @brief      Called on notify.
      *
@@ -1317,7 +1307,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  type     The type
      */
-    [[nodiscard]] async::task<void> on_notify(character& me, const std::string& message, MESSAGE_TYPE type) final;
+    void on_notify(character& me, const std::string& message, MESSAGE_TYPE type) final;
     /**
      * @brief      Called on option.
      *
@@ -1325,13 +1315,13 @@ public:
      * @param[in]  option   The option
      * @param[in]  enabled  Indicates if enabled
      */
-    [[nodiscard]] async::task<void> on_option(character& me, SETTING option, bool enabled) final;
+    void on_option(character& me, SETTING option, bool enabled) final;
     /**
      * @brief      Called on level up.
      *
      * @param      me    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_level_up(character& me) final;
+    void on_level_up(character& me) final;
     /**
      * @brief      Called on transfer.
      *
@@ -1348,21 +1338,21 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    [[nodiscard]] async::task<void> on_item_get(character& me, const item::container& items) final;
+    void on_item_get(character& me, const item::container& items) final;
     /**
      * @brief      Called when item changed.
      *
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    [[nodiscard]] async::task<void> on_item_changed(character& me, const item::container& items) final;
+    void on_item_changed(character& me, const item::container& items) final;
     /**
      * @brief      Called on item lost.
      *
      * @param      me     { parameter_description }
      * @param[in]  slots  The slots
      */
-    [[nodiscard]] async::task<void> on_item_lost(character& me, const std::vector<uint8_t>& slots) final;
+    void on_item_lost(character& me, const std::vector<uint8_t>& slots) final;
 
     //
     // @brief      Called on item remove.
@@ -1371,14 +1361,14 @@ public:
     // @param[in]  index  The index
     // @param[in]  attr   The attribute
     //
-    [[nodiscard]] async::task<void> on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr) final;
+    void on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr) final;
     /**
      * @brief      Called on item update.
      *
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    [[nodiscard]] async::task<void> on_item_update(character& me, uint8_t index) final;
+    void on_item_update(character& me, uint8_t index) final;
     /**
      * @brief      Called on item swap.
      *
@@ -1386,7 +1376,7 @@ public:
      * @param[in]  src   The source
      * @param[in]  dst   The destination
      */
-    [[nodiscard]] async::task<void> on_item_swap(character& me, uint8_t src, uint8_t dst) final;
+    void on_item_swap(character& me, uint8_t src, uint8_t dst) final;
     /**
      * @brief      Called on equipment on.
      *
@@ -1394,7 +1384,7 @@ public:
      * @param      item   The item
      * @param[in]  parts  The parts
      */
-    [[nodiscard]] async::task<void> on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) final;
+    void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) final;
     /**
      * @brief      Called on equipment off.
      *
@@ -1402,14 +1392,14 @@ public:
      * @param[in]  parts  The parts
      * @param[in]  index  The index
      */
-    [[nodiscard]] async::task<void> on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) final;
+    void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) final;
     /**
      * @brief      Called on item active.
      *
      * @param      me    { parameter_description }
      * @param      item  The item
      */
-    [[nodiscard]] async::task<void> on_item_active(character& me, item& item) final;
+    void on_item_active(character& me, item& item) final;
     /**
      * @brief      Called on item throws.
      *
@@ -1417,7 +1407,7 @@ public:
      * @param      item  The item
      * @param[in]  to    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_item_throws(character& me, item& item, const point16_t& to) final;
+    void on_item_throws(character& me, item& item, const point16_t& to) final;
 
     //
     // @brief      Called on spell update.
@@ -1425,14 +1415,14 @@ public:
     // @param      me     { parameter_description }
     // @param[in]  index  The index
     //
-    [[nodiscard]] async::task<void> on_spell_update(life& me, uint8_t index) final;
+    void on_spell_update(life& me, uint8_t index) final;
     /**
      * @brief      Called on spell remove.
      *
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    [[nodiscard]] async::task<void> on_spell_remove(life& me, uint8_t index) final;
+    void on_spell_remove(life& me, uint8_t index) final;
 
     //
     // @brief      Called on trade begin.
@@ -1440,13 +1430,13 @@ public:
     // @param      me    { parameter_description }
     // @param      you   You
     //
-    [[nodiscard]] async::task<void> on_trade_begin(character& me, character& you) final;
+    void on_trade_begin(character& me, character& you) final;
     /**
      * @brief      Called on trade bundle.
      *
      * @param      me    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_trade_bundle(character& me) final;
+    void on_trade_bundle(character& me) final;
     /**
      * @brief      Called on trade item.
      *
@@ -1454,40 +1444,40 @@ public:
      * @param      from   The from
      * @param[in]  index  The index
      */
-    [[nodiscard]] async::task<void> on_trade_item(character& me, character& from, uint8_t index) final;
+    void on_trade_item(character& me, character& from, uint8_t index) final;
     /**
      * @brief      Called on trade money.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    [[nodiscard]] async::task<void> on_trade_money(character& me, character& from) final;
+    void on_trade_money(character& me, character& from) final;
     /**
      * @brief      Called on trade cancel.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    [[nodiscard]] async::task<void> on_trade_cancel(character& me, character& from) final;
+    void on_trade_cancel(character& me, character& from) final;
     /**
      * @brief      Called on trade lock.
      *
      * @param      me    { parameter_description }
      * @param[in]  mine  The mine
      */
-    [[nodiscard]] async::task<void> on_trade_lock(character& me, bool mine) final;
+    void on_trade_lock(character& me, bool mine) final;
     /**
      * @brief      Called when trade failed.
      *
      * @param      me    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_trade_failed(character& me) final;
+    void on_trade_failed(character& me) final;
     /**
      * @brief      Called on trade success.
      *
      * @param      me    { parameter_description }
      */
-    [[nodiscard]] async::task<void> on_trade_success(character& me) final;
+    void on_trade_success(character& me) final;
 
     /**
      * @brief      Called on dialog.
@@ -1499,13 +1489,12 @@ public:
      * @param[in]  button_next  The button next
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void>
-    on_dialog(character&                    me,
-              const fb::model::object&      object,
-              const std::string&            message,
-              bool                          button_prev,
-              bool                          button_next,
-              fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                    me,
+                   const fb::model::object&      object,
+                   const std::string&            message,
+                   bool                          button_prev,
+                   bool                          button_next,
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     /**
      * @brief      Called on dialog.
      *
@@ -1515,12 +1504,11 @@ public:
      * @param[in]  menus        The menus
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void>
-    on_dialog(character&                      me,
-              const fb::model::npc&           npc,
-              const std::string&              message,
-              const std::vector<std::string>& menus,
-              fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                      me,
+                   const fb::model::npc&           npc,
+                   const std::string&              message,
+                   const std::vector<std::string>& menus,
+                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) final;
     /**
      * @brief      Called on dialog.
      *
@@ -1530,12 +1518,11 @@ public:
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void>
-    on_dialog(character&                    me,
-              const fb::model::npc&         npc,
-              const std::string&            message,
-              const std::vector<uint8_t>&   item_slots,
-              fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                    me,
+                   const fb::model::npc&         npc,
+                   const std::string&            message,
+                   const std::vector<uint8_t>&   item_slots,
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     /**
      * @brief      Called on dialog.
      *
@@ -1546,13 +1533,12 @@ public:
      * @param[in]  pursuit      The pursuit
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void>
-    on_dialog(character&                          me,
-              const fb::model::npc&               npc,
-              const std::string&                  message,
-              const fb::game::dialog::item_pairs& pairs,
-              uint16_t                            pursuit     = 0xFFFF,
-              fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                          me,
+                   const fb::model::npc&               npc,
+                   const std::string&                  message,
+                   const fb::game::dialog::item_pairs& pairs,
+                   uint16_t                            pursuit     = 0xFFFF,
+                   fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::NORMAL) final;
     /**
      * @brief      Called on dialog.
      *
@@ -1561,11 +1547,10 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void>
-    on_dialog(character&                    me,
-              const fb::model::npc&         npc,
-              const std::string&            message,
-              fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                    me,
+                   const fb::model::npc&         npc,
+                   const std::string&            message,
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
     /**
      * @brief      Called on dialog.
      *
@@ -1578,15 +1563,14 @@ public:
      * @param[in]  prev         The previous
      * @param[in]  interaction  The interaction
      */
-    [[nodiscard]] async::task<void>
-    on_dialog(character&                    me,
-              const fb::model::npc&         npc,
-              const std::string&            message,
-              const std::string&            top,
-              const std::string&            bottom,
-              int                           maxlen      = 0xFF,
-              bool                          prev        = false,
-              fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+    void on_dialog(character&                    me,
+                   const fb::model::npc&         npc,
+                   const std::string&            message,
+                   const std::string&            top,
+                   const std::string&            bottom,
+                   int                           maxlen      = 0xFF,
+                   bool                          prev        = false,
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
 
 public:
     /**

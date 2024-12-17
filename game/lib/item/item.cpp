@@ -21,14 +21,12 @@ std::optional<uint32_t> fb::game::item::durability() const
 void fb::game::item::durability(uint32_t value)
 { }
 
-async::task<void> fb::game::item::on_map_changed(fb::game::map* map)
+void fb::game::item::on_map_changed(fb::game::map* map)
 {
     if (map == nullptr)
         this->_dropped_time = std::nullopt;
     else
         this->_dropped_time = datetime();
-
-    co_return;
 }
 
 std::string fb::game::item::tip_message() const
@@ -110,12 +108,12 @@ void fb::game::item::owner(fb::game::character* owner)
     this->_owner = owner;
 }
 
-async::task<bool> fb::game::item::active()
+bool fb::game::item::active()
 {
     if (this->empty())
-        std::ignore = co_await this->_owner->items.remove(*this);
+        std::ignore = this->_owner->items.remove(*this);
 
-    co_return false;
+    return false;
 }
 
 fb::game::item* fb::game::item::split(uint16_t count)
@@ -132,14 +130,14 @@ fb::game::item* fb::game::item::split(uint16_t count)
     }
 }
 
-async::task<void> fb::game::item::merge(fb::game::item& item)
+void fb::game::item::merge(fb::game::item& item)
 {
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
-        co_return;
+        return;
 
     if (model != item.based())
-        co_return;
+        return;
 
     auto before = this->_count;
     auto remain = this->fill(item.count());
@@ -150,10 +148,10 @@ async::task<void> fb::game::item::merge(fb::game::item& item)
     if (listener != nullptr)
     {
         if (before != this->_count)
-            co_await listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
+            listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
 
         if (remain > 0 && this->_count == model.capacity)
-            co_await listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
+            listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
     }
 }
 

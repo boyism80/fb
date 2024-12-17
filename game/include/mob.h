@@ -46,7 +46,7 @@ public:
      *
      * @param[in]  thread_id  The thread identifier
      */
-    [[nodiscard]] async::task<void> spawn(std::thread::id thread_id);
+    void spawn(std::thread::id thread_id);
 };
 
 /**
@@ -162,7 +162,7 @@ public:
      *
      * @param[in]  now   The now
      */
-    [[nodiscard]] async::task<void> AI(const datetime& now);
+    void AI(const datetime& now);
     /**
      * @brief      { function_description }
      *
@@ -178,7 +178,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<uint32_t> on_calculate_damage(bool critical) const final;
+    uint32_t on_calculate_damage(bool critical) const final;
     /**
      * @brief      Called when damaged.
      *
@@ -186,13 +186,13 @@ protected:
      * @param[in]  damage    The damage
      * @param[in]  critical  The critical
      */
-    [[nodiscard]] async::task<void> on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
+    void on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
     /**
      * @brief      Called on die.
      *
      * @param      from  The from
      */
-    [[nodiscard]] async::task<void> on_die(fb::game::object* from) final;
+    void on_die(fb::game::object* from) final;
 
 public:
     /**

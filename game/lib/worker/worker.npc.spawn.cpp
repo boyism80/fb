@@ -34,7 +34,7 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
     auto npc = this->_context.make<fb::game::npc>(this->_context.model.npc[spawn_model.npc]);
     auto fn  = [](fb::game::npc* npc, fb::game::map& map, fb::model::npc_spawn& spawn_model) -> async::task<void> {
         std::ignore = co_await npc->map(&map, spawn_model.position);
-        std::ignore = co_await npc->direction(spawn_model.direction);
+        npc->direction(spawn_model.direction);
     };
     this->_context.threads.enqueue(*npc, [fn, npc, &map, &spawn_model](auto&) -> async::task<void> {
         co_await fn(npc, map, spawn_model);

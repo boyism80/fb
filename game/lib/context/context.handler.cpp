@@ -45,29 +45,29 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
     auto thread = ch->thread();
 
-    co_await this->init_items(response.items, *ch);
+    this->init_items(response.items, *ch);
     thread->assert_ptr(ch);
 
-    co_await this->init_spells(response.spells, *ch);
+    this->init_spells(response.spells, *ch);
     thread->assert_ptr(ch);
 
     this->_shard[name]->characters.lock([&name, ch](auto& characters) {
         characters.insert({name, ch});
     });
 
-    std::ignore = this->init_option(response.option, *ch);
-    std::ignore = this->send(*ch, fb_resp::init(), scope::SELF);
-    std::ignore = this->send(*ch, fb_resp::time(this->_time.hours()), scope::SELF);
-    std::ignore = this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+    this->init_option(response.option, *ch);
+    this->send(*ch, fb_resp::init(), scope::SELF);
+    this->send(*ch, fb_resp::time(this->_time.hours()), scope::SELF);
+    this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
     if (from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(response.character.updated_date);
         if (msg.empty() == false)
-            std::ignore = ch->message(msg, MESSAGE_TYPE::STATE);
+            ch->message(msg, MESSAGE_TYPE::STATE);
     }
 
-    std::ignore = this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
-    std::ignore = this->send(*ch, fb_resp::session::option(*ch), scope::SELF);
+    this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(*ch, fb_resp::session::option(*ch), scope::SELF);
     ch->init(true);
     co_return true;
 }
@@ -78,7 +78,7 @@ async::task<bool> context::handle_direction(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    if (co_await ch->direction(request.value) == false)
+    if (ch->direction(request.value) == false)
         co_return false;
 
     co_return true;
@@ -119,8 +119,8 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         if (ch->condition(warp->condition) == false)
         {
             // 메시지 보냄
-            co_await ch->message("감히 접근할 수 없습니다.");
-            co_await this->send(*ch, fb_resp::session::position(*ch), scope::SELF);
+            ch->message("감히 접근할 수 없습니다.");
+            this->send(*ch, fb_resp::session::position(*ch), scope::SELF);
             co_return true;
         }
 
@@ -138,7 +138,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             auto  params = dsl::world(warp->dest.params);
             auto& world  = this->model.world[params.id][params.index];
-            co_await ch->send(fb_resp::map::worlds(this->model, params.id, params.index));
+            ch->send(fb_resp::map::worlds(this->model, params.id, params.index));
         }
         break;
 
@@ -148,7 +148,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
     }
     else
     {
-        std::ignore = co_await ch->move(request.direction, request.position);
+        ch->move(request.direction, request.position);
     }
     co_return true;
 }
@@ -164,7 +164,7 @@ async::task<bool> context::handle_update_move(fb::socket<character>& socket, con
         co_return true;
 
     if (co_await this->handle_move(socket, request))
-        co_await this->send(*ch, fb_resp::map::update(*map, request.begin, request.size), scope::SELF);
+        this->send(*ch, fb_resp::map::update(*map, request.begin, request.size), scope::SELF);
 
     co_return true;
 }
@@ -175,7 +175,7 @@ async::task<bool> context::handle_attack(fb::socket<character>& socket, const fb
     if (ch->inited() == false)
         co_return true;
 
-    co_await ch->attack();
+    ch->attack();
     co_return true;
 }
 
@@ -185,7 +185,7 @@ async::task<bool> context::handle_pickup(fb::socket<character>& socket, const fb
     if (ch->inited() == false)
         co_return true;
 
-    co_await ch->items.pickup(request.boost);
+    ch->items.pickup(request.boost);
     co_return true;
 }
 
@@ -195,7 +195,7 @@ async::task<bool> context::handle_emotion(fb::socket<character>& socket, const f
     if (ch->inited() == false)
         co_return true;
 
-    co_await ch->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
+    ch->action(ACTION(static_cast<int>(ACTION::EMOTION) + request.value), DURATION::EMOTION);
     co_return true;
 }
 
@@ -209,7 +209,7 @@ async::task<bool> context::handle_update_map(fb::socket<character>& socket, cons
     if (map == nullptr)
         co_return true;
 
-    co_await this->send(*ch, fb_resp::map::update(*map, request.position, request.size), scope::SELF);
+    this->send(*ch, fb_resp::map::update(*map, request.position, request.size), scope::SELF);
     co_return true;
 }
 
@@ -219,7 +219,7 @@ async::task<bool> context::handle_refresh(fb::socket<character>& socket, const f
     if (ch->inited() == false)
         co_return true;
 
-    co_await this->send(*ch, fb_resp::session::position(*ch), scope::SELF);
+    this->send(*ch, fb_resp::session::position(*ch), scope::SELF);
     co_return true;
 }
 
@@ -229,7 +229,7 @@ async::task<bool> context::handle_active_item(fb::socket<character>& socket, con
     if (ch->inited() == false)
         co_return true;
 
-    std::ignore = co_await ch->items.active(request.index);
+    ch->items.active(request.index);
     co_return true;
 }
 
@@ -239,7 +239,7 @@ async::task<bool> context::handle_inactive_item(fb::socket<character>& socket, c
     if (ch->inited() == false)
         co_return true;
 
-    std::ignore = co_await ch->items.inactive(request.parts);
+    ch->items.inactive(request.parts);
     co_return true;
 }
 
@@ -249,7 +249,7 @@ async::task<bool> context::handle_drop_item(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    std::ignore = co_await ch->items.drop(request.index, request.all ? -1 : 1);
+    ch->items.drop(request.index, request.all ? -1 : 1);
     co_return true;
 }
 
@@ -265,11 +265,10 @@ async::task<bool> context::handle_drop_cash(fb::socket<character>& socket, const
 
     auto chunk = std::min(ch->money(), request.chunk);
 
-    std::ignore = co_await ch->money_drop(chunk);
+    ch->money_drop(chunk);
     co_return true;
 }
 
-// TODO : on_notify를 이용
 async::task<bool> context::handle_front_info(fb::socket<character>& socket, const fb_reqs::front_info& request)
 {
     auto ch = socket.data();
@@ -286,7 +285,7 @@ async::task<bool> context::handle_front_info(fb::socket<character>& socket, cons
         auto object  = *i;
         auto message = object->is(OBJECT_TYPE::ITEM) ? static_cast<item*>(*i)->inven_name() : (*i)->name();
 
-        co_await ch->message(message, MESSAGE_TYPE::STATE);
+        ch->message(message, MESSAGE_TYPE::STATE);
     }
 
     co_return true;
@@ -298,10 +297,10 @@ async::task<bool> context::handle_self_info(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    co_await this->send(*ch, fb_resp::session::internal_info(*ch, this->model), scope::SELF);
+    this->send(*ch, fb_resp::session::internal_info(*ch, this->model), scope::SELF);
 
     for (auto& [id, buff] : ch->buffs)
-        co_await this->send(*ch, fb_resp::spell::buff(*buff), scope::SELF);
+        this->send(*ch, fb_resp::spell::buff(*buff), scope::SELF);
     co_return true;
 }
 
@@ -318,14 +317,14 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         if (request.ride)
         {
             if (ch->state() == STATE::RIDING)
-                co_await ch->unride();
+                ch->unride();
             else
-                co_await ch->ride();
+                ch->ride();
         }
         break;
 
     default:
-        auto enabled = co_await ch->option_toggle(option);
+        auto enabled = ch->option_toggle(option);
         if (option == SETTING::GROUP && !enabled)
         {
             auto&& response = co_await this->post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
@@ -342,7 +341,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
             internal_reqs::SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
 
         if (response.success == false)
-            co_await ch->message("설정을 변경하지 못했습니다.");
+            ch->message("설정을 변경하지 못했습니다.");
         break;
     }
     co_return true;
@@ -374,13 +373,11 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
         switch (you->what())
         {
         case OBJECT_TYPE::CHARACTER:
-            co_await this->send(*ch,
-                                fb_resp::session::external_info(static_cast<character&>(*you), this->model),
-                                scope::SELF);
+            this->send(*ch, fb_resp::session::external_info(static_cast<character&>(*you), this->model), scope::SELF);
             break;
 
         case OBJECT_TYPE::MOB:
-            co_await this->handle_click_mob(*ch, static_cast<mob&>(*you));
+            this->handle_click_mob(*ch, static_cast<mob&>(*you));
             break;
 
         case OBJECT_TYPE::NPC:
@@ -403,7 +400,7 @@ async::task<bool> context::handle_item_info(fb::socket<character>& socket, const
     if (item == nullptr)
         co_return false;
 
-    co_await this->send(*ch, fb_resp::item::tip(request.position, item->tip_message()), scope::SELF);
+    this->send(*ch, fb_resp::item::tip(request.position, item->tip_message()), scope::SELF);
     co_return true;
 }
 
@@ -446,7 +443,7 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
                 throw std::runtime_error("no match exception");
 
             auto count   = item->count();
-            auto deleted = co_await ch->items.remove(*item, count);
+            auto deleted = ch->items.remove(*item, count);
             if (deleted != nullptr)
                 co_await deleted->destroy();
 
@@ -467,15 +464,15 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
             auto item  = this->make<fb::game::item>(this->model.item[params.id]);
             auto count = std::min<uint16_t>(model.capacity, remain);
             item->count(count);
-            std::ignore  = co_await ch->items.add(item);
-            remain      -= count;
+            ch->items.add(item);
+            remain -= count;
         }
     }
 
     if (listener != nullptr)
     {
         auto& message = success ? message::mix::SUCCESS : message::mix::FAILED;
-        co_await listener->on_notify(*ch, message);
+        listener->on_notify(*ch, message);
     }
 
     co_return true;
@@ -499,7 +496,7 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     {
     case trade::state::REQUEST:
     {
-        std::ignore = co_await me->trade.begin(*you);
+        me->trade.begin(*you);
         break;
     }
 
@@ -509,32 +506,32 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
         if (item == nullptr)
             break;
 
-        std::ignore = co_await me->trade.up(*item);
+        me->trade.up(*item);
         break;
     }
 
     case trade::state::ITEM_COUNT: // 아이템 갯수까지 해서 올릴 때
     {
-        std::ignore = co_await me->trade.count(request.parameter.count);
+        me->trade.count(request.parameter.count);
         break;
     }
 
     case trade::state::UP_MONEY: // 금전 올릴 때
     {
         // 클라이언트가 입력한 금전 양
-        std::ignore = co_await me->trade.up(request.parameter.money);
+        me->trade.up(request.parameter.money);
         break;
     }
 
     case trade::state::CANCEL: // 취소한 경우
     {
-        std::ignore = co_await me->trade.cancel();
+        me->trade.cancel();
         break;
     }
 
     case trade::state::LOCK:
     {
-        std::ignore = co_await me->trade.lock();
+        me->trade.lock();
         break;
     }
     }
@@ -554,7 +551,7 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
 
     if (ch->map() == &this->maps[after.map])
     {
-        co_await ch->refresh_map();
+        ch->refresh_map();
     }
     else
     {
@@ -590,7 +587,7 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     }
 
     if (error.empty() == false)
-        co_await this->send(*me, fb_resp::message(error, MESSAGE_TYPE::STATE), scope::SELF);
+        this->send(*me, fb_resp::message(error, MESSAGE_TYPE::STATE), scope::SELF);
 
     co_return true;
 }
@@ -601,7 +598,7 @@ async::task<bool> context::handle_user_list(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    co_await this->send(*ch, fb_resp::user_list(*ch, this->sockets), scope::SELF);
+    this->send(*ch, fb_resp::user_list(*ch, this->sockets), scope::SELF);
     co_return true;
 }
 
@@ -614,7 +611,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() && co_await handle_command(*ch, request.message))
         co_return true;
 
-    co_await ch->chat(request.message, request.shout);
+    ch->chat(request.message, request.shout);
 
     auto npcs = std::vector<npc*>();
     if (request.shout)
@@ -633,7 +630,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         }
     }
 
-    std::ignore = co_await ch->inline_interaction(request.message, npcs);
+    ch->inline_interaction(request.message, npcs);
 
     co_return true;
 }
@@ -649,7 +646,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     {
     case BOARD_ACTION::SECTIONS:
     {
-        co_await this->send(*ch, fb_resp::board::sections(this->model), scope::SELF);
+        this->send(*ch, fb_resp::board::sections(this->model), scope::SELF);
     }
     break;
 
@@ -686,7 +683,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto button_flags = BOARD_BUTTON_ENABLE::UP;
             if (ch->condition(section->condition) == false)
                 button_flags |= BOARD_BUTTON_ENABLE::WRITE;
-            co_await this->send(*ch, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
+            this->send(*ch, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
         }
         catch (std::exception& e)
         {
@@ -694,7 +691,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
 
         if (error.empty() == false)
-            co_await this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
+            this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
@@ -715,9 +712,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
             if (response.success == false)
             {
-                co_await this->send(*ch,
-                                    fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false),
-                                    scope::SELF);
+                this->send(*ch, fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false), scope::SELF);
                 co_return true;
             }
 
@@ -737,7 +732,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                                           (uint8_t)dt.month(),
                                           (uint8_t)dt.day(),
                                           response.article.contents};
-            co_await this->send(*ch, fb_resp::board::article(article, button_flags), scope::SELF);
+            this->send(*ch, fb_resp::board::article(article, button_flags), scope::SELF);
         }
         catch (std::exception& e)
         {
@@ -745,7 +740,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
 
         if (error.empty() == false)
-            co_await this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
+            this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
@@ -778,13 +773,13 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (response.success == false)
                 throw std::runtime_error("게시글 작성 실패");
 
-            co_await this->send(*ch, fb_resp::board::message(message::board::WRITE, true, true), scope::SELF);
+            this->send(*ch, fb_resp::board::message(message::board::WRITE, true, true), scope::SELF);
         }
         catch (std::exception& e)
         {
             error = e.what();
         }
-        co_await this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
+        this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
@@ -820,7 +815,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(message::board::NOT_AUTH);
             }
 
-            co_await this->send(*ch, fb_resp::board::message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
+            this->send(*ch, fb_resp::board::message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
         }
         catch (std::exception& e)
         {
@@ -828,7 +823,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
 
         if (error.empty() == false)
-            co_await this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
+            this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
@@ -849,13 +844,13 @@ async::task<bool> context::handle_swap(fb::socket<character>& socket, const fb_r
     {
     case SWAP_TYPE::SPELL:
     {
-        std::ignore = co_await ch->spells.swap(request.src - 1, request.dst - 1);
+        ch->spells.swap(request.src - 1, request.dst - 1);
         break;
     }
 
     case SWAP_TYPE::ITEM:
     {
-        std::ignore = co_await ch->items.swap(request.src - 1, request.dst - 1);
+        ch->items.swap(request.src - 1, request.dst - 1);
         break;
     }
 
@@ -933,7 +928,7 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
     if (ch->inited() == false)
         co_return true;
 
-    std::ignore = co_await ch->items.throws(request.index);
+    ch->items.throws(request.index);
     co_return true;
 }
 
@@ -999,7 +994,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         if (me->option(SETTING::WHISPER) == false)
             throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
 
-        co_await me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
+        me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
         this->broadcast(
             to,
             [this, from, to = me->id(), message](auto& you) {
@@ -1014,7 +1009,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
                     response.error = static_cast<uint32_t>(ERROR_CODE::DISABLED_WHISPER_TARGET);
 
                 this->assert_whisper(response);
-                std::ignore = you.message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
+                you.message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
             },
             [this, from, message, fd](const auto& to) {
                 async::awaitable_then(this->post<internal_reqs::Whisper, internal_resp::Whisper>(
@@ -1043,6 +1038,6 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         error = e.what();
     }
     if (error.empty() == false)
-        co_await me->message(error, MESSAGE_TYPE::NOTIFY);
+        me->message(error, MESSAGE_TYPE::NOTIFY);
     co_return true;
 }

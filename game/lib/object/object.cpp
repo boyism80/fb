@@ -20,8 +20,7 @@ fb::game::object::object(fb::game::context&              context,
 {
     if (this->_listener != nullptr)
     {
-        async::awaitable_then(this->_listener->on_create(*this), [](async::awaitable_result<void> result) {
-        });
+        this->_listener->on_create(*this);
     }
 }
 
@@ -38,8 +37,7 @@ fb::game::object::~object()
 {
     if (this->_listener != nullptr)
     {
-        async::awaitable_then(this->_listener->on_destroy(*this), [](async::awaitable_result<void> result) {
-        });
+        this->_listener->on_destroy(*this);
     }
 }
 
@@ -93,18 +91,16 @@ async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
     co_await this->context.destroy(*this, destroy_type);
 }
 
-async::task<void> fb::game::object::send(const fb::stream& stream, bool encrypt, bool wrap)
+async::task<size_t> fb::game::object::send(const fb::stream& stream, bool encrypt, bool wrap)
 {
     this->assert_thread();
-
-    co_return;
+    co_return 0;
 }
 
-async::task<void> fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
+async::task<size_t> fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
-
-    co_return;
+    co_return 0;
 }
 
 uint32_t fb::game::object::sequence() const
@@ -121,12 +117,12 @@ void fb::game::object::sequence(uint32_t value)
     this->_sequence = value;
 }
 
-async::task<void> fb::game::object::chat(const std::string& message, bool shout)
+void fb::game::object::chat(const std::string& message, bool shout)
 {
     this->assert_thread();
 
     if (this->_listener != nullptr)
-        co_await this->_listener->on_chat(*this, message, shout);
+        this->_listener->on_chat(*this, message, shout);
 }
 
 const point16_t& fb::game::object::position() const
@@ -136,22 +132,22 @@ const point16_t& fb::game::object::position() const
     return this->_position;
 }
 
-async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
+bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
-        co_return false;
+        return false;
 
     if (this->_position.x == x && this->_position.y == y)
-        co_return true;
+        return true;
 
     auto before       = this->_position;
     this->_position.x = std::max(0, std::min(this->_map->width() - 1, int32_t(x)));
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     if (refresh)
-        co_await this->on_hold();
+        this->on_hold();
 
     this->_map->update(*this);
 
@@ -176,7 +172,7 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
                             afters.end(),
                             std::inserter(hides, hides.begin()));
         for (auto x : hides)
-            co_await this->_listener->on_hide(*x, *this, DESTROY_TYPE::DEFAULT);
+            this->_listener->on_hide(*x, *this, DESTROY_TYPE::DEFAULT);
 
         // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
@@ -186,7 +182,7 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
                             befores.end(),
                             std::inserter(shows, shows.begin()));
         for (auto x : shows)
-            co_await this->_listener->on_show(*x, *this, false);
+            this->_listener->on_show(*x, *this, false);
 
         if (refresh)
         {
@@ -198,7 +194,7 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
                                 shows.end(),
                                 std::inserter(stay, stay.begin()));
             for (auto x : stay)
-                co_await this->_listener->on_show(*x, *this, false);
+                this->_listener->on_show(*x, *this, false);
         }
     }
 
@@ -222,7 +218,7 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
                             afters.end(),
                             std::inserter(hides, hides.begin()));
         for (auto x : hides)
-            co_await this->_listener->on_hide(*this, *x, DESTROY_TYPE::DEFAULT);
+            this->_listener->on_hide(*this, *x, DESTROY_TYPE::DEFAULT);
 
         // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
@@ -232,7 +228,7 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
                             befores.end(),
                             std::inserter(shows, shows.begin()));
         for (auto x : shows)
-            co_await this->_listener->on_show(*this, *x, false);
+            this->_listener->on_show(*this, *x, false);
 
         if (refresh)
         {
@@ -244,33 +240,33 @@ async::task<bool> fb::game::object::position(uint16_t x, uint16_t y, bool refres
                                 shows.end(),
                                 std::inserter(stay, stay.begin()));
             for (auto x : stay)
-                co_await this->_listener->on_show(*this, *x, false);
+                this->_listener->on_show(*this, *x, false);
         }
     }
 
-    co_return true;
+    return true;
 }
 
-async::task<bool> fb::game::object::position(const point16_t position, bool refresh)
+bool fb::game::object::position(const point16_t position, bool refresh)
 {
     this->assert_thread();
 
-    co_return co_await this->position(position.x, position.y, refresh);
+    return this->position(position.x, position.y, refresh);
 }
 
-async::task<bool> fb::game::object::move()
+bool fb::game::object::move()
 {
     this->assert_thread();
 
-    co_return co_await this->move(this->_direction);
+    return this->move(this->_direction);
 }
 
-async::task<bool> fb::game::object::move(DIRECTION direction)
+bool fb::game::object::move(DIRECTION direction)
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
-        co_return false;
+        return false;
 
     auto after = this->_position;
     switch (direction)
@@ -293,17 +289,17 @@ async::task<bool> fb::game::object::move(DIRECTION direction)
     }
 
     if (this->_map->movable(after) == false)
-        co_return false;
+        return false;
 
-    if (co_await this->direction(direction) == false)
-        co_return false;
+    if (this->direction(direction) == false)
+        return false;
 
     auto before = this->_position;
     this->position(after);
     if (this->_listener != nullptr)
-        co_await this->_listener->on_move(*this, before);
+        this->_listener->on_move(*this, before);
 
-    co_return true;
+    return true;
 }
 
 const point16_t fb::game::object::position_forward() const
@@ -348,11 +344,11 @@ uint16_t fb::game::object::x() const
     return this->_position.x;
 }
 
-async::task<bool> fb::game::object::x(uint16_t value)
+bool fb::game::object::x(uint16_t value)
 {
     this->assert_thread();
 
-    co_return co_await this->position(value, this->_position.y);
+    return this->position(value, this->_position.y);
 }
 
 uint16_t fb::game::object::y() const
@@ -362,11 +358,11 @@ uint16_t fb::game::object::y() const
     return this->_position.y;
 }
 
-async::task<bool> fb::game::object::y(uint16_t value)
+bool fb::game::object::y(uint16_t value)
 {
     this->assert_thread();
 
-    co_return co_await this->position(this->_position.x, value);
+    return this->position(this->_position.x, value);
 }
 
 DIRECTION fb::game::object::direction() const
@@ -376,21 +372,21 @@ DIRECTION fb::game::object::direction() const
     return this->_direction;
 }
 
-async::task<bool> fb::game::object::direction(DIRECTION value)
+bool fb::game::object::direction(DIRECTION value)
 {
     this->assert_thread();
 
     if (value != DIRECTION::LEFT && value != DIRECTION::TOP && value != DIRECTION::RIGHT && value != DIRECTION::BOTTOM)
-        co_return false;
+        return false;
 
     if (this->_direction == value)
-        co_return true;
+        return true;
 
     this->_direction = value;
     if (this->_listener != nullptr)
-        co_await this->_listener->on_direction(*this);
+        this->_listener->on_direction(*this);
 
-    co_return true;
+    return true;
 }
 
 fb::game::map* fb::game::object::map() const
@@ -520,10 +516,10 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
                 for (auto x : this->_map->nears(this->_position))
                 {
                     if (x != this)
-                        co_await this->_listener->on_hide(*x, *this, destroy_type);
+                        this->_listener->on_hide(*x, *this, destroy_type);
                 }
             }
-            co_await this->on_map_changed(this->_map);
+            this->on_map_changed(this->_map);
 
             // erase cache of map
             this->_map->objects.pop(*this);
@@ -567,7 +563,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         this->assert_thread();
 
         this->_position = before_position;
-        co_await this->on_map_changed(this->_map);
+        this->on_map_changed(this->_map);
 
         // update section
         this->_map->update(*this);
@@ -577,7 +573,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
         // broadcast near characters
         if (this->_listener != nullptr)
-            co_await this->_listener->on_map_changed(*this, before_map, map);
+            this->_listener->on_map_changed(*this, before_map, map);
 
         for (auto x : map->nears(this->_position))
         {
@@ -586,8 +582,8 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
 
             if (this->_listener != nullptr)
             {
-                co_await this->_listener->on_show(*this, *x, false);
-                co_await this->_listener->on_show(*x, *this, false);
+                this->_listener->on_show(*this, *x, false);
+                this->_listener->on_show(*x, *this, false);
             }
         }
 
@@ -843,32 +839,24 @@ void fb::game::object::assert_thread() const
     fb::thread_switchable::assert_thread();
 }
 
-async::task<void> fb::game::object::on_timer(uint64_t elapsed_milliseconds)
+void fb::game::object::on_timer(uint64_t elapsed_milliseconds)
 {
     this->assert_thread();
-
-    co_return;
 }
 
-async::task<void> fb::game::object::on_kill(fb::game::life& you)
+void fb::game::object::on_kill(fb::game::life& you)
 {
     this->assert_thread();
-
-    co_return;
 }
 
-async::task<void> fb::game::object::on_hold()
+void fb::game::object::on_hold()
 {
     this->assert_thread();
-
-    co_return;
 }
 
-async::task<void> fb::game::object::on_map_changed(fb::game::map*)
+void fb::game::object::on_map_changed(fb::game::map*)
 {
     this->assert_thread();
-
-    co_return;
 }
 
 bool fb::game::object::operator== (const object& right) const

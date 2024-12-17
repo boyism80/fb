@@ -445,7 +445,7 @@ public:
         }
 
         crt.wrap(stream);
-        co_await socket.send(stream, false, false);
+        std::ignore = co_await socket.send(stream, false, false);
     }
 
 public:
@@ -501,7 +501,7 @@ public:
         }
 
         crt.wrap(stream);
-        co_await socket.send(stream, false, false);
+        std::ignore = co_await socket.send(stream, false, false);
     }
 
 public:

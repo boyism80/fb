@@ -135,10 +135,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
 
     auto sound = thread->tointeger(2);
 
-    async::awaitable_then(
-        ctx->send(*obj, fb::protocol::game::response::object::sound(*obj, SOUND(sound)), context::scope::PIVOT),
-        [](auto result) {
-        });
+    ctx->send(*obj, fb::protocol::game::response::object::sound(*obj, SOUND(sound)), context::scope::PIVOT);
     thread->pushinteger(-1);
     return 1;
 }
@@ -186,31 +183,23 @@ int fb::game::object::builtin_position(lua_State* lua)
 
     if (obj->is(OBJECT_TYPE::CHARACTER))
     {
-        async::awaitable_then(
-            ctx->send(
-                *obj,
-                [obj](const auto& to) {
-                    return std::unique_ptr<fb::protocol::base::header>(
-                        new fb::protocol::game::response::session::show(static_cast<character&>(*obj), to));
-                },
-                context::scope::PIVOT),
-            [](auto result) {
-            });
+        ctx->send(
+            *obj,
+            [obj](const auto& to) {
+                return std::unique_ptr<fb::protocol::base::header>(
+                    new fb::protocol::game::response::session::show(static_cast<character&>(*obj), to));
+            },
+            context::scope::PIVOT);
     }
     else
     {
-        async::awaitable_then(ctx->send(*obj, fb::protocol::game::response::object::show(*obj), context::scope::PIVOT),
-                              [](auto result) {
-                              });
+        ctx->send(*obj, fb::protocol::game::response::object::show(*obj), context::scope::PIVOT);
     }
 
     if (obj->is(OBJECT_TYPE::CHARACTER))
     {
         auto session = static_cast<character*>(obj);
-        async::awaitable_then(
-            ctx->send(*obj, fb::protocol::game::response::session::position(*session), context::scope::SELF),
-            [](auto result) {
-            });
+        ctx->send(*obj, fb::protocol::game::response::session::position(*session), context::scope::SELF);
     }
 
     return 0;
@@ -240,13 +229,8 @@ int fb::game::object::builtin_direction(lua_State* lua)
         auto direction = DIRECTION(thread->tointeger(2));
         auto ctx       = thread->env<fb::game::context>("context");
 
-        async::awaitable_then(
-            [=]() -> async::task<void> {
-                std::ignore = co_await obj->direction(direction);
-                co_await ctx->send(*obj, fb::protocol::game::response::object::direction(*obj), context::scope::PIVOT);
-            }(),
-            [](auto result) {
-            });
+        std::ignore = obj->direction(direction);
+        ctx->send(*obj, fb::protocol::game::response::object::direction(*obj), context::scope::PIVOT);
         return 0;
     }
 }
@@ -282,10 +266,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    async::awaitable_then(
-        ctx->send(*obj, fb::protocol::game::response::object::chat(*obj, type, sstream.str()), context::scope::PIVOT),
-        [](auto result) {
-        });
+    ctx->send(*obj, fb::protocol::game::response::object::chat(*obj, type, sstream.str()), context::scope::PIVOT);
     return 0;
 }
 
@@ -308,10 +289,7 @@ int fb::game::object::builtin_message(lua_State* lua)
 
     if (obj->is(OBJECT_TYPE::CHARACTER))
     {
-        async::awaitable_then(
-            ctx->send(*obj, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF),
-            [](auto result) {
-            });
+        ctx->send(*obj, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
     }
 
     return 0;
@@ -335,13 +313,11 @@ int fb::game::object::builtin_buff(lua_State* lua)
         return 0;
 
     auto seconds = (uint32_t)thread->tointeger(3);
-    auto buff    = async::awaitable_get(obj->buffs.push_back(*spell, seconds));
+    auto buff    = obj->buffs.push_back(*spell, seconds);
     if (buff == nullptr)
         thread->pushnil();
     else
-        async::awaitable_then(ctx->send(*obj, fb::protocol::game::response::spell::buff(*buff), context::scope::SELF),
-                              [](auto result) {
-                              });
+        ctx->send(*obj, fb::protocol::game::response::spell::buff(*buff), context::scope::SELF);
 
     return 1;
 }
@@ -366,7 +342,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
         if (model == nullptr)
             thread->pushboolean(false);
         else
-            thread->pushboolean(async::awaitable_get(obj->buffs.remove(*model)));
+            thread->pushboolean(obj->buffs.remove(*model));
     }
     else if (thread->is_obj(2))
     {
@@ -374,7 +350,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
         if (buff == nullptr)
             return 0;
 
-        thread->pushboolean(async::awaitable_get(obj->buffs.remove(*buff)));
+        thread->pushboolean(obj->buffs.remove(*buff));
     }
     else
     {
@@ -438,10 +414,7 @@ int fb::game::object::builtin_effect(lua_State* lua)
 
     if (obj->is(OBJECT_TYPE::ITEM) == false)
     {
-        async::awaitable_then(
-            ctx->send(*obj, fb::protocol::game::response::object::effect(*obj, effect), context::scope::PIVOT),
-            [](auto result) {
-            });
+        ctx->send(*obj, fb::protocol::game::response::object::effect(*obj, effect), context::scope::PIVOT);
     }
     return 0;
 }
@@ -512,7 +485,7 @@ int fb::game::object::builtin_map(lua_State* lua)
             throw std::exception();
         }
 
-        async::awaitable_get(obj->map(map, position));
+        obj->map(map, position);
     }
     catch (...)
     { }
@@ -543,13 +516,9 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     {
         auto ctx  = thread->env<fb::game::context>("context");
         auto item = model->make(*ctx);
-        async::awaitable_get(item->map(obj->_map, obj->_position));
+        item->map(obj->_map, obj->_position);
         thread->pushobject(item);
-
-        async::awaitable_then(
-            ctx->send(*item, fb::protocol::game::response::object::show(*item), context::scope::PIVOT),
-            [](auto result) {
-            });
+        ctx->send(*item, fb::protocol::game::response::object::show(*item), context::scope::PIVOT);
     }
 
     return 1;

@@ -101,8 +101,7 @@ private:
     };
 
 private:
-    std::vector<std::function<async::task<bool>(const std::string&, const std::vector<fb::game::npc*>&)>>
-        inline_interaction_funcs;
+    std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
 
 public:
     fb::game::trade  trade  = fb::game::trade(*this);
@@ -131,12 +130,12 @@ protected:
     /**
      * @brief      Called on hold.
      */
-    [[nodiscard]] async::task<void> on_hold() final;
+    void on_hold() final;
 
     /**
      * @brief      Called on update.
      */
-    [[nodiscard]] async::task<void> on_update() final;
+    void on_update() final;
 
     /**
      * @brief      Called on calculate damage.
@@ -145,28 +144,28 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<uint32_t> on_calculate_damage(bool critical) const final;
+    uint32_t on_calculate_damage(bool critical) const final;
 
     /**
      * @brief      Called on attack.
      *
      * @param      target  The target
      */
-    [[nodiscard]] async::task<void> on_attack(fb::game::object* target) final;
+    void on_attack(fb::game::object* target) final;
 
     /**
      * @brief      Called on kill.
      *
      * @param      you   You
      */
-    [[nodiscard]] async::task<void> on_kill(fb::game::life& you) final;
+    void on_kill(fb::game::life& you) final;
 
     /**
      * @brief      Called on die.
      *
      * @param      from  The from
      */
-    [[nodiscard]] async::task<void> on_die(fb::game::object* from) final;
+    void on_die(fb::game::object* from) final;
 
 public:
     /**
@@ -178,7 +177,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true) final;
+    async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true) final;
 
     /**
      * @brief      { function_description }
@@ -189,9 +188,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& response,
-                                         bool                              encrypt = true,
-                                         bool                              wrap    = true) final;
+    async::task<size_t> send(const fb::protocol::base::header& response,
+                                           bool                              encrypt = true,
+                                           bool                              wrap    = true) final;
 
     /**
      * @brief      { function_description }
@@ -286,7 +285,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    [[nodiscard]] async::task<void> attack();
+    void attack() final;
 
     /**
      * @brief      { function_description }
@@ -295,7 +294,7 @@ public:
      * @param[in]  duration  The duration
      * @param[in]  sound     The sound
      */
-    [[nodiscard]] async::task<void> action(ACTION action, DURATION duration, uint8_t sound = 0x00);
+    void action(ACTION action, DURATION duration, uint8_t sound = 0x00);
 
     /**
      * @brief      { function_description }
@@ -344,7 +343,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> look(uint16_t value);
+    void look(uint16_t value);
 
     /**
      * @brief      { function_description }
@@ -358,7 +357,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> color(uint8_t value);
+    void color(uint8_t value);
 
     /**
      * @brief      { function_description }
@@ -372,7 +371,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> armor_color(std::optional<uint8_t> value);
+    void armor_color(std::optional<uint8_t> value);
 
     /**
      * @brief      { function_description }
@@ -393,12 +392,12 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> disguise(uint16_t value);
+    void disguise(uint16_t value);
 
     /**
      * @brief      { function_description }
      */
-    [[nodiscard]] async::task<void> undisguise();
+    void undisguise();
 
     /**
      * @brief      { function_description }
@@ -514,14 +513,14 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> level(uint8_t value);
+    void level(uint8_t value);
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> level_up();
+    bool level_up();
 
     /**
      * @brief      { function_description }
@@ -556,7 +555,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> state(STATE value);
+    void state(STATE value);
 
     /**
      * @brief      { function_description }
@@ -661,7 +660,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> experience(uint32_t value);
+    void experience(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -671,7 +670,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<uint32_t> experience_add(uint32_t value, bool notify = false);
+    uint32_t experience_add(uint32_t value, bool notify = false);
 
     /**
      * @brief      { function_description }
@@ -708,7 +707,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    [[nodiscard]] async::task<void> money(uint32_t value);
+    void money(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -717,7 +716,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<uint32_t> money_add(uint32_t value);
+    uint32_t money_add(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -726,7 +725,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<uint32_t> money_reduce(uint32_t value);
+    uint32_t money_reduce(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -735,7 +734,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<uint32_t> money_drop(uint32_t value);
+    uint32_t money_drop(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -776,7 +775,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> deposit_item(fb::game::item& item);
+    bool deposit_item(fb::game::item& item);
 
     /**
      * @brief      { function_description }
@@ -786,7 +785,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> deposit_item(uint8_t index, uint16_t count);
+    bool deposit_item(uint8_t index, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -796,7 +795,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> deposit_item(const std::string& name, uint16_t count);
+    bool deposit_item(const std::string& name, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -822,7 +821,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<fb::game::item*> withdraw_item(uint8_t index, uint16_t count);
+    fb::game::item* withdraw_item(uint8_t index, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -832,7 +831,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<fb::game::item*> withdraw_item(const std::string& name, uint16_t count);
+    fb::game::item* withdraw_item(const std::string& name, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -842,7 +841,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<fb::game::item*> withdraw_item(const fb::model::item& item, uint16_t count);
+    fb::game::item* withdraw_item(const fb::model::item& item, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -902,7 +901,7 @@ public:
      * @param[in]  value   The value
      * @param[in]  notify  The notify
      */
-    [[nodiscard]] async::task<void> option(SETTING key, bool value, bool notify = true);
+    void option(SETTING key, bool value, bool notify = true);
 
     /**
      * @brief      { function_description }
@@ -912,7 +911,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> option_toggle(SETTING key, bool notify = true);
+    bool option_toggle(SETTING key, bool notify = true);
 
     /**
      * @brief      { function_description }
@@ -979,7 +978,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> move(const point16_t& before);
+    bool move(const point16_t& before);
 
     /**
      * @brief      { function_description }
@@ -989,7 +988,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> move(DIRECTION direction, const point16_t& before);
+    bool move(DIRECTION direction, const point16_t& before);
 
     /**
      * @brief      { function_description }
@@ -998,21 +997,21 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> ride(fb::game::mob& horse);
+    void ride(fb::game::mob& horse);
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> ride();
+    void ride();
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<void> unride();
+    void unride();
 
     /**
      * @brief      { function_description }
@@ -1024,7 +1023,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    [[nodiscard]] async::task<void> refresh_map();
+    void refresh_map();
 
     /**
      * @brief      { function_description }
@@ -1041,7 +1040,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  type     The type
      */
-    [[nodiscard]] async::task<void> message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    void message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
 
     /**
      * @brief      { function_description }
@@ -1057,7 +1056,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1067,7 +1066,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1077,7 +1076,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    bool inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1087,8 +1086,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_deposit_money(const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs);
+    bool inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1098,8 +1096,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_withdraw_money(const std::string&                 message,
-                                                          const std::vector<fb::game::npc*>& npcs);
+    bool inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1109,8 +1106,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_deposit_item(const std::string&                 message,
-                                                        const std::vector<fb::game::npc*>& npcs);
+    bool inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1120,8 +1116,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_withdraw_item(const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs);
+    bool inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1131,8 +1126,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_sell_list(const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs);
+    bool inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1142,8 +1136,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_buy_list(const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    bool inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1153,8 +1146,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_sell_price(const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs);
+    bool inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1164,8 +1156,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_buy_price(const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs);
+    bool inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1175,8 +1166,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_show_deposited_money(const std::string&                 message,
-                                                                const std::vector<fb::game::npc*>& npcs);
+    bool inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1186,8 +1176,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_rename_weapon(const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs);
+    bool inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1197,8 +1186,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_hold_item_list(const std::string&                 message,
-                                                          const std::vector<fb::game::npc*>& npcs);
+    bool inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1208,8 +1196,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_hold_item_count(const std::string&                 message,
-                                                           const std::vector<fb::game::npc*>& npcs);
+    bool inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:
     /**
@@ -1220,8 +1207,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> inline_interaction(const std::string&                 message,
-                                                       const std::vector<fb::game::npc*>& npcs);
+    bool inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      Returns a protocol representation of the object.
@@ -1542,9 +1528,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  type     The type
      */
-    virtual async::task<void> on_notify(character&         me,
-                                        const std::string& message,
-                                        MESSAGE_TYPE       type = MESSAGE_TYPE::STATE) = 0;
+    virtual void on_notify(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
 
     /**
      * @brief      Called on option.
@@ -1553,14 +1537,14 @@ public:
      * @param[in]  option   The option
      * @param[in]  enabled  Indicates if enabled
      */
-    virtual async::task<void> on_option(character& me, SETTING option, bool enabled) = 0;
+    virtual void on_option(character& me, SETTING option, bool enabled) = 0;
 
     /**
      * @brief      Called on level up.
      *
      * @param      me    { parameter_description }
      */
-    virtual async::task<void> on_level_up(character& me) = 0;
+    virtual void on_level_up(character& me) = 0;
 
     /**
      * @brief      Called on item get.
@@ -1568,7 +1552,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    virtual async::task<void> on_item_get(character& me, const item::container& items) = 0;
+    virtual void on_item_get(character& me, const item::container& items) = 0;
 
     /**
      * @brief      Called when item changed.
@@ -1576,7 +1560,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    virtual async::task<void> on_item_changed(character& me, const item::container& items) = 0;
+    virtual void on_item_changed(character& me, const item::container& items) = 0;
 
     /**
      * @brief      Called on item lost.
@@ -1584,14 +1568,14 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  slots  The slots
      */
-    virtual async::task<void> on_item_lost(character& me, const std::vector<uint8_t>& slots) = 0;
+    virtual void on_item_lost(character& me, const std::vector<uint8_t>& slots) = 0;
 
     /**
      * @brief      Called on hold.
      *
      * @param      me    { parameter_description }
      */
-    virtual async::task<void> on_hold(character& me) = 0;
+    virtual void on_hold(character& me) = 0;
 
     /**
      * @brief      Called on action.
@@ -1601,7 +1585,7 @@ public:
      * @param[in]  duration  The duration
      * @param[in]  sound     The sound
      */
-    virtual async::task<void> on_action(character& me, ACTION action, DURATION duration, uint8_t sound) = 0;
+    virtual void on_action(character& me, ACTION action, DURATION duration, uint8_t sound) = 0;
 
     /**
      * @brief      Called when updated.
@@ -1609,7 +1593,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  level  The level
      */
-    virtual async::task<void> on_updated(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
+    virtual void on_updated(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
 
     /**
      * @brief      Called when money changed.
@@ -1617,7 +1601,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  value  The value
      */
-    virtual async::task<void> on_money_changed(character& me, uint32_t value) = 0;
+    virtual void on_money_changed(character& me, uint32_t value) = 0;
 
     /**
      * @brief      Called on transfer.

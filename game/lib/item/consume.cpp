@@ -12,21 +12,21 @@ fb::game::consume::consume(const consume& right) :
 fb::game::consume::~consume()
 { }
 
-async::task<bool> fb::game::consume::active()
+bool fb::game::consume::active()
 {
     if (this->_count == 0)
-        co_return false;
+        return false;
 
     this->_count--;
 
     auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
     {
-        co_await listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
-        co_await listener->on_action(*this->_owner, ACTION::EAT, DURATION::EAT, static_cast<uint8_t>(SOUND::EAT));
+        listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
+        listener->on_action(*this->_owner, ACTION::EAT, DURATION::EAT, static_cast<uint8_t>(SOUND::EAT));
     }
 
     if (this->empty())
-        std::ignore = co_await this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
-    co_return true;
+        std::ignore = this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
+    return true;
 }

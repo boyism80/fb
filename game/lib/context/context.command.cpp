@@ -40,7 +40,7 @@ async::task<bool> context::handle_command_sound(character& session, Json::Value&
         co_return false;
 
     auto value = parameters[0].asInt();
-    co_await this->send(session, fb_resp::object::sound(session, SOUND(value)), scope::PIVOT);
+    this->send(session, fb_resp::object::sound(session, SOUND(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -53,7 +53,7 @@ async::task<bool> context::handle_command_action(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    co_await this->send(session, fb_resp::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb_resp::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
@@ -66,7 +66,7 @@ async::task<bool> context::handle_command_weather(character& session, Json::Valu
         co_return false;
 
     auto value = parameters[0].asInt();
-    co_await this->send(session, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
+    this->send(session, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -79,7 +79,7 @@ async::task<bool> context::handle_command_bright(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    co_await this->send(session, fb_resp::bright(value), scope::PIVOT);
+    this->send(session, fb_resp::bright(value), scope::PIVOT);
     co_return true;
 }
 
@@ -92,7 +92,7 @@ async::task<bool> context::handle_command_timer(character& session, Json::Value&
         co_return false;
 
     auto value = parameters[0].asInt();
-    co_await this->send(session, fb_resp::timer(value), scope::PIVOT);
+    this->send(session, fb_resp::timer(value), scope::PIVOT);
     co_return true;
 }
 
@@ -105,7 +105,7 @@ async::task<bool> context::handle_command_effect(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    co_await this->send(session, fb_resp::object::effect(session, value), scope::PIVOT);
+    this->send(session, fb_resp::object::effect(session, value), scope::PIVOT);
     co_return true;
 }
 
@@ -122,16 +122,16 @@ async::task<bool> context::handle_command_disguise(character& session, Json::Val
     if (mob == nullptr)
         co_return true;
 
-    co_await session.disguise(mob->look);
-    co_await this->send(session, fb_resp::object::effect(session, 0x03), scope::PIVOT);
-    co_await this->send(session, fb_resp::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    co_await this->send(session, fb_resp::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
+    session.disguise(mob->look);
+    this->send(session, fb_resp::object::effect(session, 0x03), scope::PIVOT);
+    this->send(session, fb_resp::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb_resp::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
     co_return true;
 }
 
 async::task<bool> context::handle_command_undisguise(character& session, Json::Value& parameters)
 {
-    co_await session.undisguise();
+    session.undisguise();
     co_return true;
 }
 
@@ -170,8 +170,8 @@ async::task<bool> context::handle_command_class(character& session, Json::Value&
 
     session.cls(class_type);
     session.promotion(promotion);
-    co_await this->send(session, fb_resp::session::id(session), scope::SELF);
-    co_await this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(session, fb_resp::session::id(session), scope::SELF);
+    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -184,8 +184,8 @@ async::task<bool> context::handle_command_level(character& session, Json::Value&
         co_return false;
 
     auto level = parameters[0].asInt();
-    co_await session.level(level);
-    co_await this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    session.level(level);
+    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -202,7 +202,7 @@ async::task<bool> context::handle_command_spell(character& session, Json::Value&
     if (model == nullptr)
         co_return false;
 
-    auto slot = co_await session.spells.add(*model);
+    auto slot = session.spells.add(*model);
     if (slot == 0xFF)
         co_return false;
 
@@ -244,7 +244,7 @@ async::task<bool> context::handle_command_world(character& session, Json::Value&
         {
             if (point.name == name)
             {
-                co_await session.send(fb_resp::map::worlds(this->model, id, index));
+                session.send(fb_resp::map::worlds(this->model, id, index));
                 co_return true;
             }
         }
@@ -269,7 +269,7 @@ async::task<bool> context::handle_command_hair(character& session, Json::Value& 
         co_return false;
 
     auto hair = parameters[0].asInt();
-    co_await session.look(hair);
+    session.look(hair);
     co_return true;
 }
 
@@ -282,7 +282,7 @@ async::task<bool> context::handle_command_hair_color(character& session, Json::V
         co_return false;
 
     auto color = parameters[0].asInt();
-    co_await session.color(color);
+    session.color(color);
     co_return true;
 }
 
@@ -290,7 +290,7 @@ async::task<bool> context::handle_command_armor_color(character& session, Json::
 {
     if (parameters.size() == 0)
     {
-        co_await session.armor_color(std::nullopt);
+        session.armor_color(std::nullopt);
         co_return true;
     }
     else if (parameters[0].isInt() == false)
@@ -300,7 +300,7 @@ async::task<bool> context::handle_command_armor_color(character& session, Json::
     else
     {
         auto color = parameters[0].asInt();
-        co_await session.armor_color(color);
+        session.armor_color(color);
         co_return true;
     }
 }
@@ -325,12 +325,12 @@ async::task<bool> context::handle_command_tile(character& session, Json::Value& 
     auto sstream = std::stringstream();
     sstream << "맵타일 : " << tile->id;
     if (listener != nullptr)
-        co_await listener->on_notify(session, sstream.str());
+        listener->on_notify(session, sstream.str());
 
     sstream.str("");
     sstream << "오브젝트 : " << tile->object;
     if (listener != nullptr)
-        co_await listener->on_notify(session, sstream.str());
+        listener->on_notify(session, sstream.str());
 
     co_return true;
 }
@@ -394,7 +394,7 @@ async::task<bool> context::handle_command_npc(character& session, Json::Value& p
         co_return false;
 
     auto npc    = model->make<fb::game::npc>(*this);
-    std::ignore = co_await npc->direction(session.direction());
+    std::ignore = npc->direction(session.direction());
     co_return co_await npc->map(session.map(), session.position());
 }
 
@@ -450,7 +450,7 @@ async::task<bool> context::handle_command_concurrency(character& session, Json::
         co_await this->_mutex.sync<void>(key, [this, &session, seconds](auto& trans) -> async::task<void> {
             for (int i = 0; i < seconds; i++)
             {
-                co_await session.chat(std::format("{}초 후에 풀립니다.", seconds - i));
+                session.chat(std::format("{}초 후에 풀립니다.", seconds - i));
                 co_await this->sleep(1s);
             }
         });
@@ -464,7 +464,7 @@ async::task<bool> context::handle_command_concurrency(character& session, Json::
         error = e.what();
     }
 
-    co_await session.chat(error);
+    session.chat(error);
     co_return true;
 }
 
@@ -486,6 +486,6 @@ async::task<bool> context::handle_map_tile(character& session, Json::Value& para
     if (tile == nullptr)
         co_return false;
 
-    co_await session.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
+    session.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
     co_return true;
 }

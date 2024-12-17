@@ -217,7 +217,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
-    co_await this->save(*ch);
+    this->save(*ch);
     std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
@@ -229,8 +229,8 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
 async::task<void> context::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for (auto& [key, value] : this->maps)
-        co_await value.on_timer(elapsed_milliseconds);
+    for (auto& [key, map] : this->maps)
+        co_await map.on_timer(elapsed_milliseconds);
 }
 
 std::string context::elapsed_message(const std::string& dt)
@@ -400,26 +400,26 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.pw(response.pw);
     ch.updated_date(datetime(response.updated_date));
     ch.admin(response.admin);
-    std::ignore = ch.color(response.color);
-    std::ignore = ch.direction(DIRECTION(response.direction));
-    std::ignore = ch.look(response.look);
-    std::ignore = ch.money(response.money);
+    ch.color(response.color);
+    ch.direction(DIRECTION(response.direction));
+    ch.look(response.look);
+    ch.money(response.money);
     ch.deposited_money(response.deposited_money);
     ch.sex(SEX(response.sex));
     ch.base_hp(response.base_hp);
-    std::ignore = ch.hp(response.hp);
+    ch.hp(response.hp);
     ch.base_mp(response.base_mp);
-    std::ignore = ch.mp(response.mp);
-    std::ignore = ch.experience(response.exp);
-    std::ignore = ch.state(STATE(response.state));
+    ch.mp(response.mp);
+    ch.experience(response.exp);
+    ch.state(STATE(response.state));
 
     if (response.armor_color.has_value())
-        std::ignore = ch.armor_color(response.armor_color.value());
+        ch.armor_color(response.armor_color.value());
 
     if (response.disguise.has_value())
-        std::ignore = ch.disguise(response.disguise.value());
+        ch.disguise(response.disguise.value());
     else
-        std::ignore = ch.undisguise();
+        ch.undisguise();
 
     if (this->maps.contains(map) == false)
         co_return false;
@@ -447,22 +447,22 @@ async::task<bool> context::init_ch(const internal::Character&           response
     co_return co_await ch.map(&this->maps[map], point16_t(position_x, position_y));
 }
 
-async::task<void> context::init_option(const internal::Option& response, fb::game::character& ch)
+void context::init_option(const internal::Option& response, fb::game::character& ch)
 {
-    co_await ch.option(SETTING::WHISPER, response.whisper, false);
-    co_await ch.option(SETTING::GROUP, response.group, false);
-    co_await ch.option(SETTING::ROAR, response.roar, false);
-    co_await ch.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
-    co_await ch.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
-    co_await ch.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
-    co_await ch.option(SETTING::FIXED_MOVE, response.fixed_move, false);
-    co_await ch.option(SETTING::TRADE, response.trade, false);
-    co_await ch.option(SETTING::FAST_MOVE, response.fast_move, false);
-    co_await ch.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
-    co_await ch.option(SETTING::PK_PROTECT, response.pk_protect, false);
+    ch.option(SETTING::WHISPER, response.whisper, false);
+    ch.option(SETTING::GROUP, response.group, false);
+    ch.option(SETTING::ROAR, response.roar, false);
+    ch.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
+    ch.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
+    ch.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
+    ch.option(SETTING::FIXED_MOVE, response.fixed_move, false);
+    ch.option(SETTING::TRADE, response.trade, false);
+    ch.option(SETTING::FAST_MOVE, response.fast_move, false);
+    ch.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
+    ch.option(SETTING::PK_PROTECT, response.pk_protect, false);
 }
 
-async::task<void> context::init_items(const std::vector<internal::Item>& response, character& ch)
+void context::init_items(const std::vector<internal::Item>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -473,18 +473,18 @@ async::task<void> context::init_items(const std::vector<internal::Item>& respons
             item->durability(x.durability.value());
 
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
-            co_await static_cast<weapon*>(item)->custom_name(x.custom_name.value());
+            static_cast<weapon*>(item)->custom_name(x.custom_name.value());
 
         if (x.deposited != -1)
-            std::ignore = co_await ch.deposit_item(*item);
+            ch.deposit_item(*item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
-            std::ignore = co_await ch.items.add(*item, x.index);
+            ch.items.add(*item, x.index);
         else
             ch.items.wear((EQUIPMENT_PARTS)x.parts, static_cast<equipment*>(item));
     }
 }
 
-async::task<void> context::init_spells(const std::vector<internal::Spell>& response, character& ch)
+void context::init_spells(const std::vector<internal::Spell>& response, character& ch)
 {
     for (auto& x : response)
     {
@@ -492,7 +492,7 @@ async::task<void> context::init_spells(const std::vector<internal::Spell>& respo
             continue;
 
         auto& model = this->model.spell[x.model];
-        std::ignore = co_await ch.spells.add(model, x.slot);
+        ch.spells.add(model, x.slot);
     }
 }
 
@@ -519,43 +519,43 @@ character* context::handle_accepted(fb::socket<character>& socket)
     return this->make<character>(socket);
 }
 
-async::task<void> context::send(object&                           object,
-                                const fb::protocol::base::header& header,
-                                context::scope                    scope,
-                                bool                              exclude_self,
-                                bool                              encrypt)
+void context::send(object&                           object,
+                   const fb::protocol::base::header& header,
+                   context::scope                    scope,
+                   bool                              exclude_self,
+                   bool                              encrypt)
 {
     switch (scope)
     {
     case context::scope::SELF:
-        co_await object.send(header, encrypt);
+        object.send(header, encrypt);
         break;
 
     case context::scope::PIVOT:
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
         if (!exclude_self)
-            std::ignore = object.send(header, encrypt);
+            object.send(header, encrypt);
 
         for (auto& x : nears)
-            std::ignore = x->send(header, encrypt);
+            x->send(header, encrypt);
     }
     break;
 
     case context::scope::GROUP:
     {
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            co_return;
+            return;
 
         auto& ch                = static_cast<character&>(object);
         auto& shared_group_lock = ch.group();
         if (shared_group_lock == nullptr)
-            co_return;
+            return;
 
         shared_group_lock->lock([&header, encrypt](auto& group) {
             for (auto ch : group.characters())
             {
-                std::ignore = ch->send(header, encrypt);
+                ch->send(header, encrypt);
             }
         });
     }
@@ -565,60 +565,59 @@ async::task<void> context::send(object&                           object,
     {
         auto map = object.map();
         if (map == nullptr)
-            co_return;
+            return;
 
         for (const auto& [seq, obj] : object.map()->objects)
         {
             if (exclude_self && obj == object)
                 continue;
 
-            std::ignore = obj.send(header, encrypt);
+            obj.send(header, encrypt);
         }
     }
     break;
 
     case context::scope::WORLD:
     {
-        co_await this->send(header, encrypt);
+        this->send(header, encrypt);
     }
     break;
     }
 }
 
-async::task<void>
-context::send(object& object, const protocol_generator& fn, context::scope scope, bool exclude_self, bool encrypt)
+void context::send(object& object, const protocol_generator& fn, context::scope scope, bool exclude_self, bool encrypt)
 {
     switch (scope)
     {
     case context::scope::SELF:
-        co_await object.send(*fn(object).get(), encrypt);
+        object.send(*fn(object).get(), encrypt);
         break;
 
     case context::scope::PIVOT:
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
         if (!exclude_self)
-            co_await object.send(*fn(object).get(), encrypt);
+            object.send(*fn(object).get(), encrypt);
 
         for (auto& x : nears)
-            co_await x->send(*fn(*x).get(), encrypt);
+            x->send(*fn(*x).get(), encrypt);
     }
     break;
 
     case context::scope::GROUP:
     {
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            co_return;
+            return;
 
         auto& ch                = static_cast<character&>(object);
         auto& shared_group_lock = ch.group();
         if (shared_group_lock == nullptr)
-            co_return;
+            return;
 
         shared_group_lock->lock([&fn, encrypt](auto& group) {
             for (auto ch : group.characters())
             {
-                std::ignore = ch->send(*fn(*ch).get(), encrypt);
+                ch->send(*fn(*ch).get(), encrypt);
             }
         });
     }
@@ -631,38 +630,48 @@ context::send(object& object, const protocol_generator& fn, context::scope scope
             if (exclude_self && obj == object)
                 continue;
 
-            co_await obj.send(*fn(obj).get(), encrypt);
+            obj.send(*fn(obj).get(), encrypt);
         }
     }
     break;
 
     case context::scope::WORLD:
     {
-        co_await this->sockets.each([&fn, encrypt](auto& socket) -> async::task<void> {
-            co_await socket.send(*fn(*socket.data()).get(), encrypt);
-        });
+        for (int i = 0, n = this->threads.size(); i < n; i++)
+        {
+            auto thread = this->threads.at(i);
+            auto params = thread->data<thread_params>();
+            for (auto& [_, ch] : params->characters)
+            {
+                ch->send(*fn(*ch).get(), encrypt); // TODO: check thread switch required
+            }
+        }
     }
     break;
     }
 }
 
-async::task<void> context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
+void context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
 {
-    co_await this->sockets.each([&response, &map, encrypt](auto& socket) -> async::task<void> {
-        auto ch = socket.data();
-        if (ch->map() != &map)
-            co_return;
-
-        co_await socket.send(response, encrypt);
-    });
+    auto thread = map.thread();
+    auto params = thread->data<thread_params>();
+    for (auto& [_, ch] : params->characters)
+    {
+        ch->send(response, encrypt);
+    }
 }
 
-async::task<void> context::send(const fb::protocol::base::header& response, bool encrypt)
+void context::send(const fb::protocol::base::header& response, bool encrypt)
 {
-    co_await this->sockets.each([&response, encrypt](auto& socket) -> async::task<void> {
-        auto ch = socket.data();
-        co_await ch->send(response, encrypt);
-    });
+    for (int i = 0, n = this->threads.size(); i < n; i++)
+    {
+        auto thread = this->threads.at(i);
+        auto params = thread->data<thread_params>();
+        for (auto& [_, ch] : params->characters)
+        {
+            ch->send(response, encrypt); // TODO: check thread switch required
+        }
+    }
 }
 
 async::task<void> context::save(character& ch)
@@ -709,7 +718,7 @@ async::task<void> context::save(character& ch)
         spells.push_back(internal::Spell{ch.id(), i, spell->id});
     }
 
-    auto&& response = co_await this->post<internal_reqs::Save, internal_resp::Save>(
+    std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
         internal_reqs::Save{ch.to_protocol(), items, spells});
@@ -777,8 +786,7 @@ void context::amqp_thread()
                 {
                     this->assert_whisper(response);
                     this->broadcast(response.to, [&response](auto& you) {
-                        std::ignore =
-                            you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
+                        you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
                     });
                 }
                 catch (std::exception& e)
@@ -789,7 +797,7 @@ void context::amqp_thread()
                 if (error.empty() == false)
                 {
                     this->broadcast(response.from, [&response, &error](auto& me) {
-                        std::ignore = me.message(error, MESSAGE_TYPE::NOTIFY);
+                        me.message(error, MESSAGE_TYPE::NOTIFY);
                     });
                 }
             });
@@ -839,9 +847,9 @@ void context::amqp_thread()
 }
 
 // TODO : 클릭도 인터페이스로
-async::task<void> context::handle_click_mob(character& ch, mob& mob)
+void context::handle_click_mob(character& ch, mob& mob)
 {
-    co_await this->send(ch, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    this->send(ch, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
 void context::handle_click_npc(character& ch, npc& npc)
@@ -913,18 +921,18 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
                 character.group(group_lock_ptr);
                 if (character.name() == member)
                 {
-                    std::ignore = character.message("그룹에 참여했습니다.");
+                    character.message("그룹에 참여했습니다.");
                 }
                 else
                 {
-                    std::ignore = character.message(std::format("{}님 그룹 참여", member));
+                    character.message(std::format("{}님 그룹 참여", member));
                 }
                 break;
 
             case GroupAction::Enter:
                 if (character.name() == member)
                 {
-                    std::ignore = character.message("그룹에 참여했습니다.");
+                    character.message("그룹에 참여했습니다.");
                     group_lock_ptr->lock([&character](auto& group) {
                         group.enter(character);
                     });
@@ -932,7 +940,7 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
                 }
                 else
                 {
-                    std::ignore = character.message(std::format("{}님 그룹 참여", member));
+                    character.message(std::format("{}님 그룹 참여", member));
                 }
                 break;
 
@@ -943,11 +951,11 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
                         group.leave(character);
                     });
                     character.group().reset();
-                    std::ignore = character.message("그룹에서 추방당했습니다.");
+                    character.message("그룹에서 추방당했습니다.");
                 }
                 else
                 {
-                    std::ignore = character.message(std::format("{}님 그룹 탈퇴", member));
+                    character.message(std::format("{}님 그룹 탈퇴", member));
                 }
                 break;
             }

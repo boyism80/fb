@@ -24,7 +24,7 @@ uint32_t fb::game::life::calculate_damage(uint32_t value, const fb::game::life& 
     return damage * rate;
 }
 
-async::task<uint32_t> fb::game::life::hp_up(uint32_t value, fb::game::object* from)
+uint32_t fb::game::life::hp_up(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
 
@@ -33,83 +33,83 @@ async::task<uint32_t> fb::game::life::hp_up(uint32_t value, fb::game::object* fr
     value = std::min(value, this->base_hp() - this->_hp);
     this->hp(this->_hp + value);
     if (listener != nullptr)
-        co_await listener->on_heal_hp(*this, value, from);
+        listener->on_heal_hp(*this, value, from);
 
-    co_return value;
+    return value;
 }
 
-async::task<uint32_t> fb::game::life::hp_down(uint32_t value, fb::game::object* from, bool critical)
+uint32_t fb::game::life::hp_down(uint32_t value, fb::game::object* from, bool critical)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
 
     value = std::min(value, this->_hp);
-    co_await this->hp(this->_hp - value);
+    this->hp(this->_hp - value);
 
-    co_await this->on_damaged(from, value, critical);
+    this->on_damaged(from, value, critical);
     if (this->_hp == 0)
     {
         if (from != nullptr)
-            co_await from->on_kill(*this);
-        co_await this->on_die(from);
+            from->on_kill(*this);
+        this->on_die(from);
     }
 
-    co_return value;
+    return value;
 }
 
-async::task<uint32_t> fb::game::life::mp_up(uint32_t value, fb::game::object* from)
+uint32_t fb::game::life::mp_up(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
 
     value = std::min(value, this->base_mp() - this->_mp);
-    co_await this->mp(this->_mp + value);
+    this->mp(this->_mp + value);
     if (listener != nullptr)
-        co_await listener->on_heal_mp(*this, value, from);
+        listener->on_heal_mp(*this, value, from);
 
-    co_return value;
+    return value;
 }
 
-async::task<uint32_t> fb::game::life::mp_down(uint32_t value, fb::game::object* from)
+uint32_t fb::game::life::mp_down(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
 
     value = std::min(value, this->_mp);
-    co_await this->mp(this->_mp - value);
+    this->mp(this->_mp - value);
 
-    co_return value;
+    return value;
 }
 
-async::task<void> fb::game::life::attack()
+void fb::game::life::attack()
 {
     this->assert_thread();
 
     if (this->_map == nullptr)
-        co_return;
+        return;
 
     if (this->alive() == false)
-        co_return;
+        return;
 
     auto front = this->forward(OBJECT_TYPE::LIFE);
-    co_await this->on_attack(front);
+    this->on_attack(front);
 
     if (front == nullptr)
-        co_return;
+        return;
 
     auto you = static_cast<fb::game::life*>(front);
     if (you == nullptr)
-        co_return;
+        return;
 
-    auto miss = co_await this->on_calculate_miss(*you);
+    auto miss = this->on_calculate_miss(*you);
     if (miss)
-        co_return;
+        return;
 
-    auto critical = co_await this->on_calculate_critical(*you);
-    auto damage   = co_await this->on_calculate_damage(critical);
+    auto critical = this->on_calculate_critical(*you);
+    auto damage   = this->on_calculate_damage(critical);
 
-    co_await this->on_hit(*you, damage, critical);
+    this->on_hit(*you, damage, critical);
 }
 
 uint32_t fb::game::life::hp() const
@@ -119,18 +119,18 @@ uint32_t fb::game::life::hp() const
     return this->_hp;
 }
 
-async::task<void> fb::game::life::hp(uint32_t value)
+void fb::game::life::hp(uint32_t value)
 {
     this->assert_thread();
 
     auto before = this->_hp;
     this->_hp   = value;
 
-    co_await this->on_update();
+    this->on_update();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_hp(*this, before, this->_hp);
+        listener->on_hp(*this, before, this->_hp);
 }
 
 uint32_t fb::game::life::mp() const
@@ -140,18 +140,18 @@ uint32_t fb::game::life::mp() const
     return this->_mp;
 }
 
-async::task<void> fb::game::life::mp(uint32_t value)
+void fb::game::life::mp(uint32_t value)
 {
     this->assert_thread();
 
     auto before = this->_mp;
     this->_mp   = value;
 
-    co_await this->on_update();
+    this->on_update();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_mp(*this, before, this->_hp);
+        listener->on_mp(*this, before, this->_hp);
 }
 
 uint32_t fb::game::life::base_hp() const
@@ -226,7 +226,7 @@ bool fb::game::life::alive() const
     return this->_hp != 0;
 }
 
-async::task<void> fb::game::life::kill()
+void fb::game::life::kill()
 {
     this->assert_thread();
 
@@ -234,7 +234,7 @@ async::task<void> fb::game::life::kill()
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_hide(*this, DESTROY_TYPE::DEAD);
+        listener->on_hide(*this, DESTROY_TYPE::DEAD);
 }
 
 bool fb::game::life::active(const fb::model::spell& spell, const std::string& message)
@@ -312,69 +312,69 @@ bool fb::game::life::active(const fb::model::spell& spell)
     return true;
 }
 
-async::task<void> fb::game::life::on_update()
+void fb::game::life::on_update()
 {
     this->assert_thread();
 
-    co_return;
+    return;
 }
 
-async::task<bool> fb::game::life::on_calculate_critical(fb::game::life& you) const
+bool fb::game::life::on_calculate_critical(fb::game::life& you) const
 {
     this->assert_thread();
 
 #if defined DEBUG | defined _DEBUG
-    co_return true;
+    return true;
 #else
-    co_return std::rand() % 100 < 20;
+    return std::rand() % 100 < 20;
 #endif
 }
 
-async::task<bool> fb::game::life::on_calculate_miss(fb::game::life& you) const
+bool fb::game::life::on_calculate_miss(fb::game::life& you) const
 {
     this->assert_thread();
 
 #if defined DEBUG | defined _DEBUG
-    co_return false;
+    return false;
 #else
-    co_return std::rand() % 3 == 0;
+    return std::rand() % 3 == 0;
 #endif
 }
 
-async::task<void> fb::game::life::on_attack(fb::game::object* you)
+void fb::game::life::on_attack(fb::game::object* you)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_attack(*this, you);
+        listener->on_attack(*this, you);
 }
 
-async::task<void> fb::game::life::on_hit(fb::game::life& you, uint32_t damage, bool critical)
+void fb::game::life::on_hit(fb::game::life& you, uint32_t damage, bool critical)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_hit(*this, you, damage, critical);
+        listener->on_hit(*this, you, damage, critical);
 }
 
-async::task<void> fb::game::life::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
+void fb::game::life::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_damaged(*this, from, damage, critical);
+        listener->on_damaged(*this, from, damage, critical);
 }
 
-async::task<void> fb::game::life::on_die(fb::game::object* from)
+void fb::game::life::on_die(fb::game::object* from)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_die(*this, from);
+        listener->on_die(*this, from);
 }
 
 uint32_t fb::game::life::on_exp() const
@@ -384,11 +384,11 @@ uint32_t fb::game::life::on_exp() const
     return 0;
 }
 
-async::task<void> fb::game::life::on_kill(fb::game::life& you)
+void fb::game::life::on_kill(fb::game::life& you)
 {
     this->assert_thread();
 
     auto listener = this->get_listener<fb::game::life>();
     if (listener != nullptr)
-        co_await listener->on_kill(*this, you);
+        listener->on_kill(*this, you);
 }
