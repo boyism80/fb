@@ -10,7 +10,7 @@
 #undef small
 #endif
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a character.
@@ -50,7 +50,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct config : fb::game::object::config
+    struct initial_params : fb::game::object::initial_params
     {
     public:
         uint16_t count = 1;
@@ -73,13 +73,13 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The context
-     * @param[in]  model    The model
-     * @param[in]  config   The configuration
+     * @param      context         The context
+     * @param[in]  model           The model
+     * @param[in]  initial_params  The initial parameters
      */
-    item(fb::game::context&            context,
-         const fb::model::item&        model,
-         const fb::game::item::config& config = fb::game::item::config{.count = 1});
+    item(fb::game::context&     context,
+         const fb::model::item& model,
+         const initial_params&  initial_params = initial_params{.count = 1});
     /**
      * @brief      Constructs a new instance.
      *
@@ -1117,6 +1117,6 @@ public:
     fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__ITEM_H__

@@ -184,7 +184,7 @@ int fb::model::item::builtin_deposit_price(lua_State* lua)
 
 fb::game::item* fb::model::item::make(fb::game::context& context, uint16_t count) const
 {
-    return context.make<fb::game::item>(*this, fb::game::item::config{.count = count});
+    return context.make<fb::game::item>(*this, fb::game::item::initial_params{.count = count});
 }
 
 fb::game::item* fb::model::cash::make(fb::game::context& context, uint16_t count) const

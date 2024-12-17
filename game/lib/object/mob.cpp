@@ -50,7 +50,7 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
-                                                      fb::game::mob::config{.alive = true, .rezen = this});
+                                                      fb::game::mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->hp_up(mob->base_hp());
@@ -81,12 +81,12 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     this->_respawn_time.reset();
 }
 
-fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const fb::game::mob::config& config) :
-    life(context, model, config),
-    _rezen(config.rezen)
+fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& initial_params) :
+    life(context, model, initial_params),
+    _rezen(initial_params.rezen)
 {
-    this->visible(config.alive);
-    if (config.alive)
+    this->visible(initial_params.alive);
+    if (initial_params.alive)
     {
         this->hp_up(this->base_hp());
         this->mp_up(this->base_mp());

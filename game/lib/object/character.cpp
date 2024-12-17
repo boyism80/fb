@@ -5,7 +5,7 @@
 using namespace fb::game;
 
 character::character(fb::game::context& context, fb::socket<character>& socket) :
-    life(context, context.model.life[0], life::config{{.id = (uint32_t)socket.fd()}}),
+    life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
     _socket(socket)
 {
     inline_interaction_funcs.push_back(
@@ -1398,7 +1398,7 @@ void character::unride()
             throw std::runtime_error(message::ride::UNRIDE);
 
         auto& model = this->context.model.mob[const_value::mob::horse];
-        auto  horse = this->context.make<mob>(model, mob::config{.alive = true});
+        auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->position_forward());
 
         this->state(STATE::NORMAL);

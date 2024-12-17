@@ -57,7 +57,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct config;
+    struct initial_params;
 
 public:
     LUA_PROTOTYPE
@@ -90,7 +90,7 @@ protected:
      * @param[in]  model    The model
      * @param[in]  c        { parameter_description }
      */
-    object(fb::game::context& context, const fb::model::object& model, const config& c);
+    object(fb::game::context& context, const fb::model::object& model, const initial_params& c);
     /**
      * @brief      Constructs a new instance.
      *
@@ -832,7 +832,7 @@ struct object::listener
 /**
  * @brief      { struct_description }
  */
-struct object::config
+struct object::initial_params
 {
 public:
     uint32_t        id        = 0xFFFFFFFF;

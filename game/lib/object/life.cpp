@@ -2,10 +2,10 @@
 #include <life.h>
 #include <map.h>
 
-fb::game::life::life(fb::game::context& context, const fb::model::life& model, const fb::game::life::config& config) :
-    object(context, model, config),
-    _hp(config.hp),
-    _mp(config.mp),
+fb::game::life::life(fb::game::context& context, const fb::model::life& model, const initial_params& initial_params) :
+    object(context, model, initial_params),
+    _hp(initial_params.hp),
+    _mp(initial_params.mp),
     spells(*this)
 { }
 

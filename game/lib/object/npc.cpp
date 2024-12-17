@@ -4,7 +4,7 @@
 using namespace fb::game;
 
 fb::game::npc::npc(fb::game::context& context, const fb::model::npc& model) :
-    fb::game::object(context, model, fb::game::object::config())
+    fb::game::object(context, model, initial_params())
 { }
 
 fb::game::npc::npc(const npc& right) :

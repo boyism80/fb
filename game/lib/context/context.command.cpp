@@ -148,7 +148,7 @@ async::task<bool> context::handle_command_mob(character& session, Json::Value& p
     if (model == nullptr)
         co_return true;
 
-    auto mob    = model->make<fb::game::mob>(*this, mob::config{.alive = true});
+    auto mob    = model->make<fb::game::mob>(*this, fb::game::mob::initial_params{.alive = true});
     auto map    = session.map();
     std::ignore = co_await mob->map(map, session.position());
     co_return true;

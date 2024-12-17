@@ -2,7 +2,7 @@
 #include <item.h>
 
 fb::game::consume::consume(fb::game::context& context, const fb::model::consume& model, uint16_t count) :
-    fb::game::item(context, model, fb::game::item::config{.count = count})
+    fb::game::item(context, model, initial_params{.count = count})
 { }
 
 fb::game::consume::consume(const consume& right) :

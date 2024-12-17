@@ -5,17 +5,17 @@
 
 using namespace fb::model::enum_value;
 
-fb::game::object::object(fb::game::context&              context,
-                         const fb::model::object&        model,
-                         const fb::game::object::config& c) :
-    luable(c.id),
+fb::game::object::object(fb::game::context&       context,
+                         const fb::model::object& model,
+                         const initial_params&    initial_params) :
+    luable(initial_params.id),
     context(context),
     _listener(&context),
-    _sequence(c.id),
+    _sequence(initial_params.id),
     _model(model),
-    _position(c.position),
-    _direction(c.direction),
-    _map(c.map),
+    _position(initial_params.position),
+    _direction(initial_params.direction),
+    _map(initial_params.map),
     buffs(*this)
 {
     if (this->_listener != nullptr)
@@ -27,10 +27,10 @@ fb::game::object::object(fb::game::context&              context,
 fb::game::object::object(const object& right) :
     object(right.context,
            right._model,
-           fb::game::object::config{.id        = right._sequence,
-                                    .position  = right._position,
-                                    .direction = right._direction,
-                                    .map       = right._map})
+           initial_params{.id        = right._sequence,
+                          .position  = right._position,
+                          .direction = right._direction,
+                          .map       = right._map})
 { }
 
 fb::game::object::~object()
