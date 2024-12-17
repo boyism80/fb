@@ -79,7 +79,7 @@ session* context::handle_accepted(fb::socket<session>& socket)
 
 async::task<bool> context::handle_connected(fb::socket<session>& socket)
 {
-    co_await socket.send(this->_connection_cache, false);
+    socket.send(this->_connection_cache, false);
 
     co_return true;
 }
@@ -98,7 +98,7 @@ async::task<bool> context::handle_check_version(fb::socket<session>& socket, con
         auto crt = cryptor::generate();
         socket.crt(crt);
 
-        co_await this->send(socket, response::crt(crt, this->_entry_crc32_cache), false);
+        this->send(socket, response::crt(crt, this->_entry_crc32_cache), false);
         co_return true;
     }
     catch (std::exception& e)
