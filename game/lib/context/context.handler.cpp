@@ -51,7 +51,9 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     co_await this->init_spells(response.spells, *ch);
     thread->assert_ptr(ch);
 
-    // TODO: shard에 character 추가
+    this->_shard[name].lock([&name, ch](auto& characters){
+        characters.insert({name, ch});
+    });
 
     std::ignore = this->init_option(response.option, *ch);
     std::ignore = this->send(*ch, fb_resp::init(), scope::SELF);
@@ -331,7 +333,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
                 "/in-game/group/leave",
                 internal_reqs::LeaveGroup{ch->name()});
 
-            co_await this->on_leave_group(response);
+            this->on_leave_group(response);
         }
 
         auto&& response = co_await this->post<internal_reqs::SetOption, internal_resp::SetOption>(

@@ -210,7 +210,10 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         group.reset();
     }
 
-    // TODO: shard에 character 제거
+    auto& name = ch->name();
+    this->_shard[name]->characters.lock([&name](auto& characters) {
+        characters.erase(name);
+    });
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
@@ -532,31 +535,31 @@ async::task<void> context::send(object&                           object,
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
         if (!exclude_self)
-            co_await object.send(header, encrypt);
+            std::ignore = object.send(header, encrypt);
 
         for (auto& x : nears)
-            co_await x->send(header, encrypt);
+            std::ignore = x->send(header, encrypt);
     }
     break;
 
-        // case context::scope::GROUP:
-        //{
-        //     if (object.is(OBJECT_TYPE::CHARACTER) == false)
-        //         return;
+    case context::scope::GROUP:
+    {
+        if (object.is(OBJECT_TYPE::CHARACTER) == false)
+            co_return;
 
-        //    auto& ch = static_cast<character&>(object);
-        //    auto  group   = ch.group();
-        //    if (group == nullptr)
-        //        return;
+        auto& ch                = static_cast<character&>(object);
+        auto& shared_group_lock = ch.group();
+        if (shared_group_lock == nullptr)
+            co_return;
 
-        //    group->read<void>([&header, encrypt](const auto& g) {
-        //        for (auto ch : g.active_members())
-        //        {
-        //            co_await ch->send(header, encrypt);
-        //        }
-        //    });
-        //}
-        // break;
+        shared_group_lock->lock([&header, encrypt](auto& group) {
+            for (auto ch : group.characters())
+            {
+                std::ignore = ch->send(header, encrypt);
+            }
+        });
+    }
+    break;
 
     case context::scope::MAP:
     {
@@ -569,7 +572,7 @@ async::task<void> context::send(object&                           object,
             if (exclude_self && obj == object)
                 continue;
 
-            co_await obj.send(header, encrypt);
+            std::ignore = obj.send(header, encrypt);
         }
     }
     break;
@@ -602,24 +605,24 @@ context::send(object& object, const protocol_generator& fn, context::scope scope
     }
     break;
 
-        // case context::scope::GROUP:
-        //{
-        //     if (object.is(OBJECT_TYPE::CHARACTER) == false)
-        //         return;
+    case context::scope::GROUP:
+    {
+        if (object.is(OBJECT_TYPE::CHARACTER) == false)
+            co_return;
 
-        //    auto& ch = static_cast<character&>(object);
-        //    auto  group   = ch.group();
-        //    if (group == nullptr)
-        //        return;
+        auto& ch                = static_cast<character&>(object);
+        auto& shared_group_lock = ch.group();
+        if (shared_group_lock == nullptr)
+            co_return;
 
-        //    group->lock([&fn, encrypt](auto& g) {
-        //        for (auto ch : g.active_members())
-        //        {
-        //            co_await ch->send(*fn(*ch).get(), encrypt);
-        //        }
-        //    });
-        //}
-        // break;
+        shared_group_lock->lock([&fn, encrypt](auto& group) {
+            for (auto ch : group.characters())
+            {
+                std::ignore = ch->send(*fn(*ch).get(), encrypt);
+            }
+        });
+    }
+    break;
 
     case context::scope::MAP:
     {
@@ -810,7 +813,7 @@ void context::amqp_thread()
                 if (response.host == fb::config<uint32_t>("id"))
                     co_return;
 
-                co_await this->on_leave_group(response);
+                this->on_leave_group(response);
             });
         }
         catch (std::exception& e)
@@ -952,75 +955,52 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
     });
 }
 
-async::task<void> context::on_leave_group(const internal_resp::LeaveGroup& response)
+void context::on_leave_group(const internal_resp::LeaveGroup& resp)
 {
-    this->assert_group(response.error, response.member);
+    this->assert_group(resp.error, resp.member);
 
-    // auto group = this->_groups.lock<fb::locker<fb::game::group>*>([this, &response](auto& groups) {
-    //     if (groups.contains(response.group.id))
-    //         groups.erase(response.group.id);
+    auto gid = resp.group.id;
+    switch (resp.action)
+    {
+    case GroupAction::Leave:
+    {
+        this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group_lock_ptr) {
+            this->broadcast(resp.member, [&group_lock_ptr](auto& ch) {
+                ch.group().reset();
 
-    //    groups.insert({response.group.id,
-    //                   std::make_unique<fb::locker<fb::game::group>>(*this,
-    //                                                                 response.group.id,
-    //                                                                 response.group.master,
-    //                                                                 response.group.members)});
-    //    return groups[response.group.id].get();
-    //});
+                group_lock_ptr->lock([&ch](auto& group) {
+                    group.leave(ch);
+                });
+            });
 
-    // group->lock([this, &response, group](auto& g) {
-    //     this->_characters.lock([this, &response, &g, group](auto& characters) {
-    //         auto members = std::vector<fb::game::character*>();
+            auto members = std::vector<std::string>{resp.member};
+            members.push_back(resp.group.master);
+            this->broadcast(members, [&resp](auto& ch) {
+                if (ch.name() == resp.member)
+                    ch.message("그룹 탈퇴", MESSAGE_TYPE::STATE);
+                else
+                    ch.message(std::format("{}님 그룹에서 탈퇴", resp.member), MESSAGE_TYPE::STATE);
+            });
+        });
+    }
+    break;
 
-    //        if (characters.contains(response.group.master))
-    //            members.push_back(characters[response.group.master]);
+    case GroupAction::BreakUp:
+    {
+        this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
+            auto members = std::vector<std::string>{resp.group.members};
+            members.push_back(resp.group.master);
 
-    //        for (auto& uid : response.group.members)
-    //        {
-    //            if (characters.contains(uid))
-    //                members.push_back(characters[uid]);
-    //        }
+            this->broadcast(members, [](auto& ch) {
+                ch.group().reset();
+                ch.message("그룹 해체", MESSAGE_TYPE::STATE);
+            });
 
-    //        switch (response.action)
-    //        {
-    //        case GroupAction::Leave:
-    //        {
-    //            for (auto member : members)
-    //            {
-    //                co_await member->message(std::format("{}님 그룹에서 탈퇴", response.member), MESSAGE_TYPE::STATE);
-    //            }
-
-    //            if (characters.contains(response.member))
-    //            {
-    //                characters[response.member]->group(nullptr);
-    //                co_await characters[response.member]->message("그룹 탈퇴", MESSAGE_TYPE::STATE);
-    //            }
-    //        }
-    //        break;
-
-    //        case GroupAction::BreakUp:
-    //        {
-    //            for (auto member : members)
-    //            {
-    //                member->group(nullptr);
-    //                co_await member->message(std::format("그룹 해체", response.member), MESSAGE_TYPE::STATE);
-    //            }
-
-    //            this->_groups.lock([this, &response](auto& groups) {
-    //                switch (response.action)
-    //                {
-    //                case GroupAction::BreakUp:
-    //                    groups.erase(response.group.id);
-    //                    break;
-    //                }
-    //            });
-    //        }
-    //        break;
-    //        }
-    //    });
-    //});
-
-    co_return;
+            groups.erase(gid);
+        });
+    }
+    break;
+    }
 }
 
 async::task<bool> context::handle_command(character& ch, const std::string& message)

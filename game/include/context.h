@@ -274,7 +274,7 @@ private:
      *
      * @param[in]  response  The response
      */
-    [[nodiscard]] async::task<void> on_leave_group(const internal_resp::LeaveGroup& response);
+    void on_leave_group(const internal_resp::LeaveGroup& response);
 
 public:
     /**
