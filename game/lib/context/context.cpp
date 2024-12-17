@@ -201,15 +201,6 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch == nullptr)
         co_return false;
 
-    auto& group = ch->group();
-    if (group != nullptr)
-    {
-        group->lock([this, ch](auto& group_ptr) {
-            group_ptr.leave(*ch);
-        });
-        group.reset();
-    }
-
     auto& name = ch->name();
     this->_shard[name]->characters.lock([&name](auto& characters) {
         characters.erase(name);
@@ -221,6 +212,14 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
+    auto& group = ch->group();
+    if (group != nullptr)
+    {
+        group->lock([this, ch](auto& group_ptr) {
+            group_ptr.leave(*ch);
+        });
+        group.reset();
+    }
     ch->init(false);
     co_await ch->destroy();
     socket.data(nullptr);
@@ -381,7 +380,7 @@ void context::broadcast(const std::string&                                  name
                         const std::function<void(fb::game::character&)>&    fn,
                         const std::function<void(const std::string& name)>& miss)
 {
-    this->broadcast({name}, fn, miss);
+    this->broadcast(std::vector<std::string>{name}, fn, miss);
 }
 
 void context::broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn)
@@ -467,6 +466,7 @@ void context::init_items(const std::vector<internal::Item>& response, character&
     for (auto& x : response)
     {
         auto item = this->model.item[x.model].make(*this);
+        item->owner(&ch);
         item->count(x.count);
 
         if (x.durability.has_value())
@@ -696,7 +696,7 @@ async::task<void> context::save(character& ch)
         if (equipment == nullptr)
             continue;
 
-        items.push_back(equipment->to_protocol());
+        items.push_back(equipment->to_protocol(parts));
     }
 
     auto& deposited_items = ch.deposited_items();
@@ -983,11 +983,11 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
 
             auto members = std::vector<std::string>{resp.member};
             members.push_back(resp.group.master);
-            this->broadcast(members, [&resp](auto& ch) {
-                if (ch.name() == resp.member)
+            this->broadcast(members, [member = resp.member](auto& ch) {
+                if (ch.name() == member)
                     ch.message("그룹 탈퇴", MESSAGE_TYPE::STATE);
                 else
-                    ch.message(std::format("{}님 그룹에서 탈퇴", resp.member), MESSAGE_TYPE::STATE);
+                    ch.message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
             });
         });
     }

@@ -215,7 +215,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    virtual fb::protocol::internal::Item to_protocol() const;
+    virtual fb::protocol::internal::Item to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const;
 
 public:
     /**
@@ -649,7 +649,7 @@ public:
      *
      * @return     Protocol representation of the object.
      */
-    fb::protocol::internal::Item to_protocol() const override;
+    fb::protocol::internal::Item to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const override;
 };
 
 /**

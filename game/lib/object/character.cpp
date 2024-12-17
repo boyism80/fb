@@ -93,6 +93,19 @@ async::task<bool> character::map(fb::game::map* map, DESTROY_TYPE destroy_type)
     return this->map(map, point16_t(0, 0), destroy_type);
 }
 
+uint32_t character::limited_exp(uint32_t exp) const
+{
+#if defined DEBUG | defined _DEBUG
+    return exp * 100;
+#else
+    if (this->max_level())
+        return exp;
+
+    auto range = this->context.model.ability[this->_class][this->_level].exp;
+    return std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
+#endif
+}
+
 void character::on_hold()
 {
     this->assert_thread();
@@ -161,41 +174,34 @@ void character::on_kill(life& you)
     life::on_kill(you);
 
     auto exp = you.on_exp();
-    if (exp > 0)
+    if (exp == 0)
+        return;
+
+    if (this->_group != nullptr && this->_map != nullptr)
     {
-        auto range = this->context.model.ability[this->_class][this->_level].exp;
-#if defined DEBUG | defined _DEBUG
-        exp *= 100;
-#else
-        if (this->max_level() == false)
-            exp = std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
-#endif
-        if (this->_group != nullptr && this->_map != nullptr)
-        {
-            this->_group->lock([this, exp](auto& group) {
-                auto nears         = this->_map->nears(this->_position, OBJECT_TYPE::CHARACTER); // same thread
-                auto group_members = group.characters();
-                auto near_members  = std::vector<character*>();
+        this->_group->lock([this, exp](auto& group) {
+            auto nears         = this->_map->nears(this->_position, OBJECT_TYPE::CHARACTER); // same thread
+            auto group_members = group.characters();
+            auto near_members  = std::vector<character*>();
 
-                for (auto ch : nears)
-                {
-                    auto i = std::find(group_members.begin(), group_members.end(), ch);
-                    if (i != group_members.end())
-                        near_members.push_back(*i);
-                }
+            for (auto ch : nears)
+            {
+                auto i = std::find(group_members.begin(), group_members.end(), ch);
+                if (i != group_members.end())
+                    near_members.push_back(*i);
+            }
 
-                auto size       = near_members.size();
-                auto divide_exp = exp / size;
-                for (auto near_member : near_members)
-                {
-                    near_member->add_exp(divide_exp);
-                }
-            });
-        }
-        else
-        {
-            this->add_exp(exp, true);
-        }
+            auto size       = near_members.size();
+            auto divide_exp = exp / size;
+            for (auto near_member : near_members)
+            {
+                near_member->add_exp(near_member->limited_exp(divide_exp));
+            }
+        });
+    }
+    else
+    {
+        this->add_exp(this->limited_exp(exp), true);
     }
 }
 
@@ -1871,9 +1877,9 @@ fb::protocol::internal::Character character::to_protocol() const
 
     if (this->_group != nullptr)
     {
-        // dto.group = this->_group->lock<std::optional<uint32_t>>([](fb::game::group& g) {
-        //     return g.id();
-        // });
+        dto.group = this->_group->template lock<uint32_t>([](auto& group) {
+            return group.id();
+        });
     }
     dto.clan = std::nullopt;
     return dto;

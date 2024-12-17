@@ -126,6 +126,16 @@ public:
      */
     ~character();
 
+private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  exp   The exponent
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t limited_exp(uint32_t exp) const;
+
 protected:
     /**
      * @brief      Called on hold.

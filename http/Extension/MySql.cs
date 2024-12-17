@@ -13,7 +13,7 @@ namespace Http.Extension
 
             return obj switch
             {
-                string s => string.IsNullOrEmpty(s) ? "NULL" : $"'{s}'",
+                string s => s == null ? "NULL" : $"'{s}'",
                 bool b => b ? "1" : "0",
                 DateTime dt => $"'{dt:yyyy-MM-dd HH:mm:ss.ffffff}'",
                 _ => obj.ToString(),

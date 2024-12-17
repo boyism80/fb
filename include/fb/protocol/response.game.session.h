@@ -85,7 +85,7 @@ public:
 
         if (this->light == false)
         {
-            writer.write<uint8_t>(0x33);                                            // id
+            writer.write<uint8_t>(0x33);                                       // id
             writer.write<uint16_t>(this->ch.x());                              // x
             writer.write<uint16_t>(this->ch.y());                              // y
             writer.write<uint8_t>(static_cast<uint8_t>(this->ch.direction())); // side
@@ -163,7 +163,7 @@ public:
             }
         }
 
-        writer.write<uint8_t>(0x04);                              // head mark
+        writer.write<uint8_t>(0x04);                         // head mark
         writer.write<std::string, uint8_t>(this->ch.name()); // name
     }
 };
@@ -232,7 +232,7 @@ public:
     uint8_t     dexteritry   = 0;
     uint32_t    hp           = 0;
     uint32_t    mp           = 0;
-    uint32_t    exp   = 0;
+    uint32_t    exp          = 0;
     uint32_t    money        = 0;
     uint32_t    condition    = 0;
     uint8_t     mail         = 0;
@@ -264,7 +264,7 @@ public:
         {
             writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
             writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
-            writer.write<uint8_t>(0x00);                                           // Unknown (clan?)
+            writer.write<uint8_t>(0x00);                                      // Unknown (clan?)
             writer.write<uint8_t>(this->ch.level());                          // level
             writer.write<uint32_t>(this->ch.base_hp());                       // base hp
             writer.write<uint32_t>(this->ch.base_mp());                       // base mp
@@ -286,8 +286,8 @@ public:
 
         if (enum_in(this->level, STATE_LEVEL::EXP_MONEY))
         {
-            writer.write<uint32_t>(this->ch.exp()); // exp
-            writer.write<uint32_t>(this->ch.money());      // money
+            writer.write<uint32_t>(this->ch.exp());   // exp
+            writer.write<uint32_t>(this->ch.money()); // money
         }
 
         if (enum_in(this->level, STATE_LEVEL::CONDITION))
@@ -334,8 +334,8 @@ public:
 
         if (enum_in(this->STATE_LEVEL, STATE_LEVEL::EXP_MONEY))
         {
-            this->exp = reader.read<uint32_t>();
-            this->money      = reader.read<uint32_t>();
+            this->exp   = reader.read<uint32_t>();
+            this->money = reader.read<uint32_t>();
         }
 
         if (enum_in(this->STATE_LEVEL, STATE_LEVEL::CONDITION))
@@ -536,7 +536,7 @@ public:
 
         // 클래스 이름
         const auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;
-        writer.write<std::string>(class_name);           // 직업
+        writer.write<std::string>(class_name);      // 직업
         writer.write<std::string>(this->ch.name()); // 이름
 
         auto disguised = (this->ch.state() == STATE::DISGUISE);
@@ -736,6 +736,6 @@ public:
     }
 };
 
-} // namespace fb::protocol::game::response::ch
+} // namespace fb::protocol::game::response::character
 
 #endif // !__PROTOCOL_RESPONSE_GAME_SESSION_H__

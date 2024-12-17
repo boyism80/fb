@@ -1,4 +1,5 @@
 ﻿using StackExchange.Redis;
+using System.Text.Json.Serialization;
 
 namespace Http.Model
 {
@@ -20,6 +21,8 @@ namespace Http.Model
         public required ushort Count { get; set; } = 1;
         public required uint? Durability { get; set; }
         public required string CustomName { get; set; }
+
+        [JsonIgnore]
         public ItemKey Key => new ItemKey
         {
             Owner = Owner,

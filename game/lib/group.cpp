@@ -4,7 +4,8 @@
 using namespace fb::game;
 
 group::group(context& context, uint32_t id) :
-    _context(context)
+    _context(context),
+    _id(id)
 { }
 
 group::group(group&& g) :
@@ -43,7 +44,6 @@ async::task<void> group::update(const std::string& master, const std::vector<std
         this->_members.push_back(member);
     }
 
-    this->_active_members.clear();
     auto g = std::unordered_map<fb::thread*, std::vector<std::string>>();
 
     auto concated = std::vector<std::string>(members);

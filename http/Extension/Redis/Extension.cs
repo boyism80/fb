@@ -162,9 +162,7 @@ namespace Http.Redis
         {
             var tcs = new TaskCompletionSource<T>();
             var uuid = Guid.NewGuid().ToString();
-            if (await database.Lock(key, tcs, fn, uuid, null) == false)
-                tcs.SetException(new LogicException(ErrorCode.DistributedLockFailed));
-
+            await database.Lock(key, tcs, fn, uuid, null);
             return await tcs.Task;
         }
     }

@@ -85,7 +85,7 @@ namespace Http.Reepository
                     `durability`=VALUES(`durability`),
                     `custom_name`=VALUES(`custom_name`),
                     `deleted`=VALUES(`deleted`),
-                    `updated_date`=VALUES(`updated_date`);";
+                    `updated_date`=VALUES(`updated_date`);
                 """;
 
             return sql;
@@ -95,12 +95,6 @@ namespace Http.Reepository
         {
             var args = values.Select(item =>
             {
-                var customName = item.CustomName;
-                if (string.IsNullOrEmpty(customName))
-                    customName = "NULL";
-                else
-                    customName = $"\"{customName}\"";
-
                 return $"""
                         ({item.Owner.Escape()},
                          {item.Index.Escape()},
@@ -109,7 +103,7 @@ namespace Http.Reepository
                          {item.Model.Escape()},
                          {item.Count.Escape()},
                          {item.Durability.Escape()},
-                         {customName.Escape()},
+                         {item.CustomName.Escape()},
                          {item.Deleted.Escape()},
                          {item.CreatedDate.Escape()},
                          {item.UpdatedDate.Escape()})
@@ -135,7 +129,7 @@ namespace Http.Reepository
                         `count`=VALUES(`count`),
                         `durability`=VALUES(`durability`),
                         `custom_name`=VALUES(`custom_name`),
-                        `deleted`=VALUES(`deleted`);";
+                        `deleted`=VALUES(`deleted`);
                     """;
 
             return sql;
