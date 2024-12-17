@@ -4,10 +4,9 @@
 #include <worker.h>
 #ifdef _WIN32
 #include <Windows.h>
+#include "resource.h"
 #else
 #include <execinfo.h>
-#else
-#include "resource.h"
 #endif
 
 using namespace fb;
