@@ -459,8 +459,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     return before;
 }
 
-fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary,
-                                                             EQUIPMENT_POSITION   position)
+fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position)
 {
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;

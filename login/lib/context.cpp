@@ -42,7 +42,7 @@ async::task<void> context::handle_start()
 
 async::task<void> context::handle_heart_beat()
 {
-    co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
+    std::ignore = co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
         "internal",
         "/in-game/ping",
         fb::protocol::internal::request::Ping{this->id(),
@@ -225,7 +225,7 @@ async::task<bool> context::handle_account_complete(fb::socket<session>&         
         error      = e.what();
         error_code = e.type();
     }
-    catch (std::exception& e)
+    catch (std::exception&)
     {
         co_return false;
     }
@@ -304,7 +304,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         writer.write<uint32_t>(uid);
         writer.write<std::string>(name);
         writer.write<uint8_t>(0);
-        this->transfer(socket, response3.ip, response3.port, internal::Service::Login, parameter);
+        std::ignore = this->transfer(socket, response3.ip, response3.port, internal::Service::Login, parameter);
         co_return true;
     }
     catch (login_exception& e)

@@ -90,10 +90,10 @@ async::task<bool> context::handle_logout(fb::socket<character>& socket, const fb
     if (ch->inited() == false)
         co_return true;
 
-    co_await this->transfer(socket,
-                            fb::config<std::string>("login:ip"),
-                            fb::config<uint16_t>("login:port"),
-                            internal::Service::Game);
+    std::ignore = this->transfer(socket,
+                                 fb::config<std::string>("login:ip"),
+                                 fb::config<uint16_t>("login:port"),
+                                 internal::Service::Game);
     co_return true;
 }
 

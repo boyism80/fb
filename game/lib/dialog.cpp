@@ -176,10 +176,10 @@ fb::game::dialog& fb::game::dialog::pushobject(const fb::lua::luable& object)
 
 // new
 void fb::game::dialog::show(const fb::model::object&      object,
-                                         const std::string&            message,
-                                         bool                          button_prev,
-                                         bool                          button_next,
-                                         fb::game::dialog::interaction interaction)
+                            const std::string&            message,
+                            bool                          button_prev,
+                            bool                          button_next,
+                            fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -187,9 +187,9 @@ void fb::game::dialog::show(const fb::model::object&      object,
 }
 
 void fb::game::dialog::show(const fb::model::npc&           npc,
-                                         const std::string&              message,
-                                         const std::vector<std::string>& menus,
-                                         fb::game::dialog::interaction   interaction)
+                            const std::string&              message,
+                            const std::vector<std::string>& menus,
+                            fb::game::dialog::interaction   interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -197,9 +197,9 @@ void fb::game::dialog::show(const fb::model::npc&           npc,
 }
 
 void fb::game::dialog::show(const fb::model::npc&         npc,
-                                         const std::string&            message,
-                                         const std::vector<uint8_t>&   item_slots,
-                                         fb::game::dialog::interaction interaction)
+                            const std::string&            message,
+                            const std::vector<uint8_t>&   item_slots,
+                            fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -207,10 +207,10 @@ void fb::game::dialog::show(const fb::model::npc&         npc,
 }
 
 void fb::game::dialog::show(const fb::model::npc&               npc,
-                                         const std::string&                  message,
-                                         const fb::game::dialog::item_pairs& pairs,
-                                         uint16_t                            pursuit,
-                                         fb::game::dialog::interaction       interaction)
+                            const std::string&                  message,
+                            const fb::game::dialog::item_pairs& pairs,
+                            uint16_t                            pursuit,
+                            fb::game::dialog::interaction       interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -218,8 +218,8 @@ void fb::game::dialog::show(const fb::model::npc&               npc,
 }
 
 void fb::game::dialog::input(const fb::model::npc&         npc,
-                                          const std::string&            message,
-                                          fb::game::dialog::interaction interaction)
+                             const std::string&            message,
+                             fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -227,12 +227,12 @@ void fb::game::dialog::input(const fb::model::npc&         npc,
 }
 
 void fb::game::dialog::input(const fb::model::npc&         npc,
-                                          const std::string&            message,
-                                          const std::string&            top,
-                                          const std::string&            bottom,
-                                          int                           maxlen,
-                                          bool                          prev,
-                                          fb::game::dialog::interaction interaction)
+                             const std::string&            message,
+                             const std::string&            top,
+                             const std::string&            bottom,
+                             int                           maxlen,
+                             bool                          prev,
+                             fb::game::dialog::interaction interaction)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
     if (listener != nullptr)

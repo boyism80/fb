@@ -264,9 +264,7 @@ struct item::listener : public virtual fb::game::object::listener
      * @param[in]  index  The index
      * @param[in]  attr   The attribute
      */
-    virtual void on_item_remove(character&       me,
-                                             uint8_t          index,
-                                             ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE) = 0;
+    virtual void on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE) = 0;
     /**
      * @brief      Called on item update.
      *
@@ -867,8 +865,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<uint8_t> add(const std::vector<fb::game::item*>& items,
-                                                        bool                                stop_if_remained = false);
+    std::vector<uint8_t> add(const std::vector<fb::game::item*>& items, bool stop_if_remained = false);
     /**
      * @brief      { function_description }
      *
@@ -1032,8 +1029,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::auxiliary* auxiliary(fb::game::auxiliary* auxiliary,
-                                                              EQUIPMENT_POSITION   position);
+    fb::game::auxiliary* auxiliary(fb::game::auxiliary* auxiliary, EQUIPMENT_POSITION position);
     /**
      * @brief      Searches for the first match.
      *
@@ -1108,9 +1104,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* remove(uint8_t          index,
-                                                      uint16_t         count = 1,
-                                                      ITEM_DELETE_TYPE attr  = ITEM_DELETE_TYPE::NONE);
+    fb::game::item* remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
     /**
      * @brief      { function_description }
      *
@@ -1120,9 +1114,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* remove(fb::game::item&  item,
-                                                      uint16_t         count = 1,
-                                                      ITEM_DELETE_TYPE attr  = ITEM_DELETE_TYPE::NONE);
+    fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
 };
 
 }} // namespace fb::game

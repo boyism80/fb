@@ -290,10 +290,10 @@ public:
      * @param[in]  interaction  The interaction
      */
     void show(const fb::model::object& object,
-                                         const std::string&       message,
-                                         bool                     button_prev = false,
-                                         bool                     button_next = true,
-                                         interaction              interaction = interaction::NORMAL);
+              const std::string&       message,
+              bool                     button_prev = false,
+              bool                     button_next = true,
+              interaction              interaction = interaction::NORMAL);
     /**
      * @brief      { function_description }
      *
@@ -303,9 +303,9 @@ public:
      * @param[in]  interaction  The interaction
      */
     void show(const fb::model::npc&           npc,
-                                         const std::string&              message,
-                                         const std::vector<std::string>& menus,
-                                         interaction                     interaction = interaction::MENU);
+              const std::string&              message,
+              const std::vector<std::string>& menus,
+              interaction                     interaction = interaction::MENU);
     /**
      * @brief      { function_description }
      *
@@ -315,9 +315,9 @@ public:
      * @param[in]  interaction  The interaction
      */
     void show(const fb::model::npc&       npc,
-                                         const std::string&          message,
-                                         const std::vector<uint8_t>& item_slots,
-                                         interaction                 interaction = interaction::SLOT);
+              const std::string&          message,
+              const std::vector<uint8_t>& item_slots,
+              interaction                 interaction = interaction::SLOT);
     /**
      * @brief      { function_description }
      *
@@ -328,10 +328,10 @@ public:
      * @param[in]  interaction  The interaction
      */
     void show(const fb::model::npc& npc,
-                                         const std::string&    message,
-                                         const item_pairs&     pairs,
-                                         uint16_t              pursuit     = 0xFFFF,
-                                         interaction           interaction = interaction::ITEM);
+              const std::string&    message,
+              const item_pairs&     pairs,
+              uint16_t              pursuit     = 0xFFFF,
+              interaction           interaction = interaction::ITEM);
     /**
      * @brief      { function_description }
      *
@@ -339,9 +339,7 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    void input(const fb::model::npc& npc,
-                                          const std::string&    message,
-                                          interaction           interaction = interaction::INPUT);
+    void input(const fb::model::npc& npc, const std::string& message, interaction interaction = interaction::INPUT);
     /**
      * @brief      { function_description }
      *
@@ -354,12 +352,12 @@ public:
      * @param[in]  interaction  The interaction
      */
     void input(const fb::model::npc& npc,
-                                          const std::string&    message,
-                                          const std::string&    top,
-                                          const std::string&    bottom,
-                                          int                   maxlen      = 0xFF,
-                                          bool                  prev        = false,
-                                          interaction           interaction = interaction::INPUT_EX);
+               const std::string&    message,
+               const std::string&    top,
+               const std::string&    bottom,
+               int                   maxlen      = 0xFF,
+               bool                  prev        = false,
+               interaction           interaction = interaction::INPUT_EX);
 };
 
 /**

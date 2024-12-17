@@ -733,13 +733,12 @@ public:
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
      */
-    [[nodiscard]] async::task<void>
-    send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    async::task<size_t> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
         if (stream.empty())
-            co_return;
+            co_return 0;
 
-        co_await socket.send(stream, encrypt, wrap);
+        co_return co_await socket.send(stream, encrypt, wrap);
     }
 
 public:
@@ -751,16 +750,16 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    [[nodiscard]] async::task<void>
+    async::task<size_t>
     send(fb::socket<T>& socket, const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         co_await response.serialize(writer);
         if (stream.empty())
-            co_return;
+            co_return 0;
 
-        co_await socket.send(stream, encrypt, wrap);
+        co_return co_await socket.send(stream, encrypt, wrap);
     }
 
 protected:

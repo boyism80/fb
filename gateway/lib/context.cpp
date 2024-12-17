@@ -101,7 +101,7 @@ async::task<bool> context::handle_check_version(fb::socket<session>& socket, con
         this->send(socket, response::crt(crt, this->_entry_crc32_cache), false);
         co_return true;
     }
-    catch (std::exception& e)
+    catch (std::exception&)
     {
         co_return false;
     }
@@ -114,13 +114,13 @@ async::task<bool> context::handle_entry_list(fb::socket<session>& socket, const 
     case 0x00:
     {
         const auto& entry = this->_entrypoints[request.index];
-        co_await this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::Service::Gateway);
+        std::ignore       = this->transfer(socket, entry.ip, entry.port, fb::protocol::internal::Service::Gateway);
         co_return true;
     }
 
     case 0x01:
     {
-        co_await this->send(socket, this->_entry_stream_cache);
+        this->send(socket, this->_entry_stream_cache);
         co_return true;
     }
 

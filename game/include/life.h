@@ -197,7 +197,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    [[nodiscard]] void kill();
+    void kill();
     /**
      * @brief      { function_description }
      *

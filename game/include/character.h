@@ -188,9 +188,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<size_t> send(const fb::protocol::base::header& response,
-                                           bool                              encrypt = true,
-                                           bool                              wrap    = true) final;
+    async::task<size_t> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true) final;
 
     /**
      * @brief      { function_description }

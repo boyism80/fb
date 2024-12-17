@@ -561,7 +561,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
         writer.write<uint16_t>(map.model.id);
         writer.write<uint16_t>(position.x);
         writer.write<uint16_t>(position.y);
-        co_await this->transfer(socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
+        std::ignore = this->transfer(socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
         co_return true;
     }
     catch (std::exception& e)

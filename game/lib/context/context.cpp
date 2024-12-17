@@ -838,7 +838,7 @@ void context::amqp_thread()
                 if (this->_amqp->select(&timeout) == false)
                     continue;
             }
-            catch (std::exception& e)
+            catch (std::exception&)
             {
                 break;
             }

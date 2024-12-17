@@ -171,9 +171,7 @@ public:
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
      */
-    virtual async::task<size_t> send(const fb::protocol::base::header& response,
-                                                 bool                              encrypt = true,
-                                                 bool                              wrap    = true);
+    virtual async::task<size_t> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true);
     /**
      * @brief      { function_description }
      *
@@ -786,8 +784,7 @@ struct object::listener
      * @param      me            { parameter_description }
      * @param[in]  destroy_type  The destroy type
      */
-    virtual void on_hide(fb::game::object& me,
-                                                    DESTROY_TYPE      destroy_type = DESTROY_TYPE::DEFAULT) = 0;
+    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
     /**
      * @brief      Called on hide.
      *
@@ -795,9 +792,7 @@ struct object::listener
      * @param      you           You
      * @param[in]  destroy_type  The destroy type
      */
-    virtual void on_hide(fb::game::object& me,
-                                                    fb::game::object& you,
-                                                    DESTROY_TYPE      destroy_type) = 0;
+    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
     /**
      * @brief      Called on move.
      *
@@ -819,9 +814,7 @@ struct object::listener
      * @param      before  The before
      * @param      after   The after
      */
-    virtual void on_map_changed(fb::game::object& me,
-                                                           fb::game::map*    before,
-                                                           fb::game::map*    after) = 0;
+    virtual void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
     /**
      * @brief      Called on create.
      *

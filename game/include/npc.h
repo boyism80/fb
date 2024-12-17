@@ -61,8 +61,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool
-    buy(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count, bool bought);
+    bool buy(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count, bool bought);
     /**
      * @brief      { function_description }
      *
@@ -73,8 +72,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool
-    sell(fb::game::character& session, const fb::model::item* item, uint16_t count, bool sold);
+    bool sell(fb::game::character& session, const fb::model::item* item, uint16_t count, bool sold);
     /**
      * @brief      { function_description }
      *
@@ -112,9 +110,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool hold_item(fb::game::character&    session,
-                                              const fb::model::item*  item,
-                                              std::optional<uint16_t> count);
+    bool hold_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count);
     /**
      * @brief      Returns an item.
      *
@@ -124,9 +120,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool return_item(fb::game::character&    session,
-                                                const fb::model::item*  item,
-                                                std::optional<uint16_t> count);
+    bool return_item(fb::game::character& session, const fb::model::item* item, std::optional<uint16_t> count);
     /**
      * @brief      { function_description }
      */
@@ -164,9 +158,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool rename_weapon(fb::game::character&   session,
-                                                  const fb::model::item* item,
-                                                  const std::string&     name);
+    bool rename_weapon(fb::game::character& session, const fb::model::item* item, const std::string& name);
     /**
      * @brief      { function_description }
      *
