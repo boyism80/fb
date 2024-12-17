@@ -92,7 +92,7 @@ public:
      * @param[in]  model    The model
      * @param[in]  config   The configuration
      */
-    mob(fb::game::context& context, const fb::model::mob& model, const initial_params& initial_params);
+    mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
     /**
      * @brief      Constructs a new instance.
      *

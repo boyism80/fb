@@ -81,12 +81,12 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
     this->_respawn_time.reset();
 }
 
-fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& initial_params) :
-    life(context, model, initial_params),
-    _rezen(initial_params.rezen)
+fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params) :
+    life(context, model, params),
+    _rezen(params.rezen)
 {
-    this->visible(initial_params.alive);
-    if (initial_params.alive)
+    this->visible(params.alive);
+    if (params.alive)
     {
         this->hp_up(this->base_hp());
         this->mp_up(this->base_mp());

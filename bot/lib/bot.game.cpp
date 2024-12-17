@@ -7,17 +7,17 @@ game_bot::game_bot(bot_container& owner, uint32_t id) :
 {
     this->_next_action_time = fb::model::datetime();
 
-    this->bind<fb::protocol::game::response::session::id>(std::bind(&game_bot::handle_sequence, this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::character::id>(std::bind(&game_bot::handle_sequence, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::spell::update>(std::bind(&game_bot::handle_spell_update, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::init>(std::bind(&game_bot::handle_init, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::time>(std::bind(&game_bot::handle_time, this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::session::state>(std::bind(&game_bot::handle_state, this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::session::option>(std::bind(&game_bot::handle_option, this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::character::state>(std::bind(&game_bot::handle_state, this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::character::option>(std::bind(&game_bot::handle_option, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::message>(std::bind(&game_bot::handle_message, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::chat>(std::bind(&game_bot::handle_chat, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::life::action>(std::bind(&game_bot::handle_action, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::object::direction>(std::bind(&game_bot::handle_direction, this, std::placeholders::_1));
-    this->bind<fb::protocol::game::response::session::position>(std::bind(&game_bot::handle_position, this, std::placeholders::_1));
+    this->bind<fb::protocol::game::response::character::position>(std::bind(&game_bot::handle_position, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::object::move>(std::bind(&game_bot::handle_move, this, std::placeholders::_1));
     this->bind<fb::protocol::game::response::map::config>(std::bind(&game_bot::handle_map, this, std::placeholders::_1));
     this->bind<fb::protocol::response::transfer>(std::bind(&game_bot::handle_transfer, this, std::placeholders::_1));
@@ -77,7 +77,7 @@ void game_bot::on_timer(std::chrono::steady_clock::duration now)
     this->_next_action_time = now + std::chrono::steady_clock::duration(rand_term);
 }
 
-async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::session::id& response)
+async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::character::id& response)
 {
     this->_sequence = response.sequence;
     std::cout << "sequence : " << this->_sequence << std::endl;
@@ -100,12 +100,12 @@ async::task<void> game_bot::handle_time(const fb::protocol::game::response::time
     co_return;
 }
 
-async::task<void> game_bot::handle_state(const fb::protocol::game::response::session::state& response)
+async::task<void> game_bot::handle_state(const fb::protocol::game::response::character::state& response)
 {
     co_return;
 }
 
-async::task<void> game_bot::handle_option(const fb::protocol::game::response::session::option& response)
+async::task<void> game_bot::handle_option(const fb::protocol::game::response::character::option& response)
 {
     co_return;
 }
@@ -130,7 +130,7 @@ async::task<void> game_bot::handle_direction(const fb::protocol::game::response:
     co_return;
 }
 
-async::task<void> game_bot::handle_position(const fb::protocol::game::response::session::position& response)
+async::task<void> game_bot::handle_position(const fb::protocol::game::response::character::position& response)
 {
     this->_position = response.abs;
     co_return;

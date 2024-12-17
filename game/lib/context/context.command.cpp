@@ -53,7 +53,7 @@ async::task<bool> context::handle_command_action(character& session, Json::Value
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(session, fb_resp::session::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb_resp::character::action(session, ACTION(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
@@ -124,7 +124,7 @@ async::task<bool> context::handle_command_disguise(character& session, Json::Val
 
     session.disguise(mob->look);
     this->send(session, fb_resp::object::effect(session, 0x03), scope::PIVOT);
-    this->send(session, fb_resp::session::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    this->send(session, fb_resp::character::action(session, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
     this->send(session, fb_resp::object::sound(session, SOUND::DISGUISE), scope::PIVOT);
     co_return true;
 }
@@ -170,8 +170,8 @@ async::task<bool> context::handle_command_class(character& session, Json::Value&
 
     session.cls(class_type);
     session.promotion(promotion);
-    this->send(session, fb_resp::session::id(session), scope::SELF);
-    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(session, fb_resp::character::id(session), scope::SELF);
+    this->send(session, fb_resp::character::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -185,7 +185,7 @@ async::task<bool> context::handle_command_level(character& session, Json::Value&
 
     auto level = parameters[0].asInt();
     session.level(level);
-    this->send(session, fb_resp::session::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(session, fb_resp::character::state(session, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 

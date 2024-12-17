@@ -410,7 +410,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.hp(response.hp);
     ch.base_mp(response.base_mp);
     ch.mp(response.mp);
-    ch.experience(response.exp);
+    ch.exp(response.exp);
     ch.state(STATE(response.state));
 
     if (response.armor_color.has_value())
@@ -849,7 +849,7 @@ void context::amqp_thread()
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
-    this->send(ch, fb_resp::session::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    this->send(ch, fb_resp::character::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
 void context::handle_click_npc(character& ch, npc& npc)

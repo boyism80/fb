@@ -79,7 +79,7 @@ public:
      */
     item(fb::game::context&     context,
          const fb::model::item& model,
-         const initial_params&  initial_params = initial_params{.count = 1});
+         const initial_params&  params = initial_params{.count = 1});
     /**
      * @brief      Constructs a new instance.
      *

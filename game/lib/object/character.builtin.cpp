@@ -37,19 +37,19 @@ int fb::game::character::builtin_look(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->look());
+        thread->pushinteger(ch->look());
         return 1;
     }
     else
     {
         auto value = (uint16_t)thread->tointeger(2);
-        session->look(value);
+        ch->look(value);
         return 0;
     }
 }
@@ -62,19 +62,19 @@ int fb::game::character::builtin_color(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->color());
+        thread->pushinteger(ch->color());
         return 1;
     }
     else
     {
         auto value = (uint8_t)thread->tointeger(2);
-        session->color(value);
+        ch->color(value);
         return 0;
     }
 }
@@ -87,19 +87,19 @@ int fb::game::character::builtin_money(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->money());
+        thread->pushinteger(ch->money());
         return 1;
     }
     else
     {
         auto value = (uint32_t)thread->tointeger(2);
-        session->money(value);
+        ch->money(value);
         return 0;
     }
 }
@@ -112,19 +112,19 @@ int fb::game::character::builtin_exp(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->experience());
+        thread->pushinteger(ch->exp());
         return 1;
     }
     else
     {
         auto value = (uint32_t)thread->tointeger(2);
-        session->experience(value);
+        ch->exp(value);
         return 0;
     }
 }
@@ -137,19 +137,19 @@ int fb::game::character::builtin_base_hp(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->base_hp());
+        thread->pushinteger(ch->base_hp());
         return 1;
     }
     else
     {
         auto value = (uint32_t)thread->tointeger(2);
-        session->base_hp(value);
+        ch->base_hp(value);
         return 0;
     }
 }
@@ -162,19 +162,19 @@ int fb::game::character::builtin_base_mp(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->base_mp());
+        thread->pushinteger(ch->base_mp());
         return 1;
     }
     else
     {
         auto value = (uint32_t)thread->tointeger(2);
-        session->base_mp(value);
+        ch->base_mp(value);
         return 0;
     }
 }
@@ -187,19 +187,19 @@ int fb::game::character::builtin_strength(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->strength());
+        thread->pushinteger(ch->strength());
         return 1;
     }
     else
     {
         auto value = (uint8_t)thread->tointeger(2);
-        session->strength(value);
+        ch->strength(value);
         return 0;
     }
 }
@@ -212,19 +212,19 @@ int fb::game::character::builtin_dexterity(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->dexteritry());
+        thread->pushinteger(ch->dexteritry());
         return 1;
     }
     else
     {
         auto value = (uint8_t)thread->tointeger(2);
-        session->dexteritry(value);
+        ch->dexteritry(value);
         return 0;
     }
 }
@@ -237,19 +237,19 @@ int fb::game::character::builtin_intelligence(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->intelligence());
+        thread->pushinteger(ch->intelligence());
         return 1;
     }
     else
     {
         auto value = (uint8_t)thread->tointeger(2);
-        session->intelligence(value);
+        ch->intelligence(value);
         return 0;
     }
 }
@@ -261,19 +261,19 @@ int fb::game::character::builtin_item(lua_State* lua)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
     auto item = (fb::game::item*)nullptr;
     if (lua_isnumber(lua, 2))
     {
         auto index = (uint8_t)thread->tointeger(2);
-        item       = session->items[index];
+        item       = ch->items[index];
     }
     else if (lua_isstring(lua, 2))
     {
         auto name = thread->tostring(2);
-        item      = session->items.find(name);
+        item      = ch->items.find(name);
     }
 
     if (item == nullptr)
@@ -291,18 +291,18 @@ int fb::game::character::builtin_items(lua_State* lua)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     thread->new_table();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        if (session->items[i] == nullptr)
+        if (ch->items[i] == nullptr)
             continue;
 
         thread->pushinteger(i + 1);
-        thread->pushobject(session->items[i]);
+        thread->pushobject(ch->items[i]);
         lua_settable(lua, -3);
     }
 
@@ -316,13 +316,13 @@ int fb::game::character::builtin_item_drop(lua_State* lua)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
     auto index    = (uint8_t)thread->tointeger(2);
     auto drop_all = thread->toboolean(3);
 
-    auto dropped = session->items.drop(index - 1, drop_all ? 1 : -1);
+    auto dropped = ch->items.drop(index - 1, drop_all ? 1 : -1);
     if (dropped != nullptr)
         thread->pushobject(dropped);
     else
@@ -339,8 +339,8 @@ int fb::game::character::builtin_mkitem(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
     auto name  = thread->tostring(2);
     auto count = argc < 3 ? 1 : thread->tointeger(3);
@@ -358,14 +358,14 @@ int fb::game::character::builtin_mkitem(lua_State* lua)
     {
         auto context = thread->env<fb::game::context>("context");
         auto item    = model->make(*context, count);
-        auto slot    = session->items.add(item);
+        auto slot    = ch->items.add(item);
         if (slot == 0xFF)
         {
             thread->pushnil();
             return 1;
         }
 
-        thread->pushobject(session->items[slot]);
+        thread->pushobject(ch->items[slot]);
     }
 
     return 1;
@@ -380,9 +380,9 @@ int fb::game::character::builtin_rmitem(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     try
     {
-        auto argc    = thread->argc();
-        auto session = thread->touserdata<fb::game::character>(1);
-        if (session == nullptr)
+        auto argc = thread->argc();
+        auto ch   = thread->touserdata<fb::game::character>(1);
+        if (ch == nullptr)
             return 0;
         auto index       = uint8_t(0);
         auto count       = argc < 3 ? 1 : (int)thread->tointeger(3);
@@ -396,7 +396,7 @@ int fb::game::character::builtin_rmitem(lua_State* lua)
             if (item == nullptr)
                 throw std::exception();
 
-            index = session->items.index(item->based<fb::model::item>());
+            index = ch->items.index(item->based<fb::model::item>());
         }
         else if (lua_isnumber(lua, 2))
         {
@@ -412,14 +412,14 @@ int fb::game::character::builtin_rmitem(lua_State* lua)
             if (model == nullptr)
                 throw std::exception();
 
-            index = session->items.index(*model);
+            index = ch->items.index(*model);
         }
         else
         {
             throw std::exception();
         }
 
-        auto dropped = session->items.remove(index, count, delete_attr);
+        auto dropped = ch->items.remove(index, count, delete_attr);
         if (dropped != nullptr)
             std::ignore = dropped->destroy();
     }
@@ -437,18 +437,18 @@ int fb::game::character::builtin_state(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
     if (argc == 1)
     {
-        thread->pushinteger(session->state());
+        thread->pushinteger(ch->state());
         return 1;
     }
     else
     {
         auto value = STATE(thread->tointeger(2));
-        session->state(value);
+        ch->state(value);
         return 0;
     }
 }
@@ -461,23 +461,23 @@ int fb::game::character::builtin_disguise(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->disguise().value());
+        thread->pushinteger(ch->disguise().value());
         return 1;
     }
     else if (luaL_checkinteger(lua, 2))
     {
-        session->disguise((uint16_t)thread->tointeger(2));
+        ch->disguise((uint16_t)thread->tointeger(2));
         return 0;
     }
     else
     {
-        session->undisguise();
+        ch->undisguise();
         return 0;
     }
 }
@@ -490,14 +490,14 @@ int fb::game::character::builtin_class(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        auto cls       = session->_class;
-        auto promotion = session->_promotion;
+        auto cls       = ch->_class;
+        auto promotion = ch->_promotion;
 
         auto promo_model = context->model.promotion(cls, promotion);
         if (promo_model == nullptr)
@@ -522,9 +522,9 @@ int fb::game::character::builtin_class(lua_State* lua)
         {
             auto context = thread->env<fb::game::context>("context");
 
-            context->send(*session, fb::protocol::game::response::session::id(*session), context::scope::SELF);
-            context->send(*session,
-                          fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
+            context->send(*ch, fb::protocol::game::response::character::id(*ch), context::scope::SELF);
+            context->send(*ch,
+                          fb::protocol::game::response::character::state(*ch, STATE_LEVEL::LEVEL_MAX),
                           context::scope::SELF);
             thread->pushboolean(true);
         }
@@ -541,23 +541,23 @@ int fb::game::character::builtin_level(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->level());
+        thread->pushinteger(ch->level());
         return 1;
     }
     else
     {
         auto level = std::max(0, std::min((int)thread->tointeger(2), 255));
-        session->level(level);
+        ch->level(level);
 
         auto context = thread->env<fb::game::context>("context");
-        context->send(*session,
-                      fb::protocol::game::response::session::state(*session, STATE_LEVEL::LEVEL_MAX),
+        context->send(*ch,
+                      fb::protocol::game::response::character::state(*ch, STATE_LEVEL::LEVEL_MAX),
                       context::scope::SELF);
         return 0;
     }
@@ -569,9 +569,9 @@ int fb::game::character::builtin_assert(lua_State* lua)
     if (thread == nullptr)
         return 0;
 
-    auto               argc    = thread->argc();
-    auto               session = thread->touserdata<fb::game::character>(1);
-    auto               size    = thread->rawlen(2);
+    auto               argc = thread->argc();
+    auto               ch   = thread->touserdata<fb::game::character>(1);
+    auto               size = thread->rawlen(2);
     std::vector<STATE> values;
     for (int i = 0; i < size; i++)
     {
@@ -581,7 +581,7 @@ int fb::game::character::builtin_assert(lua_State* lua)
 
     try
     {
-        session->assert_state(values);
+        ch->assert_state(values);
         return 0;
     }
     catch (std::runtime_error& e)
@@ -599,18 +599,18 @@ int fb::game::character::builtin_admin(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushboolean(session->admin());
+        thread->pushboolean(ch->admin());
         return 1;
     }
     else
     {
-        session->admin(thread->toboolean(2));
+        ch->admin(thread->toboolean(2));
         return 0;
     }
 }
@@ -623,18 +623,18 @@ int fb::game::character::builtin_deposited_money(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     if (argc == 1)
     {
-        thread->pushinteger(session->deposited_money());
+        thread->pushinteger(ch->deposited_money());
         return 1;
     }
     else
     {
-        session->deposited_money(thread->tointeger(2));
+        ch->deposited_money(thread->tointeger(2));
         return 0;
     }
 }
@@ -647,11 +647,11 @@ int fb::game::character::builtin_deposited_item(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
-    const auto& deposited_items = session->deposited_items();
+    const auto& deposited_items = ch->deposited_items();
     if (argc == 1)
     {
         thread->new_table();
@@ -729,20 +729,20 @@ int fb::game::character::builtin_deposit_item(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     auto item  = thread->touserdata<fb::game::item>(2);
     auto count = argc >= 3 ? thread->tointeger(3) : 1;
-    auto index = session->items.index(*item);
+    auto index = ch->items.index(*item);
     if (index == 0xFF)
     {
         thread->pushboolean(false);
     }
     else
     {
-        thread->pushboolean(session->deposit_item(index, count));
+        thread->pushboolean(ch->deposit_item(index, count));
     }
 
     return 1;
@@ -756,13 +756,13 @@ int fb::game::character::builtin_withdraw_item(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto session = thread->touserdata<fb::game::character>(1);
-    if (session == nullptr)
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
         return 0;
 
     auto  item            = thread->touserdata<fb::game::item>(2);
     auto  count           = argc >= 3 ? thread->tointeger(3) : 1;
-    auto& deposited_items = session->deposited_items();
+    auto& deposited_items = ch->deposited_items();
     auto  found           = std::find(deposited_items.cbegin(), deposited_items.cend(), item);
     if (found == deposited_items.cend())
     {
@@ -771,7 +771,7 @@ int fb::game::character::builtin_withdraw_item(lua_State* lua)
     else
     {
         auto index    = std::distance(deposited_items.cbegin(), found);
-        auto returned = session->withdraw_item(index, count);
+        auto returned = ch->withdraw_item(index, count);
         thread->pushobject(returned);
     }
 

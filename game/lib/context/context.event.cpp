@@ -42,7 +42,7 @@ void context::on_show(object& me, bool light)
             me,
             [&me, light](const auto& to) {
                 return std::unique_ptr<fb::protocol::base::header>(
-                    new fb_resp::session::show(static_cast<character&>(me), to, light));
+                    new fb_resp::character::show(static_cast<character&>(me), to, light));
             },
             scope::PIVOT);
     }
@@ -55,7 +55,7 @@ void context::on_show(object& me, bool light)
 void context::on_show(object& me, object& you, bool light)
 {
     if (you.is(OBJECT_TYPE::CHARACTER))
-        this->send(me, fb_resp::session::show(static_cast<character&>(you), me, light), scope::SELF);
+        this->send(me, fb_resp::character::show(static_cast<character&>(you), me, light), scope::SELF);
     else
         this->send(me, fb_resp::object::show(you), scope::SELF);
 }
@@ -118,7 +118,7 @@ void context::on_attack(life& me, object* you)
     case OBJECT_TYPE::CHARACTER:
     {
         this->send(me,
-                   fb_resp::session::action(static_cast<character&>(me), ACTION::ATTACK, DURATION::ATTACK),
+                   fb_resp::character::action(static_cast<character&>(me), ACTION::ATTACK, DURATION::ATTACK),
                    scope::PIVOT);
         auto* weapon = static_cast<character&>(me).items.weapon();
         if (weapon != nullptr)
@@ -198,12 +198,12 @@ void context::on_mp(life& me, uint32_t before, uint32_t current)
 
 void context::on_action(character& me, ACTION action, DURATION duration, uint8_t sound)
 {
-    this->send(me, fb_resp::session::action(me, action, duration), scope::PIVOT);
+    this->send(me, fb_resp::character::action(me, action, duration), scope::PIVOT);
 }
 
 void context::on_updated(character& me, STATE_LEVEL level)
 {
-    this->send(me, fb_resp::session::state(me, level), scope::SELF);
+    this->send(me, fb_resp::character::state(me, level), scope::SELF);
 }
 
 void context::on_money_changed(character& me, uint32_t value)
@@ -213,7 +213,7 @@ void context::on_money_changed(character& me, uint32_t value)
 
 void context::on_hold(character& me)
 {
-    this->send(me, fb_resp::session::position(me), scope::SELF);
+    this->send(me, fb_resp::character::position(me), scope::SELF);
 }
 
 void context::on_notify(character& me, const std::string& message, MESSAGE_TYPE type)
@@ -292,9 +292,9 @@ void context::on_item_active(character& me, item& item)
 void context::on_item_throws(character& me, item& item, const point16_t& to)
 {
     if (me.position() != to)
-        this->send(me, fb_resp::session::throws(me, item, to), scope::PIVOT);
+        this->send(me, fb_resp::character::throws(me, item, to), scope::PIVOT);
     else
-        this->send(me, fb_resp::session::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
+        this->send(me, fb_resp::character::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
 }
 
 void context::on_spell_update(life& me, uint8_t index)
@@ -493,7 +493,7 @@ void context::on_option(character& me, SETTING option, bool enabled)
 
     sstream << ": " << (enabled ? "ON" : "OFF");
     this->send(me, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::SELF);
-    this->send(me, fb_resp::session::option(me), scope::SELF);
+    this->send(me, fb_resp::character::option(me), scope::SELF);
 }
 
 void context::on_level_up(character& me)
@@ -510,11 +510,11 @@ void context::on_map_changed(object& me, map* before, map* after)
         return;
 
     auto& session = static_cast<character&>(me);
-    this->send(session, fb_resp::session::id(session), scope::SELF);
+    this->send(session, fb_resp::character::id(session), scope::SELF);
     this->send(session, fb_resp::map::config(*after), scope::SELF);
     this->send(session, fb_resp::map::bgm(*after), scope::SELF);
-    this->send(session, fb_resp::session::position(session), scope::SELF);
-    this->send(session, fb_resp::session::show(session, session, false), scope::SELF);
+    this->send(session, fb_resp::character::position(session), scope::SELF);
+    this->send(session, fb_resp::character::show(session, session, false), scope::SELF);
     this->send(session, fb_resp::object::direction(session), scope::SELF);
 
     if (before == nullptr)

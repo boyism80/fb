@@ -1,9 +1,9 @@
 #include <context.h>
 #include <item.h>
 
-fb::game::item::item(fb::game::context& context, const fb::model::item& model, const initial_params& initial_params) :
-    fb::game::object(context, model, initial_params),
-    _count(initial_params.count)
+fb::game::item::item(fb::game::context& context, const fb::model::item& model, const initial_params& params) :
+    fb::game::object(context, model, params),
+    _count(params.count)
 { }
 
 fb::game::item::item(const fb::game::item& right) :

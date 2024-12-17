@@ -651,14 +651,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t experience() const;
+    uint32_t exp() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void experience(uint32_t value);
+    void exp(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -668,7 +668,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t experience_add(uint32_t value, bool notify = false);
+    uint32_t add_exp(uint32_t value, bool notify = false);
 
     /**
      * @brief      { function_description }
@@ -677,7 +677,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t experience_reduce(uint32_t value);
+    uint32_t reduce_exp(uint32_t value);
 
     /**
      * @brief      { function_description }

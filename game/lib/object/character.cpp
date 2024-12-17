@@ -170,7 +170,32 @@ void character::on_kill(life& you)
         if (this->max_level() == false)
             exp = std::min(uint32_t(range / 100.0f * 3.3f + 1), exp);
 #endif
-        this->experience_add(exp, true);
+        if (this->_group != nullptr && this->_map != nullptr)
+        {
+            this->_group->lock([this, exp](auto& group) {
+                auto nears         = this->_map->nears(this->_position, OBJECT_TYPE::CHARACTER); // same thread
+                auto group_members = group.characters();
+                auto near_members  = std::vector<character*>();
+
+                for (auto ch : nears)
+                {
+                    auto i = std::find(group_members.begin(), group_members.end(), ch);
+                    if (i != group_members.end())
+                        near_members.push_back(*i);
+                }
+
+                auto size       = near_members.size();
+                auto divide_exp = exp / size;
+                for (auto near_member : near_members)
+                {
+                    near_member->add_exp(divide_exp);
+                }
+            });
+        }
+        else
+        {
+            this->add_exp(exp, true);
+        }
     }
 }
 
@@ -695,14 +720,14 @@ void character::dexteritry_up(uint8_t value)
     this->_dexteritry += value;
 }
 
-uint32_t character::experience() const
+uint32_t character::exp() const
 {
     this->assert_thread();
 
     return this->_experience;
 }
 
-void character::experience(uint32_t value)
+void character::exp(uint32_t value)
 {
     this->assert_thread();
 
@@ -716,7 +741,7 @@ void character::experience(uint32_t value)
         listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
 }
 
-uint32_t character::experience_add(uint32_t value, bool notify)
+uint32_t character::add_exp(uint32_t value, bool notify)
 {
     this->assert_thread();
 
@@ -742,11 +767,11 @@ uint32_t character::experience_add(uint32_t value, bool notify)
             if (value > capacity)
             {
                 lack = value - capacity;
-                this->experience(this->_experience + capacity);
+                this->exp(this->_experience + capacity);
             }
             else
             {
-                this->experience(this->_experience + value);
+                this->exp(this->_experience + value);
             }
 
             if (notify)
@@ -789,7 +814,7 @@ uint32_t character::experience_add(uint32_t value, bool notify)
     return lack;
 }
 
-uint32_t character::experience_reduce(uint32_t value)
+uint32_t character::reduce_exp(uint32_t value)
 {
     this->assert_thread();
 
@@ -816,7 +841,7 @@ uint32_t character::experience_remained() const
     if (this->_class == CLASS::NONE && this->_level >= 5)
         return 0;
 
-    return this->context.model.ability[this->_class][this->_level].exp - this->experience();
+    return this->context.model.ability[this->_class][this->_level].exp - this->exp();
 }
 
 float character::experience_percent() const

@@ -44,13 +44,10 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     if (co_await this->init_ch(response.character, *ch, transfer) == false)
         co_return false;
     auto thread = ch->thread();
+    thread->assert_ptr(ch);
 
     this->init_items(response.items, *ch);
-    thread->assert_ptr(ch);
-
     this->init_spells(response.spells, *ch);
-    thread->assert_ptr(ch);
-
     this->_shard[name]->characters.lock([&name, ch](auto& characters) {
         characters.insert({name, ch});
     });
@@ -58,7 +55,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     this->init_option(response.option, *ch);
     this->send(*ch, fb_resp::init(), scope::SELF);
     this->send(*ch, fb_resp::time(this->_time.hours()), scope::SELF);
-    this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+    this->send(*ch, fb_resp::character::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
     if (from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(response.character.updated_date);
@@ -66,8 +63,8 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             ch->message(msg, MESSAGE_TYPE::STATE);
     }
 
-    this->send(*ch, fb_resp::session::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
-    this->send(*ch, fb_resp::session::option(*ch), scope::SELF);
+    this->send(*ch, fb_resp::character::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(*ch, fb_resp::character::option(*ch), scope::SELF);
     ch->init(true);
     co_return true;
 }
@@ -120,7 +117,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             // 메시지 보냄
             ch->message("감히 접근할 수 없습니다.");
-            this->send(*ch, fb_resp::session::position(*ch), scope::SELF);
+            this->send(*ch, fb_resp::character::position(*ch), scope::SELF);
             co_return true;
         }
 
@@ -219,7 +216,7 @@ async::task<bool> context::handle_refresh(fb::socket<character>& socket, const f
     if (ch->inited() == false)
         co_return true;
 
-    this->send(*ch, fb_resp::session::position(*ch), scope::SELF);
+    this->send(*ch, fb_resp::character::position(*ch), scope::SELF);
     co_return true;
 }
 
@@ -297,7 +294,7 @@ async::task<bool> context::handle_self_info(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    this->send(*ch, fb_resp::session::internal_info(*ch, this->model), scope::SELF);
+    this->send(*ch, fb_resp::character::internal_info(*ch, this->model), scope::SELF);
 
     for (auto& [id, buff] : ch->buffs)
         this->send(*ch, fb_resp::spell::buff(*buff), scope::SELF);
@@ -373,7 +370,7 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
         switch (you->what())
         {
         case OBJECT_TYPE::CHARACTER:
-            this->send(*ch, fb_resp::session::external_info(static_cast<character&>(*you), this->model), scope::SELF);
+            this->send(*ch, fb_resp::character::external_info(static_cast<character&>(*you), this->model), scope::SELF);
             break;
 
         case OBJECT_TYPE::MOB:

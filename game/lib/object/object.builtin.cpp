@@ -187,7 +187,7 @@ int fb::game::object::builtin_position(lua_State* lua)
             *obj,
             [obj](const auto& to) {
                 return std::unique_ptr<fb::protocol::base::header>(
-                    new fb::protocol::game::response::session::show(static_cast<character&>(*obj), to));
+                    new fb::protocol::game::response::character::show(static_cast<character&>(*obj), to));
             },
             context::scope::PIVOT);
     }
@@ -199,7 +199,7 @@ int fb::game::object::builtin_position(lua_State* lua)
     if (obj->is(OBJECT_TYPE::CHARACTER))
     {
         auto session = static_cast<character*>(obj);
-        ctx->send(*obj, fb::protocol::game::response::session::position(*session), context::scope::SELF);
+        ctx->send(*obj, fb::protocol::game::response::character::position(*session), context::scope::SELF);
     }
 
     return 0;

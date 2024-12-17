@@ -2,10 +2,10 @@
 #include <life.h>
 #include <map.h>
 
-fb::game::life::life(fb::game::context& context, const fb::model::life& model, const initial_params& initial_params) :
-    object(context, model, initial_params),
-    _hp(initial_params.hp),
-    _mp(initial_params.mp),
+fb::game::life::life(fb::game::context& context, const fb::model::life& model, const initial_params& params) :
+    object(context, model, params),
+    _hp(params.hp),
+    _mp(params.mp),
     spells(*this)
 { }
 
@@ -168,7 +168,7 @@ uint32_t fb::game::life::base_mp() const
     return static_cast<const fb::model::life&>(this->_model).mp;
 }
 
-uint32_t fb::game::life::experience() const
+uint32_t fb::game::life::exp() const
 {
     this->assert_thread();
 
