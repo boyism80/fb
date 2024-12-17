@@ -51,7 +51,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     co_await this->init_spells(response.spells, *ch);
     thread->assert_ptr(ch);
 
-    this->_shard[name].lock([&name, ch](auto& characters){
+    this->_shard[name]->characters.lock([&name, ch](auto& characters) {
         characters.insert({name, ch});
     });
 

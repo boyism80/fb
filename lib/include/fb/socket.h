@@ -25,9 +25,8 @@ template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket, public thread_switchable
 {
 public:
-    using handle_read_event   = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
-    using handler_event       = std::function<async::task<void>(fb::socket<T>&)>;
-    using boost_send_callback = std::function<void(const boost::system::error_code&, size_t)>;
+    using handle_read_event = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
+    using handler_event     = std::function<async::task<void>(fb::socket<T>&)>;
 
 private:
     context&          _context;
@@ -82,53 +81,50 @@ protected:
     }
 
 public:
-    [[nodiscard]] async::task<void> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
+    async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
-        static auto empty_fn = [](const boost::system::error_code ec, size_t size) {
+        auto promise = std::make_shared<async::task_completion_source<size_t>>();
 
-        };
-        co_await this->send(stream, encrypt, wrap, empty_fn);
-    }
-
-public:
-    [[nodiscard]] async::task<void>
-    send(const fb::stream& stream, bool encrypt, bool wrap, const boost_send_callback& callback)
-    {
         if (stream.empty())
-            co_return;
+        {
+            promise->set_value(0);
+            return promise->task();
+        }
 
         auto clone = fb::stream(stream);
         if (encrypt && this->on_encrypt(clone) == false)
-            co_return;
+        {
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown exception while send bytes")));
+            return promise->task();
+        }
 
         if (wrap && this->on_wrap(clone) == false)
-            co_return;
+        {
+            promise->set_exception(std::make_exception_ptr(std::runtime_error("unknown exception while send bytes")));
+            return promise->task();
+        }
 
         auto buffer = boost::asio::buffer(clone.data(), clone.size());
         {
             auto _ = std::lock_guard(this->_boost_mutex);
-            boost::asio::async_write(*this, buffer, callback);
+            boost::asio::async_write(*this, buffer, [promise](const boost::system::error_code& ec, size_t transferred) {
+                if (ec)
+                    promise->set_exception(std::make_exception_ptr(std::runtime_error("boost async write failed")));
+                else
+                    promise->set_value(transferred);
+            });
         }
+
+        return promise->task();
     }
 
 public:
-    [[nodiscard]] async::task<void> send(const fb::protocol::base::header& response,
-                                         bool                              encrypt = true,
-                                         bool                              wrap    = true)
-    {
-        static auto empty_fn = [](const boost::system::error_code&, size_t) {
-        };
-        co_await this->send(response, encrypt, wrap, empty_fn);
-    }
-
-public:
-    [[nodiscard]] async::task<void>
-    send(const fb::protocol::base::header& response, bool encrypt, bool wrap, const boost_send_callback& callback)
+    async::task<size_t> send(const fb::protocol::base::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         co_await response.serialize(writer);
-        co_await this->send(stream, encrypt, wrap, callback);
+        co_await this->send(stream, encrypt, wrap);
     }
 
 public:
@@ -336,7 +332,7 @@ public:
         return this->_sockets.contains(fd);
     }
 
-    [[nodiscard]] async::task<void> each(const std::function<async::task<void>(fb::socket<T>&)> fn)
+    async::task<void> each(const std::function<async::task<void>(fb::socket<T>&)> fn)
     {
         auto _ = std::lock_guard(this->_mutex);
         for (auto& [fd, socket] : this->_sockets)
