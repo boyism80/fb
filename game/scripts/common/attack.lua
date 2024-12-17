@@ -1,6 +1,6 @@
-function on_attack(session, mob)
-    if session:state() == 0x05 then
-        session:state(0x00)
-        session:unbuff('투명')
+function on_attack(ch, mob)
+    if ch:state() == 0x05 then
+        ch:state(0x00)
+        ch:unbuff('투명')
     end
 end

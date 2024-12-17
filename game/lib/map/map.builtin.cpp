@@ -8,6 +8,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"height",              fb::game::map::builtin_height},
 {"area",                fb::game::map::builtin_area},
 {"objects",             fb::game::map::builtin_objects},
+{"nears",               fb::game::map::builtin_nears},
 {"movable",             fb::game::map::builtin_movable},
 {"door",                fb::game::map::builtin_door},
 {"doors",               fb::game::map::builtin_doors},
@@ -73,6 +74,41 @@ int fb::game::map::builtin_objects(lua_State* lua)
     for (int i = 0; i < objects.size(); i++)
     {
         thread->pushobject(map->objects[i]);
+        lua_rawseti(lua, -2, i + 1);
+    }
+
+    return 1;
+}
+
+int fb::game::map::builtin_nears(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto map  = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    uint16_t x, y;
+    if (!thread->is_table(2))
+        return 0;
+
+    thread->rawgeti(2, 1);
+    x = (uint16_t)thread->tointeger(-1);
+    thread->remove(-1);
+    thread->rawgeti(2, 2);
+    y = (uint16_t)thread->tointeger(-1);
+    thread->remove(-1);
+
+    auto type  = argc < 3 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(3));
+    auto nears = map->nears(point16_t{x, y}, type);
+
+    thread->new_table();
+    for (int i = 0; i < nears.size(); i++)
+    {
+        thread->pushobject(nears[i]);
         lua_rawseti(lua, -2, i + 1);
     }
 

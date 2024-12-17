@@ -273,6 +273,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_objects(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_nears(lua_State* lua);
     /**
      * @brief      { function_description }
      *

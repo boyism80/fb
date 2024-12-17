@@ -12,4 +12,14 @@ function func(me)
 
     local npc = name2npc('낙랑')
     npc:repair(me)
+
+    local map = me:map()
+    if map == nil then
+        return
+    end
+
+    local nears = map:nears({me:position()})
+    for _, near in pairs(nears) do
+        near:chat(near:name())
+    end
 end
