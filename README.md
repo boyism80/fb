@@ -40,7 +40,7 @@ You can run all servers simply using kubernetes and pulumi. First, change ```hos
                 }
             },
 ```
-Then call ```pulumi up -y``` command in ```infra/pulumi``` directory.
+Then install [pulumi](https://github.com/pulumi/pulumi) and call ```pulumi up -y``` command in ```infra/pulumi``` directory.
 
 ## Build
 If you need to build, look ```Dockerfile``` and ```CMakeLists.txt``` and ```build.sh``` files. ```lib``` module is used by other serveres so you build ```lib``` first. Then build ```gateway```, ```login```, ```game```, ```internal``` serveres.
