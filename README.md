@@ -1,5 +1,5 @@
 ## fb
-fb is 2d mmorpg game server implemented by ```C++20``` and ```ASP.NET CORE 8.0```.
+fb is 2d mmorpg game server implemented by ```C++20``` and ```ASP.NET CORE 8.0``` and ```lua.5.3```.
 
 ## Instasllation
 ### Setup configuration
