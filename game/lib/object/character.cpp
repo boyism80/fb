@@ -750,7 +750,7 @@ uint32_t character::add_exp(uint32_t value, bool notify)
         // 직업이 없는 경우 정확히 5레벨을 찍을 경험치만 얻도록 제한
         if (this->_class == CLASS::NONE)
         {
-            auto require = this->context.model.ability[CLASS::NONE][5].exp;
+            auto require = this->context.model.ability[CLASS::NONE][5].stacked_exp;
             if (this->_experience > require)
                 value = 0;
 
@@ -771,11 +771,7 @@ uint32_t character::add_exp(uint32_t value, bool notify)
             }
 
             if (notify)
-            {
-                std::stringstream sstream;
-                sstream << "경험치가 " << value << '(' << int(this->experience_percent()) << "%) 올랐습니다.";
-                this->message(sstream.str());
-            }
+                this->message(std::format("경험치가 {}% 올랐습니다.", int(this->experience_percent())));
         }
 
         if (this->context.model.ability.contains(this->_class) == false)
@@ -790,7 +786,7 @@ uint32_t character::add_exp(uint32_t value, bool notify)
             if (next.exp == 0)
                 break;
 
-            if (this->_experience < next.exp)
+            if (this->_experience < next.stacked_exp)
                 break;
 
             if (this->level_up() == false)
@@ -834,25 +830,28 @@ uint32_t character::experience_remained() const
     if (this->max_level())
         return 0;
 
-    if (this->_class == CLASS::NONE && this->_level >= 5)
+    if (this->_class == CLASS::NONE && this->_level > 5)
         return 0;
 
-    return this->context.model.ability[this->_class][this->_level].exp - this->exp();
+    return this->context.model.ability[this->_class][this->_level].stacked_exp - this->exp();
 }
 
 float character::experience_percent() const
 {
     this->assert_thread();
 
-    auto current_level = this->level();
-    auto next_exp      = this->max_level() ? 0xFFFFFFFF : this->context.model.ability[this->_class][current_level].exp;
-    auto prev_exp =
-        current_level > 1
-            ? (this->max_level() ? 0x00000000 : this->context.model.ability[this->_class][current_level - 1].exp)
-            : 0;
-    auto exp_range = next_exp - prev_exp;
+    auto level    = this->level();
+    auto required = 0;
+    if (this->max_level())
+        required = 0xFFFFFFFF;
+    else
+        required = this->context.model.ability[this->_class][level].exp;
 
-    return std::min(100.0f, ((this->_experience - prev_exp) / float(exp_range)) * 100.0f);
+    auto prev_stack_exp = 0;
+    if (this->context.model.ability[this->_class].contains(level - 1))
+        prev_stack_exp = this->context.model.ability[this->_class][level - 1].stacked_exp;
+
+    return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
 }
 
 uint32_t character::money() const

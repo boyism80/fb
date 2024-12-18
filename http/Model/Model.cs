@@ -878,6 +878,8 @@ namespace Fb.Model
         public byte Strength { get; set; }
         [JsonProperty("exp")]
         public uint Exp { get; set; }
+        [JsonProperty("stacked_exp")]
+        public uint StackedExp { get; set; }
         [JsonProperty("hp")]
         public uint Hp { get; set; }
         [JsonProperty("mp")]
