@@ -44,7 +44,7 @@ public:
         for (const auto& [k, v] : this->model.board)
         {
             writer.write<uint16_t>(k);
-            writer.write(v.name);
+            writer.write<std::string>(v.name);
         }
     }
 #else
@@ -109,10 +109,10 @@ public:
         {
             writer.write<uint8_t>(0x00);
             writer.write<uint16_t>(article.id);
-            writer.write(article.uname);
+            writer.write<std::string>(article.uname);
             writer.write<uint8_t>(article.month);
             writer.write<uint8_t>(article.day);
-            writer.write(article.title);
+            writer.write<std::string>(article.title);
         }
 
         writer.write<uint8_t>(0x00);
@@ -155,10 +155,10 @@ public:
         writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
         writer.write<uint8_t>(0x00);
         writer.write<uint16_t>(this->value.id);
-        writer.write(this->value.uname);
+        writer.write<std::string>(this->value.uname);
         writer.write<uint8_t>(this->value.month);
         writer.write<uint8_t>(this->value.day);
-        writer.write(this->value.title);
+        writer.write<std::string>(this->value.title);
         writer.write<std::string, uint16_t>(this->value.contents);
         writer.write<uint8_t>(0x00);
     }
@@ -191,7 +191,7 @@ public:
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->refresh ? 0x06 : 0x07); // mail 관련 0x06인 것 같다. 확인 필요
         writer.write<uint8_t>(this->deleted);
-        writer.write(this->text);
+        writer.write<std::string>(this->text);
         writer.write<uint8_t>(0x00);
     }
 };

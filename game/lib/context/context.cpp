@@ -24,6 +24,7 @@ async::task<void> context::handle_start()
     lua::env<context>("context", this);
     lua::build<map, lua::luable>();
     lua::build<door, lua::luable>();
+    lua::build<group, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
@@ -399,6 +400,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.pw(response.pw);
     ch.updated_date(datetime(response.updated_date));
     ch.admin(response.admin);
+    ch.cls(static_cast<CLASS>(response.class_type));
     ch.color(response.color);
     ch.direction(DIRECTION(response.direction));
     ch.look(response.look);
@@ -409,6 +411,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.hp(response.hp);
     ch.base_mp(response.base_mp);
     ch.mp(response.mp);
+    ch.level(response.level);
     ch.exp(response.exp);
     ch.state(STATE(response.state));
 

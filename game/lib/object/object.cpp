@@ -115,12 +115,12 @@ void fb::game::object::sequence(uint32_t value)
     this->_sequence = value;
 }
 
-void fb::game::object::chat(const std::string& message, bool shout)
+void fb::game::object::chat(const std::string& message, CHAT_TYPE chat_type)
 {
     this->assert_thread();
 
     if (this->_listener != nullptr)
-        this->_listener->on_chat(*this, message, shout);
+        this->_listener->on_chat(*this, message, chat_type);
 }
 
 const point16_t& fb::game::object::position() const

@@ -608,7 +608,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() && co_await handle_command(*ch, request.message))
         co_return true;
 
-    ch->chat(request.message, request.shout);
+    ch->chat(request.message, request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL);
 
     auto npcs = std::vector<npc*>();
     if (request.shout)

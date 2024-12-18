@@ -121,6 +121,7 @@ namespace Internal.Controllers
                 Id = request.Uid,
                 Name = request.Name,
                 Pw = SHA256Hash(request.Pw),
+                Level = 1,
                 Hp = request.Hp,
                 BaseHp = request.Hp,
                 Mp = request.Mp,

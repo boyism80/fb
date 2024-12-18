@@ -171,7 +171,7 @@ public:
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<uint32_t>(this->me.sequence());
-        writer.write(this->message);
+        writer.write<std::string>(this->message);
     }
 };
 

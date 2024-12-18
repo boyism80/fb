@@ -97,7 +97,7 @@ public:
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->index + 1);
         writer.write<uint8_t>(static_cast<uint8_t>(spell->type));
-        writer.write(spell->name);
+        writer.write<std::string>(spell->name);
 
         if (static_cast<int>(spell->type) < 3)
             writer.write<std::string>(spell->message);

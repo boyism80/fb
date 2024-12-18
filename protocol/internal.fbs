@@ -25,6 +25,7 @@ table Character {
     state: ubyte;
     class_type: ubyte;
     promotion: ubyte;
+    level: ubyte;
     exp: uint;
     money: uint;
     deposited_money: uint;

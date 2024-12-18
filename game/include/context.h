@@ -1140,7 +1140,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    void on_chat(fb::game::object& me, const std::string& message, bool shout) final;
+    void on_chat(fb::game::object& me, const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) final;
     /**
      * @brief      Called on direction.
      *

@@ -9,8 +9,11 @@ namespace fb::game {
 /**
  * @brief      This class describes a group.
  */
-class group : public fb::thread_switchable
+class group : public lua::luable, public fb::thread_switchable
 {
+public:
+    LUA_PROTOTYPE
+
 private:
     context&                 _context;
     uint32_t                 _id;
@@ -52,20 +55,22 @@ public:
      *
      * @param      ch    { parameter_description }
      */
-    void enter(fb::game::character& ch);
+    void enter(character& ch);
 
     /**
      * @brief      { function_description }
      *
      * @param      ch    { parameter_description }
      */
-    void leave(fb::game::character& ch);
+    void leave(character& ch);
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  master   The master
      * @param[in]  members  The members
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<void> update(const std::string& master, const std::vector<std::string>& members);
 
@@ -95,7 +100,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<fb::game::character*> characters() const;
+    std::vector<character*> characters() const;
 
     /**
      * @brief      { function_description }
@@ -107,9 +112,45 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param[in]  map       The map
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::vector<character*> nears(const fb::game::map& map, const point16_t& position) const;
+
+    /**
+     * @brief      { function_description }
+     *
      * @return     { description_of_the_return_value }
      */
     fb::thread* thread() const override;
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_master(lua_State* lua);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_members(lua_State* lua);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_nears(lua_State* lua);
 };
 
 } // namespace fb::game

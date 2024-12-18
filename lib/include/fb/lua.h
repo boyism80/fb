@@ -324,6 +324,15 @@ public:
     }
 
     /**
+     * @brief      Gets the type.
+     *
+     * @param[in]  offset  The offset
+     *
+     * @return     The type.
+     */
+    std::string get_type(int offset);
+
+    /**
      * @brief      { function_description }
      *
      * @param[in]  offset  The offset

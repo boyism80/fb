@@ -44,27 +44,28 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_STATE = 28,
     VT_CLASS_TYPE = 30,
     VT_PROMOTION = 32,
-    VT_EXP = 34,
-    VT_MONEY = 36,
-    VT_DEPOSITED_MONEY = 38,
-    VT_DISGUISE = 40,
-    VT_HP = 42,
-    VT_BASE_HP = 44,
-    VT_ADDITIONAL_HP = 46,
-    VT_MP = 48,
-    VT_BASE_MP = 50,
-    VT_ADDITIONAL_MP = 52,
-    VT_WEAPON_COLOR = 54,
-    VT_HELMET_COLOR = 56,
-    VT_ARMOR_COLOR = 58,
-    VT_SHIELD_COLOR = 60,
-    VT_RING_LEFT_COLOR = 62,
-    VT_RING_RIGHT_COLOR = 64,
-    VT_AUX_TOP_COLOR = 66,
-    VT_AUX_BOT_COLOR = 68,
-    VT_GROUP = 70,
-    VT_CLAN = 72,
-    VT_UPDATED_DATE = 74
+    VT_LEVEL = 34,
+    VT_EXP = 36,
+    VT_MONEY = 38,
+    VT_DEPOSITED_MONEY = 40,
+    VT_DISGUISE = 42,
+    VT_HP = 44,
+    VT_BASE_HP = 46,
+    VT_ADDITIONAL_HP = 48,
+    VT_MP = 50,
+    VT_BASE_MP = 52,
+    VT_ADDITIONAL_MP = 54,
+    VT_WEAPON_COLOR = 56,
+    VT_HELMET_COLOR = 58,
+    VT_ARMOR_COLOR = 60,
+    VT_SHIELD_COLOR = 62,
+    VT_RING_LEFT_COLOR = 64,
+    VT_RING_RIGHT_COLOR = 66,
+    VT_AUX_TOP_COLOR = 68,
+    VT_AUX_BOT_COLOR = 70,
+    VT_GROUP = 72,
+    VT_CLAN = 74,
+    VT_UPDATED_DATE = 76
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -110,6 +111,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   uint8_t promotion() const {
     return GetField<uint8_t>(VT_PROMOTION, 0);
+  }
+  uint8_t level() const {
+    return GetField<uint8_t>(VT_LEVEL, 0);
   }
   uint32_t exp() const {
     return GetField<uint32_t>(VT_EXP, 0);
@@ -195,6 +199,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_STATE, 1) &&
            VerifyField<uint8_t>(verifier, VT_CLASS_TYPE, 1) &&
            VerifyField<uint8_t>(verifier, VT_PROMOTION, 1) &&
+           VerifyField<uint8_t>(verifier, VT_LEVEL, 1) &&
            VerifyField<uint32_t>(verifier, VT_EXP, 4) &&
            VerifyField<uint32_t>(verifier, VT_MONEY, 4) &&
            VerifyField<uint32_t>(verifier, VT_DEPOSITED_MONEY, 4) &&
@@ -280,6 +285,9 @@ struct CharacterBuilder {
   }
   void add_promotion(uint8_t promotion) {
     fbb_.AddElement<uint8_t>(Character::VT_PROMOTION, promotion, 0);
+  }
+  void add_level(uint8_t level) {
+    fbb_.AddElement<uint8_t>(Character::VT_LEVEL, level, 0);
   }
   void add_exp(uint32_t exp) {
     fbb_.AddElement<uint32_t>(Character::VT_EXP, exp, 0);
@@ -372,6 +380,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint8_t state = 0,
     uint8_t class_type = 0,
     uint8_t promotion = 0,
+    uint8_t level = 0,
     uint32_t exp = 0,
     uint32_t money = 0,
     uint32_t deposited_money = 0,
@@ -425,6 +434,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_sex(sex);
   builder_.add_color(color);
   builder_.add_look(look);
+  builder_.add_level(level);
   builder_.add_promotion(promotion);
   builder_.add_class_type(class_type);
   builder_.add_state(state);
@@ -450,6 +460,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint8_t state = 0,
     uint8_t class_type = 0,
     uint8_t promotion = 0,
+    uint8_t level = 0,
     uint32_t exp = 0,
     uint32_t money = 0,
     uint32_t deposited_money = 0,
@@ -491,6 +502,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       state,
       class_type,
       promotion,
+      level,
       exp,
       money,
       deposited_money,

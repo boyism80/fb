@@ -448,20 +448,27 @@ public:
         writer.write<uint8_t>((uint8_t)this->ch.defensive_physical());
         writer.write<uint8_t>(this->ch.damage());
         writer.write<uint8_t>(this->ch.hit());
-        writer.write(clan != nullptr ? clan->name() : "");
-        writer.write(clan != nullptr ? clan->title() : "");
-        writer.write(this->ch.title());
+        writer.write<std::string>(clan != nullptr ? clan->name() : "");
+        writer.write<std::string>(clan != nullptr ? clan->title() : "");
+        writer.write<std::string>(this->ch.title());
 
         auto& shared_group_lock = this->ch.group();
         if (shared_group_lock != nullptr)
         {
-            shared_group_lock->lock([&writer](fb::game::group& g) {
-                auto sstream = std::stringstream();
-                sstream << "그룹원" << std::endl << "  * " << g.master() << std::endl;
+            shared_group_lock->lock([&writer](fb::game::group& group) {
+                if (group.inited())
+                {
+                    auto sstream = std::stringstream();
+                    sstream << "그룹원" << std::endl << "  * " << group.master() << std::endl;
 
-                for (auto& member : g.members())
-                    sstream << "    " << member << std::endl;
-                writer.write<std::string>(sstream.str());
+                    for (auto& member : group.members())
+                        sstream << "    " << member << std::endl;
+                    writer.write<std::string>(sstream.str());
+                }
+                else
+                {
+                    writer.write<std::string>("그룹 정보 가져오는중.");
+                }
             });
         }
         else
@@ -504,7 +511,7 @@ public:
         {
             writer.write<uint8_t>(legend.look);
             writer.write<uint8_t>(legend.color);
-            writer.write(legend.content);
+            writer.write<std::string>(legend.content);
         }
         writer.write<uint8_t>(0x00);
     }
@@ -531,8 +538,8 @@ public:
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string>(this->ch.title());
-        writer.write("클랜 이름");
-        writer.write("클랜 타이틀");
+        writer.write<std::string>("클랜 이름");
+        writer.write<std::string>("클랜 타이틀");
 
         // 클래스 이름
         const auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;
@@ -611,7 +618,7 @@ public:
         {
             writer.write<uint8_t>(legend.look);
             writer.write<uint8_t>(legend.color);
-            writer.write(legend.content);
+            writer.write<std::string>(legend.content);
         }
         writer.write<uint8_t>(0x00);
     }

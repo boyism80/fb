@@ -2,6 +2,6 @@
 SET FNAME=latest.sql
 
 ECHO MYSQL DATABASE DUMP TOOL MADE BY INOUT TEAM
-mysqldump.exe --user=fb --password=admin --host=localhost --protocol=tcp --port=30100 --default-character-set=utf8 --no-data --skip-triggers --routines --result-file=%FNAME% --add-drop-database --databases "fb"
+mysqldump.exe --user=fb --password=admin --host=192.168.0.181 --protocol=tcp --port=30100 --default-character-set=utf8 --no-data --skip-triggers --routines --result-file=%FNAME% --add-drop-database --databases "fb"
 ECHO DUMP COMPLETE : %FNAME%
 PAUSE

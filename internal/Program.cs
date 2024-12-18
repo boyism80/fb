@@ -18,10 +18,12 @@ public class Program
         var config = new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<Http.Model.Character, Character>()
+            .ForMember(x => x.ClassType, x => x.MapFrom(u => u.Class))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.Position, x => x.MapFrom(u => new Position { X = u.PositionX, Y = u.PositionY }));
 
             cfg.CreateMap<Character, Http.Model.Character>()
+            .ForMember(x => x.Class, x => x.MapFrom(u => u.ClassType))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))
             .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
             .ForMember(x => x.PositionY, x => x.MapFrom(u => u.Position.Y));

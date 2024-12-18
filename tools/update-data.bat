@@ -1,6 +1,6 @@
 @ECHO OFF
 
-rem git submodule update --recursive --remote data-converter
+git submodule update --recursive --remote data-converter
 SET SOURCE=D:\Users\CSHYEON\Data\git\game\c++\fb
 PUSHD data-converter
 CALL dotnet publish -c Release -o "bin"

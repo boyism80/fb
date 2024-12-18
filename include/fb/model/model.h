@@ -3260,6 +3260,7 @@ public:
     const uint8_t intelligence;
     const uint8_t strength;
     const uint32_t exp;
+    const uint32_t stacked_exp;
     const uint32_t hp;
     const uint32_t mp;
 #endif
@@ -3278,6 +3279,7 @@ DECLARE_ABILITY_CONSTRUCTOR
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
         exp(fb::model::build<uint32_t>(json["exp"])),
+        stacked_exp(fb::model::build<uint32_t>(json["stacked_exp"])),
         hp(fb::model::build<uint32_t>(json["hp"])),
         mp(fb::model::build<uint32_t>(json["mp"]))
 #ifdef DECLARE_ABILITY_INITIALIZER

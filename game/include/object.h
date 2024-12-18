@@ -222,13 +222,14 @@ public:
      * @return     The object type.
      */
     virtual OBJECT_TYPE what() const;
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    void chat(const std::string& message, bool shout = false);
+    void chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL);
     /**
      * @brief      { function_description }
      *
@@ -756,7 +757,7 @@ struct object::listener
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
-    virtual void on_chat(fb::game::object& me, const std::string& message, bool shout) = 0;
+    virtual void on_chat(fb::game::object& me, const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
     /**
      * @brief      Called on direction.
      *
