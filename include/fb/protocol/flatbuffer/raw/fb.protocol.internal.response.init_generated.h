@@ -14,7 +14,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
              "Non-compatible flatbuffers version included");
 
 #include "fb.protocol.internal.character_generated.h"
-#include "fb.protocol.internal.group_generated.h"
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.option_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
@@ -34,8 +33,7 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CHARACTER = 4,
     VT_ITEMS = 6,
     VT_SPELLS = 8,
-    VT_OPTION = 10,
-    VT_GROUP = 12
+    VT_OPTION = 10
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -49,9 +47,6 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::internal::raw::Option *option() const {
     return GetPointer<const fb::protocol::internal::raw::Option *>(VT_OPTION);
   }
-  const fb::protocol::internal::raw::Group *group() const {
-    return GetPointer<const fb::protocol::internal::raw::Group *>(VT_GROUP);
-  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -64,8 +59,6 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVectorOfTables(spells()) &&
            VerifyOffset(verifier, VT_OPTION) &&
            verifier.VerifyTable(option()) &&
-           VerifyOffset(verifier, VT_GROUP) &&
-           verifier.VerifyTable(group()) &&
            verifier.EndTable();
   }
 };
@@ -86,9 +79,6 @@ struct InitBuilder {
   void add_option(::flatbuffers::Offset<fb::protocol::internal::raw::Option> option) {
     fbb_.AddOffset(Init::VT_OPTION, option);
   }
-  void add_group(::flatbuffers::Offset<fb::protocol::internal::raw::Group> group) {
-    fbb_.AddOffset(Init::VT_GROUP, group);
-  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -105,10 +95,8 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0) {
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0) {
   InitBuilder builder_(_fbb);
-  builder_.add_group(group);
   builder_.add_option(option);
   builder_.add_spells(spells);
   builder_.add_items(items);
@@ -121,8 +109,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Group> group = 0) {
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
@@ -130,8 +117,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       character,
       items__,
       spells__,
-      option,
-      group);
+      option);
 }
 
 inline const fb::protocol::internal::response::raw::Init *GetInit(const void *buf) {

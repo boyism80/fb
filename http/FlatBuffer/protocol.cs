@@ -517,8 +517,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Option),
-                builder.Build(value.Group));
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -1137,8 +1136,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Option),
-                builder.Build(value.Group));
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -1770,8 +1768,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Option),
-                builder.Build(value.Group));
+                builder.Build(value.Option));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -3464,7 +3461,6 @@ namespace fb.protocol._internal.response
         public List<fb.protocol._internal.Item> Items { get; set; } = new List<fb.protocol._internal.Item>();
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
         public fb.protocol._internal.Option Option { get; set; } = new fb.protocol._internal.Option();
-        public fb.protocol._internal.Group Group { get; set; } = new fb.protocol._internal.Group();
 
         public Init()
         { }
@@ -3475,7 +3471,6 @@ namespace fb.protocol._internal.response
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
             Option = new Option(raw.Option.Value);
-            Group = new Group(raw.Group.Value);
         }
 
         public Init(byte[] bytes) : this(fb.protocol._internal.response.raw.Init.GetRootAsInit(new ByteBuffer(bytes)))

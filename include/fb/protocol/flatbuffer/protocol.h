@@ -2272,21 +2272,20 @@ public:
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
     fb::protocol::internal::Option option;
-    fb::protocol::internal::Group group;
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), items(x.items), spells(x.spells), option(x.option), group(x.group)
+        : character(x.character), items(x.items), spells(x.spells), option(x.option)
     { }
 
-    Init(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, const fb::protocol::internal::Group& group)
-        : character(character), items(items), spells(spells), option(option), group(group)
+    Init(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option)
+        : character(character), items(items), spells(spells), option(option)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), group(*raw.group())
+        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option())
     { }
 
 public:
@@ -3034,8 +3033,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
             flatbuffers::build<fb::protocol::internal::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
-            flatbuffers::build<fb::protocol::internal::Option>(builder, value.option),
-            flatbuffers::build<fb::protocol::internal::Group>(builder, value.group));
+            flatbuffers::build<fb::protocol::internal::Option>(builder, value.option));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::MakeCharacter> build<fb::protocol::internal::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::response::MakeCharacter& value)
