@@ -455,13 +455,21 @@ public:
         auto& shared_group_lock = this->ch.group();
         if (shared_group_lock != nullptr)
         {
-            shared_group_lock->lock([&writer](fb::game::group& g) {
-                auto sstream = std::stringstream();
-                sstream << "그룹원" << std::endl << "  * " << g.master() << std::endl;
+            shared_group_lock->lock([&writer](fb::game::group& group) {
 
-                for (auto& member : g.members())
-                    sstream << "    " << member << std::endl;
-                writer.write<std::string>(sstream.str());
+                if(group.inited())
+                {
+                    auto sstream = std::stringstream();
+                    sstream << "그룹원" << std::endl << "  * " << group.master() << std::endl;
+
+                    for (auto& member : group.members())
+                        sstream << "    " << member << std::endl;
+                    writer.write<std::string>(sstream.str());
+                }
+                else
+                {
+                    writer.write<std::string>("그룹 정보 가져오는중.");
+                }
             });
         }
         else
