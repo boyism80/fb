@@ -24,6 +24,7 @@ async::task<void> context::handle_start()
     lua::env<context>("context", this);
     lua::build<map, lua::luable>();
     lua::build<door, lua::luable>();
+    lua::build<group, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::object, lua::luable>();

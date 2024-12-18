@@ -144,6 +144,7 @@
     <ClCompile Include="lib\door.builtin.cpp" />
     <ClCompile Include="lib\door.container.cpp" />
     <ClCompile Include="lib\door.cpp" />
+    <ClCompile Include="lib\group.builtin.cpp" />
     <ClCompile Include="lib\group.cpp" />
     <ClCompile Include="lib\item\armor.cpp" />
     <ClCompile Include="lib\item\auxiliary.cpp" />

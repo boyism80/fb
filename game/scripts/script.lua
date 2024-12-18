@@ -1,7 +1,19 @@
 function group_lock(me, group)
     if group == nil then
         me:chat('그룹이 없어용')
+        return false
     end
+
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+
+    local nears = group:nears(me:map(), me:position())
+    for _, near in nears do
+        near:chat(near:name())
+    end
+    return true, #nears
 end
 
 function func(me)

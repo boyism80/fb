@@ -180,22 +180,12 @@ void character::on_kill(life& you)
     if (this->_group != nullptr && this->_map != nullptr)
     {
         this->_group->lock([this, exp](auto& group) {
-            auto nears         = this->_map->nears(this->_position, OBJECT_TYPE::CHARACTER); // same thread
-            auto group_members = group.characters();
-            auto near_members  = std::vector<character*>();
-
+            auto nears      = group.nears(*this->_map, this->_position);
+            auto size       = nears.size();
+            auto divide_exp = exp / size;
             for (auto ch : nears)
             {
-                auto i = std::find(group_members.begin(), group_members.end(), ch);
-                if (i != group_members.end())
-                    near_members.push_back(*i);
-            }
-
-            auto size       = near_members.size();
-            auto divide_exp = exp / size;
-            for (auto near_member : near_members)
-            {
-                near_member->add_exp(near_member->limited_exp(divide_exp));
+                ch->add_exp(ch->limited_exp(divide_exp));
             }
         });
     }

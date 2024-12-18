@@ -792,7 +792,24 @@ int fb::game::character::builtin_group(lua_State* lua)
         return 0;
 
     thread->pushobject(ch);
-    thread->pushnil();
-    lua_call(lua, 2, 0);
-    return 0;
+    if (ch->_group == nullptr)
+    {
+        thread->pushnil();
+        lua_call(lua, 2, 0);
+
+        // TODO: debugging
+        auto x = thread->argc();
+        return x;
+    }
+    else
+    {
+        return ch->_group->template lock<uint32_t>([=](auto& group) {
+            thread->pushobject(group);
+            lua_call(lua, 2, 0);
+
+            // TODO: debugging
+            auto x = thread->argc();
+            return x;
+        });
+    }
 }

@@ -101,6 +101,21 @@ std::vector<std::string> group::members() const
     return std::vector<std::string>(this->_members);
 }
 
+std::vector<character*> group::nears(const fb::game::map& map, const point16_t& position) const
+{
+    auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
+    auto result = std::vector<character*>();
+
+    for (auto ch : nears)
+    {
+        auto i = std::find(this->_active_members.begin(), this->_active_members.end(), ch);
+        if (i != this->_active_members.end())
+            result.push_back(*i);
+    }
+
+    return result;
+}
+
 fb::thread* group::thread() const
 {
     return this->_context.threads.modular(this->_id);
