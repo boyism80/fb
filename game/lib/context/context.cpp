@@ -400,6 +400,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.pw(response.pw);
     ch.updated_date(datetime(response.updated_date));
     ch.admin(response.admin);
+    ch.cls(static_cast<CLASS>(response.class_type));
     ch.color(response.color);
     ch.direction(DIRECTION(response.direction));
     ch.look(response.look);

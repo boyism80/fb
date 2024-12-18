@@ -247,6 +247,9 @@ int fb::game::object::builtin_chat(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
+    if (obj->is(OBJECT_TYPE::ITEM))
+        return 0;
+
     obj->assert_thread();
 
     auto message  = thread->tostring(2);
@@ -266,7 +269,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
         sstream << message;
     }
 
-    ctx->send(*obj, fb::protocol::game::response::object::chat(*obj, type, sstream.str()), context::scope::PIVOT);
+    obj->chat(message, type);
     return 0;
 }
 

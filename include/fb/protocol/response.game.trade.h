@@ -34,7 +34,7 @@ public:
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);
         writer.write<uint32_t>(this->me.sequence());
-        writer.write(sstream.str());
+        writer.write<std::string>(sstream.str());
         writer.write<uint8_t>(0x00);
     }
 };
@@ -68,7 +68,7 @@ public:
         writer.write<uint8_t>(this->index); // trade slot index
         writer.write<uint16_t>(item->look());
         writer.write<uint8_t>(item->color());
-        writer.write(item->trade_name());
+        writer.write<std::string>(item->trade_name());
         writer.write<uint8_t>(0x00);
     }
 };

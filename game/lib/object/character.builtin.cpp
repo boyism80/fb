@@ -791,25 +791,24 @@ int fb::game::character::builtin_group(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
+    static auto func = [](fb::lua::context* ctx) {
+        lua_call(*ctx, 2, LUA_MULTRET);
+
+        ctx->remove(-ctx->argc());
+        return ctx->argc();
+    };
+
     thread->pushobject(ch);
     if (ch->_group == nullptr)
     {
         thread->pushnil();
-        lua_call(lua, 2, 0);
-
-        // TODO: debugging
-        auto x = thread->argc();
-        return x;
+        return func(thread);
     }
     else
     {
         return ch->_group->template lock<uint32_t>([=](auto& group) {
             thread->pushobject(group);
-            lua_call(lua, 2, 0);
-
-            // TODO: debugging
-            auto x = thread->argc();
-            return x;
+            return func(thread);
         });
     }
 }

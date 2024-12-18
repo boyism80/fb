@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
 --
--- Host: localhost    Database: fb
+-- Host: 192.168.0.181    Database: fb
 -- ------------------------------------------------------
 -- Server version	8.4.3
 
@@ -140,7 +140,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=59 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -216,6 +216,7 @@ CREATE TABLE `user` (
   `state` tinyint unsigned NOT NULL DEFAULT '0',
   `class` tinyint unsigned NOT NULL DEFAULT '0',
   `promotion` tinyint unsigned NOT NULL DEFAULT '0',
+  `level` int unsigned NOT NULL DEFAULT '1',
   `exp` int unsigned NOT NULL DEFAULT '0',
   `money` int unsigned NOT NULL DEFAULT '0',
   `deposited_money` int unsigned NOT NULL DEFAULT '0',
@@ -407,4 +408,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-21  0:31:21
+-- Dump completed on 2024-12-18 21:08:41

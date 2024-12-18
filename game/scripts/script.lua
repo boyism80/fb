@@ -9,15 +9,17 @@ function group_lock(me, group)
         return false
     end
 
-    local nears = group:nears(me:map(), me:position())
-    for _, near in nears do
+    local nears = group:nears(me:map(), {me:position()})
+    for _, near in pairs(nears) do
         near:chat(near:name())
     end
     return true, #nears
 end
 
 function func(me)
-    me:group(group_lock)
+    local success, size = me:group(group_lock)
+    local npc = name2npc('낙랑')
+    npc:dialog(me, string.format('%s, %s', success, size))
     
     local items = me:items()
 
@@ -30,7 +32,6 @@ function func(me)
         end
     end
 
-    local npc = name2npc('낙랑')
     npc:repair(me)
 
     local map = me:map()

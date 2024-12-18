@@ -185,7 +185,7 @@ void character::on_kill(life& you)
             auto divide_exp = exp / size;
             for (auto ch : nears)
             {
-                ch->add_exp(ch->limited_exp(divide_exp));
+                ch->add_exp(ch->limited_exp(divide_exp), true);
             }
         });
     }
@@ -771,7 +771,7 @@ uint32_t character::add_exp(uint32_t value, bool notify)
             }
 
             if (notify)
-                this->message(std::format("경험치가 {}% 올랐습니다.", int(this->experience_percent())));
+                this->message(std::format("경험치가 {}({}%) 올랐습니다.", value, int(this->experience_percent())));
         }
 
         if (this->context.model.ability.contains(this->_class) == false)
@@ -782,7 +782,7 @@ uint32_t character::add_exp(uint32_t value, bool notify)
             if (this->max_level())
                 break;
 
-            auto& next = this->context.model.ability[this->_class][this->_level + 1];
+            auto& next = this->context.model.ability[this->_class][this->_level];
             if (next.exp == 0)
                 break;
 
@@ -830,7 +830,10 @@ uint32_t character::experience_remained() const
     if (this->max_level())
         return 0;
 
-    if (this->_class == CLASS::NONE && this->_level > 5)
+    if (this->context.model.ability.contains(this->_class) == false)
+        return 0;
+
+    if (this->context.model.ability[this->_class].contains(this->_level) == false)
         return 0;
 
     return this->context.model.ability[this->_class][this->_level].stacked_exp - this->exp();

@@ -12,21 +12,40 @@ void context::on_destroy(object& me)
     return;
 }
 
-void context::on_chat(object& me, const std::string& message, bool shout)
+void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_type)
 {
+    if (me.is(OBJECT_TYPE::ITEM))
+        return;
+
     auto sstream = std::stringstream();
-    if (shout)
+    switch (chat_type)
     {
+    case CHAT_TYPE::SHOUT:
         sstream << me.name() << "! " << message;
-    }
-    else
-    {
+        break;
+
+    default:
         sstream << me.name() << ": " << message;
+        break;
     }
 
-    this->send(me,
-               fb_resp::chat(me, sstream.str(), shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL),
-               shout ? scope::MAP : scope::PIVOT);
+    auto scp = scope::PIVOT;
+    switch (chat_type)
+    {
+    case CHAT_TYPE::SHOUT:
+        scp = scope::MAP;
+        break;
+
+    case CHAT_TYPE::BLUE:
+    case CHAT_TYPE::LIGHT_BLUE:
+        scp = scope::WORLD;
+        break;
+
+    default:
+        scp = scope::PIVOT;
+        break;
+    }
+    this->send(me, fb_resp::chat(me, sstream.str(), chat_type), scp);
 }
 
 void context::on_direction(object& me)
@@ -556,7 +575,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         writer.write<uint32_t>(me.id());
-        writer.write(session->name());
+        writer.write<std::string>(session->name());
         writer.write<uint8_t>(1);
         writer.write<uint16_t>(map.model.id);
         writer.write<uint16_t>(position.x);
