@@ -1846,6 +1846,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.state            = (uint8_t)this->_state;
     dto.class_type       = (uint8_t)this->_class;
     dto.promotion        = this->_promotion;
+    dto.level            = this->_level;
     dto.exp              = this->_experience;
     dto.money            = this->_money;
     dto.deposited_money  = this->_deposited_money;

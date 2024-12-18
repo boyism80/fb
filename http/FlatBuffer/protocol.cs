@@ -75,6 +75,7 @@ namespace fb.protocol._internal
                 builder.Build(value.State),
                 builder.Build(value.ClassType),
                 builder.Build(value.Promotion),
+                builder.Build(value.Level),
                 builder.Build(value.Exp),
                 builder.Build(value.Money),
                 builder.Build(value.DepositedMoney),
@@ -694,6 +695,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.State),
                 builder.Build(value.ClassType),
                 builder.Build(value.Promotion),
+                builder.Build(value.Level),
                 builder.Build(value.Exp),
                 builder.Build(value.Money),
                 builder.Build(value.DepositedMoney),
@@ -1326,6 +1328,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.State),
                 builder.Build(value.ClassType),
                 builder.Build(value.Promotion),
+                builder.Build(value.Level),
                 builder.Build(value.Exp),
                 builder.Build(value.Money),
                 builder.Build(value.DepositedMoney),
@@ -1961,6 +1964,7 @@ namespace fb.protocol._internal
         public byte State { get; set; } = 0;
         public byte ClassType { get; set; } = 0;
         public byte Promotion { get; set; } = 0;
+        public byte Level { get; set; } = 0;
         public uint Exp { get; set; } = 0;
         public uint Money { get; set; } = 0;
         public uint DepositedMoney { get; set; } = 0;
@@ -2003,6 +2007,7 @@ namespace fb.protocol._internal
             State = raw.State;
             ClassType = raw.ClassType;
             Promotion = raw.Promotion;
+            Level = raw.Level;
             Exp = raw.Exp;
             Money = raw.Money;
             DepositedMoney = raw.DepositedMoney;

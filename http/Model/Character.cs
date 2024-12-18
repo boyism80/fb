@@ -28,6 +28,7 @@ namespace Http.Model
         public byte State { get; set; }
         public byte Class { get; set; }
         public byte Promotion { get; set; }
+        public byte Level { get; set; }
         public uint Exp { get; set; }
         public uint Money { get; set; }
         public uint DepositedMoney { get; set; }

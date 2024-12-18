@@ -410,6 +410,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.hp(response.hp);
     ch.base_mp(response.base_mp);
     ch.mp(response.mp);
+    ch.level(response.level);
     ch.exp(response.exp);
     ch.state(STATE(response.state));
 
