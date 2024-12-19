@@ -54,7 +54,7 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket, fb::stream& stream)
                 this->thread()->enqueue(
                     [this, cmd, &socket, protocol](auto&) -> async::task<void> {
                         // TODO: check socket alive
-                        co_await this->_handler[cmd](socket, *protocol.get());
+                        co_await this->_handler[cmd](*protocol.get());
                     },
                     [](auto& error) { // error
                         fb::logger::fatal(error.what());
@@ -83,7 +83,7 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket, fb::stream& stream)
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
     this->async_connect(endpoint, [&](const auto& e) {
-        this->recv();
+        boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner), this->recv(), boost::asio::detached);
         this->on_connected();
     });
 }
