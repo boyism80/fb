@@ -39,7 +39,8 @@ public:
 #else
     login(const fb::stream& params)
     {
-        auto reader = fb::stream_reader<big_endian>((const uint8_t*)params.data(), params.size());
+        auto clone  = fb::stream{params};
+        auto reader = fb::stream_reader<big_endian>{clone};
         this->deserialize(reader);
     }
 #endif
@@ -53,7 +54,7 @@ public:
         writer.write<uint8_t>(this->enc_type);
         writer.write<uint8_t>(this->key_size);
         writer.write((void*)this->enc_key, this->key_size);
-        writer.write<uint8_t>(this->from);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->from));
         writer.write<uint32_t>(this->id);
         writer.write<std::string, uint8_t>(this->name);
         writer.write<uint8_t>(this->transfer.has_value());
@@ -169,7 +170,7 @@ public:
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->direction);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->direction));
         writer.write<uint8_t>(this->sequence);
         writer.write<uint16_t>(this->position.x);
         writer.write<uint16_t>(this->position.y);
@@ -500,7 +501,6 @@ public:
     chat() = default;
 #else
     chat(bool shout, const std::string& message) :
-        fb::protocol::base::header(0x0E),
         shout(shout),
         message(message)
     { }

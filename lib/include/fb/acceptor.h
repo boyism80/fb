@@ -19,7 +19,7 @@ namespace fb {
  * @tparam     T     { description }
  */
 template <typename T>
-class acceptor : public fb::context
+class acceptor : public fb::acceptable
 {
 private:
     using handle_func     = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::base::header&)>;
@@ -51,7 +51,7 @@ protected:
      * @param[in]  port     The port
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
-        fb::context(context, name, port),
+        fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
         _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
     { }

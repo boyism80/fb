@@ -40,7 +40,7 @@ protected:
 
 public:
     socket(context& context, const handle_read_event& handle_received, const handler_event& handle_closed) :
-        boost::asio::ip::tcp::socket(context),
+        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
         _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed)
@@ -51,7 +51,7 @@ public:
            const fb::cryptor&       crt,
            const handle_read_event& handle_received,
            const handler_event&     handle_closed) :
-        boost::asio::ip::tcp::socket(context),
+        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
         _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed),

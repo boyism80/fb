@@ -1,21 +1,19 @@
 #include <thread>
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
-#include <fb/bot/bot.h>
+#include <bot.h>
 
 using namespace std;
 using namespace boost::asio;
 
 int main(int, char**)
 {
-    using guard_type       = executor_work_guard<io_context::executor_type>;
+    using guard_type = executor_work_guard<io_context::executor_type>;
 
     constexpr auto io_size = 1;
     constexpr auto count   = 1;
 
-    io_context     ios[io_size];
-    auto           guards         = vector<unique_ptr<guard_type>>();
-    auto           bot_containers = vector<unique_ptr<fb::bot::bot_container>>();
+    io_context ios[io_size];
+    auto       guards         = vector<unique_ptr<guard_type>>();
+    auto       bot_containers = vector<unique_ptr<fb::bot::bot_container>>();
     for (auto& io : ios)
     {
         guards.push_back(std::make_unique<guard_type>(io.get_executor()));

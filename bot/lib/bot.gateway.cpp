@@ -1,14 +1,14 @@
-#include <fb/bot/bot.h>
+#include <bot.h>
 
 using namespace fb::bot;
 
 gateway_bot::gateway_bot(bot_container& owner, uint32_t id) :
     base_bot(owner, id)
 {
-    this->bind<fb::protocol::gateway::response::welcome>(std::bind(&gateway_bot::handle_welcome, this, std::placeholders::_1));
-    this->bind<fb::protocol::gateway::response::crt>(std::bind(&gateway_bot::handle_crt, this, std::placeholders::_1));
-    this->bind<fb::protocol::gateway::response::hosts>(std::bind(&gateway_bot::handle_hosts, this, std::placeholders::_1));
-    this->bind<fb::protocol::response::transfer>(std::bind(&gateway_bot::handle_transfer, this, std::placeholders::_1));
+    this->bind(&gateway_bot::handle_welcome);
+    this->bind(&gateway_bot::handle_crt);
+    this->bind(&gateway_bot::handle_hosts);
+    this->bind(&gateway_bot::handle_transfer);
 }
 
 gateway_bot::~gateway_bot()

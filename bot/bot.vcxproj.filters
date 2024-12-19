@@ -3,5 +3,9 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
   </ItemGroup>
 </Project>

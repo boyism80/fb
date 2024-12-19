@@ -29,7 +29,7 @@ public:
      *
      * @param      context  The context
      */
-    thread_container(boost::asio::io_context& context);
+    thread_container(boost::asio::io_context& context, uint32_t count);
     /**
      * @brief      Destroys the object.
      */

@@ -58,9 +58,8 @@ public:
         }
         else
         {
-            auto size = sizeof(ValueType);
             auto seek = this->_stream.size();
-            for (int i = 0; i < size; i++)
+            for (int i = 0; i < sizeof(ValueType); i++)
             {
                 this->_stream.push_back(0);
             }
