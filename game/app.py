@@ -25,6 +25,17 @@ del roots[857]
 del roots[858]
 del roots[859]
 
+additional_roots = [
+    25383,
+    1836,
+    15183,
+    1948,
+    2412
+]
+
+for x in additional_roots:
+    roots[x] = maps[str(x)]['name']
+
 queue = []
 relations = {}
 visit = set()
