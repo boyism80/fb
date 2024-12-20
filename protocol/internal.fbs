@@ -103,3 +103,9 @@ table Group {
     master: string;
     members: [string];
 }
+
+table Trace {
+    user: uint;
+    model: uint;
+    text: string?;
+}

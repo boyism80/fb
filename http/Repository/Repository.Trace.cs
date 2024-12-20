@@ -4,72 +4,72 @@ using Http.Service;
 
 namespace Http.Reepository
 {
-    public class SpellRepository : RedisHashRepository<Spell, SpellKey>
+    public class TraceRepository : RedisHashRepository<Trace, TraceKey>
     {
-        public SpellRepository(DbContext dbContext,
+        public TraceRepository(DbContext dbContext,
             RedisService redisService,
             WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
         {
 
         }
 
-        public async Task<Spell> Get(uint owner, byte slot)
+        public async Task<Trace> Get(uint uid, uint model)
         {
-            return await base.Get(new SpellKey
+            return await base.Get(new TraceKey
             {
-                Owner = owner,
-                Slot = slot
+                Uid = uid,
+                Model = model
             });
         }
 
-        public async Task<IEnumerable<Spell>> Get(uint owner)
+        public async Task<IEnumerable<Trace>> Get(uint uid)
         {
-            return await base.GetAll(new SpellKey
+            return await base.GetAll(new TraceKey
             {
-                Owner = owner
+                Uid = uid
             });
         }
 
-        protected override string OnSelect(SpellKey key)
+        protected override string OnSelect(TraceKey key)
         {
             var sql = $"""
-                SELECT * FROM `spell` WHERE 
-                `owner` = {key.Owner} AND
-                `slot` = {key.Slot}
+                SELECT * FROM `trace` WHERE 
+                `uid` = {key.Uid} AND
+                `model` = {key.Model}
                 LIMIT 1;
                 """;
 
             return sql;
         }
 
-        protected override string OnSelectBulk(SpellKey key)
+        protected override string OnSelectBulk(TraceKey key)
         {
             var sql = $"""
-                SELECT * FROM `spell` WHERE
-                `owner` = {key.Owner};
+                SELECT * FROM `trace` WHERE
+                `uid` = {key.Uid};
                 """;
             return sql;
         }
 
-        protected override string OnUpsert(Spell value)
+        protected override string OnUpsert(Trace value)
         {
             var sql = $"""
-                    INSERT INTO spell (
-                        `owner`,
-                        `slot`,
+                    INSERT INTO `trace` (
+                        `uid`,
                         `model`,
+                        `text`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
                     VALUES (
-                        {value.Owner.Escape()},
-                        {value.Slot.Escape()},
+                        {value.Uid.Escape()},
                         {value.Model.Escape()},
+                        {value.Text.Escape()},
                         {value.Deleted.Escape()},
                         {value.CreatedDate.Escape()},
                         {value.UpdatedDate.Escape()})
                     ON DUPLICATE KEY UPDATE
-                        `model`=VALUES(`model`),
+                        `text`=VALUES(`text`),
                         `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
@@ -77,31 +77,31 @@ namespace Http.Reepository
             return sql;
         }
 
-        protected override string OnUpsert(Spell[] values)
+        protected override string OnUpsert(Trace[] values)
         {
-            var args = values.Select(spell =>
+            var args = values.Select(trace =>
             {
                 return $"""
-                        ({spell.Owner.Escape()},
-                         {spell.Slot.Escape()},
-                         {spell.Model.Escape()},
-                         {spell.Deleted.Escape()},
-                         {spell.CreatedDate.Escape()},
-                         {spell.UpdatedDate.Escape()})
+                        ({trace.Uid.Escape()},
+                         {trace.Model.Escape()},
+                         {trace.Text.Escape()},
+                         {trace.Deleted.Escape()},
+                         {trace.CreatedDate.Escape()},
+                         {trace.UpdatedDate.Escape()})
                         """;
             });
 
             var sql = $"""
-                    INSERT INTO spell (
-                        `owner`,
-                        `slot`,
+                    INSERT INTO `trace` (
+                        `uid`,
                         `model`,
+                        `text`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
-                        `model`=VALUES(`model`),
+                        `text`=VALUES(`text`),
                         `deleted`=VALUES(`deleted`),
                         `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);

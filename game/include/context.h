@@ -172,37 +172,45 @@ private:
      * @brief      Initializes the ch.
      *
      * @param[in]  response  The response
-     * @param      session   The session
+     * @param      ch   The ch
      * @param[in]  transfer  The transfer
      *
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> init_ch(const fb::protocol::internal::Character& response,
-                                            fb::game::character&                     session,
+                                            fb::game::character&                     ch,
                                             const std::optional<transfer_param>&     transfer);
 
     /**
      * @brief      Initializes the option.
      *
      * @param[in]  response  The response
-     * @param      session   The session
+     * @param      ch   The ch
      */
-    void init_option(const fb::protocol::internal::Option& response, fb::game::character& session);
+    void init_option(const fb::protocol::internal::Option& response, fb::game::character& ch);
 
     /**
      * @brief      Initializes the items.
      *
      * @param[in]  response  The response
-     * @param      session   The session
+     * @param      ch   The ch
      */
-    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& session);
+    void init_items(const std::vector<fb::protocol::internal::Item>& response, fb::game::character& ch);
     /**
      * @brief      Initializes the spells.
      *
      * @param[in]  response  The response
-     * @param      session   The session
+     * @param      ch   The ch
      */
-    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& session);
+    void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
+
+    /**
+     * @brief      Initializes the traces.
+     *
+     * @param[in]  response  The response
+     * @param      ch        { parameter_description }
+     */
+    void init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch);
 
 private:
     /**
@@ -359,11 +367,11 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> save(fb::game::character& session);
+    async::task<void> save(fb::game::character& ch);
 
 public:
     /**
@@ -406,19 +414,19 @@ protected:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::game::character>& session) final;
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::game::character>& ch) final;
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::game::character>& session) final;
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::game::character>& ch) final;
     /**
      * @brief      { function_description }
      *
@@ -455,17 +463,17 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      * @param      mob      The mob
      */
-    void handle_click_mob(fb::game::character& session, fb::game::mob& mob);
+    void handle_click_mob(fb::game::character& ch, fb::game::mob& mob);
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      * @param      npc      The npc
      */
-    void handle_click_npc(fb::game::character& session, fb::game::npc& npc);
+    void handle_click_npc(fb::game::character& ch, fb::game::npc& npc);
 
     // game event method
 
@@ -850,276 +858,276 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      * @param[in]  message  The message
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command(fb::game::character& session, const std::string& message);
+    [[nodiscard]] async::task<bool> handle_command(fb::game::character& ch, const std::string& message);
 
 public:
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_map(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_map(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_sound(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_sound(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_action(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_action(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_weather(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_weather(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_bright(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_bright(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_timer(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_timer(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_effect(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_effect(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_disguise(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_disguise(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_undisguise(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_undisguise(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_mob(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_mob(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_class(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_class(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_level(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_level(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_spell(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_spell(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_item(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_item(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_world(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_world(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_script(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_script(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_hair(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_hair(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_hair_color(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_hair_color(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_armor_color(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_armor_color(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_exit(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_exit(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_tile(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_tile(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_save(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_save(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_mapobj(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_mapobj(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_randmap(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_randmap(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_npc(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_npc(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_durability(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_durability(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_concurrency(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_concurrency(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_command_sleep(fb::game::character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_sleep(fb::game::character& ch, Json::Value& parameters);
 
     /**
      * @brief      { function_description }
      *
-     * @param      session     The session
+     * @param      ch     The ch
      * @param      parameters  The parameters
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_map_tile(character& session, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_map_tile(character& ch, Json::Value& parameters);
 
 public:
     // listener : object
@@ -1272,7 +1280,7 @@ public:
      */
     void on_mp(life& me, uint32_t before, uint32_t current) final;
 
-    // listener : session
+    // listener : ch
     //
     // @param      me    { parameter_description }
     //

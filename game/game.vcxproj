@@ -120,6 +120,7 @@
     <ClInclude Include="include\shard.h" />
     <ClInclude Include="include\spell.h" />
     <ClInclude Include="include\thread_params.h" />
+    <ClInclude Include="include\trace.h" />
     <ClInclude Include="include\trade.h" />
     <ClInclude Include="include\worker.h" />
     <ClInclude Include="resource.h" />
@@ -180,6 +181,7 @@
     <ClCompile Include="lib\model\model.recipe.cpp" />
     <ClCompile Include="lib\model\model.sell.cpp" />
     <ClCompile Include="lib\model\model.spell.cpp" />
+    <ClCompile Include="lib\model\model.trace.cpp" />
     <ClCompile Include="lib\model\mst.recipe.cpp" />
     <ClCompile Include="lib\object\character.builtin.cpp" />
     <ClCompile Include="lib\object\character.cpp" />
@@ -195,6 +197,8 @@
     <ClCompile Include="lib\shard.cpp" />
     <ClCompile Include="lib\spell.builtin.cpp" />
     <ClCompile Include="lib\spell.cpp" />
+    <ClCompile Include="lib\trace.builtin.cpp" />
+    <ClCompile Include="lib\trace.cpp" />
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="lib\worker\worker.map.cpp" />
     <ClCompile Include="lib\worker\worker.npc.spawn.cpp" />

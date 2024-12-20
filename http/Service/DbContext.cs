@@ -14,6 +14,7 @@ namespace Http.Service
         public SpellRepository Spell => Bind<SpellRepository>();
         public OptionRepository Option => Bind<OptionRepository>();
         public GroupRepository Group => Bind<GroupRepository>();
+        public TraceRepository Trace => Bind<TraceRepository>();
 
         public uint SharedDbSize
         {

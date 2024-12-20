@@ -15,6 +15,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.articlesummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.article_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.group_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.trace_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.logout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.ping_generated.h>
@@ -69,6 +70,7 @@ namespace fb::protocol::internal
     class ArticleSummary;
     class Article;
     class Group;
+    class Trace;
     enum class Service : int8_t;
     enum class GroupAction : int8_t;
 } // end of namespace fb::protocol::internal
@@ -219,6 +221,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Option> { typedef fl
 template <> struct FlatBufferOffset<fb::protocol::internal::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Article> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Group> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Group> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::Trace> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Trace> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> type; };
@@ -287,6 +290,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Article> build<fb::protocol::internal::Article>(FlatBufferBuilder& builder, const fb::protocol::internal::Article& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::internal::Group>(FlatBufferBuilder& builder, const fb::protocol::internal::Group& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::Trace> build<fb::protocol::internal::Trace>(FlatBufferBuilder& builder, const fb::protocol::internal::Trace& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <>
@@ -410,6 +415,7 @@ enum class FlatBufferProtocolType
     ArticleSummary,
     Article,
     Group,
+    Trace,
 };
 
 class Position
@@ -790,6 +796,47 @@ public:
     {
         auto raw = fb::protocol::internal::raw::GetGroup(bytes);
         return Group(*raw);
+    }
+};
+class Trace
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Trace;
+
+public:
+    uint32_t user = 0;
+    uint32_t model = 0;
+    std::optional<std::string> text = std::nullopt;
+
+public:
+    Trace() = default;
+
+    Trace(const Trace& x)
+        : user(x.user), model(x.model), text(x.text)
+    { }
+
+    Trace(uint32_t user, uint32_t model, const std::optional<std::string>& text)
+        : user(user), model(model), text(text)
+    { }
+
+    Trace(const fb::protocol::internal::raw::Trace& raw)
+        : user(raw.user()), model(raw.model()), text(raw.text() != nullptr ? flatbuffers::option::decode(raw.text()->c_str()) : std::optional<std::string>())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::Trace>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Trace Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::raw::GetTrace(bytes);
+        return Trace(*raw);
     }
 };
 
@@ -1365,20 +1412,21 @@ public:
     fb::protocol::internal::Character character;
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
+    std::vector<fb::protocol::internal::Trace> traces = {};
 
 public:
     Save() = default;
 
     Save(const Save& x)
-        : character(x.character), items(x.items), spells(x.spells)
+        : character(x.character), items(x.items), spells(x.spells), traces(x.traces)
     { }
 
-    Save(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells)
-        : character(character), items(items), spells(spells)
+    Save(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::Trace> traces)
+        : character(character), items(items), spells(spells), traces(traces)
     { }
 
     Save(const fb::protocol::internal::request::raw::Save& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells()))
+        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), traces(unpack<fb::protocol::internal::Trace>(raw.traces()))
     { }
 
 public:
@@ -2272,20 +2320,21 @@ public:
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
     fb::protocol::internal::Option option;
+    std::vector<fb::protocol::internal::Trace> traces = {};
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), items(x.items), spells(x.spells), option(x.option)
+        : character(x.character), items(x.items), spells(x.spells), option(x.option), traces(x.traces)
     { }
 
-    Init(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option)
-        : character(character), items(items), spells(spells), option(option)
+    Init(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Trace> traces)
+        : character(character), items(items), spells(spells), option(option), traces(traces)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option())
+        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), traces(unpack<fb::protocol::internal::Trace>(raw.traces()))
     { }
 
 public:
@@ -2767,6 +2816,14 @@ flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::inte
             flatbuffers::build<std::vector<std::string>>(builder, value.members));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::raw::Trace> build<fb::protocol::internal::Trace>(FlatBufferBuilder& builder, const fb::protocol::internal::Trace& value)
+{
+    return fb::protocol::internal::raw::CreateTrace(builder,
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint32_t>(builder, value.model),
+            flatbuffers::build<std::optional<std::string>>(builder, value.text));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)
 {
     return fb::protocol::internal::request::raw::CreateLogin(builder,
@@ -2877,7 +2934,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protoc
     return fb::protocol::internal::request::raw::CreateSave(builder,
             flatbuffers::build<fb::protocol::internal::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
-            flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells));
+            flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
+            flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticle> build<fb::protocol::internal::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetArticle& value)
@@ -3033,7 +3091,8 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
             flatbuffers::build<fb::protocol::internal::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
-            flatbuffers::build<fb::protocol::internal::Option>(builder, value.option));
+            flatbuffers::build<fb::protocol::internal::Option>(builder, value.option),
+            flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::MakeCharacter> build<fb::protocol::internal::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::response::MakeCharacter& value)

@@ -9,8 +9,9 @@
 #include <mob.h>
 #include <sstream>
 #include <trade.h>
+#include <trace.h>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a map of .
@@ -104,10 +105,10 @@ private:
     std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
 
 public:
-    fb::game::trade  trade  = fb::game::trade(*this);
-    fb::game::items  items  = fb::game::items(*this);
-    fb::game::dialog dialog = fb::game::dialog(*this);
-    legend_container legends;
+    fb::game::trade    trade  = fb::game::trade(*this);
+    fb::game::items    items  = fb::game::items(*this);
+    fb::game::dialog   dialog = fb::game::dialog(*this);
+    std::map<uint32_t, std::unique_ptr<trace>> traces; // order required
 
 private:
     using object::based;
@@ -1449,6 +1450,42 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_group(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_traces(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_trace(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_push_trace(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_erase_trace(lua_State* lua);
 };
 
 /**
@@ -1632,6 +1669,6 @@ public:
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const point16_t& position) = 0;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
-#endif // !__MMO_H__
+#endif // !__CHARACTER_H__

@@ -43,21 +43,3 @@ void fb::game::class_data::push(const std::string& name)
 {
     this->promotions.push_back(name);
 }
-
-fb::game::legend_container::legend_container()
-{ }
-
-fb::game::legend_container::~legend_container()
-{ }
-
-legend_container& fb::game::legend_container::push(const legend& legend)
-{
-    this->push_back(legend);
-    return *this;
-}
-
-legend_container& fb::game::legend_container::push(uint8_t look, uint8_t color, const std::string& content)
-{
-    this->push_back(legend(look, color, content));
-    return *this;
-}

@@ -59,3 +59,11 @@ IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
 {"rename_price",        fb::model::item::builtin_rename_price},
 {"deposit_price",       fb::model::item::builtin_deposit_price},
 END_LUA_EXTENSION; // clang-format on
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::trace, "fb.model.trace")
+{"id",                	fb::model::trace::builtin_id},
+{"look",                fb::model::trace::builtin_look},
+{"color",            	fb::model::trace::builtin_color},
+{"text",          		fb::model::trace::builtin_text},
+END_LUA_EXTENSION; // clang-format on
