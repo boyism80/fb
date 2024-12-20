@@ -3180,6 +3180,9 @@ std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::ty
             }
             else
             {
+                if (value->Get(i) == nullptr)
+                    continue;
+                    
                 result.push_back(*value->Get(i));
             }
         }
