@@ -177,6 +177,16 @@ namespace fb.protocol._internal
                 builder.Build(value.Master),
                 builder.Build(value.Members));
         }
+        public static Offset<fb.protocol._internal.raw.Trace> Build(this FlatBufferBuilder builder, fb.protocol._internal.Trace value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Trace.CreateTrace(builder,
+                builder.Build(value.User),
+                builder.Build(value.Model),
+                builder.Build(value.Text));
+        }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
         {
             if (value == null)
@@ -316,7 +326,8 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Traces));
         }
         public static Offset<fb.protocol._internal.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticle value)
         {
@@ -517,7 +528,8 @@ namespace fb.protocol._internal
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Option));
+                builder.Build(value.Option),
+                builder.Build(value.Traces));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -603,6 +615,10 @@ namespace fb.protocol._internal
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Trace> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Trace>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ArticleSummary> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
@@ -626,7 +642,8 @@ namespace fb.protocol._internal
         Option,
         ArticleSummary,
         Article,
-        Group
+        Group,
+        Trace
     }
 }
 namespace fb.protocol._internal.request
@@ -796,6 +813,16 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Master),
                 builder.Build(value.Members));
         }
+        public static Offset<fb.protocol._internal.raw.Trace> Build(this FlatBufferBuilder builder, fb.protocol._internal.Trace value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Trace.CreateTrace(builder,
+                builder.Build(value.User),
+                builder.Build(value.Model),
+                builder.Build(value.Text));
+        }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
         {
             if (value == null)
@@ -935,7 +962,8 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Traces));
         }
         public static Offset<fb.protocol._internal.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticle value)
         {
@@ -1136,7 +1164,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Option));
+                builder.Build(value.Option),
+                builder.Build(value.Traces));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -1221,6 +1250,10 @@ namespace fb.protocol._internal.request
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Spell> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Trace> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Trace>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ArticleSummary> value)
         {
@@ -1428,6 +1461,16 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Master),
                 builder.Build(value.Members));
         }
+        public static Offset<fb.protocol._internal.raw.Trace> Build(this FlatBufferBuilder builder, fb.protocol._internal.Trace value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Trace.CreateTrace(builder,
+                builder.Build(value.User),
+                builder.Build(value.Model),
+                builder.Build(value.Text));
+        }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
         {
             if (value == null)
@@ -1567,7 +1610,8 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.Save.CreateSave(builder,
                 builder.Build(value.Character),
                 builder.Build(value.Items),
-                builder.Build(value.Spells));
+                builder.Build(value.Spells),
+                builder.Build(value.Traces));
         }
         public static Offset<fb.protocol._internal.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticle value)
         {
@@ -1768,7 +1812,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Option));
+                builder.Build(value.Option),
+                builder.Build(value.Traces));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -1853,6 +1898,10 @@ namespace fb.protocol._internal.response
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Spell> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Trace> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Trace>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ArticleSummary> value)
         {
@@ -2280,6 +2329,39 @@ namespace fb.protocol._internal
             return new Group(bytes);
         }
     }
+    public class Trace : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Trace;
+        public uint User { get; set; } = 0;
+        public uint Model { get; set; } = 0;
+        public string Text { get; set; } = null;
+
+        public Trace()
+        { }
+
+        public Trace(fb.protocol._internal.raw.Trace raw)
+        {
+            User = raw.User;
+            Model = raw.Model;
+            Text = raw.Text;
+        }
+
+        public Trace(byte[] bytes) : this(fb.protocol._internal.raw.Trace.GetRootAsTrace(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Trace Deserialize(byte[] bytes)
+        {
+            return new Trace(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -2295,6 +2377,7 @@ namespace fb.protocol._internal
                 FlatBufferProtocolType.ArticleSummary => typeof(fb.protocol._internal.ArticleSummary),
                 FlatBufferProtocolType.Article => typeof(fb.protocol._internal.Article),
                 FlatBufferProtocolType.Group => typeof(fb.protocol._internal.Group),
+                FlatBufferProtocolType.Trace => typeof(fb.protocol._internal.Trace),
                 _ => throw new ArgumentException(),
             };
         }
@@ -2740,6 +2823,7 @@ namespace fb.protocol._internal.request
         public fb.protocol._internal.Character Character { get; set; } = new fb.protocol._internal.Character();
         public List<fb.protocol._internal.Item> Items { get; set; } = new List<fb.protocol._internal.Item>();
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
+        public List<fb.protocol._internal.Trace> Traces { get; set; } = new List<fb.protocol._internal.Trace>();
 
         public Save()
         { }
@@ -2749,6 +2833,7 @@ namespace fb.protocol._internal.request
             Character = new Character(raw.Character.Value);
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
+            Traces = Enumerable.Range(0, raw.TracesLength).Select(i => raw.Traces(i)).Select(x => new Trace(x.Value)).ToList();
         }
 
         public Save(byte[] bytes) : this(fb.protocol._internal.request.raw.Save.GetRootAsSave(new ByteBuffer(bytes)))
@@ -3461,6 +3546,7 @@ namespace fb.protocol._internal.response
         public List<fb.protocol._internal.Item> Items { get; set; } = new List<fb.protocol._internal.Item>();
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
         public fb.protocol._internal.Option Option { get; set; } = new fb.protocol._internal.Option();
+        public List<fb.protocol._internal.Trace> Traces { get; set; } = new List<fb.protocol._internal.Trace>();
 
         public Init()
         { }
@@ -3471,6 +3557,7 @@ namespace fb.protocol._internal.response
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
             Option = new Option(raw.Option.Value);
+            Traces = Enumerable.Range(0, raw.TracesLength).Select(i => raw.Traces(i)).Select(x => new Trace(x.Value)).ToList();
         }
 
         public Init(byte[] bytes) : this(fb.protocol._internal.response.raw.Init.GetRootAsInit(new ByteBuffer(bytes)))

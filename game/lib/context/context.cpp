@@ -501,6 +501,17 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
     }
 }
 
+void context::init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch)
+{
+    for (auto& x : response)
+    {
+        if (this->model.trace.contains(x.model) == false)
+            continue;
+
+        ch.traces.insert({x.model, std::make_unique<fb::game::trace>(this->model.trace[x.model], x.text)});
+    }
+}
+
 void context::assert_whisper(const internal_resp::Whisper& response) const
 {
     switch (static_cast<ERROR_CODE>(response.error))
@@ -723,10 +734,16 @@ async::task<void> context::save(character& ch)
         spells.push_back(internal::Spell{ch.id(), i, spell->id});
     }
 
+    auto traces = std::vector<internal::Trace>();
+    for (auto& [model, trace] : ch.traces)
+    {
+        traces.push_back(internal::Trace{ch.id(), model, trace->text});
+    }
+
     std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
-        internal_reqs::Save{ch.to_protocol(), items, spells});
+        internal_reqs::Save{ch.to_protocol(), items, spells, traces});
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const

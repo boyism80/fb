@@ -108,25 +108,6 @@ CREATE TABLE `item` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `legend`
---
-
-DROP TABLE IF EXISTS `legend`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `legend` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `owner` int unsigned NOT NULL,
-  `look` tinyint NOT NULL DEFAULT '0',
-  `color` tinyint NOT NULL DEFAULT '0',
-  `content` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk.legend.owner_idx` (`owner`),
-  CONSTRAINT `fk.legend.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `name`
 --
 
@@ -140,7 +121,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -188,6 +169,25 @@ CREATE TABLE `spell` (
   PRIMARY KEY (`owner`,`slot`),
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `trace`
+--
+
+DROP TABLE IF EXISTS `trace`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `trace` (
+  `uid` int unsigned NOT NULL,
+  `model` int unsigned NOT NULL,
+  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `deleted` tinyint DEFAULT NULL,
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
+  PRIMARY KEY (`uid`,`model`),
+  KEY `fk.legend.owner_idx` (`model`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -408,4 +408,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-18 21:08:41
+-- Dump completed on 2024-12-20 22:11:56

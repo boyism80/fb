@@ -94,6 +94,7 @@ table Init {
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
   option: fb.protocol.internal.Option;
+  traces: [fb.protocol.internal.Trace];
 }
 
 
