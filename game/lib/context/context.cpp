@@ -25,8 +25,10 @@ async::task<void> context::handle_start()
     lua::build<map, lua::luable>();
     lua::build<door, lua::luable>();
     lua::build<group, lua::luable>();
+    lua::build<trace, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
+    lua::build<fb::model::trace, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
     lua::build<object, lua::luable>();
     lua::build<fb::model::life, fb::model::object>();

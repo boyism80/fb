@@ -4011,6 +4011,44 @@ DECLARE_SPELL_INITIALIZER
 DECLARE_SPELL_EXTENSION
 #endif
 }; // end of class 'spell'
+class trace
+#ifdef DECLARE_TRACE_INHERIT
+DECLARE_TRACE_INHERIT
+#endif
+{
+#ifdef DECLARE_TRACE_FIELDS
+DECLARE_TRACE_FIELDS
+#else
+public:
+    const uint32_t id;
+    const uint8_t look;
+    const uint8_t color;
+    const std::string text;
+#endif
+
+#ifdef DECLARE_TRACE_CUSTOM_CONSTRUCTOR
+DECLARE_TRACE_CUSTOM_CONSTRUCTOR
+#else
+public:
+    trace(const Json::Value& json) : 
+#ifdef DECLARE_TRACE_CONSTRUCTOR
+DECLARE_TRACE_CONSTRUCTOR
+#endif
+        id(fb::model::build<uint32_t>(json["id"])),
+        look(fb::model::build<uint8_t>(json["look"])),
+        color(fb::model::build<uint8_t>(json["color"])),
+        text(fb::model::build<std::string>(json["text"]))
+#ifdef DECLARE_TRACE_INITIALIZER
+DECLARE_TRACE_INITIALIZER
+#endif
+    { }
+    trace(const trace&) = delete;
+    virtual ~trace() = default;
+#endif
+#ifdef DECLARE_TRACE_EXTENSION
+DECLARE_TRACE_EXTENSION
+#endif
+}; // end of class 'trace'
 class warp
 #ifdef DECLARE_WARP_INHERIT
 DECLARE_WARP_INHERIT
@@ -5301,6 +5339,22 @@ DECLARE_SPELL_CONTAINER_EXTENSION
 #endif
 };
 
+class __trace : public fb::model::kv_container<uint32_t, fb::model::trace>
+{
+public:
+#ifdef DECLARE_TRACE_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_TRACE_CONTAINER_CUSTOM_CONSTRUCTOR
+#else
+    __trace() : fb::model::kv_container<uint32_t, fb::model::trace>(std::string("json/trace.json"))
+    { }
+    __trace(const __trace&) = delete;
+    ~__trace() = default;
+#endif
+#ifdef DECLARE_TRACE_CONTAINER_EXTENSION
+DECLARE_TRACE_CONTAINER_EXTENSION
+#endif
+};
+
 class __warp : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::warp>>
 {
 public:
@@ -5395,6 +5449,7 @@ public:
     fb::model::__sell sell;
     fb::model::__sell_attribute sell_attribute;
     fb::model::__spell spell;
+    fb::model::__trace trace;
     fb::model::__warp warp;
     fb::model::__warp_attribute warp_attribute;
     fb::model::__world world;
@@ -5429,6 +5484,7 @@ private:
         &sell,
         &sell_attribute,
         &spell,
+        &trace,
         &warp,
         &warp_attribute,
         &world,

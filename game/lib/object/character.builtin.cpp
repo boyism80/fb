@@ -28,6 +28,10 @@ IMPLEMENT_LUA_EXTENSION(fb::game::character, "fb.game.character")
 {"deposit_item",        fb::game::character::builtin_deposit_item},
 {"withdraw_item",       fb::game::character::builtin_withdraw_item},
 {"group",               fb::game::character::builtin_group},
+{"traces",              fb::game::character::builtin_traces},
+{"trace",               fb::game::character::builtin_trace},
+{"push_trace",          fb::game::character::builtin_push_trace},
+{"erase_trace",         fb::game::character::builtin_erase_trace},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::character::builtin_look(lua_State* lua)
@@ -811,4 +815,116 @@ int fb::game::character::builtin_group(lua_State* lua)
             return func(thread);
         });
     }
+}
+
+int fb::game::character::builtin_traces(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    thread->new_table();
+    int i = 0;
+    for (auto& [id, trace] : ch->traces)
+    {
+        thread->pushinteger(i + 1);
+        thread->pushobject(*trace);
+        lua_settable(lua, -3);
+
+        i++;
+    }
+    return 1;
+}
+
+int fb::game::character::builtin_trace(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto i = thread->tointeger(2);
+    if (ch->traces.contains(i) == false)
+    {
+        thread->pushnil();
+    }
+    else
+    {
+        thread->pushobject(*ch->traces.at(i));
+    }
+    return 1;
+}
+
+int fb::game::character::builtin_push_trace(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    const fb::model::trace* model = nullptr;
+
+    if (lua_isinteger(lua, 2))
+    {
+        auto id = thread->tointeger(2);
+        if (context->model.trace.contains(id) == false)
+        {
+            thread->pushnil();
+            return 1;
+        }
+
+        model = &context->model.trace[id];
+    }
+    else if (lua_isuserdata(lua, 2))
+    {
+        model = (const fb::model::trace*)thread->touserdata<fb::game::trace>(2);
+    }
+
+    if (ch->traces.contains(model->id))
+    {
+        thread->pushnil();
+        return 1;
+    }
+
+    auto text = thread->argc() < 3 ? std::optional<std::string>{std::nullopt} : thread->tostring(3);
+    ch->traces.insert({model->id, std::make_unique<fb::game::trace>(*model, text)});
+    thread->pushobject(*ch->traces[model->id]);
+    return 1;
+}
+
+int fb::game::character::builtin_erase_trace(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto i = thread->tointeger(2);
+    if (ch->traces.contains(i) == false)
+    {
+        thread->pushboolean(false);
+    }
+    else
+    {
+        ch->traces.erase(i);
+        thread->pushboolean(true);
+    }
+    return 1;
 }

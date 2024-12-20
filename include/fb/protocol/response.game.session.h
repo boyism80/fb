@@ -506,12 +506,13 @@ public:
         writer.write<uint8_t>(this->ch.option(SETTING::TRADE));
         writer.write<uint8_t>(this->ch.option(SETTING::PK_PROTECT));
 
-        writer.write<uint8_t>((uint8_t)this->ch.legends.size());
-        for (auto legend : this->ch.legends)
+        writer.write<uint8_t>((uint8_t)this->ch.traces.size());
+        for (auto& [_, trace] : this->ch.traces)
         {
-            writer.write<uint8_t>(legend.look);
-            writer.write<uint8_t>(legend.color);
-            writer.write<std::string>(legend.content);
+            auto& model = trace->model;
+            writer.write<uint8_t>(model.look);
+            writer.write<uint8_t>(model.color);
+            writer.write<std::string>(trace->text.value_or(model.text));
         }
         writer.write<uint8_t>(0x00);
     }
@@ -613,12 +614,13 @@ public:
         writer.write<uint32_t>(0x00000000); // unknown
 
         // 업적
-        writer.write<uint8_t>((uint8_t)this->ch.legends.size());
-        for (auto& legend : this->ch.legends)
+        writer.write<uint8_t>((uint8_t)this->ch.traces.size());
+        for (auto& [_, trace] : this->ch.traces)
         {
-            writer.write<uint8_t>(legend.look);
-            writer.write<uint8_t>(legend.color);
-            writer.write<std::string>(legend.content);
+            auto& model = trace->model;
+            writer.write<uint8_t>(model.look);
+            writer.write<uint8_t>(model.color);
+            writer.write<std::string>(trace->text.value_or(model.text));
         }
         writer.write<uint8_t>(0x00);
     }

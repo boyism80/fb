@@ -78,9 +78,9 @@ public:                                               \
         return this->width == 0 && this->height == 0; \
     }
 
-#define DECLARE_OBJECT_INHERIT  : public fb::lua::luable
-
 #define DECLARE_SPELL_INHERIT  : public fb::lua::luable
+
+#define DECLARE_TRACE_INHERIT : public fb::lua::luable
 
 #define DECLARE_OBJECT_EXTENSION                                      \
                                                                       \
@@ -534,4 +534,18 @@ public:                                    \
                                                                                             \
         return this->move(newdir, step);                                                    \
     }
+
+#define DECLARE_OBJECT_INHERIT  : public fb::lua::luable
+
+#define DECLARE_TRACE_EXTENSION               \
+                                              \
+public:                                       \
+    LUA_PROTOTYPE                             \
+                                              \
+public:                                       \
+    static int builtin_id(lua_State* lua);    \
+    static int builtin_look(lua_State* lua);  \
+    static int builtin_color(lua_State* lua); \
+    static int builtin_text(lua_State* lua);
+
 #endif
