@@ -2,6 +2,7 @@
 #define __BOT_H__
 
 #include <random>
+#include <any>
 #include <fb/socket.h>
 #include <fb/thread_container.h>
 #include <fb/protocol/gateway.h>
@@ -17,14 +18,24 @@ class bot_container;
 class base_bot : public fb::socket<void*>
 {
 private:
+    template <typename ResponseType>
+    class await_params
+    {
+    public:
+        std::function<bool(const ResponseType&)>                     condition;
+        std::shared_ptr<async::task_completion_source<ResponseType>> promise;
+    };
+
+private:
     using handle_func    = std::function<async::task<void>(fb::protocol::base::header&)>;
     using deserilze_func = std::function<async::task<fb::protocol::base::header*>(fb::stream_reader<big_endian>&)>;
 
 protected:
-    bot_container&                              _owner;
-    fb::cryptor                                 _cryptor;
-    std::unordered_map<uint8_t, handle_func>    _handler;
-    std::unordered_map<uint8_t, deserilze_func> _deserializer;
+    bot_container&                                     _owner;
+    fb::cryptor                                        _cryptor;
+    std::unordered_map<uint8_t, handle_func>           _handler;
+    std::unordered_map<uint8_t, deserilze_func>        _deserializer;
+    std::unordered_map<uint8_t, std::vector<std::any>> _awaitors;
 
 public:
     const uint32_t id;
@@ -53,44 +64,67 @@ public:
         co_return;
     }
 
-    template <typename T>
-    void bind(int cmd, const std::function<async::task<void>(T&)>& fn)
-    {
-        // this->_handler.insert({cmd, [this, fn](const std::function<void()>& callback) -> async::task<void> {
-        //                            co_await this->reader<async::task<void>>(
-        //                                [this, fn, &callback](auto& reader) -> async::task<void> {
-        //                                    T header;
-        //                                    header.deserialize(reader);
-        //                                    callback();
-        //                                    this->invoke_promise(header.__id, header);
-
-        //                                   co_await fn(header);
-        //                               });
-        //                       }});
-    }
-
     template <typename Class, typename Response>
     void bind(async::task<void> (Class::*fn)(const Response&))
     {
-        auto header = Response::header;
-        this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::base::header*> {
+        this->_deserializer.insert({Response::header, [](auto& reader) -> async::task<fb::protocol::base::header*> {
                                         auto protocol = new Response();
                                         co_await protocol->deserialize(reader);
                                         co_return protocol;
                                     }});
 
         auto c_fn = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1);
-        this->_handler.insert({header, [c_fn](auto& header) -> async::task<void> {
+        this->_handler.insert({Response::header, [this, c_fn](auto& header) -> async::task<void> {
                                    auto protocol = static_cast<Response&>(header);
+
+                                   if (this->_awaitors.contains(Response::header))
+                                   {
+                                       auto& matched_awaitors = this->_awaitors.at(Response::header);
+                                       int   found            = -1;
+                                       for (int i = 0; i < matched_awaitors.size(); i++)
+                                       {
+                                           auto& param_ptr = std::any_cast<std::unique_ptr<await_params<Response>>&>(
+                                               matched_awaitors.at(i));
+                                           if (param_ptr->condition(protocol))
+                                           {
+                                               param_ptr->promise->set_value(protocol);
+                                               found = i;
+                                               break;
+                                           }
+                                       }
+
+                                       if (found != -1)
+                                           matched_awaitors.erase(matched_awaitors.begin() + found);
+                                   }
                                    co_await c_fn(protocol);
                                }});
     }
 
     template <typename ResponseType>
+    async::task<ResponseType> request(const fb::protocol::base::header&                    protocol,
+                                      const std::function<bool(const ResponseType& resp)>& condition)
+    {
+        auto header = ResponseType::header;
+        if (this->_awaitors.contains(header) == false)
+            this->_awaitors.insert({header, std::vector<void*>{}});
+
+        auto param_ptr       = std::make_unique<await_params<ResponseType>>();
+        param_ptr->condition = condition;
+        param_ptr->promise   = std::make_shared<async::task_completion_source<ResponseType>>();
+
+        auto& promise = param_ptr->promise;
+        this->_awaitors[header].push_back(std::move(param_ptr));
+
+        this->send(protocol);
+        return promise->task();
+    }
+
+    template <typename ResponseType>
     async::task<ResponseType> request(const fb::protocol::base::header& protocol)
     {
-        auto promise = std::make_shared<async::task_completion_source<ResponseType>>();
-        return promise->task();
+        co_return co_await this->request<ResponseType>(protocol, [](auto& resp) -> bool {
+            return true;
+        });
     }
 };
 

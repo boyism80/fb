@@ -30,14 +30,14 @@ int main(int, char**)
         }
     }
 
-    thread_pool thread_pool(io_size);
+    auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)
     {
-        post(thread_pool, [&io] {
+        post(threads, [&io] {
             io.run();
         });
     }
 
-    thread_pool.join();
+    threads.join();
     return 0;
 }
