@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 
+ENABLED_FORCE_LINK = True
+WORKING_DIR = '../../game/json'
+
 import json
 
 def name2map(name):
@@ -8,14 +11,20 @@ def name2map(name):
             return map
     return None
 
-with open('json/map.json', 'r', encoding='utf-8') as f:
+def relative_of_word(word):
+    for id, map in maps.items():
+        if word in map['name']:
+            yield map['id']
+    return None
+
+with open(f'{WORKING_DIR}/map.json', 'r', encoding='utf-8') as f:
     maps = json.load(f)
 
-with open('json/warp.json', 'r', encoding='utf-8') as f:
+with open(f'{WORKING_DIR}/warp.json', 'r', encoding='utf-8') as f:
     warps = json.load(f)
 
 roots = {}
-with open('json/world.json', 'r', encoding='utf-8') as f:
+with open(f'{WORKING_DIR}/world.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
     for x1 in data.values():
@@ -26,24 +35,55 @@ with open('json/world.json', 'r', encoding='utf-8') as f:
 
             roots[id] = maps[str(id)]['name']
 
-del roots[20]
-del roots[21]
-del roots[856]
-del roots[857]
-del roots[858]
-del roots[859]
 
-additional_roots = [
+roots = [
     name2map('가상계')['id'],
-    25383,
-    1836,
-    15183,
-    1948,
-    2412,
+    name2map('국내성')['id'],
+    name2map('부여성')['id'],
+    name2map('신부여성남서쪽')['id'],
+    name2map('12지신의유적')['id'],
+    name2map('천상계제일계')['id'],
+    name2map('극지방입구')['id'],
+    name2map('선비족입구')['id'],
+    name2map('대방성')['id'],
+    name2map('낙양성')['id'],
+    name2map('현도성')['id'],
+    name2map('장안성')['id'],
+    name2map('흉노족1')['id'],
+    name2map('남양1')['id'],
+    name2map('남경1')['id'],
+    name2map('상해1')['id'],
+    name2map('강서성')['id'],
+    name2map('광동성')['id'],
+    name2map('도삭산')['id'],
+    name2map('복건성')['id'],
+    name2map('고균도')['id'],
+    name2map('고구려평양성')['id'],
+    name2map('고구려졸본성')['id'],
+    name2map('고구려숙군성')['id'],
+    name2map('고구려선양성')['id'],
+    name2map('고구려집안성')['id'],
+    name2map('고구려산해관')['id'],
+    name2map('고구려신성')['id'],
+    name2map('고구려용성')['id'],
+    name2map('고구려후연성')['id'],
+    name2map('고구려개주')['id'],
+    name2map('부여범안성')['id'],
+    name2map('부여관령성')['id'],
+    name2map('부여어양성')['id'],
+    name2map('부여상곡성')['id'],
+    name2map('부여천안궁성')['id'],
+    name2map('부여만번한성')['id'],
+    name2map('부여읍루성')['id'],
+    name2map('부여장훈성')['id'],
+    name2map('부여송원성')['id'],
+    name2map('동부여성')['id'],
     name2map('청룡의심장')['id'],
     name2map('풍곡입구')['id'],
     name2map('지옥')['id'],
-    name2map('위례성')['id']
+    name2map('위례성')['id'],
+    name2map('백두산관문')['id'],
+    name2map('일본신궁')['id']
 ]
 
 links = {}
@@ -54,13 +94,20 @@ links[name2map('가상계')['id']] = [
 ]
 
 links[name2map('12지신의유적')['id']] = [
+    name2map('PK12지신의유적')['id'],
+    name2map('용왕토끼방')['id'],
     name2map('용왕용마의침소')['id'],
     name2map('용왕용천의침소')['id'],
     name2map('용왕용랑의침소')['id'],
     name2map('용왕용겸의침소')['id'],
     name2map('용왕용섬의침소')['id'],
     name2map('천상계제이계5')['id'],
-    name2map('구명곡1')['id']
+    name2map('용왕용신의침소')['id'],
+    name2map('구명곡1')['id'],
+    *list(relative_of_word('한고개')),
+    *list(relative_of_word('두고개')),
+    *list(relative_of_word('세고개')),
+    *list(relative_of_word('네고개'))
 ]
 
 links[name2map('세시마을')['id']] = [
@@ -77,7 +124,8 @@ links[name2map('해골왕의방')['id']] = [
 
 links[name2map('부여성')['id']] = [
     name2map('제곡의방')['id'],
-    name2map('부여-일본선착장')['id']
+    name2map('부여-일본선착장')['id'],
+    *list(relative_of_word('부여비밀세작의집10')),
 ]
 
 links[name2map('위례성')['id']] = [
@@ -95,6 +143,7 @@ links[name2map('청룡의심장')['id']] = [
     name2map('주작성팔괘방')['id'],
     name2map('현무성팔괘방')['id'],
 
+    name2map('주작성')['id'],
     name2map('주작의심장')['id'],
     name2map('주작의머리')['id'],
     name2map('주작의비밀의방')['id'],
@@ -153,7 +202,12 @@ links[name2map('광동성')['id']] = [
 ]
 
 links[name2map('일본신궁')['id']] = [
-    name2map('요제의방')['id']
+    name2map('요제의방')['id'],
+    name2map('닌자의방')['id']
+]
+
+links[name2map('문지기의방11')['id']] = [
+    name2map('문지기의방12')['id']
 ]
 
 links[name2map('국내성')['id']] = [
@@ -178,133 +232,57 @@ links[name2map('풍곡입구')['id']] = [
     name2map('풍 1-1')['id'],
 ]
 
+links[name2map('구명곡8')['id']] = [
+    name2map('구명곡9')['id'],
+]
+
 links[name2map('오녀산성')['id']] = [
     name2map('엄호수대기실')['id'],
     name2map('숲속길1-1')['id'],
     name2map('깊은숲1-1')['id'],
+    name2map('엄호수의유역1')['id'],
 ]
 
 links[name2map('산적굴1')['id']] = [
     name2map('산적소굴1-1')['id'],
 ]
 
+links[name2map('고균도')['id']] = [
+    name2map('가릉도')['id'],
+    name2map('폭염도')['id'],
+    name2map('난파선1')['id'],
+    name2map('난파선선장의방')['id'],
+    *list(relative_of_word('고균도폐허동굴9')),
+]
+
 links[name2map('지옥')['id']] = [
-    name2map('도산지옥6-2')['id'],
+    *list(relative_of_word('검수지옥')),
+    *list(relative_of_word('발설지옥')),
+    *list(relative_of_word('한빙지옥')),
+    *list(relative_of_word('독사지옥')),
+    *list(relative_of_word('흑암지옥')),
+    *list(relative_of_word('풍도지옥')),
+    *list(relative_of_word('화탕지옥')),
+    *list(relative_of_word('거해지옥')),
+    *list(relative_of_word('도산지옥')),
+    *list(relative_of_word('귀문')),
+    name2map('거짓지옥배')['id'],
+    name2map('지옥마왕아수라의방')['id'],
     name2map('지옥의갈림길')['id'],
     name2map('한빙비밀의방')['id'],
     name2map('흑암지옥지하입구')['id'],
-    name2map('도산지옥')['id'],
-    name2map('귀문마동1-1')['id'],
-    name2map('귀문마동1-2')['id'],
-    name2map('귀문마동1-3')['id'],
-    name2map('귀문마동1-4')['id'],
-    name2map('귀문마동1-5')['id'],
-    name2map('귀문마동1-6')['id'],
-    name2map('귀문마동1-7')['id'],
-    name2map('귀문마동1-8')['id'],
-    name2map('귀문마동1-9')['id'],
-    name2map('귀문방주실')['id'],
-    name2map('귀문마동1입구')['id'],
-    name2map('귀문마동2입구')['id'],
-    name2map('귀문마동3입구')['id'],
-    name2map('귀문마동4입구')['id'],
-    name2map('귀문마동5입구')['id'],
-    name2map('귀문마동6입구')['id'],
-    name2map('귀문마동7입구')['id'],
-    name2map('귀문마동8입구')['id'],
-    name2map('귀문마동9입구')['id'],
-    name2map('귀문방주실입구')['id'],
-    name2map('귀문혈동1-1')['id'],
-    name2map('귀문혈동1-2')['id'],
-    name2map('귀문혈동1-3')['id'],
-    name2map('귀문혈동1-4')['id'],
-    name2map('귀문혈동1-5')['id'],
-    name2map('귀문혈동1-6')['id'],
-    name2map('귀문혈동1-7')['id'],
-    name2map('귀문혈동1-8')['id'],
-    name2map('귀문혈동1-9')['id'],
-    name2map('귀문혈동1-10')['id'],
-    name2map('귀문혈동1입구')['id'],
-    name2map('귀문혈동2입구')['id'],
-    name2map('귀문혈동3입구')['id'],
-    name2map('귀문혈동4입구')['id'],
-    name2map('귀문혈동5입구')['id'],
-    name2map('귀문혈동6입구')['id'],
-    name2map('귀문혈동7입구')['id'],
-    name2map('귀문혈동8입구')['id'],
-    name2map('귀문혈동9입구')['id'],
-    name2map('귀문혈동10입구')['id'],
-    name2map('귀문동초입1')['id'],
-    name2map('귀문동초입2')['id'],
-    name2map('귀문동초입3')['id'],
-    name2map('귀문동초입4')['id'],
-    name2map('귀문동초입5')['id'],
-    name2map('귀문동초입6')['id'],
-    name2map('귀문동초입7')['id'],
-    name2map('귀문동초입8')['id'],
-    name2map('귀문동초입9')['id'],
-    name2map('귀문동초입10')['id'],
-    name2map('귀문진동1-1')['id'],
-    name2map('귀문진동1-2')['id'],
-    name2map('귀문진동1-3')['id'],
-    name2map('귀문진동1-4')['id'],
-    name2map('귀문진동1-5')['id'],
-    name2map('귀문진동1-6')['id'],
-    name2map('귀문진동1-7')['id'],
-    name2map('귀문진동1-8')['id'],
-    name2map('귀문진동1-9')['id'],
-    name2map('귀문진방주실')['id'],
-    name2map('귀문진동1입구')['id'],
-    name2map('귀문진동2입구')['id'],
-    name2map('귀문진동3입구')['id'],
-    name2map('귀문진동4입구')['id'],
-    name2map('귀문진동5입구')['id'],
-    name2map('귀문진동6입구')['id'],
-    name2map('귀문진동7입구')['id'],
-    name2map('귀문진동8입구')['id'],
-    name2map('귀문진동9입구')['id'],
-    name2map('귀문진방주실입구')['id'],
-    name2map('거해지옥7-10')['id']
 ]
 
 links[name2map('백두촌')['id']] = [
-    name2map('백운봉1')['id'],
-    name2map('백운봉2')['id'],
-    name2map('백운봉3')['id'],
-    name2map('백운봉4')['id'],
-    name2map('백운봉5')['id'],
-    name2map('백운봉6')['id'],
-    name2map('백운봉7')['id'],
-    name2map('백운봉8')['id'],
-    name2map('백운봉9')['id'],
-    name2map('백운봉10')['id'],
-    name2map('백두봉1')['id'],
-    name2map('백두봉2')['id'],
-    name2map('백두봉3')['id'],
-    name2map('백두봉4')['id'],
-    name2map('백두봉5')['id'],
-    name2map('백두봉6')['id'],
-    name2map('백두봉7')['id'],
-    name2map('백두봉8')['id'],
-    name2map('백두봉9')['id'],
-    name2map('백두봉10')['id'],
-    name2map('월요의동굴1')['id'],
-    name2map('화요의동굴1')['id'],
-    name2map('수요의동굴1')['id'],
-    name2map('목요의동굴1')['id'],
-    name2map('금요의동굴1')['id'],
-    name2map('토요의동굴1')['id'],
-    name2map('일요의동굴1')['id'],
-    name2map('팔요의동굴1')['id']
+    *list(relative_of_word('백운봉')),
+    *list(relative_of_word('백두봉')),
+    *list(relative_of_word('요의동굴1')),
 ]
-
-for x in additional_roots:
-    roots[x] = maps[str(x)]['name']
 
 queue = []
 relations = {}
 visit = set()
-for id, name in roots.items():
+for id in roots:
     relations[id] = set()
     queue.append(str(id))
 
@@ -328,15 +306,16 @@ for id, name in roots.items():
                 relations[id].add(next_id)
                 queue.append(next_id)
 
-        if int(current) in links:
-            for link in links[int(current)]:
-                relations[id].add(str(link))
-                queue.append(str(link))
+        if ENABLED_FORCE_LINK:
+            if int(current) in links:
+                for link in links[int(current)]:
+                    relations[id].add(str(link))
+                    queue.append(str(link))
 
 for id, map in maps.items():
     del map['host']
 
-with open('json/hosted.txt', 'w', encoding='utf-8') as f:
+with open('hosted.txt', 'w', encoding='utf-8') as f:
     for i, map_id in enumerate(relations.keys()):
         buffer = []
         f.write(f"host {i}\n")
@@ -350,7 +329,15 @@ with open('json/hosted.txt', 'w', encoding='utf-8') as f:
         for line in sorted(buffer):
             f.write(f"\t{line}\n")
 
-with open('json/unhosted.txt', 'w', encoding='utf-8') as f:
+max_host = i
+
+with open('unhosted.txt', 'w', encoding='utf-8') as f:
     for map in maps.values():
         if 'host' not in map:
+            map['host'] = i + 1
             f.write(f"host not set : {map['name']}\n")
+
+with open('result.txt', 'w', encoding='utf-8') as f:
+    for map in maps.values():
+        t = f"{map['id']}	{map['name']}	{map['root']}	{map['bgm']}	{map['effect']}	{map['host']}\n"
+        f.write(t)
