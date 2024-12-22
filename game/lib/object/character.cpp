@@ -1518,7 +1518,7 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
-        listener->on_notify(*this, message, type);
+        listener->on_message(*this, message, type);
 }
 
 void character::assert_thread() const

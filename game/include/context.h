@@ -1315,7 +1315,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  type     The type
      */
-    void on_notify(character& me, const std::string& message, MESSAGE_TYPE type) final;
+    void on_message(character& me, const std::string& message, MESSAGE_TYPE type) final;
     /**
      * @brief      Called on option.
      *
@@ -1701,6 +1701,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_cp949(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_broadcast(lua_State* lua);
 };
 
 }} // namespace fb::game

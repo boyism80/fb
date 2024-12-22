@@ -467,12 +467,8 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
         }
     }
 
-    if (listener != nullptr)
-    {
-        auto& message = success ? message::mix::SUCCESS : message::mix::FAILED;
-        listener->on_notify(*ch, message);
-    }
-
+    auto& message = success ? message::mix::SUCCESS : message::mix::FAILED;
+    ch->message(message);
     co_return true;
 }
 

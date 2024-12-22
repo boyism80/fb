@@ -105,9 +105,9 @@ private:
     std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
 
 public:
-    fb::game::trade    trade  = fb::game::trade(*this);
-    fb::game::items    items  = fb::game::items(*this);
-    fb::game::dialog   dialog = fb::game::dialog(*this);
+    fb::game::trade                            trade  = fb::game::trade(*this);
+    fb::game::items                            items  = fb::game::items(*this);
+    fb::game::dialog                           dialog = fb::game::dialog(*this);
     std::map<uint32_t, std::unique_ptr<trace>> traces; // order required
 
 private:
@@ -1582,7 +1582,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  type     The type
      */
-    virtual void on_notify(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
+    virtual void on_message(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
 
     /**
      * @brief      Called on option.
