@@ -803,7 +803,6 @@ void context::amqp_thread()
                 if (response.host == fb::config<uint16_t>("id"))
                     co_return;
 
-                auto error = std::string();
                 try
                 {
                     this->assert_whisper(response);
@@ -813,12 +812,7 @@ void context::amqp_thread()
                 }
                 catch (std::exception& e)
                 {
-                    error = e.what();
-                }
-
-                if (error.empty() == false)
-                {
-                    this->broadcast(response.from, [&response, &error](auto& me) {
+                    this->broadcast(response.from, [&response, error = e.what()](auto& me) {
                         me.message(error, MESSAGE_TYPE::NOTIFY);
                     });
                 }

@@ -313,7 +313,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "NOT_FOUND_MAP")]
         NotFoundMap = 19, 
         [EnumMember(Value = "NOT_GROUP_MASTER")]
-        NotGroupMaster = 20
+        NotGroupMaster = 20, 
+        [EnumMember(Value = "ARTICLE_NOT_EXISTS")]
+        ArticleNotExists = 21
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

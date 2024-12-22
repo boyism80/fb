@@ -1,5 +1,5 @@
 ###
-POST {{host}}/ping
+POST {{host}}/in-game/ping
 Content-Type: application/json
 
 {}
@@ -36,4 +36,33 @@ Content-Type: application/json
     "ExchangeName": "amq.topic",
     "RouteKey": "fb.global",
     "Message": "cshyeon"
+}
+
+###
+GET {{host}}/board/1?offset=32767
+Content-Type: application/json
+
+###
+GET {{host}}/board/1/308
+Content-Type: application/json
+
+
+###
+POST {{host}}/board/write
+Content-Type: application/json
+
+{
+    "section": 1,
+    "user": 65,
+    "title": "write text from http client",
+    "contents": "hello world"
+}
+
+###
+POST {{host}}/board/delete
+Content-Type: application/json
+
+{
+    "id": 308,
+    "user": 65
 }
