@@ -12,7 +12,7 @@ public:
     LUA_PROTOTYPE
 
 public:
-    const fb::model::trace& model;
+    const fb::model::trace&          model;
     const std::optional<std::string> text;
 
 public:
@@ -28,7 +28,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_model(lua_State* lua);
-    
+
     /**
      * @brief      { function_description }
      *

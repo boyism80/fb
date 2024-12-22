@@ -288,11 +288,11 @@ int fb::game::object::builtin_message(lua_State* lua)
     obj->assert_thread();
 
     auto message = thread->tostring(2);
-    auto type    = argc < 3 ? static_cast<int>(MESSAGE_TYPE::STATE) : thread->tointeger(3);
+    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
 
     if (obj->is(OBJECT_TYPE::CHARACTER))
     {
-        ctx->send(*obj, fb::protocol::game::response::message(message, MESSAGE_TYPE(type)), context::scope::SELF);
+        ctx->send(*obj, fb::protocol::game::response::message(message, type), context::scope::SELF);
     }
 
     return 0;

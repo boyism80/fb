@@ -47,6 +47,7 @@ async::task<void> context::handle_start()
     lua::build("name2item", builtin_name2item);
     lua::build("name2npc", builtin_name2npc);
     lua::build("name2map", builtin_name2map);
+    lua::build("broadcast", builtin_broadcast);
     lua::build("pursuit_sell", builtin_pursuit_sell);
     lua::build("pursuit_buy", builtin_pursuit_buy);
     lua::build("sell_price", builtin_sell_price);

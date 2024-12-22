@@ -17,9 +17,14 @@ function group_lock(me, group)
 end
 
 function func(me)
-    for i=0,100 do
-        me:push_trace(i)
-    end
+    broadcast('message NOTIFY', MESSAGE_TYPE_NOTIFY)
+    broadcast('message BLUE', MESSAGE_TYPE_BLUE)
+    broadcast('message STATE', MESSAGE_TYPE_STATE)
+    broadcast('message SHOUT', MESSAGE_TYPE_SHOUT)
+    broadcast('message WORLD', MESSAGE_TYPE_WORLD)
+    broadcast('message POPUP', MESSAGE_TYPE_POPUP)
+    broadcast('message YELLOW', MESSAGE_TYPE_YELLOW)
+    broadcast('message BROWN', MESSAGE_TYPE_BROWN)
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

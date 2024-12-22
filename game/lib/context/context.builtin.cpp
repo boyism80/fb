@@ -332,3 +332,34 @@ int fb::game::context::builtin_cp949(lua_State* lua)
     thread->pushstring(CP949(text));
     return 1;
 }
+
+int fb::game::context::builtin_broadcast(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto text    = thread->tostring(1);
+    auto type    = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(2));
+
+    for (int i = 0; i < context->threads.size(); i++)
+    {
+        context->threads.at(i)->enqueue(
+            [text, type](fb::thread& thread) -> async::task<void> {
+                auto params = thread.data<thread_params>();
+                for (auto& [_, ch] : params->characters)
+                {
+                    ch->message(text, type);
+                }
+                co_return;
+            },
+            [](auto& e) {
+                fb::logger::fatal(e.what());
+            },
+            []() {
+            });
+    }
+    return 0;
+}

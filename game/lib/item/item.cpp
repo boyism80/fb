@@ -149,10 +149,10 @@ void fb::game::item::merge(fb::game::item& item)
     {
         if (before != this->_count)
             listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
-
-        if (remain > 0 && this->_count == model.capacity)
-            listener->on_notify(*this->_owner, fb::game::message::item::CANNOT_PICKUP_ANYMORE);
     }
+
+    if (remain > 0 && this->_count == model.capacity)
+        this->_owner->message(fb::game::message::item::CANNOT_PICKUP_ANYMORE);
 }
 
 fb::protocol::internal::Item fb::game::item::to_protocol(EQUIPMENT_PARTS parts) const
