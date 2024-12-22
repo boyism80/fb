@@ -89,11 +89,9 @@ bool fb::game::trade::begin(fb::game::character& you)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
     }
-
-    if (listener != nullptr)
-        listener->on_notify(this->_owner, error, MESSAGE_TYPE::STATE);
     return false;
 }
 
@@ -152,11 +150,9 @@ bool fb::game::trade::up(fb::game::item& item)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
     }
-
-    if (listener != nullptr)
-        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
     return false;
 }
 
@@ -186,11 +182,9 @@ bool fb::game::trade::up(uint8_t money)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
     }
-
-    if (listener != nullptr)
-        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
 
     return false;
 }
@@ -234,11 +228,9 @@ bool fb::game::trade::count(uint16_t count)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
     }
-
-    if (listener != nullptr)
-        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
     return false;
 }
 
@@ -265,11 +257,9 @@ bool fb::game::trade::cancel()
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::POPUP);
     }
-
-    if (listener != nullptr)
-        listener->on_notify(this->_owner, error, MESSAGE_TYPE::POPUP);
 
     return false;
 }
@@ -393,11 +383,9 @@ bool fb::game::trade::lock()
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (listener != nullptr)
+            listener->on_notify(this->_owner, e.what(), MESSAGE_TYPE::STATE);
     }
-
-    if (listener != nullptr)
-        listener->on_notify(this->_owner, error, MESSAGE_TYPE::STATE);
     return false;
 }
 
