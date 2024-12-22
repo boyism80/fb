@@ -89,10 +89,14 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 }
 
 void base_bot::on_connected()
-{ }
+{
+    return;
+}
 
 void base_bot::on_disconnected()
-{ }
+{
+    return;
+}
 
 async::task<void> base_bot::on_closed(fb::socket<>& socket)
 {

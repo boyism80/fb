@@ -66,17 +66,18 @@ async::task<void> game_bot::on_timer(const fb::model::datetime& now)
     static std::mt19937             gen(device());
     std::uniform_int_distribution<> dist(0, this->_pattern_params.size() - 1);
 
-    auto& pattern = this->_pattern_params.at(dist(gen));
+    auto& pattern  = this->_pattern_params.at(dist(gen));
+    auto  datetime = fb::model::datetime{now};
     co_await pattern.fn();
 
     auto rand_term          = std::uniform_int_distribution<long long>(pattern.min.count(), pattern.max.count())(gen);
-    this->_next_action_time = now + std::chrono::steady_clock::duration(rand_term);
+    this->_next_action_time = datetime + std::chrono::steady_clock::duration(rand_term);
 }
 
 async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::character::id& response)
 {
     this->_sequence = response.sequence;
-    std::cout << "sequence : " << this->_sequence << std::endl;
+    this->_inited   = true;
     co_return;
 }
 
@@ -87,7 +88,6 @@ async::task<void> game_bot::handle_spell_update(const fb::protocol::game::respon
 
 async::task<void> game_bot::handle_init(const fb::protocol::game::response::init& response)
 {
-    this->_inited = true;
     co_return;
 }
 
@@ -160,7 +160,7 @@ async::task<void> game_bot::pattern_chat()
 {
     static std::random_device              device;
     static std::mt19937                    gen(device());
-    static std::vector<std::string>        messages{"/서버종료"};
+    static std::vector<std::string>        messages{"bot"};
     static std::uniform_int_distribution<> dist(0, messages.size() - 1);
 
     auto& message = messages.at(dist(gen));

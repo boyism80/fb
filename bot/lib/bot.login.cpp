@@ -6,7 +6,6 @@ login_bot::login_bot(bot_container& owner, uint32_t id) :
     base_bot(owner, id)
 {
     this->bind(&login_bot::handle_agreement);
-    this->bind(&login_bot::handle_message);
     this->bind(&login_bot::handle_transfer);
 }
 
@@ -65,28 +64,21 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
         co_await this->request<fb::protocol::login::response::message>(
             fb::protocol::login::request::account::complete{hair, sex, nation, creature});
 
-        this->_try_login = true;
-        this->_id        = id;
-        this->_pw        = pw;
-        this->send(fb::protocol::login::request::login{id, pw});
+        while (true)
+        {
+            auto&& resp = co_await this->request<fb::protocol::login::response::message>(
+                fb::protocol::login::request::login{id, pw});
+            if (resp.text.empty())
+                break;
+
+            auto thread = this->thread();
+            co_await thread->sleep(1000ms);
+        }
     }
     catch (std::exception& e)
     {
         std::cout << e.what() << std::endl;
     }
-}
-
-async::task<void> login_bot::handle_message(const fb::protocol::login::response::message& response)
-{
-    if (this->_try_login)
-    {
-        if (response.text.empty() == false)
-        {
-            std::this_thread::sleep_for(1000ms);
-            this->send(fb::protocol::login::request::login{this->_id, this->_pw});
-        }
-    }
-    co_return;
 }
 
 async::task<void> login_bot::handle_transfer(const fb::protocol::response::transfer& response)
