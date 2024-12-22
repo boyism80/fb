@@ -324,13 +324,11 @@ async::task<bool> context::handle_command_tile(character& session, Json::Value& 
 
     auto sstream = std::stringstream();
     sstream << "맵타일 : " << tile->id;
-    if (listener != nullptr)
-        listener->on_notify(session, sstream.str());
+    session.message(sstream.str());
 
     sstream.str("");
     sstream << "오브젝트 : " << tile->object;
-    if (listener != nullptr)
-        listener->on_notify(session, sstream.str());
+    session.message(sstream.str());
 
     co_return true;
 }

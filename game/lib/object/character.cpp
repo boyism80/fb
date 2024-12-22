@@ -272,11 +272,8 @@ void character::attack()
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
-
-    if (error.empty() == false)
-        this->message(error);
 }
 
 void character::action(ACTION action, DURATION duration, uint8_t sound)
@@ -293,11 +290,8 @@ void character::action(ACTION action, DURATION duration, uint8_t sound)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
-
-    if (error.empty() == false)
-        this->message(error);
 }
 
 const std::string& character::name() const
@@ -798,10 +792,8 @@ uint32_t character::add_exp(uint32_t value, bool notify)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
-    if (error.empty() == false)
-        this->message(error);
 
     return lack;
 }
@@ -919,7 +911,6 @@ uint32_t character::money_drop(uint32_t value)
 {
     this->assert_thread();
 
-    auto error = std::string();
     try
     {
         if (value == 0)
@@ -939,10 +930,9 @@ uint32_t character::money_drop(uint32_t value)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
 
-    this->message(error);
     return 0;
 }
 
@@ -1357,7 +1347,6 @@ void character::ride(mob& horse)
 {
     this->assert_thread();
 
-    auto error = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1378,18 +1367,14 @@ void character::ride(mob& horse)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
-
-    if (error.empty() == false)
-        this->message(error);
 }
 
 void character::ride()
 {
     this->assert_thread();
 
-    auto error = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1402,18 +1387,14 @@ void character::ride()
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
-
-    if (error.empty() == false)
-        this->message(error);
 }
 
 void character::unride()
 {
     this->assert_thread();
 
-    auto error = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
@@ -1429,11 +1410,8 @@ void character::unride()
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->message(e.what());
     }
-
-    if (error.empty() == false)
-        this->message(error);
 }
 
 bool character::alive() const
@@ -1540,7 +1518,7 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
-        listener->on_notify(*this, message, type);
+        listener->on_message(*this, message, type);
 }
 
 void character::assert_thread() const

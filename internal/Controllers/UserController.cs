@@ -221,6 +221,7 @@ namespace Internal.Controllers
             var ch = await _dbContext.Character.Get(uid);
             var items = await _dbContext.Item.Get(uid);
             var spells = await _dbContext.Spell.Get(uid);
+            var traces = await _dbContext.Trace.Get(uid);
             var option = await _dbContext.Option.Get(uid);
 
             var response = new Response.Init
@@ -228,6 +229,7 @@ namespace Internal.Controllers
                 Character = _mapper.Map<Protocol.Character>(ch),
                 Items = items.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Item>).ToList(),
                 Spells = spells.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Spell>).ToList(),
+                Traces = traces.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Trace>).ToList(),
                 Option = _mapper.Map<Protocol.Option>(option)
             };
 
@@ -271,6 +273,9 @@ namespace Internal.Controllers
 
                 var spells = Override(_mapper.Map<Protocol.Spell[], Spell[]>(request.Spells.ToArray()), await _dbContext.Spell.Get(request.Character.Id));
                 _dbContext.Spell.Set(spells.ToArray());
+
+                var traces = Override(_mapper.Map<Protocol.Trace[], Trace[]>(request.Traces.ToArray()), await _dbContext.Trace.Get(request.Character.Id));
+                _dbContext.Trace.Set(traces.ToArray());
 
                 await _dbContext.SaveChangesAsync();
                 return new Response.Save

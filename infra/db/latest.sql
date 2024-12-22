@@ -44,7 +44,7 @@ CREATE TABLE `board` (
   PRIMARY KEY (`id`),
   KEY `fk.board.owner_idx` (`user`),
   CONSTRAINT `fk.board.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=308 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=314 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,25 +108,6 @@ CREATE TABLE `item` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `legend`
---
-
-DROP TABLE IF EXISTS `legend`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `legend` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `owner` int unsigned NOT NULL,
-  `look` tinyint NOT NULL DEFAULT '0',
-  `color` tinyint NOT NULL DEFAULT '0',
-  `content` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk.legend.owner_idx` (`owner`),
-  CONSTRAINT `fk.legend.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `name`
 --
 
@@ -140,7 +121,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -188,6 +169,25 @@ CREATE TABLE `spell` (
   PRIMARY KEY (`owner`,`slot`),
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `trace`
+--
+
+DROP TABLE IF EXISTS `trace`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `trace` (
+  `uid` int unsigned NOT NULL,
+  `model` int unsigned NOT NULL,
+  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `deleted` tinyint DEFAULT NULL,
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
+  PRIMARY KEY (`uid`,`model`),
+  KEY `fk.legend.owner_idx` (`model`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -278,24 +278,32 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(id INT, user INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_DELETE`(IN id INT, IN user INT)
 BEGIN
-	DECLARE _id INT;
+    DECLARE _id INT;
     DECLARE _user INT;
     DECLARE _deleted TINYINT;
     
-    SELECT id, user, deleted INTO _id, _user, _deleted FROM board WHERE board.id = id LIMIT 1;
+    SELECT `id`,
+           `user`,
+           `deleted`
+    INTO   _id,
+           _user,
+           _deleted
+    FROM board
+    WHERE board.`id` = id LIMIT 1;
+    
     IF _id IS NULL THEN
-		SELECT -1 AS result;
-	ELSEIF _deleted = 1 THEN
-		SELECT -2 AS result;
-	ELSEIF _user != user THEN
-		SELECT -3 AS result;
-	ELSE
-		UPDATE board SET deleted = 1 WHERE board.id = id;
-		SELECT 1 AS result;
+        SELECT -1 AS result;
+    ELSEIF _deleted = 1 THEN
+        SELECT -2 AS result;
+    ELSEIF _user != user THEN
+        SELECT -3 AS result;
+    ELSE
+        UPDATE `board` SET `deleted` = 1 WHERE `board`.`id` = id;
+        SELECT 1 AS result;
     END IF;
 END ;;
 DELIMITER ;
@@ -311,15 +319,25 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET`(section INT, article INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET`(IN section INT, IN article INT)
 BEGIN
-	SELECT A.id, N.id AS uid, N.name AS uname, A.title, A.contents, A.created_date FROM board AS A
-	LEFT JOIN name AS N ON A.user = N.id
-	WHERE A.id = article AND A.section = section AND deleted = 0;
+    SELECT A.`id`,
+           N.`id` AS `user`,
+           N.`name` AS `user_name`,
+           A.`title`,
+           A.`contents`,
+           A.`created_date` 
+    FROM `board` AS A
+    LEFT JOIN `name` AS N ON A.`user` = N.id
+    WHERE A.`id` = article AND A.`section` = section AND `deleted` = 0;
     
-    SELECT EXISTS(SELECT * FROM board WHERE board.section = section AND board.id > article AND board.deleted = 0 LIMIT 1) as `next`;
+    SELECT EXISTS(SELECT * FROM `board`
+                  WHERE `board`.`section` = section 
+                    AND `board`.`id` > article 
+                    AND `board`.`deleted` = 0 
+                  LIMIT 1) as `next`;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -334,18 +352,22 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET_LIST`(section INT, position INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_BOARD_GET_LIST`(IN section INT, IN position INT)
 BEGIN
-	SELECT title FROM board WHERE id = section;
-
-	SELECT A.id, N.id AS uid, N.name AS uname, A.title, A.created_date FROM board AS A
-	LEFT JOIN name AS N
-	ON A.user = N.id
-    WHERE A.section = section AND A.deleted = 0 AND position >= A.id
-    ORDER BY A.id DESC
-	LIMIT 0, 20;
+    SELECT A.`id`,
+           A.`section`,
+           N.`id` AS `user`,
+           N.`name` AS `user_name`,
+           A.`title`,
+           A.`created_date`
+    FROM board AS A
+    LEFT JOIN `name` AS N
+    ON A.user = N.id
+    WHERE A.`section` = section AND A.`deleted` = 0 AND position >= A.`id`
+    ORDER BY A.`id` DESC
+    LIMIT 0, 20;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -408,4 +430,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-18 21:08:41
+-- Dump completed on 2024-12-22 20:41:25

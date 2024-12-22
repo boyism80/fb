@@ -48,6 +48,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
+    this->init_traces(response.traces, *ch);
     this->_shard[name]->characters.lock([&name, ch](auto& characters) {
         characters.insert({name, ch});
     });
@@ -466,12 +467,8 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
         }
     }
 
-    if (listener != nullptr)
-    {
-        auto& message = success ? message::mix::SUCCESS : message::mix::FAILED;
-        listener->on_notify(*ch, message);
-    }
-
+    auto& message = success ? message::mix::SUCCESS : message::mix::FAILED;
+    ch->message(message);
     co_return true;
 }
 
@@ -564,8 +561,6 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     if (me->inited() == false)
         co_return true;
 
-    auto error = std::string();
-
     try
     {
         if (me->option(SETTING::GROUP) == false)
@@ -580,11 +575,8 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->send(*me, fb_resp::message(e.what(), MESSAGE_TYPE::STATE), scope::SELF);
     }
-
-    if (error.empty() == false)
-        this->send(*me, fb_resp::message(error, MESSAGE_TYPE::STATE), scope::SELF);
 
     co_return true;
 }
@@ -649,7 +641,6 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
     case BOARD_ACTION::ARTICLES:
     {
-        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -660,7 +651,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
             auto&& response = co_await this->get<internal_resp::GetArticleList>(
                 "internal",
-                std::format("/board/{}&offset={}", section->id, offset));
+                std::format("/board/{}?offset={}", section->id, offset));
             if (this->sockets.contains(fd) == false)
                 co_return false;
 
@@ -678,23 +669,19 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             }
 
             auto button_flags = BOARD_BUTTON_ENABLE::UP;
-            if (ch->condition(section->condition) == false)
+            if (ch->condition(section->condition))
                 button_flags |= BOARD_BUTTON_ENABLE::WRITE;
             this->send(*ch, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
         }
         catch (std::exception& e)
         {
-            error = e.what();
+            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
         }
-
-        if (error.empty() == false)
-            this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::ARTICLE:
     {
-        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -733,17 +720,13 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            error = e.what();
+            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
         }
-
-        if (error.empty() == false)
-            this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::WRITE:
     {
-        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -774,15 +757,13 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            error = e.what();
+            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
         }
-        this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::DELETE:
     {
-        auto error = std::string();
         try
         {
             if (this->model.board.contains(request.section) == false)
@@ -816,11 +797,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            error = e.what();
+            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
         }
-
-        if (error.empty() == false)
-            this->send(*ch, fb_resp::board::message(error, false, false), scope::SELF);
     }
     break;
 
@@ -1032,9 +1010,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
         if (this->sockets.contains(fd) == false)
             co_return false;
 
-        error = e.what();
+        me->message(e.what(), MESSAGE_TYPE::NOTIFY);
     }
-    if (error.empty() == false)
-        me->message(error, MESSAGE_TYPE::NOTIFY);
     co_return true;
 }

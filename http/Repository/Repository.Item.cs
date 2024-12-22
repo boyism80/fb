@@ -1,7 +1,6 @@
 using Http.Extension;
 using Http.Model;
 using Http.Service;
-using Http.Service;
 
 namespace Http.Reepository
 {

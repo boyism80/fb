@@ -313,7 +313,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "NOT_FOUND_MAP")]
         NotFoundMap = 19, 
         [EnumMember(Value = "NOT_GROUP_MASTER")]
-        NotGroupMaster = 20
+        NotGroupMaster = 20, 
+        [EnumMember(Value = "ARTICLE_NOT_EXISTS")]
+        ArticleNotExists = 21
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1084,6 +1086,18 @@ namespace Fb.Model
         public string Message { get; set; }
     }
 
+    public class Trace
+    {
+        [JsonProperty("id")]
+        public uint Id { get; set; }
+        [JsonProperty("look")]
+        public byte Look { get; set; }
+        [JsonProperty("color")]
+        public byte Color { get; set; }
+        [JsonProperty("text")]
+        public string Text { get; set; }
+    }
+
     public class Warp
     {
         [JsonProperty("parent")]
@@ -1787,6 +1801,10 @@ namespace Fb.Model
         public partial class SpellTable : KeyValueContainer<uint, Spell>
         { }
         public SpellTable Spell { get; private set; } = new SpellTable();
+        [Table("json/trace.json")]
+        public partial class TraceTable : KeyValueContainer<uint, Trace>
+        { }
+        public TraceTable Trace { get; private set; } = new TraceTable();
         [Table("json/warp.json")]
         public partial class WarpTable : KeyValueContainer<uint, ArrayContainer<Warp>>
         { }
@@ -1836,6 +1854,7 @@ namespace Fb.Model
                 Sell, 
                 SellAttribute, 
                 Spell, 
+                Trace, 
                 Warp, 
                 WarpAttribute, 
                 World, 

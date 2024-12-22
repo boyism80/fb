@@ -235,7 +235,7 @@ void context::on_hold(character& me)
     this->send(me, fb_resp::character::position(me), scope::SELF);
 }
 
-void context::on_notify(character& me, const std::string& message, MESSAGE_TYPE type)
+void context::on_message(character& me, const std::string& message, MESSAGE_TYPE type)
 {
     this->send(me, fb_resp::message(message, type), scope::SELF);
 }
@@ -597,7 +597,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
     {
         auto session = client->data();
         session->refresh_map();
-        this->on_notify(*session, error, MESSAGE_TYPE::STATE);
+        this->on_message(*session, error, MESSAGE_TYPE::STATE);
     }
     co_return false;
 }

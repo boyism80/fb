@@ -16,6 +16,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
 #include "fb.protocol.internal.character_generated.h"
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
+#include "fb.protocol.internal.trace_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -31,7 +32,8 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CHARACTER = 4,
     VT_ITEMS = 6,
-    VT_SPELLS = 8
+    VT_SPELLS = 8,
+    VT_TRACES = 10
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -41,6 +43,9 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *>(VT_SPELLS);
+  }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *>(VT_TRACES);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -52,6 +57,9 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SPELLS) &&
            verifier.VerifyVector(spells()) &&
            verifier.VerifyVectorOfTables(spells()) &&
+           VerifyOffset(verifier, VT_TRACES) &&
+           verifier.VerifyVector(traces()) &&
+           verifier.VerifyVectorOfTables(traces()) &&
            verifier.EndTable();
   }
 };
@@ -69,6 +77,9 @@ struct SaveBuilder {
   void add_spells(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells) {
     fbb_.AddOffset(Save::VT_SPELLS, spells);
   }
+  void add_traces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces) {
+    fbb_.AddOffset(Save::VT_TRACES, traces);
+  }
   explicit SaveBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -84,8 +95,10 @@ inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces = 0) {
   SaveBuilder builder_(_fbb);
+  builder_.add_traces(traces);
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_character(character);
@@ -96,14 +109,17 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
+  auto traces__ = traces ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>(*traces) : 0;
   return fb::protocol::internal::request::raw::CreateSave(
       _fbb,
       character,
       items__,
-      spells__);
+      spells__,
+      traces__);
 }
 
 inline const fb::protocol::internal::request::raw::Save *GetSave(const void *buf) {

@@ -37,8 +37,18 @@ public class Program
             .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
             .ReverseMap();
 
+            cfg.CreateMap<Http.Model.Trace, Trace>()
+            .ForMember(x => x.User, x => x.MapFrom(u => u.Uid))
+            .ReverseMap();
+
             cfg.CreateMap<Http.Model.Option, Option>()
             .ReverseMap();
+
+            cfg.CreateMap<Http.Model.Board, ArticleSummary>()
+            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
+
+            cfg.CreateMap<Http.Model.Board, Article>()
+            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
         });
 
         var builder = WebApplication.CreateBuilder(args);

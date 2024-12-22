@@ -53,7 +53,7 @@ module.exports = {
                 metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
-                    replicas: 1,
+                    replicas: sectionConf.replicas,
                     template: {
                         metadata: { labels: appLabels },
                         spec: {

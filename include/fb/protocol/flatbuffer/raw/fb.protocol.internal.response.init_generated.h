@@ -17,6 +17,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.option_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
+#include "fb.protocol.internal.trace_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -33,7 +34,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CHARACTER = 4,
     VT_ITEMS = 6,
     VT_SPELLS = 8,
-    VT_OPTION = 10
+    VT_OPTION = 10,
+    VT_TRACES = 12
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -47,6 +49,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::internal::raw::Option *option() const {
     return GetPointer<const fb::protocol::internal::raw::Option *>(VT_OPTION);
   }
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *>(VT_TRACES);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -59,6 +64,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVectorOfTables(spells()) &&
            VerifyOffset(verifier, VT_OPTION) &&
            verifier.VerifyTable(option()) &&
+           VerifyOffset(verifier, VT_TRACES) &&
+           verifier.VerifyVector(traces()) &&
+           verifier.VerifyVectorOfTables(traces()) &&
            verifier.EndTable();
   }
 };
@@ -79,6 +87,9 @@ struct InitBuilder {
   void add_option(::flatbuffers::Offset<fb::protocol::internal::raw::Option> option) {
     fbb_.AddOffset(Init::VT_OPTION, option);
   }
+  void add_traces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces) {
+    fbb_.AddOffset(Init::VT_TRACES, traces);
+  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -95,8 +106,10 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0) {
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces = 0) {
   InitBuilder builder_(_fbb);
+  builder_.add_traces(traces);
   builder_.add_option(option);
   builder_.add_spells(spells);
   builder_.add_items(items);
@@ -109,15 +122,18 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
-    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0) {
+    ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
+  auto traces__ = traces ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>(*traces) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
       items__,
       spells__,
-      option);
+      option,
+      traces__);
 }
 
 inline const fb::protocol::internal::response::raw::Init *GetInit(const void *buf) {

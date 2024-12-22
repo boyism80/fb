@@ -99,10 +99,9 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->_owner.message(e.what());
     }
 
-    this->_owner.message(error);
     return 0xFF;
 }
 
@@ -229,10 +228,8 @@ fb::game::item* fb::game::items::active(uint8_t index)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->_owner.message(e.what());
     }
-
-    this->_owner.message(error);
     return nullptr;
 }
 
@@ -545,10 +542,8 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->_owner.message(e.what());
     }
-
-    this->_owner.message(error);
     return nullptr;
 }
 
@@ -598,10 +593,8 @@ void fb::game::items::pickup(bool boost)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->_owner.message(e.what());
     }
-
-    this->_owner.message(error);
 }
 
 bool fb::game::items::throws(uint8_t index)
@@ -643,10 +636,8 @@ bool fb::game::items::throws(uint8_t index)
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        this->_owner.message(e.what());
     }
-
-    this->_owner.message(error);
     return false;
 }
 
