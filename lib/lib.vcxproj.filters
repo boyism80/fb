@@ -605,7 +605,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -833,7 +833,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -1061,7 +1061,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -1289,7 +1289,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -1517,7 +1517,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -1745,7 +1745,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -1973,7 +1973,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -2201,7 +2201,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -2429,7 +2429,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -2657,7 +2657,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -2885,7 +2885,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -3113,7 +3113,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -3341,7 +3341,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -3569,7 +3569,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -3797,7 +3797,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -4025,7 +4025,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -4253,7 +4253,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -4481,7 +4481,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -4709,7 +4709,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -4937,7 +4937,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -5165,7 +5165,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -5393,7 +5393,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -5621,7 +5621,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -5849,7 +5849,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -6077,7 +6077,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -6305,7 +6305,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -6533,7 +6533,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -6761,7 +6761,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -6989,7 +6989,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -7217,7 +7217,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -7445,7 +7445,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -7673,7 +7673,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -7901,7 +7901,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -8129,7 +8129,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -8357,7 +8357,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -8585,7 +8585,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -8813,7 +8813,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -9041,7 +9041,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -9269,7 +9269,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -9497,7 +9497,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -9725,7 +9725,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -9953,7 +9953,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -10181,7 +10181,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -10409,7 +10409,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -10637,7 +10637,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -10865,7 +10865,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -11093,7 +11093,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -11321,7 +11321,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -11549,7 +11549,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -11777,7 +11777,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -12005,7 +12005,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -12233,7 +12233,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -12461,7 +12461,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -12689,7 +12689,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -12917,7 +12917,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -13145,7 +13145,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -13373,7 +13373,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -13601,7 +13601,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -13829,7 +13829,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -14057,7 +14057,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -14285,7 +14285,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -14513,7 +14513,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -14741,7 +14741,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -14969,7 +14969,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -15197,7 +15197,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -15425,7 +15425,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -15653,7 +15653,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -15881,7 +15881,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -16109,7 +16109,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -16337,7 +16337,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -16565,7 +16565,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
@@ -16793,7 +16793,7 @@
     <ClInclude Include="..\include\fb\protocol\response.game.object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.game.session.h">
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.spell.h">
