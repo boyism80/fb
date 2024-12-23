@@ -279,8 +279,8 @@
     "bot": {
         "section-1": {
             "io_size": 1,
-            "count": 1,
-            "replicas": 1
+            "count": 100,
+            "replicas": 5
         }
     }
 }

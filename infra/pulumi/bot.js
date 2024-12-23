@@ -12,7 +12,7 @@ module.exports = function () {
                 const config = {
                     log: ["debug", "info", "warn", "fatal"],
                     ip: conf.host,
-                    port: config.gateway.port,
+                    port: conf.gateway.port,
                     io_size: sectionConf.io_size,
                     count: sectionConf.count
                 }
