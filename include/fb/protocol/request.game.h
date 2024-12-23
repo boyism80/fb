@@ -92,7 +92,7 @@ public:
         this->enc_type = reader.read<uint8_t>();
         this->key_size = reader.read<uint8_t>();
         reader.read((void*)this->enc_key, this->key_size);
-        this->from = reader.read<uint8_t>();
+        this->from = static_cast<internal::Service>(reader.read<uint8_t>());
 
         // additional parameters
         this->id      = reader.read<uint32_t>();

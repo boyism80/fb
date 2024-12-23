@@ -34,7 +34,7 @@
                                                             \
     class context;                                          \
     class map;                                              \
-    class session;                                          \
+    class character;                                        \
     class buffs;                                            \
     class objects;                                          \
     class item;                                             \

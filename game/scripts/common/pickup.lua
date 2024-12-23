@@ -1,6 +1,6 @@
-function on_pickup(session)
-    if session:state() == 0x05 then
-        session:state(0x00)
-        session:unbuff('투명')
+function on_pickup(ch)
+    if ch:state() == 0x05 then
+        ch:state(0x00)
+        ch:unbuff('투명')
     end
 end

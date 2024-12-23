@@ -84,19 +84,19 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    bool enter(fb::game::character& session);
+    bool enter(fb::game::character& ch);
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    bool leave(fb::game::character& session);
+    bool leave(fb::game::character& ch);
 };
 
 }} // namespace fb::game

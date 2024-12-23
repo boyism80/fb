@@ -3,7 +3,7 @@
 
 int fb::model::npc::builtin_input(lua_State* lua)
 {
-    // Ex) npc::input(session, "message")
+    // Ex) npc::input(ch, "message")
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
@@ -13,8 +13,8 @@ int fb::model::npc::builtin_input(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -27,18 +27,18 @@ int fb::model::npc::builtin_input(lua_State* lua)
         auto maxlen      = argc < 6 ? 0xFF : (int)thread->tointeger(6);
         auto prev        = argc < 7 ? false : thread->toboolean(7);
 
-        session->dialog.input(*npc, message, message_top, message_bot, maxlen, prev);
+        ch->dialog.input(*npc, message, message_top, message_bot, maxlen, prev);
     }
     else
     {
-        session->dialog.input(*npc, message);
+        ch->dialog.input(*npc, message);
     }
     return thread->yield(1);
 }
 
 int fb::model::npc::builtin_menu(lua_State* lua)
 {
-    // Ex) npc::menu(session, "hello", {"hello 1", "hello 2", "hello 3"})
+    // Ex) npc::menu(ch, "hello", {"hello 1", "hello 2", "hello 3"})
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
@@ -48,8 +48,8 @@ int fb::model::npc::builtin_menu(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -63,13 +63,13 @@ int fb::model::npc::builtin_menu(lua_State* lua)
         menus.push_back(thread->tostring(-1));
     }
 
-    session->dialog.show(*npc, message, menus);
+    ch->dialog.show(*npc, message, menus);
     return thread->yield(1);
 }
 
 int fb::model::npc::builtin_item(lua_State* lua)
 {
-    // Ex) npc::menu(session, "hello", {item1, item2, item3})
+    // Ex) npc::menu(ch, "hello", {item1, item2, item3})
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
@@ -79,8 +79,8 @@ int fb::model::npc::builtin_item(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -128,7 +128,7 @@ int fb::model::npc::builtin_item(lua_State* lua)
         thread->pop(1);
     }
 
-    session->dialog.show(*npc, message, items);
+    ch->dialog.show(*npc, message, items);
     return thread->yield(1);
 }
 
@@ -143,8 +143,8 @@ int fb::model::npc::builtin_slot(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
     auto message = thread->tostring(3);
@@ -158,7 +158,7 @@ int fb::model::npc::builtin_slot(lua_State* lua)
         thread->pop(1);
     }
 
-    session->dialog.show(*npc, message, slots);
+    ch->dialog.show(*npc, message, slots);
     return thread->yield(1);
 }
 
@@ -173,11 +173,11 @@ int fb::model::npc::builtin_sell(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    auto& dialog = session->dialog.from("scripts/common/npc.lua").func("sell").pushobject(session).pushobject(npc);
+    auto& dialog = ch->dialog.from("scripts/common/npc.lua").func("sell").pushobject(ch).pushobject(npc);
 
     if (npc->sell.size() == 1)
     {
@@ -225,11 +225,11 @@ int fb::model::npc::builtin_buy(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    auto& dialog = session->dialog.from("scripts/common/npc.lua").func("buy").pushobject(session).pushobject(npc);
+    auto& dialog = ch->dialog.from("scripts/common/npc.lua").func("buy").pushobject(ch).pushobject(npc);
 
     if (npc->buy.has_value())
     {
@@ -255,11 +255,11 @@ int fb::model::npc::builtin_repair(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("repair").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("repair").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -274,11 +274,11 @@ int fb::model::npc::builtin_repair_all(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("repair_all").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("repair_all").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -293,11 +293,11 @@ int fb::model::npc::builtin_hold_money(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("hold_money").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("hold_money").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -312,11 +312,11 @@ int fb::model::npc::builtin_hold_item(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("hold_item").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("hold_item").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -331,11 +331,11 @@ int fb::model::npc::builtin_return_money(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("return_money").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("return_money").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -350,11 +350,11 @@ int fb::model::npc::builtin_return_item(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("return_item").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("return_item").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -369,11 +369,11 @@ int fb::model::npc::builtin_rename_weapon(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto session = thread->touserdata<fb::game::character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
         return 0;
 
-    session->dialog.from("scripts/common/npc.lua").func("rename_weapon").pushobject(session).pushobject(npc).resume(2);
+    ch->dialog.from("scripts/common/npc.lua").func("rename_weapon").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 

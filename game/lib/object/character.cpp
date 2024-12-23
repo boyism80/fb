@@ -1867,15 +1867,15 @@ character::container::container(const std::vector<character*>& right)
 character::container::~container()
 { }
 
-character::container& character::container::push(character& session)
+character::container& character::container::push(character& ch)
 {
-    this->push_back(&session);
+    this->push_back(&ch);
     return *this;
 }
 
-character::container& character::container::erase(character& session)
+character::container& character::container::erase(character& ch)
 {
-    std::vector<character*>::erase(std::find(this->begin(), this->end(), &session));
+    std::vector<character*>::erase(std::find(this->begin(), this->end(), &ch));
     return *this;
 }
 
@@ -1887,9 +1887,9 @@ character* character::container::find(const std::string& name)
     return i != this->end() ? *i : nullptr;
 }
 
-bool character::container::contains(const character& session) const
+bool character::container::contains(const character& ch) const
 {
-    return std::find(this->cbegin(), this->cend(), &session) != this->end();
+    return std::find(this->cbegin(), this->cend(), &ch) != this->end();
 }
 
 character* character::container::operator[] (const std::string& name)

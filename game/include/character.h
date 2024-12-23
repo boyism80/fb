@@ -1521,20 +1521,20 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    container& push(fb::game::character& session);
+    container& push(fb::game::character& ch);
 
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    container& erase(fb::game::character& session);
+    container& erase(fb::game::character& ch);
 
 public:
     /**
@@ -1549,11 +1549,11 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  session  The session
+     * @param[in]  ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    bool contains(const fb::game::character& session) const;
+    bool contains(const fb::game::character& ch) const;
 
 public:
     /**

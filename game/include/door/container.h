@@ -83,6 +83,7 @@ public:
      * @brief      { function_description }
      *
      * @param[in]  position  The position
+     * @param[in]  pivot     The pivot
      * @param[in]  model     The model
      * @param[in]  opened    Indicates if opened
      */
@@ -91,11 +92,11 @@ public:
     /**
      * @brief      Searches for the first match.
      *
-     * @param[in]  session  The session
+     * @param[in]  ch    The ch
      *
      * @return     { description_of_the_return_value }
      */
-    door* find(const character& session) const;
+    door* find(const character& ch) const;
 };
 
 /**

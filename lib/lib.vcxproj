@@ -114,6 +114,30 @@
     <ClCompile Include="src\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\fb\protocol\game.h" />
+    <ClInclude Include="..\include\fb\protocol\gateway.h" />
+    <ClInclude Include="..\include\fb\protocol\login.h" />
+    <ClInclude Include="..\include\fb\protocol\protocol.h" />
+    <ClInclude Include="..\include\fb\protocol\request.game.board.h" />
+    <ClInclude Include="..\include\fb\protocol\request.game.h" />
+    <ClInclude Include="..\include\fb\protocol\request.game.item.h" />
+    <ClInclude Include="..\include\fb\protocol\request.game.map.h" />
+    <ClInclude Include="..\include\fb\protocol\request.game.spell.h" />
+    <ClInclude Include="..\include\fb\protocol\request.gateway.h" />
+    <ClInclude Include="..\include\fb\protocol\request.login.account.h" />
+    <ClInclude Include="..\include\fb\protocol\request.login.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.board.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.character.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.dialog.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.item.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.life.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.map.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.object.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.spell.h" />
+    <ClInclude Include="..\include\fb\protocol\response.game.trade.h" />
+    <ClInclude Include="..\include\fb\protocol\response.gateway.h" />
+    <ClInclude Include="..\include\fb\protocol\response.login.h" />
     <ClInclude Include="include\fb\abstract.h" />
     <ClInclude Include="include\fb\acceptor.h" />
     <ClInclude Include="include\fb\amqp.h" />

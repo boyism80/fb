@@ -6,7 +6,9 @@
 #endif
 
 #include <fb/protocol/protocol.h>
+#ifndef BOT
 #include <board.h>
+#endif
 
 namespace fb::protocol::game::request::board {
 

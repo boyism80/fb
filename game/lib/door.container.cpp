@@ -39,11 +39,11 @@ void door_container::add(const point16_t& position, const point16_t& pivot, cons
         {index, std::make_unique<door>(this->map, model, position, pivot, opened)});
 }
 
-fb::game::door* door_container::find(const character& session) const
+fb::game::door* door_container::find(const character& ch) const
 {
-    auto direction = session.direction();
-    auto position  = session.position();
-    switch (session.direction())
+    auto direction = ch.direction();
+    auto position  = ch.position();
+    switch (ch.direction())
     {
     case DIRECTION::TOP:
         position.y = std::max(0, position.y - 1);

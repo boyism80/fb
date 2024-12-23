@@ -528,16 +528,16 @@ void context::on_map_changed(object& me, map* before, map* after)
     if (me.is(OBJECT_TYPE::CHARACTER) == false)
         return;
 
-    auto& session = static_cast<character&>(me);
-    this->send(session, fb_resp::character::id(session), scope::SELF);
-    this->send(session, fb_resp::map::config(*after), scope::SELF);
-    this->send(session, fb_resp::map::bgm(*after), scope::SELF);
-    this->send(session, fb_resp::character::position(session), scope::SELF);
-    this->send(session, fb_resp::character::show(session, session, false), scope::SELF);
-    this->send(session, fb_resp::object::direction(session), scope::SELF);
+    auto& ch = static_cast<character&>(me);
+    this->send(ch, fb_resp::character::id(ch), scope::SELF);
+    this->send(ch, fb_resp::map::config(*after), scope::SELF);
+    this->send(ch, fb_resp::map::bgm(*after), scope::SELF);
+    this->send(ch, fb_resp::character::position(ch), scope::SELF);
+    this->send(ch, fb_resp::character::show(ch, ch, false), scope::SELF);
+    this->send(ch, fb_resp::object::direction(ch), scope::SELF);
 
     if (before == nullptr)
-        this->save(session);
+        this->save(ch);
 }
 
 async::task<bool> context::on_transfer(character& me, map& map, const point16_t& position)
@@ -568,14 +568,14 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
             throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
         }
 
-        auto session = socket.data();
-        std::ignore  = co_await session->map(nullptr);
+        auto ch     = socket.data();
+        std::ignore = co_await ch->map(nullptr);
 
-        this->save(*session);
+        this->save(*ch);
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         writer.write<uint32_t>(me.id());
-        writer.write<std::string>(session->name());
+        writer.write<std::string>(ch->name());
         writer.write<uint8_t>(1);
         writer.write<uint16_t>(map.model.id);
         writer.write<uint16_t>(position.x);
@@ -595,9 +595,9 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
     auto client = this->sockets[fd];
     if (client != nullptr)
     {
-        auto session = client->data();
-        session->refresh_map();
-        this->on_message(*session, error, MESSAGE_TYPE::STATE);
+        auto ch = client->data();
+        ch->refresh_map();
+        this->on_message(*ch, error, MESSAGE_TYPE::STATE);
     }
     co_return false;
 }
