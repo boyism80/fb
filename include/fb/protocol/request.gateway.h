@@ -9,7 +9,7 @@ class assert_version : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x00;
-    
+
 public:
     uint16_t version;
     uint8_t  national_key;
@@ -27,7 +27,7 @@ public:
 #ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint16_t>(this->version);
         writer.write<uint8_t>(this->national_key);
@@ -46,7 +46,7 @@ class entry_list : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x57;
-    
+
 public:
     uint8_t action;
     uint8_t index;
@@ -65,7 +65,7 @@ public:
 #ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->action);
 

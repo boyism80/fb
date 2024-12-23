@@ -2,8 +2,10 @@
 #define __PROTOCOL_RESPONSE_GAME_ITEM_H__
 
 #include <fb/protocol/protocol.h>
-#include <item.h>
 #include <fb/model/model.h>
+#ifndef BOT
+#include <item.h>
+#endif
 
 using namespace fb::model::enum_value;
 
@@ -41,16 +43,25 @@ public:
     inline static uint8_t header = 0x0F;
 
 public:
+#ifndef BOT
     const fb::game::character& me;
     const uint8_t              index;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     update(const fb::game::character& me, uint8_t index) :
         me(me),
         index(index)
     { }
+#else
+
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -67,6 +78,13 @@ public:
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class update_slot : public fb::protocol::base::header
@@ -75,16 +93,26 @@ public:
     inline static uint8_t header = 0x37;
 
 public:
+#ifndef BOT
     const fb::game::character& me;
     const EQUIPMENT_PARTS      parts;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     update_slot(const fb::game::character& me, EQUIPMENT_PARTS parts) :
         me(me),
         parts(parts)
     { }
+#else
+    update_slot()
+    { }
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -136,6 +164,13 @@ public:
         writer.write<uint8_t>(item->color());
         writer.write<std::string, uint8_t>(item->name());
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class remove : public fb::protocol::base::header
@@ -144,18 +179,27 @@ public:
     inline static uint8_t header = 0x10;
 
 public:
+#ifndef BOT
     const ITEM_DELETE_TYPE type;
     const uint32_t         index;
     const uint16_t         count;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     remove(ITEM_DELETE_TYPE type, uint32_t index, uint16_t count = 0) :
         type(type),
         index(index),
         count(count)
     { }
+#else
+
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -164,6 +208,13 @@ public:
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<uint16_t>(this->count);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class unequip : public fb::protocol::base::header
@@ -172,14 +223,22 @@ public:
     inline static uint8_t header = 0x38;
 
 public:
+#ifndef BOT
     const EQUIPMENT_PARTS parts;
+#else
+#endif
 
 public:
+#ifndef BOT
     unequip(EQUIPMENT_PARTS parts) :
         parts(parts)
     { }
+#else
+
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -187,6 +246,13 @@ public:
         writer.write<uint8_t>(static_cast<uint8_t>(this->parts));
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 } // namespace fb::protocol::game::response::item

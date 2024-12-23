@@ -2,7 +2,9 @@
 #define __PROTOCOL_REQUEST_GAME_SPELL_H__
 
 #include <fb/protocol/protocol.h>
+#ifndef BOT
 #include <spell.h>
+#endif
 
 namespace fb::protocol::game::request::spell {
 
@@ -15,10 +17,10 @@ private:
     fb::stream_reader<big_endian>* _reader;
 
 public:
-    mutable uint8_t     slot;
-    mutable std::string message;
-    mutable uint32_t    fd;
-    mutable point16_t   position;
+    mutable uint8_t         slot;
+    mutable std::string     message;
+    mutable uint32_t        fd;
+    mutable point<uint16_t> position;
 
 public:
     use() = default;

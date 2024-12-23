@@ -4,7 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <fb/model/model.h>
 #ifdef BOT
-#include <board.h>
+#include <bot.board.h>
 #endif
 
 namespace fb::protocol::game::response::board {

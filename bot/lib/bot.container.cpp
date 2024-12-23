@@ -31,7 +31,7 @@ void bot_container::remove(base_bot& bot)
         this->_bots.erase(i);
     };
 
-    thread->dispatch(fn);
+    std::ignore = thread->dispatch(fn);
 }
 
 async::task<void> bot_container::handle_timer(const fb::model::datetime& now, std::thread::id id)

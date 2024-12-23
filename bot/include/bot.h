@@ -9,10 +9,13 @@
 #include <fb/protocol/login.h>
 #include <fb/protocol/game.h>
 #include <async/awaitable_get.h>
+#include <boost/endian/conversion.hpp>
+#include <fb/model/model.h>
 
 using namespace std::chrono_literals;
+using namespace fb::model;
 
-namespace fb { namespace bot {
+namespace fb::bot {
 
 class bot_container;
 
@@ -181,7 +184,7 @@ private:
 
 private:
     uint32_t                    _sequence = 0;
-    point16_t                   _position;
+    point<uint16_t>             _position;
     fb::stream                  _transfer_buffer;
     std::vector<pattern_params> _pattern_params;
     datetime                    _next_action_time;
@@ -270,6 +273,6 @@ public:
     async::task<void> dispatch(uint32_t id, std::function<async::task<void>(fb::thread&)>&& fn);
 };
 
-}} // namespace fb::bot
+} // namespace fb::bot
 
 #endif

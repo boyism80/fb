@@ -2,8 +2,12 @@
 #define __PROTOCOL_RESPONSE_GAME_MAP_H__
 
 #include <fb/protocol/protocol.h>
-#include <map.h>
 #include <fb/model/model.h>
+#ifndef BOT
+#include <map.h>
+#endif
+
+using namespace fb::model;
 
 static constexpr uint16_t crc16tab[256] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7, 0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad,
@@ -34,20 +38,29 @@ public:
     inline static uint8_t header = 0x06;
 
 public:
+#ifndef BOT
     const fb::game::map& map;
     const point16_t      position;
     const size8_t        size;
     const uint16_t       crc;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc = 0) :
         map(map),
         position(position),
         size(size),
         crc(crc)
     { }
+#else
+    update() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -91,6 +104,13 @@ public:
         if (crc == now_crc)
             co_return;
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class bgm : public fb::protocol::base::header
@@ -99,16 +119,25 @@ public:
     inline static uint8_t header = 0x19;
 
 public:
+#ifndef BOT
     const fb::game::map& map;
     const uint8_t        volume;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     bgm(const fb::game::map& map, uint8_t volume = 100) :
         map(map),
         volume(volume)
     { }
+#else
+    bgm() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -125,6 +154,13 @@ public:
         writer.write<uint8_t>(0x00);
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class config : public fb::protocol::base::header
@@ -136,10 +172,10 @@ public:
 #ifndef BOT
     const fb::game::map& map;
 #else
-    uint16_t    id;
-    size16_t    size;
-    bool        building;
-    std::string name;
+    uint16_t                  id;
+    fb::model::size<uint16_t> size;
+    bool                      building;
+    std::string               name;
 #endif
 
 public:
@@ -183,18 +219,27 @@ public:
     inline static uint8_t header = 0x2E;
 
 public:
+#ifndef BOT
     const fb::model::model& model;
     const uint32_t          id;
     const uint16_t          index;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     worlds(const fb::model::model& model, uint32_t id, uint16_t index) :
         model(model),
         id(id),
         index(index)
     { }
+#else
+    worlds() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -208,7 +253,7 @@ public:
             if (g.contains(point.group))
                 g[point.group].push_back(id);
             else
-                g.insert({point.group, std::vector<uint16_t>{id}});
+                g.insert({point.group, std::vector<uint16_t> { id }});
         }
 
         writer.write<std::string, uint8_t>(attr.key);
@@ -233,6 +278,13 @@ public:
             }
         }
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 } // namespace fb::protocol::game::response::map

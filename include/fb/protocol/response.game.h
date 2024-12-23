@@ -2,7 +2,9 @@
 #define __PROTOCOL_RESPONSE_GAME_H__
 
 #include <fb/protocol/protocol.h>
+#ifndef BOT
 #include <character.h>
+#endif
 
 namespace fb::protocol::game::response {
 
@@ -81,19 +83,31 @@ public:
     inline static uint8_t header = 0x36;
 
 private:
+#ifdef BOT
+#else
     using container = fb::socket_container<fb::game::character>;
+#endif
 
 public:
+#ifdef BOT
+#else
     const fb::game::character& me;
     container&                 sockets;
+#endif
 
 public:
+#ifdef BOT
+    user_list()
+    { }
+#else
     user_list(const fb::game::character& me, container& sockets) :
         me(me),
         sockets(sockets)
     { }
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -113,6 +127,13 @@ public:
             co_return;
         });
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class chat : public fb::protocol::base::header

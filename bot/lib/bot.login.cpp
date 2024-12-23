@@ -52,7 +52,7 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
         auto&& response1 = co_await this->request<fb::protocol::login::response::message>(
             fb::protocol::login::request::account::create(id, pw));
         if (response1.text.empty() == false)
-            throw std::exception("request error");
+            throw std::runtime_error("request error");
 
         std::random_device rd;
         std::mt19937       gen(rd());
@@ -86,7 +86,7 @@ async::task<void> login_bot::handle_transfer(const fb::protocol::response::trans
     this->close();
 
     auto bot      = this->_owner.create<game_bot>(response.parameter);
-    auto ip       = boost::asio::ip::address_v4(_byteswap_ulong(response.ip));
+    auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);
     co_return;
