@@ -43,6 +43,7 @@ namespace Http.Service
 
             foreach (var thread in threads)
             {
+                thread.Name = $"WriteBackThread";
                 thread.Start();
             }
 
@@ -70,7 +71,7 @@ namespace Http.Service
                             return false;
 
                         await using var connection = _dbContext.Connection(db);
-                        var backgroundCommitEntryList = ((RedisResult[])result).Select((Func<RedisResult, BackgroundCommitEntry>)(x => (BackgroundCommitEntry)JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
+                        var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
                         foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
                         {
                             var redisKey = g.Key;
@@ -103,6 +104,14 @@ namespace Http.Service
                             _logger.LogError(e, e.Message);
                             break;
                     }
+                }
+                catch (RedisTimeoutException)
+                {
+                    continue;
+                }
+                catch (RedisConnectionException e)
+                {
+                    continue;
                 }
                 catch (Exception e)
                 {

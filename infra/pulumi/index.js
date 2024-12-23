@@ -7,6 +7,7 @@ const internal = require('./internal')
 const gateway = require('./gateway')
 const login = require('./login')
 const game = require('./game')
+const bot = require('./bot')
 const fs = require('fs');
 const path = require('path')
 
@@ -27,3 +28,4 @@ const internalService = internal.setup(namespace, conf, [redisService, rabbitmqS
 gateway.setup(namespace, conf, [internalService])
 login.setup(namespace, conf, [internalService])
 game.setup(namespace, conf, [internalService])
+bot.setup(namespace, conf, [internalService])

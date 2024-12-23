@@ -34,22 +34,16 @@ public:
 
 public:
 #ifndef BOT
-    uint8_t                       enc_type;
-    uint8_t                       key_size;
-    uint8_t                       enc_key[0x09];
-    internal::Service             from;
-    uint32_t                      id;
-    std::string                   name;
-    std::optional<transfer_param> transfer;
+    internal::Service from;
 #else
+    uint8_t from;
+#endif
     uint8_t                       enc_type;
     uint8_t                       key_size;
     uint8_t                       enc_key[0x09];
-    uint8_t                       from;
     uint32_t                      id;
     std::string                   name;
     std::optional<transfer_param> transfer;
-#endif
 
 public:
 #ifndef BOT
@@ -59,12 +53,11 @@ public:
     {
         auto clone  = fb::stream{params};
         auto reader = fb::stream_reader<big_endian>{clone};
-        std::ignore = this->deserialize(reader);
+        async::awaitable_get(this->deserialize(reader));
     }
 #endif
 
 public:
-#ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -84,7 +77,7 @@ public:
             writer.write<uint16_t>(this->transfer.value().position.y);
         }
     }
-#else
+
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
@@ -92,7 +85,11 @@ public:
         this->enc_type = reader.read<uint8_t>();
         this->key_size = reader.read<uint8_t>();
         reader.read((void*)this->enc_key, this->key_size);
+#ifndef BOT
         this->from = static_cast<internal::Service>(reader.read<uint8_t>());
+#else
+        this->from = reader.read<uint8_t>();
+#endif
 
         // additional parameters
         this->id      = reader.read<uint32_t>();
@@ -106,7 +103,6 @@ public:
             this->transfer = transfer_param{.map = map, .position = fb::model::point<uint16_t>(x, y)};
         }
     }
-#endif
 };
 
 class direction : public fb::protocol::base::header
