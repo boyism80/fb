@@ -1,3 +1,7 @@
 {
-	"log": ["debug", "info", "warn", "fatal"]
+	"log": ["debug", "info", "warn", "fatal"],
+	"ip": "127.0.0.1",
+	"port": 3001,
+	"io_size": 1,
+	"count": 1
 }

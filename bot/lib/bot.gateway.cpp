@@ -37,8 +37,9 @@ async::task<void> gateway_bot::handle_transfer(const fb::protocol::response::tra
 {
     this->close();
 
-    auto bot      = this->_owner.create<login_bot>(response.parameter);
-    auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
+    auto bot = this->_owner.create<login_bot>(response.parameter);
+    auto ip  = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
+    fb::logger::info(ip.to_string());
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
     bot->connect(endpoint);
     co_return;
