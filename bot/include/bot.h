@@ -43,9 +43,9 @@ protected:
 public:
     virtual ~base_bot();
 
-private:
-    async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream);
-    async::task<void> on_closed(fb::socket<>& socket);
+public:
+    async::task<void> on_receive(fb::stream& stream);
+    async::task<void> on_closed();
 
 protected:
     virtual async::task<void> on_connected();
@@ -268,11 +268,28 @@ private:
 public:
     boost::asio::io_context& context() const;
 
+    async::task<void> on_receive(fb::socket<>& socket, fb::stream& stream)
+    {
+        co_await static_cast<base_bot&>(socket).on_receive(stream);
+    }
+
+    async::task<void> on_closed(fb::socket<>& socket)
+    {
+        auto& bot = static_cast<base_bot&>(socket);
+        co_await bot.on_closed();
+
+        auto thread = bot.thread();
+        co_await thread->switching();
+
+        auto params = thread->template data<bot_thread_params>();
+        params->bots.erase(bot.id);
+    }
+
     template <typename T>
     T* create()
     {
-        auto id  = this->_sequence++;
-        auto bot = new T(*this, id);
+        auto id     = this->_sequence++;
+        auto bot    = new T(*this, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             thread.template data<bot_thread_params>()->bots.insert({id, std::shared_ptr<base_bot>(bot)});
             co_return;
@@ -283,8 +300,8 @@ public:
     template <typename T>
     T* create(const fb::stream& params)
     {
-        auto id  = this->_sequence++;
-        auto bot = new T(*this, id, params);
+        auto id     = this->_sequence++;
+        auto bot    = new T(*this, id, params);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             thread.template data<bot_thread_params>()->bots.insert({id, std::shared_ptr<base_bot>(bot)});
             co_return;

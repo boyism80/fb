@@ -4,8 +4,8 @@ using namespace fb::bot;
 
 base_bot::base_bot(bot_container& owner, uint32_t id) :
     fb::socket<void*>(owner,
-                      std::bind(&base_bot::on_receive, this, std::placeholders::_1, std::placeholders::_2),
-                      std::bind(&base_bot::on_closed, this, std::placeholders::_1)),
+                      std::bind(&bot_container::on_receive, &owner, std::placeholders::_1, std::placeholders::_2),
+                      std::bind(&bot_container::on_closed, &owner, std::placeholders::_1)),
     _owner(owner),
     id(id)
 { }
@@ -13,7 +13,7 @@ base_bot::base_bot(bot_container& owner, uint32_t id) :
 base_bot::~base_bot()
 { }
 
-async::task<void> base_bot::on_receive(fb::socket<>& socket, fb::stream& stream)
+async::task<void> base_bot::on_receive(fb::stream& stream)
 {
     static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
 
@@ -53,7 +53,7 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket, fb::stream& stream)
             {
                 auto protocol = std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
                 this->thread()->enqueue(
-                    [this, cmd, &socket, protocol](auto&) -> async::task<void> {
+                    [this, cmd, protocol](auto&) -> async::task<void> {
                         // TODO: check socket alive
                         co_await this->_handler[cmd](*protocol.get());
                     },
@@ -99,11 +99,9 @@ async::task<void> base_bot::on_disconnected()
     co_return;
 }
 
-async::task<void> base_bot::on_closed(fb::socket<>& socket)
+async::task<void> base_bot::on_closed()
 {
     co_await this->on_disconnected();
-    this->_owner.remove(*this);
-    co_return;
 }
 
 bool base_bot::on_encrypt(fb::stream& out)
