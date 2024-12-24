@@ -28,4 +28,4 @@ const internalService = internal.setup(namespace, conf, [redisService, rabbitmqS
 const gatewayService = gateway.setup(namespace, conf, [internalService])
 const loginService = login.setup(namespace, conf, [internalService])
 const gameService = game.setup(namespace, conf, [internalService])
-// bot.setup(namespace, conf, [gatewayService, loginService, gameService])
+bot.setup(namespace, conf, [gatewayService, loginService, gameService])
