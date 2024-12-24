@@ -174,7 +174,7 @@ async::task<void> context::handle_start()
     this->command("타일", &context::handle_command_tile, true);
     this->command("서버저장", &context::handle_command_save, true);
     this->command("맵오브젝트", &context::handle_command_mapobj, true);
-    this->command("랜덤이동", &context::handle_command_randmap, true);
+    this->command("랜덤이동", &context::handle_command_randmap, false);
     this->command("엔피씨생성", &context::handle_command_npc, true);
     this->command("내구도", &context::handle_command_durability, true);
     this->command("동시성테스트", &context::handle_command_concurrency, true);

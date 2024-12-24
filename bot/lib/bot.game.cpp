@@ -56,9 +56,6 @@ void game_bot::on_connected()
 
 async::task<void> game_bot::on_timer(const fb::model::datetime& now)
 {
-    if (this->_inited == false)
-        co_return;
-
     if (now < this->_next_action_time)
         co_return;
 
@@ -77,7 +74,6 @@ async::task<void> game_bot::on_timer(const fb::model::datetime& now)
 async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::character::id& response)
 {
     this->_sequence = response.sequence;
-    this->_inited   = true;
     co_return;
 }
 
@@ -160,7 +156,7 @@ async::task<void> game_bot::pattern_chat()
 {
     static std::random_device              device;
     static std::mt19937                    gen(device());
-    static std::vector<std::string>        messages{"bot"};
+    static std::vector<std::string>        messages{"bot", "/랜덤이동"};
     static std::uniform_int_distribution<> dist(0, messages.size() - 1);
 
     auto& message = messages.at(dist(gen));

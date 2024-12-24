@@ -188,7 +188,6 @@ private:
     fb::stream                  _transfer_buffer;
     std::vector<pattern_params> _pattern_params;
     datetime                    _next_action_time;
-    bool                        _inited = false;
 
 public:
     game_bot(bot_container& owner, uint32_t id);
