@@ -10,7 +10,7 @@ bot_container::bot_container(boost::asio::io_context& context) :
     for (int i = 0; i < this->threads.count(); i++)
     {
         auto thread = this->threads.at(i);
-        thread->dispatch([](auto& thread) -> async::task<void> {
+        std::ignore = thread->dispatch([](auto& thread) -> async::task<void> {
             thread.data(new bot_thread_params{});
             co_return;
         });
@@ -39,7 +39,7 @@ void bot_container::remove(base_bot& bot)
     auto id     = bot.id % this->threads.size();
     auto thread = this->threads[id];
     auto fn     = [this, id = bot.id](auto& thread) -> async::task<void> {
-        auto params = thread.data<bot_thread_params>();
+        auto params = thread.template data<bot_thread_params>();
         params->bots.erase(id);
         co_return;
     };
