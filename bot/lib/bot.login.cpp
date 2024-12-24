@@ -25,12 +25,18 @@ login_bot::login_bot(bot_container& owner, uint32_t id, const fb::stream& params
 login_bot::~login_bot()
 { }
 
-void login_bot::on_connected()
+async::task<void> login_bot::on_connected()
 {
     this->send(
         fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()),
         false,
         true);
+    co_return;
+}
+
+async::task<void> login_bot::on_disconnected()
+{
+    co_return;
 }
 
 bool login_bot::decrypt_policy(int cmd) const

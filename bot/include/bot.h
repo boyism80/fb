@@ -48,11 +48,11 @@ private:
     async::task<void> on_closed(fb::socket<>& socket);
 
 protected:
-    virtual void on_connected();
-    virtual void on_disconnected();
-    virtual bool on_encrypt(fb::stream& out);
-    virtual bool on_wrap(fb::stream& out);
-    virtual bool decrypt_policy(int cmd) const;
+    virtual async::task<void> on_connected();
+    virtual async::task<void> on_disconnected();
+    virtual bool              on_encrypt(fb::stream& out);
+    virtual bool              on_wrap(fb::stream& out);
+    virtual bool              decrypt_policy(int cmd) const;
 
 public:
     void                      connect(const boost::asio::ip::tcp::endpoint& endpoint);
@@ -147,6 +147,10 @@ public:
     gateway_bot(bot_container& owner, uint32_t id);
     ~gateway_bot();
 
+protected:
+    async::task<void> on_connected() override final;
+    async::task<void> on_disconnected() override final;
+
 private:
     async::task<void> handle_welcome(const fb::protocol::gateway::response::welcome& response);
     async::task<void> handle_crt(const fb::protocol::gateway::response::crt& response);
@@ -165,8 +169,9 @@ public:
     ~login_bot();
 
 protected:
-    void on_connected() override final;
-    bool decrypt_policy(int cmd) const;
+    async::task<void> on_connected() override final;
+    async::task<void> on_disconnected() override final;
+    bool              decrypt_policy(int cmd) const;
 
 public:
     async::task<void> handle_agreement(const fb::protocol::login::response::agreement& response);
@@ -183,6 +188,7 @@ private:
     } pattern_params;
 
 private:
+    bool                        _inited   = false;
     uint32_t                    _sequence = 0;
     point<uint16_t>             _position;
     fb::stream                  _transfer_buffer;
@@ -204,13 +210,13 @@ private:
     }
 
 protected:
-    void on_connected() override final;
+    async::task<void> on_connected() override final;
+    async::task<void> on_disconnected() override final;
 
 public:
     async::task<void> on_timer(const fb::model::datetime& now) override final;
 
 public:
-    async::task<void> handle_init(const fb::protocol::game::response::init& response);
     async::task<void> handle_time(const fb::protocol::game::response::time& response);
     async::task<void> handle_state(const fb::protocol::game::response::character::state& response);
     async::task<void> handle_option(const fb::protocol::game::response::character::option& response);

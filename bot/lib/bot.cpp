@@ -42,6 +42,7 @@ async::task<void> base_bot::on_receive(fb::socket<>& socket, fb::stream& stream)
                 size = this->_cryptor.decrypt(stream, reader.seek() - 1, size);
             }
 
+            reader.flush();
             if (this->_deserializer.contains(cmd) == false)
             {
             }
@@ -84,23 +85,23 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
     this->async_connect(endpoint, [&](const auto& e) {
         boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner), this->recv(), boost::asio::detached);
-        this->on_connected();
+        std::ignore = this->on_connected();
     });
 }
 
-void base_bot::on_connected()
+async::task<void> base_bot::on_connected()
 {
-    return;
+    co_return;
 }
 
-void base_bot::on_disconnected()
+async::task<void> base_bot::on_disconnected()
 {
-    return;
+    co_return;
 }
 
 async::task<void> base_bot::on_closed(fb::socket<>& socket)
 {
-    this->on_disconnected();
+    co_await this->on_disconnected();
     this->_owner.remove(*this);
     co_return;
 }

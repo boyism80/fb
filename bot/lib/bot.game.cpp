@@ -9,7 +9,6 @@ game_bot::game_bot(bot_container& owner, uint32_t id) :
 
     this->bind(&game_bot::handle_sequence);
     this->bind(&game_bot::handle_spell_update);
-    this->bind(&game_bot::handle_init);
     this->bind(&game_bot::handle_time);
     this->bind(&game_bot::handle_state);
     this->bind(&game_bot::handle_option);
@@ -49,13 +48,25 @@ game_bot::game_bot(bot_container& owner, uint32_t id, const fb::stream& params) 
 game_bot::~game_bot()
 { }
 
-void game_bot::on_connected()
+async::task<void> game_bot::on_connected()
 {
-    this->send(fb::protocol::game::request::login(this->_transfer_buffer), false, true);
+    auto&& resp = co_await this->request<fb::protocol::game::response::init>(
+        fb::protocol::game::request::login(this->_transfer_buffer),
+        false,
+        true);
+    this->_inited = true;
+}
+
+async::task<void> game_bot::on_disconnected()
+{
+    co_return;
 }
 
 async::task<void> game_bot::on_timer(const fb::model::datetime& now)
 {
+    if (!this->_inited)
+        co_return;
+
     if (now < this->_next_action_time)
         co_return;
 
@@ -78,11 +89,6 @@ async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::
 }
 
 async::task<void> game_bot::handle_spell_update(const fb::protocol::game::response::spell::update& response)
-{
-    co_return;
-}
-
-async::task<void> game_bot::handle_init(const fb::protocol::game::response::init& response)
 {
     co_return;
 }
