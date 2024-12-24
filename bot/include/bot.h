@@ -139,6 +139,9 @@ public:
             encrypt,
             wrap);
     }
+
+public:
+    fb::thread* thread() const override final;
 };
 
 class gateway_bot : public base_bot
@@ -241,17 +244,26 @@ public:
     async::task<void> pattern_board_sections();
 };
 
+class bot_thread_params
+{
+public:
+    std::unordered_map<uint32_t, std::shared_ptr<base_bot>> bots;
+};
+
 class bot_container : public fb::context
 {
 private:
-    uint32_t                      _sequence = 0;
-    boost::asio::io_context&      _context;
-    std::map<uint16_t, base_bot*> _bots;
-    bool                          _exit = false;
+    uint32_t                 _remained_count;
+    uint32_t                 _sequence = 0;
+    boost::asio::io_context& _context;
+    bool                     _exit = false;
 
 public:
     bot_container(boost::asio::io_context& context);
     ~bot_container();
+
+private:
+    async::task<void> handle_bot_spawn();
 
 public:
     boost::asio::io_context& context() const;
@@ -261,7 +273,10 @@ public:
     {
         auto id  = this->_sequence++;
         auto bot = new T(*this, id);
-        this->_bots.insert({bot->id, bot});
+        bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
+            thread.data<bot_thread_params>()->bots.insert({id, std::shared_ptr<base_bot>(bot)});
+            co_return;
+        });
         return bot;
     }
 
@@ -270,7 +285,10 @@ public:
     {
         auto id  = this->_sequence++;
         auto bot = new T(*this, id, params);
-        this->_bots.insert({bot->id, bot});
+        bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
+            thread.data<bot_thread_params>()->bots.insert({id, std::shared_ptr<base_bot>(bot)});
+            co_return;
+        });
         return bot;
     }
     void              remove(base_bot& bot);

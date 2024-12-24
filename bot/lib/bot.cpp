@@ -127,3 +127,8 @@ bool base_bot::decrypt_policy(int cmd) const
         return true;
     }
 }
+
+fb::thread* base_bot::thread() const
+{
+    return this->_owner.threads.modular(this->id);
+}

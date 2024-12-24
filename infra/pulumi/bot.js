@@ -14,7 +14,12 @@ module.exports = function () {
                     ip: conf.host,
                     port: conf.gateway.port,
                     io_size: sectionConf.io_size,
-                    count: sectionConf.count
+                    interval: sectionConf.interval,
+                    spawn_per_interval: sectionConf.spawn_per_interval,
+                    spawn_count: sectionConf.spawn_count,
+                    thread: {
+                        logic: sectionConf.thread.logic
+                    }
                 }
 
                 const configMap = new k8s.core.v1.ConfigMap(`bot-${section}`, {

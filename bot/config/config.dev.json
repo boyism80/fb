@@ -3,5 +3,10 @@
 	"ip": "127.0.0.1",
 	"port": 3001,
 	"io_size": 1,
-	"count": 30
+	"interval": 5000,
+	"spawn_per_interval": 10,
+	"spawn_count": 100,
+	"thread": {
+		"logic": 12
+	}
 }

@@ -686,31 +686,6 @@ protected:
         this->bind(fn, Request::header);
     }
 
-protected:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fn        The function
-     * @param[in]  duration  The duration
-     */
-    template <typename Class>
-    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
-    {
-        auto cfunc = std::bind(fn, static_cast<Class*>(this));
-        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
-        auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
-        auto callback     = [=](const boost::system::error_code&) {
-            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
-                timer->expires_at(timer->expires_at() +
-                                  boost::posix_time::milliseconds(
-                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
-                timer->async_wait(*callback_ptr.get());
-            });
-        };
-        *callback_ptr = callback;
-        timer->async_wait(*callback_ptr.get());
-    }
-
 public:
     /**
      * @brief      { function_description }

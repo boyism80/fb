@@ -216,21 +216,6 @@ private:
     /**
      * @brief      { function_description }
      *
-     * @param      func      The function
-     * @param[in]  duration  The duration
-     *
-     * @tparam     Func      { description }
-     */
-    template <typename Func>
-    void bind_thread_timer(Func&& func, const std::chrono::steady_clock::duration& duration)
-    {
-        this->threads.settimer(std::bind(func, this, std::placeholders::_1, std::placeholders::_2), duration);
-    }
-
-private:
-    /**
-     * @brief      { function_description }
-     *
      * @param[in]  cmd    The command
      * @param      func   The function
      * @param[in]  admin  The admin

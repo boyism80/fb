@@ -279,7 +279,12 @@
     "bot": {
         "section-1": {
             "io_size": 5,
-            "count": 100,
+            "interval": 5000,
+            "spawn_per_interval": 100,
+            "spawn_count": 5000,
+            "thread": {
+                "logic": 12
+            },
             "replicas": 5
         }
     }
