@@ -6,11 +6,13 @@ namespace Http.Service
     public class RedisService
     {
         private readonly RedisConfiguration _configuration;
+        private readonly ConnectionMultiplexer _redis;
         private static Dictionary<string, LoadedLuaScript> _loadedLuaScripts = new Dictionary<string, LoadedLuaScript>();
 
         public RedisService(IConfiguration configuration)
         {
             _configuration = configuration.GetSection("Redis").Get<RedisConfiguration>();
+            _redis = ConnectionMultiplexer.Connect(_configuration.ConfigurationOptions);
             LoadScriptFiles(Path.Combine("Redis", "Script"));
         }
 
@@ -19,11 +21,10 @@ namespace Http.Service
             if (!Directory.Exists(path))
                 return;
 
-            var redis = ConnectionMultiplexer.Connect(_configuration.ConfigurationOptions);
             foreach (var file in Directory.GetFiles(path, "*.lua"))
             {
                 var script = LuaScript.Prepare(File.ReadAllText(file));
-                var loadedScript = script.Load(redis.GetServer(redis.GetEndPoints()[0]));
+                var loadedScript = script.Load(_redis.GetServer(_redis.GetEndPoints()[0]));
                 _loadedLuaScripts.Add(Path.GetFileName(file), loadedScript);
             }
         }
@@ -37,8 +38,7 @@ namespace Http.Service
         {
             get
             {
-                var redis = ConnectionMultiplexer.Connect(_configuration.ConfigurationOptions);
-                return redis.GetDatabase(_configuration.Database);
+                return _redis.GetDatabase(_configuration.Database);
             }
         }
     }
