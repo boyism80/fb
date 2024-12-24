@@ -51,7 +51,8 @@ async::task<void> bot_container::handle_bot_spawn()
 {
     auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
                                                    fb::config<uint16_t>("port"));
-    auto count    = std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval"));
+    auto count =
+        std::min(this->_remained_count, fb::config<uint32_t>("spawn_per_interval") / fb::config<uint32_t>("io_size"));
     for (uint32_t i = 0; i < count; i++)
     {
         auto bot = this->create<fb::bot::gateway_bot>();
