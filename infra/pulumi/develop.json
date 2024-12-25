@@ -256,7 +256,7 @@
     },
     "internal": {
         "section-1": {
-            "replicas": 50,
+            "replicas": 10,
             "port": {
                 "cluster": 80,
                 "node": 30200
@@ -278,18 +278,10 @@
     },
     "write-back": {
         "section-1": {
-            "port": {
-                "cluster": 80,
-                "node": 30200
-            },
             "mysql": "section-1",
             "redis": "section-1"
         },
         "section-2": {
-            "port": {
-                "cluster": 81,
-                "node": 30201
-            },
             "mysql": "section-2",
             "redis": "section-2"
         }

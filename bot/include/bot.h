@@ -27,6 +27,9 @@ private:
     using hook_func           = std::function<bool(const fb::protocol::base::header&)>;
     using hook_func_container = std::unordered_map<uint8_t, std::vector<hook_func>>;
 
+private:
+    bool _inited = false;
+
 protected:
     bot_container&                              _owner;
     fb::cryptor                                 _cryptor;
@@ -48,6 +51,7 @@ public:
     async::task<void> on_closed();
 
 protected:
+    bool                      inited() const;
     virtual async::task<void> on_connected();
     virtual async::task<void> on_disconnected();
     virtual bool              on_encrypt(fb::stream& out);
@@ -55,7 +59,7 @@ protected:
     virtual bool              decrypt_policy(int cmd) const;
 
 public:
-    void                      connect(const boost::asio::ip::tcp::endpoint& endpoint);
+    async::task<void>         connect(const boost::asio::ip::tcp::endpoint& endpoint);
     virtual async::task<void> on_timer(const fb::model::datetime& now)
     {
         co_return;
@@ -286,31 +290,30 @@ public:
     }
 
     template <typename T>
-    T* create()
+    std::shared_ptr<T> create()
     {
         auto id     = this->_sequence++;
-        auto bot    = new T(*this, id);
+        auto bot    = std::make_shared<T>(*this, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
-            params->bots.insert({id, std::shared_ptr<base_bot>(bot)});
+            params->bots.insert({id, bot});
             co_return;
         });
         return bot;
     }
 
     template <typename T>
-    T* create(const fb::stream& params)
+    std::shared_ptr<T> create(const fb::stream& params)
     {
         auto id     = this->_sequence++;
-        auto bot    = new T(*this, id, params);
+        auto bot    = std::make_shared<T>(*this, id, params);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
-            params->bots.insert({id, std::shared_ptr<base_bot>(bot)});
+            params->bots.insert({id, bot});
             co_return;
         });
         return bot;
     }
-    void              remove(base_bot& bot);
     async::task<void> handle_timer(const fb::model::datetime& now, std::thread::id id);
     async::task<void> dispatch(uint32_t id, std::function<async::task<void>(fb::thread&)>&& fn);
 };

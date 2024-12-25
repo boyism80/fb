@@ -16,13 +16,13 @@ gateway_bot::~gateway_bot()
 
 async::task<void> gateway_bot::on_connected()
 {
+    co_await base_bot::on_connected();
     fb::logger::info("gateway bot spawned");
-    co_return;
 }
 
 async::task<void> gateway_bot::on_disconnected()
 {
-    co_return;
+    co_await base_bot::on_disconnected();
 }
 
 async::task<void> gateway_bot::handle_welcome(const fb::protocol::gateway::response::welcome& response)
@@ -51,8 +51,7 @@ async::task<void> gateway_bot::handle_transfer(const fb::protocol::response::tra
     auto bot      = this->_owner.create<login_bot>(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
-    bot->connect(endpoint);
-    co_return;
+    co_await bot->connect(endpoint);
 }
 
 bool gateway_bot::decrypt_policy(int cmd) const

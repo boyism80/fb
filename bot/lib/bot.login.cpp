@@ -27,17 +27,17 @@ login_bot::~login_bot()
 
 async::task<void> login_bot::on_connected()
 {
+    co_await base_bot::on_connected();
     fb::logger::info("login bot spawned");
     this->send(
         fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()),
         false,
         true);
-    co_return;
 }
 
 async::task<void> login_bot::on_disconnected()
 {
-    co_return;
+    co_await base_bot::on_disconnected();
 }
 
 bool login_bot::decrypt_policy(int cmd) const
@@ -95,6 +95,5 @@ async::task<void> login_bot::handle_transfer(const fb::protocol::response::trans
     auto bot      = this->_owner.create<game_bot>(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
-    bot->connect(endpoint);
-    co_return;
+    co_await bot->connect(endpoint);
 }

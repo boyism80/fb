@@ -81,21 +81,38 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
     }
 }
 
-void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
+async::task<void> base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
-    this->async_connect(endpoint, [this, id = this->id, thread = this->thread()](const auto& e) {
+    try
+    {
+        fb::socket<void*>::connect(endpoint);
         boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner), this->recv(), boost::asio::detached);
-        std::ignore = this->on_connected();
-    });
+        co_await this->on_connected();
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal(e.what());
+    }
+    catch (...)
+    {
+        fb::logger::fatal("unhandled exception");
+    }
+}
+
+bool base_bot::inited() const
+{
+    return this->_inited;
 }
 
 async::task<void> base_bot::on_connected()
 {
+    this->_inited = true;
     co_return;
 }
 
 async::task<void> base_bot::on_disconnected()
 {
+    this->_inited = false;
     co_return;
 }
 

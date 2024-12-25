@@ -34,19 +34,6 @@ boost::asio::io_context& bot_container::context() const
     return this->_context;
 }
 
-void bot_container::remove(base_bot& bot)
-{
-    auto id     = bot.id % this->threads.size();
-    auto thread = this->threads[id];
-    auto fn     = [this, id = bot.id](auto& thread) -> async::task<void> {
-        auto params = thread.template data<bot_thread_params>();
-        params->bots.erase(id);
-        co_return;
-    };
-
-    std::ignore = thread->dispatch(fn);
-}
-
 async::task<void> bot_container::handle_bot_spawn()
 {
     auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(fb::config<std::string>("ip")),
@@ -56,7 +43,7 @@ async::task<void> bot_container::handle_bot_spawn()
     for (uint32_t i = 0; i < count; i++)
     {
         auto bot = this->create<fb::bot::gateway_bot>();
-        bot->connect(endpoint);
+        co_await bot->connect(endpoint);
     }
 
     this->_remained_count -= count;

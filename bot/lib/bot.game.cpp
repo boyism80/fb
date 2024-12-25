@@ -50,6 +50,7 @@ game_bot::~game_bot()
 
 async::task<void> game_bot::on_connected()
 {
+    co_await base_bot::on_connected();
     fb::logger::info("game bot spawned");
     auto&& resp = co_await this->request<fb::protocol::game::response::init>(
         fb::protocol::game::request::login(this->_transfer_buffer),
@@ -60,11 +61,14 @@ async::task<void> game_bot::on_connected()
 
 async::task<void> game_bot::on_disconnected()
 {
-    co_return;
+    co_await base_bot::on_disconnected();
 }
 
 async::task<void> game_bot::on_timer(const fb::model::datetime& now)
 {
+    if (!base_bot::inited())
+        co_return;
+
     if (!this->_inited)
         co_return;
 
@@ -155,8 +159,7 @@ async::task<void> game_bot::handle_transfer(const fb::protocol::response::transf
     auto bot      = this->_owner.create<game_bot>(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
-    bot->connect(endpoint);
-    co_return;
+    co_await bot->connect(endpoint);
 }
 
 async::task<void> game_bot::pattern_chat()
