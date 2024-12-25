@@ -75,6 +75,8 @@ public:
                                     }});
 
         this->_handler.insert({ResponseType::header, [this, fn](auto& header) -> async::task<void> {
+                                   this->assert_thread();
+
                                    if (this->_hooks.contains(ResponseType::header))
                                    {
                                        auto& matched_hooks = this->_hooks.at(ResponseType::header);
@@ -109,6 +111,8 @@ public:
                                       bool                                                 encrypt = true,
                                       bool                                                 wrap    = true)
     {
+        this->assert_thread();
+
         if (!this->_handler.contains(ResponseType::header))
         {
             this->bind<ResponseType>([](const ResponseType& resp) -> async::task<void> {
@@ -279,11 +283,11 @@ public:
 
     async::task<void> on_closed(fb::socket<>& socket)
     {
-        auto& bot = static_cast<base_bot&>(socket);
-        co_await bot.on_closed();
-
-        auto thread = bot.thread();
+        auto& bot    = static_cast<base_bot&>(socket);
+        auto  thread = bot.thread();
         co_await thread->switching();
+        bot.assert_thread();
+        co_await bot.on_closed();
 
         auto params = thread->template data<bot_thread_params>();
         params->bots.erase(bot.id);

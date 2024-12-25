@@ -101,9 +101,6 @@ private:
         0,
     };
 
-private:
-    std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
-
 public:
     fb::game::trade                            trade  = fb::game::trade(*this);
     fb::game::items                            items  = fb::game::items(*this);

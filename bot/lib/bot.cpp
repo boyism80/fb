@@ -53,8 +53,13 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
             {
                 auto protocol = std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
                 this->thread()->enqueue(
-                    [this, cmd, protocol](auto&) -> async::task<void> {
+                    [this, cmd, protocol, id = this->id](auto& thread) -> async::task<void> {
                         // TODO: check socket alive
+
+                        auto params = thread.template data<bot_thread_params>();
+                        if (params.bots.contains(id) == false)
+                            co_return;
+
                         co_await this->_handler[cmd](*protocol.get());
                     },
                     [](auto& error) { // error
@@ -87,6 +92,7 @@ async::task<void> base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoi
     {
         fb::socket<void*>::connect(endpoint);
         boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner), this->recv(), boost::asio::detached);
+        co_await this->thread()->switching();
         co_await this->on_connected();
     }
     catch (std::exception& e)
@@ -106,18 +112,24 @@ bool base_bot::inited() const
 
 async::task<void> base_bot::on_connected()
 {
+    this->assert_thread();
+
     this->_inited = true;
     co_return;
 }
 
 async::task<void> base_bot::on_disconnected()
 {
+    this->assert_thread();
+
     this->_inited = false;
     co_return;
 }
 
 async::task<void> base_bot::on_closed()
 {
+    this->assert_thread();
+
     co_await this->on_disconnected();
 }
 
