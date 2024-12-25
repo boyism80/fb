@@ -19,13 +19,20 @@ namespace fb::bot {
 
 class bot_container;
 
+class hook_params
+{
+public:
+    std::function<bool(const fb::protocol::base::header&)> condition;
+    std::function<void(const fb::protocol::base::header&)> matched;
+};
+
 class base_bot : public fb::socket<void*>
 {
 private:
-    using handle_func         = std::function<async::task<void>(fb::protocol::base::header&)>;
-    using deserilze_func      = std::function<async::task<fb::protocol::base::header*>(fb::stream_reader<big_endian>&)>;
-    using hook_func           = std::function<bool(const fb::protocol::base::header&)>;
-    using hook_func_container = std::unordered_map<uint8_t, std::vector<hook_func>>;
+    using handle_func    = std::function<async::task<void>(fb::protocol::base::header&)>;
+    using deserilze_func = std::function<async::task<fb::protocol::base::header*>(fb::stream_reader<big_endian>&)>;
+    using hook_func      = std::function<bool(const fb::protocol::base::header&)>;
+    using hook_container = std::unordered_map<uint8_t, std::vector<hook_params>>;
 
 private:
     bool _inited = false;
@@ -35,7 +42,7 @@ protected:
     fb::cryptor                                 _cryptor;
     std::unordered_map<uint8_t, handle_func>    _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
-    hook_func_container                         _hooks;
+    hook_container                              _hooks;
 
 public:
     const uint32_t id;
@@ -59,7 +66,7 @@ protected:
     virtual bool              decrypt_policy(int cmd) const;
 
 public:
-    async::task<void>         connect(const boost::asio::ip::tcp::endpoint& endpoint);
+    void                      connect(const boost::asio::ip::tcp::endpoint& endpoint);
     virtual async::task<void> on_timer(const fb::model::datetime& now)
     {
         co_return;
@@ -74,29 +81,27 @@ public:
                                         co_return protocol;
                                     }});
 
-        this->_handler.insert({ResponseType::header, [this, fn](auto& header) -> async::task<void> {
-                                   this->assert_thread();
+        this->_handler.insert(
+            {ResponseType::header, [this, fn](auto& header) -> async::task<void> {
+                 if (this->_hooks.contains(ResponseType::header))
+                 {
+                     auto& matched_hooks = this->_hooks.at(ResponseType::header);
+                     auto  i = std::find_if(matched_hooks.begin(), matched_hooks.end(), [&header](const auto& hook) {
+                         return hook.condition(header);
+                     });
 
-                                   if (this->_hooks.contains(ResponseType::header))
-                                   {
-                                       auto& matched_hooks = this->_hooks.at(ResponseType::header);
-                                       int   found         = -1;
-                                       for (int i = 0; i < matched_hooks.size(); i++)
-                                       {
-                                           if (matched_hooks.at(i)(header))
-                                           {
-                                               found = i;
-                                               break;
-                                           }
-                                       }
+                     if (i != matched_hooks.end())
+                     {
+                         auto callback = i->matched;
+                         matched_hooks.erase(i);
 
-                                       if (found != -1)
-                                           matched_hooks.erase(matched_hooks.begin() + found);
-                                   }
+                         callback(header);
+                     }
+                 }
 
-                                   auto protocol = static_cast<ResponseType&>(header);
-                                   co_await fn(protocol);
-                               }});
+                 auto protocol = static_cast<ResponseType&>(header);
+                 co_await fn(protocol);
+             }});
     }
 
     template <typename Class, typename ResponseType>
@@ -124,14 +129,18 @@ public:
         if (this->_hooks.contains(ResponseType::header) == false)
             this->_hooks.insert({ResponseType::header, {}});
 
-        this->_hooks[ResponseType::header].push_back([promise, condition](const auto& header) {
-            auto& protocol = static_cast<const ResponseType&>(header);
-            if (!condition(protocol))
-                return false;
-
-            promise->set_value(protocol);
-            return true;
-        });
+        this->_hooks[ResponseType::header].push_back(hook_params{.condition =
+                                                                     [promise, condition](const auto& header) {
+                                                                         auto& protocol =
+                                                                             static_cast<const ResponseType&>(header);
+                                                                         return condition(protocol);
+                                                                     },
+                                                                 .matched =
+                                                                     [promise](const auto& header) {
+                                                                         auto& protocol =
+                                                                             static_cast<const ResponseType&>(header);
+                                                                         promise->set_value(protocol);
+                                                                     }});
         this->send(protocol, encrypt, wrap);
         return promise->task();
     }
@@ -265,6 +274,7 @@ private:
     uint32_t                 _sequence = 0;
     boost::asio::io_context& _context;
     bool                     _exit = false;
+    std::mutex               _mutex;
 
 public:
     bot_container(boost::asio::io_context& context);
@@ -295,7 +305,9 @@ public:
     template <typename T>
     std::shared_ptr<T> create()
     {
-        auto id     = this->_sequence++;
+        this->_mutex.lock();
+        auto id = this->_sequence++;
+        this->_mutex.unlock();
         auto bot    = std::make_shared<T>(*this, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();
@@ -308,7 +320,9 @@ public:
     template <typename T>
     std::shared_ptr<T> create(const fb::stream& params)
     {
-        auto id     = this->_sequence++;
+        this->_mutex.lock();
+        auto id = this->_sequence++;
+        this->_mutex.unlock();
         auto bot    = std::make_shared<T>(*this, id, params);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
             auto params = thread.template data<bot_thread_params>();

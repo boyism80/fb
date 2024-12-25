@@ -30,7 +30,6 @@ private:
     fb::cryptor       _crt;
     handle_read_event _handle_received;
     handler_event     _handle_closed;
-    uint32_t          _fd = 0xFFFFFFFF;
     fb::stream        _stream;
 
 protected:

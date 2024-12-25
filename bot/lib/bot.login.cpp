@@ -95,5 +95,6 @@ async::task<void> login_bot::handle_transfer(const fb::protocol::response::trans
     auto bot      = this->_owner.create<game_bot>(response.parameter);
     auto ip       = boost::asio::ip::address_v4(boost::endian::endian_reverse(response.ip));
     auto endpoint = boost::asio::ip::tcp::endpoint(ip, response.port);
-    co_await bot->connect(endpoint);
+    bot->connect(endpoint);
+    co_return;
 }

@@ -43,7 +43,7 @@ async::task<void> bot_container::handle_bot_spawn()
     for (uint32_t i = 0; i < count; i++)
     {
         auto bot = this->create<fb::bot::gateway_bot>();
-        co_await bot->connect(endpoint);
+        bot->connect(endpoint);
     }
 
     this->_remained_count -= count;
