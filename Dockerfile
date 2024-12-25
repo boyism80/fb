@@ -102,7 +102,7 @@ COPY include ./include
 COPY lib ./lib
 WORKDIR /app/lib/build
 RUN cmake ..
-RUN cmake --build . --config Debug --parallel
+RUN cmake --build . --config Release --parallel
 RUN make install
 
 RUN rm -rf /app

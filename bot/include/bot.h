@@ -34,9 +34,6 @@ private:
     using hook_func      = std::function<bool(const fb::protocol::base::header&)>;
     using hook_container = std::unordered_map<uint8_t, std::vector<hook_params>>;
 
-private:
-    bool _inited = false;
-
 protected:
     bot_container&                              _owner;
     fb::cryptor                                 _cryptor;
@@ -58,7 +55,6 @@ public:
     async::task<void> on_closed();
 
 protected:
-    bool                      inited() const;
     virtual async::task<void> on_connected();
     virtual async::task<void> on_disconnected();
     virtual bool              on_encrypt(fb::stream& out);

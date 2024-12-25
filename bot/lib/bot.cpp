@@ -121,24 +121,16 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
     }
 }
 
-bool base_bot::inited() const
-{
-    return this->_inited;
-}
-
 async::task<void> base_bot::on_connected()
 {
     this->assert_thread();
 
-    this->_inited = true;
     co_return;
 }
 
 async::task<void> base_bot::on_disconnected()
 {
     this->assert_thread();
-
-    this->_inited = false;
     co_return;
 }
 

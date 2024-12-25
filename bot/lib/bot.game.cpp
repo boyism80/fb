@@ -21,13 +21,13 @@ game_bot::game_bot(bot_container& owner, uint32_t id) :
     this->bind(&game_bot::handle_map);
     this->bind(&game_bot::handle_transfer);
 
-    this->pattern(&game_bot::pattern_chat, 1000ms, 2000ms);
-    this->pattern(&game_bot::pattern_attack, 1000ms, 2000ms);
-    this->pattern(&game_bot::pattern_direction, 1000ms, 2000ms);
-    this->pattern(&game_bot::pattern_move, 1000ms, 2000ms);
-    this->pattern(&game_bot::pattern_pickup, 1000ms, 2000ms);
-    this->pattern(&game_bot::pattern_emotion, 1000ms, 2000ms);
-    this->pattern(&game_bot::pattern_board_sections, 1000ms, 2000ms);
+    this->pattern(&game_bot::pattern_chat, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_attack, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_direction, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_move, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_pickup, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_emotion, 250ms, 1000ms);
+    this->pattern(&game_bot::pattern_board_sections, 250ms, 1000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::stream& params) :
@@ -52,11 +52,15 @@ async::task<void> game_bot::on_connected()
 {
     co_await base_bot::on_connected();
     fb::logger::info("game bot spawned");
-    auto&& resp = co_await this->request<fb::protocol::game::response::init>(
+    auto&& resp = co_await this->request<fb::protocol::game::response::map::config>(
         fb::protocol::game::request::login(this->_transfer_buffer),
         false,
         true);
-    this->_inited = true;
+
+    if (resp.id == 1)
+        this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+    else
+        this->_inited = true;
 }
 
 async::task<void> game_bot::on_disconnected()
@@ -66,9 +70,6 @@ async::task<void> game_bot::on_disconnected()
 
 async::task<void> game_bot::on_timer(const fb::model::datetime& now)
 {
-    if (!base_bot::inited())
-        co_return;
-
     if (!this->_inited)
         co_return;
 
@@ -167,7 +168,7 @@ async::task<void> game_bot::pattern_chat()
 {
     static std::random_device              device;
     static std::mt19937                    gen(device());
-    static std::vector<std::string>        messages{"bot", "/랜덤이동"};
+    static std::vector<std::string>        messages{"안녕하세요", "반갑습니다."};
     static std::uniform_int_distribution<> dist(0, messages.size() - 1);
 
     auto& message = messages.at(dist(gen));
