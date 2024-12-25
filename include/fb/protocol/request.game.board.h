@@ -6,7 +6,9 @@
 #endif
 
 #include <fb/protocol/protocol.h>
+#ifndef BOT
 #include <board.h>
+#endif
 
 namespace fb::protocol::game::request::board {
 
@@ -55,7 +57,7 @@ public:
 #ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>((uint8_t)this->action);
         switch (this->action)

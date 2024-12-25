@@ -155,12 +155,6 @@ namespace Internal.Controllers
                 ch.Creature = request.Creature;
                 _dbContext.Character.Set(ch);
 
-                var option = new Option
-                {
-                    Uid = request.Uid,
-                };
-                _dbContext.Option.Set(option);
-
                 await _dbContext.SaveChangesAsync();
                 return new Response.MakeCharacter
                 {
@@ -222,7 +216,13 @@ namespace Internal.Controllers
             var items = await _dbContext.Item.Get(uid);
             var spells = await _dbContext.Spell.Get(uid);
             var traces = await _dbContext.Trace.Get(uid);
-            var option = await _dbContext.Option.Get(uid);
+            var option = await _dbContext.Option.Get(uid) ??
+                _dbContext.Option.Set(new Option
+                {
+                    Uid = uid,
+                });
+
+            await _dbContext.SaveChangesAsync();
 
             var response = new Response.Init
             {

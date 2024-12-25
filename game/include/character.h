@@ -101,9 +101,6 @@ private:
         0,
     };
 
-private:
-    std::vector<std::function<bool(const std::string&, const std::vector<fb::game::npc*>&)>> inline_interaction_funcs;
-
 public:
     fb::game::trade                            trade  = fb::game::trade(*this);
     fb::game::items                            items  = fb::game::items(*this);
@@ -1053,6 +1050,13 @@ public:
 
     /**
      * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override final;
+
+    /**
+     * @brief      { function_description }
      */
     void assert_thread() const final;
 
@@ -1521,20 +1525,20 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    container& push(fb::game::character& session);
+    container& push(fb::game::character& ch);
 
     /**
      * @brief      { function_description }
      *
-     * @param      session  The session
+     * @param      ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    container& erase(fb::game::character& session);
+    container& erase(fb::game::character& ch);
 
 public:
     /**
@@ -1549,11 +1553,11 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  session  The session
+     * @param[in]  ch  The ch
      *
      * @return     { description_of_the_return_value }
      */
-    bool contains(const fb::game::character& session) const;
+    bool contains(const fb::game::character& ch) const;
 
 public:
     /**

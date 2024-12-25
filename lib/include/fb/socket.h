@@ -30,7 +30,6 @@ private:
     fb::cryptor       _crt;
     handle_read_event _handle_received;
     handler_event     _handle_closed;
-    uint32_t          _fd = 0xFFFFFFFF;
     fb::stream        _stream;
 
 protected:
@@ -40,7 +39,7 @@ protected:
 
 public:
     socket(context& context, const handle_read_event& handle_received, const handler_event& handle_closed) :
-        boost::asio::ip::tcp::socket(context),
+        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
         _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed)
@@ -51,7 +50,7 @@ public:
            const fb::cryptor&       crt,
            const handle_read_event& handle_received,
            const handler_event&     handle_closed) :
-        boost::asio::ip::tcp::socket(context),
+        boost::asio::ip::tcp::socket(static_cast<boost::asio::io_context&>(context)),
         _context(context),
         _handle_received(handle_received),
         _handle_closed(handle_closed),
@@ -173,7 +172,7 @@ public:
         catch (...)
         { }
 
-        async::awaitable_get(this->_handle_closed(*this));
+        std::ignore = this->_handle_closed(*this);
     }
 
 public:

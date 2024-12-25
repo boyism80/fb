@@ -140,10 +140,12 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         if (response1.uid == -1)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        auto uid = response1.uid;
-        std::srand(std::time(nullptr));
+        auto        uid    = response1.uid;
+        static auto device = std::random_device{};
+        static auto gen    = std::mt19937{device()};
+        static auto dist   = std::uniform_int_distribution<uint32_t>{0, 0xFFFFFFFF};
 
-        auto i      = std::rand() % config<>("init:position").size();
+        auto i      = dist(gen) % config<>("init:position").size();
         auto init_x = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
         auto init_y = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
 
@@ -154,12 +156,12 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
                 uid,
                 name,
                 pw,
-                fb::config<uint32_t>("init:hp:base") + std::rand() % fb::config<uint32_t>("init:hp:range"), // hp
-                fb::config<uint32_t>("init:mp:base") + std::rand() % fb::config<uint32_t>("init:mp:range"), // mp
-                fb::config<uint16_t>("init:map"),                                                           // map
-                init_x,                         // position_x
-                init_y,                         // position_y
-                fb::config<bool>("admin mode"), // admin
+                fb::config<uint32_t>("init:hp:base") + dist(gen) % fb::config<uint32_t>("init:hp:range"), // hp
+                fb::config<uint32_t>("init:mp:base") + dist(gen) % fb::config<uint32_t>("init:mp:range"), // mp
+                fb::config<uint16_t>("init:map"),                                                         // map
+                init_x,                                                                                   // position_x
+                init_y,                                                                                   // position_y
+                fb::config<bool>("admin mode"),                                                           // admin
             });
 
         // 여기서 새로운 promise handler

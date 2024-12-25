@@ -1,13 +1,21 @@
 #ifndef __PROTOCOL_REQUEST_GAME_H__
 #define __PROTOCOL_REQUEST_GAME_H__
 
-#include <dialog.h>
 #include <fb/protocol/protocol.h>
-#include <mmo.h>
 #include <optional>
+#ifndef BOT
+#include <dialog.h>
+#include <mmo.h>
 #include <trade.h>
+#else
+#include <fb/model/model.h>
+#endif
 
+#ifndef BOT
 using namespace fb::game;
+#endif
+using namespace fb::model::enum_value;
+using namespace fb::model;
 
 namespace fb::protocol::game::request {
 
@@ -20,15 +28,19 @@ public:
     struct transfer_param
     {
     public:
-        uint16_t  map;
-        point16_t position;
+        uint16_t                   map;
+        fb::model::point<uint16_t> position;
     };
 
 public:
+#ifndef BOT
+    internal::Service from;
+#else
+    uint8_t from;
+#endif
     uint8_t                       enc_type;
     uint8_t                       key_size;
     uint8_t                       enc_key[0x09];
-    internal::Service             from;
     uint32_t                      id;
     std::string                   name;
     std::optional<transfer_param> transfer;
@@ -39,13 +51,13 @@ public:
 #else
     login(const fb::stream& params)
     {
-        auto reader = fb::stream_reader<big_endian>((const uint8_t*)params.data(), params.size());
-        this->deserialize(reader);
+        auto clone  = fb::stream{params};
+        auto reader = fb::stream_reader<big_endian>{clone};
+        async::awaitable_get(this->deserialize(reader));
     }
 #endif
 
 public:
-#ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -53,7 +65,7 @@ public:
         writer.write<uint8_t>(this->enc_type);
         writer.write<uint8_t>(this->key_size);
         writer.write((void*)this->enc_key, this->key_size);
-        writer.write<uint8_t>(this->from);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->from));
         writer.write<uint32_t>(this->id);
         writer.write<std::string, uint8_t>(this->name);
         writer.write<uint8_t>(this->transfer.has_value());
@@ -65,7 +77,7 @@ public:
             writer.write<uint16_t>(this->transfer.value().position.y);
         }
     }
-#endif
+
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
@@ -73,7 +85,11 @@ public:
         this->enc_type = reader.read<uint8_t>();
         this->key_size = reader.read<uint8_t>();
         reader.read((void*)this->enc_key, this->key_size);
-        this->from = (fb::protocol::internal::Service)reader.read<uint8_t>();
+#ifndef BOT
+        this->from = static_cast<internal::Service>(reader.read<uint8_t>());
+#else
+        this->from = reader.read<uint8_t>();
+#endif
 
         // additional parameters
         this->id      = reader.read<uint32_t>();
@@ -84,7 +100,7 @@ public:
             auto map       = reader.read<uint16_t>();
             auto x         = reader.read<uint16_t>();
             auto y         = reader.read<uint16_t>();
-            this->transfer = transfer_param{.map = map, .position = point16_t(x, y)};
+            this->transfer = transfer_param{.map = map, .position = fb::model::point<uint16_t>(x, y)};
         }
     }
 };
@@ -148,15 +164,15 @@ public:
     inline static uint8_t header = 0x32;
 
 public:
-    DIRECTION direction;
-    uint8_t   sequence;
-    point16_t position;
+    DIRECTION                  direction;
+    uint8_t                    sequence;
+    fb::model::point<uint16_t> position;
 
 public:
 #ifndef BOT
     move() = default;
 #else
-    move(DIRECTION direction, uint32_t sequence, point16_t position) :
+    move(DIRECTION direction, uint32_t sequence, fb::model::point<uint16_t> position) :
         direction(direction),
         sequence(sequence),
         position(position)
@@ -169,7 +185,7 @@ public:
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->direction);
+        writer.write<uint8_t>(static_cast<uint8_t>(this->direction));
         writer.write<uint8_t>(this->sequence);
         writer.write<uint16_t>(this->position.x);
         writer.write<uint16_t>(this->position.y);
@@ -192,9 +208,9 @@ public:
     inline static uint8_t header = 0x06;
 
 public:
-    point16_t begin;
-    size8_t   size;
-    uint16_t  crc;
+    fb::model::point<uint16_t> begin;
+    fb::model::size<uint8_t>   size;
+    uint16_t                   crc;
 
 public:
     update_move() = default;
@@ -416,14 +432,25 @@ public:
     } params;
 
 public:
+#ifndef BOT
     uint8_t  action;
     uint32_t fd;
     params   parameter;
+#else
+
+#endif
 
 public:
     trade() = default;
 
 public:
+#ifdef BOT
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    {
+        co_await header::serialize(writer);
+        // TODO: serialize bytes
+    }
+#else
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
@@ -444,6 +471,7 @@ public:
             break;
         }
     }
+#endif
 };
 
 class group : public fb::protocol::base::header
@@ -500,7 +528,6 @@ public:
     chat() = default;
 #else
     chat(bool shout, const std::string& message) :
-        fb::protocol::base::header(0x0E),
         shout(shout),
         message(message)
     { }
@@ -554,17 +581,28 @@ public:
     inline static uint8_t header = 0x3A;
 
 public:
+#ifndef BOT
     fb::game::dialog::interaction interaction;
     uint8_t                       action;  // NORMAL
     std::string                   message; // INPUT
     uint16_t                      index;   // MENU
     uint16_t                      pursuit; // SELL
     std::string                   name;    // SELL
+#else
+
+#endif
 
 public:
     dialog() = default;
 
 public:
+#ifdef BOT
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    {
+        co_await header::serialize(writer);
+        // TODO: serialize bytes
+    }
+#else
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
@@ -622,6 +660,7 @@ public:
         }
         }
     }
+#endif
 };
 
 class door : public fb::protocol::base::header

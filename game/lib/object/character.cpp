@@ -7,38 +7,7 @@ using namespace fb::game;
 character::character(fb::game::context& context, fb::socket<character>& socket) :
     life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
     _socket(socket)
-{
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_sell, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_buy, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_repair, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_deposit_money, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_withdraw_money, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_deposit_item, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_withdraw_item, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_sell_list, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_buy_list, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_sell_price, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_buy_price, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_show_deposited_money, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_rename_weapon, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_hold_item_list, this, std::placeholders::_1, std::placeholders::_2));
-    inline_interaction_funcs.push_back(
-        std::bind(&character::inline_hold_item_count, this, std::placeholders::_1, std::placeholders::_2));
-}
+{ }
 
 character::~character()
 { }
@@ -1521,288 +1490,17 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
         listener->on_message(*this, message, type);
 }
 
+fb::thread* character::thread() const
+{
+    if (this->_map == nullptr)
+        return this->context.threads.modular(this->_socket.fd());
+    else
+        return this->context.threads.modular(this->_map->model.id);
+}
+
 void character::assert_thread() const
 {
     fb::game::object::assert_thread();
-}
-
-bool character::inline_sell(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto count = std::optional<uint16_t>();
-    auto name  = std::string();
-    if (fb::model::const_value::regex::match_sell_message(message, name, count) == false)
-        return false;
-
-    auto model  = this->context.model.item.name2item(name);
-    auto bought = false;
-    for (auto npc : npcs)
-    {
-        if (npc->buy(*this, model, count, bought))
-            bought = true;
-    }
-
-    return bought;
-}
-
-bool character::inline_buy(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name  = std::string();
-    auto count = uint16_t(0);
-    if (fb::model::const_value::regex::match_buy_message(message, name, count) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    auto sold  = false;
-    for (auto npc : npcs)
-    {
-        if (npc->sell(*this, model, count, sold))
-            sold = true;
-    }
-
-    return sold;
-}
-
-bool character::inline_repair(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name = std::string();
-    if (fb::model::const_value::regex::match_repair_message(message, name) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    auto done  = false;
-    for (auto npc : npcs)
-    {
-        if (npc->repair(*this, model, done))
-            done = true;
-    }
-
-    return done;
-}
-
-bool character::inline_deposit_money(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto money = std::optional<uint32_t>();
-    if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
-        return false;
-
-    for (auto npc : npcs)
-    {
-        if (npc->hold_money(*this, money))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_withdraw_money(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto money = std::optional<uint32_t>();
-    if (fb::model::const_value::regex::match_withdraw_money_message(message, money) == false)
-        return false;
-
-    for (auto npc : npcs)
-    {
-        if (npc->return_money(*this, money))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_deposit_item(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name  = std::string();
-    auto count = std::optional<uint16_t>(0);
-    if (fb::model::const_value::regex::match_deposit_item_message(message, name, count) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    for (auto npc : npcs)
-    {
-        if (npc->hold_item(*this, model, count))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_withdraw_item(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name  = std::string();
-    auto count = std::optional<uint16_t>(0);
-    if (fb::model::const_value::regex::match_withdraw_item_message(message, name, count) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    for (auto npc : npcs)
-    {
-        if (npc->return_item(*this, model, count))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_sell_list(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    if (fb::model::const_value::regex::match_sell_list(message) == false)
-        return false;
-
-    for (auto npc : npcs)
-    {
-        npc->sell_list();
-    }
-
-    return true;
-}
-
-bool character::inline_buy_list(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    if (fb::model::const_value::regex::match_buy_list(message) == false)
-        return false;
-
-    for (auto npc : npcs)
-    {
-        npc->buy_list();
-    }
-
-    return true;
-}
-
-bool character::inline_sell_price(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name = std::string();
-    if (fb::model::const_value::regex::match_sell_price(message, name) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    for (auto npc : npcs)
-    {
-        npc->sell_price(model);
-    }
-
-    return true;
-}
-
-bool character::inline_buy_price(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name = std::string();
-    if (fb::model::const_value::regex::match_buy_price(message, name) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    for (auto npc : npcs)
-    {
-        npc->buy_price(model);
-    }
-
-    return true;
-}
-
-bool character::inline_show_deposited_money(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    if (fb::model::const_value::regex::match_deposited_money(message) == false)
-        return false;
-
-    for (auto npc : npcs)
-    {
-        if (npc->deposited_money(*this))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_rename_weapon(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    std::string model_name, custom_name;
-    if (fb::model::const_value::regex::match_rename_weapon(message, model_name, custom_name) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(model_name);
-    for (auto npc : npcs)
-    {
-        if (npc->rename_weapon(*this, model, custom_name))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_hold_item_list(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    if (fb::model::const_value::regex::match_hold_item_list(message) == false)
-        return false;
-
-    for (auto npc : npcs)
-    {
-        if (npc->hold_item_list(*this))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_hold_item_count(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    auto name = std::string();
-    if (fb::model::const_value::regex::match_hold_item_count(message, name) == false)
-        return false;
-
-    auto model = this->context.model.item.name2item(name);
-    for (auto npc : npcs)
-    {
-        if (npc->hold_item_count(*this, model))
-            return true;
-    }
-
-    return false;
-}
-
-bool character::inline_interaction(const std::string& message, const std::vector<npc*>& npcs)
-{
-    this->assert_thread();
-
-    if (npcs.size() == 0)
-        return false;
-
-    for (auto& fn : this->inline_interaction_funcs)
-    {
-        if (fn(message, npcs))
-            return true;
-    }
-
-    return false;
 }
 
 fb::protocol::internal::Character character::to_protocol() const
@@ -1867,15 +1565,15 @@ character::container::container(const std::vector<character*>& right)
 character::container::~container()
 { }
 
-character::container& character::container::push(character& session)
+character::container& character::container::push(character& ch)
 {
-    this->push_back(&session);
+    this->push_back(&ch);
     return *this;
 }
 
-character::container& character::container::erase(character& session)
+character::container& character::container::erase(character& ch)
 {
-    std::vector<character*>::erase(std::find(this->begin(), this->end(), &session));
+    std::vector<character*>::erase(std::find(this->begin(), this->end(), &ch));
     return *this;
 }
 
@@ -1887,9 +1585,9 @@ character* character::container::find(const std::string& name)
     return i != this->end() ? *i : nullptr;
 }
 
-bool character::container::contains(const character& session) const
+bool character::container::contains(const character& ch) const
 {
-    return std::find(this->cbegin(), this->cend(), &session) != this->end();
+    return std::find(this->cbegin(), this->cend(), &ch) != this->end();
 }
 
 character* character::container::operator[] (const std::string& name)

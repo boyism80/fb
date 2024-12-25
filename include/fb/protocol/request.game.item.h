@@ -2,12 +2,15 @@
 #define __PROTOCOL_REQUEST_GAME_ITEM_H__
 
 #include <fb/protocol/protocol.h>
-#include <item.h>
 #include <fb/model/model.h>
+#ifndef BOT
+#include <item.h>
+#endif
 
-using namespace fb::model::enum_value;
-
+#ifndef BOT
 using namespace fb::game;
+#endif
+using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request::item {
 
@@ -15,7 +18,7 @@ class active : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x1C;
-    
+
 public:
     uint8_t index;
 
@@ -34,7 +37,7 @@ class inactive : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x1F;
-    
+
 public:
     EQUIPMENT_PARTS parts;
 
@@ -53,7 +56,7 @@ class drop : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x08;
-    
+
 public:
     uint8_t index;
     bool    all;
@@ -74,7 +77,7 @@ class drop_cash : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x24;
-    
+
 public:
     uint32_t chunk;
 
@@ -93,7 +96,7 @@ class mix : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x6B;
-    
+
 public:
     std::vector<uint8_t> indices;
 
@@ -114,7 +117,7 @@ class throws : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x17;
-    
+
 public:
     bool    all;
     uint8_t index;
@@ -135,7 +138,7 @@ class info : public fb::protocol::base::header
 {
 public:
     inline static uint8_t header = 0x66;
-    
+
 public:
     uint16_t position;
     uint8_t  slot;

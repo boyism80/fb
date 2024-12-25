@@ -33,7 +33,7 @@ public:
 #ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string, uint8_t>(this->id);
         writer.write<std::string, uint8_t>(this->pw);
@@ -79,7 +79,7 @@ public:
 #ifdef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->enc_type);
         writer.write<uint8_t>(this->enc_key_size);

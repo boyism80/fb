@@ -163,11 +163,11 @@ int fb::game::map::builtin_door(lua_State* lua)
     if (map == nullptr)
         return 0;
 
-    auto session = thread->touserdata<character>(2);
-    if (session == nullptr)
+    auto ch = thread->touserdata<character>(2);
+    if (ch == nullptr)
         return 0;
 
-    auto door = map->doors.find(*session);
+    auto door = map->doors.find(*ch);
     if (door == nullptr)
         thread->pushnil();
     else

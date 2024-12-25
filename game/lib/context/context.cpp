@@ -174,12 +174,28 @@ async::task<void> context::handle_start()
     this->command("타일", &context::handle_command_tile, true);
     this->command("서버저장", &context::handle_command_save, true);
     this->command("맵오브젝트", &context::handle_command_mapobj, true);
-    this->command("랜덤이동", &context::handle_command_randmap, true);
+    this->command("랜덤이동", &context::handle_command_randmap, false);
     this->command("엔피씨생성", &context::handle_command_npc, true);
     this->command("내구도", &context::handle_command_durability, true);
     this->command("동시성테스트", &context::handle_command_concurrency, true);
     this->command("sleep", &context::handle_command_sleep, true);
     this->command("맵타일", &context::handle_map_tile, true);
+
+    this->bind_npc_interaction(&context::npc_interaction_sell);
+    this->bind_npc_interaction(&context::npc_interaction_buy);
+    this->bind_npc_interaction(&context::npc_interaction_repair);
+    this->bind_npc_interaction(&context::npc_interaction_deposit_money);
+    this->bind_npc_interaction(&context::npc_interaction_withdraw_money);
+    this->bind_npc_interaction(&context::npc_interaction_deposit_item);
+    this->bind_npc_interaction(&context::npc_interaction_withdraw_item);
+    this->bind_npc_interaction(&context::npc_interaction_sell_list);
+    this->bind_npc_interaction(&context::npc_interaction_buy_list);
+    this->bind_npc_interaction(&context::npc_interaction_sell_price);
+    this->bind_npc_interaction(&context::npc_interaction_buy_price);
+    this->bind_npc_interaction(&context::npc_interaction_show_deposited_money);
+    this->bind_npc_interaction(&context::npc_interaction_rename_weapon);
+    this->bind_npc_interaction(&context::npc_interaction_hold_item_list);
+    this->bind_npc_interaction(&context::npc_interaction_hold_item_count);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const

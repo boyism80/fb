@@ -1,45 +1,33 @@
 #include <thread>
-#include <boost/asio.hpp>
-#include <boost/thread.hpp>
-#include <fb/bot/bot.h>
+#include <bot.h>
 
 using namespace std;
 using namespace boost::asio;
 
 int main(int, char**)
 {
-    using guard_type       = executor_work_guard<io_context::executor_type>;
+    using guard_type = executor_work_guard<io_context::executor_type>;
 
-    constexpr auto io_size = 1;
-    constexpr auto count   = 1;
-
-    io_context     ios[io_size];
-    auto           guards         = vector<unique_ptr<guard_type>>();
-    auto           bot_containers = vector<unique_ptr<fb::bot::bot_container>>();
-    for (auto& io : ios)
+    auto io_size        = fb::config<uint32_t>("io_size");
+    auto ios            = std::vector<std::unique_ptr<io_context>>{};
+    auto guards         = vector<unique_ptr<guard_type>>();
+    auto bot_containers = vector<unique_ptr<fb::bot::bot_container>>();
+    for (int i = 0; i < io_size; i++)
     {
-        guards.push_back(std::make_unique<guard_type>(io.get_executor()));
-        bot_containers.push_back(make_unique<fb::bot::bot_container>(io));
+        auto io = std::make_unique<io_context>();
+        guards.push_back(std::make_unique<guard_type>(io->get_executor()));
+        bot_containers.push_back(make_unique<fb::bot::bot_container>(*io.get()));
+        ios.push_back(std::move(io));
     }
 
-    auto endpoint = ip::tcp::endpoint(ip::address::from_string("127.0.0.1"), 3001);
-    for (auto& bots : bot_containers)
-    {
-        for (int i = 0; i < count / io_size; i++)
-        {
-            auto bot = bots->create<fb::bot::gateway_bot>();
-            bot->connect(endpoint);
-        }
-    }
-
-    thread_pool thread_pool(io_size);
+    auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)
     {
-        post(thread_pool, [&io] {
-            io.run();
+        post(threads, [&io] {
+            io->run();
         });
     }
 
-    thread_pool.join();
+    threads.join();
     return 0;
 }

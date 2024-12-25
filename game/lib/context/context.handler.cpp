@@ -597,7 +597,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    if (ch->admin() && co_await handle_command(*ch, request.message))
+    if (co_await handle_command(*ch, request.message))
         co_return true;
 
     ch->chat(request.message, request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL);
@@ -619,7 +619,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         }
     }
 
-    ch->inline_interaction(request.message, npcs);
+    this->npc_interaction(*ch, request.message, npcs);
 
     co_return true;
 }

@@ -49,22 +49,22 @@ void fb::game::clan::title(const std::string& value)
     this->_title = value;
 }
 
-bool fb::game::clan::enter(fb::game::character& session)
+bool fb::game::clan::enter(fb::game::character& ch)
 {
-    if (this->_members.contains(session))
+    if (this->_members.contains(ch))
         return false;
 
-    this->_members.push(session);
-    session._clan = this;
+    this->_members.push(ch);
+    ch._clan = this;
     return true;
 }
 
-bool fb::game::clan::leave(fb::game::character& session)
+bool fb::game::clan::leave(fb::game::character& ch)
 {
-    if (this->_members.contains(session) == false)
+    if (this->_members.contains(ch) == false)
         return false;
 
-    this->_members.erase(session);
-    session._clan = nullptr;
+    this->_members.erase(ch);
+    ch._clan = nullptr;
     return true;
 }

@@ -19,7 +19,7 @@ namespace fb {
  * @tparam     T     { description }
  */
 template <typename T>
-class acceptor : public fb::context
+class acceptor : public fb::acceptable
 {
 private:
     using handle_func     = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::base::header&)>;
@@ -51,7 +51,7 @@ protected:
      * @param[in]  port     The port
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
-        fb::context(context, name, port),
+        fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
         _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
     { }
@@ -364,10 +364,9 @@ private:
                 if (socket.data() == nullptr)
                     co_return;
 
-                auto& casted = static_cast<fb::socket<T>&>(socket);
-                co_await this->threads.switching(casted);
-                std::ignore = co_await this->handle_disconnected(casted);
-                this->sockets.erase(casted);
+                co_await this->threads.switching(socket);
+                std::ignore = co_await this->handle_disconnected(socket);
+                this->sockets.erase(socket);
             }
             catch (std::exception& e)
             {
@@ -684,31 +683,6 @@ protected:
     void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&))
     {
         this->bind(fn, Request::header);
-    }
-
-protected:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fn        The function
-     * @param[in]  duration  The duration
-     */
-    template <typename Class>
-    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
-    {
-        auto cfunc = std::bind(fn, static_cast<Class*>(this));
-        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
-        auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
-        auto callback     = [=](const boost::system::error_code&) {
-            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
-                timer->expires_at(timer->expires_at() +
-                                  boost::posix_time::milliseconds(
-                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
-                timer->async_wait(*callback_ptr.get());
-            });
-        };
-        *callback_ptr = callback;
-        timer->async_wait(*callback_ptr.get());
     }
 
 public:

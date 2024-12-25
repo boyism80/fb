@@ -12,7 +12,7 @@
 #include <fb/protocol/response.game.spell.h>
 #include <fb/protocol/response.game.object.h>
 #include <fb/protocol/response.game.life.h>
-#include <fb/protocol/response.game.session.h>
+#include <fb/protocol/response.game.character.h>
 #include <fb/protocol/response.game.dialog.h>
 #include <fb/protocol/response.game.board.h>
 #include <fb/protocol/response.game.trade.h>

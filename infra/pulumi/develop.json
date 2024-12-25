@@ -275,5 +275,27 @@
             "redis": "section-2",
             "rabbitmq": "section-2"
         }
+    },
+    "write-back": {
+        "section-1": {
+            "mysql": "section-1",
+            "redis": "section-1"
+        },
+        "section-2": {
+            "mysql": "section-2",
+            "redis": "section-2"
+        }
+    },
+    "bot": {
+        "section-1": {
+            "io_size": 5,
+            "interval": 60000,
+            "spawn_per_interval": 50,
+            "spawn_count": 5000,
+            "thread": {
+                "logic": 12
+            },
+            "replicas": 5
+        }
     }
 }

@@ -2,10 +2,9 @@
 
 using namespace fb;
 
-thread_container::thread_container(boost::asio::io_context& context) :
+thread_container::thread_container(boost::asio::io_context& context, uint32_t count) :
     _context(context)
 {
-    auto count = config<uint32_t>("thread:logic");
     if (count > 0)
         this->_keys = std::make_unique<std::thread::id[]>(count);
 

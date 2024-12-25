@@ -2,7 +2,9 @@
 #define __PROTOCOL_RESPONSE_DIALOG_ITEM_H__
 
 #include <fb/protocol/protocol.h>
+#ifndef BOT
 #include <npc.h>
+#endif
 
 namespace fb::protocol::game::response::dialog {
 
@@ -12,13 +14,18 @@ public:
     inline static uint8_t header = 0x30;
 
 public:
+#ifndef BOT
     const fb::model::object&            object;
     const std::string                   message;
     const bool                          button_prev;
     const bool                          button_next;
     const fb::game::dialog::interaction interaction;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     common(const fb::model::object&      object,
            const std::string&            message,
            bool                          button_prev,
@@ -38,11 +45,15 @@ public:
            fb::game::dialog::interaction interaction) :
         common(object.based(), message, button_prev, button_next, interaction)
     { }
+#else
+    common() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x00);                                    // unknown
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction)); // interaction
@@ -59,6 +70,13 @@ public:
         writer.write<uint8_t>(this->button_next);
         writer.write<std::string, uint16_t>(this->message);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class menu : public fb::protocol::base::header
@@ -67,12 +85,17 @@ public:
     inline static uint8_t header = 0x2F;
 
 public:
+#ifndef BOT
     const fb::model::npc&               npc;
     const std::vector<std::string>      menus;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     menu(const fb::model::npc&           npc,
          const std::vector<std::string>& menus,
          const std::string&              message,
@@ -82,11 +105,15 @@ public:
         message(message),
         interaction(interaction)
     { }
+#else
+    menu() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x01);
         writer.write<uint8_t>(static_cast<uint8_t>(interaction));
@@ -117,6 +144,13 @@ public:
 
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class slot : public fb::protocol::base::header
@@ -125,12 +159,17 @@ public:
     inline static uint8_t header = 0x2F;
 
 public:
+#ifndef BOT
     const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     slot(const fb::model::npc&         npc,
          const std::vector<uint8_t>&   slots,
          const std::string&            message,
@@ -140,11 +179,15 @@ public:
         message(message),
         interaction(interaction)
     { }
+#else
+    slot() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x05);
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -164,6 +207,13 @@ public:
             writer.write<uint8_t>(slot);
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class item : public fb::protocol::base::header
@@ -172,13 +222,18 @@ public:
     inline static uint8_t header = 0x2F;
 
 public:
+#ifndef BOT
     const fb::model::npc&               npc;
     const fb::game::dialog::item_pairs& items;
     const std::string                   message;
     const uint16_t                      pursuit;
     const fb::game::dialog::interaction interaction;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     item(const fb::model::npc&               npc,
          const fb::game::dialog::item_pairs& items,
          const std::string&                  message,
@@ -190,11 +245,15 @@ public:
         pursuit(pursuit),
         interaction(interaction)
     { }
+#else
+    item() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x04);
         writer.write<uint8_t>(static_cast<uint8_t>(interaction));
@@ -221,6 +280,13 @@ public:
 
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class input : public fb::protocol::base::header
@@ -229,12 +295,17 @@ public:
     inline static uint8_t header = 0x2F;
 
 public:
+#ifndef BOT
     const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     input(const fb::model::npc&         npc,
           const std::string&            message,
           fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT) :
@@ -242,11 +313,15 @@ public:
         message(message),
         interaction(interaction)
     { }
+#else
+    input() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -261,6 +336,13 @@ public:
         writer.write<std::string, uint16_t>(this->message);
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class input_ext : public fb::protocol::base::header
@@ -269,6 +351,7 @@ public:
     inline static uint8_t header = 0x30;
 
 public:
+#ifndef BOT
     const fb::model::npc&               npc;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
@@ -276,8 +359,12 @@ public:
     const int                           maxlen;
     const bool                          button_prev;
     const fb::game::dialog::interaction interaction;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     input_ext(const fb::model::npc&         npc,
               const std::string&            message,
               const std::string&            top,
@@ -293,11 +380,15 @@ public:
         button_prev(button_prev),
         interaction(interaction)
     { }
+#else
+    input_ext() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x04);
         writer.write<uint8_t>(static_cast<uint8_t>(this->interaction));
@@ -318,6 +409,13 @@ public:
         writer.write<std::string, uint8_t>(this->bottom);
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 } // namespace fb::protocol::game::response::dialog

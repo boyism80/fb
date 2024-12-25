@@ -9,10 +9,6 @@ namespace fb {
  * @brief      This class describes a thread.
  */
 class thread;
-/**
- * @brief      This class describes threads.
- */
-class threads;
 
 /**
  * @brief      This class describes a thread switchable.

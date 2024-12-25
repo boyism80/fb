@@ -198,8 +198,8 @@ int fb::game::object::builtin_position(lua_State* lua)
 
     if (obj->is(OBJECT_TYPE::CHARACTER))
     {
-        auto session = static_cast<character*>(obj);
-        ctx->send(*obj, fb::protocol::game::response::character::position(*session), context::scope::SELF);
+        auto ch = static_cast<character*>(obj);
+        ctx->send(*obj, fb::protocol::game::response::character::position(*ch), context::scope::SELF);
     }
 
     return 0;

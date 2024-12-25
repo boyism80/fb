@@ -72,7 +72,7 @@ int fb::model::object::builtin_color(lua_State* lua)
 
 int fb::model::object::builtin_dialog(lua_State* lua)
 {
-    // Ex) npc:dialog(session, "hello", true, true);
+    // Ex) npc:dialog(ch, "hello", true, true);
 
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -90,15 +90,15 @@ int fb::model::object::builtin_dialog(lua_State* lua)
         if (object == nullptr)
             return 0;
 
-        auto session = thread->touserdata<fb::game::character>(2);
-        if (session == nullptr)
+        auto ch = thread->touserdata<fb::game::character>(2);
+        if (ch == nullptr)
             return 0;
 
         auto message     = thread->tostring(3);
         auto button_prev = argc < 4 ? false : thread->toboolean(4);
         auto button_next = argc < 5 ? false : thread->toboolean(5);
 
-        session->dialog.show(*object, message, button_prev, button_next);
+        ch->dialog.show(*object, message, button_prev, button_next);
         return thread->yield(1);
     }
     catch (std::exception&)

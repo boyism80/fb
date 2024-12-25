@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <string>
 
-namespace fb { namespace bot {
+namespace fb::bot {
 
 class board
 {
@@ -24,6 +24,6 @@ public:
 class article
 {};
 
-} }
+}
 
 #endif

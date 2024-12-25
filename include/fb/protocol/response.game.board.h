@@ -4,7 +4,7 @@
 #include <fb/protocol/protocol.h>
 #include <fb/model/model.h>
 #ifdef BOT
-#include <fb/bot/board.h>
+#include <bot.board.h>
 #endif
 
 namespace fb::protocol::game::response::board {
@@ -27,14 +27,14 @@ public:
 #else
     sections(const fb::model::model& model) :
         model(model)
-#endif
     { }
+#endif
 
 public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         auto size = this->model.board.size();
 
         writer.write<uint8_t>(header);
@@ -95,7 +95,7 @@ public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x02);
         writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
@@ -149,7 +149,7 @@ public:
 #ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(static_cast<uint8_t>(button_flags));
@@ -187,7 +187,7 @@ public:
 public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
-    	co_await header::serialize(writer);
+        co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<uint8_t>(this->refresh ? 0x06 : 0x07); // mail 관련 0x06인 것 같다. 확인 필요
         writer.write<uint8_t>(this->deleted);

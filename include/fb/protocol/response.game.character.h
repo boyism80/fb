@@ -2,12 +2,20 @@
 #define __PROTOCOL_RESPONSE_GAME_SESSION_H__
 
 #include <fb/protocol/protocol.h>
-#include <character.h>
 #include <fb/model/model.h>
+#ifndef BOT
+#include <character.h>
 #include <clan.h>
 #include <group.h>
+#else
+#include <enum_ext.h>
+#endif
 
+#ifndef BOT
 using namespace fb::game;
+#else
+using namespace fb::model;
+#endif
 
 namespace fb::protocol::game::response::character {
 
@@ -17,16 +25,25 @@ public:
     inline static uint8_t header = 0x0A;
 
 public:
+#ifndef BOT
     const std::string  text;
     const MESSAGE_TYPE type;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     message(const std::string& text, MESSAGE_TYPE type) :
         text(text),
         type(type)
     { }
+#else
+    message() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -34,16 +51,28 @@ public:
         writer.write<uint8_t>(static_cast<uint8_t>(this->type));
         writer.write<std::string, uint16_t>(this->text);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class show : public fb::protocol::base::header
 {
 public:
+#ifndef BOT
     const fb::game::character& ch;
     const fb::game::object&    to;
     const bool                 light;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     show(const fb::game::character& ch, const fb::game::object& to, bool light = false) :
         ch(ch),
         to(to),
@@ -51,8 +80,12 @@ public:
     { }
 
     show(const show&) = delete;
+#else
+    show() = default;
+#endif
 
 private:
+#ifndef BOT
     bool clock_visible() const
     {
         if (&this->ch == &this->to)
@@ -74,8 +107,10 @@ private:
 
         return mine.get() == your.get();
     }
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -166,6 +201,13 @@ public:
         writer.write<uint8_t>(0x04);                         // head mark
         writer.write<std::string, uint8_t>(this->ch.name()); // name
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class id : public fb::protocol::base::header
@@ -221,22 +263,22 @@ public:
 
 public:
 #ifdef BOT
-    STATE_LEVEL STATE_LEVEL;
-    uint8_t     nation       = 0;
-    uint8_t     creature     = 0;
-    uint8_t     level        = 0;
-    uint32_t    base_hp      = 0;
-    uint32_t    base_mp      = 0;
-    uint8_t     strength     = 0;
-    uint8_t     intelligence = 0;
-    uint8_t     dexteritry   = 0;
-    uint32_t    hp           = 0;
-    uint32_t    mp           = 0;
-    uint32_t    exp          = 0;
-    uint32_t    money        = 0;
-    uint32_t    condition    = 0;
-    uint8_t     mail         = 0;
-    uint8_t     fast_move    = 0;
+    STATE_LEVEL level;
+    uint8_t     ch_nation       = 0;
+    uint8_t     ch_creature     = 0;
+    uint8_t     ch_level        = 0;
+    uint32_t    ch_base_hp      = 0;
+    uint32_t    ch_base_mp      = 0;
+    uint8_t     ch_strength     = 0;
+    uint8_t     ch_intelligence = 0;
+    uint8_t     ch_dexteritry   = 0;
+    uint32_t    ch_hp           = 0;
+    uint32_t    ch_mp           = 0;
+    uint32_t    ch_exp          = 0;
+    uint32_t    ch_money        = 0;
+    uint32_t    ch_condition    = 0;
+    uint8_t     ch_mail         = 0;
+    uint8_t     ch_fast_move    = 0;
 #else
     const fb::game::character& ch;
     const STATE_LEVEL          level;
@@ -307,54 +349,54 @@ public:
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
     {
         co_await header::deserialize(reader);
-        this->STATE_LEVEL = static_cast<fb::model::enum_value::STATE_LEVEL>(reader.read<uint8_t>());
-        if (enum_in(this->STATE_LEVEL, STATE_LEVEL::BASED))
+        this->level = static_cast<fb::model::enum_value::STATE_LEVEL>(reader.read<uint8_t>());
+        if (enum_in(this->level, STATE_LEVEL::BASED))
         {
-            this->nation   = reader.read<uint8_t>();
-            this->creature = reader.read<uint8_t>();
+            this->ch_nation   = reader.read<uint8_t>();
+            this->ch_creature = reader.read<uint8_t>();
             reader.read<uint8_t>();
-            this->level        = reader.read<uint8_t>();
-            this->base_hp      = reader.read<uint32_t>();
-            this->base_mp      = reader.read<uint32_t>();
-            this->strength     = reader.read<uint8_t>();
-            this->intelligence = reader.read<uint8_t>();
+            this->ch_level        = reader.read<uint8_t>();
+            this->ch_base_hp      = reader.read<uint32_t>();
+            this->ch_base_mp      = reader.read<uint32_t>();
+            this->ch_strength     = reader.read<uint8_t>();
+            this->ch_intelligence = reader.read<uint8_t>();
             reader.read<uint8_t>();
             reader.read<uint8_t>();
-            this->dexteritry = reader.read<uint8_t>();
+            this->ch_dexteritry = reader.read<uint8_t>();
             reader.read<uint8_t>();
             reader.read<uint32_t>();
             reader.read<uint8_t>();
         }
 
-        if (enum_in(this->STATE_LEVEL, STATE_LEVEL::HP_MP))
+        if (enum_in(this->level, STATE_LEVEL::HP_MP))
         {
-            this->hp = reader.read<uint32_t>();
-            this->mp = reader.read<uint32_t>();
+            this->ch_hp = reader.read<uint32_t>();
+            this->ch_mp = reader.read<uint32_t>();
         }
 
-        if (enum_in(this->STATE_LEVEL, STATE_LEVEL::EXP_MONEY))
+        if (enum_in(this->level, STATE_LEVEL::EXP_MONEY))
         {
-            this->exp   = reader.read<uint32_t>();
-            this->money = reader.read<uint32_t>();
+            this->ch_exp   = reader.read<uint32_t>();
+            this->ch_money = reader.read<uint32_t>();
         }
 
-        if (enum_in(this->STATE_LEVEL, STATE_LEVEL::CONDITION))
+        if (enum_in(this->level, STATE_LEVEL::CONDITION))
         {
             if (reader.read<uint8_t>())
-                this->condition |= (uint32_t)CONDITION::MOVE;
+                this->ch_condition |= (uint32_t)CONDITION::MOVE;
             if (reader.read<uint8_t>())
-                this->condition |= (uint32_t)CONDITION::SIGHT;
+                this->ch_condition |= (uint32_t)CONDITION::SIGHT;
             if (reader.read<uint8_t>())
-                this->condition |= (uint32_t)CONDITION::HEAR;
+                this->ch_condition |= (uint32_t)CONDITION::HEAR;
             if (reader.read<uint8_t>())
-                this->condition |= (uint32_t)CONDITION::ORAL;
+                this->ch_condition |= (uint32_t)CONDITION::ORAL;
             if (reader.read<uint8_t>())
-                this->condition |= (uint32_t)CONDITION::MAP;
+                this->ch_condition |= (uint32_t)CONDITION::MAP;
         }
 
-        this->mail      = reader.read<uint8_t>();
-        this->fast_move = reader.read<uint8_t>();
-        reader.read<uint8_t>();
+        this->ch_mail      = reader.read<uint8_t>();
+        this->ch_fast_move = reader.read<uint8_t>();
+        std::ignore        = reader.read<uint8_t>();
     }
 #endif
 };
@@ -368,8 +410,8 @@ public:
 #ifndef BOT
     const fb::game::character& ch;
 #else
-    point16_t abs;
-    point16_t rel;
+    point<uint16_t> abs;
+    point<uint16_t> rel;
 #endif
 
 public:
@@ -430,16 +472,25 @@ public:
     inline static uint8_t header = 0x39;
 
 public:
+#ifndef BOT
     const fb::game::character& ch;
     const fb::model::model&    model;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     internal_info(const fb::game::character& ch, const fb::model::model& model) :
         ch(ch),
         model(model)
     { }
+#else
+    internal_info() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -516,6 +567,13 @@ public:
         }
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class external_info : public fb::protocol::base::header
@@ -524,16 +582,25 @@ public:
     inline static uint8_t header = 0x34;
 
 public:
+#ifndef BOT
     const fb::game::character& ch;
     const fb::model::model&    model;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     external_info(const fb::game::character& ch, const fb::model::model& model) :
         ch(ch),
         model(model)
     { }
+#else
+    external_info() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -624,6 +691,13 @@ public:
         }
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class option : public fb::protocol::base::header
@@ -684,18 +758,27 @@ public:
     inline static uint8_t header = 0x16;
 
 public:
+#ifndef BOT
     const fb::game::character& ch;
     const fb::game::item&      item;
-    const point16_t            to;
+    const point<uint16_t>      to;
+#else
+
+#endif
 
 public:
-    throws(const fb::game::character& ch, const fb::game::item& item, const point16_t& to) :
+#ifndef BOT
+    throws(const fb::game::character& ch, const fb::game::item& item, const point<uint16_t>& to) :
         ch(ch),
         item(item),
         to(to)
     { }
+#else
+    throws() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -712,6 +795,13 @@ public:
         writer.write<uint8_t>(0x02);
         writer.write<uint8_t>(0x00);
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 class action : public fb::protocol::base::header
@@ -720,20 +810,29 @@ public:
     inline static uint8_t header = 0x1A;
 
 public:
+#ifndef BOT
     const fb::game::character& me;
     const ACTION               value;
     const DURATION             duration;
     const uint8_t              sound;
+#else
+
+#endif
 
 public:
+#ifndef BOT
     action(const fb::game::character& me, ACTION value, DURATION duration, uint8_t sound = 0x00) :
         me(me),
         value(value),
         duration(duration),
         sound(sound)
     { }
+#else
+    action() = default;
+#endif
 
 public:
+#ifndef BOT
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
@@ -743,6 +842,13 @@ public:
         writer.write<uint16_t>(static_cast<uint16_t>(this->duration)); // duration
         writer.write<uint8_t>(this->sound);                            // sound
     }
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader)
+    {
+        co_await header::deserialize(reader);
+        // TODO: deserialize bytes
+    }
+#endif
 };
 
 } // namespace fb::protocol::game::response::character

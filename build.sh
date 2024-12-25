@@ -44,6 +44,17 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+sudo docker build --tag ghcr.io/boyism80/fb/bot:latest -f bot/Dockerfile .
+if [ $? -ne 0 ]; then
+    echo "build fb/bot failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/bot:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/bot failed"
+    exit $?
+fi
+
 sudo docker build --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
 if [ $? -ne 0 ]; then
     echo "build fb/internal failed"
@@ -52,6 +63,17 @@ fi
 sudo docker push ghcr.io/boyism80/fb/internal:latest
 if [ $? -ne 0 ]; then
     echo "push fb/internal failed"
+    exit $?
+fi
+
+sudo docker build --tag ghcr.io/boyism80/fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
+if [ $? -ne 0 ]; then
+    echo "build fb/write-back failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/write-back:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/write-back failed"
     exit $?
 fi
 
