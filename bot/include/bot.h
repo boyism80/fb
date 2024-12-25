@@ -291,7 +291,8 @@ public:
         auto id     = this->_sequence++;
         auto bot    = new T(*this, id);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
-            thread.template data<bot_thread_params>()->bots.insert({id, std::shared_ptr<base_bot>(bot)});
+            auto params = thread.template data<bot_thread_params>();
+            params->bots.insert({id, std::shared_ptr<base_bot>(bot)});
             co_return;
         });
         return bot;
@@ -303,7 +304,8 @@ public:
         auto id     = this->_sequence++;
         auto bot    = new T(*this, id, params);
         std::ignore = bot->thread()->dispatch([id, bot](auto& thread) -> async::task<void> {
-            thread.template data<bot_thread_params>()->bots.insert({id, std::shared_ptr<base_bot>(bot)});
+            auto params = thread.template data<bot_thread_params>();
+            params->bots.insert({id, std::shared_ptr<base_bot>(bot)});
             co_return;
         });
         return bot;

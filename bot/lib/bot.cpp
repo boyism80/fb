@@ -83,7 +83,7 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
 
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
-    this->async_connect(endpoint, [&](const auto& e) {
+    this->async_connect(endpoint, [this, id = this->id, thread = this->thread()](const auto& e) {
         boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner), this->recv(), boost::asio::detached);
         std::ignore = this->on_connected();
     });
