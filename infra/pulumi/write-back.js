@@ -7,7 +7,7 @@ module.exports = {
         let index = 0
         const ports = []
         const appLabels = { app: "write-back" }
-        for(const [section, sectionConf] of Object.entries(conf.write-back)) {
+        for(const [section, sectionConf] of Object.entries(conf['write-back'])) {
             const config = {
                 "Logging": {
                     "LogLevel": {

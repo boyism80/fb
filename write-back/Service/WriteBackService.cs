@@ -18,7 +18,7 @@ namespace WriteBack.Service
         private readonly IConfiguration _configuration;
         private readonly ILogger<Http.Service.WriteBackService> _logger;
         private const string RedisBufferKey = "exec-buffer";
-        private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
+        private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
         public WriteBackService(RedisService redisService,
             IConfiguration configuration,

@@ -276,6 +276,24 @@
             "rabbitmq": "section-2"
         }
     },
+    "write-back": {
+        "section-1": {
+            "port": {
+                "cluster": 80,
+                "node": 30200
+            },
+            "mysql": "section-1",
+            "redis": "section-1"
+        },
+        "section-2": {
+            "port": {
+                "cluster": 81,
+                "node": 30201
+            },
+            "mysql": "section-2",
+            "redis": "section-2"
+        }
+    },
     "bot": {
         "section-1": {
             "io_size": 5,
