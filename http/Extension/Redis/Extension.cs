@@ -1,5 +1,4 @@
-﻿using Fb.Model.EnumValue;
-using Http.Service;
+﻿using Http.Service;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;

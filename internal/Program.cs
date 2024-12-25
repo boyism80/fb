@@ -71,7 +71,7 @@ public class Program
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddSingleton<WriteBackService>();
-        builder.Services.AddHostedService(p => p.GetRequiredService<WriteBackService>());
+        builder.Services.AddTransient(p => p.GetRequiredService<WriteBackService>());
 
         var app = builder.Build();
         var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;

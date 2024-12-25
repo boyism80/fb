@@ -66,6 +66,17 @@ if [ $? -ne 0 ]; then
     exit $?
 fi
 
+sudo docker build --tag ghcr.io/boyism80/fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
+if [ $? -ne 0 ]; then
+    echo "build fb/write-back failed"
+    exit $?
+fi
+sudo docker push ghcr.io/boyism80/fb/write-back:latest
+if [ $? -ne 0 ]; then
+    echo "push fb/write-back failed"
+    exit $?
+fi
+
 pushd infra/pulumi
 pulumi down -y && pulumi up -y
 popd
