@@ -364,10 +364,9 @@ private:
                 if (socket.data() == nullptr)
                     co_return;
 
-                auto& casted = static_cast<fb::socket<T>&>(socket);
-                co_await this->threads.switching(casted);
-                std::ignore = co_await this->handle_disconnected(casted);
-                this->sockets.erase(casted);
+                co_await this->threads.switching(socket);
+                std::ignore = co_await this->handle_disconnected(socket);
+                this->sockets.erase(socket);
             }
             catch (std::exception& e)
             {

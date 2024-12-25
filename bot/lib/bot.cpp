@@ -99,6 +99,10 @@ async::task<void> base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoi
     {
         fb::logger::fatal(e.what());
     }
+    catch (boost::system::error_code e)
+    {
+        fb::logger::fatal(e.what());
+    }
     catch (...)
     {
         fb::logger::fatal("unhandled exception");

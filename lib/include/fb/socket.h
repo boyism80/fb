@@ -173,7 +173,7 @@ public:
         catch (...)
         { }
 
-        async::awaitable_get(this->_handle_closed(*this));
+        std::ignore = this->_handle_closed(*this);
     }
 
 public:

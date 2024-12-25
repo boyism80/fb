@@ -824,7 +824,7 @@ bool fb::game::object::available() const
 fb::thread* fb::game::object::thread() const
 {
     if (this->_map == nullptr)
-        return this->context.threads.modular(this->_sequence);
+        return this->context.threads.modular((uint32_t)(void*)this);
     else
         return this->context.threads.modular(this->_map->model.id);
 }

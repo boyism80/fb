@@ -283,14 +283,13 @@ public:
 
     async::task<void> on_closed(fb::socket<>& socket)
     {
-        auto& bot    = static_cast<base_bot&>(socket);
-        auto  thread = bot.thread();
-        co_await thread->switching();
-        bot.assert_thread();
-        co_await bot.on_closed();
-
-        auto params = thread->template data<bot_thread_params>();
-        params->bots.erase(bot.id);
+        auto& bot = static_cast<base_bot&>(socket);
+        bot.thread()->dispatch([&bot](auto& thread) -> async::task<void> {
+            co_await bot.on_closed();
+            auto params = thread.template data<bot_thread_params>();
+            params->bots.erase(bot.id);
+        });
+        co_return;
     }
 
     template <typename T>
