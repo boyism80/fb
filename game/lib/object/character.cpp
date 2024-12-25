@@ -1490,6 +1490,14 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
         listener->on_message(*this, message, type);
 }
 
+fb::thread* character::thread() const
+{
+    if (this->_map == nullptr)
+        return this->context.threads.modular(this->_socket.fd());
+    else
+        return this->context.threads.modular(this->_map->model.id);
+}
+
 void character::assert_thread() const
 {
     fb::game::object::assert_thread();
