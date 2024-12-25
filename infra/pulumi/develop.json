@@ -256,7 +256,7 @@
     },
     "internal": {
         "section-1": {
-            "replicas": 10,
+            "replicas": 50,
             "port": {
                 "cluster": 80,
                 "node": 30200
@@ -297,8 +297,8 @@
     "bot": {
         "section-1": {
             "io_size": 5,
-            "interval": 5000,
-            "spawn_per_interval": 100,
+            "interval": 60000,
+            "spawn_per_interval": 50,
             "spawn_count": 5000,
             "thread": {
                 "logic": 12
