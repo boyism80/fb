@@ -27,6 +27,7 @@ login_bot::~login_bot()
 
 async::task<void> login_bot::on_connected()
 {
+    fb::logger::info("login bot spawned");
     this->send(
         fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()),
         false,

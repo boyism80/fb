@@ -7,7 +7,7 @@ COPY bot ./bot
 
 WORKDIR /app/bot/build
 RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Debug --parallel
 
 FROM ghcr.io/boyism80/fb/build
 WORKDIR /app

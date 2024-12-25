@@ -7,7 +7,7 @@ COPY login ./login
 
 WORKDIR /app/login/build
 RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake --build . --config Dockerfile --parallel
 
 FROM ghcr.io/boyism80/fb/build
 WORKDIR /app

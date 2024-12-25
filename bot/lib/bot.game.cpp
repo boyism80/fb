@@ -50,6 +50,7 @@ game_bot::~game_bot()
 
 async::task<void> game_bot::on_connected()
 {
+    fb::logger::info("game bot spawned");
     auto&& resp = co_await this->request<fb::protocol::game::response::init>(
         fb::protocol::game::request::login(this->_transfer_buffer),
         false,

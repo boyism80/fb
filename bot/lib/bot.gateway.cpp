@@ -16,6 +16,7 @@ gateway_bot::~gateway_bot()
 
 async::task<void> gateway_bot::on_connected()
 {
+    fb::logger::info("gateway bot spawned");
     co_return;
 }
 
