@@ -57,7 +57,7 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
                         // TODO: check socket alive
 
                         auto params = thread.template data<bot_thread_params>();
-                        if (params.bots.contains(id) == false)
+                        if (params->bots.contains(id) == false)
                             co_return;
 
                         co_await this->_handler[cmd](*protocol.get());
