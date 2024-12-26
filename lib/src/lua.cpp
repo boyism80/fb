@@ -158,8 +158,7 @@ bool context::resume(int argc, bool auto_release)
     auto main = static_cast<fb::lua::main*>(this->owner);
     if (main != &lua::container::ist().get())
     {
-        // thread mismatch
-        main->revoke(*this);
+        fb::logger::fatal("lua thread mismatched");
         return false;
     }
 

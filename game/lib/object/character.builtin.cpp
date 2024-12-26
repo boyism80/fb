@@ -28,6 +28,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::character, "fb.game.character")
 {"deposit_item",        fb::game::character::builtin_deposit_item},
 {"withdraw_item",       fb::game::character::builtin_withdraw_item},
 {"group",               fb::game::character::builtin_group},
+{"create_group",        fb::game::character::builtin_create_group},
 {"traces",              fb::game::character::builtin_traces},
 {"trace",               fb::game::character::builtin_trace},
 {"push_trace",          fb::game::character::builtin_push_trace},
@@ -795,26 +796,94 @@ int fb::game::character::builtin_group(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    static auto func = [](fb::lua::context* ctx) {
-        lua_call(*ctx, 2, LUA_MULTRET);
-
-        ctx->remove(-ctx->argc());
-        return ctx->argc();
-    };
-
-    thread->pushobject(ch);
-    if (ch->_group == nullptr)
+    if (argc < 2)
     {
-        thread->pushnil();
-        return func(thread);
+        // 그룹 Lock scope는 스크립트 내의 다음 yield를
+        // 만나기 전까지 유효
+        ch->thread()->enqueue(
+            [=](auto&) -> async::task<void> {
+                if (ch->_group == nullptr)
+                {
+                    thread->pushnil();
+                    thread->resume(1);
+                }
+                else
+                {
+                    ch->_group->lock([=](auto& group) {
+                        thread->pushobject(group);
+                        thread->resume(1);
+                    });
+                }
+                co_return;
+            },
+            [](auto& e) {
+            },
+            []() {
+            });
+
+        return thread->yield(1);
+    }
+    else if (lua_type(lua, 2) == LUA_TFUNCTION)
+    {
+        static auto static_func = [](fb::lua::context* ctx) {
+            lua_call(*ctx, 2, LUA_MULTRET);
+
+            ctx->remove(-ctx->argc());
+            return ctx->argc();
+        };
+
+        thread->pushobject(ch);
+        if (ch->_group == nullptr)
+        {
+            thread->pushnil();
+            return static_func(thread);
+        }
+        else
+        {
+            return ch->_group->template lock<uint32_t>([=](auto& group) {
+                thread->pushobject(group);
+                return static_func(thread);
+            });
+        }
     }
     else
     {
-        return ch->_group->template lock<uint32_t>([=](auto& group) {
-            thread->pushobject(group);
-            return func(thread);
-        });
+        return 0;
     }
+}
+
+int fb::game::character::builtin_create_group(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto name = thread->tostring(2);
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  thread,
+                        character&         me,
+                        const std::string& name) -> async::task<void> {
+        thread->pushboolean(co_await context->create_group(me, name));
+        thread->resume(1);
+    };
+
+    ch->thread()->enqueue(
+        [=](auto&) -> async::task<void> {
+            co_await fn(context, thread, *ch, name);
+        },
+        [](auto& e) {
+        },
+        []() {
+        });
+
+    return thread->yield(1);
 }
 
 int fb::game::character::builtin_traces(lua_State* lua)

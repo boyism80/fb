@@ -879,6 +879,28 @@ void context::amqp_thread()
     }
 }
 
+async::task<bool> context::create_group(character& me, const std::string& target)
+{
+    try
+    {
+        if (me.option(SETTING::GROUP) == false)
+            throw std::runtime_error(message::group::DISABLED_MINE);
+
+        auto&& response = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
+            "internal",
+            "/in-game/group/create",
+            internal_reqs::EnterGroup{me.id(), target});
+
+        this->on_enter_group(response);
+        co_return true;
+    }
+    catch (std::exception& e)
+    {
+        this->send(me, fb_resp::message(e.what(), MESSAGE_TYPE::STATE), scope::SELF);
+        co_return false;
+    }
+}
+
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
