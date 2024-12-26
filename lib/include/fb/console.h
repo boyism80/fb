@@ -103,6 +103,8 @@ public:
     template <class... Args>
     static void put(align_type align, const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
+
         auto text = std::vformat(fmt, std::make_format_args(args...));
         auto x    = 0;
         switch (align)
@@ -151,6 +153,7 @@ public:
     template <class... Args>
     static void put(const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         put(align_type::left, fmt, std::forward<Args>(args)...);
     }
 
@@ -166,6 +169,7 @@ public:
     template <class... Args>
     static void puts(align_type align, const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         if (!_tty)
         {
             put(align, fmt, std::forward<Args>(args)...);
@@ -189,6 +193,7 @@ public:
     template <class... Args>
     static void puts(const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         puts(align_type::left, fmt, std::forward<Args>(args)...);
     }
 
@@ -203,6 +208,7 @@ public:
     template <class... Args>
     static void comment(const std::string& fmt, Args&&... args)
     {
+        auto _ = std::lock_guard(_mutex);
         auto text = std::vformat(fmt, std::make_format_args(args...));
         if (!_tty)
         {

@@ -70,10 +70,9 @@ bool console::is_tty()
 
 void console::position(uint16_t y)
 {
+    auto _ = std::lock_guard(_mutex);
     if (!_tty)
         return;
-
-    auto _ = std::lock_guard(_mutex);
 
     y = std::max<uint16_t>(0, std::min<uint16_t>(y, _height));
     std::cout << std::format("\x1B[{};{}H", y, 1);
@@ -82,19 +81,18 @@ void console::position(uint16_t y)
 
 uint16_t console::position()
 {
+    auto _ = std::lock_guard(_mutex);
     if (!_tty)
         return 0;
 
-    auto _ = std::lock_guard(_mutex);
     return _y;
 }
 
 void console::newline()
 {
+    auto _ = std::lock_guard(_mutex);
     if (!_tty)
         return;
-
-    auto _ = std::lock_guard(_mutex);
 
     _y            += (_comment_line + 1);
     _comment_line  = 0;
@@ -103,9 +101,9 @@ void console::newline()
 
 void console::clear()
 {
+    auto _ = std::lock_guard(_mutex);
     if (!_tty)
         return;
 
-    auto _ = std::lock_guard(_mutex);
     std::cout << "\x1b[2K";
 }
