@@ -68,56 +68,37 @@ bool console::is_tty()
     return _tty;
 }
 
-void console::position(uint16_t x, uint16_t y)
+void console::position(uint16_t y)
 {
     if (!_tty)
         return;
 
     auto _ = std::lock_guard(_mutex);
 
-    std::cout << std::format("\x1B[{};{}H", y, x);
-    _x = x;
+    y = max(0, min(y, _height));
+    std::cout << std::format("\x1B[{};{}H", y, 1);
     _y = y;
 }
 
-void console::position(uint16_t* x, uint16_t* y)
+uint16_t console::position()
 {
     if (!_tty)
-    {
-        if (x != nullptr)
-            *x = 0;
-
-        if (y != nullptr)
-            *y = 0;
-
-        return;
-    }
+        return 0;
 
     auto _ = std::lock_guard(_mutex);
-
-    if (x != nullptr)
-        *x = _x;
-
-    if (y != nullptr)
-        *y = _y;
+    return _y;
 }
 
 void console::newline()
 {
+    if (!_tty)
+        return;
+
     auto _ = std::lock_guard(_mutex);
 
-    if (_tty)
-    {
-        uint16_t y;
-        position(nullptr, &y);
-
-        position(0, y + _comment_line + 1);
-        _comment_line = 0;
-    }
-    else
-    {
-        std::cout << std::endl;
-    }
+    _y            += (_comment_line + 1);
+    _comment_line  = 0;
+    std::cout << std::endl;
 }
 
 void console::clear()

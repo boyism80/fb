@@ -29,6 +29,9 @@ namespace fb {
 static class console
 {
 public:
+    /**
+     * @brief      This class describes an align type.
+     */
     enum class align_type : uint8_t
     {
         left,
@@ -39,7 +42,7 @@ public:
 private:
     inline static std::recursive_mutex _mutex;
     inline static uint16_t             _comment_line = 0;
-    inline static uint16_t             _x = 1, _y = 1;
+    inline static uint16_t             _y            = 1;
     inline static uint16_t             _width, _height;
     inline static bool                 _tty;
 
@@ -57,8 +60,6 @@ public:
     /**
      * @brief      reference : https://github.com/jupyter-xeus/cpp-terminal
      *
-     * @param[in]  fd    { parameter_description }
-     *
      * @return     True if the specified fd is a tty, False otherwise.
      */
     static bool is_tty();
@@ -67,18 +68,16 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  x     { parameter_description }
      * @param[in]  y     { parameter_description }
      */
-    static void position(uint16_t x, uint16_t y);
+    static void position(uint16_t y);
 
     /**
      * @brief      { function_description }
      *
-     * @param      x     { parameter_description }
-     * @param      y     { parameter_description }
+     * @return     { description_of_the_return_value }
      */
-    static void position(uint16_t* x, uint16_t* y);
+    static uint16_t position();
 
     /**
      * @brief      { function_description }
@@ -105,10 +104,7 @@ public:
     static void put(align_type align, const std::string& fmt, Args&&... args)
     {
         auto text = std::vformat(fmt, std::make_format_args(args...));
-
-        uint16_t x, y;
-        position(nullptr, &y);
-
+        auto x    = 0;
         switch (align)
         {
         case align_type::right:
@@ -123,9 +119,20 @@ public:
             x = 0;
             break;
         }
+
+        text = std::string(x, ' ') + text;
+        if (!_tty)
+        {
+            std::cout << text << std::endl;
+            return;
+        }
+
+        auto current_line = position();
+        position(current_line - _comment_line);
         clear();
-        position(x, y);
+
         std::cout << text;
+        position(current_line);
 
         if (!_tty)
         {
@@ -147,12 +154,26 @@ public:
         put(align_type::left, fmt, std::forward<Args>(args)...);
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  align  The align
+     * @param[in]  fmt    The format
+     * @param      args   The arguments
+     *
+     * @tparam     Args   { description }
+     */
     template <class... Args>
     static void puts(align_type align, const std::string& fmt, Args&&... args)
     {
-        put(align, fmt, std::forward<Args>(args)...);
-        if (_tty)
+        if (!_tty)
         {
+            put(align, fmt, std::forward<Args>(args)...);
+            return;
+        }
+        else
+        {
+            put(align, fmt, std::forward<Args>(args)...);
             newline();
         }
     }
@@ -182,13 +203,18 @@ public:
     template <class... Args>
     static void comment(const std::string& fmt, Args&&... args)
     {
-        uint16_t x, y;
-        position(&x, &y);
-
-        position(0, y + (++_comment_line));
-        put(fmt, std::forward<Args>(args)...);
-
-        position(x, y);
+        auto text = std::vformat(fmt, std::make_format_args(args...));
+        if (!_tty)
+        {
+            std::cout << text << std::endl;
+            return;
+        }
+        else
+        {
+            std::cout << std::endl << text;
+            _comment_line++;
+            position(_y + 1);
+        }
     }
 } __console;
 

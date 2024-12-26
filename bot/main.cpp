@@ -1,8 +1,9 @@
 #include <thread>
-#include <bot.h>
+#include <bot.container.h>
 
 using namespace std;
 using namespace boost::asio;
+using namespace std::chrono_literals;
 
 int main(int, char**)
 {
@@ -20,6 +21,15 @@ int main(int, char**)
         ios.push_back(std::move(io));
     }
 
+    bool exit           = false;
+    auto display_thread = std::thread([&exit]() {
+        while (!exit)
+        {
+            fb::bot::bot_container::display_spawned_bots();
+            std::this_thread::sleep_for(100ms);
+        }
+    });
+
     auto threads = boost::asio::thread_pool{io_size};
     for (auto& io : ios)
     {
@@ -27,7 +37,7 @@ int main(int, char**)
             io->run();
         });
     }
-
     threads.join();
+    exit = true;
     return 0;
 }

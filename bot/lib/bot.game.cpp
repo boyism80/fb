@@ -1,4 +1,5 @@
-#include <bot.h>
+#include <bot.game.h>
+#include <bot.container.h>
 
 using namespace fb::bot;
 
@@ -50,8 +51,12 @@ game_bot::~game_bot()
 
 async::task<void> game_bot::on_connected()
 {
+    {
+        auto _ = std::lock_guard<std::shared_mutex>(_mutex);
+        _count++;
+    }
+
     co_await base_bot::on_connected();
-    fb::logger::info("game bot spawned");
     auto&& resp = co_await this->request<fb::protocol::game::response::map::config>(
         fb::protocol::game::request::login(this->_transfer_buffer),
         false,
@@ -65,6 +70,11 @@ async::task<void> game_bot::on_connected()
 
 async::task<void> game_bot::on_disconnected()
 {
+    {
+        auto _ = std::lock_guard<std::shared_mutex>(_mutex);
+        _count--;
+    }
+
     co_await base_bot::on_disconnected();
 }
 
