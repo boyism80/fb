@@ -7,5 +7,17 @@
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+    <ClCompile Include="lib\**\*.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\bot.h" />
+    <ClInclude Include="include\bot.container.h" />
+    <ClInclude Include="include\bot.game.h" />
+    <ClInclude Include="include\bot.gateway.h" />
+    <ClInclude Include="include\bot.login.h" />
+    <ClInclude Include="include\hook_params.h" />
   </ItemGroup>
 </Project>

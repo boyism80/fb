@@ -1,4 +1,7 @@
-#include <bot.h>
+#include <bot.container.h>
+#include <bot.gateway.h>
+#include <bot.login.h>
+#include <bot.game.h>
 
 using namespace fb::bot;
 
@@ -67,4 +70,19 @@ async::task<void> bot_container::dispatch(uint32_t id, std::function<async::task
     auto index  = id % this->threads.size();
     auto thread = this->threads[index];
     co_await thread->dispatch(fn);
+}
+
+void bot_container::display_spawned_bots()
+{
+    auto _1 = std::shared_lock<std::shared_mutex>(gateway_bot::_mutex);
+    auto _2 = std::shared_lock<std::shared_mutex>(login_bot::_mutex);
+    auto _3 = std::shared_lock<std::shared_mutex>(game_bot::_mutex);
+
+    static auto y = fb::console::position();
+    fb::console::position(y);
+    fb::console::put("gateway\t\t{}", gateway_bot::_count);
+    fb::console::position(y + 1);
+    fb::console::put("login\t\t{}", login_bot::_count);
+    fb::console::position(y + 2);
+    fb::console::put("game\t\t{}", game_bot::_count);
 }

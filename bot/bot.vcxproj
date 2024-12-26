@@ -94,7 +94,12 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\bot.container.h" />
+    <ClInclude Include="include\bot.game.h" />
+    <ClInclude Include="include\bot.gateway.h" />
     <ClInclude Include="include\bot.h" />
+    <ClInclude Include="include\bot.login.h" />
+    <ClInclude Include="include\hook_params.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

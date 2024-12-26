@@ -1,4 +1,6 @@
-#include <bot.h>
+#include <bot.login.h>
+#include <bot.game.h>
+#include <bot.container.h>
 
 using namespace fb::bot;
 
@@ -27,8 +29,12 @@ login_bot::~login_bot()
 
 async::task<void> login_bot::on_connected()
 {
+    {
+        auto _ = std::lock_guard<std::shared_mutex>(_mutex);
+        _count++;
+    }
+
     co_await base_bot::on_connected();
-    fb::logger::info("login bot spawned");
     this->send(
         fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()),
         false,
@@ -37,6 +43,10 @@ async::task<void> login_bot::on_connected()
 
 async::task<void> login_bot::on_disconnected()
 {
+    {
+        auto _ = std::lock_guard<std::shared_mutex>(_mutex);
+        _count--;
+    }
     co_await base_bot::on_disconnected();
 }
 

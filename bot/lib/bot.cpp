@@ -1,4 +1,5 @@
 #include <bot.h>
+#include <bot.container.h>
 
 using namespace fb::bot;
 
