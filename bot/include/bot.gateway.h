@@ -3,6 +3,7 @@
 
 #include <bot.h>
 #include <fb/protocol/gateway.h>
+#include <shared_mutex>
 
 namespace fb::bot {
 

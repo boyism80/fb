@@ -42,7 +42,7 @@ public:
     async::task<void> on_closed(fb::socket<>& socket)
     {
         auto& bot = static_cast<base_bot&>(socket);
-        bot.thread()->dispatch([&bot](auto& thread) -> async::task<void> {
+        std::ignore = bot.thread()->dispatch([&bot](auto& thread) -> async::task<void> {
             co_await bot.on_closed();
             auto params = thread.template data<bot_thread_params>();
             params->bots.erase(bot.id);
