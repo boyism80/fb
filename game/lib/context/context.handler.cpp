@@ -561,23 +561,7 @@ async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_
     if (me->inited() == false)
         co_return true;
 
-    try
-    {
-        if (me->option(SETTING::GROUP) == false)
-            throw std::runtime_error(message::group::DISABLED_MINE);
-
-        auto&& response = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
-            "internal",
-            "/in-game/group/create",
-            internal_reqs::EnterGroup{me->id(), request.name});
-
-        this->on_enter_group(response);
-    }
-    catch (std::exception& e)
-    {
-        this->send(*me, fb_resp::message(e.what(), MESSAGE_TYPE::STATE), scope::SELF);
-    }
-
+    std::ignore = co_await this->create_group(*me, request.name);
     co_return true;
 }
 

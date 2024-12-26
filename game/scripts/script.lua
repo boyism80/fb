@@ -17,14 +17,41 @@ function group_lock(me, group)
 end
 
 function func(me)
-    broadcast('message NOTIFY', MESSAGE_TYPE_NOTIFY)
-    broadcast('message BLUE', MESSAGE_TYPE_BLUE)
-    broadcast('message STATE', MESSAGE_TYPE_STATE)
-    broadcast('message SHOUT', MESSAGE_TYPE_SHOUT)
-    broadcast('message WORLD', MESSAGE_TYPE_WORLD)
-    broadcast('message POPUP', MESSAGE_TYPE_POPUP)
-    broadcast('message YELLOW', MESSAGE_TYPE_YELLOW)
-    broadcast('message BROWN', MESSAGE_TYPE_BROWN)
+--     broadcast('message NOTIFY', MESSAGE_TYPE_NOTIFY)
+--     broadcast('message BLUE', MESSAGE_TYPE_BLUE)
+--     broadcast('message STATE', MESSAGE_TYPE_STATE)
+--     broadcast('message SHOUT', MESSAGE_TYPE_SHOUT)
+--     broadcast('message WORLD', MESSAGE_TYPE_WORLD)
+--     broadcast('message POPUP', MESSAGE_TYPE_POPUP)
+--     broadcast('message YELLOW', MESSAGE_TYPE_YELLOW)
+--     broadcast('message BROWN', MESSAGE_TYPE_BROWN)
+
+    local npc = name2npc('낙랑')
+    local name = npc:input(me, '그룹 초대할 유저')
+    local group = me:group()
+    if group == nil then
+        if me:create_group(name) then
+            npc:dialog(me, '그룹이 생성되었습니다.')
+        end
+    else
+        local found = nil
+        for _, member in pairs(group:members()) do
+            if member == name then
+                found = member
+                break
+            end
+        end
+
+        if me:create_group(name) then
+            if found == nil then
+                npc:dialog(me, '그룹에 초대했습니다.')
+            else
+                npc:dialog(me, '그룹에서 추방했습니다.')
+            end
+        else
+            npc:dialog(me, '그룹에 초대할 수 없습니다.')
+        end
+    end
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

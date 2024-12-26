@@ -396,6 +396,16 @@ public:
      */
     void amqp_thread();
 
+    /**
+     * @brief      Creates a group.
+     *
+     * @param      me      { parameter_description }
+     * @param[in]  target  The target
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> create_group(character& me, const std::string& target);
+
 protected:
     /**
      * @brief      { function_description }
@@ -474,8 +484,6 @@ public:
      * @param      npc   The npc
      */
     void handle_click_npc(fb::game::character& ch, fb::game::npc& npc);
-
-    // game event method
 
 public:
     /**
