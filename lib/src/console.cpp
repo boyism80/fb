@@ -75,7 +75,7 @@ void console::position(uint16_t y)
 
     auto _ = std::lock_guard(_mutex);
 
-    y = max(0, min(y, _height));
+    y = std::max<uint16_t>(0, std::min<uint16_t>(y, _height));
     std::cout << std::format("\x1B[{};{}H", y, 1);
     _y = y;
 }

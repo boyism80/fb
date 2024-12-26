@@ -5,10 +5,6 @@
 #include <fb/endian.h>
 #include <fb/encoding.h>
 
-#ifdef max
-#undef max
-#endif
-
 namespace fb {
 
 /**
@@ -113,7 +109,7 @@ public:
      */
     uint32_t readable_size() const
     {
-        return std::max(uint32_t(0), uint32_t(this->_stream.size() - this->_seek));
+        return std::max<uint32_t>(0, this->_stream.size() - this->_seek);
     }
 
     /**
