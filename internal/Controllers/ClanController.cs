@@ -1,8 +1,8 @@
-﻿using Dapper;
+﻿using Azure;
+using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
-using Http.Redis;
 using Http.Service;
 using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
@@ -18,14 +18,17 @@ namespace Internal.Controllers
         private readonly IConfiguration _configuration;
         private readonly DbContext _dbContext;
         private readonly RedisService _redisService;
+        private readonly RabbitMqService _rabbitMqService;
 
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
-            RedisService redisService)
+            RedisService redisService,
+            RabbitMqService rabbitMqService)
         {
             _configuration = configuration;
             _dbContext = dbContext;
             _redisService = redisService;
+            _rabbitMqService = rabbitMqService;
         }
 
         [HttpGet("{id}")]
@@ -37,7 +40,7 @@ namespace Internal.Controllers
                 await using (await new RedisDistributedLock(Clan.DistributeLockKey(id), redis).AcquireAsync())
                 {
                     var clan = await _dbContext.Clan.Get(id) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
+                        throw new LogicException(ErrorCode.NotFoundClan);
 
                     var members = await _dbContext.ClanMember.Get(id);
                     var conn = _dbContext.Connection(-1);
@@ -295,13 +298,16 @@ namespace Internal.Controllers
                             _dbContext.CharacterSync.Set(targetSync);
 
                             await _dbContext.SaveChangesAsync();
-                            return new Response.JoinClan
+                            var response = new Response.JoinClan
                             {
                                 Clan = clan.Id,
                                 Uid = target.Id,
                                 Uname = target.Name,
                                 Error = (uint)ErrorCode.None
                             };
+
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            return response;
                         }
                     }
                 }
@@ -361,13 +367,16 @@ namespace Internal.Controllers
 
                         await _dbContext.SaveChangesAsync();
 
-                        return new Response.LeaveClan
+                        var response = new Response.LeaveClan
                         {
                             Clan = clan.Id,
                             Uid = ch.Id,
                             Uname = ch.Name,
                             Error = (uint)ErrorCode.None
                         };
+
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        return response;
                     }
                 }
             }
@@ -439,13 +448,16 @@ namespace Internal.Controllers
 
                             await _dbContext.SaveChangesAsync();
 
-                            return new Response.KickClan
+                            var response = new Response.KickClan
                             {
                                 Clan = clan.Id,
                                 Uid = target.Id,
                                 Uname = target.Name,
                                 Error = (uint)ErrorCode.None
                             };
+
+                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                            return response;
                         }
                     }
                 }

@@ -20,22 +20,6 @@ namespace Http.Redis
         internal Task CompleteAsync() => Task.WhenAll(_tasks);
     }
 
-    public class RedisDistributeLock : IAsyncDisposable
-    {
-        private readonly IDatabase _db;
-
-        public RedisDistributeLock(IDatabase db)
-        {
-            _db = db;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
     public static class Extension
     {
         public static async Task<RedisResult> ScriptEvaluateAsync(this IDatabaseAsync database, string file, object param = null)
