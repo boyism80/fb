@@ -109,3 +109,10 @@ table Trace {
     model: uint;
     text: string?;
 }
+
+table Clan {
+    id: uint;
+    name: string;
+    master: string;
+    title: string;
+}

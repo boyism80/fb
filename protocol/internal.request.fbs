@@ -140,3 +140,26 @@ table EnterGroup {
 table LeaveGroup {
   member: string;
 }
+
+table CreateClan {
+  master: uint;
+  name: string;
+}
+
+table DestroyClan {
+  master: uint;
+}
+
+table JoinClan {
+  master: uint;
+  uid: uint;
+}
+
+table LeaveClan {
+  uid: uint;
+}
+
+table KickClan {
+  master: uint;
+  uid: uint;
+}

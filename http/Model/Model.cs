@@ -103,6 +103,19 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum ClanPosition
+    {
+        [EnumMember(Value = "MATE")]
+        Mate = 0x00, 
+        [EnumMember(Value = "OFFICER")]
+        Officer = 0x01, 
+        [EnumMember(Value = "DEPUTY")]
+        Deputy = 0x02, 
+        [EnumMember(Value = "MASTER")]
+        Master = 0x03
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Class
     {
         [EnumMember(Value = "NONE")]
@@ -315,7 +328,23 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "NOT_GROUP_MASTER")]
         NotGroupMaster = 20, 
         [EnumMember(Value = "ARTICLE_NOT_EXISTS")]
-        ArticleNotExists = 21
+        ArticleNotExists = 21, 
+        [EnumMember(Value = "CLAN_NAME_ALREADY_EXISTS")]
+        ClanNameAlreadyExists = 22, 
+        [EnumMember(Value = "CLAN_ALREADY_JOINED")]
+        ClanAlreadyJoined = 23, 
+        [EnumMember(Value = "CLAN_NOT_JOINED")]
+        ClanNotJoined = 24, 
+        [EnumMember(Value = "NOT_FOUND_CLAN")]
+        NotFoundClan = 25, 
+        [EnumMember(Value = "CLAN_MEMBER_EXISTS")]
+        ClanMemberExists = 26, 
+        [EnumMember(Value = "CLAN_NO_PRIVILEGE")]
+        ClanNoPrivilege = 27, 
+        [EnumMember(Value = "NOT_FOUND_CLAN_MEMBER")]
+        NotFoundClanMember = 28, 
+        [EnumMember(Value = "CLAN_NOT_MATCHED")]
+        ClanNotMatched = 29
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

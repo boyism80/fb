@@ -137,3 +137,32 @@ table LeaveGroup {
   host: uint;
   error: uint;
 }
+
+table CreateClan {
+  error: uint;
+}
+
+table DestroyClan {
+  error: uint;
+}
+
+table JoinClan {
+  clan: uint;
+  uid :uint;
+  uname: string;
+  error: uint;
+}
+
+table LeaveClan {
+  clan: uint;
+  uid: uint;
+  uname: string;
+  error: uint;
+}
+
+table KickClan {
+  clan: uint;
+  uid: uint;
+  uname: string;
+  error: uint;
+}

@@ -257,7 +257,7 @@ namespace Http.Reepository
                 });
 
                 if (_local.TryGetValue(value.GetRedisKey(), out var localValues))
-                    localValues.Add(value.GetRedisField(), JsonConvert.SerializeObject(value));
+                    localValues[value.GetRedisField()] = JsonConvert.SerializeObject(value);
 
                 var sql = OnUpsert(value);
                 await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());

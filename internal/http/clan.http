@@ -1,0 +1,35 @@
+###
+POST {{host}}/clan/create
+Content-Type: application/json
+
+{
+    "master": 61012,
+    "name": "클랜테스트"
+}
+
+###
+POST {{host}}/clan/destroy
+Content-Type: application/json
+
+{
+    "master": 61012
+}
+
+
+###
+POST {{host}}/clan/join
+Content-Type: application/json
+
+{
+    "master": 61012,
+    "uid": 61013
+}
+
+###
+POST {{host}}/clan/kick
+Content-Type: application/json
+
+{
+    "master": 61012,
+    "uid": 61011
+}

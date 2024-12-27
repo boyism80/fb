@@ -54,7 +54,7 @@ namespace Http.Reepository
         protected override string OnUpsert(Item value)
         {
             var sql = $"""
-                INSERT INTO item (
+                INSERT INTO `item` (
                     `owner`,
                     `index`,
                     `parts`,
@@ -128,7 +128,8 @@ namespace Http.Reepository
                         `count`=VALUES(`count`),
                         `durability`=VALUES(`durability`),
                         `custom_name`=VALUES(`custom_name`),
-                        `deleted`=VALUES(`deleted`);
+                        `deleted`=VALUES(`deleted`),
+                        `updated_date`=VALUES(`updated_date`);
                     """;
 
             return sql;
