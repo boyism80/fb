@@ -15,5 +15,10 @@ namespace Http.Model
         public uint Master { get; set; }
         public string Name { get; set; }
         public string Title { get; set; }
+
+        public static string DistributeLockKey(uint id)
+        {
+            return $"lock:clan:{id}";
+        }
     }
 }

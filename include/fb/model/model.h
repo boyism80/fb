@@ -1035,7 +1035,9 @@ enum class ERROR_CODE
     CLAN_MEMBER_EXISTS = 26, 
     CLAN_NO_PRIVILEGE = 27, 
     NOT_FOUND_CLAN_MEMBER = 28, 
-    CLAN_NOT_MATCHED = 29
+    CLAN_NOT_MATCHED = 29, 
+    CLAN_CANNOT_LEAVEE_MASTER = 30, 
+    NOT_FOUND_CHARACTER_SYNC = 31
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1072,7 +1074,9 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "CLAN_MEMBER_EXISTS", ERROR_CODE::CLAN_MEMBER_EXISTS }, 
         { "CLAN_NO_PRIVILEGE", ERROR_CODE::CLAN_NO_PRIVILEGE }, 
         { "NOT_FOUND_CLAN_MEMBER", ERROR_CODE::NOT_FOUND_CLAN_MEMBER }, 
-        { "CLAN_NOT_MATCHED", ERROR_CODE::CLAN_NOT_MATCHED }
+        { "CLAN_NOT_MATCHED", ERROR_CODE::CLAN_NOT_MATCHED }, 
+        { "CLAN_CANNOT_LEAVEE_MASTER", ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER }, 
+        { "NOT_FOUND_CHARACTER_SYNC", ERROR_CODE::NOT_FOUND_CHARACTER_SYNC }
     };
 
     auto i = enums.find(k);
@@ -1116,7 +1120,9 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::CLAN_MEMBER_EXISTS, "CLAN_MEMBER_EXISTS" }, 
         { ERROR_CODE::CLAN_NO_PRIVILEGE, "CLAN_NO_PRIVILEGE" }, 
         { ERROR_CODE::NOT_FOUND_CLAN_MEMBER, "NOT_FOUND_CLAN_MEMBER" }, 
-        { ERROR_CODE::CLAN_NOT_MATCHED, "CLAN_NOT_MATCHED" }
+        { ERROR_CODE::CLAN_NOT_MATCHED, "CLAN_NOT_MATCHED" }, 
+        { ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER, "CLAN_CANNOT_LEAVEE_MASTER" }, 
+        { ERROR_CODE::NOT_FOUND_CHARACTER_SYNC, "NOT_FOUND_CHARACTER_SYNC" }
     };
 
     auto i = enums.find(k);
@@ -2651,6 +2657,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CLAN_MEMBER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_NOT_MATCHED);
     lua_setglobal(lua, "ERROR_CODE_CLAN_NOT_MATCHED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_CANNOT_LEAVEE_MASTER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_CHARACTER_SYNC);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CHARACTER_SYNC");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);

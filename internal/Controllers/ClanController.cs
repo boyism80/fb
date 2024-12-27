@@ -2,6 +2,7 @@
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
+using Http.Redis;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using Request = fb.protocol._internal.request;
@@ -26,6 +27,61 @@ namespace Internal.Controllers
             _redisService = redisService;
         }
 
+        [HttpGet("{id}")]
+        public async Task<Response.GetClan> Get(uint id)
+        {
+            try
+            {
+                var redis = _redisService.Connection;
+                return await redis.Sync(Clan.DistributeLockKey(id), async () =>
+                {
+                    var clan = await _dbContext.Clan.Get(id) ??
+                        throw new LogicException(ErrorCode.NotFoundClan);
+
+                    var members = await _dbContext.ClanMember.Get(id);
+                    var conn = _dbContext.Connection(-1);
+                    var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
+                    var nameDict = names.ToDictionary(x => x.id, x => x.name);
+
+                    return new Response.GetClan
+                    {
+                        Clan = new fb.protocol._internal.Clan
+                        {
+                            Id = clan.Id,
+                            Name = clan.Name,
+                            Title = clan.Title
+                        },
+                        Members = members.Select(x =>
+                        {
+                            return new fb.protocol._internal.ClanMember
+                            {
+                                Uid = x.User,
+                                Name = nameDict.GetValueOrDefault(x.User),
+                                Position = x.Position
+                            };
+                        }).ToList()
+                    };
+                });
+            }
+            catch (LogicException e)
+            {
+                return new Response.GetClan
+                {
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.GetClan
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+            finally
+            { }
+        }
+
+
         [HttpPost("create")]
         public async Task<Response.CreateClan> Create(Request.CreateClan request)
         {
@@ -33,14 +89,10 @@ namespace Internal.Controllers
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             var redis = _redisService.Connection;
-            var redisLockKey = string.Empty;
             try
             {
                 var ch = await _dbContext.Character.Get(request.Master) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                if (ch.Clan != null)
-                    throw new LogicException(ErrorCode.ClanAlreadyJoined);
 
                 var result = await db.QueryFirstAsync<ClanNameSetResult>("USP_CLAN_NAME_SET", new
                 {
@@ -50,35 +102,43 @@ namespace Internal.Controllers
                 if (!result.Result)
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
 
-                redisLockKey = $"lock:clan:{result.Id}";
-                if (await redis.LockTakeAsync(redisLockKey, Environment.MachineName, TimeSpan.FromSeconds(1)) == false)
-                    throw new LogicException(ErrorCode.DistributedLockFailed);
-
-                var clan = _dbContext.Clan.Set(new Clan
+                return await redis.Sync(CharacterSync.DistributeLockKey(ch.Id), async () =>
                 {
-                    Id = result.Id,
-                    Name = request.Name,
-                    Master = request.Master,
-                    Title = null,
-                    Deleted = false
+                    return await redis.Sync(Clan.DistributeLockKey(result.Id), async () =>
+                    {
+                        var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        if (sync.Clan != null)
+                            throw new LogicException(ErrorCode.ClanAlreadyJoined);
+
+                        var clan = _dbContext.Clan.Set(new Clan
+                        {
+                            Id = result.Id,
+                            Name = request.Name,
+                            Master = request.Master,
+                            Title = null,
+                            Deleted = false
+                        });
+
+                        _dbContext.ClanMember.Set(new ClanMember
+                        {
+                            Clan = clan.Id,
+                            User = request.Master,
+                            Position = (uint)ClanPosition.Master
+                        });
+
+                        sync.Clan = clan.Id;
+                        _dbContext.CharacterSync.Set(sync);
+
+                        await _dbContext.SaveChangesAsync();
+                        await trans.CommitAsync();
+                        return new Response.CreateClan
+                        {
+                            Error = (uint)ErrorCode.None
+                        };
+                    });
                 });
-
-                _dbContext.ClanMember.Set(new ClanMember
-                {
-                    Clan = clan.Id,
-                    User = request.Master,
-                    Position = (uint)ClanPosition.Master
-                });
-
-                ch.Clan = clan.Id;
-                _dbContext.Character.Set(ch);
-
-                await _dbContext.SaveChangesAsync();
-                await trans.CommitAsync();
-                return new Response.CreateClan
-                {
-                    Error = (uint)ErrorCode.None
-                };
             }
             catch (LogicException e)
             {
@@ -98,9 +158,6 @@ namespace Internal.Controllers
             }
             finally
             {
-                if (string.IsNullOrEmpty(redisLockKey) == false)
-                    await redis.LockReleaseAsync(redisLockKey, Environment.MachineName);
-
                 await db.CloseAsync();
             }
         }
@@ -112,56 +169,57 @@ namespace Internal.Controllers
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
             var redis = _redisService.Connection;
-            var redisLockKey = string.Empty;
             try
             {
-                var ch = await _dbContext.Character.Get(request.Master) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                if (ch.Clan == null)
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-
-                redisLockKey = $"lock:clan:{ch.Clan.Value}";
-                if (await redis.LockTakeAsync(redisLockKey, Environment.MachineName, TimeSpan.FromSeconds(1)) == false)
-                    throw new LogicException(ErrorCode.DistributedLockFailed);
-
-                var clan = await _dbContext.Clan.Get(ch.Clan.Value) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                if (clan.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                var members = (await _dbContext.ClanMember.Get(clan.Id)).Where(x => !x.Deleted).ToList();
-                if (members.Count != 1)
-                    throw new LogicException(ErrorCode.ClanMemberExists);
-
-                var master = members[0];
-                if (master.User != ch.Id)
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-
-                if (master.Position != (uint)ClanPosition.Master)
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-
-                master.Deleted = true;
-                _dbContext.ClanMember.Set(master);
-
-                ch.Clan = null;
-                _dbContext.Character.Set(ch);
-
-                clan.Deleted = true;
-                _dbContext.Clan.Set(clan);
-
-                await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
+                return await redis.Sync(CharacterSync.DistributeLockKey(request.Master), async () =>
                 {
-                    id = clan.Id
-                }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
+                    var ch = await _dbContext.Character.Get(request.Master) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                await _dbContext.SaveChangesAsync();
-                await trans.CommitAsync();
-                return new Response.DestroyClan
-                {
-                    Error = (uint)ErrorCode.None
-                };
+                    var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                    if (sync.Clan == null)
+                        throw new LogicException(ErrorCode.ClanNotJoined);
+
+                    return await redis.Sync(Clan.DistributeLockKey(sync.Clan.Value), async () =>
+                    {
+                        var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
+                            throw new LogicException(ErrorCode.NotFoundClan);
+
+                        var members = (await _dbContext.ClanMember.Get(clan.Id)).ToList();
+                        if (members.Count != 1)
+                            throw new LogicException(ErrorCode.ClanMemberExists);
+
+                        var master = members[0];
+                        if (master.User != ch.Id)
+                            throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                        if (master.Position != (uint)ClanPosition.Master)
+                            throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                        master.Deleted = true;
+                        _dbContext.ClanMember.Set(master);
+
+                        sync.Clan = null;
+                        _dbContext.CharacterSync.Set(sync);
+
+                        clan.Deleted = true;
+                        _dbContext.Clan.Set(clan);
+
+                        await db.ExecuteAsync("USP_CLAN_NAME_DELETE", new
+                        {
+                            id = clan.Id
+                        }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
+
+                        await _dbContext.SaveChangesAsync();
+                        await trans.CommitAsync();
+                        return new Response.DestroyClan
+                        {
+                            Error = (uint)ErrorCode.None
+                        };
+                    });
+                });
             }
             catch (LogicException e)
             {
@@ -181,9 +239,6 @@ namespace Internal.Controllers
             }
             finally
             {
-                if (string.IsNullOrEmpty(redisLockKey) == false)
-                    await redis.LockReleaseAsync(redisLockKey, Environment.MachineName);
-
                 await db.CloseAsync();
             }
         }
@@ -193,52 +248,62 @@ namespace Internal.Controllers
         {
             try
             {
-                var master = await _dbContext.Character.Get(request.Master) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                var target = await _dbContext.Character.Get(request.Uid) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                if (master.Clan == null)
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-
-                if (target.Clan != null)
-                    throw new LogicException(ErrorCode.ClanAlreadyJoined);
-
-                var clan = await _dbContext.Clan.Get(master.Clan.Value) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                if (clan.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                var clanMember = await _dbContext.ClanMember.Get(clan.Id, master.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (clanMember.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (clanMember.Position != (uint)ClanPosition.Master)
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-
-                _dbContext.ClanMember.Set(new ClanMember
+                var redis = _redisService.Connection;
+                return await redis.Sync(CharacterSync.DistributeLockKey(request.Master), async () =>
                 {
-                    Clan = clan.Id,
-                    Position = (uint)ClanPosition.Mate,
-                    User = target.Id,
-                    Deleted = false
+                    return await redis.Sync(CharacterSync.DistributeLockKey(request.Uid), async () =>
+                    {
+                        var master = await _dbContext.Character.Get(request.Master) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                        var masterSync = await _dbContext.CharacterSync.Get(master.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var target = await _dbContext.Character.Get(request.Uid) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        if (masterSync.Clan == null)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        if (targetSync.Clan != null)
+                            throw new LogicException(ErrorCode.ClanAlreadyJoined);
+
+                        return await redis.Sync(Clan.DistributeLockKey(masterSync.Clan.Value), async () =>
+                        {
+                            var clan = await _dbContext.Clan.Get(masterSync.Clan.Value) ??
+                                throw new LogicException(ErrorCode.NotFoundClan);
+
+                            var clanMember = await _dbContext.ClanMember.Get(clan.Id, master.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            if (clanMember.Position != (uint)ClanPosition.Master)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            _dbContext.ClanMember.Set(new ClanMember
+                            {
+                                Clan = clan.Id,
+                                Position = (uint)ClanPosition.Mate,
+                                User = target.Id,
+                                Deleted = false
+                            });
+
+                            targetSync.Clan = clan.Id;
+                            _dbContext.CharacterSync.Set(targetSync);
+
+                            await _dbContext.SaveChangesAsync();
+                            return new Response.JoinClan
+                            {
+                                Clan = clan.Id,
+                                Uid = target.Id,
+                                Uname = target.Name,
+                                Error = (uint)ErrorCode.None
+                            };
+                        });
+                    });
                 });
-
-                target.Clan = clan.Id;
-                _dbContext.Character.Set(target);
-
-                await _dbContext.SaveChangesAsync();
-                return new Response.JoinClan
-                {
-                    Clan = clan.Id,
-                    Uid = target.Id,
-                    Uname = target.Name,
-                    Error = (uint)ErrorCode.None
-                };
             }
             catch (LogicException e)
             {
@@ -264,42 +329,46 @@ namespace Internal.Controllers
         {
             try
             {
-                var ch = await _dbContext.Character.Get(request.Uid) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                if (ch.Clan == null)
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-
-                var clan = await _dbContext.Clan.Get(ch.Clan.Value) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                if (clan.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                var member = await _dbContext.ClanMember.Get(clan.Id, ch.Id) ??
-                        throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (member.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (member.Position == (uint)ClanPosition.Master)
-                    throw new LogicException(ErrorCode.AlreadyLogin); // TODO: CANNOT_LEAVE_MASTER_POSITION
-
-                member.Deleted = true;
-                _dbContext.ClanMember.Set(member);
-
-                ch.Clan = null;
-                _dbContext.Character.Set(ch);
-
-                await _dbContext.SaveChangesAsync();
-
-                return new Response.LeaveClan
+                var redis = _redisService.Connection;
+                return await redis.Sync(CharacterSync.DistributeLockKey(request.Uid), async () =>
                 {
-                    Clan = clan.Id,
-                    Uid = ch.Id,
-                    Uname = ch.Name,
-                    Error = (uint)ErrorCode.None
-                };
+                    var ch = await _dbContext.Character.Get(request.Uid) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                    var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                    if (sync.Clan == null)
+                        throw new LogicException(ErrorCode.ClanNotJoined);
+
+                    return await redis.Sync(Clan.DistributeLockKey(sync.Clan.Value), async () =>
+                    {
+                        var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
+                            throw new LogicException(ErrorCode.NotFoundClan);
+
+                        var member = await _dbContext.ClanMember.Get(clan.Id, ch.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                        if (member.Position == (uint)ClanPosition.Master)
+                            throw new LogicException(ErrorCode.ClanCannotLeaveeMaster);
+
+                        member.Deleted = true;
+                        _dbContext.ClanMember.Set(member);
+
+                        sync.Clan = null;
+                        _dbContext.CharacterSync.Set(sync);
+
+                        await _dbContext.SaveChangesAsync();
+
+                        return new Response.LeaveClan
+                        {
+                            Clan = clan.Id,
+                            Uid = ch.Id,
+                            Uname = ch.Name,
+                            Error = (uint)ErrorCode.None
+                        };
+                    });
+                });
             }
             catch (LogicException e)
             {
@@ -324,51 +393,61 @@ namespace Internal.Controllers
         {
             try
             {
-                var master = await _dbContext.Character.Get(request.Master) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                var target = await _dbContext.Character.Get(request.Uid) ??
-                    throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                if (master.Clan != target.Clan)
-                    throw new LogicException(ErrorCode.ClanNotMatched);
-
-                if (master.Clan == null)
-                    throw new LogicException(ErrorCode.ClanNotJoined);
-
-                var clan = await _dbContext.Clan.Get(master.Clan.Value) ??
-                    throw new LogicException(ErrorCode.NotFoundClan);
-
-                var masterMember = await _dbContext.ClanMember.Get(clan.Id, master.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (masterMember.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (masterMember.Position != (uint)ClanPosition.Master)
-                    throw new LogicException(ErrorCode.ClanNoPrivilege);
-
-                var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                if (targetMember.Deleted)
-                    throw new LogicException(ErrorCode.NotFoundClanMember);
-
-                targetMember.Deleted = true;
-                _dbContext.ClanMember.Set(targetMember);
-
-                target.Clan = null;
-                _dbContext.Character.Set(target);
-
-                await _dbContext.SaveChangesAsync();
-
-                return new Response.KickClan
+                var redis = _redisService.Connection;
+                return await redis.Sync(CharacterSync.DistributeLockKey(request.Master), async () =>
                 {
-                    Clan = clan.Id,
-                    Uid = target.Id,
-                    Uname = target.Name,
-                    Error = (uint)ErrorCode.None
-                };
+                    return await redis.Sync(CharacterSync.DistributeLockKey(request.Uid), async () =>
+                    {
+                        var master = await _dbContext.Character.Get(request.Master) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                        var masterSync = await _dbContext.CharacterSync.Get(master.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        var target = await _dbContext.Character.Get(request.Uid) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                        if (masterSync.Clan != targetSync.Clan)
+                            throw new LogicException(ErrorCode.ClanNotMatched);
+
+                        if (masterSync.Clan == null)
+                            throw new LogicException(ErrorCode.ClanNotJoined);
+
+                        return await redis.Sync(Clan.DistributeLockKey(masterSync.Clan.Value), async () =>
+                        {
+                            var clan = await _dbContext.Clan.Get(masterSync.Clan.Value) ??
+                                throw new LogicException(ErrorCode.NotFoundClan);
+
+                            var masterMember = await _dbContext.ClanMember.Get(clan.Id, master.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            if (masterMember.Position != (uint)ClanPosition.Master)
+                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+
+                            var targetMember = await _dbContext.ClanMember.Get(clan.Id, target.Id) ??
+                                throw new LogicException(ErrorCode.NotFoundClanMember);
+
+                            targetMember.Deleted = true;
+                            _dbContext.ClanMember.Set(targetMember);
+
+                            targetSync.Clan = null;
+                            _dbContext.CharacterSync.Set(targetSync);
+
+                            await _dbContext.SaveChangesAsync();
+
+                            return new Response.KickClan
+                            {
+                                Clan = clan.Id,
+                                Uid = target.Id,
+                                Uname = target.Name,
+                                Error = (uint)ErrorCode.None
+                            };
+                        });
+                    });
+                });
             }
             catch (LogicException e)
             {

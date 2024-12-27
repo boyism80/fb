@@ -17,6 +17,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.group_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.trace_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clan_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clanmember_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.logout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.ping_generated.h>
@@ -65,6 +66,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getgroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.entergroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.leavegroup_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.createclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.destroyclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.joinclan_generated.h>
@@ -83,6 +85,7 @@ namespace fb::protocol::internal
     class Group;
     class Trace;
     class Clan;
+    class ClanMember;
     enum class Service : int8_t;
     enum class GroupAction : int8_t;
 } // end of namespace fb::protocol::internal
@@ -139,6 +142,7 @@ namespace fb::protocol::internal::response
     class GetGroup;
     class EnterGroup;
     class LeaveGroup;
+    class GetClan;
     class CreateClan;
     class DestroyClan;
     class JoinClan;
@@ -245,6 +249,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef f
 template <> struct FlatBufferOffset<fb::protocol::internal::Group> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Group> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Trace> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Trace> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Clan> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Clan> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::ClanMember> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Ping> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Ping> type; };
@@ -293,6 +298,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::SetOption>
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::LeaveGroup> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::GetClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::CreateClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::CreateClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::DestroyClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::JoinClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::JoinClan> type; };
@@ -327,6 +333,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Trace> build<fb::protocol::internal::Trace>(FlatBufferBuilder& builder, const fb::protocol::internal::Trace& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Clan> build<fb::protocol::internal::Clan>(FlatBufferBuilder& builder, const fb::protocol::internal::Clan& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> build<fb::protocol::internal::ClanMember>(FlatBufferBuilder& builder, const fb::protocol::internal::ClanMember& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <>
@@ -424,6 +432,8 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::EnterGroup> build<fb:
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> build<fb::protocol::internal::response::LeaveGroup>(FlatBufferBuilder& builder, const fb::protocol::internal::response::LeaveGroup& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetClan> build<fb::protocol::internal::response::GetClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetClan& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::CreateClan> build<fb::protocol::internal::response::CreateClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::CreateClan& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyClan> build<fb::protocol::internal::response::DestroyClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::DestroyClan& value);
@@ -472,6 +482,7 @@ enum class FlatBufferProtocolType
     Group,
     Trace,
     Clan,
+    ClanMember,
 };
 
 class Position
@@ -554,23 +565,21 @@ public:
     std::optional<uint8_t> ring_right_color = std::nullopt;
     std::optional<uint8_t> aux_top_color = std::nullopt;
     std::optional<uint8_t> aux_bot_color = std::nullopt;
-    std::optional<uint32_t> group = std::nullopt;
-    std::optional<uint32_t> clan = std::nullopt;
     std::string updated_date;
 
 public:
     Character() = default;
 
     Character(const Character& x)
-        : id(x.id), name(x.name), pw(x.pw), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), group(x.group), clan(x.clan), updated_date(x.updated_date)
+        : id(x.id), name(x.name), pw(x.pw), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), updated_date(x.updated_date)
     { }
 
-    Character(uint32_t id, const std::string& name, const std::string& pw, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, const std::string& updated_date)
-        : id(id), name(name), pw(pw), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), group(group), clan(clan), updated_date(updated_date)
+    Character(uint32_t id, const std::string& name, const std::string& pw, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::string& updated_date)
+        : id(id), name(name), pw(pw), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), updated_date(updated_date)
     { }
 
     Character(const fb::protocol::internal::raw::Character& raw)
-        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
     { }
 
 public:
@@ -903,22 +912,21 @@ public:
 public:
     uint32_t id = 0;
     std::string name;
-    std::string master;
     std::string title;
 
 public:
     Clan() = default;
 
     Clan(const Clan& x)
-        : id(x.id), name(x.name), master(x.master), title(x.title)
+        : id(x.id), name(x.name), title(x.title)
     { }
 
-    Clan(uint32_t id, const std::string& name, const std::string& master, const std::string& title)
-        : id(id), name(name), master(master), title(title)
+    Clan(uint32_t id, const std::string& name, const std::string& title)
+        : id(id), name(name), title(title)
     { }
 
     Clan(const fb::protocol::internal::raw::Clan& raw)
-        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), master(flatbuffers::option::decode(raw.master()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str()))
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str()))
     { }
 
 public:
@@ -935,6 +943,47 @@ public:
     {
         auto raw = fb::protocol::internal::raw::GetClan(bytes);
         return Clan(*raw);
+    }
+};
+class ClanMember
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::ClanMember;
+
+public:
+    uint32_t uid = 0;
+    std::string name;
+    uint32_t position = 0;
+
+public:
+    ClanMember() = default;
+
+    ClanMember(const ClanMember& x)
+        : uid(x.uid), name(x.name), position(x.position)
+    { }
+
+    ClanMember(uint32_t uid, const std::string& name, uint32_t position)
+        : uid(uid), name(name), position(position)
+    { }
+
+    ClanMember(const fb::protocol::internal::raw::ClanMember& raw)
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), position(raw.position())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::ClanMember>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static ClanMember Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::raw::GetClanMember(bytes);
+        return ClanMember(*raw);
     }
 };
 
@@ -2057,6 +2106,7 @@ enum class FlatBufferProtocolType
     GetGroup,
     EnterGroup,
     LeaveGroup,
+    GetClan,
     CreateClan,
     DestroyClan,
     JoinClan,
@@ -2623,6 +2673,8 @@ public:
 
 public:
     fb::protocol::internal::Character character;
+    std::optional<uint32_t> group = std::nullopt;
+    std::optional<uint32_t> clan = std::nullopt;
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
     fb::protocol::internal::Option option;
@@ -2632,15 +2684,15 @@ public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), items(x.items), spells(x.spells), option(x.option), traces(x.traces)
+        : character(x.character), group(x.group), clan(x.clan), items(x.items), spells(x.spells), option(x.option), traces(x.traces)
     { }
 
-    Init(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Trace> traces)
-        : character(character), items(items), spells(spells), option(option), traces(traces)
+    Init(const fb::protocol::internal::Character& character, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Trace> traces)
+        : character(character), group(group), clan(clan), items(items), spells(spells), option(option), traces(traces)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), traces(unpack<fb::protocol::internal::Trace>(raw.traces()))
+        : character(*raw.character()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), traces(unpack<fb::protocol::internal::Trace>(raw.traces()))
     { }
 
 public:
@@ -2940,6 +2992,47 @@ public:
     {
         auto raw = fb::protocol::internal::response::raw::GetLeaveGroup(bytes);
         return LeaveGroup(*raw);
+    }
+};
+class GetClan
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetClan;
+
+public:
+    fb::protocol::internal::Clan clan;
+    std::vector<fb::protocol::internal::ClanMember> members = {};
+    uint32_t error = 0;
+
+public:
+    GetClan() = default;
+
+    GetClan(const GetClan& x)
+        : clan(x.clan), members(x.members), error(x.error)
+    { }
+
+    GetClan(const fb::protocol::internal::Clan& clan, std::vector<fb::protocol::internal::ClanMember> members, uint32_t error)
+        : clan(clan), members(members), error(error)
+    { }
+
+    GetClan(const fb::protocol::internal::response::raw::GetClan& raw)
+        : clan(*raw.clan()), members(unpack<fb::protocol::internal::ClanMember>(raw.members())), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::GetClan>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static GetClan Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetGetClan(bytes);
+        return GetClan(*raw);
     }
 };
 class CreateClan
@@ -3254,8 +3347,6 @@ flatbuffers::Offset<fb::protocol::internal::raw::Character> build<fb::protocol::
             flatbuffers::build<std::optional<uint8_t>>(builder, value.ring_right_color),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.aux_top_color),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.aux_bot_color),
-            flatbuffers::build<std::optional<uint32_t>>(builder, value.group),
-            flatbuffers::build<std::optional<uint32_t>>(builder, value.clan),
             flatbuffers::build<std::string>(builder, value.updated_date));
 }
 template <>
@@ -3339,8 +3430,15 @@ flatbuffers::Offset<fb::protocol::internal::raw::Clan> build<fb::protocol::inter
     return fb::protocol::internal::raw::CreateClan(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
             flatbuffers::build<std::string>(builder, value.name),
-            flatbuffers::build<std::string>(builder, value.master),
             flatbuffers::build<std::string>(builder, value.title));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> build<fb::protocol::internal::ClanMember>(FlatBufferBuilder& builder, const fb::protocol::internal::ClanMember& value)
+{
+    return fb::protocol::internal::raw::CreateClanMember(builder,
+            flatbuffers::build<uint32_t>(builder, value.uid),
+            flatbuffers::build<std::string>(builder, value.name),
+            flatbuffers::build<uint32_t>(builder, value.position));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)
@@ -3641,6 +3739,8 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
 {
     return fb::protocol::internal::response::raw::CreateInit(builder,
             flatbuffers::build<fb::protocol::internal::Character>(builder, value.character),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.group),
+            flatbuffers::build<std::optional<uint32_t>>(builder, value.clan),
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
             flatbuffers::build<fb::protocol::internal::Option>(builder, value.option),
@@ -3696,6 +3796,14 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveGroup> build<fb:
             flatbuffers::build<std::string>(builder, value.member),
             flatbuffers::build<fb::protocol::internal::GroupAction>(builder, value.action),
             flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetClan> build<fb::protocol::internal::response::GetClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetClan& value)
+{
+    return fb::protocol::internal::response::raw::CreateGetClan(builder,
+            flatbuffers::build<fb::protocol::internal::Clan>(builder, value.clan),
+            flatbuffers::build<std::vector<fb::protocol::internal::ClanMember>>(builder, value.members),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

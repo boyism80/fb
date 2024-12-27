@@ -28,39 +28,29 @@ public struct Clan : IFlatbufferObject
   public ArraySegment<byte>? GetNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(6); }
-  public string Master { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public string Title { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetMasterBytes() { return __p.__vector_as_span<byte>(8, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(8, 1); }
 #else
-  public ArraySegment<byte>? GetMasterBytes() { return __p.__vector_as_arraysegment(8); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
-  public byte[] GetMasterArray() { return __p.__vector_as_array<byte>(8); }
-  public string Title { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(10, 1); }
-#else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(10); }
-#endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(10); }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(8); }
 
   public static Offset<fb.protocol._internal.raw.Clan> CreateClan(FlatBufferBuilder builder,
       uint id = 0,
       StringOffset nameOffset = default(StringOffset),
-      StringOffset masterOffset = default(StringOffset),
       StringOffset titleOffset = default(StringOffset)) {
-    builder.StartTable(4);
+    builder.StartTable(3);
     Clan.AddTitle(builder, titleOffset);
-    Clan.AddMaster(builder, masterOffset);
     Clan.AddName(builder, nameOffset);
     Clan.AddId(builder, id);
     return Clan.EndClan(builder);
   }
 
-  public static void StartClan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartClan(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
-  public static void AddMaster(FlatBufferBuilder builder, StringOffset masterOffset) { builder.AddOffset(2, masterOffset.Value, 0); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(3, titleOffset.Value, 0); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(2, titleOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Clan> EndClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Clan>(o);
@@ -77,8 +67,7 @@ static public class ClanVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
-      && verifier.VerifyString(tablePos, 8 /*Master*/, false)
-      && verifier.VerifyString(tablePos, 10 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 8 /*Title*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

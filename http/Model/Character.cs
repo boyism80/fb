@@ -47,7 +47,5 @@ namespace Http.Model
         public byte? RingRightColor { get; set; }
         public byte? AuxTopColor { get; set; }
         public byte? AuxBotColor { get; set; }
-        public uint? Group { get; set; }
-        public uint? Clan { get; set; }
     }
 }

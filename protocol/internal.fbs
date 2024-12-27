@@ -44,8 +44,6 @@ table Character {
     ring_right_color: ubyte?;
     aux_top_color: ubyte?;
     aux_bot_color: ubyte?;
-    group: uint?;
-    clan: uint?;
     updated_date: string;
 }
 
@@ -113,6 +111,11 @@ table Trace {
 table Clan {
     id: uint;
     name: string;
-    master: string;
     title: string;
+}
+
+table ClanMember {
+    uid: uint;
+    name: string;
+    position: uint;
 }

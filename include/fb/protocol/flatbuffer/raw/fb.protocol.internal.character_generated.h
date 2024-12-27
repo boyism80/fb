@@ -15,7 +15,6 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
 
 #include "fb.protocol.internal.position_generated.h"
 #include "nullable_ubyte_generated.h"
-#include "nullable_uint_generated.h"
 #include "nullable_ushort_generated.h"
 
 namespace fb {
@@ -63,9 +62,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_RING_RIGHT_COLOR = 66,
     VT_AUX_TOP_COLOR = 68,
     VT_AUX_BOT_COLOR = 70,
-    VT_GROUP = 72,
-    VT_CLAN = 74,
-    VT_UPDATED_DATE = 76
+    VT_UPDATED_DATE = 72
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -169,12 +166,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const nullable::nullable_ubyte *aux_bot_color() const {
     return GetPointer<const nullable::nullable_ubyte *>(VT_AUX_BOT_COLOR);
   }
-  const nullable::nullable_uint *group() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_GROUP);
-  }
-  const nullable::nullable_uint *clan() const {
-    return GetPointer<const nullable::nullable_uint *>(VT_CLAN);
-  }
   const ::flatbuffers::String *updated_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
   }
@@ -227,10 +218,6 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyTable(aux_top_color()) &&
            VerifyOffset(verifier, VT_AUX_BOT_COLOR) &&
            verifier.VerifyTable(aux_bot_color()) &&
-           VerifyOffset(verifier, VT_GROUP) &&
-           verifier.VerifyTable(group()) &&
-           VerifyOffset(verifier, VT_CLAN) &&
-           verifier.VerifyTable(clan()) &&
            VerifyOffset(verifier, VT_UPDATED_DATE) &&
            verifier.VerifyString(updated_date()) &&
            verifier.EndTable();
@@ -343,12 +330,6 @@ struct CharacterBuilder {
   void add_aux_bot_color(::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color) {
     fbb_.AddOffset(Character::VT_AUX_BOT_COLOR, aux_bot_color);
   }
-  void add_group(::flatbuffers::Offset<nullable::nullable_uint> group) {
-    fbb_.AddOffset(Character::VT_GROUP, group);
-  }
-  void add_clan(::flatbuffers::Offset<nullable::nullable_uint> clan) {
-    fbb_.AddOffset(Character::VT_CLAN, clan);
-  }
   void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
     fbb_.AddOffset(Character::VT_UPDATED_DATE, updated_date);
   }
@@ -399,13 +380,9 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<nullable::nullable_ubyte> ring_right_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_top_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> group = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_updated_date(updated_date);
-  builder_.add_clan(clan);
-  builder_.add_group(group);
   builder_.add_aux_bot_color(aux_bot_color);
   builder_.add_aux_top_color(aux_top_color);
   builder_.add_ring_right_color(ring_right_color);
@@ -479,8 +456,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::Offset<nullable::nullable_ubyte> ring_right_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_top_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> group = 0,
-    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     const char *updated_date = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
@@ -521,8 +496,6 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       ring_right_color,
       aux_top_color,
       aux_bot_color,
-      group,
-      clan,
       updated_date__);
 }
 

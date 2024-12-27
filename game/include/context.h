@@ -175,13 +175,17 @@ private:
      * @brief      Initializes the ch.
      *
      * @param[in]  response  The response
-     * @param      ch   The ch
+     * @param      ch        The ch
+     * @param[in]  group     The group
+     * @param[in]  clan      The clan
      * @param[in]  transfer  The transfer
      *
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> init_ch(const fb::protocol::internal::Character& response,
                                             fb::game::character&                     ch,
+                                            std::optional<uint32_t>                  group,
+                                            std::optional<uint32_t>                  clan,
                                             const std::optional<transfer_param>&     transfer);
 
     /**

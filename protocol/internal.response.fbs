@@ -91,6 +91,8 @@ table Authenticate {
 
 table Init {
   character: fb.protocol.internal.Character;
+  group: uint?;
+  clan: uint?;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
   option: fb.protocol.internal.Option;
@@ -135,6 +137,12 @@ table LeaveGroup {
   member: string;
   action: fb.protocol.internal.GroupAction;
   host: uint;
+  error: uint;
+}
+
+table GetClan {
+  clan: fb.protocol.internal.Clan;
+  members: [fb.protocol.internal.ClanMember];
   error: uint;
 }
 

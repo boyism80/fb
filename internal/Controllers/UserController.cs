@@ -3,6 +3,7 @@ using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
+using Http.Redis;
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
@@ -21,14 +22,17 @@ namespace Internal.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
+        private readonly RedisService _redisService;
 
         public UserController(IConfiguration configuration,
             IMapper mapper,
-            DbContext dbContext)
+            DbContext dbContext,
+            RedisService redisService)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
+            _redisService = redisService;
         }
 
         [HttpGet("uid/{name}")]
@@ -222,15 +226,27 @@ namespace Internal.Controllers
                     Uid = uid,
                 });
 
+            var redis = _redisService.Connection;
+            var sync = await redis.Sync(CharacterSync.DistributeLockKey(uid), async () =>
+            {
+                return await _dbContext.CharacterSync.Get(uid) ??
+                _dbContext.CharacterSync.Set(new CharacterSync
+                {
+                    Uid = uid
+                });
+            });
+
             await _dbContext.SaveChangesAsync();
 
             var response = new Response.Init
             {
                 Character = _mapper.Map<Protocol.Character>(ch),
-                Items = items.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Item>).ToList(),
-                Spells = spells.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Spell>).ToList(),
-                Traces = traces.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Trace>).ToList(),
-                Option = _mapper.Map<Protocol.Option>(option)
+                Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
+                Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                Traces = traces.Select(_mapper.Map<Protocol.Trace>).ToList(),
+                Option = _mapper.Map<Protocol.Option>(option),
+                Clan = sync.Clan,
+                Group = sync.Group
             };
 
             return response;

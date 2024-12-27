@@ -12,7 +12,7 @@ namespace Http.Reepository
         Task SaveChangesAsync();
     }
 
-    public abstract class Repository<TModel, TKey> : IRepository where TModel : IModel, TKey where TKey : IModelKey
+    public abstract class Repository<TModel, TKey> : IRepository where TModel : class, IModel, TKey where TKey : IModelKey
     {
         private readonly DbContext _dbContext;
         protected readonly Queue<Func<Task>> _buffer = new Queue<Func<Task>>();
@@ -30,13 +30,20 @@ namespace Http.Reepository
         protected virtual async Task<TModel> Get(TKey key)
         {
             await using var conn = _dbContext.Connection(key.GetDbKey());
-            return await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
+            var value = await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
+            if (value == null)
+                return null;
+
+            if (value.Deleted)
+                return null;
+
+            return value;
         }
 
         protected virtual async Task<IEnumerable<TModel>> GetAll(TKey key)
         {
             await using var conn = _dbContext.Connection(key.GetDbKey());
-            return await conn.QueryAsync<TModel>(OnSelectBulk(key));
+            return (await conn.QueryAsync<TModel>(OnSelectBulk(key))).Where(x => !x.Deleted);
         }
 
         public virtual TModel Set(TModel value)
@@ -96,16 +103,30 @@ namespace Http.Reepository
             return await connRedis.Sync(GetLockKey(key), async () =>
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValue))
-                    return JsonConvert.DeserializeObject<TModel>(localValue);
+                {
+                    var value = JsonConvert.DeserializeObject<TModel>(localValue);
+                    if (value.Deleted)
+                        return null;
+
+                    return value;
+                }
 
                 var redisValues = await connRedis.JsonGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues != null)
+                {
+                    if (redisValues.Deleted)
+                        return null;
+
                     return redisValues;
+                }
 
                 var mysqlValue = await base.Get(key);
                 if (mysqlValue != null)
                 {
                     await connRedis.JsonSetAsync(key.GetRedisKey(), mysqlValue);
+                    if (mysqlValue.Deleted)
+                        return null;
+
                     return mysqlValue;
                 }
 
@@ -176,14 +197,25 @@ namespace Http.Reepository
             return await connRedis.Sync(GetLockKey(key), async () =>
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues) && localValues.TryGetValue(key.GetRedisField(), out var localValue))
-                    return JsonConvert.DeserializeObject<TModel>(localValue);
+                {
+                    var value = JsonConvert.DeserializeObject<TModel>(localValue);
+                    if (value.Deleted)
+                        return null;
+
+                    return value;
+                }
 
                 var redisValues = await connRedis.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
                     _local[key.GetRedisKey()] = redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value));
                     if (redisValues.TryGetValue(key.GetRedisField(), out var redisValue))
+                    {
+                        if (redisValue.Deleted)
+                            return null;
+
                         return redisValue;
+                    }
                 }
 
                 var mysqlValues = await base.GetAll(key);
@@ -195,7 +227,7 @@ namespace Http.Reepository
                         _local[g.Key] = g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x));
                     }
 
-                    return mysqlValues.FirstOrDefault(x =>
+                    var value = mysqlValues.FirstOrDefault(x =>
                     {
                         if (x.GetRedisKey() != key.GetRedisKey())
                             return false;
@@ -205,6 +237,14 @@ namespace Http.Reepository
 
                         return true;
                     });
+
+                    if (value == null)
+                        return null;
+
+                    if (value.Deleted)
+                        return null;
+
+                    return value;
                 }
 
                 return null;
@@ -217,13 +257,13 @@ namespace Http.Reepository
             return await connRedis.Sync(GetLockKey(key), async () =>
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
-                    return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x));
+                    return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
 
                 var redisValues = await connRedis.JsonHashGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
                     _local[key.GetRedisKey()] = redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value));
-                    return redisValues.Values;
+                    return redisValues.Values.Where(x => !x.Deleted);
                 }
 
                 var mysqlValues = await base.GetAll(key);
@@ -235,7 +275,7 @@ namespace Http.Reepository
                         _local[g.Key] = g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x));
                     }
 
-                    return mysqlValues;
+                    return mysqlValues.Where(x => !x.Deleted);
                 }
 
                 return [];

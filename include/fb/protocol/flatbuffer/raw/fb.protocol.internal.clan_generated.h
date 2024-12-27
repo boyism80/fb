@@ -26,17 +26,13 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_ID = 4,
     VT_NAME = 6,
-    VT_MASTER = 8,
-    VT_TITLE = 10
+    VT_TITLE = 8
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
   }
   const ::flatbuffers::String *name() const {
     return GetPointer<const ::flatbuffers::String *>(VT_NAME);
-  }
-  const ::flatbuffers::String *master() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_MASTER);
   }
   const ::flatbuffers::String *title() const {
     return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
@@ -46,8 +42,6 @@ struct Clan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_ID, 4) &&
            VerifyOffset(verifier, VT_NAME) &&
            verifier.VerifyString(name()) &&
-           VerifyOffset(verifier, VT_MASTER) &&
-           verifier.VerifyString(master()) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
            verifier.EndTable();
@@ -63,9 +57,6 @@ struct ClanBuilder {
   }
   void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
     fbb_.AddOffset(Clan::VT_NAME, name);
-  }
-  void add_master(::flatbuffers::Offset<::flatbuffers::String> master) {
-    fbb_.AddOffset(Clan::VT_MASTER, master);
   }
   void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
     fbb_.AddOffset(Clan::VT_TITLE, title);
@@ -85,11 +76,9 @@ inline ::flatbuffers::Offset<Clan> CreateClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> master = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0) {
   ClanBuilder builder_(_fbb);
   builder_.add_title(title);
-  builder_.add_master(master);
   builder_.add_name(name);
   builder_.add_id(id);
   return builder_.Finish();
@@ -99,16 +88,13 @@ inline ::flatbuffers::Offset<Clan> CreateClanDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t id = 0,
     const char *name = nullptr,
-    const char *master = nullptr,
     const char *title = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
-  auto master__ = master ? _fbb.CreateString(master) : 0;
   auto title__ = title ? _fbb.CreateString(title) : 0;
   return fb::protocol::internal::raw::CreateClan(
       _fbb,
       id,
       name__,
-      master__,
       title__);
 }
 

@@ -18,6 +18,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
 #include "fb.protocol.internal.option_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
 #include "fb.protocol.internal.trace_generated.h"
+#include "nullable_uint_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -32,13 +33,21 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef InitBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CHARACTER = 4,
-    VT_ITEMS = 6,
-    VT_SPELLS = 8,
-    VT_OPTION = 10,
-    VT_TRACES = 12
+    VT_GROUP = 6,
+    VT_CLAN = 8,
+    VT_ITEMS = 10,
+    VT_SPELLS = 12,
+    VT_OPTION = 14,
+    VT_TRACES = 16
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
+  }
+  const nullable::nullable_uint *group() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_GROUP);
+  }
+  const nullable::nullable_uint *clan() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_CLAN);
   }
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *>(VT_ITEMS);
@@ -56,6 +65,10 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
            verifier.VerifyTable(character()) &&
+           VerifyOffset(verifier, VT_GROUP) &&
+           verifier.VerifyTable(group()) &&
+           VerifyOffset(verifier, VT_CLAN) &&
+           verifier.VerifyTable(clan()) &&
            VerifyOffset(verifier, VT_ITEMS) &&
            verifier.VerifyVector(items()) &&
            verifier.VerifyVectorOfTables(items()) &&
@@ -77,6 +90,12 @@ struct InitBuilder {
   ::flatbuffers::uoffset_t start_;
   void add_character(::flatbuffers::Offset<fb::protocol::internal::raw::Character> character) {
     fbb_.AddOffset(Init::VT_CHARACTER, character);
+  }
+  void add_group(::flatbuffers::Offset<nullable::nullable_uint> group) {
+    fbb_.AddOffset(Init::VT_GROUP, group);
+  }
+  void add_clan(::flatbuffers::Offset<nullable::nullable_uint> clan) {
+    fbb_.AddOffset(Init::VT_CLAN, clan);
   }
   void add_items(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items) {
     fbb_.AddOffset(Init::VT_ITEMS, items);
@@ -104,6 +123,8 @@ struct InitBuilder {
 inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> group = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
@@ -113,6 +134,8 @@ inline ::flatbuffers::Offset<Init> CreateInit(
   builder_.add_option(option);
   builder_.add_spells(spells);
   builder_.add_items(items);
+  builder_.add_clan(clan);
+  builder_.add_group(group);
   builder_.add_character(character);
   return builder_.Finish();
 }
@@ -120,6 +143,8 @@ inline ::flatbuffers::Offset<Init> CreateInit(
 inline ::flatbuffers::Offset<Init> CreateInitDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> group = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> clan = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
@@ -130,6 +155,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
+      group,
+      clan,
       items__,
       spells__,
       option,

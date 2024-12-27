@@ -41,8 +41,9 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             characters.insert({name, ch});
     });
 
-    if (co_await this->init_ch(response.character, *ch, transfer) == false)
+    if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
+
     auto thread = ch->thread();
     thread->assert_ptr(ch);
 

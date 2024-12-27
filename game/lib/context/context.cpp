@@ -411,6 +411,8 @@ void context::broadcast(const std::string& name, const std::function<void(fb::ga
 
 async::task<bool> context::init_ch(const internal::Character&           response,
                                    character&                           ch,
+                                   std::optional<uint32_t>              group,
+                                   std::optional<uint32_t>              clan,
                                    const std::optional<transfer_param>& transfer)
 {
     auto map = response.map;
@@ -454,9 +456,9 @@ async::task<bool> context::init_ch(const internal::Character&           response
         position_y = uint32_t(transfer.value().position.y);
     }
 
-    if (response.group.has_value())
+    if (group.has_value())
     {
-        auto gid = response.group.value();
+        auto gid = group.value();
         this->upsert_group_then(gid, [&ch](auto& group_lock_ptr) {
             group_lock_ptr->lock([&ch](auto& group) {
                 group.enter(ch);
