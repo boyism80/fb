@@ -2,8 +2,8 @@ using AutoMapper;
 using fb.protocol._internal;
 using Fb.Model.EnumValue;
 using Http;
-using Http.Redis;
 using Http.Service;
+using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
@@ -110,9 +110,9 @@ namespace Internal.Controllers
                 var member = await _dbContext.Character.Get(memberSession.Uid) ??
                     throw new Exception($"user {request.Member} not found");
 
-                return await redis.Sync(Http.Model.CharacterSync.DistributeLockKey(master.Id), async () =>
+                await using (await new RedisDistributedLock(Http.Model.CharacterSync.DistributeLockKey(master.Id), redis).AcquireAsync())
                 {
-                    return await redis.Sync(Http.Model.CharacterSync.DistributeLockKey(member.Id), async () =>
+                    await using (await new RedisDistributedLock(Http.Model.CharacterSync.DistributeLockKey(member.Id), redis).AcquireAsync())
                     {
                         var masterSync = await _dbContext.CharacterSync.Get(master.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -195,8 +195,8 @@ namespace Internal.Controllers
                         await _dbContext.SaveChangesAsync();
                         _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
                         return response;
-                    });
-                });
+                    }
+                }
             }
             catch (LogicException e)
             {
@@ -228,7 +228,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 var redis = _redisService.Connection;
-                return await redis.Sync(Http.Model.CharacterSync.DistributeLockKey(character.Id), async () =>
+                await using (await new RedisDistributedLock(Http.Model.CharacterSync.DistributeLockKey(character.Id), redis).AcquireAsync())
                 {
                     var sync = await _dbContext.CharacterSync.Get(character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -248,7 +248,7 @@ namespace Internal.Controllers
                         var meemberNames = new List<string>();
                         foreach (var uid in group.Members)
                         {
-                            await redis.Sync(Http.Model.CharacterSync.DistributeLockKey(uid), async () =>
+                            await using (await new RedisDistributedLock(Http.Model.CharacterSync.DistributeLockKey(uid), redis).AcquireAsync())
                             {
                                 var member = await _dbContext.Character.Get(uid) ??
                                     throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -259,8 +259,7 @@ namespace Internal.Controllers
                                 memberSync.Group = null;
                                 _dbContext.CharacterSync.Set(memberSync);
                                 meemberNames.Add(member.Name);
-                                return true;
-                            });
+                            }
                         }
                         sync.Group = null;
                         _dbContext.CharacterSync.Set(sync);
@@ -319,7 +318,7 @@ namespace Internal.Controllers
                         _rabbitMqService.Publish(response, "amq.direct", $"fb.group");
                         return response;
                     }
-                });
+                }
             }
             catch (LogicException e)
             {

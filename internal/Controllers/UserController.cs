@@ -5,6 +5,7 @@ using Http;
 using Http.Model;
 using Http.Redis;
 using Http.Service;
+using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Cryptography;
@@ -227,29 +228,27 @@ namespace Internal.Controllers
                 });
 
             var redis = _redisService.Connection;
-            var sync = await redis.Sync(CharacterSync.DistributeLockKey(uid), async () =>
+
+            await using (await new RedisDistributedLock(CharacterSync.DistributeLockKey(uid), redis).AcquireAsync())
             {
-                return await _dbContext.CharacterSync.Get(uid) ??
-                _dbContext.CharacterSync.Set(new CharacterSync
+                var sync = await _dbContext.CharacterSync.Get(uid) ??
+                    _dbContext.CharacterSync.Set(new CharacterSync
+                    {
+                        Uid = uid
+                    });
+
+                await _dbContext.SaveChangesAsync();
+                return new Response.Init
                 {
-                    Uid = uid
-                });
-            });
-
-            await _dbContext.SaveChangesAsync();
-
-            var response = new Response.Init
-            {
-                Character = _mapper.Map<Protocol.Character>(ch),
-                Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
-                Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
-                Traces = traces.Select(_mapper.Map<Protocol.Trace>).ToList(),
-                Option = _mapper.Map<Protocol.Option>(option),
-                Clan = sync.Clan,
-                Group = sync.Group
-            };
-
-            return response;
+                    Character = _mapper.Map<Protocol.Character>(ch),
+                    Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
+                    Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                    Traces = traces.Select(_mapper.Map<Protocol.Trace>).ToList(),
+                    Option = _mapper.Map<Protocol.Option>(option),
+                    Clan = sync.Clan,
+                    Group = sync.Group
+                };
+            }
         }
 
         private static T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey

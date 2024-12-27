@@ -2,6 +2,7 @@ using Dapper;
 using Http.Model;
 using Http.Redis;
 using Http.Service;
+using Medallion.Threading.Redis;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -99,8 +100,8 @@ namespace Http.Reepository
 
         protected override async Task<TModel> Get(TKey key)
         {
-            var connRedis = _redisService.Connection;
-            return await connRedis.Sync(GetLockKey(key), async () =>
+            var redis = _redisService.Connection;
+            await using (await new RedisDistributedLock(GetLockKey(key), redis).AcquireAsync())
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValue))
                 {
@@ -111,7 +112,7 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redisValues = await connRedis.JsonGetAsync<TModel>(key.GetRedisKey());
+                var redisValues = await redis.JsonGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues != null)
                 {
                     if (redisValues.Deleted)
@@ -123,7 +124,7 @@ namespace Http.Reepository
                 var mysqlValue = await base.Get(key);
                 if (mysqlValue != null)
                 {
-                    await connRedis.JsonSetAsync(key.GetRedisKey(), mysqlValue);
+                    await redis.JsonSetAsync(key.GetRedisKey(), mysqlValue);
                     if (mysqlValue.Deleted)
                         return null;
 
@@ -131,7 +132,7 @@ namespace Http.Reepository
                 }
 
                 return null;
-            });
+            }
         }
 
         protected override sealed Task<IEnumerable<TModel>> GetAll(TKey key)
@@ -145,8 +146,8 @@ namespace Http.Reepository
             {
                 value.UpdatedDate = DateTime.Now;
 
-                var connRedis = _redisService.Connection;
-                await connRedis.TransactAsync(cmd =>
+                var redis = _redisService.Connection;
+                await redis.TransactAsync(cmd =>
                 {
                     cmd.Enqueue(trans => trans.JsonSetAsync(value.GetRedisKey(), value));
                     cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
@@ -193,8 +194,8 @@ namespace Http.Reepository
 
         protected override async Task<TModel> Get(TKey key)
         {
-            var connRedis = _redisService.Connection;
-            return await connRedis.Sync(GetLockKey(key), async () =>
+            var redis = _redisService.Connection;
+            await using (await new RedisDistributedLock(GetLockKey(key), redis).AcquireAsync())
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues) && localValues.TryGetValue(key.GetRedisField(), out var localValue))
                 {
@@ -205,7 +206,7 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redisValues = await connRedis.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
+                var redisValues = await redis.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
                     _local[key.GetRedisKey()] = redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value));
@@ -223,7 +224,7 @@ namespace Http.Reepository
                 {
                     foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
                     {
-                        await connRedis.JsonHashSetAsync(g.Key, g.ToDictionary(x => x.GetRedisField(), x => x));
+                        await redis.JsonHashSetAsync(g.Key, g.ToDictionary(x => x.GetRedisField(), x => x));
                         _local[g.Key] = g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x));
                     }
 
@@ -248,18 +249,18 @@ namespace Http.Reepository
                 }
 
                 return null;
-            });
+            }
         }
 
         protected override async Task<IEnumerable<TModel>> GetAll(TKey key)
         {
-            var connRedis = _redisService.Connection;
-            return await connRedis.Sync(GetLockKey(key), async () =>
+            var redis = _redisService.Connection;
+            await using (await new RedisDistributedLock(GetLockKey(key), redis).AcquireAsync())
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
                     return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
 
-                var redisValues = await connRedis.JsonHashGetAsync<TModel>(key.GetRedisKey());
+                var redisValues = await redis.JsonHashGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
                     _local[key.GetRedisKey()] = redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value));
@@ -271,7 +272,7 @@ namespace Http.Reepository
                 {
                     foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
                     {
-                        await connRedis.JsonHashSetAsync(g.Key, g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x));
+                        await redis.JsonHashSetAsync(g.Key, g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x));
                         _local[g.Key] = g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x));
                     }
 
@@ -279,7 +280,7 @@ namespace Http.Reepository
                 }
 
                 return [];
-            });
+            }
         }
 
         public override TModel Set(TModel value)
@@ -288,8 +289,8 @@ namespace Http.Reepository
             {
                 value.UpdatedDate = DateTime.Now;
 
-                var connRedis = _redisService.Connection;
-                await connRedis.TransactAsync(cmd =>
+                var redis = _redisService.Connection;
+                await redis.TransactAsync(cmd =>
                 {
                     cmd.Enqueue(trans => trans.JsonHashSetAsync(value.GetRedisKey(), value.GetRedisField(), value));
                     cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
@@ -315,7 +316,7 @@ namespace Http.Reepository
                     value.UpdatedDate = DateTime.Now;
                 }
 
-                var connRedis = _redisService.Connection;
+                var redis = _redisService.Connection;
                 foreach (var g in values.GroupBy(x => x.GetRedisKey()))
                 {
                     if (g.GroupBy(x => x.GetDbKey()).Count() > 1)
@@ -323,7 +324,7 @@ namespace Http.Reepository
 
                     var redisKey = g.Key;
                     var valueSet = g.ToDictionary(x => x.GetRedisField(), x => x);
-                    await connRedis.TransactAsync(cmd =>
+                    await redis.TransactAsync(cmd =>
                     {
                         cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
                         cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
