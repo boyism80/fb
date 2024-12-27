@@ -106,15 +106,6 @@ private:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  gid      The gid
-     * @param[in]  master   The master
-     * @param[in]  members  The members
-     */
-    void update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members);
-
-    /**
-     * @brief      { function_description }
-     *
      * @param[in]  gid   The gid
      * @param[in]  fn    The function
      */
@@ -132,6 +123,14 @@ private:
                            const std::string&                             master,
                            const std::vector<std::string>&                members,
                            const std::function<void(shared_group_lock&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  id    The identifier
+     * @param[in]  fn    The function
+     */
+    void upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn);
 
     /**
      * @brief      { function_description }
@@ -272,6 +271,13 @@ private:
     void assert_group(uint32_t error, const std::string& actor) const;
 
     /**
+     * @brief      { function_description }
+     *
+     * @param[in]  error  The error
+     */
+    void assert_clan(uint32_t error) const;
+
+    /**
      * @brief      Called on enter group.
      *
      * @param[in]  resp  The response
@@ -409,6 +415,16 @@ public:
      * @return     { description_of_the_return_value }
      */
     async::task<bool> create_group(character& me, const std::string& target);
+
+    /**
+     * @brief      Creates a clan.
+     *
+     * @param      me    { parameter_description }
+     * @param[in]  name  The name
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> create_clan(character& me, const std::string& name);
 
 protected:
     /**

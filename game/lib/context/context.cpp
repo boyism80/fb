@@ -279,16 +279,13 @@ std::string context::elapsed_message(const std::string& dt)
     }
 }
 
-void context::update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members)
-{ }
-
 void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
 {
     this->_shard[gid]->groups.lock([this, gid, &fn](auto& groups) {
         if (groups.contains(gid) == false)
         {
             groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-            async::awaitable_then(this->get<internal_resp::GetGroup>("internal", std::format("/in-game/group/{}", gid)),
+            async::awaitable_then(this->get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid)),
                                   [this, gid](auto result) {
                                       try
                                       {
@@ -340,6 +337,76 @@ void context::upsert_group_then(uint32_t                                       g
             group.update(master, members);
         });
         fn(group_lock_ptr);
+    });
+}
+
+void context::upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn)
+{
+    this->_shard[id]->clans.lock([this, id](auto& clans) {
+        if (clans.contains(id) == false)
+        {
+            clans.insert({id, std::make_shared<fb::locker<fb::game::clan>>(*this, id)});
+            async::awaitable_then(
+                this->get<internal_resp::GetClan>("internal", std::format("/clan/{}", id)),
+                [this, id](auto result) {
+                    try
+                    {
+                        auto&& resp = result();
+                        switch (static_cast<ERROR_CODE>(resp.error))
+                        {
+                        case ERROR_CODE::NONE:
+                            break;
+
+                        default:
+                            throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
+                        }
+
+                        this->_shard[id]->clans.lock([this, id, &resp](fb::game::shard_params::clan_container& clans) {
+                            if (!clans.contains(id))
+                                return;
+
+                            auto& clan_lock_ptr = clans.at(id);
+                            clan_lock_ptr->lock([this, &resp](fb::game::clan& clan) {
+                                auto members  = std::vector<clan_member>{};
+                                auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
+                                for (auto& member : resp.members)
+                                {
+                                    auto cm = clan_member{.name     = member.name,
+                                                          .position = static_cast<CLAN_POSITION>(member.position)};
+
+                                    auto hash = this->_shard.mod(member.name);
+                                    if (modulars.contains(hash) == false)
+                                        modulars.insert({hash, {}});
+
+                                    modulars[hash].push_back(member.name);
+                                    members.push_back(std::move(cm));
+                                }
+
+                                clan.update(resp.clan.name, resp.clan.title, members);
+
+                                for (auto& [hash, names] : modulars)
+                                {
+                                    this->_shard[hash]->characters.lock(
+                                        [&clan, &names, &members](
+                                            fb::game::shard_params::character_container& characters) {
+                                            for (auto& name : names)
+                                            {
+                                                if (!characters.contains(name))
+                                                    continue;
+
+                                                clan.attach_character(*characters.at(name));
+                                            }
+                                        });
+                                }
+                            });
+                        });
+                    }
+                    catch (std::exception& e)
+                    {
+                        fb::logger::fatal(e.what());
+                    }
+                });
+        }
     });
 }
 
@@ -888,19 +955,37 @@ async::task<bool> context::create_group(character& me, const std::string& target
         if (me.option(SETTING::GROUP) == false)
             throw std::runtime_error(message::group::DISABLED_MINE);
 
-        auto&& response = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
+        auto&& resp = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
             "internal",
-            "/in-game/group/create",
+            "/group/create",
             internal_reqs::EnterGroup{me.id(), target});
 
-        this->on_enter_group(response);
+        this->on_enter_group(resp);
         co_return true;
     }
     catch (std::exception& e)
     {
-        this->send(me, fb_resp::message(e.what(), MESSAGE_TYPE::STATE), scope::SELF);
+        me.message(e.what(), MESSAGE_TYPE::STATE);
         co_return false;
     }
+}
+
+async::task<bool> context::create_group(character& me, const std::string& name)
+{
+    if (me.clan() != nullptr)
+        throw std::runtime_error("클랜 이미 있음");
+
+    auto fd = me.fd();
+
+    auto&& resp = co_await this->post<internal_reqs::CreateClan, internal_resp::CreateClan>(
+        "internal",
+        "/clan/create",
+        internal_reqs::CreateClan{me.id(), name});
+
+    this->assert_clan(resp.error);
+
+    // TODO: 클랜 정보 동기화하고 소켓 살아있는 경우에 attach_character
+    // this->sockets를 locker 이용해서 다시구현
 }
 
 // TODO : 클릭도 인터페이스로
@@ -951,6 +1036,21 @@ void context::assert_group(uint32_t error, const std::string& actor) const
 
     case ERROR_CODE::NOT_GROUP_MASTER:
         throw std::runtime_error("당신은 그룹장이 아닙니다.");
+
+    default:
+        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
+    }
+}
+
+void context::assert_clan(uint32_t error) const
+{
+    switch (static_cast<ERROR_CODE>(resp.error))
+    {
+    case ERROR_CODE::NONE:
+        return;
+
+    case ERROR_CODE::CLAN_NAME_ALREEADY_EXISTS:
+        throw std::runtime_error(std::format("{} 클랜명이 이미 존재함", name));
 
     default:
         throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));

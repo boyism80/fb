@@ -12,7 +12,7 @@ using Response = fb.protocol._internal.response;
 namespace Internal.Controllers
 {
     [ApiController]
-    [Route("in-game/group")]
+    [Route("group")]
     public class GroupController : ControllerBase
     {
         private readonly IConfiguration _configuration;

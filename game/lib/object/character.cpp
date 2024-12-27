@@ -1252,7 +1252,7 @@ void character::group(shared_group_lock& value)
     this->_group = value;
 }
 
-clan* character::clan() const
+shared_clan_lock& character::clan()
 {
     this->assert_thread();
 

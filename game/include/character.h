@@ -10,6 +10,7 @@
 #include <sstream>
 #include <trade.h>
 #include <trace.h>
+#include <clan.h>
 
 namespace fb::game {
 
@@ -28,6 +29,9 @@ class group;
 
 using group_lock        = fb::locker<fb::game::group>;
 using shared_group_lock = std::shared_ptr<group_lock>;
+
+using clan_lock        = fb::locker<fb::game::clan>;
+using shared_clan_lock = std::shared_ptr<clan_lock>;
 
 /**
  * @brief      This class describes a character.
@@ -96,7 +100,7 @@ private:
     std::vector<item*>      _deposited_items;
     std::string             _title;
     shared_group_lock       _group             = nullptr;
-    fb::game::clan*         _clan              = nullptr;
+    shared_clan_lock        _clan              = nullptr;
     bool                    _options[0x0B + 1] = {
         0,
     };
@@ -961,7 +965,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::clan* clan() const;
+    shared_clan_lock& clan();
 
     /**
      * @brief      { function_description }

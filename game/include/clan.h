@@ -3,58 +3,68 @@
 
 #include <character.h>
 
-namespace fb { namespace game {
+namespace fb::game {
+
+/**
+ * @brief      This class describes a clan member.
+ */
+class clan_member
+{
+public:
+    std::string   name;
+    CLAN_POSITION position;
+};
 
 /**
  * @brief      This class describes a clan.
  */
 class clan
 {
-private:
-    character&           _owner;
-    character::container _members;
-    std::string          _name;
-    std::string          _title;
+public:
+    context&                                           _context;
+    uint32_t                                           _id;
+    std::string                                        _name;
+    std::optional<std::string>                         _title;
+    std::vector<clan_member>                           _members;
+    std::unordered_map<uint32_t, fb::game::character*> _characters;
 
 public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  name     The name
-     * @param      owner    The owner
-     * @param[in]  members  The members
+     * @param      context  The context
+     * @param[in]  id       The identifier
      */
-    clan(const std::string& name, fb::game::character& owner, const character::container& members);
+    clan(context& context, uint32_t id);
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  name     The name
-     * @param[in]  title    The title
-     * @param      owner    The owner
-     * @param[in]  members  The members
+     * @param[in]  <unnamed>  { parameter_description }
      */
-    clan(const std::string&          name,
-         const std::string&          title,
-         fb::game::character&        owner,
-         const character::container& members);
+    clan(const clan&) = delete;
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      <unnamed>  { parameter_description }
+     */
+    clan(clan&&);
     /**
      * @brief      Destroys the object.
      */
-    ~clan();
+    ~clan() = default;
 
 public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  name     The name
+     * @param[in]  title    The title
+     * @param[in]  members  The members
      */
-    const character& owner() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const character::container& members() const;
+    void update(const std::string&                name,
+                const std::optional<std::string>& title,
+                const std::vector<clan_member>&   members);
+
     /**
      * @brief      { function_description }
      *
@@ -64,41 +74,30 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  value  The value
+     * @return     { description_of_the_return_value }
      */
-    void name(const std::string& value);
+    const std::optional<std::string>& title() const;
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    const std::string& title() const;
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void title(const std::string& value);
+    const std::unordered_map<uint32_t, fb::game::character*>& characters() const;
 
-public:
     /**
-     * @brief      { function_description }
+     * @brief      Attaches the character.
      *
-     * @param      ch  The ch
-     *
-     * @return     { description_of_the_return_value }
+     * @param      ch    { parameter_description }
      */
-    bool enter(fb::game::character& ch);
+    void attach_character(character& ch);
     /**
-     * @brief      { function_description }
+     * @brief      Detaches the character.
      *
-     * @param      ch  The ch
-     *
-     * @return     { description_of_the_return_value }
+     * @param      ch    { parameter_description }
      */
-    bool leave(fb::game::character& ch);
+    void detach_character(character& ch);
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__CLAN_H__

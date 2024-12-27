@@ -1,5 +1,4 @@
-﻿using Azure;
-using Dapper;
+﻿using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;

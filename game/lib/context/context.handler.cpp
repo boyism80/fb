@@ -328,7 +328,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         {
             auto&& response = co_await this->post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
                 "internal",
-                "/in-game/group/leave",
+                "/group/leave",
                 internal_reqs::LeaveGroup{ch->name()});
 
             this->on_leave_group(response);
