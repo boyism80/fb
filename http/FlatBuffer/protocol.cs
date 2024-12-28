@@ -435,7 +435,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Master),
+                builder.Build(value.Clan),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveClan value)
@@ -1221,7 +1221,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Master),
+                builder.Build(value.Clan),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveClan value)
@@ -2023,7 +2023,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
-                builder.Build(value.Master),
+                builder.Build(value.Clan),
                 builder.Build(value.Uid));
         }
         public static Offset<fb.protocol._internal.request.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveClan value)
@@ -3659,7 +3659,7 @@ namespace fb.protocol._internal.request
     public class JoinClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.JoinClan;
-        public uint Master { get; set; } = 0;
+        public uint Clan { get; set; } = 0;
         public uint Uid { get; set; } = 0;
 
         public JoinClan()
@@ -3667,7 +3667,7 @@ namespace fb.protocol._internal.request
 
         public JoinClan(fb.protocol._internal.request.raw.JoinClan raw)
         {
-            Master = raw.Master;
+            Clan = raw.Clan;
             Uid = raw.Uid;
         }
 

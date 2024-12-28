@@ -1975,22 +1975,22 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::JoinClan;
 
 public:
-    uint32_t master = 0;
+    uint32_t clan = 0;
     uint32_t uid = 0;
 
 public:
     JoinClan() = default;
 
     JoinClan(const JoinClan& x)
-        : master(x.master), uid(x.uid)
+        : clan(x.clan), uid(x.uid)
     { }
 
-    JoinClan(uint32_t master, uint32_t uid)
-        : master(master), uid(uid)
+    JoinClan(uint32_t clan, uint32_t uid)
+        : clan(clan), uid(uid)
     { }
 
     JoinClan(const fb::protocol::internal::request::raw::JoinClan& raw)
-        : master(raw.master()), uid(raw.uid())
+        : clan(raw.clan()), uid(raw.uid())
     { }
 
 public:
@@ -3718,7 +3718,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> build<fb::protocol::internal::request::JoinClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::JoinClan& value)
 {
     return fb::protocol::internal::request::raw::CreateJoinClan(builder,
-            flatbuffers::build<uint32_t>(builder, value.master),
+            flatbuffers::build<uint32_t>(builder, value.clan),
             flatbuffers::build<uint32_t>(builder, value.uid));
 }
 template <>

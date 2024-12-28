@@ -456,6 +456,16 @@ public:
      */
     async::task<void> set_clan_title(clan& clan, std::string title);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      clan  The clan
+     * @param      ch    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> join_clan_member(clan& clan, character& ch);
+
 protected:
     /**
      * @brief      { function_description }

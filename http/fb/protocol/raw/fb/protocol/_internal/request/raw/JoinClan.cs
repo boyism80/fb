@@ -20,20 +20,20 @@ public struct JoinClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public JoinClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Master { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Clan { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.JoinClan> CreateJoinClan(FlatBufferBuilder builder,
-      uint master = 0,
+      uint clan = 0,
       uint uid = 0) {
     builder.StartTable(2);
     JoinClan.AddUid(builder, uid);
-    JoinClan.AddMaster(builder, master);
+    JoinClan.AddClan(builder, clan);
     return JoinClan.EndJoinClan(builder);
   }
 
   public static void StartJoinClan(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddMaster(FlatBufferBuilder builder, uint master) { builder.AddUint(0, master, 0); }
+  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(0, clan, 0); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
   public static Offset<fb.protocol._internal.request.raw.JoinClan> EndJoinClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -49,7 +49,7 @@ static public class JoinClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Master*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Clan*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

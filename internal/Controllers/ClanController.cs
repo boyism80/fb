@@ -6,10 +6,9 @@ using Http.Model;
 using Http.Service;
 using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
+using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
-using Protocol = fb.protocol._internal;
-using System.Dynamic;
 
 namespace Internal.Controllers
 {
@@ -314,62 +313,44 @@ namespace Internal.Controllers
             try
             {
                 var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(CharacterSync.DistributeLockKey(request.Master), redis).AcquireAsync())
+                await using (await new RedisDistributedLock(CharacterSync.DistributeLockKey(request.Uid), redis).AcquireAsync())
                 {
-                    await using (await new RedisDistributedLock(CharacterSync.DistributeLockKey(request.Uid), redis).AcquireAsync())
+                    var target = await _dbContext.Character.Get(request.Uid) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacter);
+
+                    var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
+                        throw new LogicException(ErrorCode.NotFoundCharacterSync);
+
+                    if (targetSync.Clan != null)
+                        throw new LogicException(ErrorCode.ClanAlreadyJoined);
+
+                    await using (await new RedisDistributedLock(Clan.DistributeLockKey(request.Clan), redis).AcquireAsync())
                     {
-                        var master = await _dbContext.Character.Get(request.Master) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacter);
+                        var clan = await _dbContext.Clan.Get(request.Clan) ??
+                            throw new LogicException(ErrorCode.NotFoundClan);
 
-                        var masterSync = await _dbContext.CharacterSync.Get(master.Id) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                        var target = await _dbContext.Character.Get(request.Uid) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacter);
-
-                        var targetSync = await _dbContext.CharacterSync.Get(target.Id) ??
-                            throw new LogicException(ErrorCode.NotFoundCharacterSync);
-
-                        if (masterSync.Clan == null)
-                            throw new LogicException(ErrorCode.ClanNotJoined);
-
-                        if (targetSync.Clan != null)
-                            throw new LogicException(ErrorCode.ClanAlreadyJoined);
-
-                        await using (await new RedisDistributedLock(Clan.DistributeLockKey(masterSync.Clan.Value), redis).AcquireAsync())
+                        _dbContext.ClanMember.Set(new ClanMember
                         {
-                            var clan = await _dbContext.Clan.Get(masterSync.Clan.Value) ??
-                                throw new LogicException(ErrorCode.NotFoundClan);
+                            Clan = clan.Id,
+                            Position = (uint)ClanPosition.Mate,
+                            User = target.Id,
+                            Deleted = false
+                        });
 
-                            var clanMember = await _dbContext.ClanMember.Get(clan.Id, master.Id) ??
-                                throw new LogicException(ErrorCode.NotFoundClanMember);
+                        targetSync.Clan = clan.Id;
+                        _dbContext.CharacterSync.Set(targetSync);
 
-                            if (clanMember.Position != (uint)ClanPosition.Master)
-                                throw new LogicException(ErrorCode.ClanNoPrivilege);
+                        await _dbContext.SaveChangesAsync();
+                        var response = new Response.JoinClan
+                        {
+                            Clan = clan.Id,
+                            Uid = target.Id,
+                            Uname = target.Name,
+                            Error = (uint)ErrorCode.None
+                        };
 
-                            _dbContext.ClanMember.Set(new ClanMember
-                            {
-                                Clan = clan.Id,
-                                Position = (uint)ClanPosition.Mate,
-                                User = target.Id,
-                                Deleted = false
-                            });
-
-                            targetSync.Clan = clan.Id;
-                            _dbContext.CharacterSync.Set(targetSync);
-
-                            await _dbContext.SaveChangesAsync();
-                            var response = new Response.JoinClan
-                            {
-                                Clan = clan.Id,
-                                Uid = target.Id,
-                                Uname = target.Name,
-                                Error = (uint)ErrorCode.None
-                            };
-
-                            _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
-                            return response;
-                        }
+                        _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                        return response;
                     }
                 }
             }

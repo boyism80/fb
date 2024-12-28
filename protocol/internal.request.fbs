@@ -151,7 +151,7 @@ table DestroyClan {
 }
 
 table JoinClan {
-  master: uint;
+  clan: uint;
   uid: uint;
 }
 

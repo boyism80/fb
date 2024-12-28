@@ -1124,6 +1124,16 @@ async::task<void> context::set_clan_title(clan& clan, std::string title)
     this->assert_clan(resp.error);
 }
 
+async::task<void> context::join_clan_member(clan& clan, character& ch)
+{
+    auto&& resp = co_await this->post<internal_reqs::JoinClan, internal_resp::JoinClan>(
+        "internal",
+        "/clan/join",
+        internal_reqs::JoinClan{clan.id(), ch.id()});
+
+    this->assert_clan(resp.error);
+}
+
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {

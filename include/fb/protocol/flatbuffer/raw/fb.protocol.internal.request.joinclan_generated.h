@@ -25,18 +25,18 @@ struct JoinClanBuilder;
 struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef JoinClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_MASTER = 4,
+    VT_CLAN = 4,
     VT_UID = 6
   };
-  uint32_t master() const {
-    return GetField<uint32_t>(VT_MASTER, 0);
+  uint32_t clan() const {
+    return GetField<uint32_t>(VT_CLAN, 0);
   }
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_MASTER, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyField<uint32_t>(verifier, VT_UID, 4) &&
            verifier.EndTable();
   }
@@ -46,8 +46,8 @@ struct JoinClanBuilder {
   typedef JoinClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_master(uint32_t master) {
-    fbb_.AddElement<uint32_t>(JoinClan::VT_MASTER, master, 0);
+  void add_clan(uint32_t clan) {
+    fbb_.AddElement<uint32_t>(JoinClan::VT_CLAN, clan, 0);
   }
   void add_uid(uint32_t uid) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_UID, uid, 0);
@@ -65,11 +65,11 @@ struct JoinClanBuilder {
 
 inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t master = 0,
+    uint32_t clan = 0,
     uint32_t uid = 0) {
   JoinClanBuilder builder_(_fbb);
   builder_.add_uid(uid);
-  builder_.add_master(master);
+  builder_.add_clan(clan);
   return builder_.Finish();
 }
 
