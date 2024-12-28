@@ -22,7 +22,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     auto transfer = request.transfer;
     auto delay    = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
@@ -33,7 +33,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
 
     auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     this->_shard[name]->characters.lock([&name, ch](auto& characters) {
@@ -572,7 +572,7 @@ async::task<bool> context::handle_user_list(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    this->send(*ch, fb_resp::user_list(*ch, this->sockets), scope::SELF);
+    this->send(*ch, fb_resp::user_list(*ch, this->_sockets), scope::SELF);
     co_return true;
 }
 
@@ -637,7 +637,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto&& response = co_await this->get<internal_resp::GetArticleList>(
                 "internal",
                 std::format("/board/{}?offset={}", section->id, offset));
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             auto articles = std::list<board::article>();
@@ -676,7 +676,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto&& response = co_await this->get<internal_resp::GetArticle>(
                 "internal",
                 std::format("/board/{}/{}", section->id, request.article));
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             if (response.success == false)
@@ -732,7 +732,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 "/board/write",
                 internal_reqs::WriteArticle{section->id, ch->id(), request.title, request.contents});
 
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             if (response.success == false)
@@ -763,7 +763,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 "/board/delete",
                 internal_reqs::DeleteArticle{request.article, ch->id()});
 
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             switch (response.result)
@@ -977,7 +977,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
                                           "/in-game/whisper",
                                           internal_reqs::Whisper{from, to, message}),
                                       [this, fd](auto result) {
-                                          if (this->sockets.contains(fd) == false)
+                                          if (this->assert_socket(fd) == false)
                                               return;
 
                                           try
@@ -992,7 +992,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     }
     catch (std::exception& e)
     {
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         me->message(e.what(), MESSAGE_TYPE::NOTIFY);

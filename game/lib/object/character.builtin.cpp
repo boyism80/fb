@@ -29,6 +29,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::character, "fb.game.character")
 {"withdraw_item",       fb::game::character::builtin_withdraw_item},
 {"group",               fb::game::character::builtin_group},
 {"create_group",        fb::game::character::builtin_create_group},
+{"clan",                fb::game::character::builtin_clan},
+{"create_clan",         fb::game::character::builtin_create_clan},
+{"destroy_clan",        fb::game::character::builtin_destroy_clan},
 {"traces",              fb::game::character::builtin_traces},
 {"trace",               fb::game::character::builtin_trace},
 {"push_trace",          fb::game::character::builtin_push_trace},
@@ -882,6 +885,143 @@ int fb::game::character::builtin_create_group(lua_State* lua)
         },
         []() {
         });
+
+    return thread->yield(1);
+}
+
+int fb::game::character::builtin_clan(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc < 2)
+    {
+        // 그룹 Lock scope는 스크립트 내의 다음 yield를
+        // 만나기 전까지 유효
+        ch->thread()->enqueue(
+            [=](auto&) -> async::task<void> {
+                if (ch->_clan == nullptr)
+                {
+                    thread->pushnil();
+                    thread->resume(1);
+                }
+                else
+                {
+                    ch->_clan->lock([=](auto& clan) {
+                        thread->pushobject(clan);
+                        thread->resume(1);
+                    });
+                }
+                co_return;
+            },
+            [](auto& e) {
+            },
+            []() {
+            });
+
+        return thread->yield(1);
+    }
+    else if (lua_type(lua, 2) == LUA_TFUNCTION)
+    {
+        static auto static_func = [](fb::lua::context* ctx) {
+            lua_call(*ctx, 2, LUA_MULTRET);
+
+            ctx->remove(-ctx->argc());
+            return ctx->argc();
+        };
+
+        thread->pushobject(ch);
+        if (ch->_clan == nullptr)
+        {
+            thread->pushnil();
+            return static_func(thread);
+        }
+        else
+        {
+            return ch->_clan->template lock<uint32_t>([=](auto& clan) {
+                thread->pushobject(clan);
+                return static_func(thread);
+            });
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int fb::game::character::builtin_create_clan(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto name = thread->tostring(2);
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  thread,
+                        character&         me,
+                        const std::string& name) -> async::task<void> {
+        try
+        {
+            co_await context->create_clan(me, name);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+        thread->resume(1);
+    };
+
+    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, *ch, name);
+    });
+
+    return thread->yield(1);
+}
+
+int fb::game::character::builtin_destroy_clan(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    static auto fn = [](fb::game::context* context, fb::lua::context* thread, character& me) -> async::task<void> {
+        try
+        {
+            co_await context->destroy_clan(me);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+        thread->resume(1);
+    };
+
+    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, *ch);
+    });
 
     return thread->yield(1);
 }

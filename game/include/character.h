@@ -673,7 +673,7 @@ public:
     void exp(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Adds an exponent.
      *
      * @param[in]  value   The value
      * @param[in]  notify  The notify
@@ -683,7 +683,7 @@ public:
     uint32_t add_exp(uint32_t value, bool notify = false);
 
     /**
-     * @brief      { function_description }
+     * @brief      Reduces the exponent.
      *
      * @param[in]  value  The value
      *
@@ -955,8 +955,6 @@ public:
      * @brief      { function_description }
      *
      * @param      value  The value
-     *
-     * @return     { description_of_the_return_value }
      */
     void group(shared_group_lock& value);
 
@@ -966,6 +964,13 @@ public:
      * @return     { description_of_the_return_value }
      */
     shared_clan_lock& clan();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      value  The value
+     */
+    void clan(shared_clan_lock& value);
 
     /**
      * @brief      { function_description }
@@ -1004,22 +1009,16 @@ public:
      * @brief      { function_description }
      *
      * @param      horse  The horse
-     *
-     * @return     { description_of_the_return_value }
      */
     void ride(fb::game::mob& horse);
 
     /**
      * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
      */
     void ride();
 
     /**
      * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
      */
     void unride();
 
@@ -1475,6 +1474,31 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_clan(lua_State* lua);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_create_clan(lua_State* lua);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_destroy_clan(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_traces(lua_State* lua);
 
     /**
@@ -1538,7 +1562,7 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      ch  The ch
+     * @param      ch    The ch
      *
      * @return     { description_of_the_return_value }
      */
@@ -1547,7 +1571,7 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      ch  The ch
+     * @param      ch    The ch
      *
      * @return     { description_of_the_return_value }
      */
@@ -1566,7 +1590,7 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  ch  The ch
+     * @param[in]  ch    The ch
      *
      * @return     { description_of_the_return_value }
      */

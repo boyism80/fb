@@ -1,4 +1,5 @@
 #include <clan.h>
+#include <context.h>
 
 using namespace fb::game;
 
@@ -22,6 +23,11 @@ void clan::update(const std::string&                name,
     this->_name    = name;
     this->_title   = title;
     this->_members = members;
+}
+
+uint32_t clan::id() const
+{
+    return this->_id;
 }
 
 const std::string& clan::name() const
@@ -53,4 +59,27 @@ void clan::detach_character(character& ch)
         return;
 
     this->_characters.erase(ch.id());
+}
+
+std::vector<character*> clan::nears(const fb::game::map& map, const point16_t& position) const
+{
+    auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
+    auto result = std::vector<character*>();
+
+    for (auto obj : nears)
+    {
+        if (obj->is(OBJECT_TYPE::CHARACTER) == false)
+            continue;
+
+        auto ch = static_cast<character*>(obj);
+        if (ch->clan() == nullptr)
+            continue;
+
+        ch->clan()->lock([this, ch, &result](auto& clan) {
+            if (&clan == this)
+                result.push_back(ch);
+        });
+    }
+
+    return result;
 }

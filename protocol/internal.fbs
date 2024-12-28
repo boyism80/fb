@@ -111,7 +111,7 @@ table Trace {
 table Clan {
     id: uint;
     name: string;
-    title: string;
+    title: string?;
 }
 
 table ClanMember {

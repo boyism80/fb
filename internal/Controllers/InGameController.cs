@@ -65,7 +65,8 @@ namespace Internal.Controllers
                     var session = JsonConvert.DeserializeObject<Session>(redisResult[1].ToString());
                     _rabbitMqService.Publish(new Response.KickOut
                     {
-                        Uid = session.Uid
+                        Uid = session.Uid,
+                        Name = request.Name
                     }, "amq.direct", $"fb.game.{session.Host}");
                     throw new LogicException(ErrorCode.AlreadyLogin);
                 }

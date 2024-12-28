@@ -592,10 +592,14 @@ async::task<bool> context::on_transfer(character& me, map& map, const point16_t&
         error = "비바람이 휘몰아치고 있습니다.";
     }
 
-    auto client = this->sockets[fd];
-    if (client != nullptr)
+    auto ch = this->_sockets.template lock<character*>([fd](auto& container) -> character* {
+        if (container.contains(fd))
+            return container.at(fd)->data();
+
+        return nullptr;
+    });
+    if (ch != nullptr)
     {
-        auto ch = client->data();
         ch->refresh_map();
         this->on_message(*ch, error, MESSAGE_TYPE::STATE);
     }

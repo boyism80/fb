@@ -594,15 +594,15 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& ch;
-    const fb::model::model&    model;
+    fb::game::character&    ch;
+    const fb::model::model& model;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    external_info(const fb::game::character& ch, const fb::model::model& model) :
+    external_info(fb::game::character& ch, const fb::model::model& model) :
         ch(ch),
         model(model)
     { }
@@ -617,8 +617,20 @@ public:
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string>(this->ch.title());
-        writer.write<std::string>("클랜 이름");
-        writer.write<std::string>("클랜 타이틀");
+
+        auto& clan_lock = this->ch.clan();
+        if (clan_lock == nullptr)
+        {
+            writer.write<std::string>("");
+            writer.write<std::string>("");
+        }
+        else
+        {
+            clan_lock->lock([&writer](auto& clan) {
+                writer.write<std::string>(clan.name());
+                writer.write<std::string>(clan.title().value_or(""));
+            });
+        }
 
         // 클래스 이름
         const auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;

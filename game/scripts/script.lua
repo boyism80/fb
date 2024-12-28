@@ -16,16 +16,18 @@ function group_lock(me, group)
     return true, #nears
 end
 
-function func(me)
---     broadcast('message NOTIFY', MESSAGE_TYPE_NOTIFY)
---     broadcast('message BLUE', MESSAGE_TYPE_BLUE)
---     broadcast('message STATE', MESSAGE_TYPE_STATE)
---     broadcast('message SHOUT', MESSAGE_TYPE_SHOUT)
---     broadcast('message WORLD', MESSAGE_TYPE_WORLD)
---     broadcast('message POPUP', MESSAGE_TYPE_POPUP)
---     broadcast('message YELLOW', MESSAGE_TYPE_YELLOW)
---     broadcast('message BROWN', MESSAGE_TYPE_BROWN)
+function sample_message()
+    broadcast('message NOTIFY', MESSAGE_TYPE_NOTIFY)
+    broadcast('message BLUE', MESSAGE_TYPE_BLUE)
+    broadcast('message STATE', MESSAGE_TYPE_STATE)
+    broadcast('message SHOUT', MESSAGE_TYPE_SHOUT)
+    broadcast('message WORLD', MESSAGE_TYPE_WORLD)
+    broadcast('message POPUP', MESSAGE_TYPE_POPUP)
+    broadcast('message YELLOW', MESSAGE_TYPE_YELLOW)
+    broadcast('message BROWN', MESSAGE_TYPE_BROWN)
+end
 
+function sample_group(me)
     local npc = name2npc('낙랑')
     local name = npc:input(me, '그룹 초대할 유저')
     local group = me:group()
@@ -50,6 +52,31 @@ function func(me)
             end
         else
             npc:dialog(me, '그룹에 초대할 수 없습니다.')
+        end
+    end
+end
+
+function func(me)
+
+    local npc = name2npc('낙랑')
+    local clan = me:clan()
+    if clan == nil then
+        local name = npc:input(me, '생성할 문파 이름')
+        local error = me:create_clan(name)
+        if error ~= nil then
+            npc:dialog(me, error)
+        else
+            npc:dialog(me, '클랜 생성 성공')
+        end
+    else
+        local name = clan:name()
+        npc:dialog(me, string.format('클랜 이름 : %s', name))
+
+        local error = me:destroy_clan()
+        if error ~= nil then
+            npc:dialog(me, error)
+        else
+            npc:dialog(me, '클랜 제거 성공')
         end
     end
 

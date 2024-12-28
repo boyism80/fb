@@ -3,6 +3,7 @@
 
 #include <fb/protocol/protocol.h>
 #ifndef BOT
+#include <context.h>
 #include <character.h>
 #endif
 
@@ -85,7 +86,7 @@ public:
 private:
 #ifdef BOT
 #else
-    using container = fb::socket_container<fb::game::character>;
+    using container = fb::acceptor<fb::game::character>::socket_container;
 #endif
 
 public:
@@ -112,19 +113,21 @@ public:
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
-        writer.write<uint16_t>((uint16_t)sockets.size());
-        writer.write<uint16_t>((uint16_t)sockets.size());
-        writer.write<uint8_t>(0x00);
+        this->sockets.lock([&writer, &me = this->me](auto& container) {
+            writer.write<uint16_t>((uint16_t)container.size());
+            writer.write<uint16_t>((uint16_t)container.size());
+            writer.write<uint8_t>(0x00);
 
-        co_await this->sockets.each([this, &writer](auto& socket) -> async::task<void> {
-            auto  user = socket.data();
-            auto& name = user->name();
+            for (auto& [fd, socket] : container)
+            {
+                auto  ch   = socket->data();
+                auto& name = ch->name();
 
-            writer.write<uint8_t>(0x10 * static_cast<int>(user->nation()));
-            writer.write<uint8_t>(0x10 * static_cast<int>(user->promotion()));
-            writer.write<uint8_t>((&this->me == user) ? 0x88 : 0x0F);
-            writer.write<std::string, uint8_t>(name);
-            co_return;
+                writer.write<uint8_t>(0x10 * static_cast<int>(ch->nation()));
+                writer.write<uint8_t>(0x10 * static_cast<int>(ch->promotion()));
+                writer.write<uint8_t>((&me == ch) ? 0x88 : 0x0F);
+                writer.write<std::string, uint8_t>(name);
+            }
         });
     }
 #else

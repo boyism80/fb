@@ -25,6 +25,8 @@ async::task<void> context::handle_start()
     lua::build<map, lua::luable>();
     lua::build<door, lua::luable>();
     lua::build<group, lua::luable>();
+    lua::build<clan, lua::luable>();
+    lua::build<clan_member, lua::luable>();
     lua::build<trace, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
@@ -232,13 +234,23 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
-    auto& group = ch->group();
-    if (group != nullptr)
+
+    auto& group_lock = ch->group();
+    if (group_lock != nullptr)
     {
-        group->lock([this, ch](auto& group_ptr) {
-            group_ptr.leave(*ch);
+        group_lock->lock([this, ch](auto& group) {
+            group.leave(*ch);
         });
-        group.reset();
+        group_lock.reset();
+    }
+
+    auto& clan_lock = ch->clan();
+    if (clan_lock != nullptr)
+    {
+        clan_lock->lock([ch](auto& clan) {
+            clan.detach_character(*ch);
+        });
+        clan_lock.reset();
     }
     ch->init(false);
     co_await ch->destroy();
@@ -342,7 +354,7 @@ void context::upsert_group_then(uint32_t                                       g
 
 void context::upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn)
 {
-    this->_shard[id]->clans.lock([this, id](auto& clans) {
+    this->_shard[id]->clans.lock([this, id, fn](auto& clans) {
         if (clans.contains(id) == false)
         {
             clans.insert({id, std::make_shared<fb::locker<fb::game::clan>>(*this, id)});
@@ -367,37 +379,7 @@ void context::upsert_clan_then(uint32_t id, const std::function<void(shared_clan
 
                             auto& clan_lock_ptr = clans.at(id);
                             clan_lock_ptr->lock([this, &resp](fb::game::clan& clan) {
-                                auto members  = std::vector<clan_member>{};
-                                auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
-                                for (auto& member : resp.members)
-                                {
-                                    auto cm = clan_member{.name     = member.name,
-                                                          .position = static_cast<CLAN_POSITION>(member.position)};
-
-                                    auto hash = this->_shard.mod(member.name);
-                                    if (modulars.contains(hash) == false)
-                                        modulars.insert({hash, {}});
-
-                                    modulars[hash].push_back(member.name);
-                                    members.push_back(std::move(cm));
-                                }
-
-                                clan.update(resp.clan.name, resp.clan.title, members);
-
-                                for (auto& [hash, names] : modulars)
-                                {
-                                    this->_shard[hash]->characters.lock(
-                                        [&clan, &names, &members](
-                                            fb::game::shard_params::character_container& characters) {
-                                            for (auto& name : names)
-                                            {
-                                                if (!characters.contains(name))
-                                                    continue;
-
-                                                clan.attach_character(*characters.at(name));
-                                            }
-                                        });
-                                }
+                                this->update_clan(clan, resp.clan, resp.members);
                             });
                         });
                     }
@@ -407,7 +389,46 @@ void context::upsert_clan_then(uint32_t id, const std::function<void(shared_clan
                     }
                 });
         }
+
+        fn(clans.at(id));
     });
+}
+
+void context::update_clan(clan&                                                  clan,
+                          fb::protocol::internal::Clan&                          resp1,
+                          const std::vector<fb::protocol::internal::ClanMember>& resp2) const
+{
+    auto members  = std::vector<clan_member>{};
+    auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
+    for (auto& member : resp2)
+    {
+        auto cm     = clan_member{};
+        cm.name     = member.name;
+        cm.position = static_cast<CLAN_POSITION>(member.position);
+
+        auto hash = this->_shard.mod(member.name);
+        if (modulars.contains(hash) == false)
+            modulars.insert({hash, {}});
+
+        modulars[hash].push_back(member.name);
+        members.push_back(std::move(cm));
+    }
+
+    clan.update(resp1.name, resp1.title, members);
+
+    for (auto& [hash, names] : modulars)
+    {
+        this->_shard[hash]->characters.lock(
+            [&clan, &names, &members](fb::game::shard_params::character_container& characters) {
+                for (auto& name : names)
+                {
+                    if (!characters.contains(name))
+                        continue;
+
+                    clan.attach_character(*characters.at(name));
+                }
+            });
+    }
 }
 
 void context::broadcast(const std::vector<std::string>&                     names,
@@ -531,6 +552,17 @@ async::task<bool> context::init_ch(const internal::Character&           response
                 group.enter(ch);
             });
             ch.group(group_lock_ptr);
+        });
+    }
+
+    if (clan.has_value())
+    {
+        auto id = clan.value();
+        this->upsert_clan_then(id, [&ch](auto& clan_lock_ptr) {
+            clan_lock_ptr->lock([&ch](auto& clan) {
+                clan.attach_character(ch);
+            });
+            ch.clan(clan_lock_ptr);
         });
     }
 
@@ -874,15 +906,19 @@ void context::amqp_thread()
                 co_return;
             });
             queue1.handler<internal_resp::KickOut>([this](auto& response) -> async::task<void> {
-                auto socket = this->sockets.find([uid = response.uid](fb::socket<character>& socket) {
-                    auto data = socket.data();
-                    return data->id() == uid;
-                });
+                auto ch = this->_shard[response.name]->characters.template lock<character*>(
+                    [&name = response.name](shard_params::character_container& container) -> character* {
+                        if (!container.contains(name))
+                            return nullptr;
 
-                if (socket == nullptr)
+                        return container.at(name);
+                    });
+
+                if (ch == nullptr)
                     co_return;
 
-                socket->cancel();
+                auto& socket = static_cast<fb::socket<character>&>(*ch);
+                socket.close();
             });
 
             queue1.handler<internal_resp::Whisper>([this](auto& response) -> async::task<void> {
@@ -970,22 +1006,97 @@ async::task<bool> context::create_group(character& me, const std::string& target
     }
 }
 
-async::task<bool> context::create_group(character& me, const std::string& name)
+async::task<void> context::create_clan(character& me, const std::string& name)
 {
     if (me.clan() != nullptr)
         throw std::runtime_error("클랜 이미 있음");
 
-    auto fd = me.fd();
-
+    auto   fd   = me.fd();
     auto&& resp = co_await this->post<internal_reqs::CreateClan, internal_resp::CreateClan>(
         "internal",
         "/clan/create",
         internal_reqs::CreateClan{me.id(), name});
 
-    this->assert_clan(resp.error);
+    this->assert_clan(resp.error, name);
 
-    // TODO: 클랜 정보 동기화하고 소켓 살아있는 경우에 attach_character
-    // this->sockets를 locker 이용해서 다시구현
+    auto id = resp.clan.id;
+    this->_shard[id]->clans.lock([this, id = resp.clan.id, fd, &resp, &me](auto& clans) {
+        auto id = resp.clan.id;
+        if (clans.contains(id) == false)
+        {
+            auto clan_ptr   = new fb::game::clan(*this, id);
+            auto shared_ptr = std::make_shared<fb::locker<fb::game::clan>>(*this, id);
+            shared_ptr->lock([this, &resp](auto& clan) {
+                this->update_clan(clan, resp.clan, resp.members);
+            });
+            clans.insert({id, std::move(shared_ptr)});
+        }
+
+        this->_shard[id]->clans.lock([this, id, fd, &me](fb::game::shard_params::clan_container& clans) {
+            if (!clans.contains(id))
+                return;
+
+            auto& clan_lock_ptr = clans.at(id);
+
+            if (this->assert_socket(fd))
+            {
+                me.clan(clan_lock_ptr);
+                clan_lock_ptr->lock([this, &me](fb::game::clan& clan) {
+                    clan.attach_character(me);
+                });
+            }
+        });
+    });
+}
+
+async::task<void> context::destroy_clan(character& me)
+{
+    auto& clan_lock = me.clan();
+    if (clan_lock == nullptr)
+        throw std::runtime_error("클랜이 없음");
+
+    auto clan_name = std::string{};
+    auto clan_id   = uint32_t{};
+    clan_lock->lock([&clan_name, &clan_id](auto& clan) {
+        clan_name = clan.name();
+        clan_id   = clan.id();
+    });
+
+    auto   fd   = me.fd();
+    auto&& resp = co_await this->post<internal_reqs::DestroyClan, internal_resp::DestroyClan>(
+        "internal",
+        "/clan/destroy",
+        internal_reqs::DestroyClan{me.id()});
+
+    this->assert_clan(resp.error, clan_name);
+    this->_shard[clan_id]->clans.lock([clan_id](auto& clans) {
+        if (clans.contains(clan_id))
+        {
+            clans.at(clan_id)->lock([](auto& clan) {
+                auto character_set = std::unordered_map<fb::thread*, std::vector<character*>>{};
+                for (auto& [uid, ch] : clan.characters())
+                {
+                    auto thread = ch->thread();
+                    if (!character_set.contains(thread))
+                        character_set.insert({thread, {}});
+
+                    character_set.at(thread).push_back(ch);
+                }
+
+                for (auto& [thread, characters] : character_set)
+                {
+                    thread->dispatch([characters](auto&) -> async::task<void> {
+                        for (auto ch : characters)
+                            ch->clan().reset();
+
+                        co_return;
+                    });
+                }
+            });
+
+            clans.erase(clan_id);
+        }
+    });
 }
 
 // TODO : 클릭도 인터페이스로
@@ -1042,14 +1153,14 @@ void context::assert_group(uint32_t error, const std::string& actor) const
     }
 }
 
-void context::assert_clan(uint32_t error) const
+void context::assert_clan(uint32_t error, const std::string& name) const
 {
-    switch (static_cast<ERROR_CODE>(resp.error))
+    switch (static_cast<ERROR_CODE>(error))
     {
     case ERROR_CODE::NONE:
         return;
 
-    case ERROR_CODE::CLAN_NAME_ALREEADY_EXISTS:
+    case ERROR_CODE::CLAN_NAME_ALREADY_EXISTS:
         throw std::runtime_error(std::format("{} 클랜명이 이미 존재함", name));
 
     default:

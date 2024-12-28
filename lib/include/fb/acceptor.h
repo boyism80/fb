@@ -8,6 +8,7 @@
 #include <fb/socket.h>
 #include <httplib.h>
 #include <iomanip>
+#include <fb/locker.h>
 
 using namespace std::chrono_literals;
 
@@ -21,10 +22,11 @@ namespace fb {
 template <typename T>
 class acceptor : public fb::acceptable
 {
-private:
-    using handle_func     = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::base::header&)>;
-    using deserilze_func  = std::function<async::task<fb::protocol::base::header*>(fb::stream_reader<big_endian>&)>;
-    using background_func = std::function<async::task<void>()>;
+public:
+    using handle_func      = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::base::header&)>;
+    using deserilze_func   = std::function<async::task<fb::protocol::base::header*>(fb::stream_reader<big_endian>&)>;
+    using background_func  = std::function<async::task<void>()>;
+    using socket_container = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
@@ -37,11 +39,9 @@ protected:
     std::mutex                  _background_queue_mutex;
 
 protected:
-    fb::redis _redis;
-    fb::mutex _mutex;
-
-public:
-    fb::socket_container<T> sockets;
+    fb::redis        _redis;
+    fb::mutex        _mutex;
+    socket_container _sockets;
 
 protected:
     /**
@@ -256,6 +256,23 @@ public:
         co_await this->threads[id]->dispatch(fn, 0s, priority);
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fd    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool assert_socket(uint32_t fd)
+    {
+        return this->_sockets.template lock<bool>([fd](auto& container) {
+            if (container.contains(fd))
+                return true;
+
+            return false;
+        });
+    }
+
 private:
     /**
      * @brief      This method must be call by i/o thread.
@@ -307,10 +324,7 @@ private:
                     this->threads.enqueue(
                         socket,                                                    // pivot
                         [this, protocol, fd = socket.fd()](auto& thread) -> bool { // condition
-                            if (this->sockets.contains(fd))
-                                return true;
-
-                            return false;
+                            return this->assert_socket(fd);
                         },
                         [this, cmd, &socket, protocol](auto&) -> async::task<void> { // fn
                             std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
@@ -366,7 +380,10 @@ private:
 
                 co_await this->threads.switching(socket);
                 std::ignore = co_await this->handle_disconnected(socket);
-                this->sockets.erase(socket);
+
+                this->_sockets.lock([fd = socket.fd()](auto& container) {
+                    container.erase(fd);
+                });
             }
             catch (std::exception& e)
             {
@@ -387,7 +404,10 @@ private:
 
                 ptr->data(this->handle_accepted(*ptr));
 
-                this->sockets.push(std::move(socket));
+                this->_sockets.lock([&socket](auto& container) {
+                    auto fd = socket->fd();
+                    container.insert({fd, std::move(socket)});
+                });
                 async::awaitable_get(this->handle_connected(*ptr));
 
                 boost::asio::co_spawn(*this, ptr->recv(), boost::asio::detached);
@@ -862,7 +882,9 @@ public:
 
         async::awaitable_get(this->handle_exit());
         this->cancel();
-        this->sockets.close();
+        this->_sockets.lock([](auto& container) {
+            container.clear();
+        });
         this->_running = false;
     }
 };

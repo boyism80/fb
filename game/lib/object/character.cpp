@@ -1259,6 +1259,13 @@ shared_clan_lock& character::clan()
     return this->_clan;
 }
 
+void character::clan(shared_clan_lock& value)
+{
+    this->assert_thread();
+
+    this->_clan = value;
+}
+
 void character::assert_state(STATE value) const
 {
     this->assert_thread();

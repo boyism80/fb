@@ -4,6 +4,7 @@ namespace fb.protocol.internal.response;
 
 table KickOut {
 	uid: uint;
+  name: string;
 }
 
 
@@ -147,6 +148,8 @@ table GetClan {
 }
 
 table CreateClan {
+  clan: fb.protocol.internal.Clan;
+  members: [fb.protocol.internal.ClanMember];
   error: uint;
 }
 

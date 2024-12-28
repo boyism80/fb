@@ -12,7 +12,6 @@ namespace Http.Model
 
     public class Clan : ClanKey, IModel
     {
-        public uint Master { get; set; }
         public string Name { get; set; }
         public string Title { get; set; }
 

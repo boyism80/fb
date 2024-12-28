@@ -2,25 +2,19 @@
 #define __CLAN_H__
 
 #include <character.h>
+#include <clan.member.h>
 
 namespace fb::game {
 
 /**
- * @brief      This class describes a clan member.
- */
-class clan_member
-{
-public:
-    std::string   name;
-    CLAN_POSITION position;
-};
-
-/**
  * @brief      This class describes a clan.
  */
-class clan
+class clan : public lua::luable
 {
 public:
+    LUA_PROTOTYPE
+
+private:
     context&                                           _context;
     uint32_t                                           _id;
     std::string                                        _name;
@@ -70,6 +64,13 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    uint32_t id() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     const std::string& name() const;
     /**
      * @brief      { function_description }
@@ -96,6 +97,42 @@ public:
      * @param      ch    { parameter_description }
      */
     void detach_character(character& ch);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  map       The map
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::vector<character*> nears(const fb::game::map& map, const point16_t& position) const;
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_name(lua_State* lua);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_members(lua_State* lua);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_nears(lua_State* lua);
 };
 
 } // namespace fb::game

@@ -127,6 +127,17 @@ private:
     /**
      * @brief      { function_description }
      *
+     * @param      clan   The clan
+     * @param      resp1  The response 1
+     * @param[in]  resp2  The response 2
+     */
+    void update_clan(clan&                                                  clan,
+                     fb::protocol::internal::Clan&                          resp1,
+                     const std::vector<fb::protocol::internal::ClanMember>& resp2) const;
+
+    /**
+     * @brief      { function_description }
+     *
      * @param[in]  id    The identifier
      * @param[in]  fn    The function
      */
@@ -275,7 +286,7 @@ private:
      *
      * @param[in]  error  The error
      */
-    void assert_clan(uint32_t error) const;
+    void assert_clan(uint32_t error, const std::string& name) const;
 
     /**
      * @brief      Called on enter group.
@@ -424,7 +435,16 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> create_clan(character& me, const std::string& name);
+    async::task<void> create_clan(character& me, const std::string& name);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      me    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> destroy_clan(character& me);
 
 protected:
     /**

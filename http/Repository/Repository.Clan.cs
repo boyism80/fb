@@ -32,7 +32,6 @@ namespace Http.Reepository
                 INSERT INTO `clan` (
                     `id`,
                     `name`,
-                    `master`,
                     `title`,
                     `deleted`,
                     `created_date`,
@@ -40,14 +39,12 @@ namespace Http.Reepository
                 VALUES (
                     {value.Id.Escape()},
                     {value.Name.Escape()},
-                    {value.Master.Escape()},
                     {value.Title.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `name`=VALUES(`name`),
-                    `master`=VALUES(`master`),
                     `title`=VALUES(`title`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);

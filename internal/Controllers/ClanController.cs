@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using AutoMapper;
+using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
@@ -7,6 +8,8 @@ using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
+using Protocol = fb.protocol._internal;
+using System.Dynamic;
 
 namespace Internal.Controllers
 {
@@ -18,16 +21,37 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly RedisService _redisService;
         private readonly RabbitMqService _rabbitMqService;
+        private readonly IMapper _mapper;
 
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
             RedisService redisService,
-            RabbitMqService rabbitMqService)
+            RabbitMqService rabbitMqService,
+            IMapper mapper)
         {
             _configuration = configuration;
             _dbContext = dbContext;
             _redisService = redisService;
             _rabbitMqService = rabbitMqService;
+            _mapper = mapper;
+        }
+
+        private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint id)
+        {
+            var members = await _dbContext.ClanMember.Get(id);
+            var conn = _dbContext.Connection(-1);
+            var names = await conn.QueryAsync($"SELECT `id`, `name` FROM `name` WHERE id IN ({string.Join(',', members.Select(x => x.User))})");
+            var nameDict = names.ToDictionary(x => x.id, x => x.name);
+
+            return members.Select(x =>
+            {
+                return new Protocol.ClanMember
+                {
+                    Uid = x.User,
+                    Name = nameDict.GetValueOrDefault(x.User),
+                    Position = x.Position
+                };
+            }).ToList();
         }
 
         [HttpGet("{id}")]
@@ -48,21 +72,8 @@ namespace Internal.Controllers
 
                     return new Response.GetClan
                     {
-                        Clan = new fb.protocol._internal.Clan
-                        {
-                            Id = clan.Id,
-                            Name = clan.Name,
-                            Title = clan.Title
-                        },
-                        Members = members.Select(x =>
-                        {
-                            return new fb.protocol._internal.ClanMember
-                            {
-                                Uid = x.User,
-                                Name = nameDict.GetValueOrDefault(x.User),
-                                Position = x.Position
-                            };
-                        }).ToList()
+                        Clan = _mapper.Map<Protocol.Clan>(clan),
+                        Members = await GetClanMemberResponse(id)
                     };
                 }
             }
@@ -119,7 +130,6 @@ namespace Internal.Controllers
                         {
                             Id = result.Id,
                             Name = request.Name,
-                            Master = request.Master,
                             Title = null,
                             Deleted = false
                         });
@@ -138,6 +148,8 @@ namespace Internal.Controllers
                         await trans.CommitAsync();
                         return new Response.CreateClan
                         {
+                            Clan = _mapper.Map<Protocol.Clan>(clan),
+                            Members = await GetClanMemberResponse(clan.Id),
                             Error = (uint)ErrorCode.None
                         };
                     }
