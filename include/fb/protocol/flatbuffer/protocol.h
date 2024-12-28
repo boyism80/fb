@@ -43,7 +43,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.destroyclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.joinclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.leaveclan_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.kickclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setclantitle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.login_generated.h>
@@ -72,7 +71,6 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.destroyclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.joinclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.leaveclan_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setclantitle_generated.h>
 
 namespace fb::protocol::internal
@@ -118,7 +116,6 @@ namespace fb::protocol::internal::request
     class DestroyClan;
     class JoinClan;
     class LeaveClan;
-    class KickClan;
     class SetClanTitle;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
@@ -150,7 +147,6 @@ namespace fb::protocol::internal::response
     class DestroyClan;
     class JoinClan;
     class LeaveClan;
-    class KickClan;
     class SetClanTitle;
 } // end of namespace fb::protocol::internal::response
 
@@ -279,7 +275,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::CreateClan>
 template <> struct FlatBufferOffset<fb::protocol::internal::request::DestroyClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::DestroyClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::JoinClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::LeaveClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::KickClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::KickClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetClanTitle> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Login> type; };
@@ -308,7 +303,6 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::CreateClan
 template <> struct FlatBufferOffset<fb::protocol::internal::response::DestroyClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::DestroyClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::JoinClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::JoinClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::LeaveClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveClan> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::response::KickClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetClanTitle> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetClanTitle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupAction> { typedef fb::protocol::internal::raw::GroupAction type; };
@@ -392,8 +386,6 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::JoinClan> build<fb::pr
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> build<fb::protocol::internal::request::LeaveClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveClan& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::KickClan> build<fb::protocol::internal::request::KickClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickClan& value);
-template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> build<fb::protocol::internal::request::SetClanTitle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetClanTitle& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
@@ -449,8 +441,6 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::JoinClan> build<fb::protocol::internal::response::JoinClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::JoinClan& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveClan> build<fb::protocol::internal::response::LeaveClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::LeaveClan& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::KickClan> build<fb::protocol::internal::response::KickClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickClan& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetClanTitle> build<fb::protocol::internal::response::SetClanTitle>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetClanTitle& value);
 
@@ -1028,7 +1018,6 @@ enum class FlatBufferProtocolType
     DestroyClan,
     JoinClan,
     LeaveClan,
-    KickClan,
     SetClanTitle,
 };
 
@@ -2015,21 +2004,23 @@ public:
     static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::LeaveClan;
 
 public:
-    uint32_t uid = 0;
+    uint32_t clan = 0;
+    std::string name;
+    bool kick = false;
 
 public:
     LeaveClan() = default;
 
     LeaveClan(const LeaveClan& x)
-        : uid(x.uid)
+        : clan(x.clan), name(x.name), kick(x.kick)
     { }
 
-    LeaveClan(uint32_t uid)
-        : uid(uid)
+    LeaveClan(uint32_t clan, const std::string& name, bool kick)
+        : clan(clan), name(name), kick(kick)
     { }
 
     LeaveClan(const fb::protocol::internal::request::raw::LeaveClan& raw)
-        : uid(raw.uid())
+        : clan(raw.clan()), name(flatbuffers::option::decode(raw.name()->c_str())), kick(raw.kick())
     { }
 
 public:
@@ -2046,46 +2037,6 @@ public:
     {
         auto raw = fb::protocol::internal::request::raw::GetLeaveClan(bytes);
         return LeaveClan(*raw);
-    }
-};
-class KickClan
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::KickClan;
-
-public:
-    uint32_t master = 0;
-    uint32_t uid = 0;
-
-public:
-    KickClan() = default;
-
-    KickClan(const KickClan& x)
-        : master(x.master), uid(x.uid)
-    { }
-
-    KickClan(uint32_t master, uint32_t uid)
-        : master(master), uid(uid)
-    { }
-
-    KickClan(const fb::protocol::internal::request::raw::KickClan& raw)
-        : master(raw.master()), uid(raw.uid())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::KickClan>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static KickClan Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::request::raw::GetKickClan(bytes);
-        return KickClan(*raw);
     }
 };
 class SetClanTitle
@@ -2162,7 +2113,6 @@ enum class FlatBufferProtocolType
     DestroyClan,
     JoinClan,
     LeaveClan,
-    KickClan,
     SetClanTitle,
 };
 
@@ -3219,21 +3169,22 @@ public:
     uint32_t clan = 0;
     uint32_t uid = 0;
     std::string uname;
+    bool kick = false;
     uint32_t error = 0;
 
 public:
     LeaveClan() = default;
 
     LeaveClan(const LeaveClan& x)
-        : clan(x.clan), uid(x.uid), uname(x.uname), error(x.error)
+        : clan(x.clan), uid(x.uid), uname(x.uname), kick(x.kick), error(x.error)
     { }
 
-    LeaveClan(uint32_t clan, uint32_t uid, const std::string& uname, uint32_t error)
-        : clan(clan), uid(uid), uname(uname), error(error)
+    LeaveClan(uint32_t clan, uint32_t uid, const std::string& uname, bool kick, uint32_t error)
+        : clan(clan), uid(uid), uname(uname), kick(kick), error(error)
     { }
 
     LeaveClan(const fb::protocol::internal::response::raw::LeaveClan& raw)
-        : clan(raw.clan()), uid(raw.uid()), uname(flatbuffers::option::decode(raw.uname()->c_str())), error(raw.error())
+        : clan(raw.clan()), uid(raw.uid()), uname(flatbuffers::option::decode(raw.uname()->c_str())), kick(raw.kick()), error(raw.error())
     { }
 
 public:
@@ -3250,48 +3201,6 @@ public:
     {
         auto raw = fb::protocol::internal::response::raw::GetLeaveClan(bytes);
         return LeaveClan(*raw);
-    }
-};
-class KickClan
-{
-public:
-    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::KickClan;
-
-public:
-    uint32_t clan = 0;
-    uint32_t uid = 0;
-    std::string uname;
-    uint32_t error = 0;
-
-public:
-    KickClan() = default;
-
-    KickClan(const KickClan& x)
-        : clan(x.clan), uid(x.uid), uname(x.uname), error(x.error)
-    { }
-
-    KickClan(uint32_t clan, uint32_t uid, const std::string& uname, uint32_t error)
-        : clan(clan), uid(uid), uname(uname), error(error)
-    { }
-
-    KickClan(const fb::protocol::internal::response::raw::KickClan& raw)
-        : clan(raw.clan()), uid(raw.uid()), uname(flatbuffers::option::decode(raw.uname()->c_str())), error(raw.error())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::response::KickClan>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static KickClan Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::response::raw::GetKickClan(bytes);
-        return KickClan(*raw);
     }
 };
 class SetClanTitle
@@ -3725,14 +3634,9 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> build<fb::protocol::internal::request::LeaveClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::LeaveClan& value)
 {
     return fb::protocol::internal::request::raw::CreateLeaveClan(builder,
-            flatbuffers::build<uint32_t>(builder, value.uid));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::KickClan> build<fb::protocol::internal::request::KickClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::KickClan& value)
-{
-    return fb::protocol::internal::request::raw::CreateKickClan(builder,
-            flatbuffers::build<uint32_t>(builder, value.master),
-            flatbuffers::build<uint32_t>(builder, value.uid));
+            flatbuffers::build<uint32_t>(builder, value.clan),
+            flatbuffers::build<std::string>(builder, value.name),
+            flatbuffers::build<bool>(builder, value.kick));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> build<fb::protocol::internal::request::SetClanTitle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetClanTitle& value)
@@ -3940,15 +3844,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveClan> build<fb::
             flatbuffers::build<uint32_t>(builder, value.clan),
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.uname),
-            flatbuffers::build<uint32_t>(builder, value.error));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::response::raw::KickClan> build<fb::protocol::internal::response::KickClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickClan& value)
-{
-    return fb::protocol::internal::response::raw::CreateKickClan(builder,
-            flatbuffers::build<uint32_t>(builder, value.clan),
-            flatbuffers::build<uint32_t>(builder, value.uid),
-            flatbuffers::build<std::string>(builder, value.uname),
+            flatbuffers::build<bool>(builder, value.kick),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>

@@ -70,7 +70,7 @@ function func(me)
         end
     else
         local clan_name = clan:name()
-        local selected = npc:menu(me, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입'})
+        local selected = npc:menu(me, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방'})
         if selected == nil then
             return
         end
@@ -112,19 +112,33 @@ function func(me)
                 return
             end
 
+            me:switch_context(found)
             local yes_or_no = npc:menu(found, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
-            npc:dialog(me, string.format('%s', yes_or_no))
             if yes_or_no == 0 then
                 local error = me:clan():join(found)
                 if error ~= nil then
-                    npc:dialog(me, error)
                     npc:dialog(found, error)
                 else
-                    npc:dialog(me, string.format('%s가 승락함', found:name()))
                     npc:dialog(found, string.format('%s 문파에 가입됨', clan_name))
+
+                    found:switch_context(me)
+                    npc:dialog(me, string.format('%s가 승락함', found:name()))
                 end
             else
                 npc:dialog(me, string.format('%s가 거절함', found:name()))
+            end
+        elseif selected == 3 then
+            local map = me:map()
+            if map == nil then
+                return
+            end
+
+            local name = npc:input(me, '상대 이름 입력')
+            local error = me:clan():leave(name, kick)
+            if error ~= nil then
+                npc:dialog(me, error)
+            else
+                npc:dialog(me, '추방했음')
             end
         else
         end

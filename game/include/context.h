@@ -466,6 +466,17 @@ public:
      */
     async::task<void> join_clan_member(clan& clan, character& ch);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      clan  The clan
+     * @param      ch    { parameter_description }
+     * @param[in]  kick  The kick
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> leave_clan_member(clan& clan, const std::string& name, bool kick);
+
 protected:
     /**
      * @brief      { function_description }

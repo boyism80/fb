@@ -168,13 +168,7 @@ table LeaveClan {
   clan: uint;
   uid: uint;
   uname: string;
-  error: uint;
-}
-
-table KickClan {
-  clan: uint;
-  uid: uint;
-  uname: string;
+  kick: bool;
   error: uint;
 }
 

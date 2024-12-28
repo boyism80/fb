@@ -975,6 +975,62 @@ void context::amqp_thread()
                     });
                     co_return;
                 });
+
+            queue4.handler<internal_resp::JoinClan>([this](internal_resp::JoinClan& response) -> async::task<void> {
+                this->assert_clan(response.error);
+
+                this->upsert_clan_then(response.clan, [this, uname = response.uname](auto& clan_lock) {
+                    auto ch = this->_shard[uname]->characters.template lock<character*>(
+                        [&uname](auto& container) -> character* {
+                            if (container.contains(uname) == false)
+                                return nullptr;
+
+                            return container.at(uname);
+                        });
+
+                    if (ch != nullptr)
+                    {
+                        auto thread = ch->thread();
+                        std::ignore = thread->dispatch([ch, &clan_lock](auto&) -> async::task<void> {
+                            clan_lock->lock([&clan_lock, ch](auto& clan) {
+                                clan.attach_character(*ch);
+                                ch->clan(clan_lock);
+                            });
+                            co_return;
+                        });
+                    }
+                });
+
+                co_return;
+            });
+
+            queue4.handler<internal_resp::LeaveClan>([this](internal_resp::LeaveClan& response) -> async::task<void> {
+                this->assert_clan(response.error);
+
+                this->upsert_clan_then(response.clan, [this, uname = response.uname](auto& clan_lock) {
+                    auto ch = this->_shard[uname]->characters.template lock<character*>(
+                        [&uname](auto& container) -> character* {
+                            if (container.contains(uname) == false)
+                                return nullptr;
+
+                            return container.at(uname);
+                        });
+
+                    if (ch != nullptr)
+                    {
+                        auto thread = ch->thread();
+                        std::ignore = thread->dispatch([ch, &clan_lock](auto&) -> async::task<void> {
+                            clan_lock->lock([ch](auto& clan) {
+                                clan.detach_character(*ch);
+                                ch->clan().reset();
+                            });
+                            co_return;
+                        });
+                    }
+                });
+
+                co_return;
+            });
         }
         catch (std::exception& e)
         {
@@ -1130,6 +1186,16 @@ async::task<void> context::join_clan_member(clan& clan, character& ch)
         "internal",
         "/clan/join",
         internal_reqs::JoinClan{clan.id(), ch.id()});
+
+    this->assert_clan(resp.error);
+}
+
+async::task<void> context::leave_clan_member(clan& clan, const std::string& name, bool kick)
+{
+    auto&& resp = co_await this->post<internal_reqs::LeaveClan, internal_resp::LeaveClan>(
+        "internal",
+        "/clan/leave",
+        internal_reqs::LeaveClan{clan.id(), name, kick});
 
     this->assert_clan(resp.error);
 }

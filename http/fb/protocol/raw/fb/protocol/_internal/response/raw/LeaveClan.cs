@@ -29,26 +29,30 @@ public struct LeaveClan : IFlatbufferObject
   public ArraySegment<byte>? GetUnameBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetUnameArray() { return __p.__vector_as_array<byte>(8); }
-  public uint Error { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public bool Kick { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public uint Error { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.LeaveClan> CreateLeaveClan(FlatBufferBuilder builder,
       uint clan = 0,
       uint uid = 0,
       StringOffset unameOffset = default(StringOffset),
+      bool kick = false,
       uint error = 0) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     LeaveClan.AddError(builder, error);
     LeaveClan.AddUname(builder, unameOffset);
     LeaveClan.AddUid(builder, uid);
     LeaveClan.AddClan(builder, clan);
+    LeaveClan.AddKick(builder, kick);
     return LeaveClan.EndLeaveClan(builder);
   }
 
-  public static void StartLeaveClan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartLeaveClan(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(0, clan, 0); }
   public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
   public static void AddUname(FlatBufferBuilder builder, StringOffset unameOffset) { builder.AddOffset(2, unameOffset.Value, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(3, error, 0); }
+  public static void AddKick(FlatBufferBuilder builder, bool kick) { builder.AddBool(3, kick, false); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(4, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.LeaveClan> EndLeaveClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.LeaveClan>(o);
@@ -66,7 +70,8 @@ static public class LeaveClanVerify
       && verifier.VerifyField(tablePos, 4 /*Clan*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 8 /*Uname*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Kick*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

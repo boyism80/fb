@@ -25,14 +25,25 @@ struct LeaveClanBuilder;
 struct LeaveClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef LeaveClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_UID = 4
+    VT_CLAN = 4,
+    VT_NAME = 6,
+    VT_KICK = 8
   };
-  uint32_t uid() const {
-    return GetField<uint32_t>(VT_UID, 0);
+  uint32_t clan() const {
+    return GetField<uint32_t>(VT_CLAN, 0);
+  }
+  const ::flatbuffers::String *name() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_NAME);
+  }
+  bool kick() const {
+    return GetField<uint8_t>(VT_KICK, 0) != 0;
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_UID, 4) &&
+           VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
+           VerifyOffset(verifier, VT_NAME) &&
+           verifier.VerifyString(name()) &&
+           VerifyField<uint8_t>(verifier, VT_KICK, 1) &&
            verifier.EndTable();
   }
 };
@@ -41,8 +52,14 @@ struct LeaveClanBuilder {
   typedef LeaveClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_uid(uint32_t uid) {
-    fbb_.AddElement<uint32_t>(LeaveClan::VT_UID, uid, 0);
+  void add_clan(uint32_t clan) {
+    fbb_.AddElement<uint32_t>(LeaveClan::VT_CLAN, clan, 0);
+  }
+  void add_name(::flatbuffers::Offset<::flatbuffers::String> name) {
+    fbb_.AddOffset(LeaveClan::VT_NAME, name);
+  }
+  void add_kick(bool kick) {
+    fbb_.AddElement<uint8_t>(LeaveClan::VT_KICK, static_cast<uint8_t>(kick), 0);
   }
   explicit LeaveClanBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -57,10 +74,27 @@ struct LeaveClanBuilder {
 
 inline ::flatbuffers::Offset<LeaveClan> CreateLeaveClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t uid = 0) {
+    uint32_t clan = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> name = 0,
+    bool kick = false) {
   LeaveClanBuilder builder_(_fbb);
-  builder_.add_uid(uid);
+  builder_.add_name(name);
+  builder_.add_clan(clan);
+  builder_.add_kick(kick);
   return builder_.Finish();
+}
+
+inline ::flatbuffers::Offset<LeaveClan> CreateLeaveClanDirect(
+    ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t clan = 0,
+    const char *name = nullptr,
+    bool kick = false) {
+  auto name__ = name ? _fbb.CreateString(name) : 0;
+  return fb::protocol::internal::request::raw::CreateLeaveClan(
+      _fbb,
+      clan,
+      name__,
+      kick);
 }
 
 inline const fb::protocol::internal::request::raw::LeaveClan *GetLeaveClan(const void *buf) {

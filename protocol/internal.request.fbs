@@ -156,12 +156,9 @@ table JoinClan {
 }
 
 table LeaveClan {
-  uid: uint;
-}
-
-table KickClan {
-  master: uint;
-  uid: uint;
+  clan: uint;
+  name: string;
+  kick: bool;
 }
 
 table SetClanTitle {

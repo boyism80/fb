@@ -1,15 +1,20 @@
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using System.Data;
 
 namespace Http.Reepository
 {
     public class CharacterRepository : RedisValueRepository<Character, CharacterKey>
     {
+        private readonly DbContext _dbContext;
+
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
             WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
         {
+            _dbContext = dbContext;
         }
 
         public async Task<Character> Get(uint id)
@@ -149,6 +154,20 @@ namespace Http.Reepository
                 """;
 
             return sql;
+        }
+
+        public async Task<uint?> GetCharacterId(string name)
+        {
+            await using var conn = _dbContext.Connection(-1);
+            var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
+            {
+                n = name
+            }, commandType: CommandType.StoredProcedure);
+
+            if (result.Any())
+                return result.ElementAt(0);
+
+            return null;
         }
     }
 }

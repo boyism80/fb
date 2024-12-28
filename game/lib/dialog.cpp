@@ -94,6 +94,17 @@ bool fb::game::dialog::active() const
     return ctx != nullptr;
 }
 
+bool fb::game::dialog::switch_context(dialog& to)
+{
+    auto ctx = this->current();
+    if (ctx == nullptr)
+        return false;
+
+    this->_scripts.pop();
+    to._scripts.push(ctx);
+    return true;
+}
+
 fb::game::dialog& fb::game::dialog::new_table()
 {
     auto ctx = this->current();

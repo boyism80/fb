@@ -3,7 +3,6 @@ using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
-using Http.Redis;
 using Http.Service;
 using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
@@ -39,21 +38,18 @@ namespace Internal.Controllers
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
         {
-            await using var connection = _dbContext.Connection(-1);
-            var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new
+            try
             {
-                n = name
-            }, commandType: CommandType.StoredProcedure);
+                var uid = await _dbContext.Character.GetCharacterId(name) ??
+                throw new LogicException(ErrorCode.NotFoundCharacter);
 
-            if (result.Any())
-            {
                 return new Response.GetUid
                 {
-                    Uid = result.ElementAt(0),
+                    Uid = uid,
                     Success = true
                 };
             }
-            else
+            catch (Exception)
             {
                 return new Response.GetUid
                 {

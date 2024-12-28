@@ -10,6 +10,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::clan, "fb.game.clan")
 {"nears",               fb::game::clan::builtin_nears},
 {"title",               fb::game::clan::builtin_title},
 {"join",                fb::game::clan::builtin_join},
+{"leave",               fb::game::clan::builtin_leave},
 END_LUA_EXTENSION; // clang-format on
 
 int clan::builtin_name(lua_State* lua)
@@ -173,6 +174,46 @@ int clan::builtin_join(lua_State* lua)
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
         co_await fn(context, thread, clan, ch);
+    });
+
+    return thread->yield(1);
+}
+
+int clan::builtin_leave(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto clan    = thread->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    auto name = thread->tostring(2);
+    auto kick = argc >= 3 ? thread->toboolean(3) : false;
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  thread,
+                        fb::game::clan*    clan,
+                        const std::string& name,
+                        bool               kick) -> async::task<void> {
+        try
+        {
+            co_await context->leave_clan_member(*clan, name, kick);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+
+        thread->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, clan, name, kick);
     });
 
     return thread->yield(1);
