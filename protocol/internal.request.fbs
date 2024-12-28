@@ -163,3 +163,8 @@ table KickClan {
   master: uint;
   uid: uint;
 }
+
+table SetClanTitle {
+  clan: uint;
+  title: string?;
+}

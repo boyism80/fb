@@ -961,6 +961,20 @@ void context::amqp_thread()
 
                 this->on_leave_group(response);
             });
+
+            auto& queue4 = this->_amqp->declare_queue();
+            queue4.bind("amq.direct", "fb.clan");
+            queue4.handler<internal_resp::SetClanTitle>(
+                [this](internal_resp::SetClanTitle& response) -> async::task<void> {
+                    this->assert_clan(response.error);
+
+                    this->upsert_clan_then(response.clan, [&title = response.title](auto& clan_lock) {
+                        clan_lock->lock([&title](auto& clan) {
+                            clan.title(title);
+                        });
+                    });
+                    co_return;
+                });
         }
         catch (std::exception& e)
         {
@@ -1017,7 +1031,7 @@ async::task<void> context::create_clan(character& me, const std::string& name)
         "/clan/create",
         internal_reqs::CreateClan{me.id(), name});
 
-    this->assert_clan(resp.error, name);
+    this->assert_clan(resp.error);
 
     auto id = resp.clan.id;
     this->_shard[id]->clans.lock([this, id = resp.clan.id, fd, &resp, &me](auto& clans) {
@@ -1068,7 +1082,7 @@ async::task<void> context::destroy_clan(character& me)
         "/clan/destroy",
         internal_reqs::DestroyClan{me.id()});
 
-    this->assert_clan(resp.error, clan_name);
+    this->assert_clan(resp.error);
     this->_shard[clan_id]->clans.lock([clan_id](auto& clans) {
         if (clans.contains(clan_id))
         {
@@ -1097,6 +1111,17 @@ async::task<void> context::destroy_clan(character& me)
             clans.erase(clan_id);
         }
     });
+}
+
+async::task<void> context::set_clan_title(clan& clan, std::string title)
+{
+    auto   name = std::string{clan.name()};
+    auto&& resp = co_await this->post<internal_reqs::SetClanTitle, internal_resp::SetClanTitle>(
+        "internal",
+        "/clan/title",
+        internal_reqs::SetClanTitle{clan.id(), title});
+
+    this->assert_clan(resp.error);
 }
 
 // TODO : 클릭도 인터페이스로
@@ -1153,7 +1178,7 @@ void context::assert_group(uint32_t error, const std::string& actor) const
     }
 }
 
-void context::assert_clan(uint32_t error, const std::string& name) const
+void context::assert_clan(uint32_t error) const
 {
     switch (static_cast<ERROR_CODE>(error))
     {
@@ -1161,7 +1186,7 @@ void context::assert_clan(uint32_t error, const std::string& name) const
         return;
 
     case ERROR_CODE::CLAN_NAME_ALREADY_EXISTS:
-        throw std::runtime_error(std::format("{} 클랜명이 이미 존재함", name));
+        throw std::runtime_error(std::format("클랜명이 이미 존재함"));
 
     default:
         throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));

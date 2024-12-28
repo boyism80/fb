@@ -1,4 +1,5 @@
 #include <clan.h>
+#include <context.h>
 
 using namespace fb::game;
 
@@ -7,6 +8,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::clan, "fb.game.clan")
 {"name",                fb::game::clan::builtin_name},
 {"members",             fb::game::clan::builtin_members},
 {"nears",               fb::game::clan::builtin_nears},
+{"title",               fb::game::clan::builtin_title},
 END_LUA_EXTENSION; // clang-format on
 
 int clan::builtin_name(lua_State* lua)
@@ -79,4 +81,58 @@ int clan::builtin_nears(lua_State* lua)
     }
 
     return 1;
+}
+
+int clan::builtin_title(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto clan    = thread->touserdata<fb::game::clan>(1);
+    if (clan == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto& title = clan->title();
+        if (title.has_value())
+            thread->pushstring(title.value());
+        else
+            thread->pushnil();
+
+        return 1;
+    }
+    else if (argc == 2)
+    {
+        static auto fn = [](fb::game::context* context,
+                            fb::lua::context*  thread,
+                            fb::game::clan*    clan,
+                            std::string        name) -> async::task<void> {
+            try
+            {
+                co_await context->set_clan_title(*clan, name);
+                thread->pushnil();
+            }
+            catch (std::exception& e)
+            {
+                thread->pushstring(e.what());
+            }
+
+            thread->resume(1);
+        };
+
+        auto name   = thread->tostring(2);
+        std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+            co_await fn(context, thread, clan, name);
+        });
+
+        return thread->yield(1);
+    }
+    else
+    {
+        return 0;
+    }
 }

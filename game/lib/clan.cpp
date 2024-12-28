@@ -40,6 +40,11 @@ const std::optional<std::string>& clan::title() const
     return this->_title;
 }
 
+void clan::title(const std::optional<std::string>& title)
+{
+    this->_title = title;
+}
+
 const std::unordered_map<uint32_t, fb::game::character*>& clan::characters() const
 {
     return this->_characters;

@@ -286,7 +286,7 @@ private:
      *
      * @param[in]  error  The error
      */
-    void assert_clan(uint32_t error, const std::string& name) const;
+    void assert_clan(uint32_t error) const;
 
     /**
      * @brief      Called on enter group.
@@ -445,6 +445,16 @@ public:
      * @return     { description_of_the_return_value }
      */
     async::task<void> destroy_clan(character& me);
+
+    /**
+     * @brief      Sets the clan title.
+     *
+     * @param      clan   The clan
+     * @param[in]  title  The title
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> set_clan_title(clan& clan, std::string title);
 
 protected:
     /**

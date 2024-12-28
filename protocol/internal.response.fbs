@@ -3,7 +3,7 @@ include "internal.fbs";
 namespace fb.protocol.internal.response;
 
 table KickOut {
-	uid: uint;
+  uid: uint;
   name: string;
 }
 
@@ -39,9 +39,9 @@ table Transfer {
 
 
 table Whisper {
-	from : string;
-	to: string;
-	message: string;
+  from : string;
+  to: string;
+  message: string;
   host: uint;
   error: uint;
 }
@@ -175,5 +175,11 @@ table KickClan {
   clan: uint;
   uid: uint;
   uname: string;
+  error: uint;
+}
+
+table SetClanTitle {
+  clan: uint;
+  title: string?;
   error: uint;
 }

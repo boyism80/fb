@@ -78,6 +78,14 @@ public:
      * @return     { description_of_the_return_value }
      */
     const std::optional<std::string>& title() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  title  The title
+     */
+    void title(const std::optional<std::string>& title);
+
     /**
      * @brief      { function_description }
      *
@@ -133,6 +141,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_nears(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_title(lua_State* lua);
 };
 
 } // namespace fb::game

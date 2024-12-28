@@ -348,7 +348,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "CLAN_CANNOT_LEAVEE_MASTER")]
         ClanCannotLeaveeMaster = 30, 
         [EnumMember(Value = "NOT_FOUND_CHARACTER_SYNC")]
-        NotFoundCharacterSync = 31
+        NotFoundCharacterSync = 31, 
+        [EnumMember(Value = "CLAN_TITLE_NOT_CHANGED")]
+        ClanTitleNotChanged = 32, 
+        [EnumMember(Value = "CLAN_TITLE_TOO_SHORT")]
+        ClanTitleTooShort = 33
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

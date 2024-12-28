@@ -877,13 +877,9 @@ int fb::game::character::builtin_create_group(lua_State* lua)
         thread->resume(1);
     };
 
-    ch->thread()->enqueue(
+    std::ignore = ch->thread()->dispatch(
         [=](auto&) -> async::task<void> {
             co_await fn(context, thread, *ch, name);
-        },
-        [](auto& e) {
-        },
-        []() {
         });
 
     return thread->yield(1);
@@ -905,7 +901,7 @@ int fb::game::character::builtin_clan(lua_State* lua)
     {
         // 그룹 Lock scope는 스크립트 내의 다음 yield를
         // 만나기 전까지 유효
-        ch->thread()->enqueue(
+        std::ignore = ch->thread()->dispatch(
             [=](auto&) -> async::task<void> {
                 if (ch->_clan == nullptr)
                 {
@@ -920,10 +916,6 @@ int fb::game::character::builtin_clan(lua_State* lua)
                     });
                 }
                 co_return;
-            },
-            [](auto& e) {
-            },
-            []() {
             });
 
         return thread->yield(1);

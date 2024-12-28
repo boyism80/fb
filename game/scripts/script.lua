@@ -70,13 +70,27 @@ function func(me)
         end
     else
         local name = clan:name()
-        npc:dialog(me, string.format('클랜 이름 : %s', name))
+        local selected = npc:menu(me, string.format('클랜 이름 : %s', name), {'문파 칭호 바꾸기', '문파 해체'})
+        if selected == nil then
+            return
+        end
 
-        local error = me:destroy_clan()
-        if error ~= nil then
-            npc:dialog(me, error)
+        if selected == 0 then
+            local title = npc:input(me, '문파 칭호 입력')
+            local error = clan:title(title)
+            if error ~= nil then
+                npc:dialog(me, error)
+            else
+                npc:dialog(me, '문파 칭호 변경 성공')
+            end
+        elseif selected == 1 then
+            local error = me:destroy_clan()
+            if error ~= nil then
+                npc:dialog(me, error)
+            else
+                npc:dialog(me, '클랜 제거 성공')
+            end
         else
-            npc:dialog(me, '클랜 제거 성공')
         end
     end
 

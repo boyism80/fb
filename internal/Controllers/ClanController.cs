@@ -258,6 +258,56 @@ namespace Internal.Controllers
             }
         }
 
+        [HttpPost("title")]
+        public async Task<Response.SetClanTitle> SetTitle(Request.SetClanTitle request)
+        {
+            var redis = _redisService.Connection;
+            try
+            {
+                await using (await new RedisDistributedLock(Clan.DistributeLockKey(request.Clan), redis).AcquireAsync())
+                {
+                    var clan = await _dbContext.Clan.Get(request.Clan) ??
+                        throw new LogicException(ErrorCode.NotFoundClan);
+
+                    if (clan.Title == request.Title)
+                        throw new LogicException(ErrorCode.ClanTitleNotChanged);
+
+                    if (request.Title != null && request.Title.Length < 2)
+                        throw new LogicException(ErrorCode.ClanTitleTooShort);
+
+                    clan.Title = request.Title;
+                    _dbContext.Clan.Set(clan);
+
+                    await _dbContext.SaveChangesAsync();
+
+                    var response = new Response.SetClanTitle
+                    {
+                        Clan = clan.Id,
+                        Title = request.Title,
+                        Error = (uint)ErrorCode.None
+                    };
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                    return response;
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.SetClanTitle
+                {
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception e)
+            {
+                return new Response.SetClanTitle
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+            finally
+            { }
+        }
+
         [HttpPost("join")]
         public async Task<Response.JoinClan> Join(Request.JoinClan request)
         {
