@@ -1,4 +1,4 @@
-FROM ghcr.io/boyism80/fb/build AS build
+FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
 
 WORKDIR /app
 COPY include ./include
@@ -9,7 +9,7 @@ WORKDIR /app/game/build
 RUN cmake ..
 RUN cmake --build . --config Release --parallel
 
-FROM ghcr.io/boyism80/fb/build
+FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 RUN apt-get install zip unzip -y
 
 WORKDIR /app

@@ -1,4 +1,4 @@
-FROM ghcr.io/boyism80/fb/build AS build
+FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
 
 WORKDIR /app
 COPY include ./include
@@ -9,7 +9,7 @@ WORKDIR /app/login/build
 RUN cmake ..
 RUN cmake --build . --config Release --parallel
 
-FROM ghcr.io/boyism80/fb/build
+FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app
 COPY --from=build /app/login/build/app .
 COPY --from=build /fb/data/json/server/ /app/json/

@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS data-build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS data-build
 WORKDIR /
 COPY resources/table /app/resources/table
 COPY tools/data-converter /app/tools/data-converter
@@ -9,7 +9,7 @@ RUN ./ExcelTableConverter --dir=/app/resources/table --lang="c++|c#"
 RUN mv output /output
 
 
-FROM ubuntu:24.04
+FROM --platform=$BUILDPLATFORM ubuntu:24.04
 
 RUN apt-get update -y
 RUN apt-get upgrade -y

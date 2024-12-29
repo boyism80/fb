@@ -1,6 +1,6 @@
-FROM ghcr.io/boyism80/fb/build AS data-build
+FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS data-build
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG SERVICE
 ENV SERVICE=$SERVICE
 
@@ -9,7 +9,7 @@ COPY http ./http
 COPY ${SERVICE} ./${SERVICE}
 RUN dotnet publish -c Release -o /app/dist/${SERVICE} ./${SERVICE}
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/aspnet:8.0
 ARG SERVICE
 ENV SERVICE=$SERVICE
 COPY --from=build /app/dist/${SERVICE} /app
