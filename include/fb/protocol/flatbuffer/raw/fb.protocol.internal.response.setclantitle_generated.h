@@ -25,10 +25,14 @@ struct SetClanTitleBuilder;
 struct SetClanTitle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef SetClanTitleBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CLAN = 4,
-    VT_TITLE = 6,
-    VT_ERROR = 8
+    VT_HOST = 4,
+    VT_CLAN = 6,
+    VT_TITLE = 8,
+    VT_ERROR = 10
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
   uint32_t clan() const {
     return GetField<uint32_t>(VT_CLAN, 0);
   }
@@ -40,6 +44,7 @@ struct SetClanTitle FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyOffset(verifier, VT_TITLE) &&
            verifier.VerifyString(title()) &&
@@ -52,6 +57,9 @@ struct SetClanTitleBuilder {
   typedef SetClanTitle Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(SetClanTitle::VT_HOST, host, 0);
+  }
   void add_clan(uint32_t clan) {
     fbb_.AddElement<uint32_t>(SetClanTitle::VT_CLAN, clan, 0);
   }
@@ -74,6 +82,7 @@ struct SetClanTitleBuilder {
 
 inline ::flatbuffers::Offset<SetClanTitle> CreateSetClanTitle(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t clan = 0,
     ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     uint32_t error = 0) {
@@ -81,17 +90,20 @@ inline ::flatbuffers::Offset<SetClanTitle> CreateSetClanTitle(
   builder_.add_error(error);
   builder_.add_title(title);
   builder_.add_clan(clan);
+  builder_.add_host(host);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<SetClanTitle> CreateSetClanTitleDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t clan = 0,
     const char *title = nullptr,
     uint32_t error = 0) {
   auto title__ = title ? _fbb.CreateString(title) : 0;
   return fb::protocol::internal::response::raw::CreateSetClanTitle(
       _fbb,
+      host,
       clan,
       title__,
       error);

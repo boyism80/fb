@@ -25,10 +25,14 @@ struct BroadcastClanBuilder;
 struct BroadcastClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef BroadcastClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CLAN = 4,
-    VT_MESSAGE = 6,
-    VT_TYPE = 8
+    VT_HOST = 4,
+    VT_CLAN = 6,
+    VT_MESSAGE = 8,
+    VT_TYPE = 10
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
   uint32_t clan() const {
     return GetField<uint32_t>(VT_CLAN, 0);
   }
@@ -40,6 +44,7 @@ struct BroadcastClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyOffset(verifier, VT_MESSAGE) &&
            verifier.VerifyString(message()) &&
@@ -52,6 +57,9 @@ struct BroadcastClanBuilder {
   typedef BroadcastClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(BroadcastClan::VT_HOST, host, 0);
+  }
   void add_clan(uint32_t clan) {
     fbb_.AddElement<uint32_t>(BroadcastClan::VT_CLAN, clan, 0);
   }
@@ -74,24 +82,28 @@ struct BroadcastClanBuilder {
 
 inline ::flatbuffers::Offset<BroadcastClan> CreateBroadcastClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t clan = 0,
     ::flatbuffers::Offset<::flatbuffers::String> message = 0,
     uint8_t type = 0) {
   BroadcastClanBuilder builder_(_fbb);
   builder_.add_message(message);
   builder_.add_clan(clan);
+  builder_.add_host(host);
   builder_.add_type(type);
   return builder_.Finish();
 }
 
 inline ::flatbuffers::Offset<BroadcastClan> CreateBroadcastClanDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t clan = 0,
     const char *message = nullptr,
     uint8_t type = 0) {
   auto message__ = message ? _fbb.CreateString(message) : 0;
   return fb::protocol::internal::request::raw::CreateBroadcastClan(
       _fbb,
+      host,
       clan,
       message__,
       type);

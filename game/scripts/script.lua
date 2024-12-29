@@ -129,7 +129,7 @@ function func(me)
             end
         elseif selected == 3 then
             local name = npc:input(me, '상대 이름 입력')
-            local error = me:clan():leave(name, kick)
+            local error = me:clan():leave(name, true)
             if error ~= nil then
                 npc:dialog(me, error)
             else

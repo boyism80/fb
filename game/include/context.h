@@ -144,44 +144,6 @@ private:
     void upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn);
 
     /**
-     * @brief      { function_description }
-     *
-     * @param[in]  names  The names
-     * @param[in]  fn     The function
-     * @param[in]  miss   The miss
-     */
-    void broadcast(const std::vector<std::string>&                     names,
-                   const std::function<void(fb::game::character&)>&    fn,
-                   const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  names  The names
-     * @param[in]  fn     The function
-     */
-    void broadcast(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name  The name
-     * @param[in]  fn    The function
-     * @param[in]  miss  The miss
-     */
-    void broadcast(const std::string&                                  name,
-                   const std::function<void(fb::game::character&)>&    fn,
-                   const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name  The name
-     * @param[in]  fn    The function
-     */
-    void broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn);
-
-    /**
      * @brief      Initializes the ch.
      *
      * @param[in]  response  The response
@@ -284,9 +246,9 @@ private:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  error  The error
+     * @param[in]  <unnamed>  { parameter_description }
      */
-    void assert_clan(uint32_t error) const;
+    void assert_clan(uint32_t) const;
 
     /**
      * @brief      Called on enter group.
@@ -300,7 +262,35 @@ private:
      *
      * @param[in]  response  The response
      */
-    void on_leave_group(const internal_resp::LeaveGroup& response);
+    void on_leave_group(const internal_resp::LeaveGroup& resp);
+
+    /**
+     * @brief      Called when clan title changed.
+     *
+     * @param[in]  response  The response
+     */
+    void on_clan_title_changed(const internal_resp::SetClanTitle& resp);
+
+    /**
+     * @brief      Called on clan join member.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_join_member(const internal_resp::JoinClan& resp);
+
+    /**
+     * @brief      Called on clan leave member.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_leave_member(const internal_resp::LeaveClan& resp);
+
+    /**
+     * @brief      Called on clan broadcast.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_broadcast(const internal_resp::BroadcastClan& resp);
 
 public:
     /**
@@ -394,6 +384,52 @@ public:
      */
     async::task<void> save(fb::game::character& ch);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     * @param[in]  fn    The function
+     * @param[in]  miss  The miss
+     */
+    void foreach_ch(const std::string&                                  name,
+                    const std::function<void(fb::game::character&)>&    fn,
+                    const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     * @param[in]  fn    The function
+     */
+    void foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     * @param[in]  miss   The miss
+     */
+    void foreach_ch(const std::vector<std::string>&                     names,
+                    const std::function<void(fb::game::character&)>&    fn,
+                    const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     */
+    void foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  clan  The clan
+     * @param[in]  fn    The function
+     */
+    void foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn);
+
 public:
     /**
      * @brief      { function_description }
@@ -454,7 +490,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> set_clan_title(clan& clan, std::string title);
+    async::task<void> set_clan_title(const clan& clan, std::string title);
 
     /**
      * @brief      { function_description }
@@ -464,7 +500,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> join_clan_member(clan& clan, character& ch);
+    async::task<void> join_clan_member(const clan& clan, character& ch);
 
     /**
      * @brief      { function_description }
@@ -475,18 +511,17 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> leave_clan_member(clan& clan, const std::string& name, bool kick);
+    async::task<void> leave_clan_member(const clan& clan, const std::string& name, bool kick);
 
     /**
-     * @brief      Broadcasts a clan.
+     * @brief      { function_description }
      *
-     * @param      clan     The clan
      * @param[in]  message  The message
      * @param[in]  type     The type
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> broadcast_clan(clan& clan, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+    async::task<void> broadcast_clan(const clan& clan, const std::string& message, MESSAGE_TYPE type);
 
 protected:
     /**

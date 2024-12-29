@@ -948,7 +948,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
             throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
 
         me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
-        this->broadcast(
+        this->foreach_ch(
             to,
             [this, from, to = me->id(), message](auto& you) {
                 auto response    = internal_resp::Whisper{};

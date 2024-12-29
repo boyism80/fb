@@ -27,10 +27,14 @@ struct JoinClanBuilder;
 struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef JoinClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_CLAN = 4,
-    VT_MEMBER = 6,
-    VT_ERROR = 8
+    VT_HOST = 4,
+    VT_CLAN = 6,
+    VT_MEMBER = 8,
+    VT_ERROR = 10
   };
+  uint32_t host() const {
+    return GetField<uint32_t>(VT_HOST, 0);
+  }
   uint32_t clan() const {
     return GetField<uint32_t>(VT_CLAN, 0);
   }
@@ -42,6 +46,7 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_HOST, 4) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
            VerifyOffset(verifier, VT_MEMBER) &&
            verifier.VerifyTable(member()) &&
@@ -54,6 +59,9 @@ struct JoinClanBuilder {
   typedef JoinClan Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_host(uint32_t host) {
+    fbb_.AddElement<uint32_t>(JoinClan::VT_HOST, host, 0);
+  }
   void add_clan(uint32_t clan) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_CLAN, clan, 0);
   }
@@ -76,6 +84,7 @@ struct JoinClanBuilder {
 
 inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t host = 0,
     uint32_t clan = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> member = 0,
     uint32_t error = 0) {
@@ -83,6 +92,7 @@ inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
   builder_.add_error(error);
   builder_.add_member(member);
   builder_.add_clan(clan);
+  builder_.add_host(host);
   return builder_.Finish();
 }
 

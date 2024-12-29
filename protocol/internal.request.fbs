@@ -151,22 +151,26 @@ table DestroyClan {
 }
 
 table JoinClan {
+  host: uint;
   clan: uint;
   uid: uint;
 }
 
 table LeaveClan {
+  host: uint;
   clan: uint;
   name: string;
   kick: bool;
 }
 
 table SetClanTitle {
+  host: uint;
   clan: uint;
   title: string?;
 }
 
 table BroadcastClan {
+  host: uint;
   clan: uint;
   message: string;
   type: ubyte;

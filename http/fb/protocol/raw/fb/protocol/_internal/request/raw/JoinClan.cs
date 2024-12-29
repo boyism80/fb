@@ -20,21 +20,25 @@ public struct JoinClan : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public JoinClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Clan { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Host { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Clan { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Uid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.JoinClan> CreateJoinClan(FlatBufferBuilder builder,
+      uint host = 0,
       uint clan = 0,
       uint uid = 0) {
-    builder.StartTable(2);
+    builder.StartTable(3);
     JoinClan.AddUid(builder, uid);
     JoinClan.AddClan(builder, clan);
+    JoinClan.AddHost(builder, host);
     return JoinClan.EndJoinClan(builder);
   }
 
-  public static void StartJoinClan(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(0, clan, 0); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
+  public static void StartJoinClan(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(0, host, 0); }
+  public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(1, clan, 0); }
+  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(2, uid, 0); }
   public static Offset<fb.protocol._internal.request.raw.JoinClan> EndJoinClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.JoinClan>(o);
@@ -49,8 +53,9 @@ static public class JoinClanVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Clan*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Host*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Clan*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Uid*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

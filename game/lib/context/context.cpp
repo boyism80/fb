@@ -291,159 +291,35 @@ std::string context::elapsed_message(const std::string& dt)
     }
 }
 
-void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
+void context::foreach_ch(const std::string&                                  name,
+                         const std::function<void(fb::game::character&)>&    fn,
+                         const std::function<void(const std::string& name)>& miss)
 {
-    this->_shard[gid]->groups.lock([this, gid, &fn](auto& groups) {
-        if (groups.contains(gid) == false)
-        {
-            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-            async::awaitable_then(this->get<internal_resp::GetGroup>("internal", std::format("/group/{}", gid)),
-                                  [this, gid](auto result) {
-                                      try
-                                      {
-                                          auto&& resp = result();
-                                          switch (static_cast<ERROR_CODE>(resp.error))
-                                          {
-                                          case ERROR_CODE::NONE:
-                                              break;
+    this->foreach_ch({name}, fn, miss);
+}
 
-                                          default:
-                                              throw std::runtime_error(
-                                                  std::format("cannot get group (error : {})", resp.error));
-                                          }
-
-                                          this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
-                                              if (!groups.contains(gid))
-                                                  return;
-
-                                              auto& group_lock_ptr = groups.at(gid);
-                                              group_lock_ptr->lock([&resp](auto& group) {
-                                                  group.update(resp.group.master, resp.group.members);
-                                              });
-                                          });
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          fb::logger::fatal(e.what());
-                                      }
-                                  });
-        }
-
-        fn(groups.at(gid));
+void context::foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn)
+{
+    this->foreach_ch({name}, fn, [](auto&) {
     });
 }
 
-void context::upsert_group_then(uint32_t                                       gid,
-                                const std::string&                             master,
-                                const std::vector<std::string>&                members,
-                                const std::function<void(shared_group_lock&)>& fn)
+void context::foreach_ch(const std::vector<std::string>&                     names,
+                         const std::function<void(fb::game::character&)>&    fn,
+                         const std::function<void(const std::string& name)>& miss)
 {
-    this->_shard[gid]->groups.lock([this, gid, &fn, &master, &members](auto& groups) {
-        if (groups.contains(gid) == false)
-        {
-            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-        }
-
-        auto& group_lock_ptr = groups.at(gid);
-        group_lock_ptr->lock([&master, &members](auto& group) {
-            group.update(master, members);
-        });
-        fn(group_lock_ptr);
-    });
-}
-
-void context::upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn)
-{
-    this->_shard[id]->clans.lock([this, id, fn](auto& clans) {
-        if (clans.contains(id) == false)
-        {
-            clans.insert({id, std::make_shared<fb::locker<fb::game::clan>>(*this, id)});
-            async::awaitable_then(
-                this->get<internal_resp::GetClan>("internal", std::format("/clan/{}", id)),
-                [this, id](auto result) {
-                    try
-                    {
-                        auto&& resp = result();
-                        switch (static_cast<ERROR_CODE>(resp.error))
-                        {
-                        case ERROR_CODE::NONE:
-                            break;
-
-                        default:
-                            throw std::runtime_error(std::format("cannot get clan (error : {})", resp.error));
-                        }
-
-                        this->_shard[id]->clans.lock([this, id, &resp](fb::game::shard_params::clan_container& clans) {
-                            if (!clans.contains(id))
-                                return;
-
-                            auto& clan_lock_ptr = clans.at(id);
-                            clan_lock_ptr->lock([this, &resp](fb::game::clan& clan) {
-                                this->update_clan(clan, resp.clan, resp.members);
-                            });
-                        });
-                    }
-                    catch (std::exception& e)
-                    {
-                        fb::logger::fatal(e.what());
-                    }
-                });
-        }
-
-        fn(clans.at(id));
-    });
-}
-
-void context::update_clan(clan&                                                  clan,
-                          fb::protocol::internal::Clan&                          resp1,
-                          const std::vector<fb::protocol::internal::ClanMember>& resp2) const
-{
-    auto members  = std::vector<clan_member>{};
-    auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
-    for (auto& member : resp2)
-    {
-        auto cm   = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
-        auto hash = this->_shard.mod(member.name);
-        if (modulars.contains(hash) == false)
-            modulars.insert({hash, {}});
-
-        modulars[hash].push_back(member.name);
-        members.push_back(std::move(cm));
-    }
-
-    clan.update(resp1.name, resp1.title, members);
-
-    for (auto& [hash, names] : modulars)
-    {
-        this->_shard[hash]->characters.lock(
-            [&clan, &names, &members](fb::game::shard_params::character_container& characters) {
-                for (auto& name : names)
-                {
-                    if (!characters.contains(name))
-                        continue;
-
-                    clan.attach_character(*characters.at(name));
-                }
-            });
-    }
-}
-
-void context::broadcast(const std::vector<std::string>&                     names,
-                        const std::function<void(fb::game::character&)>&    fn,
-                        const std::function<void(const std::string& name)>& miss)
-{
-    auto name_group = std::unordered_map<uint32_t, std::vector<std::string>>{};
+    auto g = std::unordered_map<uint32_t, std::vector<std::string>>{};
     for (auto& name : names)
     {
         auto mod = this->_shard.mod(name);
 
-        if (!name_group.contains(mod))
-            name_group.insert({mod, std::vector<std::string>{}});
+        if (!g.contains(mod))
+            g.insert({mod, std::vector<std::string>{}});
 
-        name_group[mod].push_back(name);
+        g[mod].push_back(name);
     }
 
-    for (auto& [mod, names] : name_group)
+    for (auto& [mod, names] : g)
     {
         this->_shard[mod]->characters.lock([this, &names, &fn, &miss](auto& characters) {
             for (auto& name : names)
@@ -467,22 +343,9 @@ void context::broadcast(const std::vector<std::string>&                     name
     }
 }
 
-void context::broadcast(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn)
+void context::foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn)
 {
-    this->broadcast(names, fn, [](auto&) {
-    });
-}
-
-void context::broadcast(const std::string&                                  name,
-                        const std::function<void(fb::game::character&)>&    fn,
-                        const std::function<void(const std::string& name)>& miss)
-{
-    this->broadcast(std::vector<std::string>{name}, fn, miss);
-}
-
-void context::broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn)
-{
-    this->broadcast({name}, fn, [](auto&) {
+    this->foreach_ch(names, fn, [](auto&) {
     });
 }
 
@@ -917,13 +780,13 @@ void context::amqp_thread()
                 try
                 {
                     this->assert_whisper(response);
-                    this->broadcast(response.to, [&response](auto& you) {
+                    this->foreach_ch(response.to, [&response](auto& you) {
                         you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
                     });
                 }
                 catch (std::exception& e)
                 {
-                    this->broadcast(response.from, [&response, error = e.what()](auto& me) {
+                    this->foreach_ch(response.from, [&response, error = e.what()](auto& me) {
                         me.message(error, MESSAGE_TYPE::NOTIFY);
                     });
                 }
@@ -955,96 +818,32 @@ void context::amqp_thread()
             queue4.bind("amq.direct", "fb.clan");
             queue4.handler<internal_resp::SetClanTitle>(
                 [this](internal_resp::SetClanTitle& response) -> async::task<void> {
-                    this->assert_clan(response.error);
+                    if (response.host == fb::config<uint32_t>("id"))
+                        co_return;
 
-                    this->upsert_clan_then(response.clan, [&title = response.title](auto& clan_lock) {
-                        clan_lock->lock([&title](auto& clan) {
-                            clan.title(title);
-                        });
-                    });
-                    co_return;
+                    this->on_clan_title_changed(response);
                 });
 
             queue4.handler<internal_resp::JoinClan>([this](internal_resp::JoinClan& response) -> async::task<void> {
-                this->assert_clan(response.error);
+                if (response.host == fb::config<uint32_t>("id"))
+                    co_return;
 
-                this->upsert_clan_then(response.clan, [this, response](auto& clan_lock) {
-                    auto ch = this->_shard[response.member.name]->characters.template lock<character*>(
-                        [&response](auto& container) -> character* {
-                            if (container.contains(response.member.name) == false)
-                                return nullptr;
-
-                            return container.at(response.member.name);
-                        });
-
-                    if (ch != nullptr)
-                    {
-                        auto thread = ch->thread();
-                        std::ignore = thread->dispatch([ch, &clan_lock, response](auto&) -> async::task<void> {
-                            clan_lock->lock([&clan_lock, ch, response](auto& clan) {
-                                auto cm = clan_member{response.member.name,
-                                                      static_cast<CLAN_POSITION>(response.member.position)};
-                                clan.join(cm);
-                                clan.attach_character(*ch);
-                                ch->clan(clan_lock);
-                            });
-                            co_return;
-                        });
-                    }
-                });
-
-                co_return;
+                this->on_clan_join_member(response);
             });
 
             queue4.handler<internal_resp::LeaveClan>([this](internal_resp::LeaveClan& response) -> async::task<void> {
-                this->assert_clan(response.error);
+                if (response.host == fb::config<uint32_t>("id"))
+                    co_return;
 
-                this->upsert_clan_then(response.clan, [this, uname = response.uname](auto& clan_lock) {
-                    auto ch = this->_shard[uname]->characters.template lock<character*>(
-                        [&uname](auto& container) -> character* {
-                            if (container.contains(uname) == false)
-                                return nullptr;
-
-                            return container.at(uname);
-                        });
-
-                    if (ch != nullptr)
-                    {
-                        auto thread = ch->thread();
-                        std::ignore = thread->dispatch([ch, &clan_lock](auto&) -> async::task<void> {
-                            clan_lock->lock([ch](auto& clan) {
-                                clan.leave(ch->name());
-                                clan.detach_character(*ch);
-                                ch->clan().reset();
-                            });
-                            co_return;
-                        });
-                    }
-                });
-
-                co_return;
+                this->on_clan_leave_member(response);
             });
 
             queue4.handler<internal_resp::BroadcastClan>(
                 [this](internal_resp::BroadcastClan& response) -> async::task<void> {
-                    this->assert_clan(response.error);
+                    if (response.host == fb::config<uint32_t>("id"))
+                        co_return;
 
-                    this->upsert_clan_then(response.clan,
-                                           [this, message = response.message, type = response.type](auto& clan_lock) {
-                                               clan_lock->lock([this, message, type](auto& clan) {
-                                                   auto names = std::vector<std::string>{};
-                                                   for (auto& [name, member] : clan.members())
-                                                   {
-                                                       names.push_back(name);
-                                                   }
-
-                                                   this->broadcast(names, [message, type](auto& ch) {
-                                                       ch.message(message, static_cast<MESSAGE_TYPE>(type));
-                                                   });
-                                               });
-                                           });
-
-                    co_return;
+                    this->on_clan_broadcast(response);
                 });
         }
         catch (std::exception& e)
@@ -1069,162 +868,6 @@ void context::amqp_thread()
     }
 }
 
-async::task<bool> context::create_group(character& me, const std::string& target)
-{
-    try
-    {
-        if (me.option(SETTING::GROUP) == false)
-            throw std::runtime_error(message::group::DISABLED_MINE);
-
-        auto&& resp = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
-            "internal",
-            "/group/create",
-            internal_reqs::EnterGroup{me.id(), target});
-
-        this->on_enter_group(resp);
-        co_return true;
-    }
-    catch (std::exception& e)
-    {
-        me.message(e.what(), MESSAGE_TYPE::STATE);
-        co_return false;
-    }
-}
-
-async::task<void> context::create_clan(character& me, const std::string& name)
-{
-    if (me.clan() != nullptr)
-        throw std::runtime_error("클랜 이미 있음");
-
-    auto   fd   = me.fd();
-    auto&& resp = co_await this->post<internal_reqs::CreateClan, internal_resp::CreateClan>(
-        "internal",
-        "/clan/create",
-        internal_reqs::CreateClan{me.id(), name});
-
-    this->assert_clan(resp.error);
-
-    auto id = resp.clan.id;
-    this->_shard[id]->clans.lock([this, id = resp.clan.id, fd, &resp, &me](auto& clans) {
-        auto id = resp.clan.id;
-        if (clans.contains(id) == false)
-        {
-            auto clan_ptr   = new fb::game::clan(*this, id);
-            auto shared_ptr = std::make_shared<fb::locker<fb::game::clan>>(*this, id);
-            shared_ptr->lock([this, &resp](auto& clan) {
-                this->update_clan(clan, resp.clan, resp.members);
-            });
-            clans.insert({id, std::move(shared_ptr)});
-        }
-
-        this->_shard[id]->clans.lock([this, id, fd, &me](fb::game::shard_params::clan_container& clans) {
-            if (!clans.contains(id))
-                return;
-
-            auto& clan_lock_ptr = clans.at(id);
-
-            if (this->assert_socket(fd))
-            {
-                me.clan(clan_lock_ptr);
-                clan_lock_ptr->lock([this, &me](fb::game::clan& clan) {
-                    clan.attach_character(me);
-                });
-            }
-        });
-    });
-}
-
-async::task<void> context::destroy_clan(character& me)
-{
-    auto& clan_lock = me.clan();
-    if (clan_lock == nullptr)
-        throw std::runtime_error("클랜이 없음");
-
-    auto clan_name = std::string{};
-    auto clan_id   = uint32_t{};
-    clan_lock->lock([&clan_name, &clan_id](auto& clan) {
-        clan_name = clan.name();
-        clan_id   = clan.id();
-    });
-
-    auto   fd   = me.fd();
-    auto&& resp = co_await this->post<internal_reqs::DestroyClan, internal_resp::DestroyClan>(
-        "internal",
-        "/clan/destroy",
-        internal_reqs::DestroyClan{me.id()});
-
-    this->assert_clan(resp.error);
-    this->_shard[clan_id]->clans.lock([clan_id](auto& clans) {
-        if (clans.contains(clan_id))
-        {
-            clans.at(clan_id)->lock([](auto& clan) {
-                auto character_set = std::unordered_map<fb::thread*, std::vector<character*>>{};
-                for (auto& [uid, ch] : clan.characters())
-                {
-                    auto thread = ch->thread();
-                    if (!character_set.contains(thread))
-                        character_set.insert({thread, {}});
-
-                    character_set.at(thread).push_back(ch);
-                }
-
-                for (auto& [thread, characters] : character_set)
-                {
-                    thread->dispatch([characters](auto&) -> async::task<void> {
-                        for (auto ch : characters)
-                            ch->clan().reset();
-
-                        co_return;
-                    });
-                }
-            });
-
-            clans.erase(clan_id);
-        }
-    });
-}
-
-async::task<void> context::set_clan_title(clan& clan, std::string title)
-{
-    auto   name = std::string{clan.name()};
-    auto&& resp = co_await this->post<internal_reqs::SetClanTitle, internal_resp::SetClanTitle>(
-        "internal",
-        "/clan/title",
-        internal_reqs::SetClanTitle{clan.id(), title});
-
-    this->assert_clan(resp.error);
-}
-
-async::task<void> context::join_clan_member(clan& clan, character& ch)
-{
-    auto&& resp = co_await this->post<internal_reqs::JoinClan, internal_resp::JoinClan>(
-        "internal",
-        "/clan/join",
-        internal_reqs::JoinClan{clan.id(), ch.id()});
-
-    this->assert_clan(resp.error);
-}
-
-async::task<void> context::leave_clan_member(clan& clan, const std::string& name, bool kick)
-{
-    auto&& resp = co_await this->post<internal_reqs::LeaveClan, internal_resp::LeaveClan>(
-        "internal",
-        "/clan/leave",
-        internal_reqs::LeaveClan{clan.id(), name, kick});
-
-    this->assert_clan(resp.error);
-}
-
-async::task<void> context::broadcast_clan(clan& clan, const std::string& message, MESSAGE_TYPE type)
-{
-    auto&& resp = co_await this->post<internal_reqs::BroadcastClan, internal_resp::BroadcastClan>(
-        "internal",
-        "/clan/broadcast",
-        internal_reqs::BroadcastClan{clan.id(), message, static_cast<uint8_t>(type)});
-
-    this->assert_clan(resp.error);
-}
-
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
@@ -1243,165 +886,6 @@ void context::handle_click_npc(character& ch, npc& npc)
         .pushobject(ch)
         .pushobject(npc.based<fb::model::npc>())
         .resume(2);
-}
-
-void context::assert_group(uint32_t error, const std::string& actor) const
-{
-    switch (static_cast<ERROR_CODE>(error))
-    {
-    case ERROR_CODE::NONE:
-        return;
-
-    case ERROR_CODE::CANNOT_GROUP_SELF:
-        throw std::runtime_error("자기 자신과는 그룹할 수 없습니다.");
-
-    case ERROR_CODE::GROUP_ALREADY_JOINED:
-        throw std::runtime_error("이미 그룹에 참여중입니다.");
-
-    case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", actor));
-
-    case ERROR_CODE::GROUP_TARGET_ALREADY_JOINED:
-        throw std::runtime_error(std::format("{}님은 이미 그룹에 참여중입니다.", actor));
-
-    case ERROR_CODE::DISABLED_GROUP:
-        throw std::runtime_error("그룹 참여 거부중입니다.");
-
-    case ERROR_CODE::DISABLED_GROUP_TARGET:
-        throw std::runtime_error(std::format("{}님은 그룹 참여 거부중입니다.", actor));
-
-    case ERROR_CODE::NOT_GROUP_MASTER:
-        throw std::runtime_error("당신은 그룹장이 아닙니다.");
-
-    default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
-    }
-}
-
-void context::assert_clan(uint32_t error) const
-{
-    switch (static_cast<ERROR_CODE>(error))
-    {
-    case ERROR_CODE::NONE:
-        return;
-
-    case ERROR_CODE::CLAN_NAME_ALREADY_EXISTS:
-        throw std::runtime_error(std::format("클랜명이 이미 존재함"));
-
-    default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
-    }
-}
-
-void context::on_enter_group(internal_resp::EnterGroup resp)
-{
-    this->assert_group(resp.error, resp.member);
-
-    auto gid = resp.group.id;
-    this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group_lock_ptr) {
-        auto members = std::vector<std::string>{resp.group.members};
-        members.push_back(resp.group.master);
-        if (resp.action == GroupAction::Kick)
-            members.push_back(resp.member);
-
-        this->broadcast(members, [action = resp.action, member = resp.member, &group_lock_ptr](auto& character) {
-            switch (action)
-            {
-            case GroupAction::Create:
-                group_lock_ptr->lock([&character](auto& group) {
-                    group.enter(character);
-                });
-                character.group(group_lock_ptr);
-                if (character.name() == member)
-                {
-                    character.message("그룹에 참여했습니다.");
-                }
-                else
-                {
-                    character.message(std::format("{}님 그룹 참여", member));
-                }
-                break;
-
-            case GroupAction::Enter:
-                if (character.name() == member)
-                {
-                    character.message("그룹에 참여했습니다.");
-                    group_lock_ptr->lock([&character](auto& group) {
-                        group.enter(character);
-                    });
-                    character.group(group_lock_ptr);
-                }
-                else
-                {
-                    character.message(std::format("{}님 그룹 참여", member));
-                }
-                break;
-
-            case GroupAction::Kick:
-                if (character.name() == member)
-                {
-                    group_lock_ptr->lock([&character](auto& group) {
-                        group.leave(character);
-                    });
-                    character.group().reset();
-                    character.message("그룹에서 추방당했습니다.");
-                }
-                else
-                {
-                    character.message(std::format("{}님 그룹 탈퇴", member));
-                }
-                break;
-            }
-        });
-    });
-}
-
-void context::on_leave_group(const internal_resp::LeaveGroup& resp)
-{
-    this->assert_group(resp.error, resp.member);
-
-    auto gid = resp.group.id;
-    switch (resp.action)
-    {
-    case GroupAction::Leave:
-    {
-        this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group_lock_ptr) {
-            this->broadcast(resp.member, [&group_lock_ptr](auto& ch) {
-                ch.group().reset();
-
-                group_lock_ptr->lock([&ch](auto& group) {
-                    group.leave(ch);
-                });
-            });
-
-            auto members = std::vector<std::string>{resp.member};
-            members.push_back(resp.group.master);
-            this->broadcast(members, [member = resp.member](auto& ch) {
-                if (ch.name() == member)
-                    ch.message("그룹 탈퇴", MESSAGE_TYPE::STATE);
-                else
-                    ch.message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
-            });
-        });
-    }
-    break;
-
-    case GroupAction::BreakUp:
-    {
-        this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
-            auto members = std::vector<std::string>{resp.group.members};
-            members.push_back(resp.group.master);
-
-            this->broadcast(members, [](auto& ch) {
-                ch.group().reset();
-                ch.message("그룹 해체", MESSAGE_TYPE::STATE);
-            });
-
-            groups.erase(gid);
-        });
-    }
-    break;
-    }
 }
 
 async::task<bool> context::handle_command(character& ch, const std::string& message)

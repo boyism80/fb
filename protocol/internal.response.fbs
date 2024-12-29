@@ -158,12 +158,14 @@ table DestroyClan {
 }
 
 table JoinClan {
+  host: uint;
   clan: uint;
   member: fb.protocol.internal.ClanMember;
   error: uint;
 
 }
 table LeaveClan {
+  host: uint;
   clan: uint;
   uid: uint;
   uname: string;
@@ -172,12 +174,14 @@ table LeaveClan {
 }
 
 table SetClanTitle {
+  host: uint;
   clan: uint;
   title: string?;
   error: uint;
 }
 
 table BroadcastClan {
+  host: uint;
   clan: uint;
   message: string;
   type: ubyte;

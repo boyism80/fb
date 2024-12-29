@@ -435,6 +435,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Uid));
         }
@@ -444,6 +445,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name),
                 builder.Build(value.Kick));
@@ -454,6 +456,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Title));
         }
@@ -463,6 +466,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -707,6 +711,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.JoinClan.CreateJoinClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Member),
                 builder.Build(value.Error));
@@ -717,6 +722,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.LeaveClan.CreateLeaveClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Uid),
                 builder.Build(value.Uname),
@@ -729,6 +735,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.SetClanTitle.CreateSetClanTitle(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Title),
                 builder.Build(value.Error));
@@ -739,6 +746,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
                 builder.Build(value.Type),
@@ -1224,6 +1232,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Uid));
         }
@@ -1233,6 +1242,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name),
                 builder.Build(value.Kick));
@@ -1243,6 +1253,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Title));
         }
@@ -1252,6 +1263,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -1496,6 +1508,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.JoinClan.CreateJoinClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Member),
                 builder.Build(value.Error));
@@ -1506,6 +1519,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.LeaveClan.CreateLeaveClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Uid),
                 builder.Build(value.Uname),
@@ -1518,6 +1532,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.SetClanTitle.CreateSetClanTitle(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Title),
                 builder.Build(value.Error));
@@ -1528,6 +1543,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
                 builder.Build(value.Type),
@@ -2029,6 +2045,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.JoinClan.CreateJoinClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Uid));
         }
@@ -2038,6 +2055,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.LeaveClan.CreateLeaveClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Name),
                 builder.Build(value.Kick));
@@ -2048,6 +2066,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.SetClanTitle.CreateSetClanTitle(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Title));
         }
@@ -2057,6 +2076,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
@@ -2301,6 +2321,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.JoinClan.CreateJoinClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Member),
                 builder.Build(value.Error));
@@ -2311,6 +2332,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.LeaveClan.CreateLeaveClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Uid),
                 builder.Build(value.Uname),
@@ -2323,6 +2345,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.SetClanTitle.CreateSetClanTitle(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Title),
                 builder.Build(value.Error));
@@ -2333,6 +2356,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Host),
                 builder.Build(value.Clan),
                 builder.Build(value.Message),
                 builder.Build(value.Type),
@@ -3668,6 +3692,7 @@ namespace fb.protocol._internal.request
     public class JoinClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.JoinClan;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public uint Uid { get; set; } = 0;
 
@@ -3676,6 +3701,7 @@ namespace fb.protocol._internal.request
 
         public JoinClan(fb.protocol._internal.request.raw.JoinClan raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Uid = raw.Uid;
         }
@@ -3699,6 +3725,7 @@ namespace fb.protocol._internal.request
     public class LeaveClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.LeaveClan;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public bool Kick { get; set; } = false;
@@ -3708,6 +3735,7 @@ namespace fb.protocol._internal.request
 
         public LeaveClan(fb.protocol._internal.request.raw.LeaveClan raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Name = raw.Name;
             Kick = raw.Kick;
@@ -3732,6 +3760,7 @@ namespace fb.protocol._internal.request
     public class SetClanTitle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetClanTitle;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Title { get; set; } = null;
 
@@ -3740,6 +3769,7 @@ namespace fb.protocol._internal.request
 
         public SetClanTitle(fb.protocol._internal.request.raw.SetClanTitle raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Title = raw.Title;
         }
@@ -3763,6 +3793,7 @@ namespace fb.protocol._internal.request
     public class BroadcastClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.BroadcastClan;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
         public byte Type { get; set; } = 0;
@@ -3772,6 +3803,7 @@ namespace fb.protocol._internal.request
 
         public BroadcastClan(fb.protocol._internal.request.raw.BroadcastClan raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Message = raw.Message;
             Type = raw.Type;
@@ -4629,6 +4661,7 @@ namespace fb.protocol._internal.response
     public class JoinClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.JoinClan;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public fb.protocol._internal.ClanMember Member { get; set; } = new fb.protocol._internal.ClanMember();
         public uint Error { get; set; } = 0;
@@ -4638,6 +4671,7 @@ namespace fb.protocol._internal.response
 
         public JoinClan(fb.protocol._internal.response.raw.JoinClan raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Member = new ClanMember(raw.Member.Value);
             Error = raw.Error;
@@ -4662,6 +4696,7 @@ namespace fb.protocol._internal.response
     public class LeaveClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.LeaveClan;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public uint Uid { get; set; } = 0;
         public string Uname { get; set; } = string.Empty;
@@ -4673,6 +4708,7 @@ namespace fb.protocol._internal.response
 
         public LeaveClan(fb.protocol._internal.response.raw.LeaveClan raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Uid = raw.Uid;
             Uname = raw.Uname;
@@ -4699,6 +4735,7 @@ namespace fb.protocol._internal.response
     public class SetClanTitle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.SetClanTitle;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Title { get; set; } = null;
         public uint Error { get; set; } = 0;
@@ -4708,6 +4745,7 @@ namespace fb.protocol._internal.response
 
         public SetClanTitle(fb.protocol._internal.response.raw.SetClanTitle raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Title = raw.Title;
             Error = raw.Error;
@@ -4732,6 +4770,7 @@ namespace fb.protocol._internal.response
     public class BroadcastClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.BroadcastClan;
+        public uint Host { get; set; } = 0;
         public uint Clan { get; set; } = 0;
         public string Message { get; set; } = string.Empty;
         public byte Type { get; set; } = 0;
@@ -4742,6 +4781,7 @@ namespace fb.protocol._internal.response
 
         public BroadcastClan(fb.protocol._internal.response.raw.BroadcastClan raw)
         {
+            Host = raw.Host;
             Clan = raw.Clan;
             Message = raw.Message;
             Type = raw.Type;
