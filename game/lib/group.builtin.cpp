@@ -1,12 +1,14 @@
 #include <group.h>
+#include <context.h>
 
 using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
-{"master",				fb::game::group::builtin_master},
-{"members",				fb::game::group::builtin_members},
-{"nears",				fb::game::group::builtin_nears},
+{"master",              fb::game::group::builtin_master},
+{"members",             fb::game::group::builtin_members},
+{"nears",               fb::game::group::builtin_nears},
+{"message",             fb::game::group::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
 int group::builtin_master(lua_State* lua)
@@ -80,4 +82,44 @@ int group::builtin_nears(lua_State* lua)
     }
 
     return 1;
+}
+
+int group::builtin_message(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto group   = thread->touserdata<fb::game::group>(1);
+    if (group == nullptr)
+        return 0;
+
+    auto message = thread->tostring(2);
+    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  thread,
+                        fb::game::group*   group,
+                        const std::string& message,
+                        MESSAGE_TYPE       type) -> async::task<void> {
+        try
+        {
+            co_await context->broadcast(*group, message, type);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+
+        thread->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, group, message, type);
+    });
+
+    return thread->yield(1);
 }

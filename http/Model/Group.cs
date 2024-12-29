@@ -13,5 +13,10 @@ namespace Http.Model
     public class Group : GroupKey, IModel
     {
         public List<uint> Members { get; set; } = new List<uint>();
+
+        public static string DistributedLockKey(uint id)
+        {
+            return $"lock:group:{id}";
+        }
     }
 }

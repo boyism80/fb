@@ -141,6 +141,14 @@ table LeaveGroup {
   error: uint;
 }
 
+table BroadcastGroup {
+  host: uint;
+  group: uint;
+  message: string;
+  type: ubyte;
+  error: uint;
+}
+
 table GetClan {
   clan: fb.protocol.internal.Clan;
   members: [fb.protocol.internal.ClanMember];
@@ -162,8 +170,8 @@ table JoinClan {
   clan: uint;
   member: fb.protocol.internal.ClanMember;
   error: uint;
-
 }
+
 table LeaveClan {
   host: uint;
   clan: uint;

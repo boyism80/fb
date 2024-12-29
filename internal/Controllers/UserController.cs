@@ -225,7 +225,7 @@ namespace Internal.Controllers
 
             var redis = _redisService.Connection;
 
-            await using (await new RedisDistributedLock(CharacterSync.DistributeLockKey(uid), redis).AcquireAsync())
+            await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(uid), redis).AcquireAsync())
             {
                 var sync = await _dbContext.CharacterSync.Get(uid) ??
                     _dbContext.CharacterSync.Set(new CharacterSync

@@ -2,6 +2,11 @@
 
 using namespace fb::game;
 
+void context::foreach_ch(const group& group, const std::function<void(fb::game::character&)>& fn)
+{
+    this->foreach_ch(group.members(), fn);
+}
+
 void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
 {
     this->_shard[gid]->groups.lock([this, gid, &fn](auto& groups) {
@@ -62,7 +67,6 @@ void context::upsert_group_then(uint32_t                                       g
         fn(group_lock_ptr);
     });
 }
-
 
 async::task<bool> context::create_group(character& me, const std::string& target)
 {
@@ -228,4 +232,27 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
     }
     break;
     }
+}
+
+async::task<void> context::broadcast(const group& group, const std::string& message, MESSAGE_TYPE type)
+{
+    auto&& resp = co_await this->post<internal_reqs::BroadcastGroup, internal_resp::BroadcastGroup>(
+        "internal",
+        "/group/broadcast",
+        internal_reqs::BroadcastGroup{config<uint32_t>("host"), group.id(), message, static_cast<uint8_t>(type)});
+
+    this->on_group_broadcast(resp);
+}
+
+void context::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
+{
+    this->assert_group(resp.error, "");
+
+    this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group_lock) {
+        group_lock->lock([this, message, type](auto& group) {
+            this->foreach_ch(group.members(), [message, type](auto& ch) {
+                ch.message(message, static_cast<MESSAGE_TYPE>(type));
+            });
+        });
+    });
 }

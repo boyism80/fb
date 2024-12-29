@@ -15,7 +15,7 @@ namespace Http.Model
         public string Name { get; set; }
         public string Title { get; set; }
 
-        public static string DistributeLockKey(uint id)
+        public static string DistributedLockKey(uint id)
         {
             return $"lock:clan:{id}";
         }

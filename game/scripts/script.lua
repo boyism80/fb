@@ -30,34 +30,55 @@ end
 function sample_group(me)
     local npc = name2npc('낙랑')
     local name = npc:input(me, '그룹 초대할 유저')
-    local group = me:group()
-    if group == nil then
-        if me:create_group(name) then
-            npc:dialog(me, '그룹이 생성되었습니다.')
-        end
-    else
-        local found = nil
-        for _, member in pairs(group:members()) do
-            if member == name then
-                found = member
-                break
-            end
-        end
+    local selected = npc:menu(me, '선택', {'그룹 액션', '그룹 메시지'})
+    if selected == nil then
+        return
+    end
 
-        if me:create_group(name) then
-            if found == nil then
-                npc:dialog(me, '그룹에 초대했습니다.')
-            else
-                npc:dialog(me, '그룹에서 추방했습니다.')
+    if selected == 1 then
+        local group = me:group()
+        if group == nil then
+            if me:create_group(name) then
+                npc:dialog(me, '그룹이 생성되었습니다.')
             end
         else
-            npc:dialog(me, '그룹에 초대할 수 없습니다.')
+            local found = nil
+            for _, member in pairs(group:members()) do
+                if member == name then
+                    found = member
+                    break
+                end
+            end
+
+            if me:create_group(name) then
+                if found == nil then
+                    npc:dialog(me, '그룹에 초대했습니다.')
+                else
+                    npc:dialog(me, '그룹에서 추방했습니다.')
+                end
+            else
+                npc:dialog(me, '그룹에 초대할 수 없습니다.')
+            end
         end
+    elseif selected == 2 then
+        local group = me:group()
+        if group == nil then
+            npc:dialog(me, '그룹 없음')
+            return
+        end
+
+        local message = npc:input(me, '메시지')
+        group = me:group()
+        if group == nil then
+            npc:dialog(me, '그룹 없음')
+            return
+        end
+
+        group:messagee(message, MESSAGE_TYPE_NOTIFY)
     end
 end
 
-function func(me)
-
+function sample_clan(me)
     local npc = name2npc('낙랑')
     local clan = me:clan()
     if clan == nil then
@@ -75,8 +96,20 @@ function func(me)
             return
         end
 
+        clan = me:clan()
+        if clan == nil then
+            npc:dialog(me, '클랜 없음')
+            return
+        end
+
         if selected == 0 then
             local title = npc:input(me, '문파 칭호 입력')
+            clan = me:clan()
+            if clan == nil then
+                npc:dialog(me, '클랜 없음')
+                return
+            end
+
             local error = clan:title(title)
             if error ~= nil then
                 npc:dialog(me, error)
@@ -115,7 +148,13 @@ function func(me)
             me:switch_context(found)
             local yes_or_no = npc:menu(found, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
             if yes_or_no == 0 then
-                local error = me:clan():join(found)
+                clan = me:clan()
+                if clan == nil then
+                    npc:dialog(found, '클랜 없음')
+                    return
+                end
+
+                local error = clan:join(found)
                 if error ~= nil then
                     npc:dialog(found, error)
                 else
@@ -129,7 +168,13 @@ function func(me)
             end
         elseif selected == 3 then
             local name = npc:input(me, '상대 이름 입력')
-            local error = me:clan():leave(name, true)
+            clan = me:clan()
+            if clan == nil then
+                npc:dialog(found, '클랜 없음')
+                return
+            end
+
+            local error = clan:leave(name, true)
             if error ~= nil then
                 npc:dialog(me, error)
             else
@@ -137,13 +182,24 @@ function func(me)
             end
         elseif selected == 4 then
             local message = npc:input(me, '내용')
-            local error = me:clan():message(message)
+            clan = me:clan()
+            if clan == nil then
+                npc:dialog(found, '클랜 없음')
+                return
+            end
+
+            local error = clan:message(message)
             if error ~= nil then
                 npc:dialog(me, error)
             end
         else
         end
     end
+end
+
+function func(me)
+
+    sample_group(me)
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')
