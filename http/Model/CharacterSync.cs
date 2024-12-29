@@ -15,7 +15,7 @@ namespace Http.Model
         public uint? Group { get; set; }
         public uint? Clan { get; set; }
 
-        public static string DistributeLockKey(uint uid)
+        public static string DistributedLockKey(uint uid)
         {
             return $"lock:character-sync:{uid}";
         }

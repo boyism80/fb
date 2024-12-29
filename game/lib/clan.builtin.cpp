@@ -244,7 +244,7 @@ int clan::builtin_message(lua_State* lua)
                         MESSAGE_TYPE       type) -> async::task<void> {
         try
         {
-            co_await context->broadcast_clan(*clan, message, type);
+            co_await context->broadcast(*clan, message, type);
             thread->pushnil();
         }
         catch (std::exception& e)

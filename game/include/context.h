@@ -265,6 +265,20 @@ private:
     void on_leave_group(const internal_resp::LeaveGroup& resp);
 
     /**
+     * @brief      Called on group broadcast.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_group_broadcast(const internal_resp::BroadcastGroup& resp);
+
+    /**
+     * @brief      Called on clan broadcast.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_broadcast(const internal_resp::BroadcastGroup& resp);
+
+    /**
      * @brief      Called when clan title changed.
      *
      * @param[in]  response  The response
@@ -430,6 +444,14 @@ public:
      */
     void foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  group  The group
+     * @param[in]  fn     The function
+     */
+    void foreach_ch(const group& group, const std::function<void(fb::game::character&)>& fn);
+
 public:
     /**
      * @brief      { function_description }
@@ -462,6 +484,17 @@ public:
      * @return     { description_of_the_return_value }
      */
     async::task<bool> create_group(character& me, const std::string& target);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  clan     The clan
+     * @param[in]  message  The message
+     * @param[in]  type     The type
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> broadcast(const group& group, const std::string& message, MESSAGE_TYPE type);
 
     /**
      * @brief      Creates a clan.
@@ -521,7 +554,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> broadcast_clan(const clan& clan, const std::string& message, MESSAGE_TYPE type);
+    async::task<void> broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type);
 
 protected:
     /**

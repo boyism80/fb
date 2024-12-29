@@ -404,6 +404,17 @@ namespace fb.protocol._internal
                 builder.Build(value.Master),
                 builder.Build(value.Member));
         }
+        public static Offset<fb.protocol._internal.request.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.BroadcastGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Group),
+                builder.Build(value.Message),
+                builder.Build(value.Type));
+        }
         public static Offset<fb.protocol._internal.request.raw.LeaveGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveGroup value)
         {
             if (value == null)
@@ -675,6 +686,18 @@ namespace fb.protocol._internal
                 builder.Build(value.Member),
                 builder.Build(value.Action),
                 builder.Build(value.Host),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.BroadcastGroup.CreateBroadcastGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Group),
+                builder.Build(value.Message),
+                builder.Build(value.Type),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.GetClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetClan value)
@@ -1201,6 +1224,17 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Master),
                 builder.Build(value.Member));
         }
+        public static Offset<fb.protocol._internal.request.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.BroadcastGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Group),
+                builder.Build(value.Message),
+                builder.Build(value.Type));
+        }
         public static Offset<fb.protocol._internal.request.raw.LeaveGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveGroup value)
         {
             if (value == null)
@@ -1474,6 +1508,18 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Host),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.BroadcastGroup.CreateBroadcastGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Group),
+                builder.Build(value.Message),
+                builder.Build(value.Type),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol._internal.response.raw.GetClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetClan value)
         {
             if (value == null)
@@ -1611,6 +1657,7 @@ namespace fb.protocol._internal.request
         DeleteArticle,
         SetOption,
         EnterGroup,
+        BroadcastGroup,
         LeaveGroup,
         CreateClan,
         DestroyClan,
@@ -2014,6 +2061,17 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Master),
                 builder.Build(value.Member));
         }
+        public static Offset<fb.protocol._internal.request.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.BroadcastGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.BroadcastGroup.CreateBroadcastGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Group),
+                builder.Build(value.Message),
+                builder.Build(value.Type));
+        }
         public static Offset<fb.protocol._internal.request.raw.LeaveGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.LeaveGroup value)
         {
             if (value == null)
@@ -2287,6 +2345,18 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Host),
                 builder.Build(value.Error));
         }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastGroup> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastGroup value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.BroadcastGroup.CreateBroadcastGroup(builder,
+                builder.Build(value.Host),
+                builder.Build(value.Group),
+                builder.Build(value.Message),
+                builder.Build(value.Type),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol._internal.response.raw.GetClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetClan value)
         {
             if (value == null)
@@ -2426,6 +2496,7 @@ namespace fb.protocol._internal.response
         GetGroup,
         EnterGroup,
         LeaveGroup,
+        BroadcastGroup,
         GetClan,
         CreateClan,
         DestroyClan,
@@ -3600,6 +3671,41 @@ namespace fb.protocol._internal.request
             return new EnterGroup(bytes);
         }
     }
+    public class BroadcastGroup : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.BroadcastGroup;
+        public uint Host { get; set; } = 0;
+        public uint Group { get; set; } = 0;
+        public string Message { get; set; } = string.Empty;
+        public byte Type { get; set; } = 0;
+
+        public BroadcastGroup()
+        { }
+
+        public BroadcastGroup(fb.protocol._internal.request.raw.BroadcastGroup raw)
+        {
+            Host = raw.Host;
+            Group = raw.Group;
+            Message = raw.Message;
+            Type = raw.Type;
+        }
+
+        public BroadcastGroup(byte[] bytes) : this(fb.protocol._internal.request.raw.BroadcastGroup.GetRootAsBroadcastGroup(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static BroadcastGroup Deserialize(byte[] bytes)
+        {
+            return new BroadcastGroup(bytes);
+        }
+    }
     public class LeaveGroup : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.LeaveGroup;
@@ -3852,6 +3958,7 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol._internal.request.DeleteArticle),
                 FlatBufferProtocolType.SetOption => typeof(fb.protocol._internal.request.SetOption),
                 FlatBufferProtocolType.EnterGroup => typeof(fb.protocol._internal.request.EnterGroup),
+                FlatBufferProtocolType.BroadcastGroup => typeof(fb.protocol._internal.request.BroadcastGroup),
                 FlatBufferProtocolType.LeaveGroup => typeof(fb.protocol._internal.request.LeaveGroup),
                 FlatBufferProtocolType.CreateClan => typeof(fb.protocol._internal.request.CreateClan),
                 FlatBufferProtocolType.DestroyClan => typeof(fb.protocol._internal.request.DestroyClan),
@@ -4563,6 +4670,43 @@ namespace fb.protocol._internal.response
             return new LeaveGroup(bytes);
         }
     }
+    public class BroadcastGroup : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.BroadcastGroup;
+        public uint Host { get; set; } = 0;
+        public uint Group { get; set; } = 0;
+        public string Message { get; set; } = string.Empty;
+        public byte Type { get; set; } = 0;
+        public uint Error { get; set; } = 0;
+
+        public BroadcastGroup()
+        { }
+
+        public BroadcastGroup(fb.protocol._internal.response.raw.BroadcastGroup raw)
+        {
+            Host = raw.Host;
+            Group = raw.Group;
+            Message = raw.Message;
+            Type = raw.Type;
+            Error = raw.Error;
+        }
+
+        public BroadcastGroup(byte[] bytes) : this(fb.protocol._internal.response.raw.BroadcastGroup.GetRootAsBroadcastGroup(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static BroadcastGroup Deserialize(byte[] bytes)
+        {
+            return new BroadcastGroup(bytes);
+        }
+    }
     public class GetClan : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetClan;
@@ -4833,6 +4977,7 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.GetGroup => typeof(fb.protocol._internal.response.GetGroup),
                 FlatBufferProtocolType.EnterGroup => typeof(fb.protocol._internal.response.EnterGroup),
                 FlatBufferProtocolType.LeaveGroup => typeof(fb.protocol._internal.response.LeaveGroup),
+                FlatBufferProtocolType.BroadcastGroup => typeof(fb.protocol._internal.response.BroadcastGroup),
                 FlatBufferProtocolType.GetClan => typeof(fb.protocol._internal.response.GetClan),
                 FlatBufferProtocolType.CreateClan => typeof(fb.protocol._internal.response.CreateClan),
                 FlatBufferProtocolType.DestroyClan => typeof(fb.protocol._internal.response.DestroyClan),

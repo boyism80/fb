@@ -295,7 +295,7 @@ void context::foreach_ch(const std::string&                                  nam
                          const std::function<void(fb::game::character&)>&    fn,
                          const std::function<void(const std::string& name)>& miss)
 {
-    this->foreach_ch({name}, fn, miss);
+    this->foreach_ch(std::vector<std::string>{name}, fn, miss);
 }
 
 void context::foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn)

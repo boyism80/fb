@@ -137,6 +137,13 @@ table EnterGroup {
   member: string;
 }
 
+table BroadcastGroup {
+  host: uint;
+  group: uint;
+  message: string;
+  type: ubyte;
+}
+
 table LeaveGroup {
   member: string;
 }

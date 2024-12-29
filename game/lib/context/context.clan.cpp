@@ -228,7 +228,7 @@ async::task<void> context::leave_clan_member(const clan& clan, const std::string
     this->on_clan_leave_member(resp);
 }
 
-async::task<void> context::broadcast_clan(const clan& clan, const std::string& message, MESSAGE_TYPE type)
+async::task<void> context::broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type)
 {
     auto&& resp = co_await this->post<internal_reqs::BroadcastClan, internal_resp::BroadcastClan>(
         "internal",
