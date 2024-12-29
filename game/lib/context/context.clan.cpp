@@ -183,9 +183,11 @@ async::task<void> context::destroy_clan(character& me)
 
                 for (auto& [thread, characters] : character_set)
                 {
-                    thread->dispatch([characters](auto&) -> async::task<void> {
+                    std::ignore = thread->dispatch([characters](auto&) -> async::task<void> {
                         for (auto ch : characters)
+                        {
                             ch->clan().reset();
+                        }
 
                         co_return;
                     });

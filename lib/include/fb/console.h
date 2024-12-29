@@ -135,11 +135,6 @@ public:
 
         std::cout << text;
         position(current_line);
-
-        if (!_tty)
-        {
-            newline();
-        }
     }
 
     /**
@@ -173,7 +168,6 @@ public:
         if (!_tty)
         {
             put(align, fmt, std::forward<Args>(args)...);
-            return;
         }
         else
         {
@@ -213,7 +207,6 @@ public:
         if (!_tty)
         {
             std::cout << text << std::endl;
-            return;
         }
         else
         {
