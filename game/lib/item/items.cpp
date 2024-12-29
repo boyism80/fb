@@ -91,9 +91,10 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
         if (listener != nullptr)
         {
             listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MAX);
-            listener->on_show(this->_owner, false);
             listener->on_equipment_off(this->_owner, parts, index);
         }
+
+        this->_owner.update_external(false);
 
         return index;
     }
@@ -328,10 +329,7 @@ fb::game::weapon* fb::game::items::weapon(fb::game::weapon* weapon)
     this->_weapon = weapon;
     weapon->owner(&this->_owner);
 
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
-
+    this->_owner.update_external(true);
     return before;
 }
 
@@ -346,10 +344,7 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
 
     this->_armor = armor;
     armor->owner(&this->_owner);
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }
@@ -365,10 +360,7 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
 
     this->_shield = shield;
     shield->owner(&this->_owner);
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }
@@ -384,10 +376,7 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
 
     this->_helmet = helmet;
     helmet->owner(&this->_owner);
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }
@@ -410,10 +399,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
         before = this->ring(ring, EQUIPMENT_POSITION::RIGHT);
     }
     ring->owner(&this->_owner);
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }
@@ -422,10 +408,7 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, EQUIPMENT_POSITION p
 {
     auto before                              = this->_rings[static_cast<int>(position)];
     this->_rings[static_cast<int>(position)] = ring;
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }
@@ -448,10 +431,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
         before = this->auxiliary(auxiliary, EQUIPMENT_POSITION::RIGHT);
     }
     auxiliary->owner(&this->_owner);
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }
@@ -460,10 +440,7 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
 {
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
-
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_show(this->_owner, true);
+    this->_owner.update_external(true);
 
     return before;
 }

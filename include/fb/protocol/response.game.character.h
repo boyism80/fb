@@ -13,6 +13,7 @@
 
 #ifndef BOT
 using namespace fb::game;
+using namespace fb::model::enum_value;
 #else
 using namespace fb::model;
 #endif
@@ -107,6 +108,21 @@ private:
 
         return mine.get() == your.get();
     }
+
+    HEAD_MARKER head_marker() const
+    {
+        if (&this->ch == &this->to)
+            return HEAD_MARKER::NONE;
+
+        if (this->to.is(OBJECT_TYPE::CHARACTER) == false)
+            return HEAD_MARKER::NONE;
+
+        auto& you = static_cast<const fb::game::character&>(this->to);
+        if (this->ch.clan() == you.clan())
+            return HEAD_MARKER::BLUE;
+
+        return HEAD_MARKER::NONE;
+    }
 #endif
 
 public:
@@ -144,6 +160,7 @@ public:
                 writer.write<uint8_t>(static_cast<uint8_t>(STATE::CLOACK));
         }
         break;
+        
         default:
         {
             writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state()));
@@ -198,7 +215,7 @@ public:
             }
         }
 
-        writer.write<uint8_t>(0x04);                         // head mark
+        writer.write<uint8_t>(static_cast<uint8_t>(this->head_marker()));      // head mark
         writer.write<std::string, uint8_t>(this->ch.name()); // name
     }
 #else

@@ -1138,6 +1138,50 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
     return i->second;
 }
 
+enum class HEAD_MARKER
+{
+    NONE = 0, 
+    RED = 1, 
+    YELLOW = 2, 
+    BLUE = 3
+}; // end of enum 'HEAD_MARKER'
+
+template <>
+inline HEAD_MARKER enum_parse<HEAD_MARKER>(const std::string k)
+{
+    static const std::unordered_map<std::string, HEAD_MARKER> enums
+    {
+        { "NONE", HEAD_MARKER::NONE }, 
+        { "RED", HEAD_MARKER::RED }, 
+        { "YELLOW", HEAD_MARKER::YELLOW }, 
+        { "BLUE", HEAD_MARKER::BLUE }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<HEAD_MARKER>(HEAD_MARKER k)
+{
+    static const std::unordered_map<HEAD_MARKER, const char*> enums
+    {
+        { HEAD_MARKER::NONE, "NONE" }, 
+        { HEAD_MARKER::RED, "RED" }, 
+        { HEAD_MARKER::YELLOW, "YELLOW" }, 
+        { HEAD_MARKER::BLUE, "BLUE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class ITEM_ATTRIBUTE
 {
     NONE = 0x00000000, 
@@ -2671,6 +2715,14 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_NOT_CHANGED");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_TITLE_TOO_SHORT);
     lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_TOO_SHORT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::NONE);
+    lua_setglobal(lua, "HEAD_MARKER_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::RED);
+    lua_setglobal(lua, "HEAD_MARKER_RED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::YELLOW);
+    lua_setglobal(lua, "HEAD_MARKER_YELLOW");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::BLUE);
+    lua_setglobal(lua, "HEAD_MARKER_BLUE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);

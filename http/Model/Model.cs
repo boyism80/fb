@@ -356,6 +356,19 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum HeadMarker
+    {
+        [EnumMember(Value = "NONE")]
+        None = 0, 
+        [EnumMember(Value = "RED")]
+        Red = 1, 
+        [EnumMember(Value = "YELLOW")]
+        Yellow = 2, 
+        [EnumMember(Value = "BLUE")]
+        Blue = 3
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum ItemAttribute
     {
         [EnumMember(Value = "NONE")]

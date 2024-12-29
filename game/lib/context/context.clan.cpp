@@ -275,6 +275,7 @@ void context::on_clan_join_member(const internal_resp::JoinClan& resp)
                     clan.join(cm);
                     clan.attach_character(*ch);
                     ch->clan(clan_lock);
+                    ch->update_external(true);
                     ch->message(std::format("{} 문파에 가입되었습니다.", clan.name()), MESSAGE_TYPE::NOTIFY);
                 });
                 co_return;
@@ -303,6 +304,7 @@ void context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
                     clan.leave(ch->name());
                     clan.detach_character(*ch);
                     ch->clan().reset();
+                    ch->update_external(true);
 
                     if (resp.kick)
                     {

@@ -226,6 +226,21 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param[in]  light  The light
+     */
+    virtual void update_external(bool light);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      you    You
+     * @param[in]  light  The light
+     */
+    virtual void update_external(object& you, bool light);
+
+    /**
+     * @brief      { function_description }
+     *
      * @param[in]  message  The message
      * @param[in]  shout    The shout
      */
