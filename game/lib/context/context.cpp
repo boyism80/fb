@@ -223,6 +223,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch == nullptr)
         co_return false;
 
+    if (ch->trade.trading())
+        ch->trade.cancel();
+
     auto& name = ch->name();
     this->_shard[name]->characters.lock([&name](auto& characters) {
         characters.erase(name);

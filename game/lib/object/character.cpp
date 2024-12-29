@@ -40,6 +40,12 @@ async::task<bool> character::map(fb::game::map* map, const point16_t& position, 
     if (this->_map_lock)
         co_return false;
 
+    if (this->_map != map)
+    {
+        if (this->trade.trading())
+            this->trade.cancel();
+    }
+
     auto switch_process = (map != nullptr && map->active == false);
     if (switch_process)
     {
