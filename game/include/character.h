@@ -968,6 +968,13 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @return     { description_of_the_return_value }
+     */
+    const shared_clan_lock& clan() const;
+
+    /**
+     * @brief      { function_description }
+     *
      * @param      value  The value
      */
     void clan(shared_clan_lock& value);

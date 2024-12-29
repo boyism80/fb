@@ -306,10 +306,7 @@ void character::look(uint16_t value)
     this->assert_thread();
 
     this->_look = value;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show(*this, false);
+    this->update_external(false);
 }
 
 uint8_t character::color() const
@@ -324,10 +321,7 @@ void character::color(uint8_t value)
     this->assert_thread();
 
     this->_color = value;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show(*this, false);
+    this->update_external(false);
 }
 
 std::optional<uint8_t> character::armor_color() const
@@ -342,10 +336,7 @@ void character::armor_color(std::optional<uint8_t> value)
     this->assert_thread();
 
     this->_armor_color = value;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show(*this, false);
+    this->update_external(false);
 }
 
 uint8_t character::current_armor_color() const
@@ -578,10 +569,7 @@ void character::state(STATE value)
         return;
 
     this->_state = value;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show(*this, false);
+    this->update_external(false);
 }
 
 CLASS character::cls() const
@@ -1249,6 +1237,13 @@ void character::group(shared_group_lock& value)
 }
 
 shared_clan_lock& character::clan()
+{
+    this->assert_thread();
+
+    return this->_clan;
+}
+
+const shared_clan_lock& character::clan() const
 {
     this->assert_thread();
 

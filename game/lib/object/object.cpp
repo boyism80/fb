@@ -82,6 +82,22 @@ OBJECT_TYPE fb::game::object::what() const
     return this->_model.what();
 }
 
+void fb::game::object::update_external(bool light)
+{
+    this->assert_thread();
+
+    if (this->_listener != nullptr)
+        this->_listener->on_show(*this, light);
+}
+
+void fb::game::object::update_external(object& to, bool light)
+{
+    this->assert_thread();
+
+    if (this->_listener != nullptr)
+        this->_listener->on_show(*this, to, light);
+}
+
 async::task<void> fb::game::object::destroy(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
@@ -180,7 +196,9 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             befores.end(),
                             std::inserter(shows, shows.begin()));
         for (auto x : shows)
-            this->_listener->on_show(*x, *this, false);
+        {
+            x->update_external(*this, false);
+        }
 
         if (refresh)
         {
@@ -192,7 +210,9 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                                 shows.end(),
                                 std::inserter(stay, stay.begin()));
             for (auto x : stay)
-                this->_listener->on_show(*x, *this, false);
+            {
+                x->update_external(*this, false);
+            }
         }
     }
 
@@ -226,7 +246,9 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             befores.end(),
                             std::inserter(shows, shows.begin()));
         for (auto x : shows)
-            this->_listener->on_show(*this, *x, false);
+        {
+            this->update_external(*x, false);
+        }
 
         if (refresh)
         {
@@ -238,7 +260,9 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                                 shows.end(),
                                 std::inserter(stay, stay.begin()));
             for (auto x : stay)
-                this->_listener->on_show(*this, *x, false);
+            {
+                this->update_external(*x, false);
+            }
         }
     }
 
@@ -578,11 +602,8 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
             if (x == this)
                 continue;
 
-            if (this->_listener != nullptr)
-            {
-                this->_listener->on_show(*this, *x, false);
-                this->_listener->on_show(*x, *this, false);
-            }
+            this->update_external(*x, false);
+            x->update_external(*this, false);
         }
 
         this->_map_lock = false;
