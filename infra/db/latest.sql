@@ -44,7 +44,25 @@ CREATE TABLE `board` (
   PRIMARY KEY (`id`),
   KEY `fk.board.owner_idx` (`user`),
   CONSTRAINT `fk.board.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=314 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `character_sync`
+--
+
+DROP TABLE IF EXISTS `character_sync`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `character_sync` (
+  `uid` int NOT NULL,
+  `group` int DEFAULT NULL,
+  `clan` int DEFAULT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`uid`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -56,13 +74,47 @@ DROP TABLE IF EXISTS `clan`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `clan` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `owner` int unsigned NOT NULL,
-  `name` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `name` varchar(45) NOT NULL,
   `title` varchar(45) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `fk.clan.owner_idx` (`owner`),
-  CONSTRAINT `fk.clan.owner` FOREIGN KEY (`owner`) REFERENCES `name` (`id`)
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `clan_member`
+--
+
+DROP TABLE IF EXISTS `clan_member`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `clan_member` (
+  `clan` int unsigned NOT NULL,
+  `user` int NOT NULL,
+  `position` int NOT NULL,
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`clan`,`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `clan_name`
+--
+
+DROP TABLE IF EXISTS `clan_name`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `clan_name` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(256) NOT NULL,
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -121,7 +173,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -235,15 +287,11 @@ CREATE TABLE `user` (
   `ring_right_color` tinyint unsigned DEFAULT NULL,
   `aux_top_color` int DEFAULT NULL,
   `aux_bot_color` int unsigned DEFAULT NULL,
-  `group` int unsigned DEFAULT NULL,
-  `clan` int unsigned DEFAULT NULL,
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  KEY `user_clan_idx` (`clan`),
-  CONSTRAINT `user_clan` FOREIGN KEY (`clan`) REFERENCES `clan` (`id`)
+  UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -374,6 +422,52 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_CLAN_NAME_DELETE` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_DELETE`(id INT)
+BEGIN
+	DELETE FROM `clan_name` WHERE `clan_name`.`id` = id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_CLAN_NAME_SET` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_SET`(name NVARCHAR(256))
+BEGIN
+    DECLARE exist TINYINT;
+    SELECT EXISTS(SELECT * FROM `clan_name` WHERE `clan_name`.`name` = name FOR UPDATE) INTO exist;
+    
+    IF exist = 0 THEN
+        INSERT INTO `clan_name` (name) VALUES (name);
+        SELECT 1 AS result, last_insert_id() as id;
+    ELSE
+        SELECT 0 AS result, 0 as id;
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `USP_NAME_GET_ID` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -401,12 +495,12 @@ DELIMITER ;
 /*!50003 SET character_set_results = utf8mb4 */ ;
 /*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_SET`(name NVARCHAR(256))
 BEGIN
 	DECLARE exist TINYINT;
-    SELECT EXISTS(SELECT * FROM name WHERE name.name = name) INTO exist;
+    SELECT EXISTS(SELECT * FROM name WHERE name.name = name FOR UPDATE) INTO exist;
     
     IF exist = 0 THEN
 		INSERT INTO name (name) VALUES (name);
@@ -430,4 +524,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-22 20:41:25
+-- Dump completed on 2024-12-28 17:19:22

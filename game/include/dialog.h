@@ -219,6 +219,15 @@ public:
      */
     bool active() const;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      to    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool switch_context(dialog& to);
+
 public:
     /**
      * @brief      { function_description }

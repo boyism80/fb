@@ -134,7 +134,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
             "/user/reserve-name",
             internal::request::ReserveName{name});
 
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         if (response1.uid == -1)
@@ -145,10 +145,10 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         static auto gen    = std::mt19937{device()};
         static auto dist   = std::uniform_int_distribution<uint32_t>{0, 0xFFFFFFFF};
 
-        auto i      = dist(gen) % config<>("init:position").size();
-        auto init_x = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
-        auto init_y = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
-
+        auto   i         = dist(gen) % config<>("init:position").size();
+        auto   init_x    = static_cast<uint16_t>(config<>("init:position")[i]["x"].asUInt());
+        auto   init_y    = static_cast<uint16_t>(config<>("init:position")[i]["y"].asUInt());
+        auto   admin     = fb::config<bool>("admin_mode");
         auto&& response2 = co_await this->post<internal::request::InitCharacter, internal::response::InitCharacter>(
             "internal",
             "/user/init-ch",
@@ -161,11 +161,11 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
                 fb::config<uint16_t>("init:map"),                                                         // map
                 init_x,                                                                                   // position_x
                 init_y,                                                                                   // position_y
-                fb::config<bool>("admin mode"),                                                           // admin
+                admin,                                                                                    // admin
             });
 
         // 여기서 새로운 promise handler
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         if (response2.success == false)
@@ -188,7 +188,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
         error_code = 0x0E;
     }
 
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     socket.send(response::message(error, error_code));
@@ -211,7 +211,7 @@ async::task<bool> context::handle_account_complete(fb::socket<session>&         
             "internal",
             "/user/mk-ch",
             internal::request::MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         if (response.success == false)
@@ -232,7 +232,7 @@ async::task<bool> context::handle_account_complete(fb::socket<session>&         
         co_return false;
     }
 
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     socket.send(response::message(error, error_code));
@@ -254,7 +254,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         this->assert_account(name, pw);
 
         auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         if (response.success == false)
@@ -265,7 +265,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             "internal",
             "/user/authenticate",
             internal::request::Authenticate{uid, pw});
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         switch (response2.error_code)
@@ -282,7 +282,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             "internal",
             "/in-game/transfer",
             internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         switch (static_cast<ERROR_CODE>(response3.error))
@@ -325,7 +325,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         error_code = 0x0E;
     }
 
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     socket.send(response::message(error, error_code));
@@ -372,7 +372,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>&          
             throw newpw_exception(message::account::NEW_PW_EQUALIZATION);
 
         auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         if (response.success == false)
@@ -385,7 +385,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>&          
             "/user/change-pw",
             internal::request::ChangePw{uid, pw, new_pw, birthday});
 
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         switch (response2.error_code)
@@ -414,7 +414,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>&          
         error_code = 0x0E;
     }
 
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     socket.send(response::message(error, error_code));

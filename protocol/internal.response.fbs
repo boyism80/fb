@@ -3,7 +3,8 @@ include "internal.fbs";
 namespace fb.protocol.internal.response;
 
 table KickOut {
-	uid: uint;
+  uid: uint;
+  name: string;
 }
 
 
@@ -38,9 +39,9 @@ table Transfer {
 
 
 table Whisper {
-	from : string;
-	to: string;
-	message: string;
+  from : string;
+  to: string;
+  message: string;
   host: uint;
   error: uint;
 }
@@ -91,6 +92,8 @@ table Authenticate {
 
 table Init {
   character: fb.protocol.internal.Character;
+  group: uint?;
+  clan: uint?;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
   option: fb.protocol.internal.Option;
@@ -135,5 +138,52 @@ table LeaveGroup {
   member: string;
   action: fb.protocol.internal.GroupAction;
   host: uint;
+  error: uint;
+}
+
+table GetClan {
+  clan: fb.protocol.internal.Clan;
+  members: [fb.protocol.internal.ClanMember];
+  error: uint;
+}
+
+table CreateClan {
+  clan: fb.protocol.internal.Clan;
+  members: [fb.protocol.internal.ClanMember];
+  error: uint;
+}
+
+table DestroyClan {
+  error: uint;
+}
+
+table JoinClan {
+  host: uint;
+  clan: uint;
+  member: fb.protocol.internal.ClanMember;
+  error: uint;
+
+}
+table LeaveClan {
+  host: uint;
+  clan: uint;
+  uid: uint;
+  uname: string;
+  kick: bool;
+  error: uint;
+}
+
+table SetClanTitle {
+  host: uint;
+  clan: uint;
+  title: string?;
+  error: uint;
+}
+
+table BroadcastClan {
+  host: uint;
+  clan: uint;
+  message: string;
+  type: ubyte;
   error: uint;
 }

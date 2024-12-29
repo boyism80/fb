@@ -97,6 +97,7 @@
     <ClInclude Include="include\board.h" />
     <ClInclude Include="include\character.h" />
     <ClInclude Include="include\clan.h" />
+    <ClInclude Include="include\clan.member.h" />
     <ClInclude Include="include\context.h" />
     <ClInclude Include="include\dialog.h" />
     <ClInclude Include="include\door.h" />
@@ -133,11 +134,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\board.cpp" />
+    <ClCompile Include="lib\clan.builtin.cpp" />
     <ClCompile Include="lib\clan.cpp" />
+    <ClCompile Include="lib\clan.member.builtin.cpp" />
+    <ClCompile Include="lib\clan.member.cpp" />
     <ClCompile Include="lib\context\context.builtin.cpp" />
+    <ClCompile Include="lib\context\context.clan.cpp" />
     <ClCompile Include="lib\context\context.command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />
     <ClCompile Include="lib\context\context.event.cpp" />
+    <ClCompile Include="lib\context\context.group.cpp" />
     <ClCompile Include="lib\context\context.handler.cpp" />
     <ClCompile Include="lib\context\context.npc_interaction.cpp" />
     <ClCompile Include="lib\context\context.timer.cpp" />

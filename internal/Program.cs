@@ -49,6 +49,8 @@ public class Program
 
             cfg.CreateMap<Http.Model.Board, Article>()
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
+
+            cfg.CreateMap<Http.Model.Clan, Clan>();
         });
 
         var builder = WebApplication.CreateBuilder(args);

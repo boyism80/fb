@@ -1,70 +1,110 @@
 #include <clan.h>
+#include <context.h>
 
-fb::game::clan::clan(const std::string& name, fb::game::character& owner, const character::container& members) :
-    _name(name),
-    _owner(owner),
-    _members(members)
+using namespace fb::game;
+
+clan::clan(context& context, uint32_t id) :
+    _context(context),
+    _id(id)
 { }
 
-fb::game::clan::clan(const std::string&          name,
-                     const std::string&          title,
-                     fb::game::character&        owner,
-                     const character::container& members) :
-    _name(name),
-    _title(title),
-    _owner(owner),
-    _members(members)
+clan::clan(clan&& r) :
+    _context(r._context),
+    _id(r._id),
+    _name(r._name),
+    _title(r._title),
+    _members(std::move(r._members))
 { }
 
-fb::game::clan::~clan()
-{ }
-
-const fb::game::character& fb::game::clan::owner() const
+void clan::update(const std::string&                name,
+                  const std::optional<std::string>& title,
+                  const std::vector<clan_member>&   members)
 {
-    return this->_owner;
+    this->_name  = name;
+    this->_title = title;
+
+    this->_members.clear();
+    for (auto& member : members)
+    {
+        this->_members.insert({member.name, member});
+    }
 }
 
-const fb::game::character::container& fb::game::clan::members() const
+uint32_t clan::id() const
 {
-    return this->_members;
+    return this->_id;
 }
 
-const std::string& fb::game::clan::name() const
+const std::string& clan::name() const
 {
     return this->_name;
 }
 
-void fb::game::clan::name(const std::string& value)
-{
-    this->_name = value;
-}
-
-const std::string& fb::game::clan::title() const
+const std::optional<std::string>& clan::title() const
 {
     return this->_title;
 }
 
-void fb::game::clan::title(const std::string& value)
+void clan::title(const std::optional<std::string>& title)
 {
-    this->_title = value;
+    this->_title = title;
 }
 
-bool fb::game::clan::enter(fb::game::character& ch)
+const std::unordered_map<std::string, clan_member>& clan::members() const
 {
-    if (this->_members.contains(ch))
-        return false;
-
-    this->_members.push(ch);
-    ch._clan = this;
-    return true;
+    return this->_members;
 }
 
-bool fb::game::clan::leave(fb::game::character& ch)
+void clan::join(const clan_member& member)
 {
-    if (this->_members.contains(ch) == false)
-        return false;
+    this->_members.insert({member.name, member});
+}
 
-    this->_members.erase(ch);
-    ch._clan = nullptr;
-    return true;
+void clan::leave(const std::string& member)
+{
+    this->_members.erase(member);
+}
+
+const std::unordered_map<uint32_t, fb::game::character*>& clan::characters() const
+{
+    return this->_characters;
+}
+
+void clan::attach_character(character& ch)
+{
+    if (this->_characters.contains(ch.id()))
+        return;
+
+    this->_characters.insert({ch.id(), &ch});
+}
+
+void clan::detach_character(character& ch)
+{
+    if (!this->_characters.contains(ch.id()))
+        return;
+
+    this->_characters.erase(ch.id());
+}
+
+std::vector<character*> clan::nears(const fb::game::map& map, const point16_t& position) const
+{
+    auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
+    auto result = std::vector<character*>();
+
+    for (auto obj : nears)
+    {
+        if (obj->is(OBJECT_TYPE::CHARACTER) == false)
+            continue;
+
+        auto ch = static_cast<character*>(obj);
+        if (ch->clan() == nullptr)
+            continue;
+
+        ch->clan()->lock([this, ch, &result](auto& clan) {
+            if (&clan == this)
+                result.push_back(ch);
+        });
+    }
+
+    return result;
 }

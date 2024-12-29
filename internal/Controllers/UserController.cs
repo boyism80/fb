@@ -4,6 +4,7 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
+using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Cryptography;
@@ -21,34 +22,34 @@ namespace Internal.Controllers
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
+        private readonly RedisService _redisService;
 
         public UserController(IConfiguration configuration,
             IMapper mapper,
-            DbContext dbContext)
+            DbContext dbContext,
+            RedisService redisService)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
+            _redisService = redisService;
         }
 
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
         {
-            await using var connection = _dbContext.Connection(-1);
-            var result = await connection.QueryAsync<uint>("USP_NAME_GET_ID", new
+            try
             {
-                n = name
-            }, commandType: CommandType.StoredProcedure);
+                var uid = await _dbContext.Character.GetCharacterId(name) ??
+                throw new LogicException(ErrorCode.NotFoundCharacter);
 
-            if (result.Any())
-            {
                 return new Response.GetUid
                 {
-                    Uid = result.ElementAt(0),
+                    Uid = uid,
                     Success = true
                 };
             }
-            else
+            catch (Exception)
             {
                 return new Response.GetUid
                 {
@@ -222,18 +223,28 @@ namespace Internal.Controllers
                     Uid = uid,
                 });
 
-            await _dbContext.SaveChangesAsync();
+            var redis = _redisService.Connection;
 
-            var response = new Response.Init
+            await using (await new RedisDistributedLock(CharacterSync.DistributeLockKey(uid), redis).AcquireAsync())
             {
-                Character = _mapper.Map<Protocol.Character>(ch),
-                Items = items.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Item>).ToList(),
-                Spells = spells.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Spell>).ToList(),
-                Traces = traces.Where(x => !x.Deleted).Select(_mapper.Map<Protocol.Trace>).ToList(),
-                Option = _mapper.Map<Protocol.Option>(option)
-            };
+                var sync = await _dbContext.CharacterSync.Get(uid) ??
+                    _dbContext.CharacterSync.Set(new CharacterSync
+                    {
+                        Uid = uid
+                    });
 
-            return response;
+                await _dbContext.SaveChangesAsync();
+                return new Response.Init
+                {
+                    Character = _mapper.Map<Protocol.Character>(ch),
+                    Items = items.Select(_mapper.Map<Protocol.Item>).ToList(),
+                    Spells = spells.Select(_mapper.Map<Protocol.Spell>).ToList(),
+                    Traces = traces.Select(_mapper.Map<Protocol.Trace>).ToList(),
+                    Option = _mapper.Map<Protocol.Option>(option),
+                    Clan = sync.Clan,
+                    Group = sync.Group
+                };
+            }
         }
 
         private static T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey

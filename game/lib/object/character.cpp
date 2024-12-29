@@ -174,8 +174,6 @@ void character::on_die(object* from)
 
 character::operator fb::socket<character>& ()
 {
-    this->assert_thread();
-
     return this->_socket;
 }
 
@@ -209,8 +207,6 @@ void character::id(uint32_t id)
 
 uint32_t character::fd()
 {
-    this->assert_thread();
-
     return this->_socket.fd();
 }
 
@@ -1252,11 +1248,18 @@ void character::group(shared_group_lock& value)
     this->_group = value;
 }
 
-clan* character::clan() const
+shared_clan_lock& character::clan()
 {
     this->assert_thread();
 
     return this->_clan;
+}
+
+void character::clan(shared_clan_lock& value)
+{
+    this->assert_thread();
+
+    this->_clan = value;
 }
 
 void character::assert_state(STATE value) const
@@ -1543,14 +1546,6 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
-
-    if (this->_group != nullptr)
-    {
-        dto.group = this->_group->template lock<uint32_t>([](auto& group) {
-            return group.id();
-        });
-    }
-    dto.clan = std::nullopt;
     return dto;
 }
 

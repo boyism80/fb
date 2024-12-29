@@ -106,15 +106,6 @@ private:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  gid      The gid
-     * @param[in]  master   The master
-     * @param[in]  members  The members
-     */
-    void update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members);
-
-    /**
-     * @brief      { function_description }
-     *
      * @param[in]  gid   The gid
      * @param[in]  fn    The function
      */
@@ -136,52 +127,37 @@ private:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  names  The names
-     * @param[in]  fn     The function
-     * @param[in]  miss   The miss
+     * @param      clan   The clan
+     * @param      resp1  The response 1
+     * @param[in]  resp2  The response 2
      */
-    void broadcast(const std::vector<std::string>&                     names,
-                   const std::function<void(fb::game::character&)>&    fn,
-                   const std::function<void(const std::string& name)>& miss);
+    void update_clan(clan&                                                  clan,
+                     fb::protocol::internal::Clan&                          resp1,
+                     const std::vector<fb::protocol::internal::ClanMember>& resp2) const;
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  names  The names
-     * @param[in]  fn     The function
-     */
-    void broadcast(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name  The name
-     * @param[in]  fn    The function
-     * @param[in]  miss  The miss
-     */
-    void broadcast(const std::string&                                  name,
-                   const std::function<void(fb::game::character&)>&    fn,
-                   const std::function<void(const std::string& name)>& miss);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name  The name
+     * @param[in]  id    The identifier
      * @param[in]  fn    The function
      */
-    void broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn);
+    void upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn);
 
     /**
      * @brief      Initializes the ch.
      *
      * @param[in]  response  The response
-     * @param      ch   The ch
+     * @param      ch        The ch
+     * @param[in]  group     The group
+     * @param[in]  clan      The clan
      * @param[in]  transfer  The transfer
      *
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> init_ch(const fb::protocol::internal::Character& response,
                                             fb::game::character&                     ch,
+                                            std::optional<uint32_t>                  group,
+                                            std::optional<uint32_t>                  clan,
                                             const std::optional<transfer_param>&     transfer);
 
     /**
@@ -268,6 +244,13 @@ private:
     void assert_group(uint32_t error, const std::string& actor) const;
 
     /**
+     * @brief      { function_description }
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     */
+    void assert_clan(uint32_t) const;
+
+    /**
      * @brief      Called on enter group.
      *
      * @param[in]  resp  The response
@@ -279,7 +262,35 @@ private:
      *
      * @param[in]  response  The response
      */
-    void on_leave_group(const internal_resp::LeaveGroup& response);
+    void on_leave_group(const internal_resp::LeaveGroup& resp);
+
+    /**
+     * @brief      Called when clan title changed.
+     *
+     * @param[in]  response  The response
+     */
+    void on_clan_title_changed(const internal_resp::SetClanTitle& resp);
+
+    /**
+     * @brief      Called on clan join member.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_join_member(const internal_resp::JoinClan& resp);
+
+    /**
+     * @brief      Called on clan leave member.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_leave_member(const internal_resp::LeaveClan& resp);
+
+    /**
+     * @brief      Called on clan broadcast.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_clan_broadcast(const internal_resp::BroadcastClan& resp);
 
 public:
     /**
@@ -373,6 +384,52 @@ public:
      */
     async::task<void> save(fb::game::character& ch);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     * @param[in]  fn    The function
+     * @param[in]  miss  The miss
+     */
+    void foreach_ch(const std::string&                                  name,
+                    const std::function<void(fb::game::character&)>&    fn,
+                    const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name  The name
+     * @param[in]  fn    The function
+     */
+    void foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     * @param[in]  miss   The miss
+     */
+    void foreach_ch(const std::vector<std::string>&                     names,
+                    const std::function<void(fb::game::character&)>&    fn,
+                    const std::function<void(const std::string& name)>& miss);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  names  The names
+     * @param[in]  fn     The function
+     */
+    void foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  clan  The clan
+     * @param[in]  fn    The function
+     */
+    void foreach_ch(const clan& clan, const std::function<void(fb::game::character&)>& fn);
+
 public:
     /**
      * @brief      { function_description }
@@ -405,6 +462,66 @@ public:
      * @return     { description_of_the_return_value }
      */
     async::task<bool> create_group(character& me, const std::string& target);
+
+    /**
+     * @brief      Creates a clan.
+     *
+     * @param      me    { parameter_description }
+     * @param[in]  name  The name
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> create_clan(character& me, const std::string& name);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      me    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> destroy_clan(character& me);
+
+    /**
+     * @brief      Sets the clan title.
+     *
+     * @param      clan   The clan
+     * @param[in]  title  The title
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> set_clan_title(const clan& clan, std::string title);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      clan  The clan
+     * @param      ch    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> join_clan_member(const clan& clan, character& ch);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      clan  The clan
+     * @param      ch    { parameter_description }
+     * @param[in]  kick  The kick
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> leave_clan_member(const clan& clan, const std::string& name, bool kick);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  message  The message
+     * @param[in]  type     The type
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> broadcast_clan(const clan& clan, const std::string& message, MESSAGE_TYPE type);
 
 protected:
     /**

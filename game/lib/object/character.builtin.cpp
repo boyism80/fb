@@ -1,41 +1,47 @@
 #include <character.h>
 #include <context.h>
 
+using namespace fb::game;
+
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::character, "fb.game.character")
+IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                fb::game::object::builtin_eq},
-{"look",                fb::game::character::builtin_look},
-{"color",               fb::game::character::builtin_color},
-{"money",               fb::game::character::builtin_money},
-{"exp",                 fb::game::character::builtin_exp},
-{"base_hp",             fb::game::character::builtin_base_hp},
-{"base_mp",             fb::game::character::builtin_base_mp},
-{"str",                 fb::game::character::builtin_strength},
-{"dex",                 fb::game::character::builtin_dexterity},
-{"int",                 fb::game::character::builtin_intelligence},
-{"item",                fb::game::character::builtin_item},
-{"items",               fb::game::character::builtin_items},
-{"dropitem",            fb::game::character::builtin_item_drop},
-{"mkitem",              fb::game::character::builtin_mkitem},
-{"rmitem",              fb::game::character::builtin_rmitem},
-{"state",               fb::game::character::builtin_state},
-{"disguise",            fb::game::character::builtin_disguise},
-{"class",               fb::game::character::builtin_class},
-{"level",               fb::game::character::builtin_level},
-{"assert",              fb::game::character::builtin_assert},
-{"deposited_money",     fb::game::character::builtin_deposited_money},
-{"deposited_item",      fb::game::character::builtin_deposited_item},
-{"deposit_item",        fb::game::character::builtin_deposit_item},
-{"withdraw_item",       fb::game::character::builtin_withdraw_item},
-{"group",               fb::game::character::builtin_group},
-{"create_group",        fb::game::character::builtin_create_group},
-{"traces",              fb::game::character::builtin_traces},
-{"trace",               fb::game::character::builtin_trace},
-{"push_trace",          fb::game::character::builtin_push_trace},
-{"erase_trace",         fb::game::character::builtin_erase_trace},
+{"look",                character::builtin_look},
+{"color",               character::builtin_color},
+{"money",               character::builtin_money},
+{"exp",                 character::builtin_exp},
+{"base_hp",             character::builtin_base_hp},
+{"base_mp",             character::builtin_base_mp},
+{"str",                 character::builtin_strength},
+{"dex",                 character::builtin_dexterity},
+{"int",                 character::builtin_intelligence},
+{"item",                character::builtin_item},
+{"items",               character::builtin_items},
+{"dropitem",            character::builtin_item_drop},
+{"mkitem",              character::builtin_mkitem},
+{"rmitem",              character::builtin_rmitem},
+{"state",               character::builtin_state},
+{"disguise",            character::builtin_disguise},
+{"class",               character::builtin_class},
+{"level",               character::builtin_level},
+{"assert",              character::builtin_assert},
+{"deposited_money",     character::builtin_deposited_money},
+{"deposited_item",      character::builtin_deposited_item},
+{"deposit_item",        character::builtin_deposit_item},
+{"withdraw_item",       character::builtin_withdraw_item},
+{"group",               character::builtin_group},
+{"create_group",        character::builtin_create_group},
+{"clan",                character::builtin_clan},
+{"create_clan",         character::builtin_create_clan},
+{"destroy_clan",        character::builtin_destroy_clan},
+{"traces",              character::builtin_traces},
+{"trace",               character::builtin_trace},
+{"push_trace",          character::builtin_push_trace},
+{"erase_trace",         character::builtin_erase_trace},
+{"switch_context",      character::builtin_switch_context},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::character::builtin_look(lua_State* lua)
+int character::builtin_look(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -43,7 +49,7 @@ int fb::game::character::builtin_look(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -60,7 +66,7 @@ int fb::game::character::builtin_look(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_color(lua_State* lua)
+int character::builtin_color(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -68,7 +74,7 @@ int fb::game::character::builtin_color(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -85,7 +91,7 @@ int fb::game::character::builtin_color(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_money(lua_State* lua)
+int character::builtin_money(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -93,7 +99,7 @@ int fb::game::character::builtin_money(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -110,7 +116,7 @@ int fb::game::character::builtin_money(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_exp(lua_State* lua)
+int character::builtin_exp(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -118,7 +124,7 @@ int fb::game::character::builtin_exp(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -135,7 +141,7 @@ int fb::game::character::builtin_exp(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_base_hp(lua_State* lua)
+int character::builtin_base_hp(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -143,7 +149,7 @@ int fb::game::character::builtin_base_hp(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -160,7 +166,7 @@ int fb::game::character::builtin_base_hp(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_base_mp(lua_State* lua)
+int character::builtin_base_mp(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -168,7 +174,7 @@ int fb::game::character::builtin_base_mp(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -185,7 +191,7 @@ int fb::game::character::builtin_base_mp(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_strength(lua_State* lua)
+int character::builtin_strength(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -193,7 +199,7 @@ int fb::game::character::builtin_strength(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -210,7 +216,7 @@ int fb::game::character::builtin_strength(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_dexterity(lua_State* lua)
+int character::builtin_dexterity(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -218,7 +224,7 @@ int fb::game::character::builtin_dexterity(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -235,7 +241,7 @@ int fb::game::character::builtin_dexterity(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_intelligence(lua_State* lua)
+int character::builtin_intelligence(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -243,7 +249,7 @@ int fb::game::character::builtin_intelligence(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -260,14 +266,14 @@ int fb::game::character::builtin_intelligence(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_item(lua_State* lua)
+int character::builtin_item(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
     auto item = (fb::game::item*)nullptr;
@@ -290,14 +296,14 @@ int fb::game::character::builtin_item(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_items(lua_State* lua)
+int character::builtin_items(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -315,14 +321,14 @@ int fb::game::character::builtin_items(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_item_drop(lua_State* lua)
+int character::builtin_item_drop(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
     auto index    = (uint8_t)thread->tointeger(2);
@@ -337,7 +343,7 @@ int fb::game::character::builtin_item_drop(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_mkitem(lua_State* lua)
+int character::builtin_mkitem(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -345,7 +351,7 @@ int fb::game::character::builtin_mkitem(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
     auto name  = thread->tostring(2);
@@ -377,7 +383,7 @@ int fb::game::character::builtin_mkitem(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_rmitem(lua_State* lua)
+int character::builtin_rmitem(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -387,7 +393,7 @@ int fb::game::character::builtin_rmitem(lua_State* lua)
     try
     {
         auto argc = thread->argc();
-        auto ch   = thread->touserdata<fb::game::character>(1);
+        auto ch   = thread->touserdata<character>(1);
         if (ch == nullptr)
             return 0;
         auto index       = uint8_t(0);
@@ -435,7 +441,7 @@ int fb::game::character::builtin_rmitem(lua_State* lua)
     return 0;
 }
 
-int fb::game::character::builtin_state(lua_State* lua)
+int character::builtin_state(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -443,7 +449,7 @@ int fb::game::character::builtin_state(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
     if (argc == 1)
@@ -459,7 +465,7 @@ int fb::game::character::builtin_state(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_disguise(lua_State* lua)
+int character::builtin_disguise(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -467,7 +473,7 @@ int fb::game::character::builtin_disguise(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -488,7 +494,7 @@ int fb::game::character::builtin_disguise(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_class(lua_State* lua)
+int character::builtin_class(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -496,7 +502,7 @@ int fb::game::character::builtin_class(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -539,7 +545,7 @@ int fb::game::character::builtin_class(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_level(lua_State* lua)
+int character::builtin_level(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -547,7 +553,7 @@ int fb::game::character::builtin_level(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -569,14 +575,14 @@ int fb::game::character::builtin_level(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_assert(lua_State* lua)
+int character::builtin_assert(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto               argc = thread->argc();
-    auto               ch   = thread->touserdata<fb::game::character>(1);
+    auto               ch   = thread->touserdata<character>(1);
     auto               size = thread->rawlen(2);
     std::vector<STATE> values;
     for (int i = 0; i < size; i++)
@@ -597,7 +603,7 @@ int fb::game::character::builtin_assert(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_admin(lua_State* lua)
+int character::builtin_admin(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -605,7 +611,7 @@ int fb::game::character::builtin_admin(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -621,7 +627,7 @@ int fb::game::character::builtin_admin(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_deposited_money(lua_State* lua)
+int character::builtin_deposited_money(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -629,7 +635,7 @@ int fb::game::character::builtin_deposited_money(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -645,7 +651,7 @@ int fb::game::character::builtin_deposited_money(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_deposited_item(lua_State* lua)
+int character::builtin_deposited_item(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -653,7 +659,7 @@ int fb::game::character::builtin_deposited_item(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -727,7 +733,7 @@ int fb::game::character::builtin_deposited_item(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_deposit_item(lua_State* lua)
+int character::builtin_deposit_item(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -735,7 +741,7 @@ int fb::game::character::builtin_deposit_item(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -754,7 +760,7 @@ int fb::game::character::builtin_deposit_item(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_withdraw_item(lua_State* lua)
+int character::builtin_withdraw_item(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -762,7 +768,7 @@ int fb::game::character::builtin_withdraw_item(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -784,7 +790,7 @@ int fb::game::character::builtin_withdraw_item(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_group(lua_State* lua)
+int character::builtin_group(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -792,7 +798,7 @@ int fb::game::character::builtin_group(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -852,7 +858,7 @@ int fb::game::character::builtin_group(lua_State* lua)
     }
 }
 
-int fb::game::character::builtin_create_group(lua_State* lua)
+int character::builtin_create_group(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -860,7 +866,7 @@ int fb::game::character::builtin_create_group(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -874,26 +880,153 @@ int fb::game::character::builtin_create_group(lua_State* lua)
         thread->resume(1);
     };
 
-    ch->thread()->enqueue(
-        [=](auto&) -> async::task<void> {
-            co_await fn(context, thread, *ch, name);
-        },
-        [](auto& e) {
-        },
-        []() {
-        });
+    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, *ch, name);
+    });
 
     return thread->yield(1);
 }
 
-int fb::game::character::builtin_traces(lua_State* lua)
+int character::builtin_clan(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc < 2)
+    {
+        // 그룹 Lock scope는 스크립트 내의 다음 yield를
+        // 만나기 전까지 유효
+        std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+            if (ch->_clan == nullptr)
+            {
+                thread->pushnil();
+                thread->resume(1);
+            }
+            else
+            {
+                ch->_clan->lock([=](auto& clan) {
+                    thread->pushobject(clan);
+                    thread->resume(1);
+                });
+            }
+            co_return;
+        });
+
+        return thread->yield(1);
+    }
+    else if (lua_type(lua, 2) == LUA_TFUNCTION)
+    {
+        static auto static_func = [](fb::lua::context* ctx) {
+            lua_call(*ctx, 2, LUA_MULTRET);
+
+            ctx->remove(-ctx->argc());
+            return ctx->argc();
+        };
+
+        thread->pushobject(ch);
+        if (ch->_clan == nullptr)
+        {
+            thread->pushnil();
+            return static_func(thread);
+        }
+        else
+        {
+            return ch->_clan->template lock<uint32_t>([=](auto& clan) {
+                thread->pushobject(clan);
+                return static_func(thread);
+            });
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int character::builtin_create_clan(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto name = thread->tostring(2);
+
+    static auto fn = [](fb::game::context* context,
+                        fb::lua::context*  thread,
+                        character&         me,
+                        const std::string& name) -> async::task<void> {
+        try
+        {
+            co_await context->create_clan(me, name);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+        thread->resume(1);
+    };
+
+    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, *ch, name);
+    });
+
+    return thread->yield(1);
+}
+
+int character::builtin_destroy_clan(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    static auto fn = [](fb::game::context* context, fb::lua::context* thread, character& me) -> async::task<void> {
+        try
+        {
+            co_await context->destroy_clan(me);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+        thread->resume(1);
+    };
+
+    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, *ch);
+    });
+
+    return thread->yield(1);
+}
+
+int character::builtin_traces(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -910,14 +1043,14 @@ int fb::game::character::builtin_traces(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_trace(lua_State* lua)
+int character::builtin_trace(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -933,14 +1066,14 @@ int fb::game::character::builtin_trace(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_push_trace(lua_State* lua)
+int character::builtin_push_trace(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -974,14 +1107,14 @@ int fb::game::character::builtin_push_trace(lua_State* lua)
     return 1;
 }
 
-int fb::game::character::builtin_erase_trace(lua_State* lua)
+int character::builtin_erase_trace(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    auto ch      = thread->touserdata<fb::game::character>(1);
+    auto ch      = thread->touserdata<character>(1);
     if (ch == nullptr)
         return 0;
 
@@ -995,5 +1128,27 @@ int fb::game::character::builtin_erase_trace(lua_State* lua)
         ch->traces.erase(i);
         thread->pushboolean(true);
     }
+    return 1;
+}
+
+int character::builtin_switch_context(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto me      = thread->touserdata<character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto you = thread->touserdata<character>(2);
+    if (you == nullptr)
+    {
+        thread->pushboolean(false);
+        return 1;
+    }
+
+    thread->pushboolean(me->dialog.switch_context(you->dialog));
     return 1;
 }

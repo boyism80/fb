@@ -22,7 +22,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     auto transfer = request.transfer;
     auto delay    = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
@@ -33,7 +33,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
 
     auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
-    if (this->sockets.contains(fd) == false)
+    if (this->assert_socket(fd) == false)
         co_return false;
 
     this->_shard[name]->characters.lock([&name, ch](auto& characters) {
@@ -41,8 +41,9 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             characters.insert({name, ch});
     });
 
-    if (co_await this->init_ch(response.character, *ch, transfer) == false)
+    if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
+
     auto thread = ch->thread();
     thread->assert_ptr(ch);
 
@@ -327,7 +328,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
         {
             auto&& response = co_await this->post<internal_reqs::LeaveGroup, internal_resp::LeaveGroup>(
                 "internal",
-                "/in-game/group/leave",
+                "/group/leave",
                 internal_reqs::LeaveGroup{ch->name()});
 
             this->on_leave_group(response);
@@ -357,31 +358,24 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
     if (request.fd == 0xFFFFFFFE) // Preff F2
         co_return true;
 
-    if (request.fd == 1 && ch->dialog.active())
+    auto map = ch->map();
+    auto you = map->objects[request.fd];
+    if (you == nullptr)
+        co_return true;
+
+    switch (you->what())
     {
-        ch->dialog.pushnil().resume(1);
-    }
-    else
-    {
-        auto map = ch->map();
-        auto you = map->objects[request.fd];
-        if (you == nullptr)
-            co_return true;
+    case OBJECT_TYPE::CHARACTER:
+        this->send(*ch, fb_resp::character::external_info(static_cast<character&>(*you), this->model), scope::SELF);
+        break;
 
-        switch (you->what())
-        {
-        case OBJECT_TYPE::CHARACTER:
-            this->send(*ch, fb_resp::character::external_info(static_cast<character&>(*you), this->model), scope::SELF);
-            break;
+    case OBJECT_TYPE::MOB:
+        this->handle_click_mob(*ch, static_cast<mob&>(*you));
+        break;
 
-        case OBJECT_TYPE::MOB:
-            this->handle_click_mob(*ch, static_cast<mob&>(*you));
-            break;
-
-        case OBJECT_TYPE::NPC:
-            this->handle_click_npc(*ch, static_cast<npc&>(*you));
-            break;
-        }
+    case OBJECT_TYPE::NPC:
+        this->handle_click_npc(*ch, static_cast<npc&>(*you));
+        break;
     }
 
     co_return true;
@@ -571,7 +565,7 @@ async::task<bool> context::handle_user_list(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    this->send(*ch, fb_resp::user_list(*ch, this->sockets), scope::SELF);
+    this->send(*ch, fb_resp::user_list(*ch, this->_sockets), scope::SELF);
     co_return true;
 }
 
@@ -636,7 +630,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto&& response = co_await this->get<internal_resp::GetArticleList>(
                 "internal",
                 std::format("/board/{}?offset={}", section->id, offset));
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             auto articles = std::list<board::article>();
@@ -675,7 +669,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             auto&& response = co_await this->get<internal_resp::GetArticle>(
                 "internal",
                 std::format("/board/{}/{}", section->id, request.article));
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             if (response.success == false)
@@ -731,7 +725,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 "/board/write",
                 internal_reqs::WriteArticle{section->id, ch->id(), request.title, request.contents});
 
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             if (response.success == false)
@@ -762,7 +756,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 "/board/delete",
                 internal_reqs::DeleteArticle{request.article, ch->id()});
 
-            if (this->sockets.contains(fd) == false)
+            if (this->assert_socket(fd) == false)
                 co_return false;
 
             switch (response.result)
@@ -954,7 +948,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
             throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
 
         me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
-        this->broadcast(
+        this->foreach_ch(
             to,
             [this, from, to = me->id(), message](auto& you) {
                 auto response    = internal_resp::Whisper{};
@@ -976,7 +970,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
                                           "/in-game/whisper",
                                           internal_reqs::Whisper{from, to, message}),
                                       [this, fd](auto result) {
-                                          if (this->sockets.contains(fd) == false)
+                                          if (this->assert_socket(fd) == false)
                                               return;
 
                                           try
@@ -991,7 +985,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     }
     catch (std::exception& e)
     {
-        if (this->sockets.contains(fd) == false)
+        if (this->assert_socket(fd) == false)
             co_return false;
 
         me->message(e.what(), MESSAGE_TYPE::NOTIFY);

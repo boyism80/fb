@@ -473,15 +473,15 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& ch;
-    const fb::model::model&    model;
+    fb::game::character&    ch;
+    const fb::model::model& model;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    internal_info(const fb::game::character& ch, const fb::model::model& model) :
+    internal_info(fb::game::character& ch, const fb::model::model& model) :
         ch(ch),
         model(model)
     { }
@@ -494,19 +494,30 @@ public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
     {
         co_await header::serialize(writer);
-        auto clan = this->ch.clan();
         writer.write<uint8_t>(header);
         writer.write<uint8_t>((uint8_t)this->ch.defensive_physical());
         writer.write<uint8_t>(this->ch.damage());
         writer.write<uint8_t>(this->ch.hit());
-        writer.write<std::string>(clan != nullptr ? clan->name() : "");
-        writer.write<std::string>(clan != nullptr ? clan->title() : "");
+
+        auto& clan_lock_ptr = this->ch.clan();
+        if (clan_lock_ptr != nullptr)
+        {
+            clan_lock_ptr->lock([&writer](auto& clan) {
+                writer.write<std::string>(clan.name());
+                writer.write<std::string>(clan.title().value_or(""));
+            });
+        }
+        else
+        {
+            writer.write<std::string>("");
+            writer.write<std::string>("");
+        }
         writer.write<std::string>(this->ch.title());
 
         auto& shared_group_lock = this->ch.group();
         if (shared_group_lock != nullptr)
         {
-            shared_group_lock->lock([&writer](fb::game::group& group) {
+            shared_group_lock->lock([&writer](auto& group) {
                 if (group.inited())
                 {
                     auto sstream = std::stringstream();
@@ -583,15 +594,15 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& ch;
-    const fb::model::model&    model;
+    fb::game::character&    ch;
+    const fb::model::model& model;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    external_info(const fb::game::character& ch, const fb::model::model& model) :
+    external_info(fb::game::character& ch, const fb::model::model& model) :
         ch(ch),
         model(model)
     { }
@@ -606,8 +617,20 @@ public:
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
         writer.write<std::string>(this->ch.title());
-        writer.write<std::string>("클랜 이름");
-        writer.write<std::string>("클랜 타이틀");
+
+        auto& clan_lock = this->ch.clan();
+        if (clan_lock == nullptr)
+        {
+            writer.write<std::string>("");
+            writer.write<std::string>("");
+        }
+        else
+        {
+            clan_lock->lock([&writer](auto& clan) {
+                writer.write<std::string>(clan.name());
+                writer.write<std::string>(clan.title().value_or(""));
+            });
+        }
 
         // 클래스 이름
         const auto& class_name = model.promotion[this->ch.cls()][this->ch.promotion()].name;

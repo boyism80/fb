@@ -440,6 +440,50 @@ inline const char* enum_tostring<CHAT_TYPE>(CHAT_TYPE k)
     return i->second;
 }
 
+enum class CLAN_POSITION
+{
+    MATE = 0x00, 
+    OFFICER = 0x01, 
+    DEPUTY = 0x02, 
+    MASTER = 0x03
+}; // end of enum 'CLAN_POSITION'
+
+template <>
+inline CLAN_POSITION enum_parse<CLAN_POSITION>(const std::string k)
+{
+    static const std::unordered_map<std::string, CLAN_POSITION> enums
+    {
+        { "MATE", CLAN_POSITION::MATE }, 
+        { "OFFICER", CLAN_POSITION::OFFICER }, 
+        { "DEPUTY", CLAN_POSITION::DEPUTY }, 
+        { "MASTER", CLAN_POSITION::MASTER }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CLAN_POSITION>(CLAN_POSITION k)
+{
+    static const std::unordered_map<CLAN_POSITION, const char*> enums
+    {
+        { CLAN_POSITION::MATE, "MATE" }, 
+        { CLAN_POSITION::OFFICER, "OFFICER" }, 
+        { CLAN_POSITION::DEPUTY, "DEPUTY" }, 
+        { CLAN_POSITION::MASTER, "MASTER" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class CLASS
 {
     NONE = 0, 
@@ -983,7 +1027,19 @@ enum class ERROR_CODE
     CANNOT_GROUP_SELF = 18, 
     NOT_FOUND_MAP = 19, 
     NOT_GROUP_MASTER = 20, 
-    ARTICLE_NOT_EXISTS = 21
+    ARTICLE_NOT_EXISTS = 21, 
+    CLAN_NAME_ALREADY_EXISTS = 22, 
+    CLAN_ALREADY_JOINED = 23, 
+    CLAN_NOT_JOINED = 24, 
+    NOT_FOUND_CLAN = 25, 
+    CLAN_MEMBER_EXISTS = 26, 
+    CLAN_NO_PRIVILEGE = 27, 
+    NOT_FOUND_CLAN_MEMBER = 28, 
+    CLAN_NOT_MATCHED = 29, 
+    CLAN_CANNOT_LEAVEE_MASTER = 30, 
+    NOT_FOUND_CHARACTER_SYNC = 31, 
+    CLAN_TITLE_NOT_CHANGED = 32, 
+    CLAN_TITLE_TOO_SHORT = 33
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1012,7 +1068,19 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "CANNOT_GROUP_SELF", ERROR_CODE::CANNOT_GROUP_SELF }, 
         { "NOT_FOUND_MAP", ERROR_CODE::NOT_FOUND_MAP }, 
         { "NOT_GROUP_MASTER", ERROR_CODE::NOT_GROUP_MASTER }, 
-        { "ARTICLE_NOT_EXISTS", ERROR_CODE::ARTICLE_NOT_EXISTS }
+        { "ARTICLE_NOT_EXISTS", ERROR_CODE::ARTICLE_NOT_EXISTS }, 
+        { "CLAN_NAME_ALREADY_EXISTS", ERROR_CODE::CLAN_NAME_ALREADY_EXISTS }, 
+        { "CLAN_ALREADY_JOINED", ERROR_CODE::CLAN_ALREADY_JOINED }, 
+        { "CLAN_NOT_JOINED", ERROR_CODE::CLAN_NOT_JOINED }, 
+        { "NOT_FOUND_CLAN", ERROR_CODE::NOT_FOUND_CLAN }, 
+        { "CLAN_MEMBER_EXISTS", ERROR_CODE::CLAN_MEMBER_EXISTS }, 
+        { "CLAN_NO_PRIVILEGE", ERROR_CODE::CLAN_NO_PRIVILEGE }, 
+        { "NOT_FOUND_CLAN_MEMBER", ERROR_CODE::NOT_FOUND_CLAN_MEMBER }, 
+        { "CLAN_NOT_MATCHED", ERROR_CODE::CLAN_NOT_MATCHED }, 
+        { "CLAN_CANNOT_LEAVEE_MASTER", ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER }, 
+        { "NOT_FOUND_CHARACTER_SYNC", ERROR_CODE::NOT_FOUND_CHARACTER_SYNC }, 
+        { "CLAN_TITLE_NOT_CHANGED", ERROR_CODE::CLAN_TITLE_NOT_CHANGED }, 
+        { "CLAN_TITLE_TOO_SHORT", ERROR_CODE::CLAN_TITLE_TOO_SHORT }
     };
 
     auto i = enums.find(k);
@@ -1048,7 +1116,19 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::CANNOT_GROUP_SELF, "CANNOT_GROUP_SELF" }, 
         { ERROR_CODE::NOT_FOUND_MAP, "NOT_FOUND_MAP" }, 
         { ERROR_CODE::NOT_GROUP_MASTER, "NOT_GROUP_MASTER" }, 
-        { ERROR_CODE::ARTICLE_NOT_EXISTS, "ARTICLE_NOT_EXISTS" }
+        { ERROR_CODE::ARTICLE_NOT_EXISTS, "ARTICLE_NOT_EXISTS" }, 
+        { ERROR_CODE::CLAN_NAME_ALREADY_EXISTS, "CLAN_NAME_ALREADY_EXISTS" }, 
+        { ERROR_CODE::CLAN_ALREADY_JOINED, "CLAN_ALREADY_JOINED" }, 
+        { ERROR_CODE::CLAN_NOT_JOINED, "CLAN_NOT_JOINED" }, 
+        { ERROR_CODE::NOT_FOUND_CLAN, "NOT_FOUND_CLAN" }, 
+        { ERROR_CODE::CLAN_MEMBER_EXISTS, "CLAN_MEMBER_EXISTS" }, 
+        { ERROR_CODE::CLAN_NO_PRIVILEGE, "CLAN_NO_PRIVILEGE" }, 
+        { ERROR_CODE::NOT_FOUND_CLAN_MEMBER, "NOT_FOUND_CLAN_MEMBER" }, 
+        { ERROR_CODE::CLAN_NOT_MATCHED, "CLAN_NOT_MATCHED" }, 
+        { ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER, "CLAN_CANNOT_LEAVEE_MASTER" }, 
+        { ERROR_CODE::NOT_FOUND_CHARACTER_SYNC, "NOT_FOUND_CHARACTER_SYNC" }, 
+        { ERROR_CODE::CLAN_TITLE_NOT_CHANGED, "CLAN_TITLE_NOT_CHANGED" }, 
+        { ERROR_CODE::CLAN_TITLE_TOO_SHORT, "CLAN_TITLE_TOO_SHORT" }
     };
 
     auto i = enums.find(k);
@@ -2403,6 +2483,14 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CHAT_TYPE_BLUE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CHAT_TYPE::LIGHT_BLUE);
     lua_setglobal(lua, "CHAT_TYPE_LIGHT_BLUE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::MATE);
+    lua_setglobal(lua, "CLAN_POSITION_MATE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::OFFICER);
+    lua_setglobal(lua, "CLAN_POSITION_OFFICER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::DEPUTY);
+    lua_setglobal(lua, "CLAN_POSITION_DEPUTY");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLAN_POSITION::MASTER);
+    lua_setglobal(lua, "CLAN_POSITION_MASTER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::NONE);
     lua_setglobal(lua, "CLASS_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::WARRIOR);
@@ -2559,6 +2647,30 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_NOT_GROUP_MASTER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::ARTICLE_NOT_EXISTS);
     lua_setglobal(lua, "ERROR_CODE_ARTICLE_NOT_EXISTS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_NAME_ALREADY_EXISTS);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_NAME_ALREADY_EXISTS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_ALREADY_JOINED);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_ALREADY_JOINED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_NOT_JOINED);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_NOT_JOINED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CLAN");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_MEMBER_EXISTS);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_MEMBER_EXISTS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_NO_PRIVILEGE);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_NO_PRIVILEGE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_CLAN_MEMBER);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CLAN_MEMBER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_NOT_MATCHED);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_NOT_MATCHED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_CANNOT_LEAVEE_MASTER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_CHARACTER_SYNC);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_CHARACTER_SYNC");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_TITLE_NOT_CHANGED);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_NOT_CHANGED");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_TITLE_TOO_SHORT);
+    lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_TOO_SHORT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::NONE);
     lua_setglobal(lua, "ITEM_ATTRIBUTE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_ATTRIBUTE::CONSUME);

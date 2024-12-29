@@ -1,15 +1,20 @@
+using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using System.Data;
 
 namespace Http.Reepository
 {
     public class CharacterRepository : RedisValueRepository<Character, CharacterKey>
     {
+        private readonly DbContext _dbContext;
+
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
             WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
         {
+            _dbContext = dbContext;
         }
 
         public async Task<Character> Get(uint id)
@@ -33,6 +38,7 @@ namespace Http.Reepository
                     `id`,
                     `name`,
                     `pw`,
+                    `admin`,
                     `birth`,
                     `look`,
                     `color`,
@@ -65,8 +71,6 @@ namespace Http.Reepository
                     `ring_right_color`,
                     `aux_top_color`,
                     `aux_bot_color`,
-                    `group`,
-                    `clan`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -74,6 +78,7 @@ namespace Http.Reepository
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Pw.Escape()},
+                    {value.Admin.Escape()},
                     {value.Birth.Escape()},
                     {value.Look.Escape()},
                     {value.Color.Escape()},
@@ -106,13 +111,12 @@ namespace Http.Reepository
                     {value.RingRightColor.Escape()},
                     {value.AuxTopColor.Escape()},
                     {value.AuxBotColor.Escape()},
-                    {value.Group.Escape()},
-                    {value.Clan.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `pw`=VALUES(`pw`),
+                    `admin`=VALUES(`admin`),
                     `birth`=VALUES(`birth`),
                     `look`=VALUES(`look`),
                     `color`=VALUES(`color`),
@@ -145,13 +149,25 @@ namespace Http.Reepository
                     `ring_right_color`=VALUES(`ring_right_color`),
                     `aux_top_color`=VALUES(`aux_top_color`),
                     `aux_bot_color`=VALUES(`aux_bot_color`),
-                    `clan`=VALUES(`clan`),
-                    `group`=VALUES(`group`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;
 
             return sql;
+        }
+
+        public async Task<uint?> GetCharacterId(string name)
+        {
+            await using var conn = _dbContext.Connection(-1);
+            var result = await conn.QueryAsync<uint>("USP_NAME_GET_ID", new
+            {
+                n = name
+            }, commandType: CommandType.StoredProcedure);
+
+            if (result.Any())
+                return result.ElementAt(0);
+
+            return null;
         }
     }
 }

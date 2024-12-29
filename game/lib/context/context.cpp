@@ -25,6 +25,8 @@ async::task<void> context::handle_start()
     lua::build<map, lua::luable>();
     lua::build<door, lua::luable>();
     lua::build<group, lua::luable>();
+    lua::build<clan, lua::luable>();
+    lua::build<clan_member, lua::luable>();
     lua::build<trace, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
@@ -232,13 +234,23 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
-    auto& group = ch->group();
-    if (group != nullptr)
+
+    auto& group_lock = ch->group();
+    if (group_lock != nullptr)
     {
-        group->lock([this, ch](auto& group_ptr) {
-            group_ptr.leave(*ch);
+        group_lock->lock([this, ch](auto& group) {
+            group.leave(*ch);
         });
-        group.reset();
+        group_lock.reset();
+    }
+
+    auto& clan_lock = ch->clan();
+    if (clan_lock != nullptr)
+    {
+        clan_lock->lock([ch](auto& clan) {
+            clan.detach_character(*ch);
+        });
+        clan_lock.reset();
     }
     ch->init(false);
     co_await ch->destroy();
@@ -279,86 +291,35 @@ std::string context::elapsed_message(const std::string& dt)
     }
 }
 
-void context::update_group(uint32_t gid, const std::string& master, const std::vector<std::string>& members)
-{ }
-
-void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
+void context::foreach_ch(const std::string&                                  name,
+                         const std::function<void(fb::game::character&)>&    fn,
+                         const std::function<void(const std::string& name)>& miss)
 {
-    this->_shard[gid]->groups.lock([this, gid, &fn](auto& groups) {
-        if (groups.contains(gid) == false)
-        {
-            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-            async::awaitable_then(this->get<internal_resp::GetGroup>("internal", std::format("/in-game/group/{}", gid)),
-                                  [this, gid](auto result) {
-                                      try
-                                      {
-                                          auto&& resp = result();
-                                          switch (static_cast<ERROR_CODE>(resp.error))
-                                          {
-                                          case ERROR_CODE::NONE:
-                                              break;
+    this->foreach_ch({name}, fn, miss);
+}
 
-                                          default:
-                                              throw std::runtime_error(
-                                                  std::format("cannot get group (error : {})", resp.error));
-                                          }
-
-                                          this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
-                                              if (!groups.contains(gid))
-                                                  return;
-
-                                              auto& group_lock_ptr = groups.at(gid);
-                                              group_lock_ptr->lock([&resp](auto& group) {
-                                                  group.update(resp.group.master, resp.group.members);
-                                              });
-                                          });
-                                      }
-                                      catch (std::exception& e)
-                                      {
-                                          fb::logger::fatal(e.what());
-                                      }
-                                  });
-        }
-
-        fn(groups.at(gid));
+void context::foreach_ch(const std::string& name, const std::function<void(fb::game::character&)>& fn)
+{
+    this->foreach_ch({name}, fn, [](auto&) {
     });
 }
 
-void context::upsert_group_then(uint32_t                                       gid,
-                                const std::string&                             master,
-                                const std::vector<std::string>&                members,
-                                const std::function<void(shared_group_lock&)>& fn)
+void context::foreach_ch(const std::vector<std::string>&                     names,
+                         const std::function<void(fb::game::character&)>&    fn,
+                         const std::function<void(const std::string& name)>& miss)
 {
-    this->_shard[gid]->groups.lock([this, gid, &fn, &master, &members](auto& groups) {
-        if (groups.contains(gid) == false)
-        {
-            groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
-        }
-
-        auto& group_lock_ptr = groups.at(gid);
-        group_lock_ptr->lock([&master, &members](auto& group) {
-            group.update(master, members);
-        });
-        fn(group_lock_ptr);
-    });
-}
-
-void context::broadcast(const std::vector<std::string>&                     names,
-                        const std::function<void(fb::game::character&)>&    fn,
-                        const std::function<void(const std::string& name)>& miss)
-{
-    auto name_group = std::unordered_map<uint32_t, std::vector<std::string>>{};
+    auto g = std::unordered_map<uint32_t, std::vector<std::string>>{};
     for (auto& name : names)
     {
         auto mod = this->_shard.mod(name);
 
-        if (!name_group.contains(mod))
-            name_group.insert({mod, std::vector<std::string>{}});
+        if (!g.contains(mod))
+            g.insert({mod, std::vector<std::string>{}});
 
-        name_group[mod].push_back(name);
+        g[mod].push_back(name);
     }
 
-    for (auto& [mod, names] : name_group)
+    for (auto& [mod, names] : g)
     {
         this->_shard[mod]->characters.lock([this, &names, &fn, &miss](auto& characters) {
             for (auto& name : names)
@@ -369,48 +330,29 @@ void context::broadcast(const std::vector<std::string>&                     name
                     continue;
                 }
 
-                auto character = characters[name];
-                this->threads.enqueue(
-                    *character,
-                    [uid = character->id()](auto& thread) {
-                        return thread.template data<thread_params>()->characters.contains(uid);
-                    },
-                    [character, fn](auto& thread) -> async::task<void> {
-                        fn(*character);
+                auto ch     = characters[name];
+                auto thread = ch->thread();
+                std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
+                    if (this->assert_socket(fd) == false)
                         co_return;
-                    },
-                    [](auto& e) {
-                        // error
-                    },
-                    []() {
-                        // success
-                    });
+
+                    fn(*ch);
+                });
             }
         });
     }
 }
 
-void context::broadcast(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn)
+void context::foreach_ch(const std::vector<std::string>& names, const std::function<void(fb::game::character&)>& fn)
 {
-    this->broadcast(names, fn, [](auto&) {
-    });
-}
-
-void context::broadcast(const std::string&                                  name,
-                        const std::function<void(fb::game::character&)>&    fn,
-                        const std::function<void(const std::string& name)>& miss)
-{
-    this->broadcast(std::vector<std::string>{name}, fn, miss);
-}
-
-void context::broadcast(const std::string& name, const std::function<void(fb::game::character&)>& fn)
-{
-    this->broadcast({name}, fn, [](auto&) {
+    this->foreach_ch(names, fn, [](auto&) {
     });
 }
 
 async::task<bool> context::init_ch(const internal::Character&           response,
                                    character&                           ch,
+                                   std::optional<uint32_t>              group,
+                                   std::optional<uint32_t>              clan,
                                    const std::optional<transfer_param>& transfer)
 {
     auto map = response.map;
@@ -454,14 +396,25 @@ async::task<bool> context::init_ch(const internal::Character&           response
         position_y = uint32_t(transfer.value().position.y);
     }
 
-    if (response.group.has_value())
+    if (group.has_value())
     {
-        auto gid = response.group.value();
+        auto gid = group.value();
         this->upsert_group_then(gid, [&ch](auto& group_lock_ptr) {
             group_lock_ptr->lock([&ch](auto& group) {
                 group.enter(ch);
             });
             ch.group(group_lock_ptr);
+        });
+    }
+
+    if (clan.has_value())
+    {
+        auto id = clan.value();
+        this->upsert_clan_then(id, [&ch](auto& clan_lock_ptr) {
+            clan_lock_ptr->lock([&ch](auto& clan) {
+                clan.attach_character(ch);
+            });
+            ch.clan(clan_lock_ptr);
         });
     }
 
@@ -805,15 +758,19 @@ void context::amqp_thread()
                 co_return;
             });
             queue1.handler<internal_resp::KickOut>([this](auto& response) -> async::task<void> {
-                auto socket = this->sockets.find([uid = response.uid](fb::socket<character>& socket) {
-                    auto data = socket.data();
-                    return data->id() == uid;
-                });
+                auto ch = this->_shard[response.name]->characters.template lock<character*>(
+                    [&name = response.name](shard_params::character_container& container) -> character* {
+                        if (!container.contains(name))
+                            return nullptr;
 
-                if (socket == nullptr)
+                        return container.at(name);
+                    });
+
+                if (ch == nullptr)
                     co_return;
 
-                socket->cancel();
+                auto& socket = static_cast<fb::socket<character>&>(*ch);
+                socket.close();
             });
 
             queue1.handler<internal_resp::Whisper>([this](auto& response) -> async::task<void> {
@@ -823,13 +780,13 @@ void context::amqp_thread()
                 try
                 {
                     this->assert_whisper(response);
-                    this->broadcast(response.to, [&response](auto& you) {
+                    this->foreach_ch(response.to, [&response](auto& you) {
                         you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
                     });
                 }
                 catch (std::exception& e)
                 {
-                    this->broadcast(response.from, [&response, error = e.what()](auto& me) {
+                    this->foreach_ch(response.from, [&response, error = e.what()](auto& me) {
                         me.message(error, MESSAGE_TYPE::NOTIFY);
                     });
                 }
@@ -856,6 +813,38 @@ void context::amqp_thread()
 
                 this->on_leave_group(response);
             });
+
+            auto& queue4 = this->_amqp->declare_queue();
+            queue4.bind("amq.direct", "fb.clan");
+            queue4.handler<internal_resp::SetClanTitle>(
+                [this](internal_resp::SetClanTitle& response) -> async::task<void> {
+                    if (response.host == fb::config<uint32_t>("id"))
+                        co_return;
+
+                    this->on_clan_title_changed(response);
+                });
+
+            queue4.handler<internal_resp::JoinClan>([this](internal_resp::JoinClan& response) -> async::task<void> {
+                if (response.host == fb::config<uint32_t>("id"))
+                    co_return;
+
+                this->on_clan_join_member(response);
+            });
+
+            queue4.handler<internal_resp::LeaveClan>([this](internal_resp::LeaveClan& response) -> async::task<void> {
+                if (response.host == fb::config<uint32_t>("id"))
+                    co_return;
+
+                this->on_clan_leave_member(response);
+            });
+
+            queue4.handler<internal_resp::BroadcastClan>(
+                [this](internal_resp::BroadcastClan& response) -> async::task<void> {
+                    if (response.host == fb::config<uint32_t>("id"))
+                        co_return;
+
+                    this->on_clan_broadcast(response);
+                });
         }
         catch (std::exception& e)
         {
@@ -879,28 +868,6 @@ void context::amqp_thread()
     }
 }
 
-async::task<bool> context::create_group(character& me, const std::string& target)
-{
-    try
-    {
-        if (me.option(SETTING::GROUP) == false)
-            throw std::runtime_error(message::group::DISABLED_MINE);
-
-        auto&& response = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
-            "internal",
-            "/in-game/group/create",
-            internal_reqs::EnterGroup{me.id(), target});
-
-        this->on_enter_group(response);
-        co_return true;
-    }
-    catch (std::exception& e)
-    {
-        this->send(me, fb_resp::message(e.what(), MESSAGE_TYPE::STATE), scope::SELF);
-        co_return false;
-    }
-}
-
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
@@ -914,156 +881,11 @@ void context::handle_click_npc(character& ch, npc& npc)
         return;
 
     ch.dialog.release();
-
     ch.dialog.from(model.script.c_str())
         .func("on_interact")
         .pushobject(ch)
         .pushobject(npc.based<fb::model::npc>())
         .resume(2);
-}
-
-void context::assert_group(uint32_t error, const std::string& actor) const
-{
-    switch (static_cast<ERROR_CODE>(error))
-    {
-    case ERROR_CODE::NONE:
-        return;
-
-    case ERROR_CODE::CANNOT_GROUP_SELF:
-        throw std::runtime_error("자기 자신과는 그룹할 수 없습니다.");
-
-    case ERROR_CODE::GROUP_ALREADY_JOINED:
-        throw std::runtime_error("이미 그룹에 참여중입니다.");
-
-    case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", actor));
-
-    case ERROR_CODE::GROUP_TARGET_ALREADY_JOINED:
-        throw std::runtime_error(std::format("{}님은 이미 그룹에 참여중입니다.", actor));
-
-    case ERROR_CODE::DISABLED_GROUP:
-        throw std::runtime_error("그룹 참여 거부중입니다.");
-
-    case ERROR_CODE::DISABLED_GROUP_TARGET:
-        throw std::runtime_error(std::format("{}님은 그룹 참여 거부중입니다.", actor));
-
-    case ERROR_CODE::NOT_GROUP_MASTER:
-        throw std::runtime_error("당신은 그룹장이 아닙니다.");
-
-    default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
-    }
-}
-
-void context::on_enter_group(internal_resp::EnterGroup resp)
-{
-    this->assert_group(resp.error, resp.member);
-
-    auto gid = resp.group.id;
-    this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp](auto& group_lock_ptr) {
-        auto members = std::vector<std::string>{resp.group.members};
-        members.push_back(resp.group.master);
-        if (resp.action == GroupAction::Kick)
-            members.push_back(resp.member);
-
-        this->broadcast(members, [action = resp.action, member = resp.member, &group_lock_ptr](auto& character) {
-            switch (action)
-            {
-            case GroupAction::Create:
-                group_lock_ptr->lock([&character](auto& group) {
-                    group.enter(character);
-                });
-                character.group(group_lock_ptr);
-                if (character.name() == member)
-                {
-                    character.message("그룹에 참여했습니다.");
-                }
-                else
-                {
-                    character.message(std::format("{}님 그룹 참여", member));
-                }
-                break;
-
-            case GroupAction::Enter:
-                if (character.name() == member)
-                {
-                    character.message("그룹에 참여했습니다.");
-                    group_lock_ptr->lock([&character](auto& group) {
-                        group.enter(character);
-                    });
-                    character.group(group_lock_ptr);
-                }
-                else
-                {
-                    character.message(std::format("{}님 그룹 참여", member));
-                }
-                break;
-
-            case GroupAction::Kick:
-                if (character.name() == member)
-                {
-                    group_lock_ptr->lock([&character](auto& group) {
-                        group.leave(character);
-                    });
-                    character.group().reset();
-                    character.message("그룹에서 추방당했습니다.");
-                }
-                else
-                {
-                    character.message(std::format("{}님 그룹 탈퇴", member));
-                }
-                break;
-            }
-        });
-    });
-}
-
-void context::on_leave_group(const internal_resp::LeaveGroup& resp)
-{
-    this->assert_group(resp.error, resp.member);
-
-    auto gid = resp.group.id;
-    switch (resp.action)
-    {
-    case GroupAction::Leave:
-    {
-        this->upsert_group_then(gid, resp.group.master, resp.group.members, [this, &resp, gid](auto& group_lock_ptr) {
-            this->broadcast(resp.member, [&group_lock_ptr](auto& ch) {
-                ch.group().reset();
-
-                group_lock_ptr->lock([&ch](auto& group) {
-                    group.leave(ch);
-                });
-            });
-
-            auto members = std::vector<std::string>{resp.member};
-            members.push_back(resp.group.master);
-            this->broadcast(members, [member = resp.member](auto& ch) {
-                if (ch.name() == member)
-                    ch.message("그룹 탈퇴", MESSAGE_TYPE::STATE);
-                else
-                    ch.message(std::format("{}님 그룹에서 탈퇴", member), MESSAGE_TYPE::STATE);
-            });
-        });
-    }
-    break;
-
-    case GroupAction::BreakUp:
-    {
-        this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
-            auto members = std::vector<std::string>{resp.group.members};
-            members.push_back(resp.group.master);
-
-            this->broadcast(members, [](auto& ch) {
-                ch.group().reset();
-                ch.message("그룹 해체", MESSAGE_TYPE::STATE);
-            });
-
-            groups.erase(gid);
-        });
-    }
-    break;
-    }
 }
 
 async::task<bool> context::handle_command(character& ch, const std::string& message)
