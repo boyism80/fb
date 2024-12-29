@@ -358,31 +358,24 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
     if (request.fd == 0xFFFFFFFE) // Preff F2
         co_return true;
 
-    if (request.fd == 1 && ch->dialog.active())
+    auto map = ch->map();
+    auto you = map->objects[request.fd];
+    if (you == nullptr)
+        co_return true;
+
+    switch (you->what())
     {
-        ch->dialog.pushnil().resume(1);
-    }
-    else
-    {
-        auto map = ch->map();
-        auto you = map->objects[request.fd];
-        if (you == nullptr)
-            co_return true;
+    case OBJECT_TYPE::CHARACTER:
+        this->send(*ch, fb_resp::character::external_info(static_cast<character&>(*you), this->model), scope::SELF);
+        break;
 
-        switch (you->what())
-        {
-        case OBJECT_TYPE::CHARACTER:
-            this->send(*ch, fb_resp::character::external_info(static_cast<character&>(*you), this->model), scope::SELF);
-            break;
+    case OBJECT_TYPE::MOB:
+        this->handle_click_mob(*ch, static_cast<mob&>(*you));
+        break;
 
-        case OBJECT_TYPE::MOB:
-            this->handle_click_mob(*ch, static_cast<mob&>(*you));
-            break;
-
-        case OBJECT_TYPE::NPC:
-            this->handle_click_npc(*ch, static_cast<npc&>(*you));
-            break;
-        }
+    case OBJECT_TYPE::NPC:
+        this->handle_click_npc(*ch, static_cast<npc&>(*you));
+        break;
     }
 
     co_return true;

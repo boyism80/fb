@@ -6,6 +6,7 @@ using Http.Model;
 using Http.Service;
 using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
@@ -329,7 +330,7 @@ namespace Internal.Controllers
                         var clan = await _dbContext.Clan.Get(request.Clan) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
 
-                        _dbContext.ClanMember.Set(new ClanMember
+                        var cm = _dbContext.ClanMember.Set(new ClanMember
                         {
                             Clan = clan.Id,
                             Position = (uint)ClanPosition.Mate,
@@ -344,8 +345,12 @@ namespace Internal.Controllers
                         var response = new Response.JoinClan
                         {
                             Clan = clan.Id,
-                            Uid = target.Id,
-                            Uname = target.Name,
+                            Member = new Protocol.ClanMember
+                            {
+                                Name = target.Name,
+                                Uid = cm.User,
+                                Position = cm.Position
+                            },
                             Error = (uint)ErrorCode.None
                         };
 
@@ -439,6 +444,46 @@ namespace Internal.Controllers
             catch (Exception)
             {
                 return new Response.LeaveClan
+                {
+                    Error = (uint)ErrorCode.Unhandled
+                };
+            }
+            finally
+            { }
+        }
+
+        [HttpPost("broadcast")]
+        public async Task<Response.BroadcastClan> Broadcast(Request.BroadcastClan request)
+        {
+            try
+            {
+                var redis = _redisService.Connection;
+                await using (await new RedisDistributedLock(Clan.DistributeLockKey(request.Clan), redis).AcquireAsync())
+                {
+                    var clan = await _dbContext.Clan.Get(request.Clan) ??
+                        throw new LogicException(ErrorCode.NotFoundClan);
+
+                    var response = new Response.BroadcastClan
+                    {
+                        Clan = request.Clan,
+                        Message = request.Message,
+                        Type = request.Type,
+                        Error = (uint)ErrorCode.None
+                    };
+                    _rabbitMqService.Publish(response, "amq.direct", $"fb.clan");
+                    return response;
+                }
+            }
+            catch (LogicException e)
+            {
+                return new Response.BroadcastClan
+                {
+                    Error = (uint)e.Error
+                };
+            }
+            catch (Exception)
+            {
+                return new Response.BroadcastClan
                 {
                     Error = (uint)ErrorCode.Unhandled
                 };

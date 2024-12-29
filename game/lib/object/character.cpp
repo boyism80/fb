@@ -174,8 +174,6 @@ void character::on_die(object* from)
 
 character::operator fb::socket<character>& ()
 {
-    this->assert_thread();
-
     return this->_socket;
 }
 
@@ -209,8 +207,6 @@ void character::id(uint32_t id)
 
 uint32_t character::fd()
 {
-    this->assert_thread();
-
     return this->_socket.fd();
 }
 

@@ -457,6 +457,16 @@ namespace fb.protocol._internal
                 builder.Build(value.Clan),
                 builder.Build(value.Title));
         }
+        public static Offset<fb.protocol._internal.request.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.BroadcastClan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Clan),
+                builder.Build(value.Message),
+                builder.Build(value.Type));
+        }
         public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
         {
             if (value == null)
@@ -698,8 +708,7 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.response.raw.JoinClan.CreateJoinClan(builder,
                 builder.Build(value.Clan),
-                builder.Build(value.Uid),
-                builder.Build(value.Uname),
+                builder.Build(value.Member),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.LeaveClan value)
@@ -722,6 +731,17 @@ namespace fb.protocol._internal
             return fb.protocol._internal.response.raw.SetClanTitle.CreateSetClanTitle(builder,
                 builder.Build(value.Clan),
                 builder.Build(value.Title),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastClan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Clan),
+                builder.Build(value.Message),
+                builder.Build(value.Type),
                 builder.Build(value.Error));
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
@@ -1226,6 +1246,16 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Clan),
                 builder.Build(value.Title));
         }
+        public static Offset<fb.protocol._internal.request.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.BroadcastClan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Clan),
+                builder.Build(value.Message),
+                builder.Build(value.Type));
+        }
         public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
         {
             if (value == null)
@@ -1467,8 +1497,7 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.response.raw.JoinClan.CreateJoinClan(builder,
                 builder.Build(value.Clan),
-                builder.Build(value.Uid),
-                builder.Build(value.Uname),
+                builder.Build(value.Member),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.LeaveClan value)
@@ -1491,6 +1520,17 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.response.raw.SetClanTitle.CreateSetClanTitle(builder,
                 builder.Build(value.Clan),
                 builder.Build(value.Title),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastClan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Clan),
+                builder.Build(value.Message),
+                builder.Build(value.Type),
                 builder.Build(value.Error));
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
@@ -1560,7 +1600,8 @@ namespace fb.protocol._internal.request
         DestroyClan,
         JoinClan,
         LeaveClan,
-        SetClanTitle
+        SetClanTitle,
+        BroadcastClan
     }
 }
 namespace fb.protocol._internal.response
@@ -2010,6 +2051,16 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Clan),
                 builder.Build(value.Title));
         }
+        public static Offset<fb.protocol._internal.request.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.BroadcastClan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Clan),
+                builder.Build(value.Message),
+                builder.Build(value.Type));
+        }
         public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
         {
             if (value == null)
@@ -2251,8 +2302,7 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.response.raw.JoinClan.CreateJoinClan(builder,
                 builder.Build(value.Clan),
-                builder.Build(value.Uid),
-                builder.Build(value.Uname),
+                builder.Build(value.Member),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.LeaveClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.LeaveClan value)
@@ -2275,6 +2325,17 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.response.raw.SetClanTitle.CreateSetClanTitle(builder,
                 builder.Build(value.Clan),
                 builder.Build(value.Title),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.BroadcastClan> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.BroadcastClan value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.BroadcastClan.CreateBroadcastClan(builder,
+                builder.Build(value.Clan),
+                builder.Build(value.Message),
+                builder.Build(value.Type),
                 builder.Build(value.Error));
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
@@ -2346,7 +2407,8 @@ namespace fb.protocol._internal.response
         DestroyClan,
         JoinClan,
         LeaveClan,
-        SetClanTitle
+        SetClanTitle,
+        BroadcastClan
     }
 }
 
@@ -3698,6 +3760,39 @@ namespace fb.protocol._internal.request
             return new SetClanTitle(bytes);
         }
     }
+    public class BroadcastClan : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.BroadcastClan;
+        public uint Clan { get; set; } = 0;
+        public string Message { get; set; } = string.Empty;
+        public byte Type { get; set; } = 0;
+
+        public BroadcastClan()
+        { }
+
+        public BroadcastClan(fb.protocol._internal.request.raw.BroadcastClan raw)
+        {
+            Clan = raw.Clan;
+            Message = raw.Message;
+            Type = raw.Type;
+        }
+
+        public BroadcastClan(byte[] bytes) : this(fb.protocol._internal.request.raw.BroadcastClan.GetRootAsBroadcastClan(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static BroadcastClan Deserialize(byte[] bytes)
+        {
+            return new BroadcastClan(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -3731,6 +3826,7 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.JoinClan => typeof(fb.protocol._internal.request.JoinClan),
                 FlatBufferProtocolType.LeaveClan => typeof(fb.protocol._internal.request.LeaveClan),
                 FlatBufferProtocolType.SetClanTitle => typeof(fb.protocol._internal.request.SetClanTitle),
+                FlatBufferProtocolType.BroadcastClan => typeof(fb.protocol._internal.request.BroadcastClan),
                 _ => throw new ArgumentException(),
             };
         }
@@ -4534,8 +4630,7 @@ namespace fb.protocol._internal.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.JoinClan;
         public uint Clan { get; set; } = 0;
-        public uint Uid { get; set; } = 0;
-        public string Uname { get; set; } = string.Empty;
+        public fb.protocol._internal.ClanMember Member { get; set; } = new fb.protocol._internal.ClanMember();
         public uint Error { get; set; } = 0;
 
         public JoinClan()
@@ -4544,8 +4639,7 @@ namespace fb.protocol._internal.response
         public JoinClan(fb.protocol._internal.response.raw.JoinClan raw)
         {
             Clan = raw.Clan;
-            Uid = raw.Uid;
-            Uname = raw.Uname;
+            Member = new ClanMember(raw.Member.Value);
             Error = raw.Error;
         }
 
@@ -4635,6 +4729,41 @@ namespace fb.protocol._internal.response
             return new SetClanTitle(bytes);
         }
     }
+    public class BroadcastClan : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.BroadcastClan;
+        public uint Clan { get; set; } = 0;
+        public string Message { get; set; } = string.Empty;
+        public byte Type { get; set; } = 0;
+        public uint Error { get; set; } = 0;
+
+        public BroadcastClan()
+        { }
+
+        public BroadcastClan(fb.protocol._internal.response.raw.BroadcastClan raw)
+        {
+            Clan = raw.Clan;
+            Message = raw.Message;
+            Type = raw.Type;
+            Error = raw.Error;
+        }
+
+        public BroadcastClan(byte[] bytes) : this(fb.protocol._internal.response.raw.BroadcastClan.GetRootAsBroadcastClan(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static BroadcastClan Deserialize(byte[] bytes)
+        {
+            return new BroadcastClan(bytes);
+        }
+    }
 
     public static class FlatBufferProtocolRouter
     {
@@ -4670,6 +4799,7 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.JoinClan => typeof(fb.protocol._internal.response.JoinClan),
                 FlatBufferProtocolType.LeaveClan => typeof(fb.protocol._internal.response.LeaveClan),
                 FlatBufferProtocolType.SetClanTitle => typeof(fb.protocol._internal.response.SetClanTitle),
+                FlatBufferProtocolType.BroadcastClan => typeof(fb.protocol._internal.response.BroadcastClan),
                 _ => throw new ArgumentException(),
             };
         }

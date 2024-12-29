@@ -20,9 +20,14 @@ void clan::update(const std::string&                name,
                   const std::optional<std::string>& title,
                   const std::vector<clan_member>&   members)
 {
-    this->_name    = name;
-    this->_title   = title;
-    this->_members = members;
+    this->_name  = name;
+    this->_title = title;
+
+    this->_members.clear();
+    for (auto& member : members)
+    {
+        this->_members.insert({member.name, member});
+    }
 }
 
 uint32_t clan::id() const
@@ -43,6 +48,21 @@ const std::optional<std::string>& clan::title() const
 void clan::title(const std::optional<std::string>& title)
 {
     this->_title = title;
+}
+
+const std::unordered_map<std::string, clan_member>& clan::members() const
+{
+    return this->_members;
+}
+
+void clan::join(const clan_member& member)
+{
+    this->_members.insert({member.name, member});
+}
+
+void clan::leave(const std::string& member)
+{
+    this->_members.erase(member);
 }
 
 const std::unordered_map<uint32_t, fb::game::character*>& clan::characters() const

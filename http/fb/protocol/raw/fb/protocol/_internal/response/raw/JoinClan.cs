@@ -21,34 +21,24 @@ public struct JoinClan : IFlatbufferObject
   public JoinClan __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint Clan { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Uid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public string Uname { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUnameBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetUnameBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetUnameArray() { return __p.__vector_as_array<byte>(8); }
-  public uint Error { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol._internal.raw.ClanMember? Member { get { int o = __p.__offset(6); return o != 0 ? (fb.protocol._internal.raw.ClanMember?)(new fb.protocol._internal.raw.ClanMember()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.JoinClan> CreateJoinClan(FlatBufferBuilder builder,
       uint clan = 0,
-      uint uid = 0,
-      StringOffset unameOffset = default(StringOffset),
+      Offset<fb.protocol._internal.raw.ClanMember> memberOffset = default(Offset<fb.protocol._internal.raw.ClanMember>),
       uint error = 0) {
-    builder.StartTable(4);
+    builder.StartTable(3);
     JoinClan.AddError(builder, error);
-    JoinClan.AddUname(builder, unameOffset);
-    JoinClan.AddUid(builder, uid);
+    JoinClan.AddMember(builder, memberOffset);
     JoinClan.AddClan(builder, clan);
     return JoinClan.EndJoinClan(builder);
   }
 
-  public static void StartJoinClan(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartJoinClan(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddClan(FlatBufferBuilder builder, uint clan) { builder.AddUint(0, clan, 0); }
-  public static void AddUid(FlatBufferBuilder builder, uint uid) { builder.AddUint(1, uid, 0); }
-  public static void AddUname(FlatBufferBuilder builder, StringOffset unameOffset) { builder.AddOffset(2, unameOffset.Value, 0); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(3, error, 0); }
+  public static void AddMember(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.ClanMember> memberOffset) { builder.AddOffset(1, memberOffset.Value, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.JoinClan> EndJoinClan(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.JoinClan>(o);
@@ -64,9 +54,8 @@ static public class JoinClanVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Clan*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Uid*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyString(tablePos, 8 /*Uname*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 6 /*Member*/, fb.protocol._internal.raw.ClanMemberVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -137,6 +137,7 @@
     <ClCompile Include="lib\clan.builtin.cpp" />
     <ClCompile Include="lib\clan.cpp" />
     <ClCompile Include="lib\clan.member.builtin.cpp" />
+    <ClCompile Include="lib\clan.member.cpp" />
     <ClCompile Include="lib\context\context.builtin.cpp" />
     <ClCompile Include="lib\context\context.command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />

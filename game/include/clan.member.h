@@ -21,6 +21,10 @@ public:
     CLAN_POSITION position;
 
 public:
+    clan_member(const std::string& name, CLAN_POSITION position);
+    ~clan_member() = default;
+
+public:
     /**
      * @brief      { function_description }
      *

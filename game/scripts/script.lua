@@ -70,7 +70,7 @@ function func(me)
         end
     else
         local clan_name = clan:name()
-        local selected = npc:menu(me, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방'})
+        local selected = npc:menu(me, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방', '메시지'})
         if selected == nil then
             return
         end
@@ -128,17 +128,18 @@ function func(me)
                 npc:dialog(me, string.format('%s가 거절함', found:name()))
             end
         elseif selected == 3 then
-            local map = me:map()
-            if map == nil then
-                return
-            end
-
             local name = npc:input(me, '상대 이름 입력')
             local error = me:clan():leave(name, kick)
             if error ~= nil then
                 npc:dialog(me, error)
             else
                 npc:dialog(me, '추방했음')
+            end
+        elseif selected == 4 then
+            local message = npc:input(me, '내용')
+            local error = me:clan():message(message)
+            if error ~= nil then
+                npc:dialog(me, error)
             end
         else
         end

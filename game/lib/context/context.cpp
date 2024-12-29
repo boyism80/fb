@@ -402,10 +402,7 @@ void context::update_clan(clan&                                                 
     auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
     for (auto& member : resp2)
     {
-        auto cm     = clan_member{};
-        cm.name     = member.name;
-        cm.position = static_cast<CLAN_POSITION>(member.position);
-
+        auto cm   = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
         auto hash = this->_shard.mod(member.name);
         if (modulars.contains(hash) == false)
             modulars.insert({hash, {}});
@@ -457,22 +454,14 @@ void context::broadcast(const std::vector<std::string>&                     name
                     continue;
                 }
 
-                auto character = characters[name];
-                this->threads.enqueue(
-                    *character,
-                    [uid = character->id()](auto& thread) {
-                        return thread.template data<thread_params>()->characters.contains(uid);
-                    },
-                    [character, fn](auto& thread) -> async::task<void> {
-                        fn(*character);
+                auto ch     = characters[name];
+                auto thread = ch->thread();
+                std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
+                    if (this->assert_socket(fd) == false)
                         co_return;
-                    },
-                    [](auto& e) {
-                        // error
-                    },
-                    []() {
-                        // success
-                    });
+
+                    fn(*ch);
+                });
             }
         });
     }
@@ -979,20 +968,23 @@ void context::amqp_thread()
             queue4.handler<internal_resp::JoinClan>([this](internal_resp::JoinClan& response) -> async::task<void> {
                 this->assert_clan(response.error);
 
-                this->upsert_clan_then(response.clan, [this, uname = response.uname](auto& clan_lock) {
-                    auto ch = this->_shard[uname]->characters.template lock<character*>(
-                        [&uname](auto& container) -> character* {
-                            if (container.contains(uname) == false)
+                this->upsert_clan_then(response.clan, [this, response](auto& clan_lock) {
+                    auto ch = this->_shard[response.member.name]->characters.template lock<character*>(
+                        [&response](auto& container) -> character* {
+                            if (container.contains(response.member.name) == false)
                                 return nullptr;
 
-                            return container.at(uname);
+                            return container.at(response.member.name);
                         });
 
                     if (ch != nullptr)
                     {
                         auto thread = ch->thread();
-                        std::ignore = thread->dispatch([ch, &clan_lock](auto&) -> async::task<void> {
-                            clan_lock->lock([&clan_lock, ch](auto& clan) {
+                        std::ignore = thread->dispatch([ch, &clan_lock, response](auto&) -> async::task<void> {
+                            clan_lock->lock([&clan_lock, ch, response](auto& clan) {
+                                auto cm = clan_member{response.member.name,
+                                                      static_cast<CLAN_POSITION>(response.member.position)};
+                                clan.join(cm);
                                 clan.attach_character(*ch);
                                 ch->clan(clan_lock);
                             });
@@ -1021,6 +1013,7 @@ void context::amqp_thread()
                         auto thread = ch->thread();
                         std::ignore = thread->dispatch([ch, &clan_lock](auto&) -> async::task<void> {
                             clan_lock->lock([ch](auto& clan) {
+                                clan.leave(ch->name());
                                 clan.detach_character(*ch);
                                 ch->clan().reset();
                             });
@@ -1031,6 +1024,28 @@ void context::amqp_thread()
 
                 co_return;
             });
+
+            queue4.handler<internal_resp::BroadcastClan>(
+                [this](internal_resp::BroadcastClan& response) -> async::task<void> {
+                    this->assert_clan(response.error);
+
+                    this->upsert_clan_then(response.clan,
+                                           [this, message = response.message, type = response.type](auto& clan_lock) {
+                                               clan_lock->lock([this, message, type](auto& clan) {
+                                                   auto names = std::vector<std::string>{};
+                                                   for (auto& [name, member] : clan.members())
+                                                   {
+                                                       names.push_back(name);
+                                                   }
+
+                                                   this->broadcast(names, [message, type](auto& ch) {
+                                                       ch.message(message, static_cast<MESSAGE_TYPE>(type));
+                                                   });
+                                               });
+                                           });
+
+                    co_return;
+                });
         }
         catch (std::exception& e)
         {
@@ -1200,6 +1215,16 @@ async::task<void> context::leave_clan_member(clan& clan, const std::string& name
     this->assert_clan(resp.error);
 }
 
+async::task<void> context::broadcast_clan(clan& clan, const std::string& message, MESSAGE_TYPE type)
+{
+    auto&& resp = co_await this->post<internal_reqs::BroadcastClan, internal_resp::BroadcastClan>(
+        "internal",
+        "/clan/broadcast",
+        internal_reqs::BroadcastClan{clan.id(), message, static_cast<uint8_t>(type)});
+
+    this->assert_clan(resp.error);
+}
+
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
@@ -1213,7 +1238,6 @@ void context::handle_click_npc(character& ch, npc& npc)
         return;
 
     ch.dialog.release();
-
     ch.dialog.from(model.script.c_str())
         .func("on_interact")
         .pushobject(ch)

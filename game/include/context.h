@@ -477,6 +477,17 @@ public:
      */
     async::task<void> leave_clan_member(clan& clan, const std::string& name, bool kick);
 
+    /**
+     * @brief      Broadcasts a clan.
+     *
+     * @param      clan     The clan
+     * @param[in]  message  The message
+     * @param[in]  type     The type
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> broadcast_clan(clan& clan, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
+
 protected:
     /**
      * @brief      { function_description }

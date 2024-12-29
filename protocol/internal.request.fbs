@@ -165,3 +165,9 @@ table SetClanTitle {
   clan: uint;
   title: string?;
 }
+
+table BroadcastClan {
+  clan: uint;
+  message: string;
+  type: ubyte;
+}

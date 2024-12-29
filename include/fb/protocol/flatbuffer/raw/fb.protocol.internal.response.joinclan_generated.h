@@ -13,6 +13,8 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
               FLATBUFFERS_VERSION_REVISION == 25,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.clanmember_generated.h"
+
 namespace fb {
 namespace protocol {
 namespace internal {
@@ -26,18 +28,14 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef JoinClanBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_CLAN = 4,
-    VT_UID = 6,
-    VT_UNAME = 8,
-    VT_ERROR = 10
+    VT_MEMBER = 6,
+    VT_ERROR = 8
   };
   uint32_t clan() const {
     return GetField<uint32_t>(VT_CLAN, 0);
   }
-  uint32_t uid() const {
-    return GetField<uint32_t>(VT_UID, 0);
-  }
-  const ::flatbuffers::String *uname() const {
-    return GetPointer<const ::flatbuffers::String *>(VT_UNAME);
+  const fb::protocol::internal::raw::ClanMember *member() const {
+    return GetPointer<const fb::protocol::internal::raw::ClanMember *>(VT_MEMBER);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -45,9 +43,8 @@ struct JoinClan FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_CLAN, 4) &&
-           VerifyField<uint32_t>(verifier, VT_UID, 4) &&
-           VerifyOffset(verifier, VT_UNAME) &&
-           verifier.VerifyString(uname()) &&
+           VerifyOffset(verifier, VT_MEMBER) &&
+           verifier.VerifyTable(member()) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -60,11 +57,8 @@ struct JoinClanBuilder {
   void add_clan(uint32_t clan) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_CLAN, clan, 0);
   }
-  void add_uid(uint32_t uid) {
-    fbb_.AddElement<uint32_t>(JoinClan::VT_UID, uid, 0);
-  }
-  void add_uname(::flatbuffers::Offset<::flatbuffers::String> uname) {
-    fbb_.AddOffset(JoinClan::VT_UNAME, uname);
+  void add_member(::flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> member) {
+    fbb_.AddOffset(JoinClan::VT_MEMBER, member);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(JoinClan::VT_ERROR, error, 0);
@@ -83,30 +77,13 @@ struct JoinClanBuilder {
 inline ::flatbuffers::Offset<JoinClan> CreateJoinClan(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t clan = 0,
-    uint32_t uid = 0,
-    ::flatbuffers::Offset<::flatbuffers::String> uname = 0,
+    ::flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> member = 0,
     uint32_t error = 0) {
   JoinClanBuilder builder_(_fbb);
   builder_.add_error(error);
-  builder_.add_uname(uname);
-  builder_.add_uid(uid);
+  builder_.add_member(member);
   builder_.add_clan(clan);
   return builder_.Finish();
-}
-
-inline ::flatbuffers::Offset<JoinClan> CreateJoinClanDirect(
-    ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t clan = 0,
-    uint32_t uid = 0,
-    const char *uname = nullptr,
-    uint32_t error = 0) {
-  auto uname__ = uname ? _fbb.CreateString(uname) : 0;
-  return fb::protocol::internal::response::raw::CreateJoinClan(
-      _fbb,
-      clan,
-      uid,
-      uname__,
-      error);
 }
 
 inline const fb::protocol::internal::response::raw::JoinClan *GetJoinClan(const void *buf) {

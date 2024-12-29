@@ -19,7 +19,7 @@ private:
     uint32_t                                           _id;
     std::string                                        _name;
     std::optional<std::string>                         _title;
-    std::vector<clan_member>                           _members;
+    std::unordered_map<std::string, clan_member>       _members;
     std::unordered_map<uint32_t, fb::game::character*> _characters;
 
 public:
@@ -85,6 +85,27 @@ public:
      * @param[in]  title  The title
      */
     void title(const std::optional<std::string>& title);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::unordered_map<std::string, clan_member>& members() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  member  The member
+     */
+    void join(const clan_member& member);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  member  The member
+     */
+    void leave(const std::string& member);
 
     /**
      * @brief      { function_description }
@@ -168,6 +189,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_leave(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_message(lua_State* lua);
 };
 
 } // namespace fb::game
