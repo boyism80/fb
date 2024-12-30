@@ -1289,6 +1289,8 @@ public:
      */
     [[nodiscard]] async::task<bool> handle_map_tile(character& ch, Json::Value& parameters);
 
+    [[nodiscard]] async::task<bool> handle_mail(character& ch, Json::Value& parameters);
+
 public:
     // listener : object
     //

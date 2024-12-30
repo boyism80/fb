@@ -486,3 +486,11 @@ async::task<bool> context::handle_map_tile(character& ch, Json::Value& parameter
     ch.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
     co_return true;
 }
+
+async::task<bool> context::handle_mail(character& ch, Json::Value& parameters)
+{
+    auto unknown  = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
+    auto protocol = fb::protocol::game::response::board::mails(static_cast<MAIL_BUTTON_ENABLE>(unknown));
+    this->send(ch, protocol, scope::SELF);
+    co_return true;
+}

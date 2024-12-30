@@ -62,7 +62,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "WRITE")]
         Write = 0x04, 
         [EnumMember(Value = "DELETE")]
-        Delete = 0x05
+        Delete = 0x05, 
+        [EnumMember(Value = "SEND_MAIL")]
+        SendMail = 0x06, 
+        [EnumMember(Value = "MAIL")]
+        Mail = 0x09
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -457,6 +461,15 @@ namespace Fb.Model.EnumValue
         Bow = 10, 
         [EnumMember(Value = "PACKAGE")]
         Package = 11
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum MailButtonEnable
+    {
+        [EnumMember(Value = "NONE")]
+        None = 0x00, 
+        [EnumMember(Value = "NEW")]
+        New = 0x02
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

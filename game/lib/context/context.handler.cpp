@@ -575,13 +575,15 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    if (co_await handle_command(*ch, request.message))
+    auto message = std::string{request.message};
+    auto shout   = request.shout;
+    if (co_await handle_command(*ch, message))
         co_return true;
 
-    ch->chat(request.message, request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL);
+    ch->chat(message, shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL);
 
     auto npcs = std::vector<npc*>();
-    if (request.shout)
+    if (shout)
     {
         for (auto& [fd, obj] : ch->map()->objects)
         {
@@ -597,7 +599,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         }
     }
 
-    this->npc_interaction(*ch, request.message, npcs);
+    this->npc_interaction(*ch, message, npcs);
 
     co_return true;
 }
@@ -621,35 +623,44 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     {
         try
         {
-            if (this->model.board.contains(request.section) == false)
-                throw std::runtime_error(message::board::SECTION_NOT_EXIST);
-
-            auto section = &this->model.board[request.section];
-            auto offset  = request.offset;
-
-            auto&& response = co_await this->get<internal_resp::GetArticleList>(
-                "internal",
-                std::format("/board/{}?offset={}", section->id, offset));
-            if (this->assert_socket(fd) == false)
-                co_return false;
-
-            auto articles = std::list<board::article>();
-            for (auto& summary : response.summary_list)
+            if (request.section == 0xFFFF)
             {
-                auto dt = datetime(summary.created_date);
-                articles.push_back(board::article{summary.id,
-                                                  section->id,
-                                                  summary.user,
-                                                  summary.user_name,
-                                                  summary.title,
-                                                  (uint8_t)dt.month(),
-                                                  (uint8_t)dt.day()});
+                // mail offset
+                auto offset = request.offset;
+                this->send(*ch, fb_resp::board::mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
             }
+            else
+            {
+                if (this->model.board.contains(request.section) == false)
+                    throw std::runtime_error(message::board::SECTION_NOT_EXIST);
 
-            auto button_flags = BOARD_BUTTON_ENABLE::UP;
-            if (ch->condition(section->condition))
-                button_flags |= BOARD_BUTTON_ENABLE::WRITE;
-            this->send(*ch, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
+                auto section = &this->model.board[request.section];
+                auto offset  = request.offset;
+
+                auto&& response = co_await this->get<internal_resp::GetArticleList>(
+                    "internal",
+                    std::format("/board/{}?offset={}", section->id, offset));
+                if (this->assert_socket(fd) == false)
+                    co_return false;
+
+                auto articles = std::list<board::article>();
+                for (auto& summary : response.summary_list)
+                {
+                    auto dt = datetime(summary.created_date);
+                    articles.push_back(board::article{summary.id,
+                                                      section->id,
+                                                      summary.user,
+                                                      summary.user_name,
+                                                      summary.title,
+                                                      (uint8_t)dt.month(),
+                                                      (uint8_t)dt.day()});
+                }
+
+                auto button_flags = BOARD_BUTTON_ENABLE::UP;
+                if (ch->condition(section->condition))
+                    button_flags |= BOARD_BUTTON_ENABLE::WRITE;
+                this->send(*ch, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
+            }
         }
         catch (std::exception& e)
         {
@@ -777,6 +788,12 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         {
             this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
         }
+    }
+    break;
+
+    case BOARD_ACTION::MAIL:
+    {
+        this->send(*ch, fb_resp::board::mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
     }
     break;
 

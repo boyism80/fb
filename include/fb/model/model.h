@@ -268,7 +268,9 @@ enum class BOARD_ACTION
     ARTICLES = 0x02, 
     ARTICLE = 0x03, 
     WRITE = 0x04, 
-    DELETE = 0x05
+    DELETE = 0x05, 
+    SEND_MAIL = 0x06, 
+    MAIL = 0x09
 }; // end of enum 'BOARD_ACTION'
 
 template <>
@@ -281,7 +283,9 @@ inline BOARD_ACTION enum_parse<BOARD_ACTION>(const std::string k)
         { "ARTICLES", BOARD_ACTION::ARTICLES }, 
         { "ARTICLE", BOARD_ACTION::ARTICLE }, 
         { "WRITE", BOARD_ACTION::WRITE }, 
-        { "DELETE", BOARD_ACTION::DELETE }
+        { "DELETE", BOARD_ACTION::DELETE }, 
+        { "SEND_MAIL", BOARD_ACTION::SEND_MAIL }, 
+        { "MAIL", BOARD_ACTION::MAIL }
     };
 
     auto i = enums.find(k);
@@ -301,7 +305,9 @@ inline const char* enum_tostring<BOARD_ACTION>(BOARD_ACTION k)
         { BOARD_ACTION::ARTICLES, "ARTICLES" }, 
         { BOARD_ACTION::ARTICLE, "ARTICLE" }, 
         { BOARD_ACTION::WRITE, "WRITE" }, 
-        { BOARD_ACTION::DELETE, "DELETE" }
+        { BOARD_ACTION::DELETE, "DELETE" }, 
+        { BOARD_ACTION::SEND_MAIL, "SEND_MAIL" }, 
+        { BOARD_ACTION::MAIL, "MAIL" }
     };
 
     auto i = enums.find(k);
@@ -1383,6 +1389,44 @@ inline const char* enum_tostring<ITEM_TYPE>(ITEM_TYPE k)
         { ITEM_TYPE::AUXILIARY, "AUXILIARY" }, 
         { ITEM_TYPE::BOW, "BOW" }, 
         { ITEM_TYPE::PACKAGE, "PACKAGE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class MAIL_BUTTON_ENABLE
+{
+    NONE = 0x00, 
+    NEW = 0x02
+}; // end of enum 'MAIL_BUTTON_ENABLE'
+
+template <>
+inline MAIL_BUTTON_ENABLE enum_parse<MAIL_BUTTON_ENABLE>(const std::string k)
+{
+    static const std::unordered_map<std::string, MAIL_BUTTON_ENABLE> enums
+    {
+        { "NONE", MAIL_BUTTON_ENABLE::NONE }, 
+        { "NEW", MAIL_BUTTON_ENABLE::NEW }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<MAIL_BUTTON_ENABLE>(MAIL_BUTTON_ENABLE k)
+{
+    static const std::unordered_map<MAIL_BUTTON_ENABLE, const char*> enums
+    {
+        { MAIL_BUTTON_ENABLE::NONE, "NONE" }, 
+        { MAIL_BUTTON_ENABLE::NEW, "NEW" }
     };
 
     auto i = enums.find(k);
@@ -2505,6 +2549,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "BOARD_ACTION_WRITE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::DELETE);
     lua_setglobal(lua, "BOARD_ACTION_DELETE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::SEND_MAIL);
+    lua_setglobal(lua, "BOARD_ACTION_SEND_MAIL");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::MAIL);
+    lua_setglobal(lua, "BOARD_ACTION_MAIL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::NONE);
     lua_setglobal(lua, "BOARD_BUTTON_ENABLE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::NEXT);
@@ -2799,6 +2847,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ITEM_TYPE_BOW");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_TYPE::PACKAGE);
     lua_setglobal(lua, "ITEM_TYPE_PACKAGE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAIL_BUTTON_ENABLE::NONE);
+    lua_setglobal(lua, "MAIL_BUTTON_ENABLE_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAIL_BUTTON_ENABLE::NEW);
+    lua_setglobal(lua, "MAIL_BUTTON_ENABLE_NEW");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAP_EFFECT_TYPE::NONE);
     lua_setglobal(lua, "MAP_EFFECT_TYPE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAP_EFFECT_TYPE::FIRE);
