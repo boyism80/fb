@@ -9,12 +9,14 @@ namespace Http.Service
     {
         private readonly RedisConfiguration _conf;
         private readonly ConnectionMultiplexer _redis;
-        private static Dictionary<string, LoadedLuaScript> _loadedLuaScripts = new Dictionary<string, LoadedLuaScript>();
+        private readonly Dictionary<string, LoadedLuaScript> _loadedLuaScripts = new Dictionary<string, LoadedLuaScript>();
 
         public Redis(RedisConfiguration conf)
         {
             _conf = conf;
             _redis = ConnectionMultiplexer.Connect(conf.ConfigurationOptions);
+
+            LoadScriptFiles(Path.Combine("Redis", "Script"));
         }
 
         private void LoadScriptFiles(string path)

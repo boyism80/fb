@@ -1,5 +1,4 @@
 #include <context.h>
-#include <fb/redis.h>
 using namespace fb::game;
 
 async::task<bool> context::handle_command_map(character& ch, Json::Value& parameters)

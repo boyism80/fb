@@ -27,14 +27,6 @@ module.exports = function () {
                             port: conf.internal[sectionConf.internal].port.cluster
                         },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },
-                        redis: {
-                            default: 
-                            {
-                                ip: "redis",
-                                port: conf.redis[sectionConf.redis].port.cluster,
-                                db: 0
-                            }
-                        },
                         amqp: {
                             ip: "rabbitmq",
                             port: conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,

@@ -42,7 +42,7 @@ module.exports = {
                                         ],
                                         volumeMounts: [
                                             {
-                                                name: `data-volume-${section}/${id}`,
+                                                name: `data-volume-${section}-${id}`,
                                                 mountPath: "/data",
                                             },
                                         ],
@@ -50,7 +50,7 @@ module.exports = {
                                 ],
                                 volumes: [
                                 {
-                                    name: `data-volume-${section}/${id}`,
+                                    name: `data-volume-${section}-${id}`,
                                     hostPath: {
                                         path: `/mnt/fb/redis/${section}/${id}`,
                                         type: "DirectoryOrCreate"

@@ -18,22 +18,26 @@ module.exports = {
                 "ConnectionStrings": {
                     "MySql": {}
                 },
-                "Redis": {
-                    "AllowAdmin": true,
-                    "ConnectTimeout": 6000,
-                    "ConnectRetry": 2,
-                    "Database": 0,
-                    "Hosts": [
-                        {
-                            "Host": "redis",
-                            "Port": conf.redis[sectionConf.redis].port.cluster
-                        }
-                    ]
-                }
+                "Redis": {}
             }
 
             for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql])) {
                 config.ConnectionStrings.MySql[id] = `Server=mysql;Port=${mysqlConfig.port.cluster};User ID=fb; Password=admin; Database=fb`
+            }
+
+            for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
+                config.Redis[id] = {
+                    AllowAdmin: true,
+                    ConnectTimeout: 6000,
+                    ConnectRetry: 2,
+                    Database: 0,
+                    Hosts: [
+                        {
+                            Host: "redis",
+                            Port: conf.redis[sectionConf.redis][id].port.cluster
+                        }
+                    ]
+                }
             }
 
             const configMap = new k8s.core.v1.ConfigMap(`write-back-${section}`, {
