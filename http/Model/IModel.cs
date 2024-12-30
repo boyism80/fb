@@ -11,7 +11,7 @@ namespace Http.Model
 
     public interface IModelKey
     {
-        uint GetDbKey();
+        uint GetHash();
     }
 
     public interface IRedisValueKey : IModelKey

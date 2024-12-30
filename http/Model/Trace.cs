@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint Uid { get; set; }
         public uint Model { get; set; }
 
-        public uint GetDbKey() => Uid;
+        public uint GetHash() => Uid;
         public RedisKey GetRedisKey() => $"cache:trace:{Uid}";
         public RedisValue GetRedisField() => $"{Model}";
     }

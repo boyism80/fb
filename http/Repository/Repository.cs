@@ -2,6 +2,7 @@ using Dapper;
 using Http.Model;
 using Http.Redis;
 using Http.Service;
+using Medallion.Threading;
 using Medallion.Threading.Redis;
 using Newtonsoft.Json;
 using StackExchange.Redis;
@@ -30,7 +31,7 @@ namespace Http.Reepository
 
         protected virtual async Task<TModel> Get(TKey key)
         {
-            await using var conn = _dbContext.Connection(key.GetDbKey());
+            await using var conn = _dbContext.Connection(key.GetHash());
             var value = await conn.QuerySingleOrDefaultAsync<TModel>(OnSelect(key));
             if (value == null)
                 return null;
@@ -43,7 +44,7 @@ namespace Http.Reepository
 
         protected virtual async Task<IEnumerable<TModel>> GetAll(TKey key)
         {
-            await using var conn = _dbContext.Connection(key.GetDbKey());
+            await using var conn = _dbContext.Connection(key.GetHash());
             return (await conn.QueryAsync<TModel>(OnSelectBulk(key))).Where(x => !x.Deleted);
         }
 
@@ -51,7 +52,7 @@ namespace Http.Reepository
         {
             _buffer.Enqueue(async () =>
             {
-                await using var conn = _dbContext.Connection(value.GetDbKey());
+                await using var conn = _dbContext.Connection(value.GetHash());
                 await conn.ExecuteAsync(OnUpsert(value));
             });
             return value;
@@ -61,7 +62,7 @@ namespace Http.Reepository
         {
             _buffer.Enqueue(async () =>
             {
-                foreach (var (conn, items) in _dbContext.Connections(values, value => value.GetDbKey()))
+                foreach (var (conn, items) in _dbContext.Connections(values, value => value.GetHash()))
                 {
                     await conn.ExecuteAsync(OnUpsert(items));
                 }
@@ -83,13 +84,16 @@ namespace Http.Reepository
     {
         private readonly Dictionary<string, string> _local = new Dictionary<string, string>();
         private readonly RedisService _redisService;
+        private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
 
         protected RedisValueRepository(DbContext dbContext,
             RedisService redisService,
+            RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext)
         {
             _redisService = redisService;
+            _distributedLock = distributedLock;
             _dbExecuteService = dbExecuteService;
         }
 
@@ -100,8 +104,7 @@ namespace Http.Reepository
 
         protected override async Task<TModel> Get(TKey key)
         {
-            var redis = _redisService.Redis(key).Connection;
-            await using (await new RedisDistributedLock(GetLockKey(key), redis).AcquireAsync())
+            await using (await _distributedLock.Lock(GetLockKey(key)))
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValue))
                 {
@@ -112,7 +115,8 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redisValues = await redis.JsonGetAsync<TModel>(key.GetRedisKey());
+                var redis = _redisService.Redis(key);
+                var redisValues = await redis.Connection.JsonGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues != null)
                 {
                     if (redisValues.Deleted)
@@ -124,7 +128,14 @@ namespace Http.Reepository
                 var mysqlValue = await base.Get(key);
                 if (mysqlValue != null)
                 {
-                    await redis.JsonSetAsync(key.GetRedisKey(), mysqlValue);
+                    await _redisService.Redis(key).ScriptEvaluateAsync("update_value_expiry.lua", new
+                    {
+                        key = key.GetRedisKey(),
+                        value = JsonConvert.SerializeObject(mysqlValue),
+                        cref = new RedisKey(Const.ReferenceCountKey),
+                        expiry = (int)Const.CacheTimeToLive.TotalSeconds
+                    });
+
                     if (mysqlValue.Deleted)
                         return null;
 
@@ -151,13 +162,13 @@ namespace Http.Reepository
                 {
                     cmd.Enqueue(trans => trans.JsonSetAsync(value.GetRedisKey(), value));
                     cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
-                    cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, value.GetRedisKey().ToString()));
+                    cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, value.GetRedisKey().ToString()));
                 });
 
                 _local[value.GetRedisKey()] = JsonConvert.SerializeObject(value);
 
                 var sql = OnUpsert(value);
-                await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
+                await _dbExecuteService.Post(value.GetHash(), sql, value.GetRedisKey().ToString());
             });
             return value;
         }
@@ -172,13 +183,16 @@ namespace Http.Reepository
     {
         private readonly Dictionary<string, Dictionary<string, string>> _local = new Dictionary<string, Dictionary<string, string>>();
         private readonly RedisService _redisService;
+        private readonly RedisDistributedLockService _distributedLock;
         private readonly WriteBackService _dbExecuteService;
 
         protected RedisHashRepository(DbContext dbContext,
             RedisService redisService,
+            RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext)
         {
             _redisService = redisService;
+            _distributedLock = distributedLock;
             _dbExecuteService = dbExecuteService;
         }
 
@@ -194,8 +208,7 @@ namespace Http.Reepository
 
         protected override async Task<TModel> Get(TKey key)
         {
-            var redis = _redisService.Redis(key).Connection;
-            await using (await new RedisDistributedLock(GetLockKey(key), redis).AcquireAsync())
+            await using (await _distributedLock.Lock(GetLockKey(key)))
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues) && localValues.TryGetValue(key.GetRedisField(), out var localValue))
                 {
@@ -206,7 +219,8 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redisValues = await redis.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
+                var redis = _redisService.Redis(key);
+                var redisValues = await redis.Connection.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
                     _local[key.GetRedisKey()] = redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value));
@@ -224,7 +238,24 @@ namespace Http.Reepository
                 {
                     foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
                     {
-                        await redis.JsonHashSetAsync(g.Key, g.ToDictionary(x => x.GetRedisField(), x => x));
+                        var dataGroup = g.ToDictionary(x => x.GetRedisField(), x => x);
+                        var values = new List<RedisValue>
+                        {
+                            (int)Const.CacheTimeToLive.TotalSeconds,
+                            dataGroup.Count
+                        };
+                        foreach (var (k, v) in dataGroup)
+                        {
+                            values.Add(k);
+                            values.Add(JsonConvert.SerializeObject(v));
+                        }
+                        var result = await redis.ScriptEvaluateAsync("update_hash_expiry.lua",
+                            keys:
+                            [
+                                g.Key,
+                                new RedisKey(Const.ReferenceCountKey)
+                            ],
+                            values: values.ToArray());
                         _local[g.Key] = g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x));
                     }
 
@@ -254,13 +285,13 @@ namespace Http.Reepository
 
         protected override async Task<IEnumerable<TModel>> GetAll(TKey key)
         {
-            var redis = _redisService.Redis(key).Connection;
-            await using (await new RedisDistributedLock(GetLockKey(key), redis).AcquireAsync())
+            await using (await _distributedLock.Lock(GetLockKey(key)))
             {
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
                     return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
 
-                var redisValues = await redis.JsonHashGetAsync<TModel>(key.GetRedisKey());
+                var redis = _redisService.Redis(key);
+                var redisValues = await redis.Connection.JsonHashGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
                     _local[key.GetRedisKey()] = redisValues.ToDictionary(x => x.Key.ToString(), x => JsonConvert.SerializeObject(x.Value));
@@ -272,7 +303,25 @@ namespace Http.Reepository
                 {
                     foreach (var g in mysqlValues.GroupBy(x => x.GetRedisKey()))
                     {
-                        await redis.JsonHashSetAsync(g.Key, g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x));
+                        var dataGroup = g.ToDictionary(x => new RedisValue(x.GetRedisField()), x => x);
+                        var values = new List<RedisValue>
+                        {
+                            (int)Const.CacheTimeToLive.TotalSeconds,
+                            dataGroup.Count
+                        };
+                        foreach (var (k, v) in dataGroup)
+                        {
+                            values.Add(k);
+                            values.Add(JsonConvert.SerializeObject(v));
+                        }
+                        var result = await redis.ScriptEvaluateAsync("update_hash_expiry.lua",
+                            keys:
+                            [
+                                g.Key,
+                                new RedisKey(Const.ReferenceCountKey)
+                            ],
+                            values: values.ToArray());
+
                         _local[g.Key] = g.ToDictionary(x => x.GetRedisField().ToString(), x => JsonConvert.SerializeObject(x));
                     }
 
@@ -294,14 +343,14 @@ namespace Http.Reepository
                 {
                     cmd.Enqueue(trans => trans.JsonHashSetAsync(value.GetRedisKey(), value.GetRedisField(), value));
                     cmd.Enqueue(trans => trans.KeyExpireAsync(value.GetRedisKey(), expiry: (TimeSpan?)null));
-                    cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, value.GetRedisKey().ToString()));
+                    cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, value.GetRedisKey().ToString()));
                 });
 
                 if (_local.TryGetValue(value.GetRedisKey(), out var localValues))
                     localValues[value.GetRedisField()] = JsonConvert.SerializeObject(value);
 
                 var sql = OnUpsert(value);
-                await _dbExecuteService.Post(value.GetDbKey(), sql, value.GetRedisKey().ToString());
+                await _dbExecuteService.Post(value.GetHash(), sql, value.GetRedisKey().ToString());
             });
 
             return value;
@@ -316,23 +365,30 @@ namespace Http.Reepository
                     value.UpdatedDate = DateTime.Now;
                 }
 
-                foreach (var g in values.GroupBy(x => x.GetRedisKey()))
+                foreach (var hashGroup in values.GroupBy(x => x.GetHash()))
                 {
-                    if (g.GroupBy(x => x.GetDbKey()).Count() > 1)
+                    if (hashGroup.GroupBy(x => x.GetHash()).Count() > 1)
                         throw new InvalidOperationException();
 
-                    var redisKey = g.Key;
-                    var redis = _redisService.Redis(redisKey).Connection;
-                    var valueSet = g.ToDictionary(x => x.GetRedisField(), x => x);
-                    await redis.TransactAsync(cmd =>
+                    var hash = hashGroup.Key;
+                    var redis = _redisService.Redis(hash).Connection;
+
+                    foreach (var modGroup in hashGroup.GroupBy(x => (int)(x.GetHash() % _redisService.ShardSize)))
                     {
-                        cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
-                        cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
-                        cmd.Enqueue(trans => trans.HashIncrementAsync(Http.Redis.Const.ReferenceCountKey, redisKey.ToString()));
-                    });
-                    var dbKey = g.Select(x => x.GetDbKey()).First();
-                    var sql = OnUpsert(g.ToArray());
-                    await _dbExecuteService.Post(dbKey, sql, redisKey.ToString());
+                        foreach (var keyGroup in modGroup.GroupBy(x => x.GetRedisKey()))
+                        {
+                            var redisKey = keyGroup.Key;
+                            var valueSet = keyGroup.ToDictionary(x => x.GetRedisField(), x => x);
+                            await redis.TransactAsync(cmd =>
+                            {
+                                cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
+                                cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
+                                cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, hash.ToString()));
+                            });
+                            var sql = OnUpsert(hashGroup.ToArray());
+                            await _dbExecuteService.Post(hash, sql, hash.ToString());
+                        }
+                    }
                 }
             });
 

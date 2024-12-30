@@ -29,6 +29,14 @@ namespace Http.Redis
             return await redis.Connection.ScriptEvaluateAsync(loadedScript, param);
         }
 
+        public static async Task<RedisResult> ScriptEvaluateAsync(this Http.Service.Redis redis, string file, RedisKey[] keys = null, RedisValue[] values = null)
+        {
+            var loadedScript = redis.GetLoadedLuaScript(file) ??
+                throw new NullReferenceException();
+
+            return await redis.Connection.ScriptEvaluateAsync(loadedScript.Hash, keys, values);
+        }
+
         public static async Task<T> JsonGetAsync<T>(this IDatabaseAsync database, RedisKey key) where T : class
         {
             var value = await database.StringGetAsync(key);

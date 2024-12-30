@@ -6,7 +6,7 @@ namespace Http.Model
     {
         public required uint Uid { get; set; }
 
-        public uint GetDbKey() => Uid;
+        public uint GetHash() => Uid;
         public RedisKey GetRedisKey() => $"cache:option:{Uid}";
     }
 

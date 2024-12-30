@@ -39,8 +39,8 @@ module.exports = {
                     Database: 0,
                     Hosts: [
                         {
-                            "Host": "redis",
-                            "Port": conf.redis[sectionConf.redis][id].port.cluster
+                            Host: "redis",
+                            Port: conf.redis[sectionConf.redis][id].port.cluster
                         }
                     ]
                 }

@@ -8,7 +8,8 @@ namespace Http.Reepository
     {
         public ClanRepository(DbContext dbContext,
             RedisService redisService,
-            WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
+            RedisDistributedLockService distributedLock,
+            WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
         }
 

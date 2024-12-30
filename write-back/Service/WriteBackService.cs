@@ -70,18 +70,27 @@ namespace WriteBack.Service
 
                     await using var dbConn = _dbContext.Connection(db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
-                    foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
+                    foreach (var g in backgroundCommitEntryList.GroupBy(x => (int)(x.Hash % _redisService.ShardSize)))
                     {
+                        var mod = g.Key;
                         var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
                         await dbConn.ExecuteAsync(sql);
 
-                        await _redisService.Redis(g.Key).ScriptEvaluateAsync("end_of_ref.lua", new
+                        var countSet = g.GroupBy(x => x.RedisKey).ToDictionary(x => x.Key, x => x.Count());
+                        var values = new List<RedisValue>
                         {
-                            key = new RedisKey(Http.Redis.Const.ReferenceCountKey),
-                            field = new RedisValue(g.Key),
-                            count = g.Count(),
-                            expiry = (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
-                        });
+                            (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
+                            countSet.Count,
+                        };
+                        foreach (var (field, count) in countSet)
+                        {
+                            values.Add(field);
+                            values.Add(count);
+                        }
+
+                        await _redisService.Redis(mod).ScriptEvaluateAsync("end_of_ref.lua",
+                            keys: [new RedisKey(Const.ReferenceCountKey)],
+                            values: [.. values]);
                     }
                 }
                 catch (LogicException e)

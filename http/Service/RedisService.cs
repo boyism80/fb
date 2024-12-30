@@ -50,7 +50,7 @@ namespace Http.Service
     {
         private readonly RedisConfiguration _configuration;
         private readonly Dictionary<int, Redis> _redis = new Dictionary<int, Redis>();
-        private readonly int _shardSize;
+        public int ShardSize { get; private set; }
 
         public RedisService(IConfiguration configuration)
         {
@@ -65,7 +65,7 @@ namespace Http.Service
                     size++;
             }
 
-            _shardSize = size;
+            ShardSize = size;
         }
 
         public Redis Redis(int id)
@@ -78,7 +78,7 @@ namespace Http.Service
 
         public Redis Redis(uint id)
         {
-            return Redis((int)(id % _shardSize));
+            return Redis((int)(id % ShardSize));
         }
 
         public Redis Redis(string key)
@@ -89,12 +89,12 @@ namespace Http.Service
                 hash = hash * 31 + b;
             }
 
-            return Redis((int)(hash % (ulong)_shardSize));
+            return Redis((int)(hash % (ulong)ShardSize));
         }
 
         public Redis Redis(IRedisValueKey key)
         {
-            return Redis(key.GetRedisKey());
+            return Redis(key.GetHash());
         }
 
         public Redis Redis(RedisKey key)
