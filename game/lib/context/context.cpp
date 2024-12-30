@@ -183,6 +183,10 @@ async::task<void> context::handle_start()
     this->command("sleep", &context::handle_command_sleep, true);
     this->command("맵타일", &context::handle_map_tile, true);
     this->command("메일", &context::handle_mail, true);
+    this->command("메일갯수", &context::handle_mail_count, true);
+    this->command("메일읽기", &context::handle_mail_read, true);
+    this->command("광고", &context::handle_ad, true);
+    this->command("웹", &context::handle_web, true);
 
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
@@ -717,10 +721,14 @@ async::task<void> context::save(character& ch)
         traces.push_back(internal::Trace{ch.id(), model, trace->text});
     }
 
+    auto fd     = ch.fd();
     std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
         internal_reqs::Save{ch.to_protocol(), items, spells, traces});
+
+    if (this->assert_socket(fd))
+        this->send(ch, fb_resp::save(), scope::SELF);
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const

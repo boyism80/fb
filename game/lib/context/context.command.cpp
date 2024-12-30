@@ -494,3 +494,39 @@ async::task<bool> context::handle_mail(character& ch, Json::Value& parameters)
     this->send(ch, protocol, scope::SELF);
     co_return true;
 }
+
+async::task<bool> context::handle_mail_count(character& ch, Json::Value& parameters)
+{
+    ch.mailed = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
+    this->send(ch, fb::protocol::game::response::character::state(ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+    co_return true;
+}
+
+async::task<bool> context::handle_mail_read(character& ch, Json::Value& parameters)
+{
+    auto flag = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
+
+    this->send(ch, fb::protocol::game::response::board::mail(flag), scope::SELF);
+    co_return true;
+}
+
+async::task<bool> context::handle_ad(character& ch, Json::Value& parameters)
+{
+    auto width = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 300;
+    auto height = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 120;
+    auto url = parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"https://www.google.com"};
+    auto time = parameters.size() >= 4 && parameters[3].isNumeric() ? parameters[3].asInt() : 60;
+
+    this->send(ch, fb::protocol::game::response::ad(width, height, url, time), scope::SELF);
+    co_return true;
+}
+
+async::task<bool> context::handle_web(character& ch, Json::Value& parameters)
+{
+    auto type = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
+    auto url = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : std::string{"https://www.google.com"};
+    auto message = parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"default message"};
+
+    this->send(ch, fb::protocol::game::response::web(type, url, message), scope::SELF);
+    co_return true;
+}

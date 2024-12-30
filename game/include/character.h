@@ -110,6 +110,7 @@ public:
     fb::game::items                            items  = fb::game::items(*this);
     fb::game::dialog                           dialog = fb::game::dialog(*this);
     std::map<uint32_t, std::unique_ptr<trace>> traces; // order required
+    uint8_t mailed = 0;
 
 private:
     using object::based;

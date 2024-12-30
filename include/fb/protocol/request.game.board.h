@@ -31,6 +31,7 @@ public:
     uint16_t     article;
     uint16_t     offset;
     std::string  title;
+    std::string  user;
     std::string  contents;
 #endif
 
@@ -111,6 +112,13 @@ public:
         case BOARD_ACTION::DELETE:
             this->section = reader.read<uint16_t>();
             this->article = reader.read<uint16_t>();
+            break;
+
+        case BOARD_ACTION::SEND_MAIL:
+            this->section  = reader.read<uint16_t>();
+            this->title    = reader.read<std::string>();
+            this->user     = reader.read<std::string>();
+            this->contents = reader.read<std::string, uint16_t>();
             break;
         }
     }

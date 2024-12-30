@@ -1290,6 +1290,10 @@ public:
     [[nodiscard]] async::task<bool> handle_map_tile(character& ch, Json::Value& parameters);
 
     [[nodiscard]] async::task<bool> handle_mail(character& ch, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_mail_count(character& ch, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_mail_read(character& ch, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_ad(character& ch, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_web(character& ch, Json::Value& parameters);
 
 public:
     // listener : object

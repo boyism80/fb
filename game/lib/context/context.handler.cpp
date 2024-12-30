@@ -797,6 +797,12 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     }
     break;
 
+    case BOARD_ACTION::SEND_MAIL:
+    {
+        this->send(*ch, fb_resp::board::message("미구현입니다", false, true), scope::SELF);
+    }
+    break;
+
     default:
         co_return false;
     }

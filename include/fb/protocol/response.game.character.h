@@ -358,7 +358,7 @@ public:
             writer.write<uint8_t>(this->ch.condition_contains(CONDITION::MAP));   // condition:map?
         }
 
-        writer.write<uint8_t>(0x00); // mail count
+        writer.write<uint8_t>(this->ch.mailed); // mail count
         writer.write<uint8_t>(true); // fast move
         writer.write<uint8_t>(0x00);
     }

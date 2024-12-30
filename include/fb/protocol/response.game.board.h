@@ -174,14 +174,14 @@ public:
 
 public:
     const std::string text;
-    const bool        deleted;
-    const bool        refresh;
+    const bool        success;
+    const bool        mail;
 
 public:
-    message(const std::string& text, bool deleted, bool refresh = false) :
+    message(const std::string& text, bool success, bool mail = false) :
         text(text),
-        deleted(deleted),
-        refresh(refresh)
+        success(success),
+        mail(mail)
     { }
 
 public:
@@ -189,8 +189,8 @@ public:
     {
         co_await header::serialize(writer);
         writer.write<uint8_t>(header);
-        writer.write<uint8_t>(this->refresh ? 0x06 : 0x07); // mail 관련 0x06인 것 같다. 확인 필요
-        writer.write<uint8_t>(this->deleted);
+        writer.write<uint8_t>(this->mail ? 0x06 : 0x07);
+        writer.write<uint8_t>(this->success);
         writer.write<std::string>(this->text);
         writer.write<uint8_t>(0x00);
     }
@@ -205,8 +205,9 @@ public:
     const MAIL_BUTTON_ENABLE button_flags;
 
 public:
-    mails(MAIL_BUTTON_ENABLE button_flags) : button_flags(button_flags)
-    {}
+    mails(MAIL_BUTTON_ENABLE button_flags) :
+        button_flags(button_flags)
+    { }
 
 public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
@@ -220,7 +221,7 @@ public:
 
         auto count = 23;
         writer.write<uint8_t>(count);
-        for(int i = 0; i < count; i++)
+        for (int i = 0; i < count; i++)
         {
             auto read = (i % 2) == 0;
             writer.write<bool>(read);
@@ -230,6 +231,40 @@ public:
             writer.write<uint8_t>(31); // day
             writer.write<std::string>(std::format("mail title {}", i));
         }
+        writer.write<uint8_t>(0x00);
+    }
+};
+
+class mail : public fb::protocol::base::header
+{
+public:
+    inline static uint8_t header = 0x31;
+
+public:
+    const uint8_t button_flag;
+
+public:
+    mail(uint8_t button_flag) :
+        button_flag(button_flag)
+    { }
+
+public:
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const
+    {
+        co_await header::serialize(writer);
+        writer.write<uint8_t>(header);
+        writer.write<uint8_t>(0x05);
+        writer.write<uint8_t>(button_flag);
+        writer.write<uint8_t>(0x00);
+
+        auto mail_id = 100;
+        writer.write<uint16_t>(mail_id);
+
+        writer.write<std::string>("name");
+        writer.write<uint8_t>(12); // month
+        writer.write<uint8_t>(31); // day
+        writer.write<std::string>("title");
+        writer.write<std::string, uint16_t>("mail contents");
         writer.write<uint8_t>(0x00);
     }
 };
