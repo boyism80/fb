@@ -399,6 +399,9 @@ async::task<bool> context::init_ch(const internal::Character&           response
         position_y = uint32_t(transfer.value().position.y);
     }
 
+    if (co_await ch.map(&this->maps[map], point16_t(position_x, position_y)) == false)
+        co_return false;
+
     if (group.has_value())
     {
         auto gid = group.value();
@@ -421,7 +424,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
         });
     }
 
-    co_return co_await ch.map(&this->maps[map], point16_t(position_x, position_y));
+    co_return true;
 }
 
 void context::init_option(const internal::Option& response, fb::game::character& ch)
