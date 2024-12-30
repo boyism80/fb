@@ -56,22 +56,20 @@
     },
     "redis": {
         "section-1": {
-            "port": {
-                "cluster": 6379,
-                "node": 30110
-            }
+            "-1": { "port": { "cluster": 6379, "node": 30110 } },
+            "0": { "port": { "cluster": 6380, "node": 30111 } },
+            "1": { "port": { "cluster": 6381, "node": 30112 } },
+            "2": { "port": { "cluster": 6382, "node": 30113 } },
+            "3": { "port": { "cluster": 6383, "node": 30114 } },
+            "4": { "port": { "cluster": 6384, "node": 30115 } },
+            "5": { "port": { "cluster": 6385, "node": 30116 } },
+            "6": { "port": { "cluster": 6386, "node": 30117 } },
+            "7": { "port": { "cluster": 6387, "node": 30118 } },
+            "8": { "port": { "cluster": 6388, "node": 30119 } },
+            "9": { "port": { "cluster": 6389, "node": 30120 } }
         },
         "section-2": {
-            "port": {
-                "cluster": 6380,
-                "node": 30111
-            }
-        },
-        "gateway": {
-            "port": {
-                "cluster": 6381,
-                "node": 30112
-            }
+            "-1": { "port": { "cluster": 6390, "node": 30121 } }
         }
     },
     "rabbitmq": {
@@ -79,11 +77,11 @@
             "port": {
                 "amqp": {
                     "cluster": 5672,
-                    "node": 30120
+                    "node": 30300
                 },
                 "management": {
                     "cluster": 15672,
-                    "node": 30130
+                    "node": 30301
                 }
             }
         },
@@ -91,18 +89,17 @@
             "port": {
                 "amqp": {
                     "cluster": 5673,
-                    "node": 30121
+                    "node": 30310
                 },
                 "management": {
                     "cluster": 15673,
-                    "node": 30131
+                    "node": 30311
                 }
             }
         }
     },
     "gateway": {
         "port": 30000,
-        "redis": "gateway",
         "replicas": 3
     },
     "login": {

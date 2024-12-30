@@ -8,67 +8,70 @@ module.exports = {
         let index = 0
         const ports = []
         for(const [section, sectionConf] of Object.entries(conf.redis)) {
-            const statefulSet = new k8s.apps.v1.StatefulSet(`redis-${section}`, {
-                metadata: {
-                    name: `redis-${section}`,
-                    namespace: namespace.metadata.name,
-                },
-                spec: {
-                    serviceName: "redis",
-                    replicas: 1,
-                    selector: {
-                        matchLabels: {
-                            app: "redis",
-                        },
+
+            for(const [id, redisConf] of Object.entries(sectionConf)) {
+                const statefulSet = new k8s.apps.v1.StatefulSet(`redis-${section}-${id}`, {
+                    metadata: {
+                        name: `redis-${section}-${id}`,
+                        namespace: namespace.metadata.name,
                     },
-                    template: {
-                        metadata: {
-                            labels: {
+                    spec: {
+                        serviceName: "redis",
+                        replicas: 1,
+                        selector: {
+                            matchLabels: {
                                 app: "redis",
                             },
                         },
-                        spec: {
-                            containers: [
-                                {
-                                    name: "redis",
-                                    image: "redis:6.2.4",
-                                    ports: [
-                                        {
-                                            containerPort: 6379,
-                                            name: `redis-${index}`,
-                                        },
-                                    ],
-                                    volumeMounts: [
-                                        {
-                                            name: `data-volume-${section}`,
-                                            mountPath: "/data",
-                                        },
-                                    ],
+                        template: {
+                            metadata: {
+                                labels: {
+                                    app: "redis",
                                 },
-                            ],
-                            volumes: [
-                            {
-                                name: `data-volume-${section}`,
-                                hostPath: {
-                                    path: `/mnt/fb/redis/${section}`,
-                                    type: "DirectoryOrCreate"
-                                }
-                            }]
-                        },
+                            },
+                            spec: {
+                                containers: [
+                                    {
+                                        name: "redis",
+                                        image: "redis:6.2.4",
+                                        ports: [
+                                            {
+                                                containerPort: 6379,
+                                                name: `redis-${index}`,
+                                            },
+                                        ],
+                                        volumeMounts: [
+                                            {
+                                                name: `data-volume-${section}/${id}`,
+                                                mountPath: "/data",
+                                            },
+                                        ],
+                                    },
+                                ],
+                                volumes: [
+                                {
+                                    name: `data-volume-${section}/${id}`,
+                                    hostPath: {
+                                        path: `/mnt/fb/redis/${section}/${id}`,
+                                        type: "DirectoryOrCreate"
+                                    }
+                                }]
+                            },
+                        }
                     }
-                }
-            })
+                })
 
-            ports.push({
-                name: `redis-${section}`,
-                port: sectionConf.port.cluster,
-                targetPort: `redis-${index}`,
-                nodePort: sectionConf.port.node,
-            })
+                ports.push({
+                    name: `redis-${section}-${id}`,
+                    port: redisConf.port.cluster,
+                    targetPort: `redis-${index}`,
+                    nodePort: redisConf.port.node,
+                })
 
-            index++
+                index++
+            }
         }
-        
+
         return new k8s.core.v1.Service("redis", {
             metadata: {
                 namespace: namespace.metadata.name,

@@ -54,31 +54,31 @@ namespace WriteBack.Service
 
         private async Task OnWork(int db, CancellationToken stoppingToken)
         {
+            var bufferKey = $"{RedisBufferKey}:{db}";
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var connRedis = _redisService.Connection;
-                    var result = await connRedis.ScriptEvaluateAsync("pop_sql_range.lua", new
+                    var redisSqlConn = _redisService.Redis(bufferKey);
+                    var result = await redisSqlConn.ScriptEvaluateAsync("pop_sql_range.lua", new
                     {
-                        key = new RedisKey($"{(RedisBufferKey)}:{db}"),
+                        key = new RedisKey(bufferKey),
                         count = 100
                     });
                     if (result.Length == 0)
                         continue;
 
-                    await using var connection = _dbContext.Connection(db);
+                    await using var dbConn = _dbContext.Connection(db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));
                     foreach (var g in backgroundCommitEntryList.GroupBy(x => x.RedisKey))
                     {
-                        var redisKey = g.Key;
                         var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
-                        await connection.ExecuteAsync(sql);
+                        await dbConn.ExecuteAsync(sql);
 
-                        await connRedis.ScriptEvaluateAsync("end_of_ref.lua", new
+                        await _redisService.Redis(g.Key).ScriptEvaluateAsync("end_of_ref.lua", new
                         {
                             key = new RedisKey(Http.Redis.Const.ReferenceCountKey),
-                            field = new RedisValue(redisKey),
+                            field = new RedisValue(g.Key),
                             count = g.Count(),
                             expiry = (int)Http.Redis.Const.CacheTimeToLive.TotalSeconds,
                         });

@@ -67,6 +67,7 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<RedisService>();
+        builder.Services.AddSingleton<RedisDistributedLockService>();
         builder.Services.AddSingleton<Fb.Model.Model>();
         builder.Services.AddSingleton<IMapper>(_ => new Mapper(config));
         builder.Services.AddSingleton<RabbitMqService>();

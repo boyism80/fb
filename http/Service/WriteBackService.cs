@@ -32,7 +32,7 @@ namespace Http.Service
         public async Task Post(int db, string sql, string key)
         {
             var bufferKey = $"{RedisBufferKey}:{db}";
-            var redis = _redisService.Connection;
+            var redis = _redisService.Redis(bufferKey).Connection;
             await redis.ListRightPushAsync(
                 new RedisKey(bufferKey),
                 new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry

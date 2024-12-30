@@ -9,14 +9,6 @@
         "background": 8
     },
     "log": ["debug", "info", "warn", "fatal"],
-    "redis": {
-        "default": 
-        {
-            "ip": "192.168.0.181",
-            "port": 30110,
-            "db": 0
-        }
-    },
     "entrypoints": [
         {
             "name": "채승현",

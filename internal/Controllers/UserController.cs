@@ -23,16 +23,19 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
         private readonly RedisService _redisService;
+        private readonly RedisDistributedLockService _distributedLock;
 
         public UserController(IConfiguration configuration,
             IMapper mapper,
             DbContext dbContext,
-            RedisService redisService)
+            RedisService redisService,
+            RedisDistributedLockService distributedLock)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
             _redisService = redisService;
+            _distributedLock = distributedLock;
         }
 
         [HttpGet("uid/{name}")]
@@ -223,9 +226,7 @@ namespace Internal.Controllers
                     Uid = uid,
                 });
 
-            var redis = _redisService.Connection;
-
-            await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(uid), redis).AcquireAsync())
+            await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
             {
                 var sync = await _dbContext.CharacterSync.Get(uid) ??
                     _dbContext.CharacterSync.Set(new CharacterSync
