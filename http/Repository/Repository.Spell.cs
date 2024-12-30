@@ -8,7 +8,8 @@ namespace Http.Reepository
     {
         public SpellRepository(DbContext dbContext,
             RedisService redisService,
-            WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
+            RedisDistributedLockService distributedLock,
+            WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
 
         }

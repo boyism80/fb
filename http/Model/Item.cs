@@ -10,7 +10,7 @@ namespace Http.Model
         public short Parts { get; set; }
         public short Deposited { get; set; }
 
-        public uint GetDbKey() => Owner;
+        public uint GetHash() => Owner;
         public RedisKey GetRedisKey() => $"cache:item:{Owner}";
         public RedisValue GetRedisField() => $"{Index}-{Parts}-{Deposited}";
     }

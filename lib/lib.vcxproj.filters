@@ -16865,9 +16865,6 @@
     <ClInclude Include="include\fb\parallel_worker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\fb\redis.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\fb\socket.h">
       <Filter>Header Files</Filter>
     </ClInclude>

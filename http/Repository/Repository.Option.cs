@@ -1,7 +1,6 @@
 using Http.Extension;
 using Http.Model;
 using Http.Service;
-using Http.Service;
 
 namespace Http.Reepository
 {
@@ -9,7 +8,8 @@ namespace Http.Reepository
     {
         public OptionRepository(DbContext dbContext,
             RedisService redisService,
-            WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
+            RedisDistributedLockService distributedLock,
+            WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
         }
 

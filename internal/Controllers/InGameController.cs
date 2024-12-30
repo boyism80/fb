@@ -43,12 +43,12 @@ namespace Internal.Controllers
         {
             try
             {
-                var connection = _redisService.Connection;
-                var config = await connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
-                if (config == null)
+                var redis = _redisService.Redis(-1);
+                var conf = await redis.Connection.JsonGetAsync<HostConfig>(new HeartBeatKey { Service = fb.protocol._internal.Service.Game, Id = request.Host }.Key);
+                if (conf == null)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
-                var redisResult = await connection.ScriptEvaluateAsync("login.lua", new
+                var redisResult = await redis.ScriptEvaluateAsync("login.lua", new
                 {
                     key = new RedisKey(new SessionKey { }.Key),
                     name = request.Name,
@@ -74,8 +74,8 @@ namespace Internal.Controllers
                 return new Response.Login
                 {
                     Logon = false,
-                    Ip = config.IP,
-                    Port = config.Port
+                    Ip = conf.IP,
+                    Port = conf.Port
                 };
             }
             catch (LogicException e)
@@ -98,8 +98,8 @@ namespace Internal.Controllers
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
-            var connection = _redisService.Connection;
-            await connection.HashDeleteAsync(new SessionKey { }.Key, request.Name);
+            var conn = _redisService.Redis(-1).Connection;
+            await conn.HashDeleteAsync(new SessionKey { }.Key, request.Name);
 
             return new Response.Logout
             {
@@ -112,18 +112,18 @@ namespace Internal.Controllers
         {
             try
             {
-                var connection = _redisService.Connection;
-                var connectedGameConf = await connection.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
-                if (connectedGameConf.IsNull)
+                var conn = _redisService.Redis(-1).Connection;
+                var gameConf = await conn.StringGetAsync(new HeartBeatKey { Service = request.Service, Id = request.Id }.Key);
+                if (gameConf.IsNull)
                     throw new LogicException(ErrorCode.ServerNotReady);
 
                 if (request.ForceShutdown && string.IsNullOrEmpty(request.Name) == false)
                 {
                     // TODO: 루아스크립트
-                    var session = await connection.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
+                    var session = await conn.JsonHashGetAsync<Session>(new SessionKey().Key, new RedisValue(request.Name));
                     if (session != null)
                     {
-                        await connection.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
+                        await conn.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
                         _rabbitMqService.Publish(new Response.KickOut
                         {
                             Uid = session.Uid
@@ -132,7 +132,7 @@ namespace Internal.Controllers
                     }
                 }
 
-                var config = JsonConvert.DeserializeObject<HostConfig>(connectedGameConf.ToString());
+                var config = JsonConvert.DeserializeObject<HostConfig>(gameConf.ToString());
                 return new Response.Transfer
                 {
                     Ip = config.IP,
@@ -159,14 +159,14 @@ namespace Internal.Controllers
         [HttpPost("ping")]
         public async Task<Response.Pong> Ping(Request.Ping request)
         {
-            var connection = _redisService.Connection;
+            var conn = _redisService.Redis(-1).Connection;
             var config = new HostConfig
             {
                 Name = request.Name,
                 IP = request.Ip,
                 Port = request.Port
             };
-            await connection.StringSetAsync(new HeartBeatKey
+            await conn.StringSetAsync(new HeartBeatKey
             {
                 Service = request.Service,
                 Id = request.Id,

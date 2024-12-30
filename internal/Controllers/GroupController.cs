@@ -22,6 +22,7 @@ namespace Internal.Controllers
         private readonly Fb.Model.Model _model;
         private readonly SessionService _sessionService;
         private readonly RedisService _redisService;
+        private readonly RedisDistributedLockService _distributedLock;
 
         public GroupController(IConfiguration configuration,
             IMapper mapper,
@@ -29,7 +30,8 @@ namespace Internal.Controllers
             RabbitMqService rabbitMqService,
             Fb.Model.Model model,
             SessionService sessionService,
-            RedisService redisService)
+            RedisService redisService,
+            RedisDistributedLockService distributedLock)
         {
             _configuration = configuration;
             _mapper = mapper;
@@ -38,6 +40,7 @@ namespace Internal.Controllers
             _model = model;
             _sessionService = sessionService;
             _redisService = redisService;
+            _distributedLock = distributedLock;
         }
 
         [HttpGet("{id}")]
@@ -45,8 +48,9 @@ namespace Internal.Controllers
         {
             try
             {
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(Group.DistributedLockKey(id), redis).AcquireAsync())
+                var redis = _redisService.Redis(id).Connection;
+
+                await using (await _distributedLock.Lock(Group.DistributedLockKey(id)))
                 {
                     var group = await _dbContext.Group.Get(id) ??
                         throw new LogicException(ErrorCode.GroupNotFound);
@@ -94,8 +98,6 @@ namespace Internal.Controllers
         {
             try
             {
-                var redis = _redisService.Connection;
-
                 var master = await _dbContext.Character.Get(request.Master) ??
                     throw new Exception($"user {request.Master} not found");
 
@@ -114,9 +116,9 @@ namespace Internal.Controllers
                 var member = await _dbContext.Character.Get(memberSession.Uid) ??
                     throw new Exception($"user {request.Member} not found");
 
-                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(master.Id), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(master.Id)))
                 {
-                    await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(member.Id), redis).AcquireAsync())
+                    await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(member.Id)))
                     {
                         var masterSync = await _dbContext.CharacterSync.Get(master.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -124,7 +126,7 @@ namespace Internal.Controllers
                         var memberSync = await _dbContext.CharacterSync.Get(member.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
 
-                        await using (await new RedisDistributedLock(Group.DistributedLockKey(master.Id), redis).AcquireAsync())
+                        await using (await _distributedLock.Lock(Group.DistributedLockKey(master.Id)))
                         {
                             var group = masterSync.Group != null ? await _dbContext.Group.Get(master.Id) : null;
                             var isCreated = false;
@@ -234,8 +236,7 @@ namespace Internal.Controllers
                 var character = await _dbContext.Character.Get(session.Uid) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(character.Id), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(character.Id)))
                 {
                     var sync = await _dbContext.CharacterSync.Get(character.Id) ??
                         throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -246,7 +247,7 @@ namespace Internal.Controllers
                     var groupId = sync.Group ??
                         throw new LogicException(ErrorCode.GroupNotJoined);
 
-                    await using (await new RedisDistributedLock(Group.DistributedLockKey(groupId), redis).AcquireAsync())
+                    await using (await _distributedLock.Lock(Group.DistributedLockKey(groupId)))
                     {
                         var group = await _dbContext.Group.Get(groupId) ??
                         throw new LogicException(ErrorCode.GroupNotFound);
@@ -257,7 +258,7 @@ namespace Internal.Controllers
                             var memberNames = new List<string>();
                             foreach (var uid in group.Members)
                             {
-                                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(uid), redis).AcquireAsync())
+                                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
                                 {
                                     var member = await _dbContext.Character.Get(uid) ??
                                         throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -353,8 +354,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(Group.DistributedLockKey(request.Group), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(Group.DistributedLockKey(request.Group)))
                 {
                     var clan = await _dbContext.Group.Get(request.Group) ??
                         throw new LogicException(ErrorCode.GroupNotFound);

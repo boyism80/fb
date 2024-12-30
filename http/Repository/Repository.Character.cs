@@ -12,7 +12,8 @@ namespace Http.Reepository
 
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
-            WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
+            RedisDistributedLockService distributedLock,
+            WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
             _dbContext = dbContext;
         }

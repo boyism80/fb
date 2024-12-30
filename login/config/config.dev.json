@@ -21,14 +21,6 @@
     "forbidden": [ "김대중", "노무현" ],
     "agreement": "적당히 좀 하지?\n사람 열받게 하지 말고",
     "admin_mode": true,
-    "redis": {
-        "default": 
-        {
-            "ip": "192.168.0.181",
-            "port": 30110,
-            "db": 0
-        }
-    },
     "log": ["debug", "info", "warn", "fatal"],
     "init": {
         "map": 1,

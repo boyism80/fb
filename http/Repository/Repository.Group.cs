@@ -1,7 +1,6 @@
 using Http.Extension;
 using Http.Model;
 using Http.Service;
-using Http.Service;
 using Newtonsoft.Json;
 
 namespace Http.Reepository
@@ -10,7 +9,8 @@ namespace Http.Reepository
     {
         public GroupRepository(DbContext dbContext,
             RedisService redisService,
-            WriteBackService dbExecuteService) : base(dbContext, redisService, dbExecuteService)
+            RedisDistributedLockService distributedLock,
+            WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
         {
         }
 

@@ -4,7 +4,6 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
-using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 using Protocol = fb.protocol._internal;
@@ -22,18 +21,21 @@ namespace Internal.Controllers
         private readonly RedisService _redisService;
         private readonly RabbitMqService _rabbitMqService;
         private readonly IMapper _mapper;
+        private readonly RedisDistributedLockService _distributedLock;
 
         public ClanController(IConfiguration configuration,
             DbContext dbContext,
             RedisService redisService,
             RabbitMqService rabbitMqService,
-            IMapper mapper)
+            IMapper mapper,
+            RedisDistributedLockService distributedLock)
         {
             _configuration = configuration;
             _dbContext = dbContext;
             _redisService = redisService;
             _rabbitMqService = rabbitMqService;
             _mapper = mapper;
+            _distributedLock = distributedLock;
         }
 
         private async Task<List<Protocol.ClanMember>> GetClanMemberResponse(uint id)
@@ -59,8 +61,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(Clan.DistributedLockKey(id), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(Clan.DistributedLockKey(id)))
                 {
                     var clan = await _dbContext.Clan.Get(id) ??
                         throw new LogicException(ErrorCode.NotFoundClan);
@@ -102,7 +103,6 @@ namespace Internal.Controllers
             await using var db = _dbContext.Connection(-1);
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
-            var redis = _redisService.Connection;
             try
             {
                 var ch = await _dbContext.Character.Get(request.Master) ??
@@ -116,9 +116,9 @@ namespace Internal.Controllers
                 if (!result.Result)
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
 
-                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(ch.Id), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(ch.Id)))
                 {
-                    await using (await new RedisDistributedLock(Clan.DistributedLockKey(result.Id), redis).AcquireAsync())
+                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(result.Id)))
                     {
                         var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -183,10 +183,9 @@ namespace Internal.Controllers
             await using var db = _dbContext.Connection(-1);
             await db.OpenAsync();
             await using var trans = await db.BeginTransactionAsync();
-            var redis = _redisService.Connection;
             try
             {
-                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(request.Master), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(request.Master)))
                 {
                     var ch = await _dbContext.Character.Get(request.Master) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -197,7 +196,7 @@ namespace Internal.Controllers
                     if (sync.Clan == null)
                         throw new LogicException(ErrorCode.ClanNotJoined);
 
-                    await using (await new RedisDistributedLock(Clan.DistributedLockKey(sync.Clan.Value), redis).AcquireAsync())
+                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(sync.Clan.Value)))
                     {
                         var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
@@ -261,10 +260,9 @@ namespace Internal.Controllers
         [HttpPost("title")]
         public async Task<Response.SetClanTitle> SetTitle(Request.SetClanTitle request)
         {
-            var redis = _redisService.Connection;
             try
             {
-                await using (await new RedisDistributedLock(Clan.DistributedLockKey(request.Clan), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(Clan.DistributedLockKey(request.Clan)))
                 {
                     var clan = await _dbContext.Clan.Get(request.Clan) ??
                         throw new LogicException(ErrorCode.NotFoundClan);
@@ -313,8 +311,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(request.Uid), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(request.Uid)))
                 {
                     var target = await _dbContext.Character.Get(request.Uid) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -325,7 +322,7 @@ namespace Internal.Controllers
                     if (targetSync.Clan != null)
                         throw new LogicException(ErrorCode.ClanAlreadyJoined);
 
-                    await using (await new RedisDistributedLock(Clan.DistributedLockKey(request.Clan), redis).AcquireAsync())
+                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(request.Clan)))
                     {
                         var clan = await _dbContext.Clan.Get(request.Clan) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
@@ -386,8 +383,7 @@ namespace Internal.Controllers
                 var uid = await _dbContext.Character.GetCharacterId(request.Name) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(CharacterSync.DistributedLockKey(uid), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(uid)))
                 {
                     var ch = await _dbContext.Character.Get(uid) ??
                         throw new LogicException(ErrorCode.NotFoundCharacter);
@@ -401,7 +397,7 @@ namespace Internal.Controllers
                     if (sync.Clan.Value != request.Clan)
                         throw new LogicException(ErrorCode.ClanNotMatched);
 
-                    await using (await new RedisDistributedLock(Clan.DistributedLockKey(sync.Clan.Value), redis).AcquireAsync())
+                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(sync.Clan.Value)))
                     {
                         var clan = await _dbContext.Clan.Get(sync.Clan.Value) ??
                             throw new LogicException(ErrorCode.NotFoundClan);
@@ -457,8 +453,7 @@ namespace Internal.Controllers
         {
             try
             {
-                var redis = _redisService.Connection;
-                await using (await new RedisDistributedLock(Clan.DistributedLockKey(request.Clan), redis).AcquireAsync())
+                await using (await _distributedLock.Lock(Clan.DistributedLockKey(request.Clan)))
                 {
                     var clan = await _dbContext.Clan.Get(request.Clan) ??
                         throw new LogicException(ErrorCode.NotFoundClan);

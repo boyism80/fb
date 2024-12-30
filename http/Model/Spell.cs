@@ -7,7 +7,7 @@ namespace Http.Model
         public required uint Owner { get; set; }
         public byte Slot { get; set; }
 
-        public uint GetDbKey() => Owner;
+        public uint GetHash() => Owner;
         public RedisKey GetRedisKey() => $"cache:spell:{Owner}";
         public RedisValue GetRedisField() => $"{Slot}";
     }

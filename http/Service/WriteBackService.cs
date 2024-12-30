@@ -7,6 +7,7 @@ namespace Http.Service
     {
         public required string SQL { get; set; }
         public required string RedisKey { get; set; }
+        public required uint Hash { get; set; }
     };
 
     public class WriteBackService
@@ -29,23 +30,24 @@ namespace Http.Service
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
         }
 
-        public async Task Post(int db, string sql, string key)
+        public async Task Post(int db, string sql, string key, uint hash)
         {
             var bufferKey = $"{RedisBufferKey}:{db}";
-            var redis = _redisService.Connection;
+            var redis = _redisService.Redis(bufferKey).Connection;
             await redis.ListRightPushAsync(
                 new RedisKey(bufferKey),
                 new RedisValue(JsonConvert.SerializeObject(new BackgroundCommitEntry
                 {
                     SQL = sql,
-                    RedisKey = key
+                    RedisKey = key,
+                    Hash = hash
                 })));
         }
 
-        public async Task Post(uint modKey, string sql, string key)
+        public async Task Post(uint hash, string sql, string key)
         {
-            var db = modKey % _dbContext.SharedDbSize;
-            await Post((int)db, sql, key);
+            var db = hash % _dbContext.SharedDbSize;
+            await Post((int)db, sql, key, hash);
         }
     }
 }

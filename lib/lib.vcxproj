@@ -157,7 +157,6 @@
     <ClInclude Include="include\fb\mst.h" />
     <ClInclude Include="include\fb\mutex.h" />
     <ClInclude Include="include\fb\parallel_worker.h" />
-    <ClInclude Include="include\fb\redis.h" />
     <ClInclude Include="include\fb\socket.h" />
     <ClInclude Include="include\fb\stream.h" />
     <ClInclude Include="include\fb\stream_reader.h" />

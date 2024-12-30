@@ -16,14 +16,6 @@ module.exports = function () {
                     io: 12,
                     background: 8
                 },
-                redis: {
-                    default: 
-                    {
-                        ip: "redis",
-                        port: conf.redis[conf.gateway.redis].port.cluster,
-                        db: 0
-                    }
-                },
                 log: ["info", "fatal"],
                 entrypoints: []
             }

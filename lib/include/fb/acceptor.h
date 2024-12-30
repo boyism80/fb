@@ -4,7 +4,6 @@
 #include <ctime>
 #include <fb/mutex.h>
 #include <fb/protocol/flatbuffer/protocol.h>
-#include <fb/redis.h>
 #include <fb/socket.h>
 #include <httplib.h>
 #include <iomanip>
@@ -39,7 +38,6 @@ protected:
     std::mutex                  _background_queue_mutex;
 
 protected:
-    fb::redis        _redis;
     fb::mutex        _mutex;
     socket_container _sockets;
 
@@ -52,7 +50,6 @@ protected:
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
         fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
-        _redis(*this, fb::config<std::string>("redis:default:ip"), fb::config<uint16_t>("redis:default:port")),
         _mutex(*this)
     { }
 

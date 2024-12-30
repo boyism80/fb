@@ -18,7 +18,8 @@ namespace Http.Service
         public async Task<Session> Get(string name)
         {
             var key = new SessionKey().Key;
-            var data = await _redisService.Connection.HashGetAsync(new RedisKey(key), new RedisValue(name));
+            var conn = _redisService.Redis(-1).Connection;
+            var data = await conn.HashGetAsync(new RedisKey(key), new RedisValue(name));
             if (data.IsNull)
                 return null;
 

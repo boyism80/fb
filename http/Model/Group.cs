@@ -6,7 +6,7 @@ namespace Http.Model
     {
         public required uint Master { get; set; }
 
-        public uint GetDbKey() => Master;
+        public uint GetHash() => Master;
         public RedisKey GetRedisKey() => $"cache:group:{Master}";
     }
 
