@@ -185,6 +185,11 @@ fb::game::life* fb::game::mob::fix()
         if (this->_target == nullptr)
             throw nullptr;
 
+        auto thread = this->thread();
+        if (thread == nullptr)
+            return nullptr;
+        thread->assert_ptr(this->_target);
+
         if (this->_target->alive() == false)
             throw nullptr;
 
@@ -347,6 +352,8 @@ uint32_t fb::game::mob::damage(uint32_t value, fb::game::object* from, bool crit
 
     if (!this->alive())
         this->kill(from, DESTROY_TYPE::DEAD);
+
+    return result;
 }
 
 uint32_t fb::game::mob::auto_attack_damage(MOB_SIZE size) const

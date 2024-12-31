@@ -639,7 +639,7 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
         {
             auto thread = this->threads.at(i);
             std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-                auto params = thread.data<thread_params>();
+                auto params = thread.template data<thread_params>();
                 for (auto& [_, ch] : params->characters)
                 {
                     ch->send(*fn(*ch).get(), encrypt);
@@ -656,7 +656,7 @@ void context::send(const fb::protocol::header& response, const map& map, bool en
 {
     auto thread = map.thread();
     std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-        auto params = thread.data<thread_params>();
+        auto params = thread.template data<thread_params>();
         for (auto& [_, ch] : params->characters)
         {
             ch->send(response, encrypt);
@@ -671,7 +671,7 @@ void context::send(const fb::protocol::header& response, bool encrypt)
     {
         auto thread = this->threads.at(i);
         std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-            auto params = thread.data<thread_params>();
+            auto params = thread.template data<thread_params>();
             for (auto& [_, ch] : params->characters)
             {
                 ch->send(response, encrypt);
