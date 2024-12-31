@@ -88,9 +88,9 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
         }
 
         auto index = this->add(item);
+        this->_owner.update(STATE_LEVEL::LEVEL_MAX);
         if (listener != nullptr)
         {
-            listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MAX);
             listener->on_equipment_off(this->_owner, parts, index);
         }
 
@@ -141,9 +141,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             else
                 std::ignore = cash->destroy();
 
-            if (listener != nullptr)
-                listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MIN);
-
+            this->_owner.update(STATE_LEVEL::LEVEL_MIN);
             if (remain != 0)
             {
                 this->_owner.message(message::money::FULL);

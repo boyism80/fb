@@ -51,17 +51,6 @@ protected:
      */
     virtual ~life();
 
-protected:
-    /**
-     * @brief      Calculates the damage.
-     *
-     * @param[in]  value  The value
-     * @param[in]  life   The life
-     *
-     * @return     The damage.
-     */
-    uint32_t calculate_damage(uint32_t value, const fb::game::life& life) const;
-
 public:
     /**
      * @brief      { function_description }
@@ -129,7 +118,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t hp_up(uint32_t value, fb::game::object* from = nullptr);
+    virtual uint32_t heal(uint32_t value, fb::game::object* from = nullptr);
     /**
      * @brief      { function_description }
      *
@@ -139,7 +128,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t hp_down(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
+    virtual uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
     /**
      * @brief      { function_description }
      *
@@ -158,6 +147,14 @@ public:
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t mp_down(uint32_t value, fb::game::object* from = nullptr);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      from  The from
+     */
+    virtual void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+
     /**
      * @brief      { function_description }
      *
@@ -196,10 +193,6 @@ public:
     virtual bool alive() const;
     /**
      * @brief      { function_description }
-     */
-    void kill();
-    /**
-     * @brief      { function_description }
      *
      * @param[in]  spell  The spell
      *
@@ -234,11 +227,23 @@ public:
      */
     bool active(const fb::model::spell& spell, fb::game::object& to);
 
-protected:
+public:
     /**
-     * @brief      Called on update.
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
      */
-    virtual void on_update();
+    virtual uint32_t auto_attack_damage(MOB_SIZE size) const = 0;
+
+    /**
+     * @brief      Calculates the critical.
+     *
+     * @param      you   You
+     *
+     * @return     The critical.
+     */
+    virtual bool calculate_critical(fb::game::life& you) const;
+
     /**
      * @brief      Called on calculate damage.
      *
@@ -246,7 +251,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t on_calculate_damage(bool critical) const = 0;
+    virtual uint32_t calculate_damage(uint32_t damage, const fb::game::life& you, bool critical) const;
     /**
      * @brief      Called on calculate critical.
      *
@@ -254,57 +259,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual bool on_calculate_critical(fb::game::life& you) const;
-    /**
-     * @brief      Called on calculate miss.
-     *
-     * @param      you   You
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual bool on_calculate_miss(fb::game::life& you) const;
-    /**
-     * @brief      Called on attack.
-     *
-     * @param      you   You
-     */
-    virtual void on_attack(fb::game::object* you);
-    /**
-     * @brief      Called on hit.
-     *
-     * @param      you       You
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    virtual void on_hit(fb::game::life& you, uint32_t damage, bool critical);
-    /**
-     * @brief      Called when damaged.
-     *
-     * @param      from      The from
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    virtual void on_damaged(fb::game::object* from, uint32_t damage, bool critical);
-    /**
-     * @brief      Called on die.
-     *
-     * @param      from  The from
-     */
-    virtual void on_die(fb::game::object* from);
-
-public:
-    /**
-     * @brief      Called on exponent.
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual uint32_t on_exp() const;
-    /**
-     * @brief      Called on kill.
-     *
-     * @param      you   You
-     */
-    virtual void on_kill(fb::game::life& you);
+    virtual bool calculate_miss(fb::game::life& you) const;
 
 public:
     /**
@@ -416,55 +371,14 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    virtual void on_attack(life& me, object* you) = 0;
-    /**
-     * @brief      Called on hit.
-     *
-     * @param      me        { parameter_description }
-     * @param      you       You
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    virtual void on_hit(life& me, life& you, uint32_t damage, bool critical) = 0;
-    /**
-     * @brief      Called on kill.
-     *
-     * @param      me    { parameter_description }
-     * @param      you   You
-     */
-    virtual void on_kill(life& me, life& you) = 0;
-    /**
-     * @brief      Called when damaged.
-     *
-     * @param      me        { parameter_description }
-     * @param      you       You
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    virtual void on_damaged(life& me, object* you, uint32_t damage, bool critical) = 0;
+    virtual void on_attack(life& me) = 0;
     /**
      * @brief      Called on die.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    virtual void on_die(life& me, object* you) = 0;
-    /**
-     * @brief      Called on heal hp.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  value  The value
-     * @param      from   The from
-     */
-    virtual void on_heal_hp(life& me, uint32_t value, fb::game::object* from) = 0;
-    /**
-     * @brief      Called on heal mp.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  value  The value
-     * @param      from   The from
-     */
-    virtual void on_heal_mp(life& me, uint32_t value, fb::game::object* from) = 0;
+    virtual void on_dead(life& me, object* you) = 0;
     /**
      * @brief      Called on hp.
      *
@@ -472,7 +386,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  before   The before
      * @param[in]  current  The current
      */
-    virtual void on_hp(life& me, uint32_t before, uint32_t current) = 0;
+    virtual void on_hp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from) = 0;
     /**
      * @brief      Called on mp.
      *
@@ -480,7 +394,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param[in]  before   The before
      * @param[in]  current  The current
      */
-    virtual void on_mp(life& me, uint32_t before, uint32_t current) = 0;
+    virtual void on_mp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from) = 0;
 };
 
 }} // namespace fb::game

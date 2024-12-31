@@ -339,7 +339,7 @@ public:
     {
         if constexpr (std::is_same_v<T, fb::game::object>)
         {
-            std::ignore = co_await obj.map(nullptr, destroy_type);
+            std::ignore = co_await obj.map(nullptr, point16_t{0, 0}, destroy_type);
         }
         delete &obj;
         co_return;
@@ -570,7 +570,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> handle_start() final;
+    async::task<void> handle_start() override final;
     /**
      * @brief      { function_description }
      *
@@ -578,7 +578,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::game::character>& ch) final;
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::game::character>& ch) override final;
     /**
      * @brief      { function_description }
      *
@@ -586,7 +586,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::game::character>& ch) final;
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::game::character>& ch) override final;
     /**
      * @brief      { function_description }
      *
@@ -594,8 +594,8 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::character* handle_accepted(fb::socket<fb::game::character>& socket) final;
-    // async::task<void>       handle_internal_connected() final;
+    fb::game::character* handle_accepted(fb::socket<fb::game::character>& socket) override final;
+    // async::task<void>       handle_internal_connected() override final;
 
     // for heart-beat
 
@@ -1105,6 +1105,25 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> handle_command_level(fb::game::character& ch, Json::Value& parameters);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_hp(fb::game::character& ch, Json::Value& parameters);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_mp(fb::game::character& ch, Json::Value& parameters);
     /**
      * @brief      { function_description }
      *
@@ -1271,13 +1290,13 @@ public:
     //
     // @param      me    { parameter_description }
     //
-    void on_create(fb::game::object& me) final;
+    void on_create(fb::game::object& me) override final;
     /**
      * @brief      Called on destroy.
      *
      * @param      me    { parameter_description }
      */
-    void on_destroy(fb::game::object& me) final;
+    void on_destroy(fb::game::object& me) override final;
     /**
      * @brief      Called on chat.
      *
@@ -1286,20 +1305,22 @@ public:
      * @param[in]  chat_type  The chat type
      * @param[in]  shout  The shout
      */
-    void on_chat(fb::game::object& me, const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) final;
+    void on_chat(fb::game::object&  me,
+                 const std::string& message,
+                 CHAT_TYPE          chat_type = CHAT_TYPE::NORMAL) override final;
     /**
      * @brief      Called on direction.
      *
      * @param      me    { parameter_description }
      */
-    void on_direction(fb::game::object& me) final;
+    void on_direction(fb::game::object& me) override final;
     /**
      * @brief      Called on show.
      *
      * @param      me     { parameter_description }
      * @param[in]  light  The light
      */
-    void on_show(fb::game::object& me, bool light) final;
+    void on_show(fb::game::object& me, bool light) override final;
     /**
      * @brief      Called on show.
      *
@@ -1307,14 +1328,14 @@ public:
      * @param      you    You
      * @param[in]  light  The light
      */
-    void on_show(fb::game::object& me, fb::game::object& you, bool light) final;
+    void on_show(fb::game::object& me, fb::game::object& you, bool light) override final;
     /**
      * @brief      Called on hide.
      *
      * @param      me            { parameter_description }
      * @param[in]  destroy_type  The destroy type
      */
-    void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
+    void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
     /**
      * @brief      Called on hide.
      *
@@ -1322,21 +1343,23 @@ public:
      * @param      you           You
      * @param[in]  destroy_type  The destroy type
      */
-    void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
+    void on_hide(fb::game::object& me,
+                 fb::game::object& you,
+                 DESTROY_TYPE      destroy_type = DESTROY_TYPE::DEFAULT) override final;
     /**
      * @brief      Called on move.
      *
      * @param      me      { parameter_description }
      * @param[in]  before  The before
      */
-    void on_move(fb::game::object& me, const point16_t& before) final;
+    void on_move(fb::game::object& me, const point16_t& before) override final;
     /**
      * @brief      Called on unbuff.
      *
      * @param      me    { parameter_description }
      * @param      buff  The buffer
      */
-    void on_unbuff(fb::game::object& me, fb::game::buff& buff) final;
+    void on_unbuff(fb::game::object& me, fb::game::buff& buff) override final;
     /**
      * @brief      Called when map changed.
      *
@@ -1344,85 +1367,52 @@ public:
      * @param      before  The before
      * @param      after   The after
      */
-    void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) final;
+    void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) override final;
+
+    /**
+     * @brief      Called on hold.
+     *
+     * @param      me    { parameter_description }
+     */
+    void on_hold(fb::game::object& me) override final;
 
     // listener : life
     //
     // @param      me    { parameter_description }
     // @param      you   You
     //
-    void on_attack(life& me, object* you) final;
-    /**
-     * @brief      Called on hit.
-     *
-     * @param      me        { parameter_description }
-     * @param      you       You
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    void on_hit(life& me, life& you, uint32_t damage, bool critical) final;
-    /**
-     * @brief      Called on kill.
-     *
-     * @param      me    { parameter_description }
-     * @param      you   You
-     */
-    void on_kill(life& me, life& you) final;
-    /**
-     * @brief      Called when damaged.
-     *
-     * @param      me        { parameter_description }
-     * @param      you       You
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    void on_damaged(life& me, object* you, uint32_t damage, bool critical) final;
+    void on_attack(life& me) override final;
     /**
      * @brief      Called on die.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
-    void on_die(life& me, object* you) final;
+    void on_dead(life& me, object* you) override final;
 
-    /**
-     * @brief      Called on heal hp.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  value  The value
-     * @param      from   The from
-     */
-    void on_heal_hp(life& me, uint32_t value, fb::game::object* from) final;
-    /**
-     * @brief      Called on heal mp.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  value  The value
-     * @param      from   The from
-     */
-    void on_heal_mp(life& me, uint32_t value, fb::game::object* from) final;
     /**
      * @brief      Called on hp.
      *
-     * @param      me       { parameter_description }
-     * @param[in]  before   The before
-     * @param[in]  current  The current
+     * @param      me        { parameter_description }
+     * @param[in]  before    The before
+     * @param[in]  current   The current
+     * @param[in]  critical  The critical
+     * @param      from      The from
      */
-    void on_hp(life& me, uint32_t before, uint32_t current) final;
+    void
+    on_hp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from) override final;
     /**
      * @brief      Called on mp.
      *
-     * @param      me       { parameter_description }
-     * @param[in]  before   The before
-     * @param[in]  current  The current
+     * @param      me        { parameter_description }
+     * @param[in]  before    The before
+     * @param[in]  current   The current
+     * @param[in]  critical  The critical
+     * @param      from      The from
      */
-    void on_mp(life& me, uint32_t before, uint32_t current) final;
+    void
+    on_mp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from) override final;
 
-    // listener : ch
-    //
-    // @param      me    { parameter_description }
-    //
-    void on_hold(character& me) final;
     /**
      * @brief      Called on action.
      *
@@ -1431,21 +1421,14 @@ public:
      * @param[in]  duration  The duration
      * @param[in]  sound     The sound
      */
-    void on_action(character& me, ACTION action, DURATION duration, uint8_t sound) final;
+    void on_action(character& me, ACTION action, DURATION duration, uint8_t sound) override final;
     /**
      * @brief      Called when updated.
      *
      * @param      me     { parameter_description }
      * @param[in]  level  The level
      */
-    void on_updated(character& me, STATE_LEVEL level) final;
-    /**
-     * @brief      Called when money changed.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  value  The value
-     */
-    void on_money_changed(character& me, uint32_t value) final;
+    void on_update(character& me, STATE_LEVEL level) override final;
     /**
      * @brief      Called on notify.
      *
@@ -1453,7 +1436,7 @@ public:
      * @param[in]  message  The message
      * @param[in]  type     The type
      */
-    void on_message(character& me, const std::string& message, MESSAGE_TYPE type) final;
+    void on_message(character& me, const std::string& message, MESSAGE_TYPE type) override final;
     /**
      * @brief      Called on option.
      *
@@ -1461,13 +1444,13 @@ public:
      * @param[in]  option   The option
      * @param[in]  enabled  Indicates if enabled
      */
-    void on_option(character& me, SETTING option, bool enabled) final;
+    void on_option(character& me, SETTING option, bool enabled) override final;
     /**
      * @brief      Called on level up.
      *
      * @param      me    { parameter_description }
      */
-    void on_level_up(character& me) final;
+    void on_level_up(character& me) override final;
     /**
      * @brief      Called on transfer.
      *
@@ -1477,28 +1460,30 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> on_transfer(character& me, fb::game::map& map, const point16_t& position) final;
+    [[nodiscard]] async::task<bool> on_transfer(character&       me,
+                                                fb::game::map&   map,
+                                                const point16_t& position) override final;
     /**
      * @brief      Called on item get.
      *
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    void on_item_get(character& me, const item::container& items) final;
+    void on_item_get(character& me, const item::container& items) override final;
     /**
      * @brief      Called when item changed.
      *
      * @param      me     { parameter_description }
      * @param[in]  items  The items
      */
-    void on_item_changed(character& me, const item::container& items) final;
+    void on_item_changed(character& me, const item::container& items) override final;
     /**
      * @brief      Called on item lost.
      *
      * @param      me     { parameter_description }
      * @param[in]  slots  The slots
      */
-    void on_item_lost(character& me, const std::vector<uint8_t>& slots) final;
+    void on_item_lost(character& me, const std::vector<uint8_t>& slots) override final;
 
     //
     // @brief      Called on item remove.
@@ -1507,14 +1492,14 @@ public:
     // @param[in]  index  The index
     // @param[in]  attr   The attribute
     //
-    void on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr) final;
+    void on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr) override final;
     /**
      * @brief      Called on item update.
      *
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    void on_item_update(character& me, uint8_t index) final;
+    void on_item_update(character& me, uint8_t index) override final;
     /**
      * @brief      Called on item swap.
      *
@@ -1522,7 +1507,7 @@ public:
      * @param[in]  src   The source
      * @param[in]  dst   The destination
      */
-    void on_item_swap(character& me, uint8_t src, uint8_t dst) final;
+    void on_item_swap(character& me, uint8_t src, uint8_t dst) override final;
     /**
      * @brief      Called on equipment on.
      *
@@ -1530,7 +1515,7 @@ public:
      * @param      item   The item
      * @param[in]  parts  The parts
      */
-    void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) final;
+    void on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts) override final;
     /**
      * @brief      Called on equipment off.
      *
@@ -1538,14 +1523,14 @@ public:
      * @param[in]  parts  The parts
      * @param[in]  index  The index
      */
-    void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) final;
+    void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) override final;
     /**
      * @brief      Called on item active.
      *
      * @param      me    { parameter_description }
      * @param      item  The item
      */
-    void on_item_active(character& me, item& item) final;
+    void on_item_active(character& me, item& item) override final;
     /**
      * @brief      Called on item throws.
      *
@@ -1553,7 +1538,7 @@ public:
      * @param      item  The item
      * @param[in]  to    { parameter_description }
      */
-    void on_item_throws(character& me, item& item, const point16_t& to) final;
+    void on_item_throws(character& me, item& item, const point16_t& to) override final;
 
     //
     // @brief      Called on spell update.
@@ -1561,14 +1546,14 @@ public:
     // @param      me     { parameter_description }
     // @param[in]  index  The index
     //
-    void on_spell_update(life& me, uint8_t index) final;
+    void on_spell_update(life& me, uint8_t index) override final;
     /**
      * @brief      Called on spell remove.
      *
      * @param      me     { parameter_description }
      * @param[in]  index  The index
      */
-    void on_spell_remove(life& me, uint8_t index) final;
+    void on_spell_remove(life& me, uint8_t index) override final;
 
     //
     // @brief      Called on trade begin.
@@ -1576,13 +1561,13 @@ public:
     // @param      me    { parameter_description }
     // @param      you   You
     //
-    void on_trade_begin(character& me, character& you) final;
+    void on_trade_begin(character& me, character& you) override final;
     /**
      * @brief      Called on trade bundle.
      *
      * @param      me    { parameter_description }
      */
-    void on_trade_bundle(character& me) final;
+    void on_trade_bundle(character& me) override final;
     /**
      * @brief      Called on trade item.
      *
@@ -1590,40 +1575,40 @@ public:
      * @param      from   The from
      * @param[in]  index  The index
      */
-    void on_trade_item(character& me, character& from, uint8_t index) final;
+    void on_trade_item(character& me, character& from, uint8_t index) override final;
     /**
      * @brief      Called on trade money.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    void on_trade_money(character& me, character& from) final;
+    void on_trade_money(character& me, character& from) override final;
     /**
      * @brief      Called on trade cancel.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    void on_trade_cancel(character& me, character& from) final;
+    void on_trade_cancel(character& me, character& from) override final;
     /**
      * @brief      Called on trade lock.
      *
      * @param      me    { parameter_description }
      * @param[in]  mine  The mine
      */
-    void on_trade_lock(character& me, bool mine) final;
+    void on_trade_lock(character& me, bool mine) override final;
     /**
      * @brief      Called when trade failed.
      *
      * @param      me    { parameter_description }
      */
-    void on_trade_failed(character& me) final;
+    void on_trade_failed(character& me) override final;
     /**
      * @brief      Called on trade success.
      *
      * @param      me    { parameter_description }
      */
-    void on_trade_success(character& me) final;
+    void on_trade_success(character& me) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1640,7 +1625,7 @@ public:
                    const std::string&            message,
                    bool                          button_prev,
                    bool                          button_next,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
     /**
      * @brief      Called on dialog.
      *
@@ -1654,7 +1639,7 @@ public:
                    const fb::model::npc&           npc,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) final;
+                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
     /**
      * @brief      Called on dialog.
      *
@@ -1668,7 +1653,7 @@ public:
                    const fb::model::npc&         npc,
                    const std::string&            message,
                    const std::vector<uint8_t>&   item_slots,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
     /**
      * @brief      Called on dialog.
      *
@@ -1683,8 +1668,8 @@ public:
                    const fb::model::npc&               npc,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
-                   uint16_t                            pursuit     = 0xFFFF,
-                   fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::NORMAL) final;
+                   uint16_t                            pursuit = 0xFFFF,
+                   fb::game::dialog::interaction interaction   = fb::game::dialog::interaction::NORMAL) override final;
     /**
      * @brief      Called on dialog.
      *
@@ -1696,7 +1681,7 @@ public:
     void on_dialog(character&                    me,
                    const fb::model::npc&         npc,
                    const std::string&            message,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
     /**
      * @brief      Called on dialog.
      *
@@ -1716,7 +1701,7 @@ public:
                    const std::string&            bottom,
                    int                           maxlen      = 0xFF,
                    bool                          prev        = false,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) final;
+                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
 
 public:
     /**

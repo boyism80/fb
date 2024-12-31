@@ -61,13 +61,6 @@ async::task<bool> character::map(fb::game::map* map, const point16_t& position, 
     }
 }
 
-async::task<bool> character::map(fb::game::map* map, DESTROY_TYPE destroy_type)
-{
-    this->assert_thread();
-
-    return this->map(map, point16_t(0, 0), destroy_type);
-}
-
 uint32_t character::limited_exp(uint32_t exp) const
 {
 #if defined DEBUG | defined _DEBUG
@@ -81,25 +74,7 @@ uint32_t character::limited_exp(uint32_t exp) const
 #endif
 }
 
-void character::on_hold()
-{
-    this->assert_thread();
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_hold(*this);
-}
-
-void character::on_update()
-{
-    this->assert_thread();
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MIDDLE);
-}
-
-uint32_t character::on_calculate_damage(bool critical) const
+uint32_t character::auto_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
@@ -112,70 +87,11 @@ uint32_t character::on_calculate_damage(bool critical) const
     {
         return 1 + std::rand() % 5;
     }
-    else if (critical)
-    {
-        auto& range = model->damage_small;
-        return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
-    }
-    else // normal
-    {
-        auto& range = model->damage_large;
-        return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
-    }
-}
-
-void character::on_attack(object* you)
-{
-    this->assert_thread();
-
-    life::on_attack(you);
-
-    auto thread = lua::get();
-    if (thread == nullptr)
-        return;
-
-    thread->from("scripts/common/attack.lua").func("on_attack").pushobject(*this);
-    if (you != nullptr)
-        thread->pushobject(*you);
-    else
-        thread->pushnil();
-    thread->resume(2);
-}
-
-void character::on_kill(life& you)
-{
-    this->assert_thread();
-
-    life::on_kill(you);
-
-    auto exp = you.on_exp();
-    if (exp == 0)
-        return;
-
-    if (this->_group != nullptr && this->_map != nullptr)
-    {
-        this->_group->lock([this, exp](auto& group) {
-            auto nears      = group.nears(*this->_map, this->_position);
-            auto size       = nears.size();
-            auto divide_exp = exp / size;
-            for (auto ch : nears)
-            {
-                ch->add_exp(ch->limited_exp(divide_exp), true);
-            }
-        });
-    }
     else
     {
-        this->add_exp(this->limited_exp(exp), true);
+        auto& range = size == MOB_SIZE::SMALL ? model->damage_small : model->damage_large;
+        return std::max(uint32_t(1), range.min) + std::rand() % std::max(uint32_t(1), range.max);
     }
-}
-
-void character::on_die(object* from)
-{
-    this->assert_thread();
-
-    life::on_die(from);
-    this->state(STATE::GHOST);
 }
 
 character::operator fb::socket<character>& ()
@@ -367,9 +283,7 @@ void character::disguise(uint16_t value)
     this->_disguise = value;
     this->state(STATE::DISGUISE);
 
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 void character::undisguise()
@@ -380,9 +294,7 @@ void character::undisguise()
     if (this->state() == STATE::DISGUISE)
         this->state(STATE::NORMAL);
 
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 uint32_t character::defensive_physical() const
@@ -433,6 +345,7 @@ void character::base_hp(uint32_t value)
 
     this->_base_hp = value;
     this->_hp      = std::min(this->_hp, this->_base_hp);
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 void character::base_mp(uint32_t value)
@@ -441,6 +354,7 @@ void character::base_mp(uint32_t value)
 
     this->_base_mp = value;
     this->_mp      = std::min(this->_mp, this->_base_mp);
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 uint32_t character::base_hp() const
@@ -505,11 +419,8 @@ void character::level(uint8_t value)
 {
     this->assert_thread();
 
-    auto listener = this->get_listener<character>();
-
     this->_level = value;
-    if (listener != nullptr)
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MAX);
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 bool character::level_up()
@@ -684,15 +595,15 @@ void character::exp(uint32_t value)
         return;
 
     this->_experience = value;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
+    this->update(STATE_LEVEL::LEVEL_MIN);
 }
 
-uint32_t character::add_exp(uint32_t value, bool notify)
+uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
 {
     this->assert_thread();
+
+    if (limit)
+        value = this->limited_exp(value);
 
     auto capacity = 0xFFFFFFFF - this->_experience;
     auto lack     = 0;
@@ -820,13 +731,7 @@ void character::money(uint32_t value)
     this->assert_thread();
 
     this->_money = value;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-    {
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
-        listener->on_money_changed(*this, value);
-    }
+    this->update(STATE_LEVEL::LEVEL_MIN);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -1185,12 +1090,10 @@ void character::option(SETTING key, bool value, bool notify)
     if (this->_options[opt] == value)
         return;
 
+    this->update(STATE_LEVEL::LEVEL_MIN);
     auto listener = this->get_listener<character>();
     if (listener != nullptr && notify)
-    {
-        listener->on_updated(*this, STATE_LEVEL::LEVEL_MIN);
         listener->on_option(*this, key, value);
-    }
 
     this->_options[opt] = value;
 }
@@ -1505,6 +1408,15 @@ fb::thread* character::thread() const
 void character::assert_thread() const
 {
     fb::game::object::assert_thread();
+}
+
+void character::update(STATE_LEVEL value)
+{
+    this->assert_thread();
+
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update(*this, value);
 }
 
 fb::protocol::internal::Character character::to_protocol() const

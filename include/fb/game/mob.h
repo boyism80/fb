@@ -170,37 +170,38 @@ public:
      */
     virtual bool available() const;
 
-protected:
     /**
-     * @brief      Called on calculate damage.
+     * @brief      { function_description }
      *
-     * @param[in]  critical  The critical
+     * @param[in]  size  The size
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t on_calculate_damage(bool critical) const final;
-    /**
-     * @brief      Called when damaged.
-     *
-     * @param      from      The from
-     * @param[in]  damage    The damage
-     * @param[in]  critical  The critical
-     */
-    void on_damaged(fb::game::object* from, uint32_t damage, bool critical) final;
-    /**
-     * @brief      Called on die.
-     *
-     * @param      from  The from
-     */
-    void on_die(fb::game::object* from) final;
+    uint32_t auto_attack_damage(MOB_SIZE size) const override final;
 
-public:
     /**
-     * @brief      Called on exponent.
+     * @brief      { function_description }
+     *
+     * @param[in]  value     The value
+     * @param      from      The from
+     * @param[in]  critical  The critical
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t on_exp() const final;
+    uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      from          The from
+     * @param[in]  destroy_type  The destroy type
+     */
+    void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
+
+    /**
+     * @brief      { function_description }
+     */
+    void drop_items();
 };
 
 /**

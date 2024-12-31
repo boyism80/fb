@@ -188,6 +188,34 @@ async::task<bool> context::handle_command_level(character& ch, Json::Value& para
     co_return true;
 }
 
+async::task<bool> context::handle_command_hp(character& ch, Json::Value& parameters)
+{
+    if (parameters.size() < 1)
+        co_return false;
+
+    if (parameters[0].isNumeric() == false)
+        co_return false;
+
+    auto hp = parameters[0].asUInt();
+    ch.base_hp(hp);
+    ch.hp(hp);
+    co_return true;
+}
+
+async::task<bool> context::handle_command_mp(character& ch, Json::Value& parameters)
+{
+    if (parameters.size() < 1)
+        co_return false;
+
+    if (parameters[0].isNumeric() == false)
+        co_return false;
+
+    auto mp = parameters[0].asUInt();
+    ch.base_mp(mp);
+    ch.mp(mp);
+    co_return true;
+}
+
 async::task<bool> context::handle_command_spell(character& ch, Json::Value& parameters)
 {
     if (parameters.size() < 1)

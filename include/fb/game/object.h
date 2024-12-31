@@ -350,17 +350,8 @@ public:
      * @return     { description_of_the_return_value }
      */
     virtual async::task<bool> map(fb::game::map*   map,
-                                  const point16_t& position,
+                                  const point16_t& position = point16_t{0,0},
                                   DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      map           The map
-     * @param[in]  destroy_type  The destroy type
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual async::task<bool> map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
     /**
      * @brief      { function_description }
      *
@@ -474,6 +465,21 @@ public:
      */
     virtual bool available() const;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  destroy_type  The destroy type
+     */
+    virtual void hide(DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      to            { parameter_description }
+     * @param[in]  destroy_type  The destroy type
+     */
+    virtual void hide(fb::game::object& to, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+
     // The objects that I can see.
     //
     // @param[in]  type  The type
@@ -526,31 +532,11 @@ public:
      */
     void assert_thread() const override;
 
-public:
-    /**
-     * @brief      Called on timer.
-     *
-     * @param[in]  elapsed_milliseconds  The elapsed milliseconds
-     */
-    virtual void on_timer(uint64_t elapsed_milliseconds);
-    /**
-     * @brief      Called on kill.
-     *
-     * @param      you   You
-     */
-    virtual void on_kill(fb::game::life& you);
-
 protected:
     /**
      * @brief      Called on hold.
      */
-    virtual void on_hold();
-    /**
-     * @brief      Called when map changed.
-     *
-     * @param      <unnamed>  { parameter_description }
-     */
-    virtual void on_map_changed(fb::game::map*);
+    virtual void hold();
 
 public:
     /**
@@ -843,6 +829,13 @@ struct object::listener
      * @param      me    { parameter_description }
      */
     virtual void on_destroy(fb::game::object& me) = 0;
+
+    /**
+     * @brief      Called on hold.
+     *
+     * @param      me    { parameter_description }
+     */
+    virtual void on_hold(fb::game::object& me) = 0;
 };
 
 /**

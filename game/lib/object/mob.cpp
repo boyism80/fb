@@ -53,7 +53,7 @@ void fb::game::rezen::spawn(std::thread::id thread_id)
                                                       fb::game::mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
-        mob->hp_up(mob->base_hp());
+        mob->heal(mob->base_hp());
 
         while (true)
         {
@@ -88,7 +88,7 @@ fb::game::mob::mob(fb::game::context& context, const fb::model::mob& model, cons
     this->visible(params.alive);
     if (params.alive)
     {
-        this->hp_up(this->base_hp());
+        this->heal(this->base_hp());
         this->mp_up(this->base_mp());
     }
 }
@@ -314,7 +314,42 @@ bool fb::game::mob::available() const
     return this->alive();
 }
 
-uint32_t fb::game::mob::on_calculate_damage(bool critical) const
+uint32_t fb::game::mob::damage(uint32_t value, fb::game::object* from, bool critical)
+{
+    this->assert_thread();
+
+    auto result = fb::game::life::damage(value, from, critical);
+    if (from == nullptr)
+        return result;
+
+    auto& model = this->based<fb::model::mob>();
+    if (model.attack_type == MOB_ATTACK_TYPE::NONE)
+        return result;
+
+    if (model.attack_type == MOB_ATTACK_TYPE::RUN_AWAY)
+    {
+        // TODO: 도망치기
+        return result;
+    }
+
+    if (from->is(OBJECT_TYPE::LIFE))
+    {
+        if (this->_target == nullptr)
+        {
+            this->target(static_cast<fb::game::life*>(from));
+        }
+        else
+        {
+            // TODO: 가장 최근에 공격한 대상이 일정 시간 이상 공격하지 않았으면
+            // 타겟을 변경한다.
+        }
+    }
+
+    if (!this->alive())
+        this->kill(from, DESTROY_TYPE::DEAD);
+}
+
+uint32_t fb::game::mob::auto_attack_damage(MOB_SIZE size) const
 {
     this->assert_thread();
 
@@ -323,32 +358,15 @@ uint32_t fb::game::mob::on_calculate_damage(bool critical) const
     return model.damage.min + (std::rand() % difference);
 }
 
-void fb::game::mob::on_damaged(fb::game::object* from, uint32_t damage, bool critical)
+void fb::game::mob::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
 {
-    this->assert_thread();
-
-    fb::game::life::on_damaged(from, damage, critical);
-
-    auto& model = this->based<fb::model::mob>();
-    if (model.attack_type != MOB_ATTACK_TYPE::NONE && from != nullptr && from->is(OBJECT_TYPE::LIFE))
-    {
-        this->target(static_cast<fb::game::life*>(from));
-    }
+    fb::game::life::kill(from, destroy_type);
+    this->destroy(destroy_type);
 }
 
-uint32_t fb::game::mob::on_exp() const
+void fb::game::mob::drop_items()
 {
     this->assert_thread();
-
-    auto& model = this->based<fb::model::mob>();
-    return model.exp;
-}
-
-void fb::game::mob::on_die(fb::game::object* from)
-{
-    this->assert_thread();
-
-    fb::game::life::on_die(from);
 
     // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();
@@ -371,6 +389,4 @@ void fb::game::mob::on_die(fb::game::object* from)
         break;
         }
     }
-
-    std::ignore = this->destroy(DESTROY_TYPE::DEAD);
 }

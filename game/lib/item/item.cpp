@@ -21,12 +21,18 @@ std::optional<uint32_t> fb::game::item::durability() const
 void fb::game::item::durability(uint32_t value)
 { }
 
-void fb::game::item::on_map_changed(fb::game::map* map)
+async::task<bool> fb::game::item::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
+    auto result = co_await fb::game::object::map(map, position, destroy_type);
+    if (!result)
+        co_return false;
+
     if (map == nullptr)
         this->_dropped_time = std::nullopt;
     else
         this->_dropped_time = datetime();
+
+    co_return true;
 }
 
 std::string fb::game::item::tip_message() const
