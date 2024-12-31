@@ -223,14 +223,6 @@ public:
 
 public:
     /**
-     * @brief      Called on timer.
-     *
-     * @param[in]  elapsed_milliseconds  The elapsed milliseconds
-     */
-    [[nodiscard]] async::task<void> on_timer(uint64_t elapsed_milliseconds);
-
-public:
-    /**
      * @brief      Function call operator.
      *
      * @param[in]  x     { parameter_description }

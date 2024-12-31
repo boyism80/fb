@@ -91,15 +91,11 @@ public:
      */
     virtual ~item();
 
-protected:
-    /**
-     * @brief      Called when map changed.
-     *
-     * @param      map   The map
-     */
-    virtual void on_map_changed(fb::game::map* map);
-
 public:
+    virtual async::task<bool> map(fb::game::map*   map,
+                                  const point16_t& position = point16_t{0,0},
+                                  DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) override;
+
     /**
      * @brief      { function_description }
      *

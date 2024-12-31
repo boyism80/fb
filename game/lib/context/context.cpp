@@ -166,6 +166,8 @@ async::task<void> context::handle_start()
     this->command("몬스터생성", &context::handle_command_mob, true);
     this->command("직업바꾸기", &context::handle_command_class, true);
     this->command("레벨바꾸기", &context::handle_command_level, true);
+    this->command("체력바꾸기", &context::handle_command_hp, true);
+    this->command("마력바꾸기", &context::handle_command_mp, true);
     this->command("아이템생성", &context::handle_command_item, true);
     this->command("월드맵", &context::handle_command_world, true);
     this->command("스크립트", &context::handle_command_script, true);
@@ -268,8 +270,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
 async::task<void> context::handle_timer(uint64_t elapsed_milliseconds)
 {
-    for (auto& [key, map] : this->maps)
-        co_await map.on_timer(elapsed_milliseconds);
+    co_return;
 }
 
 std::string context::elapsed_message(const std::string& dt)
@@ -637,11 +638,14 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
         for (int i = 0, n = this->threads.size(); i < n; i++)
         {
             auto thread = this->threads.at(i);
-            auto params = thread->data<thread_params>();
-            for (auto& [_, ch] : params->characters)
-            {
-                ch->send(*fn(*ch).get(), encrypt); // TODO: check thread switch required
-            }
+            std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
+                auto params = thread.data<thread_params>();
+                for (auto& [_, ch] : params->characters)
+                {
+                    ch->send(*fn(*ch).get(), encrypt);
+                }
+                co_return;
+            });
         }
     }
     break;
@@ -651,11 +655,14 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
 void context::send(const fb::protocol::header& response, const map& map, bool encrypt)
 {
     auto thread = map.thread();
-    auto params = thread->data<thread_params>();
-    for (auto& [_, ch] : params->characters)
-    {
-        ch->send(response, encrypt);
-    }
+    std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
+        auto params = thread.data<thread_params>();
+        for (auto& [_, ch] : params->characters)
+        {
+            ch->send(response, encrypt);
+        }
+        co_return;
+    });
 }
 
 void context::send(const fb::protocol::header& response, bool encrypt)
@@ -663,11 +670,14 @@ void context::send(const fb::protocol::header& response, bool encrypt)
     for (int i = 0, n = this->threads.size(); i < n; i++)
     {
         auto thread = this->threads.at(i);
-        auto params = thread->data<thread_params>();
-        for (auto& [_, ch] : params->characters)
-        {
-            ch->send(response, encrypt); // TODO: check thread switch required
-        }
+        std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
+            auto params = thread.data<thread_params>();
+            for (auto& [_, ch] : params->characters)
+            {
+                ch->send(response, encrypt);
+            }
+            co_return;
+        });
     }
 }
 
@@ -933,7 +943,7 @@ async::task<bool> context::handle_command(character& ch, const std::string& mess
             return std::isdigit(c);
         });
         if (digit)
-            parameters.append(std::stoi(*i));
+            parameters.append(static_cast<uint64_t>(std::stoul(*i)));
         else
             parameters.append(*i);
     }

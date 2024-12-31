@@ -177,9 +177,6 @@
     <ClCompile Include="lib\context\context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\context\context.event.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lib\context\context.handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -503,6 +500,30 @@
     </ClCompile>
     <ClCompile Include="lib\protocol\protocol.life.update.hp.cpp">
       <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.character.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.dialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.life.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.spell.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.event.trade.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\context\context.equipment.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

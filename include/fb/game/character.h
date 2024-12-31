@@ -139,47 +139,6 @@ private:
      */
     uint32_t limited_exp(uint32_t exp) const;
 
-protected:
-    /**
-     * @brief      Called on hold.
-     */
-    void on_hold() final;
-
-    /**
-     * @brief      Called on update.
-     */
-    void on_update() final;
-
-    /**
-     * @brief      Called on calculate damage.
-     *
-     * @param[in]  critical  The critical
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t on_calculate_damage(bool critical) const final;
-
-    /**
-     * @brief      Called on attack.
-     *
-     * @param      target  The target
-     */
-    void on_attack(fb::game::object* target) final;
-
-    /**
-     * @brief      Called on kill.
-     *
-     * @param      you   You
-     */
-    void on_kill(fb::game::life& you) final;
-
-    /**
-     * @brief      Called on die.
-     *
-     * @param      from  The from
-     */
-    void on_die(fb::game::object* from) final;
-
 public:
     /**
      * @brief      { function_description }
@@ -190,7 +149,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true) final;
+    async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true) override final;
 
     /**
      * @brief      { function_description }
@@ -201,14 +160,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) final;
+    async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
 
     /**
      * @brief      { function_description }
      *
      * @return     The object type.
      */
-    OBJECT_TYPE what() const final;
+    OBJECT_TYPE what() const override final;
 
     /**
      * @brief      { function_description }
@@ -220,18 +179,8 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> map(fb::game::map*   map,
-                                        const point16_t& position,
-                                        DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) final;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      map           The map
-     * @param[in]  destroy_type  The destroy type
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) final;
+                                        const point16_t& position = point16_t{0,0},
+                                        DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:
     operator fb::socket<fb::game::character>& ();
@@ -296,7 +245,16 @@ public:
     /**
      * @brief      { function_description }
      */
-    void attack() final;
+    void attack() override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  size  The size
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t auto_attack_damage(MOB_SIZE size) const override final;
 
     /**
      * @brief      { function_description }
@@ -312,7 +270,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    const std::string& name() const final;
+    const std::string& name() const override final;
 
     /**
      * @brief      { function_description }
@@ -347,7 +305,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint16_t look() const final;
+    uint16_t look() const override final;
 
     /**
      * @brief      { function_description }
@@ -361,7 +319,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t color() const final;
+    uint8_t color() const override final;
 
     /**
      * @brief      { function_description }
@@ -681,7 +639,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t add_exp(uint32_t value, bool notify = false);
+    uint32_t add_exp(uint32_t value, bool limit = false, bool notify = false);
 
     /**
      * @brief      Reduces the exponent.
@@ -1049,7 +1007,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool condition(const std::vector<fb::model::dsl>& conditions) const final;
+    bool condition(const std::vector<fb::model::dsl>& conditions) const override final;
 
     /**
      * @brief      { function_description }
@@ -1069,7 +1027,14 @@ public:
     /**
      * @brief      { function_description }
      */
-    void assert_thread() const final;
+    void assert_thread() const override final;
+
+    /**
+     * @brief      Updates the given value.
+     *
+     * @param[in]  value  The value
+     */
+    void update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN);
 
 private:
     /**
@@ -1683,13 +1648,6 @@ public:
     virtual void on_item_lost(character& me, const std::vector<uint8_t>& slots) = 0;
 
     /**
-     * @brief      Called on hold.
-     *
-     * @param      me    { parameter_description }
-     */
-    virtual void on_hold(character& me) = 0;
-
-    /**
      * @brief      Called on action.
      *
      * @param      me        { parameter_description }
@@ -1705,15 +1663,7 @@ public:
      * @param      me     { parameter_description }
      * @param[in]  level  The level
      */
-    virtual void on_updated(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
-
-    /**
-     * @brief      Called when money changed.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  value  The value
-     */
-    virtual void on_money_changed(character& me, uint32_t value) = 0;
+    virtual void on_update(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
 
     /**
      * @brief      Called on transfer.

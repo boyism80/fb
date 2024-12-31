@@ -117,7 +117,7 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
 
     auto value = (uint32_t)thread->tointeger(2);
 
-    object->hp_up(value);
+    object->heal(value);
     return 0;
 }
 
@@ -135,7 +135,7 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
 
     auto value = (uint32_t)thread->tointeger(2);
 
-    object->hp_down(value);
+    object->damage(value);
     return 0;
 }
 
@@ -236,7 +236,7 @@ int fb::game::life::builtin_damage(lua_State* lua)
         return 0;
 
     auto damage = (uint32_t)thread->tointeger(3);
-    me->hp_down(damage, you, false);
+    me->damage(damage, you, false);
     thread->pushboolean(you->visible());
     return 1;
 }

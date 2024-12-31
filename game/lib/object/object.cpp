@@ -161,14 +161,14 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
     this->_position.y = std::max(0, std::min(this->_map->height() - 1, int32_t(y)));
 
     if (refresh)
-        this->on_hold();
+        this->hold();
 
     this->_map->update(*this);
 
     auto nears_before = this->_map->nears(before);
     auto nears_after  = this->_map->nears(this->_position);
 
-    if (this->_listener != nullptr)
+    // leave
     {
         // 내 이전 위치에서 내 시야에 보이는 오브젝트들
         auto befores = this->showings(nears_before, before);
@@ -186,7 +186,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             afters.end(),
                             std::inserter(hides, hides.begin()));
         for (auto x : hides)
-            this->_listener->on_hide(*x, *this, DESTROY_TYPE::DEFAULT);
+            x->hide(*this, DESTROY_TYPE::DEFAULT);
 
         // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
@@ -195,6 +195,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             befores.begin(),
                             befores.end(),
                             std::inserter(shows, shows.begin()));
+
         for (auto x : shows)
         {
             x->update_external(*this, false);
@@ -216,15 +217,13 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
         }
     }
 
-    if (this->_listener != nullptr)
+    // enter
     {
         // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
-        // auto befores = fb::game::object::showns(nears_before, *this, OBJECT_TYPE::UNKNOWN/* , true, false */);
         auto befores = this->showns(nears_before, before);
         std::sort(befores.begin(), befores.end());
 
         // 내 현재 위치에서 내가 포함된 시야를 가진 오브젝트들
-        // auto afters = fb::game::object::showns(nears_after, *this, OBJECT_TYPE::UNKNOWN/* , false, false */);
         auto afters = this->showns(nears_after, this->_position);
         std::sort(afters.begin(), afters.end());
 
@@ -236,7 +235,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             afters.end(),
                             std::inserter(hides, hides.begin()));
         for (auto x : hides)
-            this->_listener->on_hide(*this, *x, DESTROY_TYPE::DEFAULT);
+            this->hide(*x, DESTROY_TYPE::DEFAULT);
 
         // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
         auto shows = std::vector<fb::game::object*>();
@@ -245,6 +244,7 @@ bool fb::game::object::position(uint16_t x, uint16_t y, bool refresh)
                             befores.begin(),
                             befores.end(),
                             std::inserter(shows, shows.begin()));
+
         for (auto x : shows)
         {
             this->update_external(*x, false);
@@ -505,8 +505,7 @@ bool fb::game::object::sight(const point16_t me, const point16_t you, const fb::
 
 async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
 {
-    if (this->_map != nullptr)
-        this->assert_thread();
+    this->assert_thread();
 
     try
     {
@@ -538,18 +537,22 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
                 for (auto x : this->_map->nears(this->_position))
                 {
                     if (x != this)
-                        this->_listener->on_hide(*x, *this, destroy_type);
+                        x->hide(*this, destroy_type);
                 }
             }
-            this->on_map_changed(this->_map);
 
             // erase cache of map
             this->_map->objects.pop(*this);
 
             // reset default map and position
             this->sector(nullptr);
+
+            auto before_map = this->_map;
             this->_map      = nullptr;
             this->_position = point16_t(1, 1);
+            if (this->_listener != nullptr)
+                this->_listener->on_map_changed(*this, before_map, this->_map);
+
             co_return true;
         }
 
@@ -583,9 +586,7 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
         // update destination map and position
         this->_map = map;
         this->assert_thread();
-
         this->_position = before_position;
-        this->on_map_changed(this->_map);
 
         // update section
         this->_map->update(*this);
@@ -617,13 +618,6 @@ async::task<bool> fb::game::object::map(fb::game::map* map, const point16_t& pos
     {
         co_return false;
     }
-}
-
-async::task<bool> fb::game::object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
-{
-    this->assert_thread();
-
-    co_return co_await this->map(map, point16_t(0, 0), destroy_type);
 }
 
 fb::game::object* fb::game::object::side(DIRECTION direction, OBJECT_TYPE type) const
@@ -842,6 +836,18 @@ bool fb::game::object::available() const
     return true;
 }
 
+void fb::game::object::hide(DESTROY_TYPE destroy_type)
+{
+    if (this->_listener != nullptr)
+        this->_listener->on_hide(*this, destroy_type);
+}
+
+void fb::game::object::hide(fb::game::object& to, DESTROY_TYPE destroy_type)
+{
+    if (this->_listener != nullptr)
+        this->_listener->on_hide(*this, to, destroy_type);
+}
+
 fb::thread* fb::game::object::thread() const
 {
     if (this->_map == nullptr)
@@ -858,22 +864,7 @@ void fb::game::object::assert_thread() const
     fb::thread_switchable::assert_thread();
 }
 
-void fb::game::object::on_timer(uint64_t elapsed_milliseconds)
-{
-    this->assert_thread();
-}
-
-void fb::game::object::on_kill(fb::game::life& you)
-{
-    this->assert_thread();
-}
-
-void fb::game::object::on_hold()
-{
-    this->assert_thread();
-}
-
-void fb::game::object::on_map_changed(fb::game::map*)
+void fb::game::object::hold()
 {
     this->assert_thread();
 }
