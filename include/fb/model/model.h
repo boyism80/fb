@@ -14,6 +14,8 @@
 #include <json/json.h>
 #include <fstream>
 #include <unordered_map>
+#include <functional>
+#include <mutex>
 #include <model.additional.h>
 #ifdef LUA
 extern "C"

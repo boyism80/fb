@@ -1,6 +1,6 @@
-#include <bot.login.h>
-#include <bot.gateway.h>
-#include <bot.container.h>
+#include <fb/bot/bot.login.h>
+#include <fb/bot/bot.gateway.h>
+#include <fb/bot/bot.container.h>
 
 using namespace fb::bot;
 
@@ -38,20 +38,20 @@ async::task<void> gateway_bot::on_disconnected()
 
 async::task<void> gateway_bot::handle_welcome(const fb::protocol::gateway::response::welcome& response)
 {
-    this->send(fb::protocol::gateway::request::assert_version{0x0226, 0xD7}, false, true);
+    this->send(fb::protocol::gateway::request::version{0x0226, 0xD7}, false, true);
     co_return;
 }
 
-async::task<void> gateway_bot::handle_crt(const fb::protocol::gateway::response::crt& response)
+async::task<void> gateway_bot::handle_crt(const fb::protocol::gateway::response::crypto& response)
 {
-    this->_cryptor = response.cryptor;
-    this->send(fb::protocol::gateway::request::entry_list{0x01, 0});
+    this->_crypto = response.crt;
+    this->send(fb::protocol::gateway::request::endpoint{0x01, 0});
     co_return;
 }
 
-async::task<void> gateway_bot::handle_hosts(const fb::protocol::gateway::response::hosts& response)
+async::task<void> gateway_bot::handle_hosts(const fb::protocol::gateway::response::endpoint& response)
 {
-    this->send(fb::protocol::gateway::request::entry_list{0x00, 1});
+    this->send(fb::protocol::gateway::request::endpoint{0x00, 1});
     co_return;
 }
 

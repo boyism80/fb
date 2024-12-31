@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/gateway/context.h>
 
 using namespace fb::gateway;
 using namespace fb::protocol::gateway;
@@ -20,24 +20,24 @@ async::task<void> context::load_entries()
     auto& entrypoints = fb::config<>("entrypoints");
     for (auto i = entrypoints.begin(); i != entrypoints.end(); i++)
     {
-        this->_entrypoints.push_back(entry(cp949((*i)["name"].asCString()),
-                                           cp949((*i)["desc"].asCString()),
-                                           (*i)["ip"].asCString(),
-                                           (*i)["port"].asInt()));
+        this->_entrypoints.push_back(endpoint(cp949((*i)["name"].asCString()),
+                                              cp949((*i)["desc"].asCString()),
+                                              (*i)["ip"].asCString(),
+                                              (*i)["port"].asInt()));
     }
 
-    auto writer = fb::stream_writer<big_endian>(this->_entry_stream_cache);
-    co_await response::hosts(this->_entrypoints).serialize(writer);
-    this->_entry_crc32_cache = this->_entry_stream_cache.crc();
+    auto writer = fb::stream_writer<big_endian>(this->_endpoint_bytes);
+    co_await fb::protocol::gateway::response::endpoint(this->_entrypoints).serialize(writer);
+    this->_endpoint_crc = this->_endpoint_bytes.crc();
 }
 
-fb::stream context::make_crt_stream(const fb::cryptor& crt)
+fb::stream context::make_crt_stream(const fb::crypto& crt)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
     writer.write<uint8_t>(0x00); // cmd : 0x00
     writer.write<uint8_t>(0x00);
-    writer.write<uint32_t>(this->_entry_crc32_cache);
+    writer.write<uint32_t>(this->_endpoint_crc);
     writer.write<uint8_t>(crt.type());
     writer.write<uint8_t>(0x09);
     writer.write(crt.key(), 0x09);
@@ -89,16 +89,17 @@ async::task<bool> context::handle_disconnected(fb::socket<session>& socket)
     co_return false;
 }
 
-async::task<bool> context::handle_check_version(fb::socket<session>& socket, const request::assert_version& request)
+async::task<bool> context::handle_check_version(fb::socket<session>&                           socket,
+                                                const fb::protocol::gateway::request::version& request)
 {
     try
     {
         util::assert_client(request);
 
-        auto crt = cryptor::generate();
+        auto crt = crypto::generate();
         socket.crt(crt);
 
-        this->send(socket, response::crt(crt, this->_entry_crc32_cache), false);
+        this->send(socket, response::crypto(crt, this->_endpoint_crc), false);
         co_return true;
     }
     catch (std::exception&)
@@ -107,7 +108,8 @@ async::task<bool> context::handle_check_version(fb::socket<session>& socket, con
     }
 }
 
-async::task<bool> context::handle_entry_list(fb::socket<session>& socket, const request::entry_list& request)
+async::task<bool> context::handle_entry_list(fb::socket<session>&                            socket,
+                                             const fb::protocol::gateway::request::endpoint& request)
 {
     switch (request.action)
     {
@@ -120,7 +122,7 @@ async::task<bool> context::handle_entry_list(fb::socket<session>& socket, const 
 
     case 0x01:
     {
-        this->send(socket, this->_entry_stream_cache);
+        this->send(socket, this->_endpoint_bytes);
         co_return true;
     }
 

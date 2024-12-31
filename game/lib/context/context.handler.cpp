@@ -1,9 +1,10 @@
-#include "context.h"
+#include <fb/game/context.h>
 
 using namespace fb::game;
 using namespace std::chrono_literals;
 
-async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_reqs::login& request)
+async::task<bool> context::handle_login(fb::socket<character>&                    socket,
+                                        const fb::protocol::game::request::login& request)
 {
     auto ch = socket.data();
     if (ch->inited())
@@ -57,7 +58,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     this->init_option(response.option, *ch);
     this->send(*ch, fb_resp::init(), scope::SELF);
     this->send(*ch, fb_resp::time(this->_time.hours()), scope::SELF);
-    this->send(*ch, fb_resp::character::state(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+    this->send(*ch, fb_resp::update_internal(*ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
     if (from == internal::Service::Login)
     {
         auto msg = this->elapsed_message(response.character.updated_date);
@@ -65,8 +66,8 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             ch->message(msg, MESSAGE_TYPE::STATE);
     }
 
-    this->send(*ch, fb_resp::character::state(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
-    this->send(*ch, fb_resp::character::option(*ch), scope::SELF);
+    this->send(*ch, fb_resp::update_internal(*ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(*ch, fb_resp::option(*ch), scope::SELF);
     ch->init(true);
     co_return true;
 }
@@ -119,7 +120,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             // 메시지 보냄
             ch->message("감히 접근할 수 없습니다.");
-            this->send(*ch, fb_resp::character::position(*ch), scope::SELF);
+            this->send(*ch, fb_resp::position(*ch), scope::SELF);
             co_return true;
         }
 
@@ -137,7 +138,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             auto  params = dsl::world(warp->dest.params);
             auto& world  = this->model.world[params.id][params.index];
-            ch->send(fb_resp::map::worlds(this->model, params.id, params.index));
+            ch->send(fb_resp::map_worlds(this->model, params.id, params.index));
         }
         break;
 
@@ -163,7 +164,7 @@ async::task<bool> context::handle_update_move(fb::socket<character>& socket, con
         co_return true;
 
     if (co_await this->handle_move(socket, request))
-        this->send(*ch, fb_resp::map::update(*map, request.begin, request.size), scope::SELF);
+        this->send(*ch, fb_resp::map_update(*map, request.begin, request.size), scope::SELF);
 
     co_return true;
 }
@@ -198,7 +199,7 @@ async::task<bool> context::handle_emotion(fb::socket<character>& socket, const f
     co_return true;
 }
 
-async::task<bool> context::handle_update_map(fb::socket<character>& socket, const fb_reqs::map::update& request)
+async::task<bool> context::handle_update_map(fb::socket<character>& socket, const fb_reqs::map_update& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -208,21 +209,21 @@ async::task<bool> context::handle_update_map(fb::socket<character>& socket, cons
     if (map == nullptr)
         co_return true;
 
-    this->send(*ch, fb_resp::map::update(*map, request.position, request.size), scope::SELF);
+    this->send(*ch, fb_resp::map_update(*map, request.position, request.size), scope::SELF);
     co_return true;
 }
 
-async::task<bool> context::handle_refresh(fb::socket<character>& socket, const fb_reqs::refresh& request)
+async::task<bool> context::handle_update_screen(fb::socket<character>& socket, const fb_reqs::update_screen& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
         co_return true;
 
-    this->send(*ch, fb_resp::character::position(*ch), scope::SELF);
+    this->send(*ch, fb_resp::position(*ch), scope::SELF);
     co_return true;
 }
 
-async::task<bool> context::handle_active_item(fb::socket<character>& socket, const fb_reqs::item::active& request)
+async::task<bool> context::handle_active_item(fb::socket<character>& socket, const fb_reqs::item_active& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -232,7 +233,7 @@ async::task<bool> context::handle_active_item(fb::socket<character>& socket, con
     co_return true;
 }
 
-async::task<bool> context::handle_inactive_item(fb::socket<character>& socket, const fb_reqs::item::inactive& request)
+async::task<bool> context::handle_inactive_item(fb::socket<character>& socket, const fb_reqs::item_inactive& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -242,7 +243,7 @@ async::task<bool> context::handle_inactive_item(fb::socket<character>& socket, c
     co_return true;
 }
 
-async::task<bool> context::handle_drop_item(fb::socket<character>& socket, const fb_reqs::item::drop& request)
+async::task<bool> context::handle_drop_item(fb::socket<character>& socket, const fb_reqs::item_drop& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -252,7 +253,7 @@ async::task<bool> context::handle_drop_item(fb::socket<character>& socket, const
     co_return true;
 }
 
-async::task<bool> context::handle_drop_cash(fb::socket<character>& socket, const fb_reqs::item::drop_cash& request)
+async::task<bool> context::handle_drop_cash(fb::socket<character>& socket, const fb_reqs::item_drop_cash& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -296,14 +297,14 @@ async::task<bool> context::handle_self_info(fb::socket<character>& socket, const
     if (ch->inited() == false)
         co_return true;
 
-    this->send(*ch, fb_resp::character::internal_info(*ch, this->model), scope::SELF);
+    this->send(*ch, fb_resp::internal_info(*ch, this->model), scope::SELF);
 
     for (auto& [id, buff] : ch->buffs)
-        this->send(*ch, fb_resp::spell::buff(*buff), scope::SELF);
+        this->send(*ch, fb_resp::spell_buff(*buff), scope::SELF);
     co_return true;
 }
 
-async::task<bool> context::handle_option_changed(fb::socket<character>& socket, const fb_reqs::change_option& request)
+async::task<bool> context::handle_option_changed(fb::socket<character>& socket, const fb_reqs::update_option& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -366,7 +367,7 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
     switch (you->what())
     {
     case OBJECT_TYPE::CHARACTER:
-        this->send(*ch, fb_resp::character::external_info(static_cast<character&>(*you), this->model), scope::SELF);
+        this->send(*ch, fb_resp::external_info(static_cast<character&>(*you), this->model), scope::SELF);
         break;
 
     case OBJECT_TYPE::MOB:
@@ -382,7 +383,7 @@ async::task<bool> context::handle_click_object(fb::socket<character>& socket, co
 }
 
 // TODO : on_item_detail
-async::task<bool> context::handle_item_info(fb::socket<character>& socket, const fb_reqs::item::info& request)
+async::task<bool> context::handle_item_info(fb::socket<character>& socket, const fb_reqs::item_info& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -392,11 +393,11 @@ async::task<bool> context::handle_item_info(fb::socket<character>& socket, const
     if (item == nullptr)
         co_return false;
 
-    this->send(*ch, fb_resp::item::tip(request.position, item->tip_message()), scope::SELF);
+    this->send(*ch, fb_resp::item_tip(request.position, item->tip_message()), scope::SELF);
     co_return true;
 }
 
-async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const fb_reqs::item::mix& request)
+async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const fb_reqs::item_mix& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -527,7 +528,7 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     co_return true;
 }
 
-async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_reqs::map::world& request)
+async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_reqs::map_world& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -604,7 +605,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     co_return true;
 }
 
-async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_reqs::board::board& request)
+async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_reqs::board& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -615,7 +616,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     {
     case BOARD_ACTION::SECTIONS:
     {
-        this->send(*ch, fb_resp::board::sections(this->model), scope::SELF);
+        this->send(*ch, fb_resp::board_sections(this->model), scope::SELF);
     }
     break;
 
@@ -627,7 +628,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             {
                 // mail offset
                 auto offset = request.offset;
-                this->send(*ch, fb_resp::board::mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
+                this->send(*ch, fb_resp::board_mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
             }
             else
             {
@@ -659,12 +660,12 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 auto button_flags = BOARD_BUTTON_ENABLE::UP;
                 if (ch->condition(section->condition))
                     button_flags |= BOARD_BUTTON_ENABLE::WRITE;
-                this->send(*ch, fb_resp::board::articles(*section, articles, button_flags), scope::SELF);
+                this->send(*ch, fb_resp::board_articles(*section, articles, button_flags), scope::SELF);
             }
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
         }
     }
     break;
@@ -685,7 +686,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
             if (response.success == false)
             {
-                this->send(*ch, fb_resp::board::message(message::board::ARTICLE_NOT_EXIST, false, false), scope::SELF);
+                this->send(*ch, fb_resp::board_message(message::board::ARTICLE_NOT_EXIST, false, false), scope::SELF);
                 co_return true;
             }
 
@@ -705,11 +706,11 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                                           (uint8_t)dt.month(),
                                           (uint8_t)dt.day(),
                                           response.article.contents};
-            this->send(*ch, fb_resp::board::article(article, button_flags), scope::SELF);
+            this->send(*ch, fb_resp::board_article(article, button_flags), scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
         }
     }
     break;
@@ -742,11 +743,11 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (response.success == false)
                 throw std::runtime_error("게시글 작성 실패");
 
-            this->send(*ch, fb_resp::board::message(message::board::WRITE, true, true), scope::SELF);
+            this->send(*ch, fb_resp::board_message(message::board::WRITE, true, true), scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
         }
     }
     break;
@@ -782,24 +783,24 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
                 throw std::runtime_error(message::board::NOT_AUTH);
             }
 
-            this->send(*ch, fb_resp::board::message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(message::board::SUCCESS_DELETE, true, false), scope::SELF);
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board::message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
         }
     }
     break;
 
     case BOARD_ACTION::MAIL:
     {
-        this->send(*ch, fb_resp::board::mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
+        this->send(*ch, fb_resp::board_mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::SEND_MAIL:
     {
-        this->send(*ch, fb_resp::board::message("미구현입니다", false, true), scope::SELF);
+        this->send(*ch, fb_resp::board_message("미구현입니다", false, true), scope::SELF);
     }
     break;
 
@@ -898,7 +899,7 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
     co_return true;
 }
 
-async::task<bool> context::handle_throw_item(fb::socket<character>& socket, const fb_reqs::item::throws& request)
+async::task<bool> context::handle_throw_item(fb::socket<character>& socket, const fb_reqs::item_throws& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -908,7 +909,7 @@ async::task<bool> context::handle_throw_item(fb::socket<character>& socket, cons
     co_return true;
 }
 
-async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_reqs::spell::use& request)
+async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_reqs::spell_cast& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -954,7 +955,8 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
     co_return true;
 }
 
-async::task<bool> context::handle_whisper(fb::socket<character>& socket, const fb_reqs::whisper& request)
+async::task<bool> context::handle_whisper(fb::socket<character>&                      socket,
+                                          const fb::protocol::game::request::whisper& request)
 {
     auto me = socket.data();
     if (me->inited() == false)

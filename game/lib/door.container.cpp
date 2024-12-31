@@ -1,7 +1,7 @@
-#include <door/container.h>
-#include <character.h>
-#include <context.h>
-#include <map.h>
+#include <fb/game/door/container.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
+#include <fb/game/map.h>
 
 using namespace fb::game;
 

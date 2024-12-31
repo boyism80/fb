@@ -1,7 +1,7 @@
-#include <context.h>
+#include <fb/game/context.h>
 #include <fb/leak.h>
 #include <fb/mst.h>
-#include <worker.h>
+#include <fb/game/worker.h>
 #ifdef _WIN32
 #include <Windows.h>
 #include "resource.h"

@@ -1,4 +1,4 @@
-#include <item.h>
+#include <fb/game/item.h>
 
 fb::game::bow::bow(fb::game::context& context, const fb::model::bow& model) :
     equipment(context, model)

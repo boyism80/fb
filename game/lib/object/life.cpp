@@ -1,6 +1,6 @@
-#include <context.h>
-#include <life.h>
-#include <map.h>
+#include <fb/game/context.h>
+#include <fb/game/life.h>
+#include <fb/game/map.h>
 
 fb::game::life::life(fb::game::context& context, const fb::model::life& model, const initial_params& params) :
     object(context, model, params),

@@ -10,6 +10,15 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{99a378d0-2162-41ec-bc00-928b3371dc35}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\protocol">
+      <UniqueIdentifier>{8c14dcd2-9918-43b1-b4e7-449177de1fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\protocol\account">
+      <UniqueIdentifier>{1aa4902c-bfc7-43b6-b2f5-56252a6b11b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\protocol">
+      <UniqueIdentifier>{6d93da26-2a6e-45c0-a8a9-14389dee574d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -23,6 +32,24 @@
     </ClInclude>
     <ClInclude Include="include\context.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol\agreement.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol\login.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol\message.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol\update_pw.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol\complete.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="include\protocol\create.h">
+      <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +74,21 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.agreement.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.complete.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.create.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.login.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.update_pw.cpp">
+      <Filter>Source Files\protocol</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

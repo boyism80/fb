@@ -10,6 +10,12 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{7d958e1c-7e91-451b-b077-dcff5f6fcd30}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\protocol">
+      <UniqueIdentifier>{f827ba1e-b216-4fa8-9115-47db1d3a36db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\protocol">
+      <UniqueIdentifier>{a6f41c6f-9abe-4601-b4b2-8bdb19cad590}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\board.cpp">
@@ -243,100 +249,613 @@
     <ClCompile Include="lib\context\context.group.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.spell.unbuff.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.spell.update.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.spell.cast.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.swap.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.time.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.timer.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.bundle.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.close.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.dialog.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.lock.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.money.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.trade.upload.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.update.move.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.user.list.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.weather.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.web.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.whisper.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.ad.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.attack.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.article.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.articles.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.mail.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.mails.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.message.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.sections.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.bright.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.external.info.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.id.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.internal.info.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.option.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.position.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.click.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.common.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.input.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.input.ext.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.item.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.menu.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.dialog.slot.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.door.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.emotion.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.exit.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.front.info.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.group.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.init.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.active.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.drop.cash.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.drop.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.inactive.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.info.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.mix.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.remove.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.throws.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.tip.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.unequip.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.update.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.item.update.slot.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.life.action.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.life.die.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.game.login.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.map.bgm.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.map.config.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.map.update.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.map.world.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.map.worlds.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.message.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.chat.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.direction.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.effect.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.hide.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.move.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.show.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.sound.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.pick.up.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.update.screen.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.save.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.self.info.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.spell.buff.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.spell.remove.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.update.option.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.board.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.update.external.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.character.update.internal.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.life.update.hp.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="include\board.h">
+    <ClInclude Include="..\include\fb\game\board.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\character.h">
+    <ClInclude Include="..\include\fb\game\character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\clan.h">
+    <ClInclude Include="..\include\fb\game\clan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\context.h">
+    <ClInclude Include="..\include\fb\game\clan.member.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\dialog.h">
+    <ClInclude Include="..\include\fb\game\context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\door.h">
+    <ClInclude Include="..\include\fb\game\dialog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\group.h">
+    <ClInclude Include="..\include\fb\game\door.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\inventory.h">
+    <ClInclude Include="..\include\fb\game\group.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\inventory.hpp">
+    <ClInclude Include="..\include\fb\game\inventory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\item.h">
+    <ClInclude Include="..\include\fb\game\inventory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\life.h">
+    <ClInclude Include="..\include\fb\game\item.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\listener.h">
+    <ClInclude Include="..\include\fb\game\life.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\map.h">
+    <ClInclude Include="..\include\fb\game\listener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\mmo.h">
+    <ClInclude Include="..\include\fb\game\map.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\mob.h">
+    <ClInclude Include="..\include\fb\game\mmo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\model.h">
+    <ClInclude Include="..\include\fb\game\mob.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\model.preprocessor.h">
+    <ClInclude Include="..\include\fb\game\mst.recipe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\mst.recipe.h">
+    <ClInclude Include="..\include\fb\game\npc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\npc.h">
+    <ClInclude Include="..\include\fb\game\object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\object.h">
+    <ClInclude Include="..\include\fb\game\protocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\regex.h">
+    <ClInclude Include="..\include\fb\game\regex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\sector.h">
+    <ClInclude Include="..\include\fb\game\sector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\spell.h">
+    <ClInclude Include="..\include\fb\game\shard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\trade.h">
+    <ClInclude Include="..\include\fb\game\spell.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\worker.h">
+    <ClInclude Include="..\include\fb\game\thread_params.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\thread_params.h">
+    <ClInclude Include="..\include\fb\game\trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\object_container.h">
+    <ClInclude Include="..\include\fb\game\trade.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\shard.h">
+    <ClInclude Include="..\include\fb\game\worker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\trace.h">
+    <ClInclude Include="..\include\fb\game\door\container.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\clan.member.h">
+    <ClInclude Include="..\include\fb\game\map\container.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\object\container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\ad.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\attack.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board_article.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board_articles.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board_mail.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board_mails.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board_message.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\board\board_sections.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\bright.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\external_info.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\id.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\internal_info.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\option.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\position.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\update_external.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\character\update_internal.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\click.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_input.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_input_ext.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_item.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_menu.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_slot.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\dialog.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\door.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\emotion.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\exit.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\front_info.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\group.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\init.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_active.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_drop.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_drop_cash.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_inactive.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_info.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_mix.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_remove.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_throws.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_tip.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_unequip.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_update.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\item\item_update_slot.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\life\action.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\life\die.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\life\update_hp.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\login.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\map\map_bgm.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\map\map_config.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\map\map_update.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\map\map_world.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\map\map_worlds.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\message.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\chat.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\direction.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\effect.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\hide.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\move.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\sound.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\object\update.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\pick_up.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\save.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\self_info.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_buff.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_cast.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_remove.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_unbuff.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_update.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\swap.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\time.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\timer.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade\trade_bundle.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade\trade_close.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade\trade_dialog.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade\trade_lock.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade\trade_money.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade\trade_upload.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\trade.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\update_move.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\update_option.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\update_screen.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\user_list.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\weather.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\web.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\whisper.h">
+      <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

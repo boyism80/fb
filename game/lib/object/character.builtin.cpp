@@ -1,5 +1,5 @@
-#include <character.h>
-#include <context.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -534,9 +534,9 @@ int character::builtin_class(lua_State* lua)
         {
             auto context = thread->env<fb::game::context>("context");
 
-            context->send(*ch, fb::protocol::game::response::character::id(*ch), context::scope::SELF);
+            context->send(*ch, fb::protocol::game::response::id(*ch), context::scope::SELF);
             context->send(*ch,
-                          fb::protocol::game::response::character::state(*ch, STATE_LEVEL::LEVEL_MAX),
+                          fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX),
                           context::scope::SELF);
             thread->pushboolean(true);
         }
@@ -569,7 +569,7 @@ int character::builtin_level(lua_State* lua)
 
         auto context = thread->env<fb::game::context>("context");
         context->send(*ch,
-                      fb::protocol::game::response::character::state(*ch, STATE_LEVEL::LEVEL_MAX),
+                      fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX),
                       context::scope::SELF);
         return 0;
     }

@@ -1,4 +1,4 @@
-#include <mst.recipe.h>
+#include <fb/game/mst.recipe.h>
 
 fb::model::recipe_node::recipe_node(uint32_t id, uint32_t count, const recipe_node* parent) :
     _dsl(id, count, 0.0),

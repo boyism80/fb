@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/game/context.h>
 using namespace fb::game;
 
 async::task<bool> context::handle_command_map(character& ch, Json::Value& parameters)
@@ -39,7 +39,7 @@ async::task<bool> context::handle_command_sound(character& ch, Json::Value& para
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::object::sound(ch, SOUND(value)), scope::PIVOT);
+    this->send(ch, fb_resp::sound(ch, SOUND(value)), scope::PIVOT);
     co_return true;
 }
 
@@ -52,7 +52,7 @@ async::task<bool> context::handle_command_action(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::character::action(ch, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    this->send(ch, fb_resp::action(ch, ACTION(value), DURATION::SPELL), scope::PIVOT);
     co_return true;
 }
 
@@ -104,7 +104,7 @@ async::task<bool> context::handle_command_effect(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::object::effect(ch, value), scope::PIVOT);
+    this->send(ch, fb_resp::effect(ch, value), scope::PIVOT);
     co_return true;
 }
 
@@ -122,9 +122,9 @@ async::task<bool> context::handle_command_disguise(character& ch, Json::Value& p
         co_return true;
 
     ch.disguise(mob->look);
-    this->send(ch, fb_resp::object::effect(ch, 0x03), scope::PIVOT);
-    this->send(ch, fb_resp::character::action(ch, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    this->send(ch, fb_resp::object::sound(ch, SOUND::DISGUISE), scope::PIVOT);
+    this->send(ch, fb_resp::effect(ch, 0x03), scope::PIVOT);
+    this->send(ch, fb_resp::action(ch, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
+    this->send(ch, fb_resp::sound(ch, SOUND::DISGUISE), scope::PIVOT);
     co_return true;
 }
 
@@ -169,8 +169,8 @@ async::task<bool> context::handle_command_class(character& ch, Json::Value& para
 
     ch.cls(class_type);
     ch.promotion(promotion);
-    this->send(ch, fb_resp::character::id(ch), scope::SELF);
-    this->send(ch, fb_resp::character::state(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(ch, fb_resp::id(ch), scope::SELF);
+    this->send(ch, fb_resp::update_internal(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -184,7 +184,7 @@ async::task<bool> context::handle_command_level(character& ch, Json::Value& para
 
     auto level = parameters[0].asInt();
     ch.level(level);
-    this->send(ch, fb_resp::character::state(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    this->send(ch, fb_resp::update_internal(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -243,7 +243,7 @@ async::task<bool> context::handle_command_world(character& ch, Json::Value& para
         {
             if (point.name == name)
             {
-                ch.send(fb_resp::map::worlds(this->model, id, index));
+                ch.send(fb_resp::map_worlds(this->model, id, index));
                 co_return true;
             }
         }
@@ -490,7 +490,7 @@ async::task<bool> context::handle_map_tile(character& ch, Json::Value& parameter
 async::task<bool> context::handle_mail(character& ch, Json::Value& parameters)
 {
     auto unknown  = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
-    auto protocol = fb::protocol::game::response::board::mails(static_cast<MAIL_BUTTON_ENABLE>(unknown));
+    auto protocol = fb::protocol::game::response::board_mails(static_cast<MAIL_BUTTON_ENABLE>(unknown));
     this->send(ch, protocol, scope::SELF);
     co_return true;
 }
@@ -498,7 +498,7 @@ async::task<bool> context::handle_mail(character& ch, Json::Value& parameters)
 async::task<bool> context::handle_mail_count(character& ch, Json::Value& parameters)
 {
     ch.mailed = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
-    this->send(ch, fb::protocol::game::response::character::state(ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
+    this->send(ch, fb::protocol::game::response::update_internal(ch, STATE_LEVEL::LEVEL_MIN), scope::SELF);
     co_return true;
 }
 
@@ -506,16 +506,17 @@ async::task<bool> context::handle_mail_read(character& ch, Json::Value& paramete
 {
     auto flag = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
 
-    this->send(ch, fb::protocol::game::response::board::mail(flag), scope::SELF);
+    this->send(ch, fb::protocol::game::response::board_mail(flag), scope::SELF);
     co_return true;
 }
 
 async::task<bool> context::handle_ad(character& ch, Json::Value& parameters)
 {
-    auto width = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 300;
+    auto width  = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 300;
     auto height = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 120;
-    auto url = parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"https://www.google.com"};
-    auto time = parameters.size() >= 4 && parameters[3].isNumeric() ? parameters[3].asInt() : 60;
+    auto url    = parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString()
+                                                                     : std::string{"https://www.google.com"};
+    auto time   = parameters.size() >= 4 && parameters[3].isNumeric() ? parameters[3].asInt() : 60;
 
     this->send(ch, fb::protocol::game::response::ad(width, height, url, time), scope::SELF);
     co_return true;
@@ -524,8 +525,10 @@ async::task<bool> context::handle_ad(character& ch, Json::Value& parameters)
 async::task<bool> context::handle_web(character& ch, Json::Value& parameters)
 {
     auto type = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
-    auto url = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString() : std::string{"https://www.google.com"};
-    auto message = parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"default message"};
+    auto url  = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString()
+                                                                   : std::string{"https://www.google.com"};
+    auto message =
+        parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"default message"};
 
     this->send(ch, fb::protocol::game::response::web(type, url, message), scope::SELF);
     co_return true;

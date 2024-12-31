@@ -1,7 +1,7 @@
-#include <character.h>
-#include <map.h>
-#include <mob.h>
-#include <sector.h>
+#include <fb/game/character.h>
+#include <fb/game/map.h>
+#include <fb/game/mob.h>
+#include <fb/game/sector.h>
 
 fb::game::sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) :
     _id(id),

@@ -1,8 +1,8 @@
-#include <character.h>
-#include <context.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
 #include <fb/thread.h>
-#include <map.h>
-#include <mob.h>
+#include <fb/game/map.h>
+#include <fb/game/mob.h>
 
 fb::game::rezen::rezen(fb::game::context& context, const fb::model::mob_spawn& model) :
     _context(context),

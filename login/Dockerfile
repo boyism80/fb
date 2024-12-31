@@ -2,7 +2,6 @@ FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
 
 WORKDIR /app
 COPY include ./include
-COPY lib/include ./lib/include
 COPY login ./login
 
 WORKDIR /app/login/build

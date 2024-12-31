@@ -1,7 +1,7 @@
-#include <character.h>
-#include <context.h>
-#include <door.h>
-#include <map.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
+#include <fb/game/door.h>
+#include <fb/game/map.h>
 
 fb::game::door::door(const fb::game::map&   map,
                      const fb::model::door& model,

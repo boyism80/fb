@@ -1,4 +1,4 @@
-#include <spell.h>
+#include <fb/game/spell.h>
 
 int fb::model::spell::builtin_type(lua_State* lua)
 {

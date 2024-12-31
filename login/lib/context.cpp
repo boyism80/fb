@@ -1,5 +1,5 @@
 #include <boost/asio/high_resolution_timer.hpp>
-#include <context.h>
+#include <fb/login/context.h>
 #include <format>
 
 using namespace fb::login;
@@ -14,7 +14,7 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     this->bind(&context::handle_login);
     this->bind(&context::handle_agreement);
     this->bind(&context::handle_create_account);
-    this->bind(&context::handle_account_complete);
+    this->bind(&context::handle_complete);
     this->bind(&context::handle_change_password);
 }
 
@@ -102,7 +102,7 @@ async::task<bool> context::handle_agreement(fb::socket<session>& socket, const r
 {
     try
     {
-        if (cryptor::validate(request.enc_type, request.enc_key, request.enc_key_size) == false)
+        if (crypto::validate(request.enc_type, request.enc_key, request.enc_key_size) == false)
             throw std::exception();
 
         socket.crt(request.enc_type, request.enc_key);
@@ -115,7 +115,7 @@ async::task<bool> context::handle_agreement(fb::socket<session>& socket, const r
     }
 }
 
-async::task<bool> context::handle_create_account(fb::socket<session>& socket, const request::account::create& request)
+async::task<bool> context::handle_create_account(fb::socket<session>& socket, const request::create& request)
 {
     // 여기는 task handler
     auto fd         = socket.fd();
@@ -194,8 +194,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
     socket.send(response::message(error, error_code));
 }
 
-async::task<bool> context::handle_account_complete(fb::socket<session>&              socket,
-                                                   const request::account::complete& request)
+async::task<bool> context::handle_complete(fb::socket<session>& socket, const request::complete& request)
 {
     auto fd         = socket.fd();
     auto error      = std::string();
@@ -332,8 +331,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
     co_return true;
 }
 
-async::task<bool> context::handle_change_password(fb::socket<session>&               socket,
-                                                  const request::account::change_pw& request)
+async::task<bool> context::handle_change_password(fb::socket<session>& socket, const request::update_pw& request)
 {
     auto fd         = socket.fd();
     auto error      = std::string();

@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -50,7 +50,7 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
 
 void context::on_direction(object& me)
 {
-    this->send(me, fb_resp::object::direction(me), scope::PIVOT, true);
+    this->send(me, fb_resp::direction(me), scope::PIVOT, true);
 }
 
 void context::on_show(object& me, bool light)
@@ -60,23 +60,23 @@ void context::on_show(object& me, bool light)
         this->send(
             me,
             [&me, light](const auto& to) {
-                return std::unique_ptr<fb::protocol::base::header>(
-                    new fb_resp::character::show(static_cast<character&>(me), to, light));
+                return std::unique_ptr<fb::protocol::header>(
+                    new fb_resp::update_external(static_cast<character&>(me), to, light));
             },
             scope::PIVOT);
     }
     else
     {
-        this->send(me, fb_resp::object::show(me), scope::PIVOT);
+        this->send(me, fb_resp::update(me), scope::PIVOT);
     }
 }
 
 void context::on_show(object& me, object& you, bool light)
 {
     if (you.is(OBJECT_TYPE::CHARACTER))
-        this->send(me, fb_resp::character::show(static_cast<character&>(you), me, light), scope::SELF);
+        this->send(me, fb_resp::update_external(static_cast<character&>(you), me, light), scope::SELF);
     else
-        this->send(me, fb_resp::object::show(you), scope::SELF);
+        this->send(me, fb_resp::update(you), scope::SELF);
 }
 
 void context::on_hide(object& me, DESTROY_TYPE destroy_type)
@@ -84,14 +84,14 @@ void context::on_hide(object& me, DESTROY_TYPE destroy_type)
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        this->send(me, fb_resp::object::hide(me), scope::PIVOT, true);
+        this->send(me, fb_resp::hide(me), scope::PIVOT, true);
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        this->send(me, fb_resp::life::die(static_cast<life&>(me)), scope::PIVOT, true);
+        this->send(me, fb_resp::die(static_cast<life&>(me)), scope::PIVOT, true);
         break;
     }
 }
@@ -101,21 +101,21 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        this->send(me, fb_resp::object::hide(you), scope::SELF);
+        this->send(me, fb_resp::hide(you), scope::SELF);
         break;
 
     case DESTROY_TYPE::DEAD:
         if (you.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        this->send(me, fb_resp::life::die(static_cast<life&>(you)), scope::SELF);
+        this->send(me, fb_resp::die(static_cast<life&>(you)), scope::SELF);
         break;
     }
 }
 
 void context::on_move(object& me, const point16_t& before)
 {
-    this->send(me, fb_resp::object::move(me, before), scope::PIVOT, true);
+    this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
 
 void context::on_unbuff(object& me, buff& buff)
@@ -127,7 +127,7 @@ void context::on_unbuff(object& me, buff& buff)
     if (thread == nullptr)
         return;
     thread->from(buff.model.uncast.c_str()).func("on_uncast").pushobject(me).pushobject(buff.model).resume(2);
-    this->send(me, fb_resp::spell::unbuff(buff), scope::SELF);
+    this->send(me, fb_resp::spell_unbuff(buff), scope::SELF);
 }
 
 void context::on_attack(life& me, object* you)
@@ -136,20 +136,18 @@ void context::on_attack(life& me, object* you)
     {
     case OBJECT_TYPE::CHARACTER:
     {
-        this->send(me,
-                   fb_resp::character::action(static_cast<character&>(me), ACTION::ATTACK, DURATION::ATTACK),
-                   scope::PIVOT);
+        this->send(me, fb_resp::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
         auto* weapon = static_cast<character&>(me).items.weapon();
         if (weapon != nullptr)
         {
             auto sound = weapon->based<fb::model::weapon>().sound;
-            this->send(me, fb_resp::object::sound(me, sound != 0 ? SOUND(sound) : SOUND::SWING), scope::PIVOT);
+            this->send(me, fb_resp::sound(me, sound != 0 ? SOUND(sound) : SOUND::SWING), scope::PIVOT);
         }
     }
     break;
 
     case OBJECT_TYPE::MOB:
-        this->send(me, fb_resp::life::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
+        this->send(me, fb_resp::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT, true);
         break;
     }
 }
@@ -172,7 +170,7 @@ void context::on_hit(life& me, life& you, uint32_t damage, bool critical)
 
         auto* weapon = static_cast<character&>(me).items.weapon();
         if (weapon != nullptr)
-            this->send(me, fb_resp::object::sound(me, SOUND::DAMAGE), scope::PIVOT);
+            this->send(me, fb_resp::sound(me, SOUND::DAMAGE), scope::PIVOT);
 
         you.hp_down(damage, &me, critical);
     }
@@ -187,7 +185,7 @@ void context::on_kill(life& me, life& you)
 
 void context::on_damaged(life& me, object* you, uint32_t damage, bool critical)
 {
-    this->send(me, fb_resp::life::show_hp(me, damage, false), scope::PIVOT);
+    this->send(me, fb_resp::update_hp(me, damage, false), scope::PIVOT);
 }
 
 void context::on_die(life& me, object* you)
@@ -217,12 +215,12 @@ void context::on_mp(life& me, uint32_t before, uint32_t current)
 
 void context::on_action(character& me, ACTION action, DURATION duration, uint8_t sound)
 {
-    this->send(me, fb_resp::character::action(me, action, duration), scope::PIVOT);
+    this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
 }
 
 void context::on_updated(character& me, STATE_LEVEL level)
 {
-    this->send(me, fb_resp::character::state(me, level), scope::SELF);
+    this->send(me, fb_resp::update_internal(me, level), scope::SELF);
 }
 
 void context::on_money_changed(character& me, uint32_t value)
@@ -232,7 +230,7 @@ void context::on_money_changed(character& me, uint32_t value)
 
 void context::on_hold(character& me)
 {
-    this->send(me, fb_resp::character::position(me), scope::SELF);
+    this->send(me, fb_resp::position(me), scope::SELF);
 }
 
 void context::on_message(character& me, const std::string& message, MESSAGE_TYPE type)
@@ -242,8 +240,8 @@ void context::on_message(character& me, const std::string& message, MESSAGE_TYPE
 
 void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    this->send(me, fb_resp::item::update_slot(me, parts), scope::SELF);
-    this->send(me, fb_resp::object::sound(me, SOUND::EQUIPMENT_ON), scope::PIVOT);
+    this->send(me, fb_resp::item_update_slot(me, parts), scope::SELF);
+    this->send(me, fb_resp::sound(me, SOUND::EQUIPMENT_ON), scope::PIVOT);
 
     std::stringstream sstream;
     switch (parts)
@@ -292,7 +290,7 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 
 void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index)
 {
-    this->send(me, fb_resp::object::sound(me, SOUND::EQUIPMENT_OFF), scope::PIVOT);
+    this->send(me, fb_resp::sound(me, SOUND::EQUIPMENT_OFF), scope::PIVOT);
 }
 
 void context::on_item_active(character& me, item& item)
@@ -311,42 +309,42 @@ void context::on_item_active(character& me, item& item)
 void context::on_item_throws(character& me, item& item, const point16_t& to)
 {
     if (me.position() != to)
-        this->send(me, fb_resp::character::throws(me, item, to), scope::PIVOT);
+        this->send(me, fb_resp::item_throws(me, item, to), scope::PIVOT);
     else
-        this->send(me, fb_resp::character::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
+        this->send(me, fb_resp::action(me, ACTION::ATTACK, DURATION::THROW), scope::PIVOT);
 }
 
 void context::on_spell_update(life& me, uint8_t index)
 {
-    this->send(me, fb_resp::spell::update(me, index), scope::SELF);
+    this->send(me, fb_resp::spell_update(me, index), scope::SELF);
 }
 
 void context::on_spell_remove(life& me, uint8_t index)
 {
-    this->send(me, fb_resp::spell::remove(me, index), scope::SELF);
+    this->send(me, fb_resp::spell_remove(me, index), scope::SELF);
 }
 
 void context::on_trade_begin(character& me, character& you)
 {
-    this->send(me, fb_resp::trade::dialog(you, this->model), scope::SELF);
+    this->send(me, fb_resp::trade_dialog(you, this->model), scope::SELF);
 }
 
 void context::on_trade_bundle(character& me)
 {
-    this->send(me, fb_resp::trade::bundle(), scope::SELF);
+    this->send(me, fb_resp::trade_bundle(), scope::SELF);
 }
 
 void context::on_trade_money(character& me, character& from)
 {
     bool mine = (&me == &from);
-    this->send(me, fb_resp::trade::money(from, mine), scope::SELF);
+    this->send(me, fb_resp::trade_money(from, mine), scope::SELF);
 }
 
 void context::on_trade_cancel(character& me, character& from)
 {
     bool mine = (&me == &from);
     this->send(me,
-               fb_resp::trade::close(mine ? message::trade::CANCELLED_BY_ME : message::trade::CANCELLED_BY_PARTNER),
+               fb_resp::trade_close(mine ? message::trade::CANCELLED_BY_ME : message::trade::CANCELLED_BY_PARTNER),
                scope::SELF);
 }
 
@@ -354,7 +352,7 @@ void context::on_trade_lock(character& me, bool mine)
 {
     if (mine)
     {
-        this->send(me, fb_resp::trade::lock(), scope::SELF);
+        this->send(me, fb_resp::trade_lock(), scope::SELF);
     }
     else
     {
@@ -364,12 +362,12 @@ void context::on_trade_lock(character& me, bool mine)
 
 void context::on_trade_failed(character& me)
 {
-    this->send(me, fb_resp::trade::close(message::trade::FAILED), scope::SELF);
+    this->send(me, fb_resp::trade_close(message::trade::FAILED), scope::SELF);
 }
 
 void context::on_trade_success(character& me)
 {
-    this->send(me, fb_resp::trade::close(message::trade::SUCCESS), scope::SELF);
+    this->send(me, fb_resp::trade_close(message::trade::SUCCESS), scope::SELF);
 }
 
 // new dialog
@@ -380,7 +378,7 @@ void context::on_dialog(character&               me,
                         bool                     button_next,
                         dialog::interaction      interaction)
 {
-    this->send(me, fb_resp::dialog::common(object, message, button_prev, button_next, interaction), scope::SELF);
+    this->send(me, fb_resp::dialog(object, message, button_prev, button_next, interaction), scope::SELF);
 }
 
 void context::on_dialog(character&                      me,
@@ -389,7 +387,7 @@ void context::on_dialog(character&                      me,
                         const std::vector<std::string>& menus,
                         dialog::interaction             interaction)
 {
-    this->send(me, fb_resp::dialog::menu(npc, menus, message, interaction), scope::SELF);
+    this->send(me, fb_resp::dialog_menu(npc, menus, message, interaction), scope::SELF);
 }
 
 void context::on_dialog(character&                  me,
@@ -398,7 +396,7 @@ void context::on_dialog(character&                  me,
                         const std::vector<uint8_t>& item_slots,
                         dialog::interaction         interaction)
 {
-    this->send(me, fb_resp::dialog::slot(npc, item_slots, message, interaction), scope::SELF);
+    this->send(me, fb_resp::dialog_slot(npc, item_slots, message, interaction), scope::SELF);
 }
 
 void context::on_dialog(character&                me,
@@ -408,7 +406,7 @@ void context::on_dialog(character&                me,
                         uint16_t                  pursuit,
                         dialog::interaction       interaction)
 {
-    this->send(me, fb_resp::dialog::item(npc, pairs, message, pursuit, interaction), scope::SELF);
+    this->send(me, fb_resp::dialog_item(npc, pairs, message, pursuit, interaction), scope::SELF);
 }
 
 void context::on_dialog(character&            me,
@@ -416,7 +414,7 @@ void context::on_dialog(character&            me,
                         const std::string&    message,
                         dialog::interaction   interaction)
 {
-    this->send(me, fb_resp::dialog::input(npc, message, interaction), scope::SELF);
+    this->send(me, fb_resp::dialog_input(npc, message, interaction), scope::SELF);
 }
 
 void context::on_dialog(character&            me,
@@ -428,13 +426,13 @@ void context::on_dialog(character&            me,
                         bool                  prev,
                         dialog::interaction   interaction)
 {
-    this->send(me, fb_resp::dialog::input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
+    this->send(me, fb_resp::dialog_input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
 }
 
 void context::on_trade_item(character& me, character& from, uint8_t index)
 {
     bool mine = (&me == &from);
-    this->send(me, fb_resp::trade::upload(from, index, mine), scope::SELF);
+    this->send(me, fb_resp::trade_upload(from, index, mine), scope::SELF);
 }
 
 void context::on_option(character& me, SETTING option, bool enabled)
@@ -512,12 +510,12 @@ void context::on_option(character& me, SETTING option, bool enabled)
 
     sstream << ": " << (enabled ? "ON" : "OFF");
     this->send(me, fb_resp::message(sstream.str(), MESSAGE_TYPE::STATE), scope::SELF);
-    this->send(me, fb_resp::character::option(me), scope::SELF);
+    this->send(me, fb_resp::option(me), scope::SELF);
 }
 
 void context::on_level_up(character& me)
 {
-    this->send(me, fb_resp::object::effect(me, 0x02), scope::PIVOT);
+    this->send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
 }
 
 void context::on_map_changed(object& me, map* before, map* after)
@@ -529,12 +527,12 @@ void context::on_map_changed(object& me, map* before, map* after)
         return;
 
     auto& ch = static_cast<character&>(me);
-    this->send(ch, fb_resp::character::id(ch), scope::SELF);
-    this->send(ch, fb_resp::map::config(*after), scope::SELF);
-    this->send(ch, fb_resp::map::bgm(*after), scope::SELF);
-    this->send(ch, fb_resp::character::position(ch), scope::SELF);
-    this->send(ch, fb_resp::character::show(ch, ch, false), scope::SELF);
-    this->send(ch, fb_resp::object::direction(ch), scope::SELF);
+    this->send(ch, fb_resp::id(ch), scope::SELF);
+    this->send(ch, fb_resp::map_config(*after), scope::SELF);
+    this->send(ch, fb_resp::map_bgm(*after), scope::SELF);
+    this->send(ch, fb_resp::position(ch), scope::SELF);
+    this->send(ch, fb_resp::update_external(ch, ch, false), scope::SELF);
+    this->send(ch, fb_resp::direction(ch), scope::SELF);
 
     if (before == nullptr)
         this->save(ch);
@@ -623,12 +621,12 @@ void context::on_item_lost(character& me, const std::vector<uint8_t>& slots)
 
 void context::on_item_remove(character& me, uint8_t index, ITEM_DELETE_TYPE attr)
 {
-    this->send(me, fb_resp::item::remove(attr, index, 0), scope::SELF);
+    this->send(me, fb_resp::item_remove(attr, index, 0), scope::SELF);
 }
 
 void context::on_item_update(character& me, uint8_t index)
 {
-    this->send(me, fb_resp::item::update(me, index), scope::SELF);
+    this->send(me, fb_resp::item_update(me, index), scope::SELF);
 }
 
 void context::on_item_swap(character& me, uint8_t src, uint8_t dst)

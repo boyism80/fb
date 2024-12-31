@@ -44,11 +44,11 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;$(SolutionDir)\game\include</IncludePath>
+    <IncludePath>$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(IncludePath);$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(SolutionDir);$(IncludePath);$(SolutionDir)\include;$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(IncludePath);$(SolutionDir)\include</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -90,16 +90,112 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\game\lib\protocol\protocol.ad.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.attack.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.article.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.articles.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.mail.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.mails.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.message.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.board.sections.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.bright.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.external.info.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.id.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.internal.info.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.option.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.position.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.update.external.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.character.update.internal.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.click.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.common.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.input.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.input.ext.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.item.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.menu.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.dialog.slot.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.door.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.emotion.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.exit.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.front.info.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.group.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.init.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.active.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.drop.cash.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.drop.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.inactive.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.info.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.mix.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.remove.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.throws.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.tip.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.unequip.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.update.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.update.slot.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.life.action.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.life.die.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.life.update.hp.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.game.login.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.map.bgm.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.map.config.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.map.update.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.map.world.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.map.worlds.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.message.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.chat.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.direction.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.effect.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.hide.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.move.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.show.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.object.sound.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.pick.up.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.save.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.self.info.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.spell.buff.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.spell.cast.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.spell.remove.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.spell.unbuff.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.spell.update.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.swap.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.time.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.timer.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.bundle.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.close.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.dialog.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.lock.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.money.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.trade.upload.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.update.move.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.update.option.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.update.screen.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.user.list.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.weather.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.web.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.whisper.cpp" />
+    <ClCompile Include="..\gateway\lib\protocol\endpoint.cpp" />
+    <ClCompile Include="..\gateway\lib\protocol\protocol.crypto.cpp" />
+    <ClCompile Include="..\gateway\lib\protocol\protocol.endpoint.cpp" />
+    <ClCompile Include="..\gateway\lib\protocol\protocol.version.cpp" />
+    <ClCompile Include="..\gateway\lib\protocol\protocol.welcome.cpp" />
+    <ClCompile Include="..\login\lib\protocol\protocol.agreement.cpp" />
+    <ClCompile Include="..\login\lib\protocol\protocol.complete.cpp" />
+    <ClCompile Include="..\login\lib\protocol\protocol.create.cpp" />
+    <ClCompile Include="..\login\lib\protocol\protocol.login.cpp" />
+    <ClCompile Include="..\login\lib\protocol\protocol.update_pw.cpp" />
     <ClCompile Include="lib\**\*.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\bot.container.h" />
-    <ClInclude Include="include\bot.game.h" />
-    <ClInclude Include="include\bot.gateway.h" />
-    <ClInclude Include="include\bot.h" />
-    <ClInclude Include="include\bot.login.h" />
-    <ClInclude Include="include\hook_params.h" />
+    <ClInclude Include="..\include\fb\bot\bot.board.h" />
+    <ClInclude Include="..\include\fb\bot\bot.container.h" />
+    <ClInclude Include="..\include\fb\bot\bot.game.h" />
+    <ClInclude Include="..\include\fb\bot\bot.gateway.h" />
+    <ClInclude Include="..\include\fb\bot\bot.h" />
+    <ClInclude Include="..\include\fb\bot\bot.login.h" />
+    <ClInclude Include="..\include\fb\bot\hook_params.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
