@@ -1,6 +1,6 @@
-#include <character.h>
-#include <item.h>
-#include <map.h>
+#include <fb/game/character.h>
+#include <fb/game/item.h>
+#include <fb/game/map.h>
 
 fb::game::items::items(fb::game::character& owner) :
     inventory(owner),

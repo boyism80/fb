@@ -1,6 +1,6 @@
-#include <character.h>
-#include <context.h>
-#include <regex.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
+#include <fb/game/regex.h>
 
 using namespace fb::game;
 
@@ -19,7 +19,7 @@ async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool
     co_return co_await this->_socket.send(stream, encrypt, wrap);
 }
 
-async::task<size_t> character::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
+async::task<size_t> character::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
 

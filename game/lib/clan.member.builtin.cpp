@@ -1,4 +1,4 @@
-#include <clan.member.h>
+#include <fb/game/clan.member.h>
 
 using namespace fb::game;
 

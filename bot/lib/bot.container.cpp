@@ -1,7 +1,7 @@
-#include <bot.container.h>
-#include <bot.gateway.h>
-#include <bot.login.h>
-#include <bot.game.h>
+#include <fb/bot/bot.container.h>
+#include <fb/bot/bot.gateway.h>
+#include <fb/bot/bot.login.h>
+#include <fb/bot/bot.game.h>
 
 using namespace fb::bot;
 

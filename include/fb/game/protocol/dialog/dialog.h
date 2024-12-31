@@ -1,0 +1,57 @@
+#ifndef __PROTOCOL_GAME_COMMON_H__
+#define __PROTOCOL_GAME_COMMON_H__
+
+#include <fb/protocol/header.h>
+#include <fb/model/model.h>
+#ifndef BOT
+#include <fb/game/dialog.h>
+#endif
+
+using namespace fb::model::enum_value;
+
+namespace fb::protocol::game::response {
+
+class dialog : public fb::protocol::header
+{
+public:
+    inline static uint8_t header = 0x30;
+
+public:
+#ifndef BOT
+    const fb::model::object&            object;
+    const std::string                   message;
+    const bool                          button_prev;
+    const bool                          button_next;
+    const fb::game::dialog::interaction interaction;
+#else
+
+#endif
+
+public:
+#ifndef BOT
+    dialog(const fb::model::object&      object,
+           const std::string&            message,
+           bool                          button_prev,
+           bool                          button_next,
+           fb::game::dialog::interaction interaction);
+
+    dialog(const fb::game::object&       object,
+           const std::string&            message,
+           bool                          button_prev,
+           bool                          button_next,
+           fb::game::dialog::interaction interaction);
+#else
+    dialog() = default;
+#endif
+
+public:
+#ifndef BOT
+    [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;
+#else
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+#endif
+};
+
+} // namespace fb::protocol::game::response
+
+#endif

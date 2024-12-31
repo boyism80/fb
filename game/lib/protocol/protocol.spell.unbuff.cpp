@@ -1,0 +1,27 @@
+#include <fb/game/protocol/spell/spell_unbuff.h>
+
+namespace fb::protocol::game::response {
+
+#ifndef BOT
+spell_unbuff::spell_unbuff(const fb::game::buff& buff) :
+    buff(buff)
+{ }
+#endif
+
+#ifndef BOT
+async::task<void> spell_unbuff::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+    writer.write<std::string>(this->buff.model.name);
+    writer.write<uint32_t>(0x00);
+}
+#else
+async::task<void> spell_unbuff::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    // TODO: deserialize bytes
+}
+#endif
+
+} // namespace fb::protocol::game::response

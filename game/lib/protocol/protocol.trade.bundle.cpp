@@ -1,0 +1,21 @@
+#include <fb/game/protocol/trade/trade_bundle.h>
+
+namespace fb::protocol::game::response {
+
+#ifndef BOT
+async::task<void> trade_bundle::serialize(fb::stream_writer<big_endian>& writer) const
+{
+    co_await header::serialize(writer);
+    writer.write<uint8_t>(header);
+    writer.write<uint8_t>(0x01);
+    writer.write<uint8_t>(0x00);
+}
+#else
+async::task<void> trade_bundle::deserialize(fb::stream_reader<big_endian>& reader)
+{
+    co_await header::deserialize(reader);
+    // TODO: deserialize bytes
+}
+#endif
+
+} // namespace fb::protocol::game::response

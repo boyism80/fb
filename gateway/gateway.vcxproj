@@ -44,12 +44,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -91,9 +91,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\context.h" />
-    <ClInclude Include="include\session.h" />
-    <ClInclude Include="include\util.h" />
+    <ClInclude Include="..\include\fb\gateway\context.h" />
+    <ClInclude Include="..\include\fb\gateway\protocol.h" />
+    <ClInclude Include="..\include\fb\gateway\protocol\crypto.h" />
+    <ClInclude Include="..\include\fb\gateway\protocol\endpoint.h" />
+    <ClInclude Include="..\include\fb\gateway\protocol\version.h" />
+    <ClInclude Include="..\include\fb\gateway\protocol\welcome.h" />
+    <ClInclude Include="..\include\fb\gateway\session.h" />
+    <ClInclude Include="..\include\fb\gateway\util.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +109,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\context.cpp" />
+    <ClCompile Include="lib\protocol\endpoint.cpp" />
+    <ClCompile Include="lib\protocol\protocol.crypto.cpp" />
+    <ClCompile Include="lib\protocol\protocol.endpoint.cpp" />
+    <ClCompile Include="lib\protocol\protocol.version.cpp" />
+    <ClCompile Include="lib\protocol\protocol.welcome.cpp" />
     <ClCompile Include="lib\session.cpp" />
     <ClCompile Include="lib\util.cpp" />
     <ClCompile Include="main.cpp" />

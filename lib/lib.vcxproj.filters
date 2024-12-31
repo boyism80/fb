@@ -24,7 +24,7 @@
     <ClCompile Include="src\amqp.socket.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cryptor.cpp">
+    <ClCompile Include="src\crypto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\dead_lock.cpp">
@@ -54,49 +54,7 @@
     <ClCompile Include="src\console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cryptor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\dead_lock.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\encoding.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\stream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\table.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\thread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\thread_container.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\thread_switchable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\amqp.queue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\amqp.socket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\concurrent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cryptor.cpp">
+    <ClCompile Include="src\crypto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\dead_lock.cpp">
@@ -138,7 +96,49 @@
     <ClCompile Include="src\console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cryptor.cpp">
+    <ClCompile Include="src\crypto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dead_lock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\encoding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\table.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread_container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread_switchable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\timer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\amqp.queue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\amqp.socket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\concurrent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\dead_lock.cpp">
@@ -177,7 +177,55 @@
     <ClCompile Include="src\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\*.cpp">
+    <ClCompile Include="src\amqp.queue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\amqp.socket.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\concurrent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\crypto.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dead_lock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\encoding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lua.builtin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lua.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\table.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread.builtin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread_container.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\thread_switchable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\*.cpp">
@@ -351,7 +399,7 @@
     <ClCompile Include="src\concurrent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\cryptor.cpp">
+    <ClCompile Include="src\crypto.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\dead_lock.cpp">
@@ -395,147 +443,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.articlesummary_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.article_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.character_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.item_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.position_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.account_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.authenticate_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.changepw_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.deletearticle_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.getarticlelist_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.getarticle_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.initcharacter_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.login_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.makecharacter_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.reservename_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.save_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.request.writearticle_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.authenticate_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.changepw_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.deletearticle_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.getarticlelist_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.getarticle_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.getuid_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.initcharacter_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.login_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.makecharacter_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.reservename_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.save_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.response.writearticle_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.db.spell_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.request.kickout_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.request.login_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.request.logout_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.request.ping_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.request.transfer_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.request.whisper_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.response.kickout_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.response.login_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.response.logout_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.response.pong_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.response.transfer_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.response.whisper_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.service_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\fb.protocol.internal.transferresult_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\nullable_ubyte_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\nullable_uint_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\flatbuffer\raw\nullable_ushort_generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\fb\protocol\game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -546,12 +453,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\protocol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\protocol_type.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\request.common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\request.game.board.h">
@@ -572,16 +473,10 @@
     <ClInclude Include="..\include\fb\protocol\request.gateway.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\request.internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\fb\protocol\request.login.account.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\request.login.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.board.h">
@@ -615,9 +510,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.gateway.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\protocol\response.internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.login.h">
@@ -16832,7 +16724,7 @@
     <ClInclude Include="include\fb\container.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\fb\cryptor.h">
+    <ClInclude Include="include\fb\crypto.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\fb\dead_lock.h">
@@ -16969,6 +16861,99 @@
     </ClInclude>
     <ClInclude Include="..\include\fb\protocol\response.game.character.h">
       <Filter>Protocol Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\lua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\mst.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\mutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\parallel_worker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\socket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\stream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\stream_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\stream_writer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\string.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\table.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\thread_container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\thread_switchable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\timer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\amqp\queue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\amqp\socket.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\abstract.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\acceptor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\amqp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\concurrent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\container.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\crypto.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\dead_lock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\encoding.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\endian.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\leak.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\locker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\logger.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

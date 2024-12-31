@@ -1,5 +1,5 @@
-#include <character.h>
-#include <trade.h>
+#include <fb/game/character.h>
+#include <fb/game/trade.h>
 
 fb::game::trade::trade(character& owner) :
     _owner(owner)

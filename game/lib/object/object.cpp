@@ -1,7 +1,7 @@
-#include <character.h>
-#include <context.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
 #include <fb/model/model.h>
-#include <object.h>
+#include <fb/game/object.h>
 
 using namespace fb::model::enum_value;
 
@@ -111,7 +111,7 @@ async::task<size_t> fb::game::object::send(const fb::stream& stream, bool encryp
     co_return 0;
 }
 
-async::task<size_t> fb::game::object::send(const fb::protocol::base::header& response, bool encrypt, bool wrap)
+async::task<size_t> fb::game::object::send(const fb::protocol::header& response, bool encrypt, bool wrap)
 {
     this->assert_thread();
     co_return 0;

@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/game/context.h>
 using namespace fb::game;
 using namespace std::chrono_literals;
 
@@ -119,7 +119,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_pickup);         // 아이템 줍기 핸들러
     this->bind(&context::handle_emotion);        // 감정표현 핸들러
     this->bind(&context::handle_update_map);     // 맵 데이터 업데이트 핸들러
-    this->bind(&context::handle_refresh);        // 새로고침 핸들러
+    this->bind(&context::handle_update_screen);  // 새로고침 핸들러
     this->bind(&context::handle_active_item);    // 아이템 사용 핸들러
     this->bind(&context::handle_inactive_item);  // 아이템 장착 해제 핸들러
     this->bind(&context::handle_drop_item);      // 아이템 버리기 핸들러
@@ -516,11 +516,11 @@ character* context::handle_accepted(fb::socket<character>& socket)
     return this->make<character>(socket);
 }
 
-void context::send(object&                           object,
-                   const fb::protocol::base::header& header,
-                   context::scope                    scope,
-                   bool                              exclude_self,
-                   bool                              encrypt)
+void context::send(object&                     object,
+                   const fb::protocol::header& header,
+                   context::scope              scope,
+                   bool                        exclude_self,
+                   bool                        encrypt)
 {
     switch (scope)
     {
@@ -648,7 +648,7 @@ void context::send(object& object, const protocol_generator& fn, context::scope 
     }
 }
 
-void context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
+void context::send(const fb::protocol::header& response, const map& map, bool encrypt)
 {
     auto thread = map.thread();
     auto params = thread->data<thread_params>();
@@ -658,7 +658,7 @@ void context::send(const fb::protocol::base::header& response, const map& map, b
     }
 }
 
-void context::send(const fb::protocol::base::header& response, bool encrypt)
+void context::send(const fb::protocol::header& response, bool encrypt)
 {
     for (int i = 0, n = this->threads.size(); i < n; i++)
     {
@@ -886,7 +886,7 @@ void context::amqp_thread()
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
-    this->send(ch, fb_resp::character::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    this->send(ch, fb_resp::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
 }
 
 void context::handle_click_npc(character& ch, npc& npc)

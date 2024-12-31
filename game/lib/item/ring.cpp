@@ -1,4 +1,4 @@
-#include <item.h>
+#include <fb/game/item.h>
 
 fb::game::ring::ring(fb::game::context& context, const fb::model::ring& model) :
     equipment(context, model)

@@ -1,6 +1,6 @@
-#include <context.h>
-#include <life.h>
-#include <map.h>
+#include <fb/game/context.h>
+#include <fb/game/life.h>
+#include <fb/game/map.h>
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
@@ -192,7 +192,7 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto sound    = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
 
     context->send(*life,
-                  fb::protocol::game::response::life::action{*life, ACTION(action), DURATION(duration), sound},
+                  fb::protocol::game::response::action{*life, ACTION(action), DURATION(duration), sound},
                   context::scope::PIVOT);
     return 0;
 }

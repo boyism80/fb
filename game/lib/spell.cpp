@@ -1,6 +1,6 @@
-#include <context.h>
-#include <life.h>
-#include <spell.h>
+#include <fb/game/context.h>
+#include <fb/game/life.h>
+#include <fb/game/spell.h>
 
 fb::game::spells::spells(life& owner) :
     inventory(owner)

@@ -1,5 +1,5 @@
-#include <context.h>
-#include <item.h>
+#include <fb/game/context.h>
+#include <fb/game/item.h>
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")

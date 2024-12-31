@@ -1,4 +1,4 @@
-#include <board.h>
+#include <fb/game/board.h>
 
 bool fb::game::board::section::writable(uint8_t level, bool admin) const
 {

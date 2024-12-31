@@ -1,4 +1,4 @@
-#include <mob.h>
+#include <fb/game/mob.h>
 
 using namespace fb::game;
 

@@ -1,4 +1,4 @@
-#include <mst.recipe.h>
+#include <fb/game/mst.recipe.h>
 
 fb::model::__recipe::__recipe() :
     fb::model::array_container<fb::model::recipe>(std::string("json/recipe.json"))
