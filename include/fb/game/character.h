@@ -160,7 +160,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true) override final;
+    async::task<size_t> send(const fb::protocol::header& response,
+                             bool                        encrypt = true,
+                             bool                        wrap    = true) override final;
 
     /**
      * @brief      { function_description }
@@ -179,7 +181,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> map(fb::game::map*   map,
-                                        const point16_t& position = point16_t{0,0},
+                                        const point16_t& position     = point16_t{0, 0},
                                         DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:

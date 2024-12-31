@@ -93,7 +93,7 @@ public:
 
 public:
     virtual async::task<bool> map(fb::game::map*   map,
-                                  const point16_t& position = point16_t{0,0},
+                                  const point16_t& position     = point16_t{0, 0},
                                   DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) override;
 
     /**

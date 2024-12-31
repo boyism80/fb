@@ -350,7 +350,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     virtual async::task<bool> map(fb::game::map*   map,
-                                  const point16_t& position = point16_t{0,0},
+                                  const point16_t& position     = point16_t{0, 0},
                                   DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT);
     /**
      * @brief      { function_description }
