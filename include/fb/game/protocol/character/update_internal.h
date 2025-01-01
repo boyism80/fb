@@ -5,6 +5,8 @@
 #include <fb/model/model.h>
 #ifndef BOT
 #include <fb/game/character.h>
+#else
+#include <macro.h>
 #endif
 
 using namespace fb::model::enum_value;
