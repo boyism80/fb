@@ -179,7 +179,7 @@ void fb::game::item::merge(fb::game::item& item)
     }
 
     if (remain > 0 && this->_count == model.capacity)
-        this->_owner->message(TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+        this->_owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
 fb::protocol::internal::Item fb::game::item::to_protocol(EQUIPMENT_PARTS parts) const

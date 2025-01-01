@@ -462,7 +462,7 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
         }
     }
 
-    auto& message = success ? TEXT(MESSAGE_MIX_SUCCESS) : TEXT(MESSAGE_MIX_FAILED);
+    auto& message = success ? _TEXT(MESSAGE_MIX_SUCCESS) : _TEXT(MESSAGE_MIX_FAILED);
     ch->message(message);
     co_return true;
 }
@@ -630,7 +630,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             else
             {
                 if (this->model.board.contains(request.section) == false)
-                    throw std::runtime_error(TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
 
                 auto section = &this->model.board[request.section];
                 auto offset  = request.offset;
@@ -672,7 +672,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             if (this->model.board.contains(request.section) == false)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
 
             auto   section  = &this->model.board[request.section]; // 코루틴땜시 포인터로
             auto&& response = co_await this->get<internal_resp::GetArticle>(
@@ -684,7 +684,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (response.success == false)
             {
                 this->send(*ch,
-                           fb_resp::board_message(TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST), false, false),
+                           fb_resp::board_message(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST), false, false),
                            scope::SELF);
                 co_return true;
             }
@@ -719,17 +719,17 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             if (this->model.board.contains(request.section) == false)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
 
             auto section = &this->model.board[request.section];
             if (ch->condition(section->condition) == false)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_NOT_AUTH));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
 
             if (request.title.length() > 64)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_TOO_LONG_TITLE));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_TOO_LONG_TITLE));
 
             if (request.contents.length() > 256)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_TOO_LONG_CONTENTS));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_TOO_LONG_CONTENTS));
 
             auto&& response = co_await this->post<internal_reqs::WriteArticle, internal_resp::WriteArticle>(
                 "internal",
@@ -742,7 +742,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (response.success == false)
                 throw std::runtime_error("게시글 작성 실패");
 
-            this->send(*ch, fb_resp::board_message(TEXT(MESSAGE_BOARD_WRITE), true, true), scope::SELF);
+            this->send(*ch, fb_resp::board_message(_TEXT(MESSAGE_BOARD_WRITE), true, true), scope::SELF);
         }
         catch (std::exception& e)
         {
@@ -756,11 +756,11 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             if (this->model.board.contains(request.section) == false)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
 
             auto section = &this->model.board[request.section];
             if (ch->condition(section->condition) == false)
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_NOT_AUTH));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
 
             auto&& response = co_await this->post<internal_reqs::DeleteArticle, internal_resp::DeleteArticle>(
                 "internal",
@@ -773,16 +773,16 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             switch (response.result)
             {
             case -1: // article not found
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
 
             case -2: // article deleted
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
 
             case -3: // no authenticate
-                throw std::runtime_error(TEXT(MESSAGE_BOARD_NOT_AUTH));
+                throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
             }
 
-            this->send(*ch, fb_resp::board_message(TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false), scope::SELF);
         }
         catch (std::exception& e)
         {

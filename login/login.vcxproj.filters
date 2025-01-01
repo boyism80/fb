@@ -13,9 +13,6 @@
     <Filter Include="Header Files\protocol">
       <UniqueIdentifier>{8c14dcd2-9918-43b1-b4e7-449177de1fbe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\protocol\account">
-      <UniqueIdentifier>{1aa4902c-bfc7-43b6-b2f5-56252a6b11b1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\protocol">
       <UniqueIdentifier>{6d93da26-2a6e-45c0-a8a9-14389dee574d}</UniqueIdentifier>
     </Filter>
@@ -24,31 +21,40 @@
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="include\gateway.h">
+    <ClInclude Include="..\include\fb\login\context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\session.h">
+    <ClInclude Include="..\include\fb\login\gateway.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\context.h">
+    <ClInclude Include="..\include\fb\login\protocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\protocol\agreement.h">
+    <ClInclude Include="..\include\fb\login\session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\login\protocol\agreement.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
-    <ClInclude Include="include\protocol\login.h">
+    <ClInclude Include="..\include\fb\login\protocol\complete.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
-    <ClInclude Include="include\protocol\message.h">
+    <ClInclude Include="..\include\fb\login\protocol\create.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
-    <ClInclude Include="include\protocol\update_pw.h">
+    <ClInclude Include="..\include\fb\login\protocol\header.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
-    <ClInclude Include="include\protocol\complete.h">
+    <ClInclude Include="..\include\fb\login\protocol\login.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
-    <ClInclude Include="include\protocol\create.h">
+    <ClInclude Include="..\include\fb\login\protocol\message.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\login\protocol\transfer.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\login\protocol\update_pw.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>

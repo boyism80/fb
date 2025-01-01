@@ -26,14 +26,14 @@ bool fb::game::trade::begin(fb::game::character& you)
 
         if (this->_owner.option(SETTING::TRADE) == false)
         {
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_REFUSED_BY_ME));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_REFUSED_BY_ME));
         }
 
         if (you.option(SETTING::TRADE) == false)
         {
             // 상대방이 교환 거부중
             std::stringstream sstream;
-            sstream << you.name() << TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER);
+            sstream << you.name() << _TEXT(MESSAGE_TRADE_REFUSED_BY_PARTNER);
             throw std::runtime_error(sstream.str());
         }
 
@@ -46,21 +46,21 @@ bool fb::game::trade::begin(fb::game::character& you)
         {
             // 상대방이 이미 교환중
             std::stringstream sstream;
-            sstream << you.name() << TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING);
+            sstream << you.name() << _TEXT(MESSAGE_TRADE_PARTNER_ALREADY_TRADING);
             throw std::runtime_error(sstream.str());
         }
 
         if (this->_owner.sight(you) == false)
         {
             // 상대방이 시야에서 보이지 않음
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_PARTNER_INVISIBLE));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_PARTNER_INVISIBLE));
         }
 
         if (this->_owner.distance_sqrt(you) > 16)
         {
             // 상대방과의 거리가 너무 멈
             std::stringstream sstream;
-            sstream << you.name() << TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR);
+            sstream << you.name() << _TEXT(MESSAGE_TRADE_PARTNER_TOO_FAR);
 
             throw std::runtime_error(sstream.str());
         }
@@ -124,10 +124,10 @@ bool fb::game::trade::up_item(uint8_t index)
         auto& model = item->based<fb::model::item>();
 
         if (this->trading() == false)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_TRADING));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
         if (model.trade == false)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
 
         if (ENUM_IN(model.attr(), ITEM_ATTRIBUTE::BUNDLE) && item->count() > 1)
         {
@@ -191,19 +191,19 @@ bool fb::game::trade::count(uint16_t count)
     try
     {
         if (this->trading() == false)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_TRADING));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
         if (this->_selected == 0xFF)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_SELECTED));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_SELECTED));
 
         auto  item  = this->_owner.items[this->_selected];
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_ALLOWED_TO_TRADE));
 
         auto remained = item->count() - item->trade_count();
         if (remained < count)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_INVALID_COUNT));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_INVALID_COUNT));
 
         item->trade_count(item->trade_count() + count);
         this->_owner.items.update(this->_selected);
@@ -228,7 +228,7 @@ bool fb::game::trade::cancel()
     try
     {
         if (this->trading() == false)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_TRADING));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
         this->restore();
         this->_you->trade.restore();
@@ -370,7 +370,7 @@ bool fb::game::trade::lock()
     try
     {
         if (this->trading() == false)
-            throw std::runtime_error(TEXT(MESSAGE_TRADE_NOT_TRADING));
+            throw std::runtime_error(_TEXT(MESSAGE_TRADE_NOT_TRADING));
 
         this->_locked = true;
         if (this->_you->trade._locked == false) // 상대가 아직 OK 안누름

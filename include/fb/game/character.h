@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <fb/game/dialog.h>
 #include <fb/locker.h>
+#include <fb/socket.h>
 #include <iostream>
 #include <fb/game/mob.h>
 #include <sstream>
@@ -66,29 +67,30 @@ private:
     std::string             _name;
     std::string             _pw;
     datetime                _updated_date;
-    uint16_t                _look            = 0;
-    uint8_t                 _color           = 0;
-    std::optional<uint8_t>  _armor_color     = 0;
-    defensive               _defensive       = {};
-    uint32_t                _base_hp         = 0;
-    uint32_t                _base_mp         = 0;
-    uint32_t                _experience      = 0;
-    uint8_t                 _strength        = 0;
-    uint8_t                 _intelligence    = 0;
-    uint8_t                 _dexteritry      = 0;
-    uint8_t                 _damage          = 0; // 공격수정
-    uint8_t                 _hit             = 0; // 명중수정
-    uint8_t                 _regenerative    = 0; // 재생력
-    NATION                  _nation          = NATION::GOGURYEO;
-    CREATURE                _creature        = CREATURE::DRAGON;
-    SEX                     _sex             = SEX::ALL;
-    STATE                   _state           = STATE::NORMAL;
-    uint8_t                 _level           = 1;
-    CLASS                   _class           = CLASS::NONE;
-    uint8_t                 _promotion       = 0;
-    uint32_t                _money           = 0;
-    std::optional<uint16_t> _disguise        = 0;
-    uint32_t                _deposited_money = 0;
+    uint16_t                _look               = 0;
+    uint8_t                 _color              = 0;
+    std::optional<uint8_t>  _armor_color        = 0;
+    int16_t                 _defensive_physical = 0;
+    int16_t                 _defensive_magical  = 0;
+    uint32_t                _base_hp            = 0;
+    uint32_t                _base_mp            = 0;
+    uint32_t                _experience         = 0;
+    uint8_t                 _strength           = 0;
+    uint8_t                 _intelligence       = 0;
+    uint8_t                 _dexteritry         = 0;
+    uint8_t                 _damage             = 0; // 공격수정
+    uint8_t                 _hit                = 0; // 명중수정
+    uint8_t                 _regenerative       = 0; // 재생력
+    NATION                  _nation             = NATION::GOGURYEO;
+    CREATURE                _creature           = CREATURE::DRAGON;
+    SEX                     _sex                = SEX::ALL;
+    STATE                   _state              = STATE::NORMAL;
+    uint8_t                 _level              = 1;
+    CLASS                   _class              = CLASS::NONE;
+    uint8_t                 _promotion          = 0;
+    uint32_t                _money              = 0;
+    std::optional<uint16_t> _disguise           = 0;
+    uint32_t                _deposited_money    = 0;
     std::vector<item*>      _deposited_items;
     std::string             _title;
     shared_group_lock       _group             = nullptr;

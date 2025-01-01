@@ -1,13 +1,18 @@
 #ifndef __OBJECT_H__
 #define __OBJECT_H__
 
-#include <fb/game/spell.h>
 #include <fb/lua.h>
+#include <fb/stream.h>
+#include <fb/protocol/header.h>
+#include <fb/thread_switchable.h>
+#include <fb/model/model.h>
+#include <fb/game/spell.h>
+#include <async/task.h>
 
 using namespace fb::model;
 using namespace fb::model::enum_value;
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a context.
@@ -850,6 +855,6 @@ public:
     fb::game::map*  map       = nullptr;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__OBJECT_H__

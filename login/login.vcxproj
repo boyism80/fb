@@ -98,15 +98,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\context.h" />
-    <ClInclude Include="include\gateway.h" />
-    <ClInclude Include="include\protocol\update_pw.h" />
-    <ClInclude Include="include\protocol\complete.h" />
-    <ClInclude Include="include\protocol\create.h" />
-    <ClInclude Include="include\protocol\agreement.h" />
-    <ClInclude Include="include\protocol\login.h" />
-    <ClInclude Include="include\protocol\message.h" />
-    <ClInclude Include="include\session.h" />
+    <ClInclude Include="..\include\fb\login\context.h" />
+    <ClInclude Include="..\include\fb\login\gateway.h" />
+    <ClInclude Include="..\include\fb\login\protocol.h" />
+    <ClInclude Include="..\include\fb\login\protocol\agreement.h" />
+    <ClInclude Include="..\include\fb\login\protocol\complete.h" />
+    <ClInclude Include="..\include\fb\login\protocol\create.h" />
+    <ClInclude Include="..\include\fb\login\protocol\header.h" />
+    <ClInclude Include="..\include\fb\login\protocol\login.h" />
+    <ClInclude Include="..\include\fb\login\protocol\message.h" />
+    <ClInclude Include="..\include\fb\login\protocol\transfer.h" />
+    <ClInclude Include="..\include\fb\login\protocol\update_pw.h" />
+    <ClInclude Include="..\include\fb\login\session.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

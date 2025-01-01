@@ -65,19 +65,19 @@ void context::assert_account(const std::string& id, const std::string& pw) const
     auto name_size = cp949.length();
 
     if (name_size < fb::config<int>("name_size:min") || name_size > fb::config<int>("name_size:max"))
-        throw id_exception(TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+        throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Name must be full-hangul characters
     if (fb::config<bool>("allow other language") == false && assert_korean(cp949) == false)
-        throw id_exception(TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+        throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Name cannot contains subcharacters in forbidden list
     if (this->is_forbidden(id))
-        throw id_exception(TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+        throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
     // Read character's password
     if (pw.length() < fb::config<int>("pw_size:min") || pw.length() > fb::config<int>("pw_size:max"))
-        throw pw_exception(TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
+        throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 }
 
 session* context::handle_accepted(fb::socket<session>& socket)
@@ -216,7 +216,7 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
         if (response.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
-        socket.send(response::message(TEXT(MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT), 0x00));
+        socket.send(response::message(_TEXT(MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT), 0x00));
         session->pk = -1;
         session->name.clear();
         co_return true;
@@ -257,7 +257,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             co_return false;
 
         if (response.success == false)
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto   uid       = response.uid;
         auto&& response2 = co_await this->post<internal::request::Authenticate, internal::response::Authenticate>(
@@ -270,10 +270,10 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         switch (response2.error_code)
         {
         case 1:
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         case 2:
-            throw pw_exception(TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
         }
 
         auto   map       = response2.map;
@@ -349,32 +349,32 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
         co_await this->sleep(std::chrono::seconds(delay));
 
         if (name.length() < fb::config("name_size:min").asInt() || name.length() > fb::config("name_size:max").asInt())
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name must be full-hangul characters
         if (fb::config<bool>("login:account option:allow other language") == false && assert_korean(name) == false)
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         // Name cannot contains subcharacters in forbidden list
         if (this->is_forbidden(name))
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_NAME));
 
         if (pw.length() < fb::config("pw_size:min").asInt() || pw.length() > fb::config("pw_size:max").asInt())
-            throw pw_exception(TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
         if (new_pw.length() < fb::config("pw_size:min").asInt() || new_pw.length() > fb::config("pw_size:max").asInt())
-            throw newpw_exception(TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
+            throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_PASSWORD_SIZE));
 
         // TODO : 너무 쉬운 비밀번호인지 체크
         if (pw == new_pw)
-            throw newpw_exception(TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
+            throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
         auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
         if (this->assert_socket(fd) == false)
             co_return false;
 
         if (response.success == false)
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         auto uid = response.uid;
 
@@ -389,16 +389,16 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
         switch (response2.error_code)
         {
         case 1: // id wrong
-            throw id_exception(TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
+            throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
         case 2: // pw wrong
-            throw pw_exception(TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
 
         case 3: // birthday wrong
-            throw pw_exception(TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY));
+            throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY));
         }
 
-        socket.send(response::message((TEXT(MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD)), 0x00));
+        socket.send(response::message((_TEXT(MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD)), 0x00));
         co_return true;
     }
     catch (login_exception& e)

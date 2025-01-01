@@ -116,7 +116,7 @@ public:
      * @brief      Constructs a new instance.
      */
     btd_exception() :
-        login_exception(0x1F, TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY))
+        login_exception(0x1F, _TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY))
     { }
 };
 

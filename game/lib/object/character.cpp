@@ -301,28 +301,28 @@ uint32_t character::defensive_physical() const
 {
     this->assert_thread();
 
-    return this->_defensive.physical;
+    return this->_defensive_physical;
 }
 
 void character::defensive_physical(uint8_t value)
 {
     this->assert_thread();
 
-    this->_defensive.physical = value;
+    this->_defensive_physical = value;
 }
 
 uint32_t character::defensive_magical() const
 {
     this->assert_thread();
 
-    return this->_defensive.magical;
+    return this->_defensive_magical;
 }
 
 void character::defensive_magical(uint8_t value)
 {
     this->assert_thread();
 
-    this->_defensive.magical = value;
+    this->_defensive_magical = value;
 }
 
 void character::base_hp_up(uint32_t value)
@@ -441,7 +441,7 @@ bool character::level_up()
     this->mp(this->base_mp());
 
     this->level(this->_level + 1);
-    this->message(TEXT(MESSAGE_LEVEL_UP));
+    this->message(_TEXT(MESSAGE_LEVEL_UP));
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
@@ -658,7 +658,7 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
         }
 
         if (this->_class == CLASS::NONE && this->max_level())
-            throw std::runtime_error(TEXT(MESSAGE_EXCEPTION_REQUIRE_CLASS));
+            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_REQUIRE_CLASS));
     }
     catch (std::exception& e)
     {
@@ -788,7 +788,7 @@ uint32_t character::money_drop(uint32_t value)
         cash->map(this->_map, this->_position);
 
         this->action(ACTION::PICKUP, DURATION::PICKUP);
-        this->message(TEXT(MESSAGE_MONEY_DROP));
+        this->message(_TEXT(MESSAGE_MONEY_DROP));
 
         return lack;
     }
@@ -1171,9 +1171,9 @@ void character::assert_state(STATE value) const
     this->assert_thread();
 
     static const auto error = std::map<STATE, const std::string>{
-        {STATE::GHOST,    TEXT(MESSAGE_EXCEPTION_GHOST)   },
-        {STATE::RIDING,   TEXT(MESSAGE_EXCEPTION_RIDDING) },
-        {STATE::DISGUISE, TEXT(MESSAGE_EXCEPTION_DISGUISE)}
+        {STATE::GHOST,    _TEXT(MESSAGE_EXCEPTION_GHOST)   },
+        {STATE::RIDING,   _TEXT(MESSAGE_EXCEPTION_RIDDING) },
+        {STATE::DISGUISE, _TEXT(MESSAGE_EXCEPTION_DISGUISE)}
     };
 
     if (this->_state == value)
@@ -1228,18 +1228,18 @@ void character::ride(mob& horse)
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
 
         if (this->state() == STATE::RIDING)
-            throw std::runtime_error(TEXT(MESSAGE_RIDE_ALREADY_RIDE));
+            throw std::runtime_error(_TEXT(MESSAGE_RIDE_ALREADY_RIDE));
 
         if (horse.based<fb::model::mob>() != this->context.model.mob[fb::model::const_value::mob::horse])
-            throw std::runtime_error(TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
+            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
         if (horse.map() != this->_map)
-            throw std::runtime_error(TEXT(MESSAGE_ERROR_UNKNOWN));
+            throw std::runtime_error(_TEXT(MESSAGE_ERROR_UNKNOWN));
 
         horse.map(nullptr);
         this->state(STATE::RIDING);
         horse.kill();
-        this->message(TEXT(MESSAGE_RIDE_ON));
+        this->message(_TEXT(MESSAGE_RIDE_ON));
     }
     catch (std::exception& e)
     {
@@ -1257,7 +1257,7 @@ void character::ride()
 
         auto front = this->forward(OBJECT_TYPE::MOB);
         if (front == nullptr)
-            throw std::runtime_error(TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
+            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_NO_CONVEYANCE));
 
         this->ride(static_cast<mob&>(*front));
     }
@@ -1275,14 +1275,14 @@ void character::unride()
     {
         this->assert_state({STATE::GHOST, STATE::DISGUISE});
         if (this->state() != STATE::RIDING)
-            throw std::runtime_error(TEXT(MESSAGE_RIDE_UNRIDE));
+            throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
         auto& model = this->context.model.mob[const_value::mob::horse];
         auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->position_forward());
 
         this->state(STATE::NORMAL);
-        this->message(TEXT(MESSAGE_RIDE_OFF));
+        this->message(_TEXT(MESSAGE_RIDE_OFF));
     }
     catch (std::exception& e)
     {
@@ -1331,7 +1331,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         case DSL::sex:
         {
             auto params = dsl::sex(dsl.params);
-            if (enum_in(params.value, this->_sex) == false)
+            if (ENUM_IN(params.value, this->_sex) == false)
                 return false;
         }
         break;
@@ -1371,7 +1371,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         case DSL::class_t:
         {
             auto params = dsl::class_t(dsl.params);
-            if (enum_in(params.value, this->_class) == false)
+            if (ENUM_IN(params.value, this->_class) == false)
                 return false;
         }
 
