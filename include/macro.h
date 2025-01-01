@@ -5,9 +5,6 @@
 #define interface struct
 #endif
 
-#ifdef TEXT
-#undef TEXT
-#endif
 #define _TEXT(k) fb::model::const_value::string::k
 
 #include <type_traits>
