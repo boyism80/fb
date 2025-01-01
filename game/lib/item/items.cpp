@@ -294,6 +294,7 @@ bool fb::game::items::update(uint8_t index) const
         else
             listener->on_item_update(this->_owner, index);
     }
+    return true;
 }
 
 fb::game::equipment* fb::game::items::wear(EQUIPMENT_PARTS parts, fb::game::equipment* item)

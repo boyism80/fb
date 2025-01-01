@@ -365,7 +365,7 @@ async::task<bool> context::handle_command_save(character& ch, Json::Value& param
     for (int i = 0; i < this->threads.size(); i++)
     {
         std::ignore = this->threads[i]->dispatch([this](auto& thread) -> async::task<void> {
-            auto params = thread.data<thread_params>();
+            auto params = thread.template data<thread_params>();
             for (auto& [id, character] : params->characters)
             {
                 std::ignore = this->save(*character);

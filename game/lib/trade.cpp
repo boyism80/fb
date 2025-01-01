@@ -411,7 +411,7 @@ const std::vector<fb::game::item*>& fb::game::trade::items() const
 
         result.push_back(item);
     }
-    return result;
+    return std::ref(result);
 }
 
 const fb::game::item* fb::game::trade::item(uint8_t index) const
