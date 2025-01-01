@@ -46,6 +46,6 @@ public:
 #endif
 };
 
-}
+} // namespace fb::protocol::login::response
 
 #endif

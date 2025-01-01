@@ -41,7 +41,6 @@ public:
 #endif
 };
 
-
-}
+} // namespace fb::protocol::login::request
 
 #endif
