@@ -145,8 +145,6 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_world);          // 월드맵 핸들러
 
     this->bind_timer(&context::handle_heart_beat, 1s);
-    this->bind_timer(&context::handle_time, 1min); // 세계 시간 타이머
-
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
     this->bind_thread_timer(&context::handle_mob_respawn, 1s);   // 몹 리젠 타이머
     this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머
@@ -277,11 +275,6 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
-}
-
-async::task<void> context::handle_timer(uint64_t elapsed_milliseconds)
-{
-    co_return;
 }
 
 std::string context::elapsed_message(const std::string& dt)

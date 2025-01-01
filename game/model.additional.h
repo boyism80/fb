@@ -11,7 +11,6 @@
 
 #include <fb/lua.h>
 #include <fb/model/datetime.h>
-#include <enum_ext.h>
 
 #define OVERRIDE_OBJECT_TYPE(v)                   \
     enum_value::OBJECT_TYPE what() const override \

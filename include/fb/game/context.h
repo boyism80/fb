@@ -639,18 +639,6 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  elapsed_milliseconds  The elapsed milliseconds
-     *
-     * @return     { description_of_the_return_value }
-     */
-    async::task<void> handle_timer(uint64_t elapsed_milliseconds);
-
-    // game event method
-
-public:
-    /**
-     * @brief      { function_description }
-     *
      * @param      <unnamed>  { parameter_description }
      * @param[in]  <unnamed>  { parameter_description }
      *

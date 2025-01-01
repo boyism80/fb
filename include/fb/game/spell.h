@@ -2,7 +2,6 @@
 #define __SPELL_H__
 
 #include <chrono>
-#include <fb/game/mmo.h>
 #include <fb/game/inventory.h>
 #include <fb/model/model.h>
 

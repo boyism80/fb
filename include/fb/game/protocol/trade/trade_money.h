@@ -19,7 +19,7 @@ public:
 public:
 #ifndef BOT
     const uint32_t money;
-    const bool                 mine;
+    const bool     mine;
 #else
 
 #endif

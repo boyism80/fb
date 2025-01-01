@@ -36,9 +36,6 @@
     <ClCompile Include="lib\listener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\mmo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lib\spell.builtin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -573,9 +570,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\game\map.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\fb\game\mmo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\game\mob.h">

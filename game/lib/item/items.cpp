@@ -29,7 +29,7 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
     try
     {
         if (this->free() == false)
-            throw std::runtime_error(message::exception::INVENTORY_OVERFLOW);
+            throw std::runtime_error(TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
 
         fb::game::item* item = nullptr;
         switch (parts)
@@ -144,7 +144,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             this->_owner.update(STATE_LEVEL::LEVEL_MIN);
             if (remain != 0)
             {
-                this->_owner.message(message::money::FULL);
+                this->_owner.message(TEXT(MESSAGE_MONEY_FULL));
                 if (stop_if_remained)
                     break;
             }
@@ -519,7 +519,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
-            throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
+            throw std::runtime_error(TEXT(MESSAGE_EXCEPTION_CANNOT_DROP_ITEM));
 
         auto dropped = this->remove(*item, count, ITEM_DELETE_TYPE::DROP);
         if (dropped != nullptr)
@@ -600,7 +600,7 @@ bool fb::game::items::throws(uint8_t index)
 
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
-            throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
+            throw std::runtime_error(TEXT(MESSAGE_EXCEPTION_CANNOT_THROW_ITEM));
 
         auto map = this->_owner.map();
         if (map == nullptr)

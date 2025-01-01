@@ -79,7 +79,7 @@ bool fb::game::equipment::active()
         break;
 
     default:
-        throw equipment::not_equipment_exception();
+        throw std::runtime_error("입을 수 없는 물건입니다.");
     }
 
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로

@@ -17,6 +17,7 @@ extern "C"
 #include <mutex>
 #include <format>
 #include <thread>
+#include <macro.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
 

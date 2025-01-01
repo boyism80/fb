@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <fb/game/dialog.h>
-#include <fb/string.h>
 #include <fb/locker.h>
 #include <iostream>
 #include <fb/game/mob.h>
@@ -49,13 +48,6 @@ public:
      * @brief      This class describes a container.
      */
     class container;
-
-public:
-    DECLARE_EXCEPTION(require_class_exception, fb::game::message::exception::REQUIRE_CLASS)
-    DECLARE_EXCEPTION(ghost_exception, fb::game::message::exception::GHOST)
-    DECLARE_EXCEPTION(ridding_exception, fb::game::message::exception::RIDDING)
-    DECLARE_EXCEPTION(no_conveyance_exception, fb::game::message::exception::NO_CONVEYANCE)
-    DECLARE_EXCEPTION(disguise_exception, fb::game::message::exception::DISGUISE)
 
 public:
     LUA_PROTOTYPE

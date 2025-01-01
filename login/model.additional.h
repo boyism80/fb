@@ -2,6 +2,6 @@
 #define	__MODEL_PREPROCESSOR_H__
 
 #include <fb/model/datetime.h>
-#include <enum_ext.h>
+#include <macro.h>
 
 #endif

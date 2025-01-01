@@ -812,17 +812,17 @@ namespace Fb.Model.ConstValue
 
     public static class String
     {
-        public const string AccountInvalidName = "이름이 길거나 적합하지 않습니다.";
-        public const string AccountAlreadyLogin = "이미 접속중입니다.";
-        public const string AccountNotFoundName = "존재하지 않는 이름입니다.";
-        public const string AccountPasswordSize = "암호는 4자 이상 8자 이하";
-        public const string AccountInvalidPassword = "비밀번호가 올바르지 않습니다.";
-        public const string AccountSimplePassword = "암호가 단순합니다.";
-        public const string AccountSuccessRegisterAccount = "등록완료, 이어하기를 선택하세요.";
-        public const string AccountSuccessChangePassword = "변경됐다리";
-        public const string AccountInvalidBirthday = "생년월일이 올바르지 않습니다.";
-        public const string AccountNewPwEqualization = "기존 암호화 동일합니다.";
-        public const string AccountAlreadyExists = "이미 존재하는 이름입니다.";
+        public const string MessageAccountInvalidName = "이름이 길거나 적합하지 않습니다.";
+        public const string MessageAccountAlreadyLogin = "이미 접속중입니다.";
+        public const string MessageAccountNotFoundName = "존재하지 않는 이름입니다.";
+        public const string MessageAccountPasswordSize = "암호는 4자 이상 8자 이하";
+        public const string MessageAccountInvalidPassword = "비밀번호가 올바르지 않습니다.";
+        public const string MessageAccountSimplePassword = "암호가 단순합니다.";
+        public const string MessageAccountSuccessRegisterAccount = "등록완료, 이어하기를 선택하세요.";
+        public const string MessageAccountSuccessChangePassword = "변경됐다리";
+        public const string MessageAccountInvalidBirthday = "생년월일이 올바르지 않습니다.";
+        public const string MessageAccountNewPwEqualization = "기존 암호화 동일합니다.";
+        public const string MessageAccountAlreadyExists = "이미 존재하는 이름입니다.";
         public const string MessageAssetMapLoaded = "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})";
         public const string MessageAssetRegexLoaded = "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})";
         public const string MessageAssetWorldMapLoaded = "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})";

@@ -12,7 +12,6 @@
 #include <fb/socket.h>
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/acceptor.h>
-#include <fb/string.h>
 #include <fb/model/model.h>
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
@@ -117,7 +116,7 @@ public:
      * @brief      Constructs a new instance.
      */
     btd_exception() :
-        login_exception(0x1F, fb::login::message::account::INVALID_BIRTHDAY)
+        login_exception(0x1F, TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY))
     { }
 };
 
@@ -262,7 +261,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> handle_complete(fb::socket<fb::login::session>&,
-                                                            const fb::protocol::login::request::complete&);
+                                                    const fb::protocol::login::request::complete&);
     /**
      * @brief      { function_description }
      *

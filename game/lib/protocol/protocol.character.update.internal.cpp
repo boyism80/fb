@@ -16,7 +16,7 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(static_cast<uint8_t>(this->level));
 
-    if (enum_in(this->level, STATE_LEVEL::BASED))
+    if (ENUM_IN(this->level, STATE_LEVEL::BASED))
     {
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
@@ -34,19 +34,19 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
         writer.write<uint8_t>(0x00);
     }
 
-    if (enum_in(this->level, STATE_LEVEL::HP_MP))
+    if (ENUM_IN(this->level, STATE_LEVEL::HP_MP))
     {
         writer.write<uint32_t>(this->ch.hp()); // current hp
         writer.write<uint32_t>(this->ch.mp()); // current mp
     }
 
-    if (enum_in(this->level, STATE_LEVEL::EXP_MONEY))
+    if (ENUM_IN(this->level, STATE_LEVEL::EXP_MONEY))
     {
         writer.write<uint32_t>(this->ch.exp());                            // exp
         writer.write<uint32_t>(this->ch.money() - this->ch.trade.money()); // money
     }
 
-    if (enum_in(this->level, STATE_LEVEL::CONDITION))
+    if (ENUM_IN(this->level, STATE_LEVEL::CONDITION))
     {
         writer.write<uint8_t>(this->ch.condition_contains(CONDITION::MOVE));  // condition::move
         writer.write<uint8_t>(this->ch.condition_contains(CONDITION::SIGHT)); // condition::sight
@@ -64,7 +64,7 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
 {
     co_await header::deserialize(reader);
     this->level = static_cast<fb::model::enum_value::STATE_LEVEL>(reader.read<uint8_t>());
-    if (enum_in(this->level, STATE_LEVEL::BASED))
+    if (ENUM_IN(this->level, STATE_LEVEL::BASED))
     {
         this->ch_nation   = reader.read<uint8_t>();
         this->ch_creature = reader.read<uint8_t>();
@@ -82,19 +82,19 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
         reader.read<uint8_t>();
     }
 
-    if (enum_in(this->level, STATE_LEVEL::HP_MP))
+    if (ENUM_IN(this->level, STATE_LEVEL::HP_MP))
     {
         this->ch_hp = reader.read<uint32_t>();
         this->ch_mp = reader.read<uint32_t>();
     }
 
-    if (enum_in(this->level, STATE_LEVEL::EXP_MONEY))
+    if (ENUM_IN(this->level, STATE_LEVEL::EXP_MONEY))
     {
         this->ch_exp   = reader.read<uint32_t>();
         this->ch_money = reader.read<uint32_t>();
     }
 
-    if (enum_in(this->level, STATE_LEVEL::CONDITION))
+    if (ENUM_IN(this->level, STATE_LEVEL::CONDITION))
     {
         if (reader.read<uint8_t>())
             this->ch_condition |= (uint32_t)CONDITION::MOVE;

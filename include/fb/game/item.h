@@ -57,8 +57,6 @@ public:
     };
 
 public:
-    DECLARE_EXCEPTION(full_inven_exception, "소지품이 꽉 찼습니다.")
-
     static const conditions DEFAULT_CONDITION;
 
 public:
@@ -473,9 +471,6 @@ public:
      * @brief      { struct_description }
      */
     struct listener;
-
-public:
-    DECLARE_EXCEPTION(not_equipment_exception, "입을 수 없는 물건입니다.")
 
 protected:
     uint32_t _durability = 0;

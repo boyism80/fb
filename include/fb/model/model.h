@@ -2397,17 +2397,17 @@ DECLARE_CONST_REGEX_EXTENSION
 class string
 {
 public:
-    inline static constexpr const char* ACCOUNT_INVALID_NAME = "이름이 길거나 적합하지 않습니다.";
-    inline static constexpr const char* ACCOUNT_ALREADY_LOGIN = "이미 접속중입니다.";
-    inline static constexpr const char* ACCOUNT_NOT_FOUND_NAME = "존재하지 않는 이름입니다.";
-    inline static constexpr const char* ACCOUNT_PASSWORD_SIZE = "암호는 4자 이상 8자 이하";
-    inline static constexpr const char* ACCOUNT_INVALID_PASSWORD = "비밀번호가 올바르지 않습니다.";
-    inline static constexpr const char* ACCOUNT_SIMPLE_PASSWORD = "암호가 단순합니다.";
-    inline static constexpr const char* ACCOUNT_SUCCESS_REGISTER_ACCOUNT = "등록완료, 이어하기를 선택하세요.";
-    inline static constexpr const char* ACCOUNT_SUCCESS_CHANGE_PASSWORD = "변경됐다리";
-    inline static constexpr const char* ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
-    inline static constexpr const char* ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
-    inline static constexpr const char* ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_INVALID_NAME = "이름이 길거나 적합하지 않습니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_ALREADY_LOGIN = "이미 접속중입니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_NOT_FOUND_NAME = "존재하지 않는 이름입니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_PASSWORD_SIZE = "암호는 4자 이상 8자 이하";
+    inline static constexpr const char* MESSAGE_ACCOUNT_INVALID_PASSWORD = "비밀번호가 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_SIMPLE_PASSWORD = "암호가 단순합니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT = "등록완료, 이어하기를 선택하세요.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD = "변경됐다리";
+    inline static constexpr const char* MESSAGE_ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
     inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})";
