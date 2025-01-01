@@ -42,8 +42,8 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
 
     if (enum_in(this->level, STATE_LEVEL::EXP_MONEY))
     {
-        writer.write<uint32_t>(this->ch.exp());   // exp
-        writer.write<uint32_t>(this->ch.money()); // money
+        writer.write<uint32_t>(this->ch.exp());                            // exp
+        writer.write<uint32_t>(this->ch.money() - this->ch.trade.money()); // money
     }
 
     if (enum_in(this->level, STATE_LEVEL::CONDITION))

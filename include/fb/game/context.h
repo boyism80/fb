@@ -1463,28 +1463,6 @@ public:
     [[nodiscard]] async::task<bool> on_transfer(character&       me,
                                                 fb::game::map&   map,
                                                 const point16_t& position) override final;
-    /**
-     * @brief      Called on item get.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  items  The items
-     */
-    void on_item_get(character& me, const item::container& items) override final;
-    /**
-     * @brief      Called when item changed.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  items  The items
-     */
-    void on_item_changed(character& me, const item::container& items) override final;
-    /**
-     * @brief      Called on item lost.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  slots  The slots
-     */
-    void on_item_lost(character& me, const std::vector<uint8_t>& slots) override final;
-
     //
     // @brief      Called on item remove.
     //
@@ -1575,40 +1553,40 @@ public:
      * @param      from   The from
      * @param[in]  index  The index
      */
-    void on_trade_item(character& me, character& from, uint8_t index) override final;
+    void on_trade_item(character& me, character& from, uint8_t index, const fb::game::item& item) override final;
     /**
      * @brief      Called on trade money.
      *
      * @param      me    { parameter_description }
      * @param      from  The from
      */
-    void on_trade_money(character& me, character& from) override final;
+    void on_trade_money(character& me, character& you, uint32_t money) override final;
     /**
      * @brief      Called on trade cancel.
      *
      * @param      me    { parameter_description }
-     * @param      from  The from
+     * @param      you   You
      */
-    void on_trade_cancel(character& me, character& from) override final;
+    void on_trade_cancel(character& me, character& you) override final;
     /**
      * @brief      Called on trade lock.
      *
      * @param      me    { parameter_description }
      * @param[in]  mine  The mine
      */
-    void on_trade_lock(character& me, bool mine) override final;
+    void on_trade_lock(character& me, character& you) override final;
     /**
      * @brief      Called when trade failed.
      *
      * @param      me    { parameter_description }
      */
-    void on_trade_failed(character& me) override final;
+    void on_trade_failed(character& me, character& you) override final;
     /**
      * @brief      Called on trade success.
      *
      * @param      me    { parameter_description }
      */
-    void on_trade_success(character& me) override final;
+    void on_trade_success(character& me, character& you) override final;
 
     /**
      * @brief      Called on dialog.

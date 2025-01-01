@@ -50,11 +50,11 @@ std::string fb::game::item::tip_message() const
 std::string fb::game::item::inven_name() const
 {
     auto& model = this->based<fb::model::item>();
-
-    if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > 1)
+    auto  count = this->_count - this->_trade_count;
+    if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && count > 1)
     {
         auto sstream = std::stringstream();
-        sstream << model.name << ' ' << this->_count << "개";
+        sstream << model.name << ' ' << count << "개";
         return sstream.str();
     }
     else
@@ -65,7 +65,18 @@ std::string fb::game::item::inven_name() const
 
 std::string fb::game::item::trade_name() const
 {
-    return this->inven_name();
+    auto& model = this->based<fb::model::item>();
+
+    if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_trade_count > 1)
+    {
+        auto sstream = std::stringstream();
+        sstream << model.name << ' ' << this->_trade_count << "개";
+        return sstream.str();
+    }
+    else
+    {
+        return model.name;
+    }
 }
 
 uint16_t fb::game::item::fill(uint16_t count)
@@ -92,6 +103,16 @@ uint16_t fb::game::item::count() const
 void fb::game::item::count(uint16_t value)
 {
     this->_count = value;
+}
+
+uint16_t fb::game::item::trade_count() const
+{
+    return this->_trade_count;
+}
+
+void fb::game::item::trade_count(uint16_t value)
+{
+    this->_trade_count = value;
 }
 
 bool fb::game::item::empty() const

@@ -18,16 +18,16 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& me;
-    const uint8_t              index;
-    const bool                 mine;
+    const uint8_t         index;
+    const fb::game::item& item;
+    const bool            mine;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    trade_upload(const fb::game::character& me, uint8_t index, bool mine);
+    trade_upload(uint8_t index, const fb::game::item& item, bool mine);
 #else
     trade_upload() = default;
 #endif

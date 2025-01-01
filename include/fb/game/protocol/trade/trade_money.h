@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& me;
+    const uint32_t money;
     const bool                 mine;
 #else
 
@@ -26,7 +26,7 @@ public:
 
 public:
 #ifndef BOT
-    trade_money(const fb::game::character& me, bool mine);
+    trade_money(uint32_t money, bool mine);
 #else
     trade_money() = default;
 #endif

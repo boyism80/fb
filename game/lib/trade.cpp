@@ -8,17 +8,6 @@ fb::game::trade::trade(character& owner) :
 fb::game::trade::~trade()
 { }
 
-uint8_t fb::game::trade::find(fb::game::item& item) const
-{
-    for (int i = 0; i < this->_items.size(); i++)
-    {
-        if (this->_items[i]->based() == item.based())
-            return i;
-    }
-
-    return 0xFF;
-}
-
 fb::game::character* fb::game::trade::you() const
 {
     return this->_you;
@@ -97,12 +86,25 @@ void fb::game::trade::end()
 {
     if (this->_you != nullptr)
     {
-        this->_you->trade._you    = nullptr;
-        this->_you->trade._locked = false;
+        auto& trade = this->_you->trade;
+        trade._you  = nullptr;
+        trade.end();
+        this->_you = nullptr;
     }
 
-    this->_you    = nullptr;
     this->_locked = false;
+    this->_money  = 0;
+
+    for (auto& [index, order] : this->_items)
+    {
+        auto item = this->_owner.items[index];
+        if (item == nullptr)
+            continue;
+
+        item->trade_count(0);
+        this->_owner.items.update(index);
+    }
+    this->_items.clear();
 }
 
 bool fb::game::trade::trading() const
@@ -110,37 +112,41 @@ bool fb::game::trade::trading() const
     return this->_you != nullptr;
 }
 
-bool fb::game::trade::up(fb::game::item& item)
+bool fb::game::trade::up_item(uint8_t index)
 {
-    auto  listener = this->_owner.get_listener<fb::game::character>();
-    auto& model    = item.based<fb::model::item>();
     try
     {
+        auto listener = this->_owner.get_listener<fb::game::character>();
+        auto item     = this->_owner.items[index];
+        if (item == nullptr)
+            throw std::runtime_error("아이템이 없습니다.");
+
+        auto& model = item->based<fb::model::item>();
+
         if (this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
         if (model.trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
-        if (enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE) && item.count() > 1)
+        if (enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE) && item->count() > 1)
         {
             // 묶음 단위의 아이템 형식 거래 시도
-            this->_selected = &item;
+            this->_selected = index;
             if (listener != nullptr)
                 listener->on_trade_bundle(this->_owner);
         }
         else
         {
             // 일반 아이템의 거래 시도
-            auto splitted = this->_owner.items.remove(item);
-            auto index    = this->add(*splitted);
-            if (index == 0xFF)
+            item->trade_count(1);
+            auto order = this->add(index);
+            if (order == 0xFF)
                 return false;
 
+            this->_owner.items.update(index);
             if (listener != nullptr)
-                listener->on_trade_item(this->_owner, this->_owner, index);
-            if (listener != nullptr)
-                listener->on_trade_item(*this->_you, this->_owner, index);
+                listener->on_trade_item(this->_owner, *this->_you, order, *this->item(index));
         }
 
         return true;
@@ -152,26 +158,16 @@ bool fb::game::trade::up(fb::game::item& item)
     return false;
 }
 
-bool fb::game::trade::up(uint8_t money)
+bool fb::game::trade::up_money(uint32_t money)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
 
     try
     {
-        // 입력한 금전 양을 계속해서 빼면 안된다.
-        // 100전 입력한 경우 -1, -10, -100 이렇게 까여버림
-        auto total = this->_owner.money() + this->_money;
-        if (money > total)
-            money = total;
-
-        this->_owner.money(total - money);
-        this->_money = money;
-
+        this->_money = std::min<uint32_t>(this->_owner.money(), money);
+        this->_owner.update(STATE_LEVEL::EXP_MONEY);
         if (listener != nullptr)
-        {
-            listener->on_trade_money(this->_owner, this->_owner);
-            listener->on_trade_money(this->_owner, this->_owner);
-        }
+            listener->on_trade_money(this->_owner, *this->_you, this->_money);
 
         return true;
     }
@@ -197,26 +193,26 @@ bool fb::game::trade::count(uint16_t count)
         if (this->trading() == false)
             throw std::runtime_error(message::trade::NOT_TRADING);
 
-        if (this->_selected == nullptr)
+        if (this->_selected == 0xFF)
             throw std::runtime_error(message::trade::NOT_SELECTED);
 
-        auto& model = _selected->based<fb::model::item>();
+        auto  item  = this->_owner.items[this->_selected];
+        auto& model = item->based<fb::model::item>();
         if (model.trade == false)
             throw std::runtime_error(message::trade::NOT_ALLOWED_TO_TRADE);
 
-        if (this->_selected->count() < count)
+        auto remained = item->count() - item->trade_count();
+        if (remained < count)
             throw std::runtime_error(message::trade::INVALID_COUNT);
 
-        auto splitted = this->_owner.items.remove(*this->_selected, count);
-        auto index    = this->add(*splitted);
+        item->trade_count(item->trade_count() + count);
+        this->_owner.items.update(this->_selected);
 
+        auto order = this->add(this->_selected);
         if (listener != nullptr)
-        {
-            listener->on_trade_item(this->_owner, this->_owner, index);
-            listener->on_trade_item(*this->_you, this->_owner, index);
-        }
+            listener->on_trade_item(this->_owner, *this->_you, order, *this->item(this->_selected));
 
-        this->_selected = nullptr;
+        this->_selected = 0xFF;
         return true;
     }
     catch (std::exception& e)
@@ -238,12 +234,8 @@ bool fb::game::trade::cancel()
         this->_you->trade.restore();
 
         if (listener != nullptr)
-        {
-            listener->on_trade_cancel(this->_owner, this->_owner);
-            listener->on_trade_cancel(*this->_you, this->_owner);
-        }
+            listener->on_trade_cancel(this->_owner, *this->_you);
 
-        this->end();
         return true;
     }
     catch (std::exception& e)
@@ -251,57 +243,62 @@ bool fb::game::trade::cancel()
         this->_owner.message(e.what(), MESSAGE_TYPE::POPUP);
     }
 
+    this->end();
     return false;
 }
 
-uint8_t fb::game::trade::add(fb::game::item& item)
+uint8_t fb::game::trade::add(uint8_t index)
 {
-    auto& model = item.based<fb::model::item>();
-    if (enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE))
-    {
-        auto exists = this->find(item);
-        if (exists != 0xFF)
-        {
-            auto count = this->_items[exists]->count() + item.count();
-            this->_items[exists]->count(count);
-            return exists;
-        }
-    }
+    if (this->_items.contains(index))
+        return this->_items.at(index);
 
-    this->_items.push_back(&item);
-    return uint8_t(this->_items.size() - 1);
+    auto order = this->_items.size();
+    this->_items.insert({index, order});
+    return order;
 }
 
 void fb::game::trade::restore()
 {
-    this->_owner.items.add(this->_items);
+    for (auto& [index, order] : this->_items)
+    {
+        auto item = this->_owner.items[index];
+        if (item == nullptr)
+            continue;
+
+        item->trade_count(0);
+        this->_owner.items.update(index);
+    }
     this->_items.clear();
 
-    this->_owner.money_add(this->_money);
     this->_money = 0;
+    this->_owner.update(STATE_LEVEL::EXP_MONEY);
 }
 
-void fb::game::trade::flush()
+fb::game::item* fb::game::trade::find(const fb::model::item& item) const
 {
-    this->_you->items.add(this->_items);
-    this->_items.clear();
+    for (auto& [index, order] : this->_items)
+    {
+        auto x = this->_owner.items[index];
+        if (x == nullptr)
+            continue;
 
-    this->_you->money_add(this->_money);
-    this->_money = 0;
+        auto& model = x->based<fb::model::item>();
+        if (&model == &item)
+            return x;
+    }
+
+    return nullptr;
 }
 
-bool fb::game::trade::flushable() const
+void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
 {
-    if (this->trading() == false)
-        return false;
+    if (0xFFFFFFFF - trade.money() < this->_owner.money())
+        throw std::runtime_error("더 이상 돈을 가질 수 없습니다.");
 
-    if (0xFFFFFFFF - this->_you->money() < this->_money)
-        return false;
-
-    auto free_size = this->_you->items.free_size();
+    auto free_size = this->_owner.items.free_size();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
     {
-        auto item = this->_you->items[i];
+        auto item = this->_owner.items[i];
         if (item == nullptr)
             continue;
 
@@ -309,20 +306,62 @@ bool fb::game::trade::flushable() const
         if (enum_in(model.attr(), ITEM_ATTRIBUTE::BUNDLE) == false)
             continue;
 
-        auto index = this->find(*item);
-        if (index == 0xFF)
+        auto found = trade.find(model);
+        if (found == nullptr)
             continue;
 
-        if (item->free_space() < this->_items[index]->count())
-            return false;
+        if (model.capacity < item->count() + found->trade_count() - item->trade_count())
+            continue;
 
         free_size++;
     }
 
-    if (free_size < this->_items.size())
-        return false;
+    if (free_size < trade.items().size())
+        throw std::runtime_error("더 이상 아이템을 가질 수 없습니다.");
+}
 
-    return true;
+void fb::game::trade::exchange(trade& trade1, trade& trade2)
+{
+    static auto push_buffer = [](trade& trade, std::vector<fb::game::item*>& buffer) {
+        for (auto& [index, order] : trade._items)
+        {
+            auto item = trade._owner.items[index];
+            if (item == nullptr)
+                continue;
+
+            auto trade_count = item->trade_count();
+            item->trade_count(0);
+
+            auto split = item->split(trade_count);
+            buffer.push_back(split);
+        }
+
+        auto money   = trade._money;
+        trade._money = 0;
+        trade._owner.money_reduce(money);
+        return money;
+    };
+
+    trade1.assert_exchange(trade2);
+    trade2.assert_exchange(trade1);
+
+    auto buffer1 = std::vector<fb::game::item*>();
+    auto money1  = push_buffer(trade1, buffer1);
+
+    auto buffer2 = std::vector<fb::game::item*>();
+    auto money2  = push_buffer(trade2, buffer2);
+
+    for (auto& item : buffer2)
+    {
+        trade1._owner.items.add(item);
+    }
+    trade1._owner.money_add(money2);
+
+    for (auto& item : buffer1)
+    {
+        trade2._owner.items.add(item);
+    }
+    trade2._owner.money_add(money1);
 }
 
 bool fb::game::trade::lock()
@@ -334,55 +373,51 @@ bool fb::game::trade::lock()
             throw std::runtime_error(message::trade::NOT_TRADING);
 
         this->_locked = true;
-        if (listener != nullptr)
-            listener->on_trade_lock(this->_owner, true);
-
-        if (this->_you->trade._locked == false) // 상대방이 이미 교환 확인을 누른 경우
+        if (this->_you->trade._locked == false) // 상대가 아직 OK 안누름
         {
             if (listener != nullptr)
-                listener->on_trade_lock(*this->_you, false);
+                listener->on_trade_lock(this->_owner, *this->_you);
+
             return true;
-        }
-        else if (!this->flushable() || !this->_you->trade.flushable()) // 교환이 불가능한 경우
-        {
-            this->restore();
-            this->_you->trade.restore();
-
-            if (listener != nullptr)
-            {
-                listener->on_trade_failed(this->_owner);
-                listener->on_trade_failed(*this->_you);
-            }
-            this->end();
-            return false;
         }
         else
         {
-            this->flush();
-            this->_you->trade.flush();
-
+            this->exchange(*this, this->_you->trade);
             if (listener != nullptr)
-            {
-                listener->on_trade_success(this->_owner);
-                listener->on_trade_success(*this->_you);
-            }
+                listener->on_trade_success(this->_owner, *this->_you);
+
             this->end();
             return true;
         }
     }
     catch (std::exception& e)
     {
-        this->_owner.message(e.what(), MESSAGE_TYPE::STATE);
+        if (listener != nullptr)
+            listener->on_trade_failed(this->_owner, *this->_you);
+
+        this->end();
+        return false;
     }
-    return false;
 }
 
 const std::vector<fb::game::item*>& fb::game::trade::items() const
 {
-    return this->_items;
+    auto result = std::vector<fb::game::item*>();
+    for (auto& [index, order] : this->_items)
+    {
+        auto item = this->_owner.items[index];
+        if (item == nullptr)
+            continue;
+
+        result.push_back(item);
+    }
+    return result;
 }
 
 const fb::game::item* fb::game::trade::item(uint8_t index) const
 {
-    return this->_items.at(index);
+    if (this->_items.contains(index) == false)
+        return nullptr;
+
+    return this->_owner.items[index];
 }

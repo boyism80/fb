@@ -3,8 +3,8 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-trade_money::trade_money(const fb::game::character& me, bool mine) :
-    me(me),
+trade_money::trade_money(uint32_t money, bool mine) :
+    money(money),
     mine(mine)
 { }
 #endif
@@ -16,7 +16,7 @@ async::task<void> trade_money::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x03);
     writer.write<uint8_t>(this->mine ? 0x00 : 0x01);
-    writer.write<uint32_t>(this->me.trade.money());
+    writer.write<uint32_t>(this->money);
     writer.write<uint8_t>(0x00);
 }
 #else

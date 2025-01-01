@@ -126,7 +126,8 @@ namespace Internal.Controllers
                         await conn.HashDeleteAsync(new SessionKey().Key, new RedisValue(request.Name));
                         _rabbitMqService.Publish(new Response.KickOut
                         {
-                            Uid = session.Uid
+                            Uid = session.Uid,
+                            Name = request.Name
                         }, "amq.direct", $"fb.game.{session.Host}");
                         throw new LogicException(ErrorCode.AlreadyLogin);
                     }
