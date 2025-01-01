@@ -73,21 +73,6 @@ void context::on_level_up(character& me)
     this->send(me, fb_resp::effect(me, 0x02), scope::PIVOT);
 }
 
-void context::on_item_get(character& me, const item::container& items)
-{
-    return;
-}
-
-void context::on_item_changed(character& me, const item::container& items)
-{
-    return;
-}
-
-void context::on_item_lost(character& me, const std::vector<uint8_t>& slots)
-{
-    return;
-}
-
 void context::on_action(character& me, ACTION action, DURATION duration, uint8_t sound)
 {
     this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);

@@ -66,6 +66,7 @@ public:
 
 protected:
     uint16_t      _count        = 0;
+    uint16_t      _trade_count  = 0;
     character*    _owner        = nullptr;
     nullable_time _dropped_time = std::nullopt;
 
@@ -156,6 +157,21 @@ public:
      * @param[in]  value  The value
      */
     void count(uint16_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t trade_count() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void trade_count(uint16_t value);
+
     /**
      * @brief      { function_description }
      *
@@ -911,6 +927,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     std::vector<uint8_t> index_all(const fb::model::item& item) const;
+
+    /**
+     * @brief      Updates the given index.
+     *
+     * @param[in]  index  The index
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool update(uint8_t index) const;
     /**
      * @brief      { function_description }
      *

@@ -1624,30 +1624,6 @@ public:
     virtual void on_level_up(character& me) = 0;
 
     /**
-     * @brief      Called on item get.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  items  The items
-     */
-    virtual void on_item_get(character& me, const item::container& items) = 0;
-
-    /**
-     * @brief      Called when item changed.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  items  The items
-     */
-    virtual void on_item_changed(character& me, const item::container& items) = 0;
-
-    /**
-     * @brief      Called on item lost.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  slots  The slots
-     */
-    virtual void on_item_lost(character& me, const std::vector<uint8_t>& slots) = 0;
-
-    /**
      * @brief      Called on action.
      *
      * @param      me        { parameter_description }

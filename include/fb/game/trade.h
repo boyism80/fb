@@ -2,6 +2,7 @@
 #define __TRADE_H__
 
 #include <fb/stream.h>
+#include <unordered_map>
 
 namespace fb { namespace game {
 
@@ -32,12 +33,12 @@ public:
     struct listener;
 
 private:
-    character&                   _owner;
-    character*                   _you = nullptr;
-    std::vector<fb::game::item*> _items;
-    fb::game::item*              _selected = nullptr;
-    uint32_t                     _money    = 0;
-    bool                         _locked   = false;
+    character&                           _owner;
+    character*                           _you = nullptr;
+    std::unordered_map<uint8_t, uint8_t> _items;
+    uint8_t                              _selected = 0xFF;
+    uint32_t                             _money    = 0;
+    bool                                 _locked   = false;
 
 public:
     /**
@@ -59,33 +60,46 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t find(fb::game::item& item) const;
+    // uint8_t find(fb::game::item& item) const;
     /**
      * @brief      Adds the specified item.
      *
-     * @param      item  The item
+     * @param[in]  index  The index
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t add(fb::game::item& item);
+    uint8_t add(uint8_t index);
     /**
      * @brief      { function_description }
      */
     void restore();
+
     /**
-     * @brief      Flushes the object.
-     */
-    void flush();
-    /**
-     * @brief      { function_description }
+     * @brief      Searches for the first match.
+     *
+     * @param[in]  item  The item
      *
      * @return     { description_of_the_return_value }
      */
-    bool flushable() const;
+    fb::game::item* find(const fb::model::item& item) const;
+    /**
+     * @brief      { function_description }
+     *
+     * @param      trade  The trade
+     */
+    void assert_exchange(const fb::game::trade& trade) const;
     /**
      * @brief      { function_description }
      */
     void end();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      trade1  The trade 1
+     * @param      trade2  The trade 2
+     */
+    static void exchange(trade& trade1, trade& trade2);
 
 public:
     /**
@@ -111,11 +125,11 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      item  The item
+     * @param[in]  index  The index
      *
      * @return     { description_of_the_return_value }
      */
-    bool up(fb::game::item& item);
+    bool up_item(uint8_t index);
     /**
      * @brief      { function_description }
      *
@@ -123,7 +137,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool up(uint8_t money);
+    bool up_money(uint32_t money);
     /**
      * @brief      { function_description }
      *
@@ -156,6 +170,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     const std::vector<fb::game::item*>& items() const;
+
     /**
      * @brief      { function_description }
      *
@@ -201,43 +216,46 @@ struct trade::listener
      * @brief      Called on trade item.
      *
      * @param      me     { parameter_description }
-     * @param      from   The from
+     * @param      you    The you
      * @param[in]  index  The index
      */
-    virtual void on_trade_item(character& me, character& from, uint8_t index) = 0;
+    virtual void on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item) = 0;
     /**
      * @brief      Called on trade money.
      *
-     * @param      me    { parameter_description }
-     * @param      from  The from
+     * @param      me     { parameter_description }
+     * @param      you    The you
+     * @param[in]  money  The money
      */
-    virtual void on_trade_money(character& me, character& from) = 0;
+    virtual void on_trade_money(character& me, character& you, uint32_t money) = 0;
     /**
      * @brief      Called on trade cancel.
      *
      * @param      me    { parameter_description }
-     * @param      from  The from
+     * @param      you   You
      */
-    virtual void on_trade_cancel(character& me, character& from) = 0;
+    virtual void on_trade_cancel(character& me, character& you) = 0;
     /**
      * @brief      Called on trade lock.
      *
      * @param      me    { parameter_description }
-     * @param[in]  mine  The mine
+     * @param      you   You
      */
-    virtual void on_trade_lock(character& me, bool mine) = 0;
+    virtual void on_trade_lock(character& me, character& you) = 0;
     /**
      * @brief      Called when trade failed.
      *
      * @param      me    { parameter_description }
+     * @param      you   You
      */
-    virtual void on_trade_failed(character& me) = 0;
+    virtual void on_trade_failed(character& me, character& you) = 0;
     /**
      * @brief      Called on trade success.
      *
      * @param      me    { parameter_description }
+     * @param      you   You
      */
-    virtual void on_trade_success(character& me) = 0;
+    virtual void on_trade_success(character& me, character& you) = 0;
 };
 
 }} // namespace fb::game

@@ -24,7 +24,7 @@ async::task<void> item_update::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint16_t>(item->look());
     writer.write<uint8_t>(item->color());
     writer.write<std::string, uint8_t>(item->inven_name());
-    writer.write<uint32_t>(item->count());
+    writer.write<uint32_t>(item->count() - item->trade_count());
     writer.write<uint8_t>(0x00);
     writer.write<uint8_t>(0x00);
 }

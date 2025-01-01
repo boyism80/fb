@@ -181,9 +181,6 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             }
         }
     }
-
-    if (listener != nullptr)
-        listener->on_item_changed(this->_owner, updates);
     return std::ref(indices);
 }
 
@@ -280,6 +277,23 @@ std::vector<uint8_t> fb::game::items::index_all(const fb::model::item& item) con
     }
 
     return result;
+}
+
+bool fb::game::items::update(uint8_t index) const
+{
+    auto item = this->at(index);
+    if (item == nullptr)
+        return false;
+
+    auto remained = item->count() - item->trade_count();
+    auto listener = this->_owner.get_listener<fb::game::character>();
+    if (listener != nullptr)
+    {
+        if (remained == 0)
+            listener->on_item_remove(this->_owner, index, ITEM_DELETE_TYPE::NONE);
+        else
+            listener->on_item_update(this->_owner, index);
+    }
 }
 
 fb::game::equipment* fb::game::items::wear(EQUIPMENT_PARTS parts, fb::game::equipment* item)
@@ -634,15 +648,7 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
     if (listener != nullptr)
     {
         auto current = this->at(index);
-
         listener->on_item_update(this->_owner, index);
-        if (current == nullptr)
-            listener->on_item_lost(this->_owner, std::vector<uint8_t>{index});
-        else
-            listener->on_item_changed(this->_owner,
-                                      fb::game::item::container{
-                                          {index, current}
-            });
     }
 
     return splitted;

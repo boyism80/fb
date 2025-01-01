@@ -491,11 +491,8 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
 
     case trade::state::UP_ITEM: // 아이템 올릴때
     {
-        auto item = me->items[request.parameter.index - 1];
-        if (item == nullptr)
-            break;
-
-        me->trade.up(*item);
+        auto index = request.parameter.index - 1;
+        me->trade.up_item(index);
         break;
     }
 
@@ -508,7 +505,7 @@ async::task<bool> context::handle_trade(fb::socket<character>& socket, const fb_
     case trade::state::UP_MONEY: // 금전 올릴 때
     {
         // 클라이언트가 입력한 금전 양
-        me->trade.up(request.parameter.money);
+        me->trade.up_money(request.parameter.money);
         break;
     }
 
