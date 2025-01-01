@@ -9,6 +9,7 @@
 #include <httplib.h>
 #include <iomanip>
 #include <fb/locker.h>
+#include <fb/amqp.h>
 
 using namespace std::chrono_literals;
 
@@ -23,14 +24,17 @@ template <typename T>
 class acceptor : public fb::acceptable
 {
 public:
-    using handle_func      = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
-    using deserilze_func   = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
-    using background_func  = std::function<async::task<void>()>;
-    using socket_container = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>>;
+    using handle_func       = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
+    using deserilze_func    = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
+    using background_func   = std::function<async::task<void>()>;
+    using socket_container  = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>>;
+    using amqp_handler_func = std::function<async::task<void>(const uint8_t*)>;
+    using amqp_handler_type = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
+    amqp_handler_type                           _amqp_handler;
     std::mutex                                  _mutex_exit;
     bool                                        _running = false;
 
@@ -652,39 +656,53 @@ protected:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  cmd   The command
-     * @param[in]  fn    The function
+     * @param[in]  <unnamed>    { parameter_description }
+     * @param[in]  header       The header
      *
-     * @tparam     R     { description }
+     * @tparam     Class        { description }
+     * @tparam     RequestType  { description }
      */
-    template <typename R>
-    void bind(int cmd, const std::function<async::task<bool>(fb::socket<T>&, const R&)>& fn)
-    { }
-
-protected:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  <unnamed>  { parameter_description }
-     * @param[in]  header     The header
-     *
-     * @tparam     Class      { description }
-     * @tparam     Request    { description }
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&), uint8_t header)
+    template <typename Class, typename RequestType>
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const RequestType&), uint8_t header)
     {
         this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                        auto protocol = new Request();
+                                        auto protocol = new RequestType();
                                         co_await protocol->deserialize(reader);
                                         co_return protocol;
                                     }});
 
         auto func_bound = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
         this->_handler.insert({header, [func_bound](auto& socket, auto& header) -> async::task<bool> {
-                                   auto protocol = static_cast<Request&>(header);
+                                   auto protocol = static_cast<RequestType&>(header);
                                    co_return co_await func_bound(socket, protocol);
                                }});
+    }
+
+protected:
+    template <typename Class, typename ResponseType>
+    void bind_amqp(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
+    {
+        if (this->_amqp_handler.contains(route) == false)
+            this->_amqp_handler.insert({route, std::unordered_map<uint32_t, amqp_handler_func>{}});
+
+        auto c_func = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1);
+        auto cmd    = static_cast<uint32_t>(ResponseType::FlatBufferProtocolType);
+        this->_amqp_handler[route].insert({cmd, [c_func](const uint8_t* ptr) -> async::task<void> {
+                                               auto protocol = ResponseType::Deserialize(ptr);
+                                               co_await c_func(protocol);
+                                           }});
+    }
+
+    void bind_amqp(fb::amqp::queue& queue)
+    {
+        auto& route = queue.route();
+        if (this->_amqp_handler.contains(route))
+        {
+            for (auto& [cmd, fn] : this->_amqp_handler.at(route))
+            {
+                queue.handler(cmd, fn);
+            }
+        }
     }
 
 protected:

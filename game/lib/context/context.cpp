@@ -205,6 +205,17 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_rename_weapon);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_list);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_count);
+
+    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Pong);
+    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
+    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
+    this->bind_amqp("fb.global", &context::handle_amqp_Pong);
+    this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
+    this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
+    this->bind_amqp("fb.clan", &context::handle_amqp_SetClanTitle);
+    this->bind_amqp("fb.clan", &context::handle_amqp_JoinClan);
+    this->bind_amqp("fb.clan", &context::handle_amqp_LeaveClan);
+    this->bind_amqp("fb.clan", &context::handle_amqp_BroadcastClan);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const
@@ -405,32 +416,27 @@ async::task<bool> context::init_ch(const internal::Character&           response
         position_y = uint32_t(transfer.value().position.y);
     }
 
-    if (co_await ch.map(&this->maps[map], point16_t(position_x, position_y)) == false)
-        co_return false;
-
     if (group.has_value())
     {
-        auto gid = group.value();
-        this->upsert_group_then(gid, [&ch](auto& group_lock_ptr) {
-            group_lock_ptr->lock([&ch](auto& group) {
+        this->upsert_group_then(group.value(), [&ch](auto& lock) {
+            lock->lock([&ch](auto& group) {
                 group.enter(ch);
             });
-            ch.group(group_lock_ptr);
+            ch.group(lock);
         });
     }
 
     if (clan.has_value())
     {
-        auto id = clan.value();
-        this->upsert_clan_then(id, [&ch](auto& clan_lock_ptr) {
-            clan_lock_ptr->lock([&ch](auto& clan) {
+        this->upsert_clan_then(clan.value(), [&ch](auto& lock) {
+            lock->lock([&ch](auto& clan) {
                 clan.attach_character(ch);
             });
-            ch.clan(clan_lock_ptr);
+            ch.clan(lock);
         });
     }
 
-    co_return true;
+    co_return co_await ch.map(&this->maps[map], point16_t(position_x, position_y));
 }
 
 void context::init_option(const internal::Option& response, fb::game::character& ch)
@@ -779,97 +785,19 @@ void context::amqp_thread()
 
             auto& queue1 = this->_amqp->declare_queue();
             queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-            queue1.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
-                co_return;
-            });
-            queue1.handler<internal_resp::KickOut>([this](auto& response) -> async::task<void> {
-                auto ch = this->_shard[response.name]->characters.template lock<character*>(
-                    [&name = response.name](shard_params::character_container& container) -> character* {
-                        if (!container.contains(name))
-                            return nullptr;
-
-                        return container.at(name);
-                    });
-
-                if (ch == nullptr)
-                    co_return;
-
-                auto& socket = static_cast<fb::socket<character>&>(*ch);
-                socket.close();
-            });
-
-            queue1.handler<internal_resp::Whisper>([this](auto& response) -> async::task<void> {
-                if (response.host == fb::config<uint16_t>("id"))
-                    co_return;
-
-                try
-                {
-                    this->assert_whisper(response);
-                    this->foreach_ch(response.to, [&response](auto& you) {
-                        you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
-                    });
-                }
-                catch (std::exception& e)
-                {
-                    this->foreach_ch(response.from, [&response, error = e.what()](auto& me) {
-                        me.message(error, MESSAGE_TYPE::NOTIFY);
-                    });
-                }
-            });
+            this->bind_amqp(queue1);
 
             auto& queue2 = this->_amqp->declare_queue();
             queue2.bind("amq.direct", "fb.global");
-            queue2.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
-                co_return;
-            });
+            this->bind_amqp(queue2);
 
             auto& queue3 = this->_amqp->declare_queue();
             queue3.bind("amq.direct", "fb.group");
-            queue3.handler<internal_resp::EnterGroup>([this](internal_resp::EnterGroup& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_enter_group(response);
-            });
-
-            queue3.handler<internal_resp::LeaveGroup>([this](internal_resp::LeaveGroup& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_leave_group(response);
-            });
+            this->bind_amqp(queue3);
 
             auto& queue4 = this->_amqp->declare_queue();
             queue4.bind("amq.direct", "fb.clan");
-            queue4.handler<internal_resp::SetClanTitle>(
-                [this](internal_resp::SetClanTitle& response) -> async::task<void> {
-                    if (response.host == fb::config<uint32_t>("id"))
-                        co_return;
-
-                    this->on_clan_title_changed(response);
-                });
-
-            queue4.handler<internal_resp::JoinClan>([this](internal_resp::JoinClan& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_clan_join_member(response);
-            });
-
-            queue4.handler<internal_resp::LeaveClan>([this](internal_resp::LeaveClan& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_clan_leave_member(response);
-            });
-
-            queue4.handler<internal_resp::BroadcastClan>(
-                [this](internal_resp::BroadcastClan& response) -> async::task<void> {
-                    if (response.host == fb::config<uint32_t>("id"))
-                        co_return;
-
-                    this->on_clan_broadcast(response);
-                });
+            this->bind_amqp(queue4);
         }
         catch (std::exception& e)
         {

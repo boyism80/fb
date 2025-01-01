@@ -16,13 +16,13 @@ queue::~queue()
         amqp_bytes_free(this->_raw_tag);
 }
 
-bool queue::bind(const std::string& exchange, const std::string& binding_key)
+bool queue::bind(const std::string& exchange, const std::string& route)
 {
     amqp_queue_bind(this->_owner,
                     1,
                     this->_raw_name,
                     amqp_cstring_bytes(exchange.c_str()),
-                    amqp_cstring_bytes(binding_key.c_str()),
+                    amqp_cstring_bytes(route.c_str()),
                     amqp_empty_table);
     if (amqp_get_rpc_reply(this->_owner).reply_type != AMQP_RESPONSE_NORMAL)
         return false;
@@ -38,12 +38,18 @@ bool queue::bind(const std::string& exchange, const std::string& binding_key)
         throw std::runtime_error("Out of memory while copying consumer tag");
     this->_tag = std::string((const char*)this->_raw_tag.bytes, (const char*)this->_raw_tag.bytes + this->_raw_tag.len);
 
+    this->_route = route;
     return true;
 }
 
 const std::string& queue::name() const
 {
     return this->_name;
+}
+
+const std::string& queue::route() const
+{
+    return this->_route;
 }
 
 const std::string& queue::consumer_tag() const
@@ -62,4 +68,9 @@ async::task<void> queue::invoke(const std::vector<uint8_t>& message)
         co_return;
 
     co_await found->second(((const uint8_t*)stream.data()) + (sizeof(uint32_t) * 2));
+}
+
+void queue::handler(uint32_t cmd, const handle_func& fn)
+{
+    this->_handler.insert({cmd, fn});
 }
