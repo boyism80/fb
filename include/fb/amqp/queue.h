@@ -24,6 +24,7 @@ private:
     std::string      _name;
     amqp_bytes_t     _raw_tag;
     std::string      _tag;
+    std::string      _route;
 
 private:
     queue(socket& owner, const amqp_bytes_t& name);
@@ -33,20 +34,23 @@ public:
     ~queue();
 
 public:
-    bool                            bind(const std::string& exchange, const std::string& binding_key);
+    bool                            bind(const std::string& exchange, const std::string& route);
     const std::string&              name() const;
+    const std::string&              route() const;
     const std::string&              consumer_tag() const;
     [[nodiscard]] async::task<void> invoke(const std::vector<uint8_t>& message);
 
     template <typename R>
     void handler(const std::function<async::task<void>(R&)>& fn)
     {
-        auto cmd = (uint32_t)R::FlatBufferProtocolType;
-        this->_handler.insert({cmd, [this, fn](const uint8_t* ptr) -> async::task<void> {
-                                   auto protocol = R::Deserialize(ptr);
-                                   co_await fn(protocol);
-                               }});
+        auto cmd = static_cast<uint32_t>(R::FlatBufferProtocolType);
+        this->handler(cmd, [this, fn](const uint8_t* ptr) -> async::task<void> {
+            auto protocol = R::Deserialize(ptr);
+            co_await fn(protocol);
+        });
     }
+
+    void handler(uint32_t cmd, const handle_func& fn);
 };
 
 } // namespace fb::amqp

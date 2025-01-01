@@ -74,34 +74,14 @@ void context::update_clan(clan&                                                 
                           fb::protocol::internal::Clan&                          resp1,
                           const std::vector<fb::protocol::internal::ClanMember>& resp2) const
 {
-    auto members  = std::vector<clan_member>{};
-    auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
+    auto members = std::vector<clan_member>{};
     for (auto& member : resp2)
     {
-        auto cm   = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
-        auto hash = this->_shard.mod(member.name);
-        if (modulars.contains(hash) == false)
-            modulars.insert({hash, {}});
-
-        modulars[hash].push_back(member.name);
+        auto cm = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
         members.push_back(std::move(cm));
     }
 
     clan.update(resp1.name, resp1.title, members);
-
-    for (auto& [hash, names] : modulars)
-    {
-        this->_shard[hash]->characters.lock(
-            [&clan, &names, &members](fb::game::shard_params::character_container& characters) {
-                for (auto& name : names)
-                {
-                    if (!characters.contains(name))
-                        continue;
-
-                    clan.attach_character(*characters.at(name));
-                }
-            });
-    }
 }
 
 async::task<void> context::create_clan(character& me, const std::string& name)

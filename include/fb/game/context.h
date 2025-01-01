@@ -1286,6 +1286,80 @@ public:
     [[nodiscard]] async::task<bool> handle_web(character& ch, Json::Value& parameters);
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_Pong(const internal_resp::Pong& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_KickOut(const internal_resp::KickOut& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_Whisper(const internal_resp::Whisper& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_EnterGroup(const internal_resp::EnterGroup& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_LeaveGroup(const internal_resp::LeaveGroup& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_SetClanTitle(const internal_resp::SetClanTitle& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_JoinClan(const internal_resp::JoinClan& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_LeaveClan(const internal_resp::LeaveClan& response);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& response);
+
+public:
     // listener : object
     //
     // @param      me    { parameter_description }
