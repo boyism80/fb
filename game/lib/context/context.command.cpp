@@ -362,7 +362,17 @@ async::task<bool> context::handle_command_tile(character& ch, Json::Value& param
 
 async::task<bool> context::handle_command_save(character& ch, Json::Value& parameters)
 {
-    co_await this->save(ch);
+    for (int i = 0; i < this->threads.size(); i++)
+    {
+        std::ignore = this->threads[i]->dispatch([this](auto& thread) -> async::task<void> {
+            auto params = thread.data<thread_params>();
+            for (auto& [id, character] : params->characters)
+            {
+                std::ignore = this->save(*character);
+            }
+            co_return;
+        });
+    }
     co_return true;
 }
 
