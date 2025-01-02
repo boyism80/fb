@@ -184,6 +184,9 @@ async::task<void> context::handle_start()
     this->command("맵타일", &context::handle_map_tile, true);
     this->command("광고", &context::handle_command_ad, true);
     this->command("웹", &context::handle_command_web, true);
+    this->command("메일쓰기", &context::handle_command_write_mail, true);
+    this->command("메일읽기", &context::handle_command_read_mail, true);
+    this->command("메일삭제", &context::handle_command_delete_mail, true);
 
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);

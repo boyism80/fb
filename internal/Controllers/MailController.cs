@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Dapper;
 using Fb.Model.EnumValue;
 using Http;
 using Http.Service;
@@ -28,11 +27,11 @@ namespace Internal.Controllers
         }
 
         [HttpGet("{user}")]
-        public async Task<Response.GetMailList> GetMailList(uint user, [FromQuery(Name = "offset")] ushort offset)
+        public async Task<Response.GetMailList> GetMailList(uint user, [FromQuery(Name = "offset")] ushort offset, [FromQuery(Name = "count")] ushort count)
         {
             try
             {
-                var mails = await _dbContext.Mail.GetList(user, offset);
+                var mails = await _dbContext.Mail.GetList(user, offset, count);
                 var summaryList = _mapper.Map<List<Http.Model.Mail>, List<Protocol.MailSummary>>(mails.ToList());
                 return new Response.GetMailList
                 {
@@ -127,6 +126,7 @@ namespace Internal.Controllers
                 await _dbContext.Mail.Delete(request.User, request.Id);
                 return new Response.DeleteMail
                 {
+                    Unread = await _dbContext.Mail.Unread(request.User),
                     Error = (uint)ErrorCode.None
                 };
             }

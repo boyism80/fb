@@ -548,3 +548,90 @@ async::task<bool> context::handle_command_web(character& ch, Json::Value& parame
     this->send(ch, fb::protocol::game::response::web(type, url, message), scope::SELF);
     co_return true;
 }
+
+async::task<bool> context::handle_command_write_mail(character& ch, Json::Value& parameters)
+{
+    auto to    = parameters.size() >= 1 && parameters[0].isString() ? parameters[0].asString() : ch.name();
+    auto count = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 1;
+    auto fd    = ch.fd();
+    try
+    {
+        for (int i = 0; i < count; i++)
+        {
+            auto title    = std::format("MAIL TITLE {}", i);
+            auto contents = std::format("MAIL CONTENTS {}", i);
+            co_await this->write_mail(ch, to, title, contents);
+            if (!this->assert_socket(fd))
+                break;
+        }
+    }
+    catch (std::exception& e)
+    {
+        if (!this->assert_socket(fd))
+            ch.message(e.what());
+    }
+
+    co_return true;
+}
+
+async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& parameters)
+{
+    auto fd = ch.fd();
+    try
+    {
+        auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
+        if (!this->assert_socket(fd))
+            co_return false;
+
+        this->assert_mail(resp.error);
+
+        auto i = 0;
+        for (auto& mail : resp.summary_list)
+        {
+            auto&& resp = co_await this->read_mail(ch, mail.id);
+            if (!this->assert_socket(fd))
+                break;
+            i++;
+        }
+
+        ch.message(std::format("{}개의 메일 읽음 처리", i));
+    }
+    catch (std::exception& e)
+    {
+        if (this->assert_socket(fd))
+            ch.message(e.what());
+    }
+
+    co_return true;
+}
+
+async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value& parameters)
+{
+    auto fd = ch.fd();
+    try
+    {
+        auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
+        if (!this->assert_socket(fd))
+            co_return false;
+
+        this->assert_mail(resp.error);
+
+        auto i = 0;
+        for (auto& mail : resp.summary_list)
+        {
+            auto&& resp = co_await this->delete_mail(ch, mail.id);
+            if (!this->assert_socket(fd))
+                break;
+            i++;
+        }
+
+        ch.message(std::format("{}개의 메일 삭제", i));
+    }
+    catch (std::exception& e)
+    {
+        if (this->assert_socket(fd))
+            ch.message(e.what());
+    }
+
+    co_return true;
+}

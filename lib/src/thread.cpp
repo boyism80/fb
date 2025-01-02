@@ -88,19 +88,19 @@ void fb::thread::exit()
     this->_mutex_timer.unlock();
 }
 
-void fb::thread::push_ptr(void* ptr)
+void fb::thread::push_ptr(const void* ptr)
 {
     this->assert_exec();
-    this->_ptrs.insert(static_cast<void*>(ptr));
+    this->_ptrs.insert(static_cast<const void*>(ptr));
 }
 
-void fb::thread::pop_ptr(void* ptr)
+void fb::thread::pop_ptr(const void* ptr)
 {
     this->assert_exec();
-    this->_ptrs.erase(static_cast<void*>(ptr));
+    this->_ptrs.erase(static_cast<const void*>(ptr));
 }
 
-void fb::thread::assert_ptr(void* ptr) const
+void fb::thread::assert_ptr(const void* ptr) const
 {
     this->assert_exec();
     if (this->_ptrs.contains(ptr) == false)

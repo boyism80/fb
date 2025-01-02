@@ -31,13 +31,13 @@ struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
   }
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
+  uint16_t id() const {
+    return GetField<uint16_t>(VT_ID, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint16_t>(verifier, VT_ID, 2) &&
            verifier.EndTable();
   }
 };
@@ -49,8 +49,8 @@ struct DeleteMailBuilder {
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(DeleteMail::VT_USER, user, 0);
   }
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(DeleteMail::VT_ID, id, 0);
+  void add_id(uint16_t id) {
+    fbb_.AddElement<uint16_t>(DeleteMail::VT_ID, id, 0);
   }
   explicit DeleteMailBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -66,10 +66,10 @@ struct DeleteMailBuilder {
 inline ::flatbuffers::Offset<DeleteMail> CreateDeleteMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     uint32_t user = 0,
-    uint32_t id = 0) {
+    uint16_t id = 0) {
   DeleteMailBuilder builder_(_fbb);
-  builder_.add_id(id);
   builder_.add_user(user);
+  builder_.add_id(id);
   return builder_.Finish();
 }
 

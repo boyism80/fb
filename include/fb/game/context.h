@@ -563,6 +563,50 @@ public:
      */
     async::task<void> broadcast(const clan& clan, const std::string& message, MESSAGE_TYPE type);
 
+    /**
+     * @brief      Writes a mail.
+     *
+     * @param[in]  ch        { parameter_description }
+     * @param[in]  to        { parameter_description }
+     * @param[in]  title     The title
+     * @param[in]  contents  The contents
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<internal_resp::WriteMail>
+    write_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  ch      { parameter_description }
+     * @param[in]  offset  The offset
+     * @param[in]  count   The count
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<internal_resp::GetMailList> mail_list(const character& ch, uint16_t offset, uint16_t count);
+
+    /**
+     * @brief      Reads a mail.
+     *
+     * @param[in]  ch    { parameter_description }
+     * @param[in]  id    The identifier
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<internal_resp::GetMail> read_mail(character& ch, uint16_t id);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  ch    { parameter_description }
+     * @param[in]  id    The identifier
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<internal_resp::DeleteMail> delete_mail(character& ch, uint16_t id);
+
 protected:
     /**
      * @brief      { function_description }
@@ -1292,6 +1336,36 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<bool> handle_command_web(character& ch, Json::Value& parameters);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_write_mail(character& ch, Json::Value& parameters);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_read_mail(character& ch, Json::Value& parameters);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_delete_mail(character& ch, Json::Value& parameters);
 
 public:
     /**

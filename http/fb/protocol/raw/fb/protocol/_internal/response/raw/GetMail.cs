@@ -21,23 +21,23 @@ public struct GetMail : IFlatbufferObject
   public GetMail __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public fb.protocol._internal.raw.Mail? Mail { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.Mail?)(new fb.protocol._internal.raw.Mail()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Unread { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Unread { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public uint Error { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.GetMail> CreateGetMail(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Mail> mailOffset = default(Offset<fb.protocol._internal.raw.Mail>),
-      uint unread = 0,
+      ushort unread = 0,
       uint error = 0) {
     builder.StartTable(3);
     GetMail.AddError(builder, error);
-    GetMail.AddUnread(builder, unread);
     GetMail.AddMail(builder, mailOffset);
+    GetMail.AddUnread(builder, unread);
     return GetMail.EndGetMail(builder);
   }
 
   public static void StartGetMail(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddMail(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Mail> mailOffset) { builder.AddOffset(0, mailOffset.Value, 0); }
-  public static void AddUnread(FlatBufferBuilder builder, uint unread) { builder.AddUint(1, unread, 0); }
+  public static void AddUnread(FlatBufferBuilder builder, ushort unread) { builder.AddUshort(1, unread, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(2, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.GetMail> EndGetMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -54,7 +54,7 @@ static public class GetMailVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyTable(tablePos, 4 /*Mail*/, fb.protocol._internal.raw.MailVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 6 /*Unread*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Unread*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 8 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

@@ -123,7 +123,7 @@ table WriteMail {
 
 table DeleteMail {
   user: uint;
-  id: uint;
+  id: ushort;
 }
 
 

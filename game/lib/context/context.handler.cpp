@@ -623,10 +623,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         {
             if (mail)
             {
-                // mail offset
-                auto&& resp = co_await this->get<internal_resp::GetMailList>(
-                    "internal",
-                    std::format("/mail/{}?offset={}", ch->id(), request.offset));
+                auto&& resp = co_await this->mail_list(*ch, request.offset, 20);
                 if (this->assert_socket(fd) == false)
                     co_return false;
 
@@ -679,15 +676,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         {
             if (mail)
             {
-                auto   url  = std::format("/mail/{}/{}", ch->id(), request.article);
-                auto&& resp = co_await this->get<internal_resp::GetMail>("internal", url);
-                if (this->assert_socket(fd) == false)
-                    co_return false;
-
-                this->assert_mail(resp.error);
-
-                auto flag = MAIL_BUTTON_ENABLE::NEW;
-                ch->unread_mail(resp.unread);
+                auto&& resp = co_await this->read_mail(*ch, request.article);
+                auto   flag = MAIL_BUTTON_ENABLE::NEW;
                 this->send(*ch, fb::protocol::game::response::board_mail(resp.mail, flag), scope::SELF);
             }
             else
@@ -731,7 +721,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board_message(e.what(), true, mail), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, mail), scope::SELF);
         }
     }
     break;
@@ -780,15 +770,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         {
             if (mail)
             {
-                auto&& response = co_await this->post<internal_reqs::DeleteMail, internal_resp::DeleteMail>(
-                    "internal",
-                    "/mail/delete",
-                    internal_reqs::DeleteMail{ch->id(), request.article});
-
-                if (this->assert_socket(fd) == false)
-                    co_return false;
-
-                this->assert_mail(response.error);
+                auto&& resp = co_await this->delete_mail(*ch, request.article);
                 this->send(*ch, fb_resp::board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, true), scope::SELF);
             }
             else
@@ -832,12 +814,20 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
     case BOARD_ACTION::MAIL:
     {
-        auto&& resp =
-            co_await this->get<internal_resp::GetMailList>("internal", std::format("/mail/{}?offset=32727", ch->id()));
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        try
+        {
+            auto&& resp = co_await this->mail_list(*ch, 0xFFFF, 20);
+            if (this->assert_socket(fd) == false)
+                co_return false;
 
-        this->send(*ch, fb_resp::board_mails(resp.summary_list, MAIL_BUTTON_ENABLE::NEW), scope::SELF);
+            this->assert_mail(resp.error);
+            this->send(*ch, fb_resp::board_mails(resp.summary_list, MAIL_BUTTON_ENABLE::NEW), scope::SELF);
+        }
+        catch (std::exception& e)
+        {
+            this->send(*ch, fb_resp::board_message(e.what(), false, true), scope::SELF);
+            co_return true;
+        }
     }
     break;
 
@@ -845,20 +835,14 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     {
         try
         {
-            auto&& resp = co_await this->post<internal_reqs::WriteMail, internal_resp::WriteMail>(
-                "internal",
-                "/mail/write",
-                internal_reqs::WriteMail{ch->id(),
-                                         request.user,
-                                         request.title,
-                                         request.contents,
-                                         config<uint32_t>("id")});
-
-            this->on_write_mail(resp);
+            auto&& resp = co_await this->write_mail(*ch, request.user, request.title, request.contents);
             this->send(*ch, fb_resp::board_message("우편을 보냈습니다.", true, true), scope::SELF);
         }
         catch (std::exception& e)
         {
+            if (this->assert_socket(fd) == false)
+                co_return false;
+
             this->send(*ch, fb_resp::board_message(e.what(), false, true), scope::SELF);
         }
     }

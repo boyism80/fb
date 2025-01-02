@@ -97,7 +97,7 @@ table Article {
 }
 
 table MailSummary {
-    id: uint;
+    id: ushort;
     user: uint;
     sender: uint;
     sender_name: string;
@@ -107,7 +107,7 @@ table MailSummary {
 }
 
 table Mail {
-    id: uint;
+    id: ushort;
     user: uint;
     sender: uint;
     sender_name: string;

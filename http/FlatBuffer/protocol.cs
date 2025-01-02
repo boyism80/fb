@@ -642,6 +642,7 @@ namespace fb.protocol._internal
                 return default;
 
             return fb.protocol._internal.response.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.Unread),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ChangePw value)
@@ -1539,6 +1540,7 @@ namespace fb.protocol._internal.request
                 return default;
 
             return fb.protocol._internal.response.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.Unread),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ChangePw value)
@@ -2451,6 +2453,7 @@ namespace fb.protocol._internal.response
                 return default;
 
             return fb.protocol._internal.response.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.Unread),
                 builder.Build(value.Error));
         }
         public static Offset<fb.protocol._internal.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ChangePw value)
@@ -3089,7 +3092,7 @@ namespace fb.protocol._internal
     public class MailSummary : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.MailSummary;
-        public uint Id { get; set; } = 0;
+        public ushort Id { get; set; } = 0;
         public uint User { get; set; } = 0;
         public uint Sender { get; set; } = 0;
         public string SenderName { get; set; } = string.Empty;
@@ -3130,7 +3133,7 @@ namespace fb.protocol._internal
     public class Mail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Mail;
-        public uint Id { get; set; } = 0;
+        public ushort Id { get; set; } = 0;
         public uint User { get; set; } = 0;
         public uint Sender { get; set; } = 0;
         public string SenderName { get; set; } = string.Empty;
@@ -3903,7 +3906,7 @@ namespace fb.protocol._internal.request
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteMail;
         public uint User { get; set; } = 0;
-        public uint Id { get; set; } = 0;
+        public ushort Id { get; set; } = 0;
 
         public DeleteMail()
         { }
@@ -4613,7 +4616,7 @@ namespace fb.protocol._internal.response
     {
         public int ProtocolType => (int)FlatBufferProtocolType.GetMail;
         public fb.protocol._internal.Mail Mail { get; set; } = new fb.protocol._internal.Mail();
-        public uint Unread { get; set; } = 0;
+        public ushort Unread { get; set; } = 0;
         public uint Error { get; set; } = 0;
 
         public GetMail()
@@ -4678,7 +4681,7 @@ namespace fb.protocol._internal.response
         public int ProtocolType => (int)FlatBufferProtocolType.WriteMail;
         public fb.protocol._internal.Mail Mail { get; set; } = new fb.protocol._internal.Mail();
         public uint Host { get; set; } = 0;
-        public uint Unread { get; set; } = 0;
+        public ushort Unread { get; set; } = 0;
         public uint Error { get; set; } = 0;
 
         public WriteMail()
@@ -4711,6 +4714,7 @@ namespace fb.protocol._internal.response
     public class DeleteMail : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.DeleteMail;
+        public uint Unread { get; set; } = 0;
         public uint Error { get; set; } = 0;
 
         public DeleteMail()
@@ -4718,6 +4722,7 @@ namespace fb.protocol._internal.response
 
         public DeleteMail(fb.protocol._internal.response.raw.DeleteMail raw)
         {
+            Unread = raw.Unread;
             Error = raw.Error;
         }
 

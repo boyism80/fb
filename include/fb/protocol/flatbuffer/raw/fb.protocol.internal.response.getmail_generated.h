@@ -34,8 +34,8 @@ struct GetMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::internal::raw::Mail *mail() const {
     return GetPointer<const fb::protocol::internal::raw::Mail *>(VT_MAIL);
   }
-  uint32_t unread() const {
-    return GetField<uint32_t>(VT_UNREAD, 0);
+  uint16_t unread() const {
+    return GetField<uint16_t>(VT_UNREAD, 0);
   }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
@@ -44,7 +44,7 @@ struct GetMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_MAIL) &&
            verifier.VerifyTable(mail()) &&
-           VerifyField<uint32_t>(verifier, VT_UNREAD, 4) &&
+           VerifyField<uint16_t>(verifier, VT_UNREAD, 2) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -57,8 +57,8 @@ struct GetMailBuilder {
   void add_mail(::flatbuffers::Offset<fb::protocol::internal::raw::Mail> mail) {
     fbb_.AddOffset(GetMail::VT_MAIL, mail);
   }
-  void add_unread(uint32_t unread) {
-    fbb_.AddElement<uint32_t>(GetMail::VT_UNREAD, unread, 0);
+  void add_unread(uint16_t unread) {
+    fbb_.AddElement<uint16_t>(GetMail::VT_UNREAD, unread, 0);
   }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(GetMail::VT_ERROR, error, 0);
@@ -77,12 +77,12 @@ struct GetMailBuilder {
 inline ::flatbuffers::Offset<GetMail> CreateGetMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Mail> mail = 0,
-    uint32_t unread = 0,
+    uint16_t unread = 0,
     uint32_t error = 0) {
   GetMailBuilder builder_(_fbb);
   builder_.add_error(error);
-  builder_.add_unread(unread);
   builder_.add_mail(mail);
+  builder_.add_unread(unread);
   return builder_.Finish();
 }
 

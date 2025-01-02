@@ -15,22 +15,26 @@ namespace Http.Reepository
             _dbContext = dbContext;
         }
 
-        public async Task<List<Mail>> GetList(uint user, ushort offset)
+        public async Task<List<Mail>> GetList(uint user, ushort offset, ushort count)
         {
             await using var conn = _dbContext.Connection(user);
             var dynamicParams = new DynamicParameters();
             dynamicParams.Add("user", user);
             dynamicParams.Add("position", offset);
+            dynamicParams.Add("count", count);
             var mails = await conn.QueryAsync<Http.Model.Mail>($"USP_MAIL_GET_LIST", dynamicParams, commandType: System.Data.CommandType.StoredProcedure);
 
-            var names = await _dbContext.Character.GetName(mails.Select(x => x.Sender));
-            foreach (var mail in mails)
+            if (mails.Any())
             {
-                if (names.TryGetValue(mail.Sender, out var name))
-                    mail.SenderName = name;
-                else
-                    mail.SenderName = "Unknown";
-            };
+                var names = await _dbContext.Character.GetName(mails.Select(x => x.Sender));
+                foreach (var mail in mails)
+                {
+                    if (names.TryGetValue(mail.Sender, out var name))
+                        mail.SenderName = name;
+                    else
+                        mail.SenderName = "Unknown";
+                };
+            }
 
             return mails.ToList();
         }
@@ -75,9 +79,9 @@ namespace Http.Reepository
             return mail;
         }
 
-        public async Task<uint> Unread(uint user)
+        public async Task<ushort> Unread(uint user)
         {
-            return await _dbContext.Connection(user).QueryFirstOrDefaultAsync<uint>($"SELECT COUNT(id) FROM mail WHERE user = {user} AND `read` = 0;");
+            return await _dbContext.Connection(user).QueryFirstOrDefaultAsync<ushort>($"SELECT COUNT(id) FROM mail WHERE user = {user} AND `read` = 0 AND deleted = 0;");
         }
 
         public async Task Delete(uint user, uint id)

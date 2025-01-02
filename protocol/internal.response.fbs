@@ -70,7 +70,7 @@ table WriteArticle {
 
 table GetMail {
   mail: fb.protocol.internal.Mail;
-  unread: uint;
+  unread: ushort;
   error: uint;
 }
 
@@ -82,11 +82,12 @@ table GetMailList {
 table WriteMail {
   mail: fb.protocol.internal.Mail;
   host: uint;
-  unread: uint;
+  unread: ushort;
   error: uint;
 }
 
 table DeleteMail {
+  unread: uint;
   error: uint;
 }
 

@@ -95,7 +95,7 @@ private:
     std::string             _title;
     shared_group_lock       _group             = nullptr;
     shared_clan_lock        _clan              = nullptr;
-    uint32_t                _unread_mail       = 0;
+    uint16_t                _unread_mail       = 0;
     bool                    _options[0x0B + 1] = {
         0,
     };
@@ -1037,14 +1037,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t unread_mail() const;
+    uint16_t unread_mail() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void unread_mail(uint32_t value);
+    void unread_mail(uint16_t value);
 
 private:
     /**

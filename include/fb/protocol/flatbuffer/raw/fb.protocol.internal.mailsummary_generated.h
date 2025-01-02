@@ -32,8 +32,8 @@ struct MailSummary FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_TITLE = 14,
     VT_CREATED_DATE = 16
   };
-  uint32_t id() const {
-    return GetField<uint32_t>(VT_ID, 0);
+  uint16_t id() const {
+    return GetField<uint16_t>(VT_ID, 0);
   }
   uint32_t user() const {
     return GetField<uint32_t>(VT_USER, 0);
@@ -55,7 +55,7 @@ struct MailSummary FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint32_t>(verifier, VT_ID, 4) &&
+           VerifyField<uint16_t>(verifier, VT_ID, 2) &&
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<uint32_t>(verifier, VT_SENDER, 4) &&
            VerifyOffset(verifier, VT_SENDER_NAME) &&
@@ -73,8 +73,8 @@ struct MailSummaryBuilder {
   typedef MailSummary Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
-  void add_id(uint32_t id) {
-    fbb_.AddElement<uint32_t>(MailSummary::VT_ID, id, 0);
+  void add_id(uint16_t id) {
+    fbb_.AddElement<uint16_t>(MailSummary::VT_ID, id, 0);
   }
   void add_user(uint32_t user) {
     fbb_.AddElement<uint32_t>(MailSummary::VT_USER, user, 0);
@@ -107,7 +107,7 @@ struct MailSummaryBuilder {
 
 inline ::flatbuffers::Offset<MailSummary> CreateMailSummary(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
+    uint16_t id = 0,
     uint32_t user = 0,
     uint32_t sender = 0,
     ::flatbuffers::Offset<::flatbuffers::String> sender_name = 0,
@@ -127,7 +127,7 @@ inline ::flatbuffers::Offset<MailSummary> CreateMailSummary(
 
 inline ::flatbuffers::Offset<MailSummary> CreateMailSummaryDirect(
     ::flatbuffers::FlatBufferBuilder &_fbb,
-    uint32_t id = 0,
+    uint16_t id = 0,
     uint32_t user = 0,
     uint32_t sender = 0,
     const char *sender_name = nullptr,

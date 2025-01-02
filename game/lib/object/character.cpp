@@ -1493,14 +1493,14 @@ character* character::container::find(const std::string& name)
     return i != this->end() ? *i : nullptr;
 }
 
-uint32_t character::unread_mail() const
+uint16_t character::unread_mail() const
 {
     this->assert_thread();
 
     return this->_unread_mail;
 }
 
-void character::unread_mail(uint32_t value)
+void character::unread_mail(uint16_t value)
 {
     this->assert_thread();
 

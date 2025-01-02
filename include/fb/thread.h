@@ -36,7 +36,7 @@ private:
     std::thread       _thread;
 
 private:
-    std::unordered_set<void*>           _ptrs;
+    std::unordered_set<const void*>     _ptrs;
     std::vector<std::unique_ptr<timer>> _timers;
     std::recursive_mutex                _mutex_timer;
     void*                               _data = nullptr;
@@ -153,21 +153,21 @@ public:
      *
      * @param      ptr   The pointer
      */
-    void push_ptr(void* ptr);
+    void push_ptr(const void* ptr);
 
     /**
      * @brief      { function_description }
      *
      * @param      ptr   The pointer
      */
-    void pop_ptr(void* ptr);
+    void pop_ptr(const void* ptr);
 
     /**
      * @brief      { function_description }
      *
      * @param      ptr   The pointer
      */
-    void assert_ptr(void* ptr) const;
+    void assert_ptr(const void* ptr) const;
 
 public:
     /**

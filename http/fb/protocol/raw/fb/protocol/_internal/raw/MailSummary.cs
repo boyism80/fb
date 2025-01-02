@@ -20,7 +20,7 @@ public struct MailSummary : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public MailSummary __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Id { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public uint User { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Sender { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public string SenderName { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
@@ -47,7 +47,7 @@ public struct MailSummary : IFlatbufferObject
   public byte[] GetCreatedDateArray() { return __p.__vector_as_array<byte>(16); }
 
   public static Offset<fb.protocol._internal.raw.MailSummary> CreateMailSummary(FlatBufferBuilder builder,
-      uint id = 0,
+      ushort id = 0,
       uint user = 0,
       uint sender = 0,
       StringOffset sender_nameOffset = default(StringOffset),
@@ -66,7 +66,7 @@ public struct MailSummary : IFlatbufferObject
   }
 
   public static void StartMailSummary(FlatBufferBuilder builder) { builder.StartTable(7); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
+  public static void AddId(FlatBufferBuilder builder, ushort id) { builder.AddUshort(0, id, 0); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(1, user, 0); }
   public static void AddSender(FlatBufferBuilder builder, uint sender) { builder.AddUint(2, sender, 0); }
   public static void AddSenderName(FlatBufferBuilder builder, StringOffset senderNameOffset) { builder.AddOffset(3, senderNameOffset.Value, 0); }
@@ -87,7 +87,7 @@ static public class MailSummaryVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Id*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 6 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Sender*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 10 /*SenderName*/, false)

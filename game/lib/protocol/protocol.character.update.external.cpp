@@ -45,7 +45,7 @@ HEAD_MARKER update_external::head_marker() const
         return HEAD_MARKER::NONE;
 
     auto& you = static_cast<const fb::game::character&>(this->to);
-    if (this->ch.clan() == you.clan())
+    if (this->ch.clan() != nullptr && this->ch.clan() == you.clan())
         return HEAD_MARKER::BLUE;
 
     return HEAD_MARKER::NONE;

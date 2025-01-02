@@ -500,7 +500,7 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_GET_LIST`(IN user INT, IN position INT)
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_GET_LIST`(IN user INT, IN position INT, IN count INT)
 BEGIN
     SELECT mail.`id`,
            mail.`user`,
@@ -513,7 +513,7 @@ BEGIN
     ON mail.sender = N.id
     WHERE mail.`user` = user AND mail.`deleted` = 0 AND position >= mail.`id`
     ORDER BY mail.`id` DESC
-    LIMIT 0, 20;
+    LIMIT 0, count;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -646,4 +646,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-01-03  0:33:10
+-- Dump completed on 2025-01-03  2:58:27

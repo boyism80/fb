@@ -21,20 +21,20 @@ public struct DeleteMail : IFlatbufferObject
   public DeleteMail __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Id { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.DeleteMail> CreateDeleteMail(FlatBufferBuilder builder,
       uint user = 0,
-      uint id = 0) {
+      ushort id = 0) {
     builder.StartTable(2);
-    DeleteMail.AddId(builder, id);
     DeleteMail.AddUser(builder, user);
+    DeleteMail.AddId(builder, id);
     return DeleteMail.EndDeleteMail(builder);
   }
 
   public static void StartDeleteMail(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
-  public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(1, id, 0); }
+  public static void AddId(FlatBufferBuilder builder, ushort id) { builder.AddUshort(1, id, 0); }
   public static Offset<fb.protocol._internal.request.raw.DeleteMail> EndDeleteMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.DeleteMail>(o);
@@ -50,7 +50,7 @@ static public class DeleteMailVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Id*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Id*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

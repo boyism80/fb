@@ -22,26 +22,26 @@ public struct WriteMail : IFlatbufferObject
 
   public fb.protocol._internal.raw.Mail? Mail { get { int o = __p.__offset(4); return o != 0 ? (fb.protocol._internal.raw.Mail?)(new fb.protocol._internal.raw.Mail()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public uint Host { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Unread { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public ushort Unread { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public uint Error { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.WriteMail> CreateWriteMail(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Mail> mailOffset = default(Offset<fb.protocol._internal.raw.Mail>),
       uint host = 0,
-      uint unread = 0,
+      ushort unread = 0,
       uint error = 0) {
     builder.StartTable(4);
     WriteMail.AddError(builder, error);
-    WriteMail.AddUnread(builder, unread);
     WriteMail.AddHost(builder, host);
     WriteMail.AddMail(builder, mailOffset);
+    WriteMail.AddUnread(builder, unread);
     return WriteMail.EndWriteMail(builder);
   }
 
   public static void StartWriteMail(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddMail(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Mail> mailOffset) { builder.AddOffset(0, mailOffset.Value, 0); }
   public static void AddHost(FlatBufferBuilder builder, uint host) { builder.AddUint(1, host, 0); }
-  public static void AddUnread(FlatBufferBuilder builder, uint unread) { builder.AddUint(2, unread, 0); }
+  public static void AddUnread(FlatBufferBuilder builder, ushort unread) { builder.AddUshort(2, unread, 0); }
   public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(3, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.WriteMail> EndWriteMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -59,7 +59,7 @@ static public class WriteMailVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyTable(tablePos, 4 /*Mail*/, fb.protocol._internal.raw.MailVerify.Verify, false)
       && verifier.VerifyField(tablePos, 6 /*Host*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Unread*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Unread*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 10 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

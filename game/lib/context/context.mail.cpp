@@ -10,12 +10,10 @@ void context::assert_mail(uint32_t error) const
         return;
 
     case ERROR_CODE::NOT_FOUND_CHARACTER:
-        std::runtime_error("없는사람한테 메일 보내려고함");
-        return;
+        throw std::runtime_error("없는사람한테 메일 보내려고함");
 
     case ERROR_CODE::NOT_FOUND_MAIL:
-        std::runtime_error("메일이 없습니다.");
-        return;
+        throw std::runtime_error("메일이 없습니다.");
 
     default:
         throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
@@ -36,4 +34,53 @@ void context::on_write_mail(const internal_resp::WriteMail& resp)
             co_return;
         });
     });
+}
+
+async::task<internal_resp::WriteMail>
+context::write_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
+{
+    auto   thread = ch.thread();
+    auto&& resp   = co_await this->post<internal_reqs::WriteMail, internal_resp::WriteMail>(
+        "internal",
+        "/mail/write",
+        internal_reqs::WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
+    thread->assert_ptr(&ch);
+
+    this->assert_mail(resp.error);
+    this->on_write_mail(resp);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::GetMailList> context::mail_list(const character& ch, uint16_t offset, uint16_t count)
+{
+    auto&& resp = co_await this->get<internal_resp::GetMailList>(
+        "internal",
+        std::format("/mail/{}?offset={}&count={}", ch.id(), offset, count));
+    this->assert_mail(resp.error);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t id)
+{
+    auto   url    = std::format("/mail/{}/{}", ch.id(), id);
+    auto   thread = ch.thread();
+    auto&& resp   = co_await this->get<internal_resp::GetMail>("internal", url);
+    thread->assert_ptr(&ch);
+
+    this->assert_mail(resp.error);
+    ch.unread_mail(resp.unread);
+    co_return std::move(resp);
+}
+
+async::task<internal_resp::DeleteMail> context::delete_mail(character& ch, uint16_t id)
+{
+    auto   thread = ch.thread();
+    auto&& resp   = co_await this->post<internal_reqs::DeleteMail, internal_resp::DeleteMail>(
+        "internal",
+        "/mail/delete",
+        internal_reqs::DeleteMail{ch.id(), id});
+    thread->assert_ptr(&ch);
+    this->assert_mail(resp.error);
+    ch.unread_mail(resp.unread);
+    co_return std::move(resp);
 }

@@ -25,13 +25,18 @@ struct DeleteMailBuilder;
 struct DeleteMail FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   typedef DeleteMailBuilder Builder;
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_ERROR = 4
+    VT_UNREAD = 4,
+    VT_ERROR = 6
   };
+  uint32_t unread() const {
+    return GetField<uint32_t>(VT_UNREAD, 0);
+  }
   uint32_t error() const {
     return GetField<uint32_t>(VT_ERROR, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
+           VerifyField<uint32_t>(verifier, VT_UNREAD, 4) &&
            VerifyField<uint32_t>(verifier, VT_ERROR, 4) &&
            verifier.EndTable();
   }
@@ -41,6 +46,9 @@ struct DeleteMailBuilder {
   typedef DeleteMail Table;
   ::flatbuffers::FlatBufferBuilder &fbb_;
   ::flatbuffers::uoffset_t start_;
+  void add_unread(uint32_t unread) {
+    fbb_.AddElement<uint32_t>(DeleteMail::VT_UNREAD, unread, 0);
+  }
   void add_error(uint32_t error) {
     fbb_.AddElement<uint32_t>(DeleteMail::VT_ERROR, error, 0);
   }
@@ -57,9 +65,11 @@ struct DeleteMailBuilder {
 
 inline ::flatbuffers::Offset<DeleteMail> CreateDeleteMail(
     ::flatbuffers::FlatBufferBuilder &_fbb,
+    uint32_t unread = 0,
     uint32_t error = 0) {
   DeleteMailBuilder builder_(_fbb);
   builder_.add_error(error);
+  builder_.add_unread(unread);
   return builder_.Finish();
 }
 

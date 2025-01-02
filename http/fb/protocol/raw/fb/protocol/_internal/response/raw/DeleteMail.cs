@@ -20,17 +20,21 @@ public struct DeleteMail : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public DeleteMail __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public uint Error { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Unread { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Error { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.DeleteMail> CreateDeleteMail(FlatBufferBuilder builder,
+      uint unread = 0,
       uint error = 0) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     DeleteMail.AddError(builder, error);
+    DeleteMail.AddUnread(builder, unread);
     return DeleteMail.EndDeleteMail(builder);
   }
 
-  public static void StartDeleteMail(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(0, error, 0); }
+  public static void StartDeleteMail(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddUnread(FlatBufferBuilder builder, uint unread) { builder.AddUint(0, unread, 0); }
+  public static void AddError(FlatBufferBuilder builder, uint error) { builder.AddUint(1, error, 0); }
   public static Offset<fb.protocol._internal.response.raw.DeleteMail> EndDeleteMail(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.DeleteMail>(o);
@@ -45,7 +49,8 @@ static public class DeleteMailVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*Error*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*Unread*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*Error*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

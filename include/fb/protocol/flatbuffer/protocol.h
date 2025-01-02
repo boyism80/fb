@@ -880,7 +880,7 @@ public:
     static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::MailSummary;
 
 public:
-    uint32_t id = 0;
+    uint16_t id = 0;
     uint32_t user = 0;
     uint32_t sender = 0;
     std::string sender_name;
@@ -895,7 +895,7 @@ public:
         : id(x.id), user(x.user), sender(x.sender), sender_name(x.sender_name), read(x.read), title(x.title), created_date(x.created_date)
     { }
 
-    MailSummary(uint32_t id, uint32_t user, uint32_t sender, const std::string& sender_name, bool read, const std::string& title, const std::string& created_date)
+    MailSummary(uint16_t id, uint32_t user, uint32_t sender, const std::string& sender_name, bool read, const std::string& title, const std::string& created_date)
         : id(id), user(user), sender(sender), sender_name(sender_name), read(read), title(title), created_date(created_date)
     { }
 
@@ -925,7 +925,7 @@ public:
     static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Mail;
 
 public:
-    uint32_t id = 0;
+    uint16_t id = 0;
     uint32_t user = 0;
     uint32_t sender = 0;
     std::string sender_name;
@@ -941,7 +941,7 @@ public:
         : id(x.id), user(x.user), sender(x.sender), sender_name(x.sender_name), title(x.title), contents(x.contents), read(x.read), created_date(x.created_date)
     { }
 
-    Mail(uint32_t id, uint32_t user, uint32_t sender, const std::string& sender_name, const std::string& title, const std::string& contents, bool read, const std::string& created_date)
+    Mail(uint16_t id, uint32_t user, uint32_t sender, const std::string& sender_name, const std::string& title, const std::string& contents, bool read, const std::string& created_date)
         : id(id), user(user), sender(sender), sender_name(sender_name), title(title), contents(contents), read(read), created_date(created_date)
     { }
 
@@ -1874,7 +1874,7 @@ public:
 
 public:
     uint32_t user = 0;
-    uint32_t id = 0;
+    uint16_t id = 0;
 
 public:
     DeleteMail() = default;
@@ -1883,7 +1883,7 @@ public:
         : user(x.user), id(x.id)
     { }
 
-    DeleteMail(uint32_t user, uint32_t id)
+    DeleteMail(uint32_t user, uint16_t id)
         : user(user), id(id)
     { }
 
@@ -2759,7 +2759,7 @@ public:
 
 public:
     fb::protocol::internal::Mail mail;
-    uint32_t unread = 0;
+    uint16_t unread = 0;
     uint32_t error = 0;
 
 public:
@@ -2769,7 +2769,7 @@ public:
         : mail(x.mail), unread(x.unread), error(x.error)
     { }
 
-    GetMail(const fb::protocol::internal::Mail& mail, uint32_t unread, uint32_t error)
+    GetMail(const fb::protocol::internal::Mail& mail, uint16_t unread, uint32_t error)
         : mail(mail), unread(unread), error(error)
     { }
 
@@ -2841,7 +2841,7 @@ public:
 public:
     fb::protocol::internal::Mail mail;
     uint32_t host = 0;
-    uint32_t unread = 0;
+    uint16_t unread = 0;
     uint32_t error = 0;
 
 public:
@@ -2851,7 +2851,7 @@ public:
         : mail(x.mail), host(x.host), unread(x.unread), error(x.error)
     { }
 
-    WriteMail(const fb::protocol::internal::Mail& mail, uint32_t host, uint32_t unread, uint32_t error)
+    WriteMail(const fb::protocol::internal::Mail& mail, uint32_t host, uint16_t unread, uint32_t error)
         : mail(mail), host(host), unread(unread), error(error)
     { }
 
@@ -2881,21 +2881,22 @@ public:
     static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::DeleteMail;
 
 public:
+    uint32_t unread = 0;
     uint32_t error = 0;
 
 public:
     DeleteMail() = default;
 
     DeleteMail(const DeleteMail& x)
-        : error(x.error)
+        : unread(x.unread), error(x.error)
     { }
 
-    DeleteMail(uint32_t error)
-        : error(error)
+    DeleteMail(uint32_t unread, uint32_t error)
+        : unread(unread), error(error)
     { }
 
     DeleteMail(const fb::protocol::internal::response::raw::DeleteMail& raw)
-        : error(raw.error())
+        : unread(raw.unread()), error(raw.error())
     { }
 
 public:
@@ -3909,7 +3910,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::MailSummary> build<fb::protocol::internal::MailSummary>(FlatBufferBuilder& builder, const fb::protocol::internal::MailSummary& value)
 {
     return fb::protocol::internal::raw::CreateMailSummary(builder,
-            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<uint16_t>(builder, value.id),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint32_t>(builder, value.sender),
             flatbuffers::build<std::string>(builder, value.sender_name),
@@ -3921,7 +3922,7 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Mail> build<fb::protocol::internal::Mail>(FlatBufferBuilder& builder, const fb::protocol::internal::Mail& value)
 {
     return fb::protocol::internal::raw::CreateMail(builder,
-            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<uint16_t>(builder, value.id),
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint32_t>(builder, value.sender),
             flatbuffers::build<std::string>(builder, value.sender_name),
@@ -4107,7 +4108,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> build<fb::
 {
     return fb::protocol::internal::request::raw::CreateDeleteMail(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
-            flatbuffers::build<uint32_t>(builder, value.id));
+            flatbuffers::build<uint16_t>(builder, value.id));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> build<fb::protocol::internal::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetOption& value)
@@ -4262,7 +4263,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::GetMail> build<fb::pr
 {
     return fb::protocol::internal::response::raw::CreateGetMail(builder,
             flatbuffers::build<fb::protocol::internal::Mail>(builder, value.mail),
-            flatbuffers::build<uint32_t>(builder, value.unread),
+            flatbuffers::build<uint16_t>(builder, value.unread),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
@@ -4278,13 +4279,14 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::WriteMail> build<fb::
     return fb::protocol::internal::response::raw::CreateWriteMail(builder,
             flatbuffers::build<fb::protocol::internal::Mail>(builder, value.mail),
             flatbuffers::build<uint32_t>(builder, value.host),
-            flatbuffers::build<uint32_t>(builder, value.unread),
+            flatbuffers::build<uint16_t>(builder, value.unread),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::DeleteMail> build<fb::protocol::internal::response::DeleteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::DeleteMail& value)
 {
     return fb::protocol::internal::response::raw::CreateDeleteMail(builder,
+            flatbuffers::build<uint32_t>(builder, value.unread),
             flatbuffers::build<uint32_t>(builder, value.error));
 }
 template <>
