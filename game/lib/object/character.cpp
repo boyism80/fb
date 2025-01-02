@@ -1091,11 +1091,11 @@ void character::option(SETTING key, bool value, bool notify)
         return;
 
     this->update(STATE_LEVEL::LEVEL_MIN);
+    this->_options[opt] = value;
+
     auto listener = this->get_listener<character>();
     if (listener != nullptr && notify)
         listener->on_option(*this, key, value);
-
-    this->_options[opt] = value;
 }
 
 bool character::option_toggle(SETTING key, bool notify)
