@@ -182,9 +182,8 @@ async::task<void> context::handle_start()
     this->command("동시성테스트", &context::handle_command_concurrency, true);
     this->command("sleep", &context::handle_command_sleep, true);
     this->command("맵타일", &context::handle_map_tile, true);
-    this->command("광고", &context::handle_ad, true);
-    this->command("웹", &context::handle_web, true);
-    this->command("메일읽기", &context::handle_command_read_mail, true);
+    this->command("광고", &context::handle_command_ad, true);
+    this->command("웹", &context::handle_command_web, true);
 
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);

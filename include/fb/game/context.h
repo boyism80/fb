@@ -1274,9 +1274,24 @@ public:
      */
     [[nodiscard]] async::task<bool> handle_map_tile(character& ch, Json::Value& parameters);
 
-    [[nodiscard]] async::task<bool> handle_ad(character& ch, Json::Value& parameters);
-    [[nodiscard]] async::task<bool> handle_web(character& ch, Json::Value& parameters);
-    [[nodiscard]] async::task<bool> handle_command_read_mail(character& ch, Json::Value& parameters);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_ad(character& ch, Json::Value& parameters);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_web(character& ch, Json::Value& parameters);
 
 public:
     /**

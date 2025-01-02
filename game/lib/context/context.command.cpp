@@ -525,7 +525,7 @@ async::task<bool> context::handle_map_tile(character& ch, Json::Value& parameter
     co_return true;
 }
 
-async::task<bool> context::handle_ad(character& ch, Json::Value& parameters)
+async::task<bool> context::handle_command_ad(character& ch, Json::Value& parameters)
 {
     auto width  = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 300;
     auto height = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 120;
@@ -537,7 +537,7 @@ async::task<bool> context::handle_ad(character& ch, Json::Value& parameters)
     co_return true;
 }
 
-async::task<bool> context::handle_web(character& ch, Json::Value& parameters)
+async::task<bool> context::handle_command_web(character& ch, Json::Value& parameters)
 {
     auto type = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
     auto url  = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString()
@@ -546,23 +546,5 @@ async::task<bool> context::handle_web(character& ch, Json::Value& parameters)
         parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"default message"};
 
     this->send(ch, fb::protocol::game::response::web(type, url, message), scope::SELF);
-    co_return true;
-}
-
-async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& parameters)
-{
-    auto id   = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asUInt() : 1;
-    auto flag = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 0;
-
-    auto mail = fb::protocol::internal::Mail{id,
-                                             0,
-                                             0,
-                                             "보낸사람",
-                                             "메일제목",
-                                             "메일내용",
-                                             false,
-                                             fb::model::datetime::datetime().to_string()};
-    auto resp = fb::protocol::game::response::board_mail(mail, static_cast<MAIL_BUTTON_ENABLE>(flag));
-    this->send(ch, resp, scope::SELF);
     co_return true;
 }
