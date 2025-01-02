@@ -356,7 +356,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "CLAN_TITLE_NOT_CHANGED")]
         ClanTitleNotChanged = 32, 
         [EnumMember(Value = "CLAN_TITLE_TOO_SHORT")]
-        ClanTitleTooShort = 33
+        ClanTitleTooShort = 33, 
+        [EnumMember(Value = "MAIL_NOT_EXISTS")]
+        MailNotExists = 34, 
+        [EnumMember(Value = "NOT_FOUND_MAIL")]
+        NotFoundMail = 35
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

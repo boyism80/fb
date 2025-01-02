@@ -50,6 +50,12 @@ public class Program
             cfg.CreateMap<Http.Model.Board, Article>()
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
+            cfg.CreateMap<Http.Model.Mail, MailSummary>()
+            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
+
+            cfg.CreateMap<Http.Model.Mail, Mail>()
+            .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
+
             cfg.CreateMap<Http.Model.Clan, Clan>();
         });
 

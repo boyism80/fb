@@ -14,14 +14,16 @@ namespace fb::game {
 class shard_params
 {
 public:
-    using group_container     = std::unordered_map<uint32_t, shared_group_lock>;
-    using clan_container      = std::unordered_map<uint32_t, shared_clan_lock>;
-    using character_container = std::unordered_map<std::string, fb::game::character*>;
+    using group_container          = std::unordered_map<uint32_t, shared_group_lock>;
+    using clan_container           = std::unordered_map<uint32_t, shared_clan_lock>;
+    using character_name_container = std::unordered_map<std::string, fb::game::character*>;
+    using character_id_container   = std::unordered_map<uint32_t, fb::game::character*>;
 
 public:
-    fb::locker<group_container>     groups;
-    fb::locker<clan_container>      clans;
-    fb::locker<character_container> characters;
+    fb::locker<group_container>          groups;
+    fb::locker<clan_container>           clans;
+    fb::locker<character_id_container>   ids;
+    fb::locker<character_name_container> names;
 
 public:
     shard_params();

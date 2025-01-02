@@ -236,12 +236,12 @@ void context::on_clan_join_member(const internal_resp::JoinClan& resp)
     this->assert_clan(resp.error);
 
     this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch = this->_shard[resp.member.name]->characters.template lock<character*>(
-            [&resp](auto& container) -> character* {
-                if (container.contains(resp.member.name) == false)
+        auto ch =
+            this->_shard[resp.member.name]->names.template lock<character*>([&resp](auto& ch_names) -> character* {
+                if (ch_names.contains(resp.member.name) == false)
                     return nullptr;
 
-                return container.at(resp.member.name);
+                return ch_names.at(resp.member.name);
             });
 
         if (ch != nullptr)
@@ -271,13 +271,12 @@ void context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
     this->assert_clan(resp.error);
 
     this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch =
-            this->_shard[resp.uname]->characters.template lock<character*>([&resp](auto& container) -> character* {
-                if (container.contains(resp.uname) == false)
-                    return nullptr;
+        auto ch = this->_shard[resp.uname]->names.template lock<character*>([&resp](auto& ch_names) -> character* {
+            if (ch_names.contains(resp.uname) == false)
+                return nullptr;
 
-                return container.at(resp.uname);
-            });
+            return ch_names.at(resp.uname);
+        });
 
         if (ch != nullptr)
         {

@@ -38,7 +38,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ITEMS = 10,
     VT_SPELLS = 12,
     VT_OPTION = 14,
-    VT_TRACES = 16
+    VT_TRACES = 16,
+    VT_MAIL = 18
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -61,6 +62,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *>(VT_TRACES);
   }
+  uint32_t mail() const {
+    return GetField<uint32_t>(VT_MAIL, 0);
+  }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyOffset(verifier, VT_CHARACTER) &&
@@ -80,6 +84,7 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_TRACES) &&
            verifier.VerifyVector(traces()) &&
            verifier.VerifyVectorOfTables(traces()) &&
+           VerifyField<uint32_t>(verifier, VT_MAIL, 4) &&
            verifier.EndTable();
   }
 };
@@ -109,6 +114,9 @@ struct InitBuilder {
   void add_traces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces) {
     fbb_.AddOffset(Init::VT_TRACES, traces);
   }
+  void add_mail(uint32_t mail) {
+    fbb_.AddElement<uint32_t>(Init::VT_MAIL, mail, 0);
+  }
   explicit InitBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
     start_ = fbb_.StartTable();
@@ -128,8 +136,10 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces = 0,
+    uint32_t mail = 0) {
   InitBuilder builder_(_fbb);
+  builder_.add_mail(mail);
   builder_.add_traces(traces);
   builder_.add_option(option);
   builder_.add_spells(spells);
@@ -148,7 +158,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces = nullptr,
+    uint32_t mail = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
   auto traces__ = traces ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>(*traces) : 0;
@@ -160,7 +171,8 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       items__,
       spells__,
       option,
-      traces__);
+      traces__,
+      mail);
 }
 
 inline const fb::protocol::internal::response::raw::Init *GetInit(const void *buf) {

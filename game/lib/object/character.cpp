@@ -1493,6 +1493,24 @@ character* character::container::find(const std::string& name)
     return i != this->end() ? *i : nullptr;
 }
 
+uint32_t character::unread_mail() const
+{
+    this->assert_thread();
+
+    return this->_unread_mail;
+}
+
+void character::unread_mail(uint32_t value)
+{
+    this->assert_thread();
+
+    if (this->_unread_mail != value)
+    {
+        this->_unread_mail = value;
+        this->update(STATE_LEVEL::LEVEL_MIN);
+    }
+}
+
 bool character::container::contains(const character& ch) const
 {
     return std::find(this->cbegin(), this->cend(), &ch) != this->end();

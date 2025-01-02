@@ -3,8 +3,10 @@
 
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
+#include <fb/protocol/flatbuffer/protocol.h>
 
 using namespace fb::model::enum_value;
+using namespace fb::protocol::internal;
 
 namespace fb::protocol::game::response {
 
@@ -14,10 +16,11 @@ public:
     inline static uint8_t header = 0x31;
 
 public:
-    const uint8_t button_flag;
+    const Mail&              mail;
+    const MAIL_BUTTON_ENABLE flag;
 
 public:
-    board_mail(uint8_t button_flag);
+    board_mail(const Mail& mail, MAIL_BUTTON_ENABLE flag);
 
 public:
     [[nodiscard]] async::task<void> serialize(fb::stream_writer<big_endian>& writer) const;

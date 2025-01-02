@@ -37,22 +37,21 @@ async::task<bool> context::handle_login(fb::socket<character>&                  
     if (this->assert_socket(fd) == false)
         co_return false;
 
-    this->_shard[name]->characters.lock([&name, ch](auto& characters) {
-        if (characters.contains(name) == false)
-            characters.insert({name, ch});
-    });
-
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
 
     auto thread = ch->thread();
     thread->assert_ptr(ch);
+    ch->unread_mail(response.mail);
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
     this->init_traces(response.traces, *ch);
-    this->_shard[name]->characters.lock([&name, ch](auto& characters) {
-        characters.insert({name, ch});
+    this->_shard[name]->names.lock([&name, ch](auto& names) {
+        names.insert({name, ch});
+    });
+    this->_shard[id]->ids.lock([id, ch](auto& ids) {
+        ids.insert({id, ch});
     });
 
     this->init_option(response.option, *ch);
@@ -619,13 +618,19 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
     case BOARD_ACTION::ARTICLES:
     {
+        auto mail = request.section == 0xFFFF;
         try
         {
-            if (request.section == 0xFFFF)
+            if (mail)
             {
                 // mail offset
-                auto offset = request.offset;
-                this->send(*ch, fb_resp::board_mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
+                auto&& resp = co_await this->get<internal_resp::GetMailList>(
+                    "internal",
+                    std::format("/mail/{}?offset={}", ch->id(), request.offset));
+                if (this->assert_socket(fd) == false)
+                    co_return false;
+
+                this->send(*ch, fb_resp::board_mails(resp.summary_list, MAIL_BUTTON_ENABLE::NEW), scope::SELF);
             }
             else
             {
@@ -662,54 +667,71 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, mail), scope::SELF);
         }
     }
     break;
 
     case BOARD_ACTION::ARTICLE:
     {
+        auto mail = request.section == 0xFFFF;
         try
         {
-            if (this->model.board.contains(request.section) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
-
-            auto   section  = &this->model.board[request.section]; // 코루틴땜시 포인터로
-            auto&& response = co_await this->get<internal_resp::GetArticle>(
-                "internal",
-                std::format("/board/{}/{}", section->id, request.article));
-            if (this->assert_socket(fd) == false)
-                co_return false;
-
-            if (response.success == false)
+            if (mail)
             {
-                this->send(*ch,
-                           fb_resp::board_message(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST), false, false),
-                           scope::SELF);
-                co_return true;
+                auto   url  = std::format("/mail/{}/{}", ch->id(), request.article);
+                auto&& resp = co_await this->get<internal_resp::GetMail>("internal", url);
+                if (this->assert_socket(fd) == false)
+                    co_return false;
+
+                this->assert_mail(resp.error);
+
+                auto flag = MAIL_BUTTON_ENABLE::NEW;
+                ch->unread_mail(resp.unread);
+                this->send(*ch, fb::protocol::game::response::board_mail(resp.mail, flag), scope::SELF);
             }
+            else
+            {
+                if (this->model.board.contains(request.section) == false)
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
 
-            auto dt           = datetime(response.article.created_date);
-            auto button_flags = BOARD_BUTTON_ENABLE::NONE;
-            if (response.next)
-                button_flags |= BOARD_BUTTON_ENABLE::NEXT;
+                auto   section  = &this->model.board[request.section]; // 코루틴땜시 포인터로
+                auto&& response = co_await this->get<internal_resp::GetArticle>(
+                    "internal",
+                    std::format("/board/{}/{}", section->id, request.article));
+                if (this->assert_socket(fd) == false)
+                    co_return false;
 
-            if (ch->condition(section->condition) == false)
-                button_flags |= BOARD_BUTTON_ENABLE::WRITE;
+                if (response.success == false)
+                {
+                    this->send(*ch,
+                               fb_resp::board_message(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST), true, false),
+                               scope::SELF);
+                    co_return true;
+                }
 
-            auto article = board::article{response.article.id,
-                                          section->id,
-                                          response.article.user,
-                                          response.article.user_name,
-                                          response.article.title,
-                                          (uint8_t)dt.month(),
-                                          (uint8_t)dt.day(),
-                                          response.article.contents};
-            this->send(*ch, fb_resp::board_article(article, button_flags), scope::SELF);
+                auto dt           = datetime(response.article.created_date);
+                auto button_flags = BOARD_BUTTON_ENABLE::NONE;
+                if (response.next)
+                    button_flags |= BOARD_BUTTON_ENABLE::NEXT;
+
+                if (ch->condition(section->condition) == false)
+                    button_flags |= BOARD_BUTTON_ENABLE::WRITE;
+
+                auto article = board::article{response.article.id,
+                                              section->id,
+                                              response.article.user,
+                                              response.article.user_name,
+                                              response.article.title,
+                                              (uint8_t)dt.month(),
+                                              (uint8_t)dt.day(),
+                                              response.article.contents};
+                this->send(*ch, fb_resp::board_article(article, button_flags), scope::SELF);
+            }
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), true, mail), scope::SELF);
         }
     }
     break;
@@ -753,53 +775,92 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
 
     case BOARD_ACTION::DELETE:
     {
+        auto mail = request.section == 0xFFFF;
         try
         {
-            if (this->model.board.contains(request.section) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
-
-            auto section = &this->model.board[request.section];
-            if (ch->condition(section->condition) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
-
-            auto&& response = co_await this->post<internal_reqs::DeleteArticle, internal_resp::DeleteArticle>(
-                "internal",
-                "/board/delete",
-                internal_reqs::DeleteArticle{request.article, ch->id()});
-
-            if (this->assert_socket(fd) == false)
-                co_return false;
-
-            switch (response.result)
+            if (mail)
             {
-            case -1: // article not found
-                throw std::runtime_error(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
+                auto&& response = co_await this->post<internal_reqs::DeleteMail, internal_resp::DeleteMail>(
+                    "internal",
+                    "/mail/delete",
+                    internal_reqs::DeleteMail{ch->id(), request.article});
 
-            case -2: // article deleted
-                throw std::runtime_error(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
+                if (this->assert_socket(fd) == false)
+                    co_return false;
 
-            case -3: // no authenticate
-                throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
+                this->assert_mail(response.error);
+                this->send(*ch, fb_resp::board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, true), scope::SELF);
             }
+            else
+            {
+                if (this->model.board.contains(request.section) == false)
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_SECTION_NOT_EXIST));
 
-            this->send(*ch, fb_resp::board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false), scope::SELF);
+                auto section = &this->model.board[request.section];
+                if (ch->condition(section->condition) == false)
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
+
+                auto&& response = co_await this->post<internal_reqs::DeleteArticle, internal_resp::DeleteArticle>(
+                    "internal",
+                    "/board/delete",
+                    internal_reqs::DeleteArticle{request.article, ch->id()});
+
+                if (this->assert_socket(fd) == false)
+                    co_return false;
+
+                switch (response.result)
+                {
+                case -1: // article not found
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
+
+                case -2: // article deleted
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_ARTICLE_NOT_EXIST));
+
+                case -3: // no authenticate
+                    throw std::runtime_error(_TEXT(MESSAGE_BOARD_NOT_AUTH));
+                }
+
+                this->send(*ch, fb_resp::board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false), scope::SELF);
+            }
         }
         catch (std::exception& e)
         {
-            this->send(*ch, fb_resp::board_message(e.what(), false, false), scope::SELF);
+            this->send(*ch, fb_resp::board_message(e.what(), false, mail), scope::SELF);
         }
     }
     break;
 
     case BOARD_ACTION::MAIL:
     {
-        this->send(*ch, fb_resp::board_mails(MAIL_BUTTON_ENABLE::NONE), scope::SELF);
+        auto&& resp =
+            co_await this->get<internal_resp::GetMailList>("internal", std::format("/mail/{}?offset=32727", ch->id()));
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        this->send(*ch, fb_resp::board_mails(resp.summary_list, MAIL_BUTTON_ENABLE::NEW), scope::SELF);
     }
     break;
 
     case BOARD_ACTION::SEND_MAIL:
     {
-        this->send(*ch, fb_resp::board_message("미구현입니다", false, true), scope::SELF);
+        try
+        {
+            auto&& resp = co_await this->post<internal_reqs::WriteMail, internal_resp::WriteMail>(
+                "internal",
+                "/mail/write",
+                internal_reqs::WriteMail{ch->id(),
+                                         request.user,
+                                         request.title,
+                                         request.contents,
+                                         config<uint32_t>("id")});
+
+            this->on_write_mail(resp);
+            this->send(*ch, fb_resp::board_message("우편을 보냈습니다.", true, true), scope::SELF);
+        }
+        catch (std::exception& e)
+        {
+            this->send(*ch, fb_resp::board_message(e.what(), false, true), scope::SELF);
+        }
     }
     break;
 

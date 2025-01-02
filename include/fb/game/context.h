@@ -251,6 +251,13 @@ private:
     void assert_clan(uint32_t) const;
 
     /**
+     * @brief      { function_description }
+     *
+     * @param[in]  <unnamed>  { parameter_description }
+     */
+    void assert_mail(uint32_t) const;
+
+    /**
      * @brief      Called on enter group.
      *
      * @param[in]  resp  The response
@@ -276,7 +283,7 @@ private:
      *
      * @param[in]  resp  The response
      */
-    void on_clan_broadcast(const internal_resp::BroadcastGroup& resp);
+    void on_clan_broadcast(const internal_resp::BroadcastClan& resp);
 
     /**
      * @brief      Called when clan title changed.
@@ -300,11 +307,11 @@ private:
     void on_clan_leave_member(const internal_resp::LeaveClan& resp);
 
     /**
-     * @brief      Called on clan broadcast.
+     * @brief      Called on write mail.
      *
      * @param[in]  resp  The response
      */
-    void on_clan_broadcast(const internal_resp::BroadcastClan& resp);
+    void on_write_mail(const internal_resp::WriteMail& resp);
 
 public:
     /**
@@ -1267,11 +1274,9 @@ public:
      */
     [[nodiscard]] async::task<bool> handle_map_tile(character& ch, Json::Value& parameters);
 
-    [[nodiscard]] async::task<bool> handle_mail(character& ch, Json::Value& parameters);
-    [[nodiscard]] async::task<bool> handle_mail_count(character& ch, Json::Value& parameters);
-    [[nodiscard]] async::task<bool> handle_mail_read(character& ch, Json::Value& parameters);
     [[nodiscard]] async::task<bool> handle_ad(character& ch, Json::Value& parameters);
     [[nodiscard]] async::task<bool> handle_web(character& ch, Json::Value& parameters);
+    [[nodiscard]] async::task<bool> handle_command_read_mail(character& ch, Json::Value& parameters);
 
 public:
     /**
@@ -1346,6 +1351,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& response);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_WriteMail(const internal_resp::WriteMail& response);
 
 public:
     // listener : object

@@ -4,7 +4,6 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
-using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Cryptography;
@@ -243,7 +242,8 @@ namespace Internal.Controllers
                     Traces = traces.Select(_mapper.Map<Protocol.Trace>).ToList(),
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
-                    Group = sync.Group
+                    Group = sync.Group,
+                    Mail = await _dbContext.Mail.Unread(uid)
                 };
             }
         }

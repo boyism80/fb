@@ -2,20 +2,19 @@
 
 using namespace fb::game;
 
-async::task<void> context::handle_amqp_Pong(const internal_resp::Pong& response)
+async::task<void> context::handle_amqp_Pong(const internal_resp::Pong& resp)
 {
     co_return;
 }
 
-async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& response)
+async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& resp)
 {
-    auto ch = this->_shard[response.name]->characters.template lock<character*>(
-        [&name = response.name](shard_params::character_container& container) -> character* {
-            if (!container.contains(name))
-                return nullptr;
+    auto ch = this->_shard[resp.name]->names.template lock<character*>([&name = resp.name](auto& names) -> character* {
+        if (!names.contains(name))
+            return nullptr;
 
-            return container.at(name);
-        });
+        return names.at(name);
+    });
 
     if (ch == nullptr)
         co_return;
@@ -25,67 +24,75 @@ async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& res
     co_return;
 }
 
-async::task<void> context::handle_amqp_Whisper(const internal_resp::Whisper& response)
+async::task<void> context::handle_amqp_Whisper(const internal_resp::Whisper& resp)
 {
-    if (response.host == fb::config<uint16_t>("id"))
+    if (resp.host == fb::config<uint16_t>("id"))
         co_return;
 
     try
     {
-        this->assert_whisper(response);
-        this->foreach_ch(response.to, [&response](auto& you) {
-            you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
+        this->assert_whisper(resp);
+        this->foreach_ch(resp.to, [&resp](auto& you) {
+            you.message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
         });
     }
     catch (std::exception& e)
     {
-        this->foreach_ch(response.from, [&response, error = e.what()](auto& me) {
+        this->foreach_ch(resp.from, [&resp, error = e.what()](auto& me) {
             me.message(error, MESSAGE_TYPE::NOTIFY);
         });
     }
 }
 
-async::task<void> context::handle_amqp_EnterGroup(const internal_resp::EnterGroup& response)
+async::task<void> context::handle_amqp_EnterGroup(const internal_resp::EnterGroup& resp)
 {
-    if (response.host == fb::config<uint32_t>("id"))
+    if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_enter_group(response);
+    this->on_enter_group(resp);
 };
-async::task<void> context::handle_amqp_LeaveGroup(const internal_resp::LeaveGroup& response)
+async::task<void> context::handle_amqp_LeaveGroup(const internal_resp::LeaveGroup& resp)
 {
-    if (response.host == fb::config<uint32_t>("id"))
+    if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_leave_group(response);
+    this->on_leave_group(resp);
 };
-async::task<void> context::handle_amqp_SetClanTitle(const internal_resp::SetClanTitle& response)
+async::task<void> context::handle_amqp_SetClanTitle(const internal_resp::SetClanTitle& resp)
 {
-    if (response.host == fb::config<uint32_t>("id"))
+    if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_title_changed(response);
+    this->on_clan_title_changed(resp);
 };
-async::task<void> context::handle_amqp_JoinClan(const internal_resp::JoinClan& response)
+async::task<void> context::handle_amqp_JoinClan(const internal_resp::JoinClan& resp)
 {
-    if (response.host == fb::config<uint32_t>("id"))
+    if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_join_member(response);
-};
-
-async::task<void> context::handle_amqp_LeaveClan(const internal_resp::LeaveClan& response)
-{
-    if (response.host == fb::config<uint32_t>("id"))
-        co_return;
-
-    this->on_clan_leave_member(response);
+    this->on_clan_join_member(resp);
 };
 
-async::task<void> context::handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& response)
+async::task<void> context::handle_amqp_LeaveClan(const internal_resp::LeaveClan& resp)
 {
-    if (response.host == fb::config<uint32_t>("id"))
+    if (resp.host == fb::config<uint32_t>("id"))
         co_return;
 
-    this->on_clan_broadcast(response);
+    this->on_clan_leave_member(resp);
+};
+
+async::task<void> context::handle_amqp_BroadcastClan(const internal_resp::BroadcastClan& resp)
+{
+    if (resp.host == fb::config<uint32_t>("id"))
+        co_return;
+
+    this->on_clan_broadcast(resp);
+};
+
+async::task<void> context::handle_amqp_WriteMail(const internal_resp::WriteMail& resp)
+{
+    if (resp.host == fb::config<uint32_t>("id"))
+        co_return;
+
+    this->on_write_mail(resp);
 };

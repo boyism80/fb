@@ -182,11 +182,9 @@ async::task<void> context::handle_start()
     this->command("동시성테스트", &context::handle_command_concurrency, true);
     this->command("sleep", &context::handle_command_sleep, true);
     this->command("맵타일", &context::handle_map_tile, true);
-    this->command("메일", &context::handle_mail, true);
-    this->command("메일갯수", &context::handle_mail_count, true);
-    this->command("메일읽기", &context::handle_mail_read, true);
     this->command("광고", &context::handle_ad, true);
     this->command("웹", &context::handle_web, true);
+    this->command("메일읽기", &context::handle_command_read_mail, true);
 
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
@@ -214,6 +212,7 @@ async::task<void> context::handle_start()
     this->bind_amqp("fb.clan", &context::handle_amqp_JoinClan);
     this->bind_amqp("fb.clan", &context::handle_amqp_LeaveClan);
     this->bind_amqp("fb.clan", &context::handle_amqp_BroadcastClan);
+    this->bind_amqp("fb.mail", &context::handle_amqp_WriteMail);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const
@@ -242,9 +241,14 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch->trade.trading())
         ch->trade.cancel();
 
+    auto id = ch->id();
+    this->_shard[id]->ids.lock([&id](auto& ids) {
+        ids.erase(id);
+    });
+
     auto& name = ch->name();
-    this->_shard[name]->characters.lock([&name](auto& characters) {
-        characters.erase(name);
+    this->_shard[name]->names.lock([&name](auto& names) {
+        names.erase(name);
     });
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
@@ -334,16 +338,16 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
 
     for (auto& [mod, names] : g)
     {
-        this->_shard[mod]->characters.lock([this, &names, &fn, &miss](auto& characters) {
+        this->_shard[mod]->names.lock([this, &names, &fn, &miss](auto& ch_names) {
             for (auto& name : names)
             {
-                if (!characters.contains(name))
+                if (!ch_names.contains(name))
                 {
                     miss(name);
                     continue;
                 }
 
-                auto ch     = characters[name];
+                auto ch     = ch_names[name];
                 auto thread = ch->thread();
                 std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
                     if (this->assert_socket(fd) == false)
@@ -791,6 +795,10 @@ void context::amqp_thread()
             auto& queue4 = this->_amqp->declare_queue();
             queue4.bind("amq.direct", "fb.clan");
             this->bind_amqp(queue4);
+
+            auto& queue5 = this->_amqp->declare_queue();
+            queue5.bind("amq.direct", "fb.mail");
+            this->bind_amqp(queue5);
         }
         catch (std::exception& e)
         {

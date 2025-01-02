@@ -2,7 +2,8 @@
 
 namespace fb::protocol::game::response {
 
-board_mails::board_mails(MAIL_BUTTON_ENABLE button_flags) :
+board_mails::board_mails(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE button_flags) :
+    mails(mails),
     button_flags(button_flags)
 { }
 
@@ -12,20 +13,20 @@ async::task<void> board_mails::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x04);
     writer.write<uint8_t>(static_cast<uint8_t>(this->button_flags));
-    writer.write<uint16_t>(65535);
+    writer.write<uint16_t>(0xFFFF);
     writer.write<std::string>("mail name");
 
-    auto count = 23;
-    writer.write<uint8_t>(count);
-    for (int i = 0; i < count; i++)
+    writer.write<uint8_t>(this->mails.size());
+    for (auto& mail : this->mails)
     {
-        auto read = (i % 2) == 0;
-        writer.write<bool>(read);
-        writer.write<uint16_t>(i + 100); // id
-        writer.write<std::string>(std::format("name {}", i));
-        writer.write<uint8_t>(12); // month
-        writer.write<uint8_t>(31); // day
-        writer.write<std::string>(std::format("mail title {}", i));
+        writer.write<bool>(!mail.read);
+        writer.write<uint16_t>(mail.id);
+        writer.write<std::string>(mail.sender_name);
+
+        auto dt = fb::model::datetime(mail.created_date);
+        writer.write<uint8_t>(static_cast<uint8_t>(dt.month()));
+        writer.write<uint8_t>(static_cast<uint8_t>(dt.day()));
+        writer.write<std::string>(mail.title);
     }
     writer.write<uint8_t>(0x00);
 }

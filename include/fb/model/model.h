@@ -1047,7 +1047,9 @@ enum class ERROR_CODE
     CLAN_CANNOT_LEAVEE_MASTER = 30, 
     NOT_FOUND_CHARACTER_SYNC = 31, 
     CLAN_TITLE_NOT_CHANGED = 32, 
-    CLAN_TITLE_TOO_SHORT = 33
+    CLAN_TITLE_TOO_SHORT = 33, 
+    MAIL_NOT_EXISTS = 34, 
+    NOT_FOUND_MAIL = 35
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1088,7 +1090,9 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "CLAN_CANNOT_LEAVEE_MASTER", ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER }, 
         { "NOT_FOUND_CHARACTER_SYNC", ERROR_CODE::NOT_FOUND_CHARACTER_SYNC }, 
         { "CLAN_TITLE_NOT_CHANGED", ERROR_CODE::CLAN_TITLE_NOT_CHANGED }, 
-        { "CLAN_TITLE_TOO_SHORT", ERROR_CODE::CLAN_TITLE_TOO_SHORT }
+        { "CLAN_TITLE_TOO_SHORT", ERROR_CODE::CLAN_TITLE_TOO_SHORT }, 
+        { "MAIL_NOT_EXISTS", ERROR_CODE::MAIL_NOT_EXISTS }, 
+        { "NOT_FOUND_MAIL", ERROR_CODE::NOT_FOUND_MAIL }
     };
 
     auto i = enums.find(k);
@@ -1136,7 +1140,9 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER, "CLAN_CANNOT_LEAVEE_MASTER" }, 
         { ERROR_CODE::NOT_FOUND_CHARACTER_SYNC, "NOT_FOUND_CHARACTER_SYNC" }, 
         { ERROR_CODE::CLAN_TITLE_NOT_CHANGED, "CLAN_TITLE_NOT_CHANGED" }, 
-        { ERROR_CODE::CLAN_TITLE_TOO_SHORT, "CLAN_TITLE_TOO_SHORT" }
+        { ERROR_CODE::CLAN_TITLE_TOO_SHORT, "CLAN_TITLE_TOO_SHORT" }, 
+        { ERROR_CODE::MAIL_NOT_EXISTS, "MAIL_NOT_EXISTS" }, 
+        { ERROR_CODE::NOT_FOUND_MAIL, "NOT_FOUND_MAIL" }
     };
 
     auto i = enums.find(k);
@@ -2765,6 +2771,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_NOT_CHANGED");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_TITLE_TOO_SHORT);
     lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_TOO_SHORT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::MAIL_NOT_EXISTS);
+    lua_setglobal(lua, "ERROR_CODE_MAIL_NOT_EXISTS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_MAIL);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_MAIL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::NONE);
     lua_setglobal(lua, "HEAD_MARKER_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::RED);

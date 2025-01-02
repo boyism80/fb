@@ -79,8 +79,8 @@ async::task<void> board::deserialize(fb::stream_reader<big_endian>& reader)
 
     case BOARD_ACTION::SEND_MAIL:
         this->section  = reader.read<uint16_t>();
-        this->title    = reader.read<std::string>();
         this->user     = reader.read<std::string>();
+        this->title    = reader.read<std::string>();
         this->contents = reader.read<std::string, uint16_t>();
         break;
     }

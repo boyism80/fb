@@ -12,7 +12,7 @@ async::task<void> board_message::serialize(fb::stream_writer<big_endian>& writer
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->mail ? 0x06 : 0x07);
+    writer.write<uint8_t>(this->mail ? 0x07 : 0x06);
     writer.write<uint8_t>(this->success);
     writer.write<std::string>(this->text);
     writer.write<uint8_t>(0x00);

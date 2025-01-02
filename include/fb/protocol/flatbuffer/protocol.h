@@ -14,6 +14,8 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.option_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.articlesummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.article_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.mailsummary_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.mail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.group_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.trace_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clan_generated.h>
@@ -32,10 +34,10 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.makecharacter_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.reservename_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.save_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getarticle_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.getarticlelist_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.writearticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.deletearticle_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.writemail_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.deletemail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setoption_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.entergroup_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcastgroup_generated.h>
@@ -56,6 +58,10 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getarticle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getarticlelist_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.writearticle_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getmail_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getmaillist_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.writemail_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.deletemail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.changepw_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.getuid_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.initcharacter_generated.h>
@@ -86,6 +92,8 @@ namespace fb::protocol::internal
     class Option;
     class ArticleSummary;
     class Article;
+    class MailSummary;
+    class Mail;
     class Group;
     class Trace;
     class Clan;
@@ -109,10 +117,10 @@ namespace fb::protocol::internal::request
     class MakeCharacter;
     class ReserveName;
     class Save;
-    class GetArticle;
-    class GetArticleList;
     class WriteArticle;
     class DeleteArticle;
+    class WriteMail;
+    class DeleteMail;
     class SetOption;
     class EnterGroup;
     class BroadcastGroup;
@@ -136,6 +144,10 @@ namespace fb::protocol::internal::response
     class GetArticle;
     class GetArticleList;
     class WriteArticle;
+    class GetMail;
+    class GetMailList;
+    class WriteMail;
+    class DeleteMail;
     class ChangePw;
     class GetUid;
     class InitCharacter;
@@ -254,6 +266,8 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Spell> { typedef fla
 template <> struct FlatBufferOffset<fb::protocol::internal::Option> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Option> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Article> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::MailSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::MailSummary> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::Mail> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Mail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Group> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Group> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Trace> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Trace> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Clan> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Clan> type; };
@@ -272,10 +286,10 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::Init> { typ
 template <> struct FlatBufferOffset<fb::protocol::internal::request::MakeCharacter> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::MakeCharacter> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::ReserveName> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::ReserveName> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Save> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Save> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::GetArticle> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticle> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::request::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticleList> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::WriteArticle> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::DeleteArticle> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::WriteMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::WriteMail> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::DeleteMail> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetOption> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::EnterGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::EnterGroup> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::BroadcastGroup> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastGroup> type; };
@@ -296,6 +310,10 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::DeleteArti
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetArticle> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetArticle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetArticleList> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetArticleList> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::WriteArticle> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::WriteArticle> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::GetMail> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetMail> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::GetMailList> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetMailList> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::WriteMail> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::WriteMail> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::DeleteMail> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::DeleteMail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::ChangePw> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::ChangePw> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::GetUid> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::GetUid> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::InitCharacter> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::InitCharacter> type; };
@@ -340,6 +358,10 @@ flatbuffers::Offset<fb::protocol::internal::raw::ArticleSummary> build<fb::proto
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Article> build<fb::protocol::internal::Article>(FlatBufferBuilder& builder, const fb::protocol::internal::Article& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::raw::MailSummary> build<fb::protocol::internal::MailSummary>(FlatBufferBuilder& builder, const fb::protocol::internal::MailSummary& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::Mail> build<fb::protocol::internal::Mail>(FlatBufferBuilder& builder, const fb::protocol::internal::Mail& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::internal::Group>(FlatBufferBuilder& builder, const fb::protocol::internal::Group& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Trace> build<fb::protocol::internal::Trace>(FlatBufferBuilder& builder, const fb::protocol::internal::Trace& value);
@@ -376,13 +398,13 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::ReserveName> build<fb:
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protocol::internal::request::Save>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Save& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticle> build<fb::protocol::internal::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetArticle& value);
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticleList> build<fb::protocol::internal::request::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetArticleList& value);
-template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> build<fb::protocol::internal::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteArticle& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteArticle> build<fb::protocol::internal::request::DeleteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeleteArticle& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::WriteMail> build<fb::protocol::internal::request::WriteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteMail& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> build<fb::protocol::internal::request::DeleteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeleteMail& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> build<fb::protocol::internal::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetOption& value);
 template <>
@@ -423,6 +445,14 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::GetArticleList> build<fb::protocol::internal::response::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetArticleList& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::WriteArticle> build<fb::protocol::internal::response::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::response::WriteArticle& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetMail> build<fb::protocol::internal::response::GetMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMail& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetMailList> build<fb::protocol::internal::response::GetMailList>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMailList& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::WriteMail> build<fb::protocol::internal::response::WriteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::WriteMail& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::DeleteMail> build<fb::protocol::internal::response::DeleteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::DeleteMail& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::ChangePw> build<fb::protocol::internal::response::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ChangePw& value);
 template <>
@@ -499,6 +529,8 @@ enum class FlatBufferProtocolType
     Option,
     ArticleSummary,
     Article,
+    MailSummary,
+    Mail,
     Group,
     Trace,
     Clan,
@@ -842,6 +874,97 @@ public:
         return Article(*raw);
     }
 };
+class MailSummary
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::MailSummary;
+
+public:
+    uint32_t id = 0;
+    uint32_t user = 0;
+    uint32_t sender = 0;
+    std::string sender_name;
+    bool read = false;
+    std::string title;
+    std::string created_date;
+
+public:
+    MailSummary() = default;
+
+    MailSummary(const MailSummary& x)
+        : id(x.id), user(x.user), sender(x.sender), sender_name(x.sender_name), read(x.read), title(x.title), created_date(x.created_date)
+    { }
+
+    MailSummary(uint32_t id, uint32_t user, uint32_t sender, const std::string& sender_name, bool read, const std::string& title, const std::string& created_date)
+        : id(id), user(user), sender(sender), sender_name(sender_name), read(read), title(title), created_date(created_date)
+    { }
+
+    MailSummary(const fb::protocol::internal::raw::MailSummary& raw)
+        : id(raw.id()), user(raw.user()), sender(raw.sender()), sender_name(flatbuffers::option::decode(raw.sender_name()->c_str())), read(raw.read()), title(flatbuffers::option::decode(raw.title()->c_str())), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::MailSummary>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static MailSummary Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::raw::GetMailSummary(bytes);
+        return MailSummary(*raw);
+    }
+};
+class Mail
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Mail;
+
+public:
+    uint32_t id = 0;
+    uint32_t user = 0;
+    uint32_t sender = 0;
+    std::string sender_name;
+    std::string title;
+    std::string contents;
+    bool read = false;
+    std::string created_date;
+
+public:
+    Mail() = default;
+
+    Mail(const Mail& x)
+        : id(x.id), user(x.user), sender(x.sender), sender_name(x.sender_name), title(x.title), contents(x.contents), read(x.read), created_date(x.created_date)
+    { }
+
+    Mail(uint32_t id, uint32_t user, uint32_t sender, const std::string& sender_name, const std::string& title, const std::string& contents, bool read, const std::string& created_date)
+        : id(id), user(user), sender(sender), sender_name(sender_name), title(title), contents(contents), read(read), created_date(created_date)
+    { }
+
+    Mail(const fb::protocol::internal::raw::Mail& raw)
+        : id(raw.id()), user(raw.user()), sender(raw.sender()), sender_name(flatbuffers::option::decode(raw.sender_name()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), read(raw.read()), created_date(flatbuffers::option::decode(raw.created_date()->c_str()))
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::Mail>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Mail Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::raw::GetMail(bytes);
+        return Mail(*raw);
+    }
+};
 class Group
 {
 public:
@@ -1027,10 +1150,10 @@ enum class FlatBufferProtocolType
     MakeCharacter,
     ReserveName,
     Save,
-    GetArticle,
-    GetArticleList,
     WriteArticle,
     DeleteArticle,
+    WriteMail,
+    DeleteMail,
     SetOption,
     EnterGroup,
     BroadcastGroup,
@@ -1619,86 +1742,6 @@ public:
         return Save(*raw);
     }
 };
-class GetArticle
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::GetArticle;
-
-public:
-    uint32_t section = 0;
-    uint32_t article = 0;
-
-public:
-    GetArticle() = default;
-
-    GetArticle(const GetArticle& x)
-        : section(x.section), article(x.article)
-    { }
-
-    GetArticle(uint32_t section, uint32_t article)
-        : section(section), article(article)
-    { }
-
-    GetArticle(const fb::protocol::internal::request::raw::GetArticle& raw)
-        : section(raw.section()), article(raw.article())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::GetArticle>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetArticle Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::request::raw::GetGetArticle(bytes);
-        return GetArticle(*raw);
-    }
-};
-class GetArticleList
-{
-public:
-    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::GetArticleList;
-
-public:
-    uint32_t section = 0;
-    uint32_t position = 0;
-
-public:
-    GetArticleList() = default;
-
-    GetArticleList(const GetArticleList& x)
-        : section(x.section), position(x.position)
-    { }
-
-    GetArticleList(uint32_t section, uint32_t position)
-        : section(section), position(position)
-    { }
-
-    GetArticleList(const fb::protocol::internal::request::raw::GetArticleList& raw)
-        : section(raw.section()), position(raw.position())
-    { }
-
-public:
-    std::vector<uint8_t> Serialize() const
-    {
-        auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::request::GetArticleList>(builder, *this));
-        auto buffer = std::vector<uint8_t>(builder.GetSize());
-        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
-        return buffer;
-    }
-
-    static GetArticleList Deserialize(const uint8_t* bytes)
-    {
-        auto raw = fb::protocol::internal::request::raw::GetGetArticleList(bytes);
-        return GetArticleList(*raw);
-    }
-};
 class WriteArticle
 {
 public:
@@ -1779,6 +1822,89 @@ public:
     {
         auto raw = fb::protocol::internal::request::raw::GetDeleteArticle(bytes);
         return DeleteArticle(*raw);
+    }
+};
+class WriteMail
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::WriteMail;
+
+public:
+    uint32_t sender = 0;
+    std::string user;
+    std::string title;
+    std::string contents;
+    uint32_t host = 0;
+
+public:
+    WriteMail() = default;
+
+    WriteMail(const WriteMail& x)
+        : sender(x.sender), user(x.user), title(x.title), contents(x.contents), host(x.host)
+    { }
+
+    WriteMail(uint32_t sender, const std::string& user, const std::string& title, const std::string& contents, uint32_t host)
+        : sender(sender), user(user), title(title), contents(contents), host(host)
+    { }
+
+    WriteMail(const fb::protocol::internal::request::raw::WriteMail& raw)
+        : sender(raw.sender()), user(flatbuffers::option::decode(raw.user()->c_str())), title(flatbuffers::option::decode(raw.title()->c_str())), contents(flatbuffers::option::decode(raw.contents()->c_str())), host(raw.host())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::WriteMail>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static WriteMail Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetWriteMail(bytes);
+        return WriteMail(*raw);
+    }
+};
+class DeleteMail
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::DeleteMail;
+
+public:
+    uint32_t user = 0;
+    uint32_t id = 0;
+
+public:
+    DeleteMail() = default;
+
+    DeleteMail(const DeleteMail& x)
+        : user(x.user), id(x.id)
+    { }
+
+    DeleteMail(uint32_t user, uint32_t id)
+        : user(user), id(id)
+    { }
+
+    DeleteMail(const fb::protocol::internal::request::raw::DeleteMail& raw)
+        : user(raw.user()), id(raw.id())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::DeleteMail>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static DeleteMail Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetDeleteMail(bytes);
+        return DeleteMail(*raw);
     }
 };
 class SetOption
@@ -2205,6 +2331,10 @@ enum class FlatBufferProtocolType
     GetArticle,
     GetArticleList,
     WriteArticle,
+    GetMail,
+    GetMailList,
+    WriteMail,
+    DeleteMail,
     ChangePw,
     GetUid,
     InitCharacter,
@@ -2622,6 +2752,168 @@ public:
         return WriteArticle(*raw);
     }
 };
+class GetMail
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetMail;
+
+public:
+    fb::protocol::internal::Mail mail;
+    uint32_t unread = 0;
+    uint32_t error = 0;
+
+public:
+    GetMail() = default;
+
+    GetMail(const GetMail& x)
+        : mail(x.mail), unread(x.unread), error(x.error)
+    { }
+
+    GetMail(const fb::protocol::internal::Mail& mail, uint32_t unread, uint32_t error)
+        : mail(mail), unread(unread), error(error)
+    { }
+
+    GetMail(const fb::protocol::internal::response::raw::GetMail& raw)
+        : mail(*raw.mail()), unread(raw.unread()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::GetMail>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static GetMail Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetGetMail(bytes);
+        return GetMail(*raw);
+    }
+};
+class GetMailList
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::GetMailList;
+
+public:
+    std::vector<fb::protocol::internal::MailSummary> summary_list = {};
+    uint32_t error = 0;
+
+public:
+    GetMailList() = default;
+
+    GetMailList(const GetMailList& x)
+        : summary_list(x.summary_list), error(x.error)
+    { }
+
+    GetMailList(std::vector<fb::protocol::internal::MailSummary> summary_list, uint32_t error)
+        : summary_list(summary_list), error(error)
+    { }
+
+    GetMailList(const fb::protocol::internal::response::raw::GetMailList& raw)
+        : summary_list(unpack<fb::protocol::internal::MailSummary>(raw.summary_list())), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::GetMailList>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static GetMailList Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetGetMailList(bytes);
+        return GetMailList(*raw);
+    }
+};
+class WriteMail
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::WriteMail;
+
+public:
+    fb::protocol::internal::Mail mail;
+    uint32_t host = 0;
+    uint32_t unread = 0;
+    uint32_t error = 0;
+
+public:
+    WriteMail() = default;
+
+    WriteMail(const WriteMail& x)
+        : mail(x.mail), host(x.host), unread(x.unread), error(x.error)
+    { }
+
+    WriteMail(const fb::protocol::internal::Mail& mail, uint32_t host, uint32_t unread, uint32_t error)
+        : mail(mail), host(host), unread(unread), error(error)
+    { }
+
+    WriteMail(const fb::protocol::internal::response::raw::WriteMail& raw)
+        : mail(*raw.mail()), host(raw.host()), unread(raw.unread()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::WriteMail>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static WriteMail Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetWriteMail(bytes);
+        return WriteMail(*raw);
+    }
+};
+class DeleteMail
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::DeleteMail;
+
+public:
+    uint32_t error = 0;
+
+public:
+    DeleteMail() = default;
+
+    DeleteMail(const DeleteMail& x)
+        : error(x.error)
+    { }
+
+    DeleteMail(uint32_t error)
+        : error(error)
+    { }
+
+    DeleteMail(const fb::protocol::internal::response::raw::DeleteMail& raw)
+        : error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::DeleteMail>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static DeleteMail Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetDeleteMail(bytes);
+        return DeleteMail(*raw);
+    }
+};
 class ChangePw
 {
 public:
@@ -2793,20 +3085,21 @@ public:
     std::vector<fb::protocol::internal::Spell> spells = {};
     fb::protocol::internal::Option option;
     std::vector<fb::protocol::internal::Trace> traces = {};
+    uint32_t mail = 0;
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), group(x.group), clan(x.clan), items(x.items), spells(x.spells), option(x.option), traces(x.traces)
+        : character(x.character), group(x.group), clan(x.clan), items(x.items), spells(x.spells), option(x.option), traces(x.traces), mail(x.mail)
     { }
 
-    Init(const fb::protocol::internal::Character& character, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Trace> traces)
-        : character(character), group(group), clan(clan), items(items), spells(spells), option(option), traces(traces)
+    Init(const fb::protocol::internal::Character& character, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Trace> traces, uint32_t mail)
+        : character(character), group(group), clan(clan), items(items), spells(spells), option(option), traces(traces), mail(mail)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), traces(unpack<fb::protocol::internal::Trace>(raw.traces()))
+        : character(*raw.character()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), traces(unpack<fb::protocol::internal::Trace>(raw.traces())), mail(raw.mail())
     { }
 
 public:
@@ -3613,6 +3906,31 @@ flatbuffers::Offset<fb::protocol::internal::raw::Article> build<fb::protocol::in
             flatbuffers::build<std::string>(builder, value.created_date));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::raw::MailSummary> build<fb::protocol::internal::MailSummary>(FlatBufferBuilder& builder, const fb::protocol::internal::MailSummary& value)
+{
+    return fb::protocol::internal::raw::CreateMailSummary(builder,
+            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint32_t>(builder, value.sender),
+            flatbuffers::build<std::string>(builder, value.sender_name),
+            flatbuffers::build<bool>(builder, value.read),
+            flatbuffers::build<std::string>(builder, value.title),
+            flatbuffers::build<std::string>(builder, value.created_date));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::Mail> build<fb::protocol::internal::Mail>(FlatBufferBuilder& builder, const fb::protocol::internal::Mail& value)
+{
+    return fb::protocol::internal::raw::CreateMail(builder,
+            flatbuffers::build<uint32_t>(builder, value.id),
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint32_t>(builder, value.sender),
+            flatbuffers::build<std::string>(builder, value.sender_name),
+            flatbuffers::build<std::string>(builder, value.title),
+            flatbuffers::build<std::string>(builder, value.contents),
+            flatbuffers::build<bool>(builder, value.read),
+            flatbuffers::build<std::string>(builder, value.created_date));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::internal::Group>(FlatBufferBuilder& builder, const fb::protocol::internal::Group& value)
 {
     return fb::protocol::internal::raw::CreateGroup(builder,
@@ -3759,20 +4077,6 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protoc
             flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticle> build<fb::protocol::internal::request::GetArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetArticle& value)
-{
-    return fb::protocol::internal::request::raw::CreateGetArticle(builder,
-            flatbuffers::build<uint32_t>(builder, value.section),
-            flatbuffers::build<uint32_t>(builder, value.article));
-}
-template <>
-flatbuffers::Offset<fb::protocol::internal::request::raw::GetArticleList> build<fb::protocol::internal::request::GetArticleList>(FlatBufferBuilder& builder, const fb::protocol::internal::request::GetArticleList& value)
-{
-    return fb::protocol::internal::request::raw::CreateGetArticleList(builder,
-            flatbuffers::build<uint32_t>(builder, value.section),
-            flatbuffers::build<uint32_t>(builder, value.position));
-}
-template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> build<fb::protocol::internal::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteArticle& value)
 {
     return fb::protocol::internal::request::raw::CreateWriteArticle(builder,
@@ -3787,6 +4091,23 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteArticle> build<f
     return fb::protocol::internal::request::raw::CreateDeleteArticle(builder,
             flatbuffers::build<uint32_t>(builder, value.id),
             flatbuffers::build<uint32_t>(builder, value.user));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::WriteMail> build<fb::protocol::internal::request::WriteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteMail& value)
+{
+    return fb::protocol::internal::request::raw::CreateWriteMail(builder,
+            flatbuffers::build<uint32_t>(builder, value.sender),
+            flatbuffers::build<std::string>(builder, value.user),
+            flatbuffers::build<std::string>(builder, value.title),
+            flatbuffers::build<std::string>(builder, value.contents),
+            flatbuffers::build<uint32_t>(builder, value.host));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::DeleteMail> build<fb::protocol::internal::request::DeleteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::request::DeleteMail& value)
+{
+    return fb::protocol::internal::request::raw::CreateDeleteMail(builder,
+            flatbuffers::build<uint32_t>(builder, value.user),
+            flatbuffers::build<uint32_t>(builder, value.id));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::SetOption> build<fb::protocol::internal::request::SetOption>(FlatBufferBuilder& builder, const fb::protocol::internal::request::SetOption& value)
@@ -3937,6 +4258,36 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::WriteArticle> build<f
             flatbuffers::build<bool>(builder, value.success));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetMail> build<fb::protocol::internal::response::GetMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMail& value)
+{
+    return fb::protocol::internal::response::raw::CreateGetMail(builder,
+            flatbuffers::build<fb::protocol::internal::Mail>(builder, value.mail),
+            flatbuffers::build<uint32_t>(builder, value.unread),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::GetMailList> build<fb::protocol::internal::response::GetMailList>(FlatBufferBuilder& builder, const fb::protocol::internal::response::GetMailList& value)
+{
+    return fb::protocol::internal::response::raw::CreateGetMailList(builder,
+            flatbuffers::build<std::vector<fb::protocol::internal::MailSummary>>(builder, value.summary_list),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::WriteMail> build<fb::protocol::internal::response::WriteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::WriteMail& value)
+{
+    return fb::protocol::internal::response::raw::CreateWriteMail(builder,
+            flatbuffers::build<fb::protocol::internal::Mail>(builder, value.mail),
+            flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<uint32_t>(builder, value.unread),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::DeleteMail> build<fb::protocol::internal::response::DeleteMail>(FlatBufferBuilder& builder, const fb::protocol::internal::response::DeleteMail& value)
+{
+    return fb::protocol::internal::response::raw::CreateDeleteMail(builder,
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::ChangePw> build<fb::protocol::internal::response::ChangePw>(FlatBufferBuilder& builder, const fb::protocol::internal::response::ChangePw& value)
 {
     return fb::protocol::internal::response::raw::CreateChangePw(builder,
@@ -3972,7 +4323,8 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
             flatbuffers::build<fb::protocol::internal::Option>(builder, value.option),
-            flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces));
+            flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces),
+            flatbuffers::build<uint32_t>(builder, value.mail));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::MakeCharacter> build<fb::protocol::internal::response::MakeCharacter>(FlatBufferBuilder& builder, const fb::protocol::internal::response::MakeCharacter& value)
