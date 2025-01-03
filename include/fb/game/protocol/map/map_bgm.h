@@ -19,7 +19,7 @@ public:
 public:
 #ifndef BOT
     const uint16_t bgm;
-    const uint8_t        volume;
+    const uint8_t  volume;
 #else
 
 #endif

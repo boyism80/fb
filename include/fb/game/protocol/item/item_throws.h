@@ -8,8 +8,10 @@
 #include <fb/game/character.h>
 #endif
 
-using namespace fb::model::enum_value;
+#ifndef BOT
 using namespace fb::game;
+#endif
+using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
 
@@ -40,8 +42,8 @@ public:
 
 public:
 #ifndef BOT
-    const character&                 ch;
-    const item&                      item;
+    const fb::game::character&       ch;
+    const fb::game::item&            item;
     const fb::model::point<uint16_t> to;
 #else
 

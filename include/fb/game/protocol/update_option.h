@@ -15,7 +15,7 @@ public:
 
 public:
     OPTION option;
-    bool    ride = false;
+    bool   ride = false;
 
 public:
     update_option() = default;

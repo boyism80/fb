@@ -87,7 +87,10 @@ public:
      * @param[in]  model     The model
      * @param[in]  opened    Indicates if opened
      */
-    void add(const fb::model::point16_t& position, const fb::model::point16_t& pivot, const fb::model::door& model, bool opened);
+    void add(const fb::model::point16_t& position,
+             const fb::model::point16_t& pivot,
+             const fb::model::door&      model,
+             bool                        opened);
 
     /**
      * @brief      Searches for the first match.

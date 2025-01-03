@@ -51,9 +51,9 @@ public:
     const fb::model::point<uint16_t> position;
     const DIRECTION                  direction;
 #else
-    uint32_t        id;
-    point<uint16_t> position;
-    DIRECTION       direction;
+    uint32_t                   id;
+    fb::model::point<uint16_t> position;
+    DIRECTION                  direction;
 #endif
 
 public:
