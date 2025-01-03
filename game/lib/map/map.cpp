@@ -39,7 +39,7 @@ fb::game::map::map(fb::game::context&    context,
         this->_tiles[i].object = reader.read<uint16_t>();
     }
 
-    this->_sectors = std::make_unique<sectors>(this->_size, size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
+    this->_sectors = std::make_unique<sectors>(this->_size, fb::model::size16_t(MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT));
     this->update_door();
 }
 
@@ -48,7 +48,7 @@ fb::game::map::~map()
 
 void fb::game::map::update_door()
 {
-    auto pivot = point16_t{0, 0};
+    auto pivot = fb::model::point16_t{0, 0};
     while (pivot.y < this->_size.height)
     {
         pivot.x = 0;
@@ -62,7 +62,10 @@ void fb::game::map::update_door()
                 {
                     for (uint16_t i = 0; i < door.width; i++)
                     {
-                        this->doors.add(point16_t{uint16_t(pivot.x + i), uint16_t(pivot.y)}, pivot, door, opened);
+                        this->doors.add(fb::model::point16_t{uint16_t(pivot.x + i), uint16_t(pivot.y)},
+                                        pivot,
+                                        door,
+                                        opened);
                     }
                     found    = true;
                     pivot.x += door.width;
@@ -79,17 +82,17 @@ void fb::game::map::update_door()
     }
 }
 
-uint64_t fb::game::map::index(const point16_t& p) const
+uint64_t fb::game::map::index(const fb::model::point16_t& p) const
 {
     return (uint64_t)p.y * (uint64_t)this->_size.width + (uint64_t)p.x;
 }
 
-point16_t fb::game::map::point(uint64_t i) const
+fb::model::point16_t fb::game::map::point(uint64_t i) const
 {
     auto y = uint16_t(i / this->_size.width);
     auto x = uint16_t(i % this->_size.width);
 
-    return point16_t(x, y);
+    return fb::model::point16_t(x, y);
 }
 
 bool fb::game::map::blocked(uint16_t x, uint16_t y) const
@@ -138,7 +141,7 @@ uint16_t fb::game::map::height() const
     return this->_size.height;
 }
 
-size16_t fb::game::map::size() const
+fb::model::size16_t fb::game::map::size() const
 {
     return this->_size;
 }
@@ -153,12 +156,12 @@ bool fb::game::map::loaded() const
     return this->_size.width > 0 && this->_size.height > 0;
 }
 
-bool fb::game::map::existable(const point16_t position) const
+bool fb::game::map::existable(const fb::model::point16_t position) const
 {
     return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;
 }
 
-bool fb::game::map::movable(const point16_t position) const
+bool fb::game::map::movable(const fb::model::point16_t position) const
 {
     if (this->existable(position) == false)
         return false;
@@ -183,7 +186,7 @@ bool fb::game::map::movable(const point16_t position) const
 
 bool fb::game::map::movable(const object& object, DIRECTION direction) const
 {
-    point16_t position = object.position();
+    fb::model::point16_t position = object.position();
 
     switch (direction)
     {
@@ -215,7 +218,7 @@ bool fb::game::map::movable_forward(const object& object, uint16_t step) const
     return this->movable(object, object.direction());
 }
 
-const fb::model::warp* fb::game::map::warpable(const point16_t& position) const
+const fb::model::warp* fb::game::map::warpable(const fb::model::point16_t& position) const
 {
     auto& warps = this->context.model.warp;
     if (warps.contains(this->model.id) == false)
@@ -250,7 +253,7 @@ bool fb::game::map::activated() const
     return this->_sectors->activated();
 }
 
-std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::map::nears(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     if (this->_sectors == nullptr)
         return std::vector<fb::game::object*>{};
@@ -258,7 +261,7 @@ std::vector<fb::game::object*> fb::game::map::nears(const point16_t& pivot, OBJE
         return this->_sectors->objects(pivot, type);
 }
 
-std::vector<fb::game::object*> fb::game::map::belows(const point16_t& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> fb::game::map::belows(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     auto objects = std::vector<fb::game::object*>();
     try

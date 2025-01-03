@@ -6,7 +6,7 @@
 
 using namespace std::chrono_literals;
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a character.
@@ -19,10 +19,10 @@ class character;
 class rezen
 {
 private:
-    fb::game::context&          _context;
-    const fb::model::mob_spawn& _model;
-    uint16_t                    _count = 0;
-    std::optional<datetime>     _respawn_time;
+    fb::game::context&                 _context;
+    const fb::model::mob_spawn&        _model;
+    uint16_t                           _count = 0;
+    std::optional<fb::model::datetime> _respawn_time;
 
 public:
     /**
@@ -78,11 +78,11 @@ public:
     };
 
 private:
-    listener*        _listener = nullptr;
-    datetime         _action_time;
-    fb::game::rezen* _rezen         = nullptr;
-    fb::game::life*  _target        = nullptr;
-    lua::context*    _attack_thread = nullptr;
+    listener*           _listener = nullptr;
+    fb::model::datetime _action_time;
+    fb::game::rezen*    _rezen         = nullptr;
+    fb::game::life*     _target        = nullptr;
+    lua::context*       _attack_thread = nullptr;
 
 public:
     /**
@@ -132,13 +132,13 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    const datetime& action_time() const;
+    const fb::model::datetime& action_time() const;
     /**
      * @brief      { function_description }
      *
      * @param[in]  dt    { parameter_description }
      */
-    void action_time(const datetime& dt);
+    void action_time(const fb::model::datetime& dt);
     /**
      * @brief      { function_description }
      *
@@ -162,7 +162,7 @@ public:
      *
      * @param[in]  now   The now
      */
-    void AI(const datetime& now);
+    void AI(const fb::model::datetime& now);
     /**
      * @brief      { function_description }
      *
@@ -210,6 +210,6 @@ public:
 struct mob::listener : public virtual fb::game::life::listener
 { };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__MOB_H__

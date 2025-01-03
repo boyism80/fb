@@ -21,14 +21,14 @@ public:
 public:
 #ifndef BOT
     const fb::game::board::article& value;
-    const BOARD_BUTTON_ENABLE       button_flags;
+    const BOARD_BUTTON_ENABLE       flag;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    board_article(const fb::game::board::article& value, BOARD_BUTTON_ENABLE button_flags);
+    board_article(const fb::game::board::article& value, BOARD_BUTTON_ENABLE flag);
 #else
 
 #endif

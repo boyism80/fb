@@ -2,84 +2,75 @@
 #include <fb/game/life.h>
 #include <fb/game/map.h>
 
-fb::game::life::life(fb::game::context& context, const fb::model::life& model, const initial_params& params) :
+using namespace fb::game;
+
+life::life(fb::game::context& context, const fb::model::life& model, const initial_params& params) :
     object(context, model, params),
     _hp(params.hp),
     _mp(params.mp),
     spells(*this)
 { }
 
-fb::game::life::~life()
+life::~life()
 { }
 
-uint32_t fb::game::life::heal(uint32_t value, fb::game::object* from)
+uint32_t life::heal(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
 
     auto before = this->_hp;
     this->hp(this->_hp + std::min(value, this->base_hp() - this->_hp));
-
-    auto listener = this->get_listener<fb::game::life>();
-    if (listener != nullptr)
-        listener->on_hp_changed(*this, before, this->_hp, false, from);
-
+    this->update_hp(this->_hp - before, false);
     return this->_hp - before;
 }
 
-uint32_t fb::game::life::damage(uint32_t value, fb::game::object* from, bool critical)
+uint32_t life::damage(uint32_t value, fb::game::object* from, bool critical)
 {
     this->assert_thread();
 
     auto before = this->_hp;
     this->hp(this->_hp - std::min(value, this->_hp));
-
-    auto listener = this->get_listener<fb::game::life>();
-    if (listener != nullptr)
-        listener->on_hp_changed(*this, before, this->_hp, critical, from);
-
-    if (this->_hp == 0)
-        this->kill(from, DESTROY_TYPE::DEAD);
-
+    this->update_hp(before - this->_hp, critical);
     return before - this->_hp;
 }
 
-uint32_t fb::game::life::mp_up(uint32_t value, fb::game::object* from)
+uint32_t life::mp_up(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
 
     auto before = this->_mp;
     this->mp(this->_mp + std::min(value, this->base_mp() - this->_mp));
-
-    auto listener = this->get_listener<fb::game::life>();
-    if (listener != nullptr)
-        listener->on_mp_changed(*this, before, this->_mp, false, from);
-
     return this->_mp - before;
 }
 
-uint32_t fb::game::life::mp_down(uint32_t value, fb::game::object* from)
+uint32_t life::mp_down(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
 
     auto before = this->_mp;
     this->mp(this->_mp - std::min(value, this->_mp));
-
-    auto listener = this->get_listener<fb::game::life>();
-    if (listener != nullptr)
-        listener->on_mp_changed(*this, before, this->_mp, false, from);
-
     return before - this->_mp;
 }
 
-void fb::game::life::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
+void life::update(STATE_LEVEL value)
+{ }
+
+void life::update_hp(uint32_t diff, bool critical)
+{
+    auto listener = this->get_listener<life>();
+    if (listener != nullptr)
+        listener->on_update_hp(*this, diff, critical);
+}
+
+void life::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
 {
     this->_hp     = 0;
-    auto listener = this->get_listener<fb::game::life>();
+    auto listener = this->get_listener<life>();
     if (listener != nullptr)
         listener->on_dead(*this, from);
 }
 
-void fb::game::life::attack()
+void life::attack()
 {
     this->assert_thread();
 
@@ -89,92 +80,86 @@ void fb::game::life::attack()
     if (this->alive() == false)
         return;
 
-    auto listener = this->get_listener<fb::game::life>();
+    auto listener = this->get_listener<life>();
     if (listener != nullptr)
         listener->on_attack(*this);
 }
 
-uint32_t fb::game::life::hp() const
+uint32_t life::hp() const
 {
     this->assert_thread();
 
     return this->_hp;
 }
 
-void fb::game::life::hp(uint32_t value)
+void life::hp(uint32_t value)
 {
     this->assert_thread();
 
     auto before = this->_hp;
     this->_hp   = value;
-
-    auto listener = this->get_listener<fb::game::life>();
-    if (listener != nullptr)
-        listener->on_hp_changed(*this, before, this->_hp, false, nullptr);
+    this->update(STATE_LEVEL::HP_MP);
 }
 
-uint32_t fb::game::life::mp() const
+uint32_t life::mp() const
 {
     this->assert_thread();
 
     return this->_mp;
 }
 
-void fb::game::life::mp(uint32_t value)
+void life::mp(uint32_t value)
 {
     this->assert_thread();
 
     auto before = this->_mp;
     this->_mp   = value;
-
-    auto listener = this->get_listener<fb::game::life>();
-    if (listener != nullptr)
-        listener->on_mp_changed(*this, before, this->_mp, false, nullptr);
+    this->update(STATE_LEVEL::HP_MP);
 }
 
-uint32_t fb::game::life::base_hp() const
+uint32_t life::base_hp() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).hp;
 }
 
-uint32_t fb::game::life::base_mp() const
+uint32_t life::base_mp() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).mp;
 }
 
-uint32_t fb::game::life::exp() const
+uint32_t life::exp() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).exp;
 }
 
-uint32_t fb::game::life::defensive_physical() const
+uint32_t life::defensive_physical() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).defensive_physical;
 }
 
-uint32_t fb::game::life::defensive_magical() const
+uint32_t life::defensive_magical() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).defensive_magical;
 }
 
-CONDITION fb::game::life::condition() const
+CONDITION life::condition() const
 {
     this->assert_thread();
 
     return this->_condition;
 }
 
-CONDITION fb::game::life::condition_add(CONDITION value)
+CONDITION life::condition_add(CONDITION value)
 {
     this->assert_thread();
 
@@ -182,7 +167,7 @@ CONDITION fb::game::life::condition_add(CONDITION value)
     return this->_condition;
 }
 
-CONDITION fb::game::life::condition_remove(CONDITION value)
+CONDITION life::condition_remove(CONDITION value)
 {
     this->assert_thread();
 
@@ -190,21 +175,21 @@ CONDITION fb::game::life::condition_remove(CONDITION value)
     return this->_condition;
 }
 
-bool fb::game::life::condition_contains(CONDITION value) const
+bool life::condition_contains(CONDITION value) const
 {
     this->assert_thread();
 
     return uint32_t(this->_condition) & uint32_t(value);
 }
 
-bool fb::game::life::alive() const
+bool life::alive() const
 {
     this->assert_thread();
 
     return this->_hp != 0;
 }
 
-bool fb::game::life::active(const fb::model::spell& spell, const std::string& message)
+bool life::active(const fb::model::spell& spell, const std::string& message)
 {
     this->assert_thread();
 
@@ -221,7 +206,7 @@ bool fb::game::life::active(const fb::model::spell& spell, const std::string& me
     return true;
 }
 
-bool fb::game::life::active(const fb::model::spell& spell, uint32_t fd)
+bool life::active(const fb::model::spell& spell, uint32_t fd)
 {
     this->assert_thread();
 
@@ -235,7 +220,7 @@ bool fb::game::life::active(const fb::model::spell& spell, uint32_t fd)
     return this->active(spell, *to);
 }
 
-bool fb::game::life::active(const fb::model::spell& spell, fb::game::object& to)
+bool life::active(const fb::model::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
 
@@ -262,7 +247,7 @@ bool fb::game::life::active(const fb::model::spell& spell, fb::game::object& to)
     return true;
 }
 
-bool fb::game::life::active(const fb::model::spell& spell)
+bool life::active(const fb::model::spell& spell)
 {
     this->assert_thread();
 
@@ -279,7 +264,14 @@ bool fb::game::life::active(const fb::model::spell& spell)
     return true;
 }
 
-bool fb::game::life::calculate_critical(fb::game::life& you) const
+void life::action(ACTION action, DURATION duration, uint8_t sound)
+{
+    auto listener = this->get_listener<life>();
+    if (listener != nullptr)
+        listener->on_action(*this, action, duration, sound);
+}
+
+bool life::calculate_critical(life& you) const
 {
     this->assert_thread();
 
@@ -290,7 +282,7 @@ bool fb::game::life::calculate_critical(fb::game::life& you) const
 #endif
 }
 
-bool fb::game::life::calculate_miss(fb::game::life& you) const
+bool life::calculate_miss(life& you) const
 {
     this->assert_thread();
 
@@ -301,7 +293,7 @@ bool fb::game::life::calculate_miss(fb::game::life& you) const
 #endif
 }
 
-uint32_t fb::game::life::calculate_damage(uint32_t value, const fb::game::life& life, bool critical) const
+uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical) const
 {
     this->assert_thread();
 

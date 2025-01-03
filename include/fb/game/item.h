@@ -60,7 +60,7 @@ public:
     static const conditions DEFAULT_CONDITION;
 
 public:
-    using nullable_time = std::optional<datetime>;
+    using nullable_time = std::optional<fb::model::datetime>;
 
 protected:
     uint16_t      _count        = 0;
@@ -91,9 +91,9 @@ public:
     virtual ~item();
 
 public:
-    virtual async::task<bool> map(fb::game::map*   map,
-                                  const point16_t& position     = point16_t{0, 0},
-                                  DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) override;
+    virtual async::task<bool> map(fb::game::map*              map,
+                                  const fb::model::point16_t& position     = fb::model::point16_t{0, 0},
+                                  DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT) override;
 
     /**
      * @brief      { function_description }
@@ -304,7 +304,7 @@ struct item::listener : public virtual fb::game::object::listener
      * @param      item  The item
      * @param[in]  to    { parameter_description }
      */
-    virtual void on_item_throws(character& me, item& item, const point16_t& to) = 0;
+    virtual void on_item_throws(character& me, item& item, const fb::model::point16_t& to) = 0;
 };
 
 /**

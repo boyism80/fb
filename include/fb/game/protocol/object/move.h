@@ -7,7 +7,6 @@
 #include <fb/game/object.h>
 #endif
 
-using namespace fb::model;
 using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
@@ -48,9 +47,9 @@ public:
 
 public:
 #ifndef BOT
-    const uint32_t        id;
-    const point<uint16_t> position;
-    const DIRECTION       direction;
+    const uint32_t                   id;
+    const fb::model::point<uint16_t> position;
+    const DIRECTION                  direction;
 #else
     uint32_t        id;
     point<uint16_t> position;
@@ -59,8 +58,8 @@ public:
 
 public:
 #ifndef BOT
-    move(const fb::game::object& object, const point<uint16_t>& position);
-    move(const uint32_t id, DIRECTION direction, const point<uint16_t>& position);
+    move(const fb::game::object& object, const fb::model::point<uint16_t>& position);
+    move(const uint32_t id, DIRECTION direction, const fb::model::point<uint16_t>& position);
 #else
     move() = default;
 #endif

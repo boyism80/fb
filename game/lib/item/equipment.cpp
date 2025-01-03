@@ -153,11 +153,11 @@ std::string fb::game::equipment::tip_message() const
         switch (dsl.header)
         {
         case DSL::class_t:
-            cls = dsl::class_t(dsl.params).value;
+            cls = fb::model::dsl::class_t(dsl.params).value;
             break;
 
         case DSL::level:
-            level = dsl::level(dsl.params).min.value_or(0);
+            level = fb::model::dsl::level(dsl.params).min.value_or(0);
             break;
         }
     }

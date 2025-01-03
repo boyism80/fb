@@ -3,15 +3,17 @@
 #include <fb/game/mob.h>
 #include <fb/game/sector.h>
 
-fb::game::sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) :
+using namespace fb::game;
+
+sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) :
     _id(id),
     _state_changed(state_changed)
 { }
 
-fb::game::sector::~sector()
+sector::~sector()
 { }
 
-void fb::game::sector::push(fb::game::object& object)
+void sector::push(object& object)
 {
     this->push_back(&object);
     if (object.is(OBJECT_TYPE::CHARACTER))
@@ -25,7 +27,7 @@ void fb::game::sector::push(fb::game::object& object)
 }
 
 // sector
-void fb::game::sector::erase(fb::game::object& object)
+void sector::erase(object& object)
 {
     auto found = std::find(this->begin(), this->end(), &object);
     if (found == this->end())
@@ -45,18 +47,18 @@ void fb::game::sector::erase(fb::game::object& object)
     }
 }
 
-uint32_t fb::game::sector::id() const
+uint32_t sector::id() const
 {
     return this->_id;
 }
 
-bool fb::game::sector::activated() const
+bool sector::activated() const
 {
     return this->_activated;
 }
 
 // sectors
-fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
+sectors::sectors(const fb::model::size16_t& map_size, const fb::model::size16_t& size) :
     _map_size(map_size),
     _size(size),
     _rows((map_size.height / size.height) + ((map_size.height % size.height) ? 1 : 0)),
@@ -64,7 +66,7 @@ fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
     _count(_rows * _columns)
 {
     auto& cache    = this->_activated_cache;
-    auto  callback = [&cache](fb::game::sector& x) {
+    auto  callback = [&cache](sector& x) {
         if (x.activated())
             cache[x.id()] = &x;
         else
@@ -74,16 +76,16 @@ fb::game::sectors::sectors(const size16_t& map_size, const size16_t& size) :
         this->_pool.push_back(std::make_unique<sector>(i, callback));
 }
 
-uint32_t fb::game::sectors::index(const point16_t& position) const
+uint32_t sectors::index(const fb::model::point16_t& position) const
 {
     auto x = std::max(0, std::min((int)position.x, this->_map_size.width - 1));
     auto y = std::max(0, std::min((int)position.y, this->_map_size.height - 1));
     return (y / this->_size.height) * this->_columns + (x / this->_size.width);
 }
 
-std::set<fb::game::sector*> fb::game::sectors::activated_sectors() const
+std::set<sector*> sectors::activated_sectors() const
 {
-    auto sectors = std::set<fb::game::sector*>();
+    auto sectors = std::set<sector*>();
     for (auto& x : this->_activated_cache)
     {
         auto&& nears = this->nears(x.first);
@@ -93,13 +95,13 @@ std::set<fb::game::sector*> fb::game::sectors::activated_sectors() const
     return sectors;
 }
 
-fb::game::sector* fb::game::sectors::at(const point16_t& position) const
+sector* sectors::at(const fb::model::point16_t& position) const
 {
     auto index = this->index(position);
     return this->at(index);
 }
 
-fb::game::sector* fb::game::sectors::at(uint32_t index) const
+sector* sectors::at(uint32_t index) const
 {
     if (index > this->_pool.size() - 1)
         return nullptr;
@@ -107,7 +109,7 @@ fb::game::sector* fb::game::sectors::at(uint32_t index) const
     return this->_pool[index].get();
 }
 
-uint32_t fb::game::sectors::push(fb::game::object& object)
+uint32_t sectors::push(object& object)
 {
     auto index  = this->index(object.position());
     auto sector = this->at(index);
@@ -116,9 +118,9 @@ uint32_t fb::game::sectors::push(fb::game::object& object)
     return index;
 }
 
-std::vector<fb::game::sector*> fb::game::sectors::nears(uint32_t index) const
+std::vector<sector*> sectors::nears(uint32_t index) const
 {
-    auto sectors = std::vector<fb::game::sector*>();
+    auto sectors = std::vector<sector*>();
     auto center  = this->at(index);
     if (center == nullptr)
         throw std::runtime_error("center sector cannot be null");
@@ -187,15 +189,15 @@ std::vector<fb::game::sector*> fb::game::sectors::nears(uint32_t index) const
     return std::move(sectors);
 }
 
-std::vector<fb::game::sector*> fb::game::sectors::nears(const point16_t& pivot) const
+std::vector<sector*> sectors::nears(const fb::model::point16_t& pivot) const
 {
     return this->nears(this->index(pivot));
 }
 
-std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot, OBJECT_TYPE type) const
+std::vector<object*> sectors::objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     auto&& sectors = this->nears(pivot);
-    auto   objects = std::vector<fb::game::object*>();
+    auto   objects = std::vector<object*>();
     for (auto sector : sectors)
     {
         for (auto obj : *sector)
@@ -211,7 +213,7 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
     }
     else
     {
-        auto filtered = std::vector<fb::game::object*>();
+        auto filtered = std::vector<object*>();
         std::copy_if(objects.begin(), objects.end(), std::back_inserter(filtered), [type](auto x) {
             return x->is(type);
         });
@@ -219,9 +221,9 @@ std::vector<fb::game::object*> fb::game::sectors::objects(const point16_t& pivot
     }
 }
 
-std::vector<fb::game::object*> fb::game::sectors::activated_objects(OBJECT_TYPE type) const
+std::vector<object*> sectors::activated_objects(OBJECT_TYPE type) const
 {
-    auto result = std::vector<fb::game::object*>();
+    auto result = std::vector<object*>();
     for (auto& sector : this->activated_sectors())
     {
         std::copy_if(sector->begin(), sector->end(), std::back_inserter(result), [type](auto x) {
@@ -232,7 +234,7 @@ std::vector<fb::game::object*> fb::game::sectors::activated_objects(OBJECT_TYPE 
     return std::move(result);
 }
 
-bool fb::game::sectors::activated() const
+bool sectors::activated() const
 {
     return this->_activated_cache.size() > 0;
 }

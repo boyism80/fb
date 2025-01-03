@@ -52,7 +52,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     {
         writer.write<std::string>("그룹 없음.");
     }
-    writer.write<uint8_t>(this->ch.option(SETTING::GROUP));
+    writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
 
     uint32_t remained_exp = this->ch.experience_remained();
     writer.write<uint32_t>(remained_exp);
@@ -80,8 +80,8 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     }
 
     writer.write<uint8_t>(0x00); // fixed
-    writer.write<uint8_t>(this->ch.option(SETTING::TRADE));
-    writer.write<uint8_t>(this->ch.option(SETTING::PK_PROTECT));
+    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
+    writer.write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
 
     writer.write<uint8_t>((uint8_t)this->ch.traces.size());
     for (auto& [_, trace] : this->ch.traces)

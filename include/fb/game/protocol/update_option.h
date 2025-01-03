@@ -14,7 +14,7 @@ public:
     inline static uint8_t header = 0x1B;
 
 public:
-    SETTING option;
+    OPTION option;
     bool    ride = false;
 
 public:

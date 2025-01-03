@@ -8,7 +8,6 @@
 #include <fb/game/map.h>
 #endif
 
-using namespace fb::model;
 using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::response {

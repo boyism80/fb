@@ -72,7 +72,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
 {
     try
     {
-        if (me.option(SETTING::GROUP) == false)
+        if (me.option(OPTION::GROUP) == false)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
         auto&& resp = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(

@@ -87,7 +87,7 @@ public:
      * @param[in]  model     The model
      * @param[in]  opened    Indicates if opened
      */
-    void add(const point16_t& position, const point16_t& pivot, const fb::model::door& model, bool opened);
+    void add(const fb::model::point16_t& position, const fb::model::point16_t& pivot, const fb::model::door& model, bool opened);
 
     /**
      * @brief      Searches for the first match.
@@ -105,7 +105,7 @@ public:
 class door_container::iterator : public door_container::base_iterator
 {
 public:
-    std::optional<std::pair<point16_t, door&>> pair;
+    std::optional<std::pair<fb::model::point16_t, door&>> pair;
 
 public:
     /**
@@ -126,7 +126,7 @@ public:
      *
      * @return     The result of the multiplication
      */
-    std::pair<point16_t, door&> operator* ();
+    std::pair<fb::model::point16_t, door&> operator* ();
 };
 
 /**
@@ -135,7 +135,7 @@ public:
 class door_container::const_iterator : public door_container::const_base_iterator
 {
 public:
-    const std::optional<std::pair<point16_t, door&>> pair;
+    const std::optional<std::pair<fb::model::point16_t, door&>> pair;
 
 public:
     /**
@@ -156,7 +156,7 @@ public:
      *
      * @return     The result of the multiplication
      */
-    const std::pair<point16_t, door&> operator* () const;
+    const std::pair<fb::model::point16_t, door&> operator* () const;
 };
 
 } // namespace fb::game

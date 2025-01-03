@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::map& map;
+    const uint16_t bgm;
     const uint8_t        volume;
 #else
 
@@ -26,7 +26,7 @@ public:
 
 public:
 #ifndef BOT
-    map_bgm(const fb::game::map& map, uint8_t volume = 100);
+    map_bgm(uint16_t bgm, uint8_t volume = 100);
 #else
     map_bgm() = default;
 #endif

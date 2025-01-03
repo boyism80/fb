@@ -13,11 +13,11 @@ async::task<void> option::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>(this->ch.option(SETTING::WEATHER_EFFECT)); // weather
-    writer.write<uint8_t>(this->ch.option(SETTING::MAGIC_EFFECT));   // magic effect
-    writer.write<uint8_t>(this->ch.option(SETTING::ROAR_WORLDS));    // listen news
-    writer.write<uint8_t>(this->ch.option(SETTING::FAST_MOVE));      // fast move
-    writer.write<uint8_t>(this->ch.option(SETTING::EFFECT_SOUND));   // effect sound
+    writer.write<uint8_t>(this->ch.option(OPTION::WEATHER_EFFECT)); // weather
+    writer.write<uint8_t>(this->ch.option(OPTION::MAGIC_EFFECT));   // magic effect
+    writer.write<uint8_t>(this->ch.option(OPTION::ROAR_WORLDS));    // listen news
+    writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));      // fast move
+    writer.write<uint8_t>(this->ch.option(OPTION::EFFECT_SOUND));   // effect sound
     writer.write<uint8_t>(0x00);
 }
 #else

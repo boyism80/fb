@@ -285,7 +285,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
 std::string context::elapsed_message(const std::string& dt)
 {
-    auto elapsed = datetime() - datetime(dt);
+    auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
     if (elapsed.total_milliseconds() > 1000 * 60)
     {
         auto sstream = std::stringstream();
@@ -368,6 +368,22 @@ void context::foreach_ch(const std::vector<std::string>& names, const std::funct
     });
 }
 
+void context::foreach_ch(const std::function<void(fb::game::character&)>& fn)
+{
+    for (int i = 0, n = this->threads.size(); i < n; i++)
+    {
+        auto thread = this->threads.at(i);
+        std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [_, ch] : params->characters)
+            {
+                fn(*ch);
+            }
+            co_return;
+        });
+    }
+}
+
 async::task<bool> context::init_ch(const internal::Character&           response,
                                    character&                           ch,
                                    std::optional<uint32_t>              group,
@@ -378,7 +394,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.id(response.id);
     ch.name(response.name);
     ch.pw(response.pw);
-    ch.updated_date(datetime(response.updated_date));
+    ch.updated_date(fb::model::datetime(response.updated_date));
     ch.admin(response.admin);
     ch.cls(static_cast<CLASS>(response.class_type));
     ch.color(response.color);
@@ -435,22 +451,22 @@ async::task<bool> context::init_ch(const internal::Character&           response
         });
     }
 
-    co_return co_await ch.map(&this->maps[map], point16_t(position_x, position_y));
+    co_return co_await ch.map(&this->maps[map], fb::model::point16_t(position_x, position_y));
 }
 
 void context::init_option(const internal::Option& response, fb::game::character& ch)
 {
-    ch.option(SETTING::WHISPER, response.whisper, false);
-    ch.option(SETTING::GROUP, response.group, false);
-    ch.option(SETTING::ROAR, response.roar, false);
-    ch.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
-    ch.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
-    ch.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
-    ch.option(SETTING::FIXED_MOVE, response.fixed_move, false);
-    ch.option(SETTING::TRADE, response.trade, false);
-    ch.option(SETTING::FAST_MOVE, response.fast_move, false);
-    ch.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
-    ch.option(SETTING::PK_PROTECT, response.pk_protect, false);
+    ch.option(OPTION::WHISPER, response.whisper, false);
+    ch.option(OPTION::GROUP, response.group, false);
+    ch.option(OPTION::ROAR, response.roar, false);
+    ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
+    ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
+    ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
+    ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
+    ch.option(OPTION::TRADE, response.trade, false);
+    ch.option(OPTION::FAST_MOVE, response.fast_move, false);
+    ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
+    ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
 }
 
 void context::init_items(const std::vector<internal::Item>& response, character& ch)
@@ -530,10 +546,6 @@ void context::send(object&                     object,
 {
     switch (scope)
     {
-    case context::scope::SELF:
-        object.send(header, encrypt);
-        break;
-
     case context::scope::PIVOT:
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
@@ -550,7 +562,7 @@ void context::send(object&                     object,
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
             return;
 
-        auto& ch                = static_cast<character&>(object);
+        auto& ch                = static_cast<const character&>(object);
         auto& shared_group_lock = ch.group();
         if (shared_group_lock == nullptr)
             return;
@@ -582,107 +594,12 @@ void context::send(object&                     object,
 
     case context::scope::WORLD:
     {
-        this->send(header, encrypt);
-    }
-    break;
-    }
-}
-
-void context::send(object& object, const protocol_generator& fn, context::scope scope, bool exclude_self, bool encrypt)
-{
-    switch (scope)
-    {
-    case context::scope::SELF:
-        object.send(*fn(object).get(), encrypt);
-        break;
-
-    case context::scope::PIVOT:
-    {
-        auto nears = object.showings(OBJECT_TYPE::CHARACTER);
-        if (!exclude_self)
-            object.send(*fn(object).get(), encrypt);
-
-        for (auto& x : nears)
-            x->send(*fn(*x).get(), encrypt);
-    }
-    break;
-
-    case context::scope::GROUP:
-    {
-        if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            return;
-
-        auto& ch                = static_cast<character&>(object);
-        auto& shared_group_lock = ch.group();
-        if (shared_group_lock == nullptr)
-            return;
-
-        shared_group_lock->lock([&fn, encrypt](auto& group) {
-            for (auto ch : group.characters())
-            {
-                ch->send(*fn(*ch).get(), encrypt);
-            }
-        });
-    }
-    break;
-
-    case context::scope::MAP:
-    {
-        for (const auto& [seq, obj] : object.map()->objects)
-        {
-            if (exclude_self && obj == object)
-                continue;
-
-            obj.send(*fn(obj).get(), encrypt);
-        }
-    }
-    break;
-
-    case context::scope::WORLD:
-    {
-        for (int i = 0, n = this->threads.size(); i < n; i++)
-        {
-            auto thread = this->threads.at(i);
-            std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-                auto params = thread.template data<thread_params>();
-                for (auto& [_, ch] : params->characters)
-                {
-                    ch->send(*fn(*ch).get(), encrypt);
-                }
-                co_return;
-            });
-        }
-    }
-    break;
-    }
-}
-
-void context::send(const fb::protocol::header& response, const map& map, bool encrypt)
-{
-    auto thread = map.thread();
-    std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-        auto params = thread.template data<thread_params>();
-        for (auto& [_, ch] : params->characters)
-        {
-            ch->send(response, encrypt);
-        }
-        co_return;
-    });
-}
-
-void context::send(const fb::protocol::header& response, bool encrypt)
-{
-    for (int i = 0, n = this->threads.size(); i < n; i++)
-    {
-        auto thread = this->threads.at(i);
-        std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
-            auto params = thread.template data<thread_params>();
-            for (auto& [_, ch] : params->characters)
-            {
-                ch->send(response, encrypt);
-            }
+        this->foreach_ch([header, encrypt](auto& ch) -> async::task<void> {
+            ch.send(header, encrypt);
             co_return;
         });
+    }
+    break;
     }
 }
 
@@ -743,7 +660,7 @@ async::task<void> context::save(character& ch)
         internal_reqs::Save{ch.to_protocol(), items, spells, traces});
 
     if (this->assert_socket(fd))
-        this->send(ch, fb_resp::save(), scope::SELF);
+        ch.send(fb_resp::save());
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const
@@ -827,7 +744,7 @@ void context::amqp_thread()
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
-    this->send(ch, fb_resp::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    ch.send(fb_resp::message(mob.name(), MESSAGE_TYPE::STATE));
 }
 
 void context::handle_click_npc(character& ch, npc& npc)

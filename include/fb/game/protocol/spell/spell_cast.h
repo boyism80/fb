@@ -4,7 +4,6 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 
-using namespace fb::model;
 using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
@@ -18,10 +17,10 @@ private:
     fb::stream_reader<big_endian>* _reader;
 
 public:
-    mutable uint8_t         slot;
-    mutable std::string     message;
-    mutable uint32_t        fd;
-    mutable point<uint16_t> position;
+    mutable uint8_t                    slot;
+    mutable std::string                message;
+    mutable uint32_t                   fd;
+    mutable fb::model::point<uint16_t> position;
 
 public:
     spell_cast() = default;

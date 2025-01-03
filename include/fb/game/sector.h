@@ -4,9 +4,7 @@
 #include <fb/game/object.h>
 #include <set>
 
-using namespace fb::model;
-
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a map of .
@@ -93,8 +91,8 @@ public:
     using unique_sectors = std::vector<std::unique_ptr<sector>>;
 
 private:
-    const size16_t              _map_size = size16_t(0, 0);
-    const size16_t              _size     = size16_t(0, 0);
+    const fb::model::size16_t   _map_size = fb::model::size16_t(0, 0);
+    const fb::model::size16_t   _size     = fb::model::size16_t(0, 0);
     const uint32_t              _rows = 0, _columns = 0;
     const uint32_t              _count = 0;
     unique_sectors              _pool;
@@ -107,7 +105,7 @@ public:
      * @param[in]  map_size  The map size
      * @param[in]  size      The size
      */
-    sectors(const size16_t& map_size, const size16_t& size);
+    sectors(const fb::model::size16_t& map_size, const fb::model::size16_t& size);
     /**
      * @brief      Constructs a new instance.
      *
@@ -151,7 +149,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t index(const point16_t& position) const;
+    uint32_t index(const fb::model::point16_t& position) const;
     /**
      * @brief      { function_description }
      *
@@ -167,7 +165,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    sector* at(const point16_t& position) const;
+    sector* at(const fb::model::point16_t& position) const;
     /**
      * @brief      { function_description }
      *
@@ -201,7 +199,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<sector*> nears(const point16_t& pivot) const;
+    std::vector<sector*> nears(const fb::model::point16_t& pivot) const;
     /**
      * @brief      { function_description }
      *
@@ -210,7 +208,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> objects(const point16_t& pivot, OBJECT_TYPE type) const;
+    std::vector<object*> objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const;
     /**
      * @brief      { function_description }
      *
@@ -227,6 +225,6 @@ public:
     bool activated() const;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__SECTOR_H__
