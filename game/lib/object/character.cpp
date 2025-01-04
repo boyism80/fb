@@ -106,10 +106,9 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
         return result;
 
     if (this->_hp == 0)
-    {
         this->kill(from, DESTROY_TYPE::DEAD);
-        return result;
-    }
+
+    return result;
 }
 
 character::operator fb::socket<character>& ()
