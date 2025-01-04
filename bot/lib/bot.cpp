@@ -89,42 +89,33 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
 
 void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
-    while (true)
+    try
     {
-        try
-        {
-            fb::socket<void*>::connect(endpoint);
+        this->async_connect(endpoint, [this, endpoint](const boost::system::error_code& error) {
+            if (error)
+            {
+                fb::logger::fatal(error.message());
+                this->connect(endpoint);
+                return;
+            }
+
             boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner),
                                   this->recv(),
                                   boost::asio::detached);
-            this->thread()->enqueue(
-                [this, id = this->id](auto& thread) -> async::task<void> {
-                    auto params = thread.template data<bot_thread_params>();
-                    if (!params->bots.contains(id))
-                        co_return;
 
-                    co_await this->on_connected();
-                },
-                [](auto& error) { // error
-                    fb::logger::fatal(error.what());
-                },
-                []() { // success
+            std::ignore = this->thread()->dispatch([this](auto& thread) -> async::task<void> {
+                auto params = thread.template data<bot_thread_params>();
+                if (!params->bots.contains(this->id))
+                    co_return;
 
-                });
-            break;
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-        }
-        catch (boost::system::error_code e)
-        {
-            fb::logger::fatal(e.what());
-        }
-        catch (...)
-        {
-            fb::logger::fatal("unhandled exception");
-        }
+                co_await this->on_connected();
+            });
+        });
+    }
+    catch (...)
+    {
+        fb::logger::fatal("connection failed");
+        this->connect(endpoint);
     }
 }
 
