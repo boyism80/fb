@@ -879,7 +879,7 @@ namespace Fb.Model.ConstValue
         public const string MessageGroupDisabledTarget = "상대방이 그룹 거부 상태입니다.";
         public const string MessageGroupNotOwner = "그룹장만 할 수 있습니다.";
         public const string MessageGroupFullMember = "자리가 없습니다.";
-        public const string MessageGroupAlreadyJoined = "님은 이미 그룹 참여 중입니다.";
+        public const string MessageGroupAlreadyJoined = "{}님은 이미 그룹 참여 중입니다.";
         public const string MessageGroupJoined = "님 그룹에 참여";
         public const string MessageGroupLeft = "님 그룹 탈퇴";
         public const string MessageExceptionRidding = "말을 타고는 할 수 없습니다.";
@@ -928,7 +928,45 @@ namespace Fb.Model.ConstValue
         public const string MessageDoorLocked = "문이 잠겼습니다.";
         public const string MessageErrorUnknown = "올바르지 않은 명령입니다.";
         public const string MessageNotReadyGameServer = "비바람이 휘몰아치고 있습니다.";
-        public const string MessageUnknownError = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
+        public const string MessageUnknownErrorWithCode = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
+        public const string MessageNotFoundItem = "아이템이 없습니다.";
+        public const string MessageItemFull = "더 이상 가질 수 없습니다.";
+        public const string MessageWriteBoardFailed = "게시글 작성 실패";
+        public const string MessageInvalidUserName = "존재하지 않는 유저입니다.";
+        public const string MessageNotFoundMail = "메일이 없습니다.";
+        public const string MessageCannotGroupSelf = "자기 자신과는 그룹할 수 없습니다.";
+        public const string MessageAlreadyJoinedGroup = "이미 그룹 참여중입니다.";
+        public const string MessageUserNotLogin = "{}님은 바람의나라에 없습니다.";
+        public const string MessageAlreadyJoinedClan = "클랜 이미 있음";
+        public const string MessageWhisperDisabledMine = "당신은 귓속말 거부 상태입니다.";
+        public const string MessageWhisperDisabledTarget = "{}님은 귓속말 거부 상태입니다.";
+        public const string MessageCannotEquipItem = "입을 수 없는 물건입니다.";
+        public const string MessageNotJoinedClan = "클랜이 없음";
+        public const string MessageInvalidSellItem = "뭘 팔아?";
+        public const string MessageNoHaveItem = "가지고 있지도 않으면서...";
+        public const string MessageItemNotBuy = "그런 물건은 안 삽니다.";
+        public const string MessageInvalidItemCount = "뭐래는거야..";
+        public const string MessageNotEnoughItemCount = "갯수가 모자라는데요?";
+        public const string MessageInvalidBuyItemName = "뭘 사?";
+        public const string MessageItemNotSell = "그런 물건은 안 팝니다.";
+        public const string MessageTooManyCount = "그렇게나 많이요?";
+        public const string MessageNotEnoughMoney = "돈이 모자랍니다.";
+        public const string MessageRepairInvalidName = "뭘 고쳐줘?";
+        public const string MessageHaveNoItem = "가지고 있지 않은데요";
+        public const string MessageAlreadyRepaired = "이미 고쳐져 있습니다.";
+        public const string MessageNotAnyRepairable = "고칠 물건이 없습니다.";
+        public const string MessageCannotDepositeMore = "더 이상 맡길 수 없습니다.";
+        public const string MessageNotDepositedMoney = "맡아둔 돈이 없습니다.";
+        public const string MessageNotDepositedEnough = "그만큼 맡기지 않았습니다.";
+        public const string MessageHaveMuchMoney = "소지금이 너무 많습니다.";
+        public const string MessageNotDepositedThisItem = "그런 물품은 맡아두고 있지 않습니다.";
+        public const string MessageUnknownError = "알 수 없는 에러";
+        public const string MessageInvalidItemName = "그게 뭐야?";
+        public const string MessageWeawponNameTooShort = "이름이 너무 짧습니다.";
+        public const string MessageWeaponNameTooLong = "이름이 너무 깁니다.";
+        public const string MessageInvalidWeaponName = "그렇게 바꿀 수 없습니다.";
+        public const string MessageNoAnyDeposited = "맡긴 물건이 없습니다.";
+        public const string MessageNoItemDeposited = "그런 물건은 맡고 있지 않습니다.";
     }
 
 }

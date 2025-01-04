@@ -126,7 +126,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
             throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
         default:
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response.error));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));
         }
 
         auto ch     = socket.data();

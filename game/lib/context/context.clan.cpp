@@ -13,7 +13,7 @@ void context::assert_clan(uint32_t error) const
         throw std::runtime_error(std::format("클랜명이 이미 존재함"));
 
     default:
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }
 }
 
@@ -87,7 +87,7 @@ void context::update_clan(clan&                                                 
 async::task<void> context::create_clan(character& me, const std::string& name)
 {
     if (me.clan() != nullptr)
-        throw std::runtime_error("클랜 이미 있음");
+        throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
     auto   fd   = me.fd();
     auto&& resp = co_await this->post<internal_reqs::CreateClan, internal_resp::CreateClan>(
@@ -131,7 +131,7 @@ async::task<void> context::destroy_clan(character& me)
 {
     auto& clan_lock = me.clan();
     if (clan_lock == nullptr)
-        throw std::runtime_error("클랜이 없음");
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
     auto clan_name = std::string{};
     auto clan_id   = uint32_t{};

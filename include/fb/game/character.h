@@ -1502,6 +1502,24 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_switch_context(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_whisper(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_send_mail(lua_State* lua);
 };
 
 /**

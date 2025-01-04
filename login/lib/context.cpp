@@ -296,7 +296,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             throw id_exception("이미 접속중입니다.");
 
         default:
-            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response3.error));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response3.error));
         }
 
         socket.send(response::message("", 0x00));

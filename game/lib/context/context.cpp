@@ -515,24 +515,6 @@ void context::init_traces(const std::vector<fb::protocol::internal::Trace>& resp
     }
 }
 
-void context::assert_whisper(const internal_resp::Whisper& response) const
-{
-    switch (static_cast<ERROR_CODE>(response.error))
-    {
-    case ERROR_CODE::NONE:
-        return;
-
-    case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", response.to));
-
-    case ERROR_CODE::DISABLED_WHISPER_TARGET:
-        throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", response.to));
-
-    default:
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response.error));
-    }
-}
-
 character* context::handle_accepted(fb::socket<character>& socket)
 {
     return this->make<character>(socket);

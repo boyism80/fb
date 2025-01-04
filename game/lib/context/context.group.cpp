@@ -98,28 +98,28 @@ void context::assert_group(uint32_t error, const std::string& actor) const
         return;
 
     case ERROR_CODE::CANNOT_GROUP_SELF:
-        throw std::runtime_error("자기 자신과는 그룹할 수 없습니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
     case ERROR_CODE::GROUP_ALREADY_JOINED:
-        throw std::runtime_error("이미 그룹에 참여중입니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
 
     case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", actor));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), actor));
 
     case ERROR_CODE::GROUP_TARGET_ALREADY_JOINED:
-        throw std::runtime_error(std::format("{}님은 이미 그룹에 참여중입니다.", actor));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_GROUP_ALREADY_JOINED), actor));
 
     case ERROR_CODE::DISABLED_GROUP:
-        throw std::runtime_error("그룹 참여 거부중입니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
     case ERROR_CODE::DISABLED_GROUP_TARGET:
-        throw std::runtime_error(std::format("{}님은 그룹 참여 거부중입니다.", actor));
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_TARGET));
 
     case ERROR_CODE::NOT_GROUP_MASTER:
-        throw std::runtime_error("당신은 그룹장이 아닙니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_GROUP_NOT_OWNER));
 
     default:
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }
 }
 
