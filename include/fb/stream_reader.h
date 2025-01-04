@@ -51,7 +51,10 @@ public:
         }
         else
         {
-            auto size    = sizeof(ValueType);
+            auto size = sizeof(ValueType);
+            if (this->readable_size() < size)
+                throw std::runtime_error("stream_reader::read: out of range");
+
             auto value   = EndianType::template get<ValueType>(this->_stream.data() + this->_seek);
             this->_seek += size;
             return value;
@@ -71,8 +74,12 @@ public:
     {
         if constexpr (std::is_same_v<T1, std::string>)
         {
-            auto len     = this->read<T2>();
-            auto str     = std::string(this->_stream.data() + this->_seek, this->_stream.data() + this->_seek + len);
+            auto len = this->read<T2>();
+            if (this->readable_size() < len)
+                throw std::runtime_error("stream_reader::read: out of range");
+
+            auto str = std::string(this->_stream.data() + this->_seek, this->_stream.data() + this->_seek + len);
+
             this->_seek += len;
 #ifndef _WIN32
             return utf8(str);
@@ -97,6 +104,9 @@ public:
     {
         if (buffer == nullptr)
             return;
+
+        if (this->readable_size() < size)
+            throw std::runtime_error("stream_reader::read: out of range");
 
         memcpy(buffer, this->_stream.data() + this->_seek, size);
         this->_seek += size;
