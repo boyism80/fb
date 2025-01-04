@@ -3,7 +3,6 @@
 #include <fb/game/regex.h>
 
 using namespace fb::game;
-using namespace fb::model;
 
 character::character(fb::game::context& context, fb::socket<character>& socket) :
     life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
@@ -34,7 +33,7 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
+async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
 
@@ -174,7 +173,7 @@ void character::action(ACTION action, DURATION duration, uint8_t sound)
     try
     {
         this->assert_state({STATE::GHOST, STATE::RIDING});
-        fb::game::life::action(action, duration, sound);
+        life::action(action, duration, sound);
     }
     catch (std::exception& e)
     {
@@ -203,14 +202,14 @@ void character::pw(const std::string& value)
     this->_pw = value;
 }
 
-const datetime& character::updated_date() const
+const fb::model::datetime& character::updated_date() const
 {
     this->assert_thread();
 
     return this->_updated_date;
 }
 
-void character::updated_date(const datetime& value)
+void character::updated_date(const fb::model::datetime& value)
 {
     this->assert_thread();
 
@@ -925,7 +924,7 @@ bool character::deposit_item(const std::string& name, uint16_t count)
     return this->deposit_item(index, count);
 }
 
-fb::game::item* character::deposited_item(const fb::model::item& item) const
+item* character::deposited_item(const fb::model::item& item) const
 {
     this->assert_thread();
 
@@ -940,14 +939,14 @@ fb::game::item* character::deposited_item(const fb::model::item& item) const
     return *found;
 }
 
-const std::vector<fb::game::item*>& character::deposited_items() const
+const std::vector<item*>& character::deposited_items() const
 {
     this->assert_thread();
 
     return this->_deposited_items;
 }
 
-fb::game::item* character::withdraw_item(uint8_t index, uint16_t count)
+item* character::withdraw_item(uint8_t index, uint16_t count)
 {
     this->assert_thread();
 
@@ -997,8 +996,9 @@ fb::game::item* character::withdraw_item(uint8_t index, uint16_t count)
     }
 }
 
-fb::game::item* character::withdraw_item(const std::string& name, uint16_t count)
+item* character::withdraw_item(const std::string& name, uint16_t count)
 {
+
     this->assert_thread();
 
     auto found =
@@ -1014,7 +1014,7 @@ fb::game::item* character::withdraw_item(const std::string& name, uint16_t count
     return this->withdraw_item((uint8_t)index, count);
 }
 
-fb::game::item* character::withdraw_item(const fb::model::item& item, uint16_t count)
+item* character::withdraw_item(const fb::model::item& item, uint16_t count)
 {
     this->assert_thread();
 
@@ -1131,7 +1131,7 @@ void character::update_map(const fb::game::map& map)
         listener->on_update_map(*this, map);
 }
 
-void character::update_map(const fb::game::map& map, const point16_t& begin, const size8_t& size)
+void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size)
 {
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
@@ -1258,14 +1258,14 @@ void character::assert_state(const std::vector<STATE>& values) const
         this->assert_state(value);
 }
 
-bool character::move(const point16_t& before)
+bool character::move(const fb::model::point16_t& before)
 {
     this->assert_thread();
 
     return this->move(this->_direction, before);
 }
 
-bool character::move(DIRECTION direction, const point16_t& before)
+bool character::move(DIRECTION direction, const fb::model::point16_t& before)
 {
     this->assert_thread();
 
@@ -1345,7 +1345,7 @@ void character::unride()
         if (this->state() != STATE::RIDING)
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
-        auto& model = this->context.model.mob[const_value::mob::horse];
+        auto& model = this->context.model.mob[fb::model::const_value::mob::horse];
         auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->position_forward());
 
@@ -1387,7 +1387,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         {
         case DSL::level:
         {
-            auto params = dsl::level(dsl.params);
+            auto params = fb::model::dsl::level(dsl.params);
             if (params.min.has_value() && *params.min > this->_level)
                 return false;
 
@@ -1398,7 +1398,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::sex:
         {
-            auto params = dsl::sex(dsl.params);
+            auto params = fb::model::dsl::sex(dsl.params);
             if (ENUM_IN(params.value, this->_sex) == false)
                 return false;
         }
@@ -1406,7 +1406,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::strength:
         {
-            auto params = dsl::strength(dsl.params);
+            auto params = fb::model::dsl::strength(dsl.params);
             if (params.value > this->_strength)
                 return false;
         }
@@ -1414,7 +1414,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::intelligence:
         {
-            auto params = dsl::intelligence(dsl.params);
+            auto params = fb::model::dsl::intelligence(dsl.params);
             if (params.value > this->_intelligence)
                 return false;
         }
@@ -1422,7 +1422,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::dexteritry:
         {
-            auto params = dsl::dexteritry(dsl.params);
+            auto params = fb::model::dsl::dexteritry(dsl.params);
             if (params.value > this->_dexteritry)
                 return false;
         }
@@ -1430,7 +1430,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::promotion:
         {
-            auto params = dsl::promotion(dsl.params);
+            auto params = fb::model::dsl::promotion(dsl.params);
             if (params.value > this->_promotion)
                 return false;
         }
@@ -1438,14 +1438,14 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::class_t:
         {
-            auto params = dsl::class_t(dsl.params);
+            auto params = fb::model::dsl::class_t(dsl.params);
             if (ENUM_IN(params.value, this->_class) == false)
                 return false;
         }
 
         case DSL::admin:
         {
-            auto params = dsl::admin(dsl.params);
+            auto params = fb::model::dsl::admin(dsl.params);
             if (params.value != this->_admin)
                 return false;
         }
@@ -1475,7 +1475,7 @@ fb::thread* character::thread() const
 
 void character::assert_thread() const
 {
-    fb::game::object::assert_thread();
+    object::assert_thread();
 }
 
 void character::update(STATE_LEVEL value)
@@ -1495,7 +1495,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.id               = this->_id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
-    dto.updated_date     = datetime().to_string();
+    dto.updated_date     = fb::model::datetime().to_string();
     dto.admin            = this->_admin;
     dto.look             = this->_look;
     dto.color            = this->_color;
@@ -1586,7 +1586,7 @@ void character::browse_ch(const character& ch)
         listener->on_browse_character(*this, ch);
 }
 
-void character::item_tooltip(const fb::game::item& item, uint16_t position)
+void character::item_tooltip(const item& item, uint16_t position)
 {
     auto listener = this->get_listener<character>();
     if (listener != nullptr)

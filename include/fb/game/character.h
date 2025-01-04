@@ -19,10 +19,10 @@ class map;
 class clan;
 class group;
 
-using group_lock        = fb::locker<fb::game::group>;
+using group_lock        = fb::locker<group>;
 using shared_group_lock = std::shared_ptr<group_lock>;
 
-using clan_lock        = fb::locker<fb::game::clan>;
+using clan_lock        = fb::locker<clan>;
 using shared_clan_lock = std::shared_ptr<clan_lock>;
 
 /**
@@ -34,7 +34,7 @@ class character : public life
     friend class clan;
 
 public:
-    using fb::game::object::map;
+    using object::map;
 
 public:
     /**
@@ -108,7 +108,7 @@ public:
      * @param      context  The context
      * @param      socket   The socket
      */
-    character(fb::game::context& context, fb::socket<fb::game::character>& socket);
+    character(fb::game::context& context, fb::socket<character>& socket);
 
     /**
      * @brief      Destroys the object.
@@ -161,7 +161,7 @@ public:
                                         DESTROY_TYPE destroy_type            = DESTROY_TYPE::DEFAULT) override final;
 
 public:
-    operator fb::socket<fb::game::character>& ();
+    operator fb::socket<character>& ();
 
 public:
     /**
@@ -723,7 +723,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool deposit_item(fb::game::item& item);
+    bool deposit_item(item& item);
 
     /**
      * @brief      { function_description }
@@ -752,7 +752,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* deposited_item(const fb::model::item& item) const;
+    item* deposited_item(const fb::model::item& item) const;
 
     /**
      * @brief      { function_description }
@@ -769,7 +769,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* withdraw_item(uint8_t index, uint16_t count);
+    item* withdraw_item(uint8_t index, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -779,7 +779,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* withdraw_item(const std::string& name, uint16_t count);
+    item* withdraw_item(const std::string& name, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -789,7 +789,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* withdraw_item(const fb::model::item& item, uint16_t count);
+    item* withdraw_item(const fb::model::item& item, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -1011,7 +1011,7 @@ public:
      *
      * @param      horse  The horse
      */
-    void ride(fb::game::mob& horse);
+    void ride(mob& horse);
 
     /**
      * @brief      { function_description }
@@ -1098,7 +1098,7 @@ public:
      * @param[in]  iteem     The iteem
      * @param[in]  position  The position
      */
-    void item_tooltip(const fb::game::item& iteem, uint16_t position);
+    void item_tooltip(const item& iteem, uint16_t position);
 
     /**
      * @brief      Shows the user list.
@@ -1117,9 +1117,9 @@ public:
      * @param[in]  articles  The articles
      * @param[in]  flag      The flag
      */
-    void show_board(const fb::model::board&                    section,
-                    const std::list<fb::game::board::article>& articles,
-                    BOARD_BUTTON_ENABLE                        flag);
+    void show_board(const fb::model::board&          section,
+                    const std::list<board::article>& articles,
+                    BOARD_BUTTON_ENABLE              flag);
 
     /**
      * @brief      Shows the board.
@@ -1127,7 +1127,7 @@ public:
      * @param[in]  article  The article
      * @param[in]  flag     The flag
      */
-    void show_board(const fb::game::board::article& article, BOARD_BUTTON_ENABLE flag);
+    void show_board(const board::article& article, BOARD_BUTTON_ENABLE flag);
 
     /**
      * @brief      Shows the mail box.
@@ -1507,13 +1507,13 @@ public:
 /**
  * @brief      This class describes a container.
  */
-class character::container : private std::vector<fb::game::character*>
+class character::container : private std::vector<character*>
 {
 public:
-    using std::vector<fb::game::character*>::begin;
-    using std::vector<fb::game::character*>::end;
-    using std::vector<fb::game::character*>::size;
-    using std::vector<fb::game::character*>::operator[];
+    using std::vector<character*>::begin;
+    using std::vector<character*>::end;
+    using std::vector<character*>::size;
+    using std::vector<character*>::operator[];
 
 public:
     /**
@@ -1526,7 +1526,7 @@ public:
      *
      * @param[in]  right  The right
      */
-    container(const std::vector<fb::game::character*>& right);
+    container(const std::vector<character*>& right);
 
     /**
      * @brief      Destroys the object.
@@ -1541,7 +1541,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    container& push(fb::game::character& ch);
+    container& push(character& ch);
 
     /**
      * @brief      { function_description }
@@ -1550,7 +1550,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    container& erase(fb::game::character& ch);
+    container& erase(character& ch);
 
 public:
     /**
@@ -1560,7 +1560,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::character* find(const std::string& name);
+    character* find(const std::string& name);
 
     /**
      * @brief      { function_description }
@@ -1569,7 +1569,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool contains(const fb::game::character& ch) const;
+    bool contains(const character& ch) const;
 
 public:
     /**
@@ -1579,16 +1579,16 @@ public:
      *
      * @return     The result of the array indexer
      */
-    fb::game::character* operator[] (const std::string& name);
+    character* operator[] (const std::string& name);
 };
 
 /**
  * @brief      { struct_description }
  */
-struct character::listener : public virtual fb::game::life::listener,
-                             public virtual fb::game::dialog::listener,
-                             public virtual fb::game::trade::listener,
-                             public virtual fb::game::equipment::listener
+struct character::listener : public virtual life::listener,
+                             public virtual dialog::listener,
+                             public virtual trade::listener,
+                             public virtual equipment::listener
 {
 public:
     /**
@@ -1684,7 +1684,7 @@ public:
      * @param[in]  item      The item
      * @param[in]  position  The position
      */
-    virtual void on_item_tooltip(character& ch, const fb::game::item& item, uint16_t position) = 0;
+    virtual void on_item_tooltip(character& ch, const item& item, uint16_t position) = 0;
 
     /**
      * @brief      Called on show user list.
@@ -1708,10 +1708,10 @@ public:
      * @param[in]  articles  The articles
      * @param[in]  flag      The flag
      */
-    virtual void on_show_board(character&                                 ch,
-                               const fb::model::board&                    section,
-                               const std::list<fb::game::board::article>& articles,
-                               BOARD_BUTTON_ENABLE                        flag) = 0;
+    virtual void on_show_board(character&                       ch,
+                               const fb::model::board&          section,
+                               const std::list<board::article>& articles,
+                               BOARD_BUTTON_ENABLE              flag) = 0;
 
     /**
      * @brief      Called on show board.
@@ -1720,7 +1720,7 @@ public:
      * @param[in]  value  The value
      * @param[in]  flag   The flag
      */
-    virtual void on_show_board(character& ch, const fb::game::board::article& value, BOARD_BUTTON_ENABLE flag) = 0;
+    virtual void on_show_board(character& ch, const board::article& value, BOARD_BUTTON_ENABLE flag) = 0;
 
     /**
      * @brief      Called on show mail box.
