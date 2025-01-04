@@ -3,7 +3,7 @@
 namespace fb::protocol::gateway::request {
 
 #ifdef BOT
-version::version(uint16_t version, uint8_t nation) :
+version::version(uint16_t v, uint8_t nation) :
     v(v),
     nation(nation)
 { }
