@@ -600,9 +600,9 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
 
         this->update_id();
         this->update_map(*map);
-        this->update_bgm(map->model.bgm, 100);
         this->update_position();
         this->update_external(false);
+        this->update_bgm(map->model.bgm, 100);
 
         for (auto obj : map->nears(this->_position))
         {

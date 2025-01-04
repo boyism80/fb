@@ -17,7 +17,6 @@ namespace WriteBack.Service
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<Http.Service.WriteBackService> _logger;
-        private const string RedisBufferKey = "exec-buffer";
         private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
         public WriteBackService(RedisService redisService,
@@ -54,7 +53,7 @@ namespace WriteBack.Service
 
         private async Task OnWork(int db, CancellationToken stoppingToken)
         {
-            var bufferKey = $"{RedisBufferKey}:{db}";
+            var bufferKey = $"{Const.RedisBufferKey}:{db}";
             while (!stoppingToken.IsCancellationRequested)
             {
                 try

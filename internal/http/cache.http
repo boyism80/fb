@@ -1,0 +1,5 @@
+###
+POST {{host}}/cache/clear
+Content-Type: application/json
+
+{}

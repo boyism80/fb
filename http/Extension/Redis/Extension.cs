@@ -102,6 +102,25 @@ namespace Http.Redis
             return await database.StringSetAsync(key, new JValue(value).ToString(), expiry);
         }
 
+        public static async Task<List<string>> ScanKeysAsync(this IDatabaseAsync database, string match, string count)
+        {
+            var schemas = new List<string>();
+            int nextCursor = 0;
+            do
+            {
+                RedisResult redisResult = await database.ExecuteAsync("SCAN", nextCursor.ToString(), "MATCH", match, "COUNT", count);
+                var innerResult = (RedisResult[])redisResult;
+
+                nextCursor = int.Parse((string)innerResult[0]);
+
+                List<string> resultLines = ((string[])innerResult[1]).ToList();
+                schemas.AddRange(resultLines);
+            }
+            while (nextCursor != 0);
+
+            return schemas;
+        }
+
         public static async Task TransactAsync(this IDatabase db, Action<RedisCommandQueue> addCommands)
         {
             var tran = db.CreateTransaction();
