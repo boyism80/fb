@@ -57,12 +57,13 @@ async::task<void> bot_container::handle_timer(const datetime& now, std::thread::
 {
     auto thread = this->threads.at(id);
     auto params = thread->data<bot_thread_params>();
+    if (params == nullptr)
+        co_return;
 
     for (auto& [_, bot] : params->bots)
     {
         bot->on_timer(now);
     }
-    co_return;
 }
 
 async::task<void> bot_container::dispatch(uint32_t id, std::function<async::task<void>(fb::thread&)>&& fn)

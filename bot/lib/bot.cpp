@@ -91,34 +91,31 @@ void base_bot::connect(const boost::asio::ip::tcp::endpoint& endpoint)
 {
     try
     {
-        fb::socket<void*>::connect(endpoint);
-        boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner), this->recv(), boost::asio::detached);
-        this->thread()->enqueue(
-            [this, id = this->id](auto& thread) -> async::task<void> {
+        this->async_connect(endpoint, [this, endpoint](const boost::system::error_code& error) {
+            if (error)
+            {
+                fb::logger::fatal(error.message());
+                this->connect(endpoint);
+                return;
+            }
+
+            boost::asio::co_spawn(static_cast<boost::asio::io_context&>(this->_owner),
+                                  this->recv(),
+                                  boost::asio::detached);
+
+            std::ignore = this->thread()->dispatch([this](auto& thread) -> async::task<void> {
                 auto params = thread.template data<bot_thread_params>();
-                if (!params->bots.contains(id))
+                if (!params->bots.contains(this->id))
                     co_return;
 
                 co_await this->on_connected();
-            },
-            [](auto& error) { // error
-                fb::logger::fatal(error.what());
-            },
-            []() { // success
-
             });
-    }
-    catch (std::exception& e)
-    {
-        fb::logger::fatal(e.what());
-    }
-    catch (boost::system::error_code e)
-    {
-        fb::logger::fatal(e.what());
+        });
     }
     catch (...)
     {
-        fb::logger::fatal("unhandled exception");
+        fb::logger::fatal("connection failed");
+        this->connect(endpoint);
     }
 }
 

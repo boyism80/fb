@@ -606,10 +606,10 @@ namespace Fb.Model.EnumValue
         Trade = 0x08, 
         [EnumMember(Value = "FAST_MOVE")]
         FastMove = 0x09, 
-        [EnumMember(Value = "EFFECT_SOUND")]
-        EffectSound = 0x0a, 
         [EnumMember(Value = "PK_PROTECT")]
-        PkProtect = 0x0b
+        PkProtect = 0x0b, 
+        [EnumMember(Value = "EFFECT_SOUND")]
+        EffectSound = 0x0d
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

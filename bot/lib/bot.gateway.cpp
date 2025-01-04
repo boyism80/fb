@@ -38,7 +38,7 @@ async::task<void> gateway_bot::on_disconnected()
 
 async::task<void> gateway_bot::handle_welcome(const fb::protocol::gateway::response::welcome& response)
 {
-    this->send(fb::protocol::gateway::request::version{0x0226, 0xD7}, false, true);
+    this->send(fb::protocol::gateway::request::version{550, 0xD7}, false, true);
     co_return;
 }
 

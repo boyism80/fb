@@ -383,10 +383,10 @@ namespace Http.Reepository
                             {
                                 cmd.Enqueue(trans => trans.JsonHashSetAsync(redisKey, valueSet));
                                 cmd.Enqueue(trans => trans.KeyExpireAsync(redisKey, expiry: (TimeSpan?)null));
-                                cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, hash.ToString()));
+                                cmd.Enqueue(trans => trans.HashIncrementAsync(Const.ReferenceCountKey, redisKey.ToString()));
                             });
                             var sql = OnUpsert(hashGroup.ToArray());
-                            await _dbExecuteService.Post(hash, sql, hash.ToString());
+                            await _dbExecuteService.Post(hash, sql, redisKey.ToString());
                         }
                     }
                 }

@@ -1,36 +1,36 @@
 #!/bin/bash
 
-sudo docker build --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/build failed"
     exit $?
 fi
-sudo docker build --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/gateway failed"
     exit $?
 fi
-sudo docker build --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/login failed"
     exit $?
 fi
-sudo docker build --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/game failed"
     exit $?
 fi
-sudo docker build --tag ghcr.io/boyism80/fb/bot:latest -f bot/Dockerfile .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/bot:latest -f bot/Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/bot failed"
     exit $?
 fi
-sudo docker build --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
 if [ $? -ne 0 ]; then
     echo "build fb/internal failed"
     exit $?
 fi
-sudo docker build --tag ghcr.io/boyism80/fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
+sudo docker buildx build --push --tag ghcr.io/boyism80/fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
 if [ $? -ne 0 ]; then
     echo "build fb/write-back failed"
     exit $?

@@ -57,15 +57,7 @@ async::task<void> game_bot::on_connected()
     }
 
     co_await base_bot::on_connected();
-    auto&& resp = co_await this->request<fb::protocol::game::response::map_config>(
-        fb::protocol::game::request::login(this->_transfer_buffer),
-        false,
-        true);
-
-    if (resp.id == 1)
-        this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
-    else
-        this->_inited = true;
+    this->send(fb::protocol::game::request::login(this->_transfer_buffer), false, true);
 }
 
 async::task<void> game_bot::on_disconnected()
@@ -126,6 +118,11 @@ async::task<void> game_bot::handle_option(const fb::protocol::game::response::op
 
 async::task<void> game_bot::handle_message(const fb::protocol::game::response::message& response)
 {
+    if (response.text == "비바람이 휘몰아치고 있습니다.")
+    {
+        this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+    }
+
     co_return;
 }
 
@@ -160,6 +157,14 @@ async::task<void> game_bot::handle_move(const fb::protocol::game::response::move
 
 async::task<void> game_bot::handle_map(const fb::protocol::game::response::map_config& response)
 {
+    if (response.id == 1)
+    {
+        this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+    }
+    else
+    {
+        this->_inited = true;
+    }
     co_return;
 }
 

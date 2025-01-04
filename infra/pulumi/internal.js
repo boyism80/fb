@@ -33,16 +33,8 @@ module.exports = {
 
             for(const [id, redisConf] of Object.entries(conf.redis[sectionConf.redis])) {
                 config.Redis[id] = {
-                    AllowAdmin: true,
-                    ConnectTimeout: 6000,
-                    ConnectRetry: 2,
-                    Database: 0,
-                    Hosts: [
-                        {
-                            Host: "redis",
-                            Port: conf.redis[sectionConf.redis][id].port.cluster
-                        }
-                    ]
+                    Host: "redis",
+                    Port: conf.redis[sectionConf.redis][id].port.cluster
                 }
             }
 

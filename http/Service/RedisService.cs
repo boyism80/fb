@@ -7,14 +7,12 @@ namespace Http.Service
 {
     public class Redis
     {
-        private readonly RedisConfiguration _conf;
         private readonly ConnectionMultiplexer _redis;
         private readonly Dictionary<string, LoadedLuaScript> _loadedLuaScripts = new Dictionary<string, LoadedLuaScript>();
 
-        public Redis(RedisConfiguration conf)
+        public Redis(RedisHost host)
         {
-            _conf = conf;
-            _redis = ConnectionMultiplexer.Connect(conf.ConfigurationOptions);
+            _redis = ConnectionMultiplexer.Connect($"{host.Host}:{host.Port}");
 
             LoadScriptFiles(Path.Combine("Redis", "Script"));
         }
@@ -41,7 +39,7 @@ namespace Http.Service
         {
             get
             {
-                return _redis.GetDatabase(_conf.Database);
+                return _redis.GetDatabase(0);
             }
         }
     }
@@ -58,8 +56,8 @@ namespace Http.Service
             foreach (var section in configuration.GetSection("Redis").GetChildren())
             {
                 var id = int.Parse(section.Key);
-                var redisConf = section.Get<RedisConfiguration>();
-                _redis.Add(id, new Redis(redisConf));
+                var host = section.Get<RedisHost>();
+                _redis.Add(id, new Redis(host));
 
                 if (id != -1)
                     size++;

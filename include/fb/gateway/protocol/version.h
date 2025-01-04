@@ -17,7 +17,7 @@ public:
 public:
     version() = default;
 #ifdef BOT
-    version(uint16_t version, uint8_t nation);
+    version(uint16_t v, uint8_t nation);
 #endif
 
 public:

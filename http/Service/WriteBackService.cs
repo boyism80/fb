@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Http.Redis;
+using Newtonsoft.Json;
 using StackExchange.Redis;
 
 namespace Http.Service
@@ -16,7 +17,6 @@ namespace Http.Service
         private readonly DbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly ILogger<WriteBackService> _logger;
-        private const string RedisBufferKey = "exec-buffer";
         private static readonly TimeSpan _delay = TimeSpan.FromMilliseconds(500);
 
         public WriteBackService(RedisService redisService,
@@ -32,7 +32,7 @@ namespace Http.Service
 
         public async Task Post(int db, string sql, string key, uint hash)
         {
-            var bufferKey = $"{RedisBufferKey}:{db}";
+            var bufferKey = $"{Const.RedisBufferKey}:{db}";
             var redis = _redisService.Redis(bufferKey).Connection;
             await redis.ListRightPushAsync(
                 new RedisKey(bufferKey),

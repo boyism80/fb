@@ -329,31 +329,38 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
     if (from == nullptr)
         return result;
 
-    auto& model = this->based<fb::model::mob>();
-    if (model.attack_type == MOB_ATTACK_TYPE::NONE)
-        return result;
-
-    if (model.attack_type == MOB_ATTACK_TYPE::RUN_AWAY)
-    {
-        // TODO: 도망치기
-        return result;
-    }
-
-    if (from->is(OBJECT_TYPE::LIFE))
-    {
-        if (this->_target == nullptr)
-        {
-            this->target(static_cast<life*>(from));
-        }
-        else
-        {
-            // TODO: 가장 최근에 공격한 대상이 일정 시간 이상 공격하지 않았으면
-            // 타겟을 변경한다.
-        }
-    }
-
     if (!this->alive())
+    {
         this->kill(from, DESTROY_TYPE::DEAD);
+        return result;
+    }
+
+    auto& model = this->based<fb::model::mob>();
+    switch (model.attack_type)
+    {
+    case MOB_ATTACK_TYPE::NONE:
+        break;
+
+    case MOB_ATTACK_TYPE::RUN_AWAY:
+        break;
+
+    default:
+    {
+        if (from->is(OBJECT_TYPE::LIFE))
+        {
+            if (this->_target == nullptr)
+            {
+                this->target(static_cast<life*>(from));
+            }
+            else
+            {
+                // TODO: 가장 최근에 공격한 대상이 일정 시간 이상 공격하지 않았으면
+                // 타겟을 변경한다.
+            }
+        }
+    }
+    break;
+    }
 
     return result;
 }

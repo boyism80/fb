@@ -922,12 +922,12 @@ async::task<bool> context::handle_whisper(fb::socket<character>&                
     if (me->inited() == false)
         co_return true;
 
-    auto  fd      = me->fd();
+    auto fd = me->fd();
     try
     {
         co_await this->whisper(*me, request.name, request.message);
     }
-    catch(std::exception& e)
+    catch (std::exception& e)
     {
         if (this->assert_socket(fd) == false)
             co_return false;

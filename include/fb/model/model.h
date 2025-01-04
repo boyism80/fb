@@ -1788,8 +1788,8 @@ enum class OPTION
     FIXED_MOVE = 0x07, 
     TRADE = 0x08, 
     FAST_MOVE = 0x09, 
-    EFFECT_SOUND = 0x0A, 
-    PK_PROTECT = 0x0B
+    PK_PROTECT = 0x0B, 
+    EFFECT_SOUND = 0x0D
 }; // end of enum 'OPTION'
 
 template <>
@@ -1807,8 +1807,8 @@ inline OPTION enum_parse<OPTION>(const std::string k)
         { "FIXED_MOVE", OPTION::FIXED_MOVE }, 
         { "TRADE", OPTION::TRADE }, 
         { "FAST_MOVE", OPTION::FAST_MOVE }, 
-        { "EFFECT_SOUND", OPTION::EFFECT_SOUND }, 
-        { "PK_PROTECT", OPTION::PK_PROTECT }
+        { "PK_PROTECT", OPTION::PK_PROTECT }, 
+        { "EFFECT_SOUND", OPTION::EFFECT_SOUND }
     };
 
     auto i = enums.find(k);
@@ -1833,8 +1833,8 @@ inline const char* enum_tostring<OPTION>(OPTION k)
         { OPTION::FIXED_MOVE, "FIXED_MOVE" }, 
         { OPTION::TRADE, "TRADE" }, 
         { OPTION::FAST_MOVE, "FAST_MOVE" }, 
-        { OPTION::EFFECT_SOUND, "EFFECT_SOUND" }, 
-        { OPTION::PK_PROTECT, "PK_PROTECT" }
+        { OPTION::PK_PROTECT, "PK_PROTECT" }, 
+        { OPTION::EFFECT_SOUND, "EFFECT_SOUND" }
     };
 
     auto i = enums.find(k);
@@ -2995,10 +2995,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "OPTION_TRADE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::FAST_MOVE);
     lua_setglobal(lua, "OPTION_FAST_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::EFFECT_SOUND);
-    lua_setglobal(lua, "OPTION_EFFECT_SOUND");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::PK_PROTECT);
     lua_setglobal(lua, "OPTION_PK_PROTECT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::EFFECT_SOUND);
+    lua_setglobal(lua, "OPTION_EFFECT_SOUND");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::SELL);
     lua_setglobal(lua, "REGEX_SELL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::BUY);

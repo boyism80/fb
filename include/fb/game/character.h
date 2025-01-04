@@ -237,6 +237,17 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param[in]  value     The value
+     * @param      from      The from
+     * @param[in]  critical  The critical
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
+
+    /**
+     * @brief      { function_description }
+     *
      * @param[in]  action    The action
      * @param[in]  duration  The duration
      * @param[in]  sound     The sound

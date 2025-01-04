@@ -30,4 +30,4 @@ const writeBackService = wb.setup(namespace, conf, [redisService, rabbitmqServic
 const gatewayService = gateway.setup(namespace, conf, [internalService])
 const loginService = login.setup(namespace, conf, [internalService])
 const gameService = game.setup(namespace, conf, [internalService])
-bot.setup(namespace, conf, [gatewayService, loginService, gameService])
+// bot.setup(namespace, conf, [gatewayService, loginService, gameService])
