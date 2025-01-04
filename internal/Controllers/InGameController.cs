@@ -171,7 +171,7 @@ namespace Internal.Controllers
             {
                 Service = request.Service,
                 Id = request.Id,
-            }.Key, JsonConvert.SerializeObject(config), TimeSpan.FromSeconds(5));
+            }.Key, JsonConvert.SerializeObject(config), TimeSpan.FromSeconds(30));
             return new Response.Pong
             { };
         }
