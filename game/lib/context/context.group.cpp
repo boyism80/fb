@@ -101,7 +101,7 @@ void context::assert_group(uint32_t error, const std::string& actor) const
         throw std::runtime_error(_TEXT(MESSAGE_CANNOT_GROUP_SELF));
 
     case ERROR_CODE::GROUP_ALREADY_JOINED:
-        throw std::runtime_error(MESSAGE_ALREADY_JOINED_GROUP);
+        throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_GROUP));
 
     case ERROR_CODE::OFFLINE:
         throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), actor));
