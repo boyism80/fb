@@ -10,20 +10,20 @@ void context::assert_whisper(const internal_resp::Whisper& response) const
         return;
 
     case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", response.to));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_USER_NOT_LOGIN), response.to));
 
     case ERROR_CODE::DISABLED_WHISPER_TARGET:
         throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", response.to));
 
     default:
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));
     }
 }
 
 async::task<void> context::whisper(character& from, std::string to, std::string message)
 {
     if (from.option(OPTION::WHISPER) == false)
-        throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
     auto target = this->_shard[to]->names.template lock<character*>([&to](auto& names) -> character* {
         if (names.contains(to) == false)
@@ -39,7 +39,7 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
 
         co_await target->thread()->switching();
         if (target->option(OPTION::WHISPER) == false)
-            throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", to));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), to));
 
         target->message(std::format("{}> {}", from.name(), message), MESSAGE_TYPE::NOTIFY);
 

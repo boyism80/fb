@@ -10,13 +10,13 @@ void context::assert_mail(uint32_t error) const
         return;
 
     case ERROR_CODE::NOT_FOUND_CHARACTER:
-        throw std::runtime_error("없는사람한테 메일 보내려고함");
+        throw std::runtime_error(_TEXT(MESSAGE_INVALID_USER_NAME));
 
     case ERROR_CODE::NOT_FOUND_MAIL:
-        throw std::runtime_error("메일이 없습니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_MAIL));
 
     default:
-        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }
 }
 

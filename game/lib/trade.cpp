@@ -119,7 +119,7 @@ bool fb::game::trade::up_item(uint8_t index)
         auto listener = this->_owner.get_listener<fb::game::character>();
         auto item     = this->_owner.items[index];
         if (item == nullptr)
-            throw std::runtime_error("아이템이 없습니다.");
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_FOUND_ITEM));
 
         auto& model = item->based<fb::model::item>();
 
@@ -293,7 +293,7 @@ fb::game::item* fb::game::trade::find(const fb::model::item& item) const
 void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
 {
     if (0xFFFFFFFF - trade.money() < this->_owner.money())
-        throw std::runtime_error("더 이상 돈을 가질 수 없습니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_MONEY_FULL));
 
     auto free_size = this->_owner.items.free_size();
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -317,7 +317,7 @@ void fb::game::trade::assert_exchange(const fb::game::trade& trade) const
     }
 
     if (free_size < trade.items().size())
-        throw std::runtime_error("더 이상 아이템을 가질 수 없습니다.");
+        throw std::runtime_error(_TEXT(MESSAGE_ITEM_FULL));
 }
 
 void fb::game::trade::exchange(trade& trade1, trade& trade2)
