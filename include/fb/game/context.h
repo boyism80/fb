@@ -311,6 +311,13 @@ private:
      */
     void on_write_mail(const internal_resp::WriteMail& resp);
 
+    /**
+     * @brief      Called on whisper.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_whisper(const internal_resp::Whisper& resp);
+
 public:
     /**
      * @brief      { function_description }
@@ -596,7 +603,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<std::list<board::article>> board_list(uint16_t section, uint16_t offset);
+    [[nodiscard]] async::task<std::list<board::article>> board_list(uint16_t section, uint16_t offset);
 
     /**
      * @brief      Reads a board.
@@ -606,7 +613,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<board::article> read_board(uint16_t section, uint16_t id);
+    [[nodiscard]] async::task<board::article> read_board(uint16_t section, uint16_t id);
 
     /**
      * @brief      Writes a board.
@@ -618,7 +625,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void>
+    [[nodiscard]] async::task<void>
     write_board(character& ch, uint16_t section, const std::string& title, const std::string& contents);
 
     /**
@@ -630,7 +637,18 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<void> delete_board(character& ch, uint16_t section, uint16_t id);
+    [[nodiscard]] async::task<void> delete_board(character& ch, uint16_t section, uint16_t id);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      from     The from
+     * @param[in]  to       { parameter_description }
+     * @param[in]  message  The message
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> whisper(character& from, std::string to, std::string message);
 
 protected:
     /**

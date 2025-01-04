@@ -39,6 +39,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"push_trace",          character::builtin_push_trace},
 {"erase_trace",         character::builtin_erase_trace},
 {"switch_context",      character::builtin_switch_context},
+{"whisper",             character::builtin_whisper},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1147,4 +1148,43 @@ int character::builtin_switch_context(lua_State* lua)
 
     thread->pushboolean(me->dialog.switch_context(you->dialog));
     return 1;
+}
+
+int character::builtin_whisper(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto me      = thread->touserdata<character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto to      = thread->tostring(2);
+    auto message = thread->tostring(3);
+
+    static auto fn = [](fb::game::context*   context,
+                        fb::lua::context*    thread,
+                        fb::game::character* ch,
+                        const std::string&   to,
+                        const std::string&   message) -> async::task<void> {
+        try
+        {
+            co_await context->whisper(*ch, to, message);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+
+        thread->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, me, to, message);
+    });
+
+    return thread->yield(1);
 }

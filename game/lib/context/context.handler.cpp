@@ -923,52 +923,11 @@ async::task<bool> context::handle_whisper(fb::socket<character>&                
         co_return true;
 
     auto  fd      = me->fd();
-    auto& from    = me->name();
-    auto  to      = std::string(request.name);
-    auto  message = std::string(request.message);
-    auto  error   = std::string();
     try
     {
-        if (me->option(OPTION::WHISPER) == false)
-            throw std::runtime_error("당신은 귓속말 거부 상태입니다.");
-
-        me->message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
-        this->foreach_ch(
-            to,
-            [this, from, to = me->id(), message](auto& you) {
-                auto response    = internal_resp::Whisper{};
-                response.from    = from;
-                response.to      = to;
-                response.message = message;
-                response.host    = fb::config<uint32_t>("id");
-                if (you.option(OPTION::WHISPER))
-                    response.error = static_cast<uint32_t>(ERROR_CODE::NONE);
-                else
-                    response.error = static_cast<uint32_t>(ERROR_CODE::DISABLED_WHISPER_TARGET);
-
-                this->assert_whisper(response);
-                you.message(std::format("{}> {}", from, message), MESSAGE_TYPE::NOTIFY);
-            },
-            [this, from, message, fd](const auto& to) {
-                async::awaitable_then(this->post<internal_reqs::Whisper, internal_resp::Whisper>(
-                                          "internal",
-                                          "/in-game/whisper",
-                                          internal_reqs::Whisper{from, to, message}),
-                                      [this, fd](auto result) {
-                                          if (this->assert_socket(fd) == false)
-                                              return;
-
-                                          try
-                                          {
-                                              auto&& resp = result();
-                                              this->assert_whisper(resp);
-                                          }
-                                          catch (std::exception& e)
-                                          { }
-                                      });
-            });
+        co_await this->whisper(*me, request.name, request.message);
     }
-    catch (std::exception& e)
+    catch(std::exception& e)
     {
         if (this->assert_socket(fd) == false)
             co_return false;

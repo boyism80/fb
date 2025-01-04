@@ -29,19 +29,7 @@ async::task<void> context::handle_amqp_Whisper(const internal_resp::Whisper& res
     if (resp.host == fb::config<uint16_t>("id"))
         co_return;
 
-    try
-    {
-        this->assert_whisper(resp);
-        this->foreach_ch(resp.to, [&resp](auto& you) {
-            you.message(std::format("{}> {}", resp.from, resp.message), MESSAGE_TYPE::NOTIFY);
-        });
-    }
-    catch (std::exception& e)
-    {
-        this->foreach_ch(resp.from, [&resp, error = e.what()](auto& me) {
-            me.message(error, MESSAGE_TYPE::NOTIFY);
-        });
-    }
+    this->on_whisper(resp);
 }
 
 async::task<void> context::handle_amqp_EnterGroup(const internal_resp::EnterGroup& resp)

@@ -197,9 +197,22 @@ function sample_clan(me)
     end
 end
 
+function sample_whisper(me)
+    local npc = name2npc('낙랑')
+    local name = npc:input(me, '귓속말할 상대 이름')
+    local message = npc:input(me, '귓속말 내용')
+
+    local error = me:whisper(name, message)
+    if error ~= nil then
+        npc:dialog(me, error)
+    else
+        npc:dialog(me, '성공')
+    end
+end
+
 function func(me)
 
-    sample_group(me)
+    sample_whisper(me)
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')
