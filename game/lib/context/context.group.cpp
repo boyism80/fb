@@ -72,7 +72,7 @@ async::task<bool> context::create_group(character& me, const std::string& target
 {
     try
     {
-        if (me.option(SETTING::GROUP) == false)
+        if (me.option(OPTION::GROUP) == false)
             throw std::runtime_error(_TEXT(MESSAGE_GROUP_DISABLED_MINE));
 
         auto&& resp = co_await this->post<internal_reqs::EnterGroup, internal_resp::EnterGroup>(
@@ -119,7 +119,7 @@ void context::assert_group(uint32_t error, const std::string& actor) const
         throw std::runtime_error("당신은 그룹장이 아닙니다.");
 
     default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), error));
     }
 }
 

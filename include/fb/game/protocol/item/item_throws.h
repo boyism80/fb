@@ -4,9 +4,13 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #ifndef BOT
+#include <fb/game/item.h>
 #include <fb/game/character.h>
 #endif
 
+#ifndef BOT
+using namespace fb::game;
+#endif
 using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
@@ -38,16 +42,16 @@ public:
 
 public:
 #ifndef BOT
-    const fb::game::character& ch;
-    const fb::game::item&      item;
-    const point<uint16_t>      to;
+    const fb::game::character&       ch;
+    const fb::game::item&            item;
+    const fb::model::point<uint16_t> to;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    item_throws(const fb::game::character& ch, const fb::game::item& item, const point<uint16_t>& to);
+    item_throws(const fb::game::character& ch, const fb::game::item& item, const fb::model::point<uint16_t>& to);
 #else
     item_throws() = default;
 #endif

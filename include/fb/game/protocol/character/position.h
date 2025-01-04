@@ -8,7 +8,6 @@
 #include <fb/game/map.h>
 #endif
 
-using namespace fb::model;
 using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::response {
@@ -22,8 +21,8 @@ public:
 #ifndef BOT
     const fb::game::character& ch;
 #else
-    point<uint16_t> abs;
-    point<uint16_t> rel;
+    fb::model::point<uint16_t> abs;
+    fb::model::point<uint16_t> rel;
 #endif
 
 public:

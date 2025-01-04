@@ -534,10 +534,8 @@ int character::builtin_class(lua_State* lua)
         {
             auto context = thread->env<fb::game::context>("context");
 
-            context->send(*ch, fb::protocol::game::response::id(*ch), context::scope::SELF);
-            context->send(*ch,
-                          fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX),
-                          context::scope::SELF);
+            ch->send(fb::protocol::game::response::id(*ch));
+            ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
             thread->pushboolean(true);
         }
     }
@@ -568,9 +566,7 @@ int character::builtin_level(lua_State* lua)
         ch->level(level);
 
         auto context = thread->env<fb::game::context>("context");
-        context->send(*ch,
-                      fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX),
-                      context::scope::SELF);
+        ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
         return 0;
     }
 }

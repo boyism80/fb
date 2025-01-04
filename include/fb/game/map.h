@@ -32,9 +32,9 @@ public:
     using unique_sector = std::unique_ptr<sectors>;
 
 private:
-    size16_t      _size  = size16_t(0, 0);
-    unique_tiles  _tiles = nullptr;
-    unique_sector _sectors;
+    fb::model::size16_t _size  = fb::model::size16_t(0, 0);
+    unique_tiles        _tiles = nullptr;
+    unique_sector       _sectors;
 
 public:
     const fb::game::context& context;
@@ -79,7 +79,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint64_t index(const point16_t& p) const;
+    uint64_t index(const fb::model::point16_t& p) const;
     /**
      * @brief      { function_description }
      *
@@ -87,7 +87,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    point16_t point(uint64_t i) const;
+    fb::model::point16_t point(uint64_t i) const;
     /**
      * @brief      { function_description }
      *
@@ -124,7 +124,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    size16_t size() const;
+    fb::model::size16_t size() const;
     /**
      * @brief      { function_description }
      *
@@ -138,7 +138,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool existable(const point16_t position) const;
+    bool existable(const fb::model::point16_t position) const;
     /**
      * @brief      { function_description }
      *
@@ -146,7 +146,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool movable(const point16_t position) const;
+    bool movable(const fb::model::point16_t position) const;
     /**
      * @brief      { function_description }
      *
@@ -172,7 +172,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    const fb::model::warp* warpable(const point16_t& position) const;
+    const fb::model::warp* warpable(const fb::model::point16_t& position) const;
     /**
      * @brief      Updates the given object.
      *
@@ -195,7 +195,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> nears(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     /**
      * @brief      { function_description }
      *
@@ -204,7 +204,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> belows(const point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
     /**
      * @brief      { function_description }
      *

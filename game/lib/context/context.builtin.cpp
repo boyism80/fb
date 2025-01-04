@@ -270,7 +270,11 @@ int fb::game::context::builtin_timer(lua_State* lua)
     auto value    = (uint32_t)thread->tointeger(1);
     auto decrease = thread->toboolean(2);
 
-    context->send(fb::protocol::game::response::timer(value, decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE));
+    auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
+    context->foreach_ch([value, type](auto& ch) -> async::task<void> {
+        ch.timer(value, type);
+        co_return;
+    });
     return 0;
 }
 
@@ -283,7 +287,10 @@ int fb::game::context::builtin_weather(lua_State* lua)
     auto context = thread->env<fb::game::context>("context");
     auto value   = (uint32_t)thread->tointeger(1);
 
-    context->send(fb::protocol::game::response::weather(WEATHER_TYPE(value)));
+    context->foreach_ch([weather = WEATHER_TYPE(value)](auto& ch) -> async::task<void> {
+        ch.weather(weather);
+        co_return;
+    });
     return 0;
 }
 
@@ -344,22 +351,9 @@ int fb::game::context::builtin_broadcast(lua_State* lua)
     auto text    = thread->tostring(1);
     auto type    = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(2));
 
-    for (int i = 0; i < context->threads.size(); i++)
-    {
-        context->threads.at(i)->enqueue(
-            [text, type](fb::thread& thread) -> async::task<void> {
-                auto params = thread.data<thread_params>();
-                for (auto& [_, ch] : params->characters)
-                {
-                    ch->message(text, type);
-                }
-                co_return;
-            },
-            [](auto& e) {
-                fb::logger::fatal(e.what());
-            },
-            []() {
-            });
-    }
+    context->foreach_ch([text, type](auto& ch) -> async::task<void> {
+        ch.message(text, type);
+        co_return;
+    });
     return 0;
 }

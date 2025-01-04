@@ -53,17 +53,19 @@ void context::on_direction(object& me)
     this->send(me, fb_resp::direction(me), scope::PIVOT, true);
 }
 
-void context::on_show(object& me, bool light)
+void context::on_update_external(object& me, bool light)
 {
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
-        this->send(
-            me,
-            [&me, light](const auto& to) {
-                return std::unique_ptr<fb::protocol::header>(
-                    new fb_resp::update_external(static_cast<character&>(me), to, light));
-            },
-            scope::PIVOT);
+        auto map = me.map();
+        if (map == nullptr)
+            return;
+
+        for (auto obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
+        {
+            auto you = static_cast<character*>(obj);
+            you->send(fb_resp::update_external(static_cast<character&>(me), me, light));
+        }
     }
     else
     {
@@ -71,12 +73,12 @@ void context::on_show(object& me, bool light)
     }
 }
 
-void context::on_show(object& me, object& you, bool light)
+void context::on_update_external(object& me, object& you, bool light)
 {
-    if (you.is(OBJECT_TYPE::CHARACTER))
-        this->send(me, fb_resp::update_external(static_cast<character&>(you), me, light), scope::SELF);
+    if (me.is(OBJECT_TYPE::CHARACTER))
+        you.send(fb_resp::update_external(static_cast<character&>(me), me, light));
     else
-        this->send(me, fb_resp::update(you), scope::SELF);
+        you.send(fb_resp::update(me));
 }
 
 void context::on_hide(object& me, DESTROY_TYPE destroy_type)
@@ -101,19 +103,19 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        this->send(me, fb_resp::hide(you), scope::SELF);
+        me.send(fb_resp::hide(you));
         break;
 
     case DESTROY_TYPE::DEAD:
         if (you.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        this->send(me, fb_resp::die(static_cast<life&>(you)), scope::SELF);
+        me.send(fb_resp::die(static_cast<life&>(you)));
         break;
     }
 }
 
-void context::on_move(object& me, const point16_t& before)
+void context::on_move(object& me, const fb::model::point16_t& before)
 {
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
@@ -127,13 +129,14 @@ void context::on_unbuff(object& me, buff& buff)
     if (thread == nullptr)
         return;
     thread->from(buff.model.uncast.c_str()).func("on_uncast").pushobject(me).pushobject(buff.model).resume(2);
-    this->send(me, fb_resp::spell_unbuff(buff), scope::SELF);
+    me.send(fb_resp::spell_unbuff(buff));
 }
 
-void context::on_hold(fb::game::object& me)
+void context::on_sound(object& me, SOUND sound)
 {
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        this->send(me, fb_resp::position(static_cast<character&>(me)), scope::SELF);
-    }
+    this->send(me, fb_resp::sound(me, sound), scope::PIVOT);
+}
+void context::on_effect(object& me, uint8_t value)
+{
+    this->send(me, fb_resp::effect(me, value), scope::PIVOT);
 }

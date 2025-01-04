@@ -26,7 +26,7 @@ async::task<bool> context::handle_command_map(character& ch, Json::Value& parame
     }
 
     auto& map   = this->maps[model->id];
-    std::ignore = co_await ch.map(&map, point16_t(x, y));
+    std::ignore = co_await ch.map(&map, fb::model::point16_t(x, y));
     co_return true;
 }
 
@@ -39,7 +39,7 @@ async::task<bool> context::handle_command_sound(character& ch, Json::Value& para
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::sound(ch, SOUND(value)), scope::PIVOT);
+    ch.sound(SOUND(value));
     co_return true;
 }
 
@@ -52,7 +52,7 @@ async::task<bool> context::handle_command_action(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::action(ch, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    ch.action(ACTION(value), DURATION::SPELL);
     co_return true;
 }
 
@@ -65,7 +65,7 @@ async::task<bool> context::handle_command_weather(character& ch, Json::Value& pa
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
+    ch.weather(WEATHER_TYPE(value));
     co_return true;
 }
 
@@ -78,7 +78,7 @@ async::task<bool> context::handle_command_bright(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::bright(value), scope::PIVOT);
+    ch.bright(value);
     co_return true;
 }
 
@@ -91,7 +91,7 @@ async::task<bool> context::handle_command_timer(character& ch, Json::Value& para
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::timer(value), scope::PIVOT);
+    ch.timer(value, TIMER_TYPE::DECREASE);
     co_return true;
 }
 
@@ -104,7 +104,7 @@ async::task<bool> context::handle_command_effect(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::effect(ch, value), scope::PIVOT);
+    ch.effect(value);
     co_return true;
 }
 
@@ -122,9 +122,9 @@ async::task<bool> context::handle_command_disguise(character& ch, Json::Value& p
         co_return true;
 
     ch.disguise(mob->look);
-    this->send(ch, fb_resp::effect(ch, 0x03), scope::PIVOT);
-    this->send(ch, fb_resp::action(ch, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    this->send(ch, fb_resp::sound(ch, SOUND::DISGUISE), scope::PIVOT);
+    ch.effect(0x03);
+    ch.action(ACTION::CAST_SPELL, DURATION::SPELL);
+    ch.sound(SOUND::DISGUISE);
     co_return true;
 }
 
@@ -169,8 +169,6 @@ async::task<bool> context::handle_command_class(character& ch, Json::Value& para
 
     ch.cls(class_type);
     ch.promotion(promotion);
-    this->send(ch, fb_resp::id(ch), scope::SELF);
-    this->send(ch, fb_resp::update_internal(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -184,7 +182,6 @@ async::task<bool> context::handle_command_level(character& ch, Json::Value& para
 
     auto level = parameters[0].asInt();
     ch.level(level);
-    this->send(ch, fb_resp::update_internal(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -271,7 +268,7 @@ async::task<bool> context::handle_command_world(character& ch, Json::Value& para
         {
             if (point.name == name)
             {
-                ch.send(fb_resp::map_worlds(this->model, id, index));
+                ch.show_world_map(id, index);
                 co_return true;
             }
         }
@@ -411,7 +408,7 @@ async::task<bool> context::handle_command_randmap(character& ch, Json::Value& pa
     auto  x     = map->width() > 0 ? std::rand() % map->width() : 0;
     auto  y     = map->height() > 0 ? std::rand() % map->height() : 0;
 
-    co_return co_await ch.map(map, point16_t(x, y));
+    co_return co_await ch.map(map, fb::model::point16_t(x, y));
 }
 
 async::task<bool> context::handle_command_npc(character& ch, Json::Value& parameters)
@@ -533,7 +530,7 @@ async::task<bool> context::handle_command_ad(character& ch, Json::Value& paramet
                                                                      : std::string{"https://www.google.com"};
     auto time   = parameters.size() >= 4 && parameters[3].isNumeric() ? parameters[3].asInt() : 60;
 
-    this->send(ch, fb::protocol::game::response::ad(width, height, url, time), scope::SELF);
+    ch.send(fb::protocol::game::response::ad(width, height, url, time));
     co_return true;
 }
 
@@ -545,7 +542,7 @@ async::task<bool> context::handle_command_web(character& ch, Json::Value& parame
     auto message =
         parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"default message"};
 
-    this->send(ch, fb::protocol::game::response::web(type, url, message), scope::SELF);
+    ch.send(fb::protocol::game::response::web(type, url, message));
     co_return true;
 }
 

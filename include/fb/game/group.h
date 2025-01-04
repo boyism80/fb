@@ -117,7 +117,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<character*> nears(const fb::game::map& map, const point16_t& position) const;
+    std::vector<character*> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
 
     /**
      * @brief      { function_description }

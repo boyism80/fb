@@ -3,7 +3,7 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-external_info::external_info(fb::game::character& ch, const fb::model::model& model) :
+external_info::external_info(const fb::game::character& ch, const fb::model::model& model) :
     ch(ch),
     model(model)
 { }
@@ -97,8 +97,8 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<std::string>(sstream.str());
 
     writer.write<uint32_t>(this->ch.sequence());
-    writer.write<uint8_t>(this->ch.option(SETTING::GROUP));
-    writer.write<uint8_t>(this->ch.option(SETTING::TRADE));
+    writer.write<uint8_t>(this->ch.option(OPTION::GROUP));
+    writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
     writer.write<uint32_t>(0x00000000); // unknown
 
     // 업적

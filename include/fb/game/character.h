@@ -11,26 +11,18 @@
 #include <fb/game/trade.h>
 #include <fb/game/trace.h>
 #include <fb/game/clan.h>
+#include <fb/game/board.h>
 
 namespace fb::game {
 
-/**
- * @brief      This class describes a map of .
- */
 class map;
-/**
- * @brief      This class describes a clan.
- */
 class clan;
-/**
- * @brief      This class describes a group.
- */
 class group;
 
-using group_lock        = fb::locker<fb::game::group>;
+using group_lock        = fb::locker<group>;
 using shared_group_lock = std::shared_ptr<group_lock>;
 
-using clan_lock        = fb::locker<fb::game::clan>;
+using clan_lock        = fb::locker<clan>;
 using shared_clan_lock = std::shared_ptr<clan_lock>;
 
 /**
@@ -42,7 +34,7 @@ class character : public life
     friend class clan;
 
 public:
-    using fb::game::object::map;
+    using object::map;
 
 public:
     /**
@@ -66,7 +58,7 @@ private:
     bool                    _admin = false;
     std::string             _name;
     std::string             _pw;
-    datetime                _updated_date;
+    fb::model::datetime     _updated_date;
     uint16_t                _look               = 0;
     uint8_t                 _color              = 0;
     std::optional<uint8_t>  _armor_color        = 0;
@@ -116,7 +108,7 @@ public:
      * @param      context  The context
      * @param      socket   The socket
      */
-    character(fb::game::context& context, fb::socket<fb::game::character>& socket);
+    character(fb::game::context& context, fb::socket<character>& socket);
 
     /**
      * @brief      Destroys the object.
@@ -163,23 +155,13 @@ public:
      *
      * @return     The object type.
      */
-    OBJECT_TYPE what() const override final;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      map           The map
-     * @param[in]  position      The position
-     * @param[in]  destroy_type  The destroy type
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> map(fb::game::map*   map,
-                                        const point16_t& position     = point16_t{0, 0},
-                                        DESTROY_TYPE     destroy_type = DESTROY_TYPE::DEFAULT) override final;
+    OBJECT_TYPE                     what() const override final;
+    [[nodiscard]] async::task<bool> map(fb::game::map*              map,
+                                        const fb::model::point16_t& position = fb::model::point16_t{0, 0},
+                                        DESTROY_TYPE destroy_type            = DESTROY_TYPE::DEFAULT) override final;
 
 public:
-    operator fb::socket<fb::game::character>& ();
+    operator fb::socket<character>& ();
 
 public:
     /**
@@ -259,7 +241,7 @@ public:
      * @param[in]  duration  The duration
      * @param[in]  sound     The sound
      */
-    void action(ACTION action, DURATION duration, uint8_t sound = 0x00);
+    void action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
 
     /**
      * @brief      { function_description }
@@ -287,14 +269,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    const datetime& updated_date() const;
+    const fb::model::datetime& updated_date() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void updated_date(const datetime& value);
+    void updated_date(const fb::model::datetime& value);
 
     /**
      * @brief      { function_description }
@@ -631,6 +613,7 @@ public:
      * @brief      Adds an exponent.
      *
      * @param[in]  value   The value
+     * @param[in]  limit   The limit
      * @param[in]  notify  The notify
      *
      * @return     { description_of_the_return_value }
@@ -740,7 +723,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool deposit_item(fb::game::item& item);
+    bool deposit_item(item& item);
 
     /**
      * @brief      { function_description }
@@ -769,7 +752,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* deposited_item(const fb::model::item& item) const;
+    item* deposited_item(const fb::model::item& item) const;
 
     /**
      * @brief      { function_description }
@@ -786,7 +769,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* withdraw_item(uint8_t index, uint16_t count);
+    item* withdraw_item(uint8_t index, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -796,7 +779,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* withdraw_item(const std::string& name, uint16_t count);
+    item* withdraw_item(const std::string& name, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -806,7 +789,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* withdraw_item(const fb::model::item& item, uint16_t count);
+    item* withdraw_item(const fb::model::item& item, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -857,7 +840,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool option(SETTING key) const;
+    bool option(OPTION key) const;
 
     /**
      * @brief      { function_description }
@@ -866,7 +849,7 @@ public:
      * @param[in]  value   The value
      * @param[in]  notify  The notify
      */
-    void option(SETTING key, bool value, bool notify = true);
+    void option(OPTION key, bool value, bool notify = true);
 
     /**
      * @brief      { function_description }
@@ -876,7 +859,63 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool option_toggle(SETTING key, bool notify = true);
+    bool option_toggle(OPTION key, bool notify = true);
+
+    /**
+     * @brief      { function_description }
+     */
+    void update_option();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  map   The map
+     */
+    void update_map(const fb::game::map& map) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  map    The map
+     * @param[in]  begin  The begin
+     * @param[in]  size   The size
+     */
+    void update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  bgm     The bgm
+     * @param[in]  volume  The volume
+     */
+    void update_bgm(uint16_t bgm, uint8_t volume) override final;
+
+    /**
+     * @brief      { function_description }
+     */
+    void update_buff();
+
+    /**
+     * @brief      { function_description }
+     */
+    void update_internal();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  hours  The hours
+     */
+    void update_time(uint16_t hours);
+
+    /**
+     * @brief      Initializes the object.
+     */
+    void init();
+
+    /**
+     * @brief      { function_description }
+     */
+    void update_position() override final;
 
     /**
      * @brief      { function_description }
@@ -955,7 +994,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool move(const point16_t& before);
+    bool move(const fb::model::point16_t& before);
 
     /**
      * @brief      { function_description }
@@ -965,14 +1004,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool move(DIRECTION direction, const point16_t& before);
+    bool move(DIRECTION direction, const fb::model::point16_t& before);
 
     /**
      * @brief      { function_description }
      *
      * @param      horse  The horse
      */
-    void ride(fb::game::mob& horse);
+    void ride(mob& horse);
 
     /**
      * @brief      { function_description }
@@ -1030,7 +1069,7 @@ public:
      *
      * @param[in]  value  The value
      */
-    void update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN);
+    void update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN) override final;
 
     /**
      * @brief      { function_description }
@@ -1046,167 +1085,109 @@ public:
      */
     void unread_mail(uint16_t value);
 
-private:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  ch    { parameter_description }
      */
-    bool inline_sell(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    void browse_ch(const character& ch);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  iteem     The iteem
+     * @param[in]  position  The position
      */
-    bool inline_buy(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    void item_tooltip(const item& iteem, uint16_t position);
+
+    /**
+     * @brief      Shows the user list.
+     */
+    void show_user_list();
+
+    /**
+     * @brief      Shows the board.
+     */
+    void show_board();
+
+    /**
+     * @brief      Shows the board.
+     *
+     * @param[in]  section   The section
+     * @param[in]  articles  The articles
+     * @param[in]  flag      The flag
+     */
+    void show_board(const fb::model::board&          section,
+                    const std::list<board::article>& articles,
+                    BOARD_BUTTON_ENABLE              flag);
+
+    /**
+     * @brief      Shows the board.
+     *
+     * @param[in]  article  The article
+     * @param[in]  flag     The flag
+     */
+    void show_board(const board::article& article, BOARD_BUTTON_ENABLE flag);
+
+    /**
+     * @brief      Shows the mail box.
+     *
+     * @param[in]  mails  The mails
+     * @param[in]  flag   The flag
+     */
+    void show_mail_box(const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag);
+
+    /**
+     * @brief      Shows the mail box.
+     *
+     * @param[in]  mail  The mail
+     * @param[in]  flag  The flag
+     */
+    void show_mail_box(const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag);
+
+    /**
+     * @brief      Shows the board message.
+     *
+     * @param[in]  message  The message
+     * @param[in]  success  The success
+     * @param[in]  mail     The mail
+     */
+    void show_board_message(const std::string& message, bool success, bool mail);
+
+    /**
+     * @brief      Shows the world map.
+     *
+     * @param[in]  id     The identifier
+     * @param[in]  index  The index
+     */
+    void show_world_map(uint32_t id, uint16_t index);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  time  The time
+     * @param[in]  type  The type
      */
-    bool inline_repair(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    void timer(uint32_t time, TIMER_TYPE type);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  weather  The weather
      */
-    bool inline_deposit_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    void weather(WEATHER_TYPE weather);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  value  The value
      */
-    bool inline_withdraw_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    void bright(uint8_t value);
 
     /**
      * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
      */
-    bool inline_deposit_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_withdraw_item(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_sell_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_buy_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_sell_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_buy_price(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_show_deposited_money(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_rename_weapon(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_hold_item_list(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_hold_item_count(const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool inline_interaction(const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    void update_id() override final;
 
     /**
      * @brief      Returns a protocol representation of the object.
@@ -1458,6 +1439,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_clan(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -1466,6 +1448,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_create_clan(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -1524,13 +1507,13 @@ public:
 /**
  * @brief      This class describes a container.
  */
-class character::container : private std::vector<fb::game::character*>
+class character::container : private std::vector<character*>
 {
 public:
-    using std::vector<fb::game::character*>::begin;
-    using std::vector<fb::game::character*>::end;
-    using std::vector<fb::game::character*>::size;
-    using std::vector<fb::game::character*>::operator[];
+    using std::vector<character*>::begin;
+    using std::vector<character*>::end;
+    using std::vector<character*>::size;
+    using std::vector<character*>::operator[];
 
 public:
     /**
@@ -1543,7 +1526,7 @@ public:
      *
      * @param[in]  right  The right
      */
-    container(const std::vector<fb::game::character*>& right);
+    container(const std::vector<character*>& right);
 
     /**
      * @brief      Destroys the object.
@@ -1554,20 +1537,20 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      ch    The ch
+     * @param      ch    { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
-    container& push(fb::game::character& ch);
+    container& push(character& ch);
 
     /**
      * @brief      { function_description }
      *
-     * @param      ch    The ch
+     * @param      ch    { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
-    container& erase(fb::game::character& ch);
+    container& erase(character& ch);
 
 public:
     /**
@@ -1577,16 +1560,16 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::character* find(const std::string& name);
+    character* find(const std::string& name);
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  ch    The ch
+     * @param[in]  ch    { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
-    bool contains(const fb::game::character& ch) const;
+    bool contains(const character& ch) const;
 
 public:
     /**
@@ -1596,20 +1579,20 @@ public:
      *
      * @return     The result of the array indexer
      */
-    fb::game::character* operator[] (const std::string& name);
+    character* operator[] (const std::string& name);
 };
 
 /**
  * @brief      { struct_description }
  */
-struct character::listener : public virtual fb::game::life::listener,
-                             public virtual fb::game::dialog::listener,
-                             public virtual fb::game::trade::listener,
-                             public virtual fb::game::equipment::listener
+struct character::listener : public virtual life::listener,
+                             public virtual dialog::listener,
+                             public virtual trade::listener,
+                             public virtual equipment::listener
 {
 public:
     /**
-     * @brief      Called on notify.
+     * @brief      Called on message.
      *
      * @param      me       { parameter_description }
      * @param[in]  message  The message
@@ -1618,13 +1601,211 @@ public:
     virtual void on_message(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
 
     /**
-     * @brief      Called on option.
+     * @brief      Called when option changed.
      *
      * @param      me       { parameter_description }
      * @param[in]  option   The option
      * @param[in]  enabled  Indicates if enabled
      */
-    virtual void on_option(character& me, SETTING option, bool enabled) = 0;
+    virtual void on_option_changed(character& me, OPTION option, bool enabled) = 0;
+
+    /**
+     * @brief      Called on update option.
+     *
+     * @param      me    { parameter_description }
+     */
+    virtual void on_update_option(character& me) = 0;
+
+    /**
+     * @brief      Called on update map.
+     *
+     * @param      ch    { parameter_description }
+     * @param[in]  map   The map
+     */
+    virtual void on_update_map(character& ch, const fb::game::map& map) = 0;
+
+    /**
+     * @brief      Called on update map.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  map    The map
+     * @param[in]  begin  The begin
+     * @param[in]  size   The size
+     */
+    virtual void on_update_map(character&                  ch,
+                               const fb::game::map&        map,
+                               const fb::model::point16_t& begin,
+                               const fb::model::size8_t&   size) = 0;
+
+    /**
+     * @brief      Called on update bgm.
+     *
+     * @param      ch      { parameter_description }
+     * @param[in]  bgm     The bgm
+     * @param[in]  volume  The volume
+     */
+    virtual void on_update_bgm(character& ch, uint16_t bgm, uint8_t volume) = 0;
+
+    /**
+     * @brief      Called on update buffer.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  buffs  The buffs
+     */
+    virtual void on_update_buff(character& ch, const fb::game::buffs& buffs) = 0;
+
+    /**
+     * @brief      Called on update internal.
+     *
+     * @param      ch    { parameter_description }
+     */
+    virtual void on_update_internal(character& ch) = 0;
+
+    /**
+     * @brief      Called on update time.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  hours  The hours
+     */
+    virtual void on_update_time(character& ch, uint16_t hours) = 0;
+
+    /**
+     * @brief      Called on browse character.
+     *
+     * @param      ch      { parameter_description }
+     * @param[in]  target  The target
+     */
+    virtual void on_browse_character(character& ch, const character& target) = 0;
+
+    /**
+     * @brief      Called on item tooltip.
+     *
+     * @param      ch        { parameter_description }
+     * @param[in]  item      The item
+     * @param[in]  position  The position
+     */
+    virtual void on_item_tooltip(character& ch, const item& item, uint16_t position) = 0;
+
+    /**
+     * @brief      Called on show user list.
+     *
+     * @param      ch    { parameter_description }
+     */
+    virtual void on_show_user_list(character& ch) = 0;
+
+    /**
+     * @brief      Called on show board.
+     *
+     * @param      ch    { parameter_description }
+     */
+    virtual void on_show_board(character& ch) = 0;
+
+    /**
+     * @brief      Called on show board.
+     *
+     * @param      ch        { parameter_description }
+     * @param[in]  section   The section
+     * @param[in]  articles  The articles
+     * @param[in]  flag      The flag
+     */
+    virtual void on_show_board(character&                       ch,
+                               const fb::model::board&          section,
+                               const std::list<board::article>& articles,
+                               BOARD_BUTTON_ENABLE              flag) = 0;
+
+    /**
+     * @brief      Called on show board.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  value  The value
+     * @param[in]  flag   The flag
+     */
+    virtual void on_show_board(character& ch, const board::article& value, BOARD_BUTTON_ENABLE flag) = 0;
+
+    /**
+     * @brief      Called on show mail box.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  mails  The mails
+     * @param[in]  flag   The flag
+     */
+    virtual void on_show_mail_box(character&                                              ch,
+                                  const std::vector<fb::protocol::internal::MailSummary>& mails,
+                                  MAIL_BUTTON_ENABLE                                      flag) = 0;
+
+    /**
+     * @brief      Called on show mail box.
+     *
+     * @param      ch    { parameter_description }
+     * @param[in]  mail  The mail
+     * @param[in]  flag  The flag
+     */
+    virtual void on_show_mail_box(character& ch, const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag) = 0;
+
+    /**
+     * @brief      Called on show board message.
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  success  The success
+     * @param[in]  mail     The mail
+     */
+    virtual void on_show_board_message(character& ch, const std::string& message, bool success, bool mail) = 0;
+
+    /**
+     * @brief      Called on show world map.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  id     The identifier
+     * @param[in]  index  The index
+     */
+    virtual void on_show_world_map(character& ch, uint32_t id, uint16_t index) = 0;
+
+    /**
+     * @brief      Called on timer.
+     *
+     * @param      ch    { parameter_description }
+     * @param[in]  time  The time
+     * @param[in]  type  The type
+     */
+    virtual void on_timer(character& ch, uint32_t time, TIMER_TYPE type) = 0;
+
+    /**
+     * @brief      Called on weather.
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  weather  The weather
+     */
+    virtual void on_weather(character& ch, WEATHER_TYPE weather) = 0;
+
+    /**
+     * @brief      Called on bright.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  value  The value
+     */
+    virtual void on_bright(character& ch, uint8_t value) = 0;
+
+    /**
+     * @brief      Called on update identifier.
+     *
+     * @param      ch    { parameter_description }
+     */
+    virtual void on_update_id(character& ch) = 0;
+
+    /**
+     * @brief      Called on character initialize.
+     *
+     * @param      ch    { parameter_description }
+     */
+    virtual void on_character_init(character& ch) = 0;
+
+    /**
+     * @brief      Called on update position.
+     *
+     * @param      ch    { parameter_description }
+     */
+    virtual void on_update_position(character& ch) = 0;
 
     /**
      * @brief      Called on level up.
@@ -1634,17 +1815,7 @@ public:
     virtual void on_level_up(character& me) = 0;
 
     /**
-     * @brief      Called on action.
-     *
-     * @param      me        { parameter_description }
-     * @param[in]  action    The action
-     * @param[in]  duration  The duration
-     * @param[in]  sound     The sound
-     */
-    virtual void on_action(character& me, ACTION action, DURATION duration, uint8_t sound) = 0;
-
-    /**
-     * @brief      Called when updated.
+     * @brief      Called on update.
      *
      * @param      me     { parameter_description }
      * @param[in]  level  The level
@@ -1660,7 +1831,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const point16_t& position) = 0;
+    virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position) = 0;
 };
 
 } // namespace fb::game

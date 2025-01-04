@@ -2,9 +2,11 @@
 #define __BOARD_H__
 
 #include <ctime>
-#include <fb/game/character.h>
+#include <stdint.h>
+#include <optional>
+#include <string>
 
-namespace fb { namespace game { namespace board {
+namespace fb::game::board {
 
 /**
  * @brief      This class describes a section.
@@ -65,6 +67,7 @@ public:
     const std::string uname;
     const std::string title;
     const std::string contents;
+    const bool        next;
 
 public:
     /**
@@ -86,7 +89,8 @@ public:
             const std::string& title,
             uint8_t            month,
             uint8_t            day,
-            const std::string& contents = "") :
+            const std::string& contents = "",
+            bool               next     = false) :
         id(id),
         section(section),
         user(user),
@@ -94,11 +98,12 @@ public:
         title(title),
         month(month),
         day(day),
-        contents(contents)
+        contents(contents),
+        next(next)
     { }
     ~article() = default;
 };
 
-}}} // namespace fb::game::board
+} // namespace fb::game::board
 
 #endif // !__BOARD_H__

@@ -14,8 +14,8 @@ public:
     inline static uint8_t header = 0x1B;
 
 public:
-    SETTING option;
-    bool    ride = false;
+    OPTION option;
+    bool   ride = false;
 
 public:
     update_option() = default;

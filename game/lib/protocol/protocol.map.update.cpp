@@ -25,7 +25,10 @@ async::task<void> map_update::deserialize(fb::stream_reader<big_endian>& reader)
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-map_update::map_update(const fb::game::map& map, const point16_t& position, const size8_t& size, uint16_t crc) :
+map_update::map_update(const fb::game::map&        map,
+                       const fb::model::point16_t& position,
+                       const fb::model::size8_t&   size,
+                       uint16_t                    crc) :
     map(map),
     position(position),
     size(size),

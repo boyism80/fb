@@ -33,7 +33,7 @@ OBJECT_TYPE character::what() const
     return OBJECT_TYPE::CHARACTER;
 }
 
-async::task<bool> character::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
+async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
 
@@ -57,7 +57,10 @@ async::task<bool> character::map(fb::game::map* map, const point16_t& position, 
     }
     else
     {
-        co_return co_await object::map(map, position, destroy_type);
+        if (co_await object::map(map, position, destroy_type) == false)
+            co_return false;
+
+        co_return true;
     }
 }
 
@@ -167,13 +170,10 @@ void character::action(ACTION action, DURATION duration, uint8_t sound)
 {
     this->assert_thread();
 
-    auto listener = this->get_listener<character>();
-    auto error    = std::string();
     try
     {
         this->assert_state({STATE::GHOST, STATE::RIDING});
-        if (listener != nullptr)
-            listener->on_action(*this, action, duration, sound);
+        life::action(action, duration, sound);
     }
     catch (std::exception& e)
     {
@@ -202,14 +202,14 @@ void character::pw(const std::string& value)
     this->_pw = value;
 }
 
-const datetime& character::updated_date() const
+const fb::model::datetime& character::updated_date() const
 {
     this->assert_thread();
 
     return this->_updated_date;
 }
 
-void character::updated_date(const datetime& value)
+void character::updated_date(const fb::model::datetime& value)
 {
     this->assert_thread();
 
@@ -501,6 +501,8 @@ void character::cls(CLASS value)
     this->assert_thread();
 
     this->_class = value;
+    this->update_id();
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 uint8_t character::promotion() const
@@ -515,6 +517,8 @@ void character::promotion(uint8_t value)
     this->assert_thread();
 
     this->_promotion = value;
+    this->update_id();
+    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 uint8_t character::strength() const
@@ -920,7 +924,7 @@ bool character::deposit_item(const std::string& name, uint16_t count)
     return this->deposit_item(index, count);
 }
 
-fb::game::item* character::deposited_item(const fb::model::item& item) const
+item* character::deposited_item(const fb::model::item& item) const
 {
     this->assert_thread();
 
@@ -935,14 +939,14 @@ fb::game::item* character::deposited_item(const fb::model::item& item) const
     return *found;
 }
 
-const std::vector<fb::game::item*>& character::deposited_items() const
+const std::vector<item*>& character::deposited_items() const
 {
     this->assert_thread();
 
     return this->_deposited_items;
 }
 
-fb::game::item* character::withdraw_item(uint8_t index, uint16_t count)
+item* character::withdraw_item(uint8_t index, uint16_t count)
 {
     this->assert_thread();
 
@@ -992,8 +996,9 @@ fb::game::item* character::withdraw_item(uint8_t index, uint16_t count)
     }
 }
 
-fb::game::item* character::withdraw_item(const std::string& name, uint16_t count)
+item* character::withdraw_item(const std::string& name, uint16_t count)
 {
+
     this->assert_thread();
 
     auto found =
@@ -1009,7 +1014,7 @@ fb::game::item* character::withdraw_item(const std::string& name, uint16_t count
     return this->withdraw_item((uint8_t)index, count);
 }
 
-fb::game::item* character::withdraw_item(const fb::model::item& item, uint16_t count)
+item* character::withdraw_item(const fb::model::item& item, uint16_t count)
 {
     this->assert_thread();
 
@@ -1068,23 +1073,23 @@ void character::regenerative(uint8_t value)
     this->_regenerative = value;
 }
 
-bool character::option(SETTING key) const
+bool character::option(OPTION key) const
 {
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::PK_PROTECT))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     return this->_options[opt];
 }
 
-void character::option(SETTING key, bool value, bool notify)
+void character::option(OPTION key, bool value, bool notify)
 {
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::PK_PROTECT))
         return;
 
     if (this->_options[opt] == value)
@@ -1095,19 +1100,84 @@ void character::option(SETTING key, bool value, bool notify)
 
     auto listener = this->get_listener<character>();
     if (listener != nullptr && notify)
-        listener->on_option(*this, key, value);
+        listener->on_option_changed(*this, key, value);
+
+    this->update_option();
 }
 
-bool character::option_toggle(SETTING key, bool notify)
+bool character::option_toggle(OPTION key, bool notify)
 {
     this->assert_thread();
 
     auto opt = static_cast<uint8_t>(key);
-    if (opt == 0 || opt > static_cast<uint8_t>(SETTING::PK_PROTECT))
+    if (opt == 0 || opt > static_cast<uint8_t>(OPTION::PK_PROTECT))
         throw std::runtime_error(std::format("invalid setting key : {:#x}", opt));
 
     this->option(key, !this->_options[opt], notify);
     return this->_options[opt];
+}
+
+void character::update_option()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_option(*this);
+}
+
+void character::update_map(const fb::game::map& map)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_map(*this, map);
+}
+
+void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_map(*this, map, begin, size);
+}
+
+void character::update_bgm(uint16_t bgm, uint8_t volume)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_bgm(*this, bgm, volume);
+}
+
+void character::update_buff()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_buff(*this, this->buffs);
+}
+
+void character::update_internal()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_internal(*this);
+}
+
+void character::update_time(uint16_t hours)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_time(*this, hours);
+}
+
+void character::init()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_character_init(*this);
+}
+
+void character::update_position()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_position(*this);
 }
 
 const std::string& character::title() const
@@ -1188,14 +1258,14 @@ void character::assert_state(const std::vector<STATE>& values) const
         this->assert_state(value);
 }
 
-bool character::move(const point16_t& before)
+bool character::move(const fb::model::point16_t& before)
 {
     this->assert_thread();
 
     return this->move(this->_direction, before);
 }
 
-bool character::move(DIRECTION direction, const point16_t& before)
+bool character::move(DIRECTION direction, const fb::model::point16_t& before)
 {
     this->assert_thread();
 
@@ -1203,14 +1273,12 @@ bool character::move(DIRECTION direction, const point16_t& before)
 
     if (this->_position != before)
     {
-        if (listener != nullptr)
-            listener->on_hold(*this);
+        this->update_position();
         return false;
     }
     else if (object::move(direction) == false)
     {
-        if (listener != nullptr)
-            listener->on_hold(*this);
+        this->update_position();
         return false;
     }
     else
@@ -1277,7 +1345,7 @@ void character::unride()
         if (this->state() != STATE::RIDING)
             throw std::runtime_error(_TEXT(MESSAGE_RIDE_UNRIDE));
 
-        auto& model = this->context.model.mob[const_value::mob::horse];
+        auto& model = this->context.model.mob[fb::model::const_value::mob::horse];
         auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
         horse->map(this->_map, this->position_forward());
 
@@ -1319,7 +1387,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         {
         case DSL::level:
         {
-            auto params = dsl::level(dsl.params);
+            auto params = fb::model::dsl::level(dsl.params);
             if (params.min.has_value() && *params.min > this->_level)
                 return false;
 
@@ -1330,7 +1398,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::sex:
         {
-            auto params = dsl::sex(dsl.params);
+            auto params = fb::model::dsl::sex(dsl.params);
             if (ENUM_IN(params.value, this->_sex) == false)
                 return false;
         }
@@ -1338,7 +1406,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::strength:
         {
-            auto params = dsl::strength(dsl.params);
+            auto params = fb::model::dsl::strength(dsl.params);
             if (params.value > this->_strength)
                 return false;
         }
@@ -1346,7 +1414,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::intelligence:
         {
-            auto params = dsl::intelligence(dsl.params);
+            auto params = fb::model::dsl::intelligence(dsl.params);
             if (params.value > this->_intelligence)
                 return false;
         }
@@ -1354,7 +1422,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::dexteritry:
         {
-            auto params = dsl::dexteritry(dsl.params);
+            auto params = fb::model::dsl::dexteritry(dsl.params);
             if (params.value > this->_dexteritry)
                 return false;
         }
@@ -1362,7 +1430,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::promotion:
         {
-            auto params = dsl::promotion(dsl.params);
+            auto params = fb::model::dsl::promotion(dsl.params);
             if (params.value > this->_promotion)
                 return false;
         }
@@ -1370,14 +1438,14 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 
         case DSL::class_t:
         {
-            auto params = dsl::class_t(dsl.params);
+            auto params = fb::model::dsl::class_t(dsl.params);
             if (ENUM_IN(params.value, this->_class) == false)
                 return false;
         }
 
         case DSL::admin:
         {
-            auto params = dsl::admin(dsl.params);
+            auto params = fb::model::dsl::admin(dsl.params);
             if (params.value != this->_admin)
                 return false;
         }
@@ -1407,7 +1475,7 @@ fb::thread* character::thread() const
 
 void character::assert_thread() const
 {
-    fb::game::object::assert_thread();
+    object::assert_thread();
 }
 
 void character::update(STATE_LEVEL value)
@@ -1427,7 +1495,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.id               = this->_id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
-    dto.updated_date     = datetime().to_string();
+    dto.updated_date     = fb::model::datetime().to_string();
     dto.admin            = this->_admin;
     dto.look             = this->_look;
     dto.color            = this->_color;
@@ -1509,6 +1577,105 @@ void character::unread_mail(uint16_t value)
         this->_unread_mail = value;
         this->update(STATE_LEVEL::LEVEL_MIN);
     }
+}
+
+void character::browse_ch(const character& ch)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_browse_character(*this, ch);
+}
+
+void character::item_tooltip(const item& item, uint16_t position)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_item_tooltip(*this, item, position);
+}
+
+void character::show_user_list()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_user_list(*this);
+}
+
+void character::show_board()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_board(*this);
+}
+
+void character::show_board(const fb::model::board&                    section,
+                           const std::list<fb::game::board::article>& articles,
+                           BOARD_BUTTON_ENABLE                        flag)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_board(*this, section, articles, flag);
+}
+
+void character::show_board(const fb::game::board::article& article, BOARD_BUTTON_ENABLE flag)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_board(*this, article, flag);
+}
+
+void character::show_mail_box(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_mail_box(*this, mails, flag);
+}
+
+void character::show_mail_box(const Mail& mail, MAIL_BUTTON_ENABLE flag)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_mail_box(*this, mail, flag);
+}
+
+void character::show_board_message(const std::string& message, bool success, bool mail)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_board_message(*this, message, success, mail);
+}
+
+void character::show_world_map(uint32_t id, uint16_t index)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_show_world_map(*this, id, index);
+}
+
+void character::timer(uint32_t time, TIMER_TYPE type)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_timer(*this, time, type);
+}
+void character::weather(WEATHER_TYPE weather)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_weather(*this, weather);
+}
+
+void character::update_id()
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_update_id(*this);
+}
+
+void character::bright(uint8_t value)
+{
+    auto listener = this->get_listener<character>();
+    if (listener != nullptr)
+        listener->on_bright(*this, value);
 }
 
 bool character::container::contains(const character& ch) const

@@ -101,7 +101,7 @@ std::vector<std::string> group::members() const
     return std::vector<std::string>(this->_members);
 }
 
-std::vector<character*> group::nears(const fb::game::map& map, const point16_t& position) const
+std::vector<character*> group::nears(const fb::game::map& map, const fb::model::point16_t& position) const
 {
     auto nears  = map.nears(position, OBJECT_TYPE::CHARACTER); // same thread
     auto result = std::vector<character*>();

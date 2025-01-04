@@ -290,13 +290,13 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             break;
 
         case ERROR_CODE::SERVER_NOT_READY:
-            throw id_exception("비바람이 휘몰아치고 있습니다.");
+            throw id_exception(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
         case ERROR_CODE::ALREADY_LOGIN:
             throw id_exception("이미 접속중입니다.");
 
         default:
-            throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response3.error));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response3.error));
         }
 
         socket.send(response::message("", 0x00));

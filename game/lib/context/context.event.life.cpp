@@ -2,18 +2,23 @@
 
 using namespace fb::game;
 
+void context::on_action(life& me, ACTION action, DURATION duration, uint8_t sound)
+{
+    this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
+}
+
 void context::on_attack(life& me)
 {
     static auto PK = false;
 
-    this->send(me, fb_resp::action(me, ACTION::ATTACK, DURATION::ATTACK), scope::PIVOT);
+    me.action(ACTION::ATTACK, DURATION::ATTACK);
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
         auto* weapon = static_cast<character&>(me).items.weapon();
         if (weapon != nullptr)
         {
             auto sound = weapon->based<fb::model::weapon>().sound;
-            this->send(me, fb_resp::sound(me, sound != 0 ? SOUND(sound) : SOUND::SWING), scope::PIVOT);
+            me.sound(sound != 0 ? SOUND(sound) : SOUND::SWING);
         }
     }
 
@@ -34,7 +39,7 @@ void context::on_attack(life& me)
         if (weapon != nullptr)
         {
             auto sound = weapon->based<fb::model::weapon>().sound;
-            this->send(*front, fb_resp::sound(*front, SOUND::DAMAGE), scope::PIVOT);
+            front->sound(SOUND::DAMAGE);
         }
     }
 
@@ -107,17 +112,7 @@ void context::on_dead(life& me, object* you)
     }
 }
 
-void context::on_hp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from)
+void context::on_update_hp(life& me, uint32_t diff, bool critical)
 {
-    auto damage = current - before;
-    this->send(me, fb_resp::update_hp(me, damage, critical), scope::PIVOT);
-
-    if (me.is(OBJECT_TYPE::CHARACTER))
-        static_cast<character&>(me).update(STATE_LEVEL::HP_MP);
-}
-
-void context::on_mp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from)
-{
-    if (me.is(OBJECT_TYPE::CHARACTER))
-        static_cast<character&>(me).update(STATE_LEVEL::HP_MP);
+    this->send(me, fb_resp::update_hp(me, diff, critical), scope::PIVOT);
 }

@@ -16,7 +16,7 @@ void context::assert_mail(uint32_t error) const
         throw std::runtime_error("메일이 없습니다.");
 
     default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), error));
     }
 }
 

@@ -1,41 +1,43 @@
 #include <fb/game/context.h>
 #include <fb/game/item.h>
 
-fb::game::item::item(fb::game::context& context, const fb::model::item& model, const initial_params& params) :
-    fb::game::object(context, model, params),
+using namespace fb::game;
+
+item::item(fb::game::context& context, const fb::model::item& model, const initial_params& params) :
+    object(context, model, params),
     _count(params.count)
 { }
 
-fb::game::item::item(const fb::game::item& right) :
-    fb::game::object(right.context, right._model, initial_params{.count = right._count})
+item::item(const item& right) :
+    object(right.context, right._model, initial_params{.count = right._count})
 { }
 
-fb::game::item::~item()
+item::~item()
 { }
 
-std::optional<uint32_t> fb::game::item::durability() const
+std::optional<uint32_t> item::durability() const
 {
     return std::nullopt;
 }
 
-void fb::game::item::durability(uint32_t value)
+void item::durability(uint32_t value)
 { }
 
-async::task<bool> fb::game::item::map(fb::game::map* map, const point16_t& position, DESTROY_TYPE destroy_type)
+async::task<bool> item::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
 {
-    auto result = co_await fb::game::object::map(map, position, destroy_type);
+    auto result = co_await object::map(map, position, destroy_type);
     if (!result)
         co_return false;
 
     if (map == nullptr)
         this->_dropped_time = std::nullopt;
     else
-        this->_dropped_time = datetime();
+        this->_dropped_time = fb::model::datetime();
 
     co_return true;
 }
 
-std::string fb::game::item::tip_message() const
+std::string item::tip_message() const
 {
     std::stringstream sstream;
     auto&             model = this->based<fb::model::item>();
@@ -47,7 +49,7 @@ std::string fb::game::item::tip_message() const
     return sstream.str();
 }
 
-std::string fb::game::item::inven_name() const
+std::string item::inven_name() const
 {
     auto& model = this->based<fb::model::item>();
     auto  count = this->_count - this->_trade_count;
@@ -63,7 +65,7 @@ std::string fb::game::item::inven_name() const
     }
 }
 
-std::string fb::game::item::trade_name() const
+std::string item::trade_name() const
 {
     auto& model = this->based<fb::model::item>();
 
@@ -79,7 +81,7 @@ std::string fb::game::item::trade_name() const
     }
 }
 
-uint16_t fb::game::item::fill(uint16_t count)
+uint16_t item::fill(uint16_t count)
 {
     // 추가하고 남은 갯수 리턴
     auto space    = this->free_space();
@@ -89,53 +91,53 @@ uint16_t fb::game::item::fill(uint16_t count)
     return std::max(0, count - space);
 }
 
-uint16_t fb::game::item::free_space() const
+uint16_t item::free_space() const
 {
     auto& model = this->based<fb::model::item>();
     return model.capacity - this->_count;
 }
 
-uint16_t fb::game::item::count() const
+uint16_t item::count() const
 {
     return this->_count;
 }
 
-void fb::game::item::count(uint16_t value)
+void item::count(uint16_t value)
 {
     this->_count = value;
 }
 
-uint16_t fb::game::item::trade_count() const
+uint16_t item::trade_count() const
 {
     return this->_trade_count;
 }
 
-void fb::game::item::trade_count(uint16_t value)
+void item::trade_count(uint16_t value)
 {
     this->_trade_count = value;
 }
 
-bool fb::game::item::empty() const
+bool item::empty() const
 {
     return this->_count == 0;
 }
 
-const fb::game::item::nullable_time& fb::game::item::dropped_time() const
+const item::nullable_time& item::dropped_time() const
 {
     return this->_dropped_time;
 }
 
-fb::game::character* fb::game::item::owner() const
+character* item::owner() const
 {
     return this->_owner;
 }
 
-void fb::game::item::owner(fb::game::character* owner)
+void item::owner(character* owner)
 {
     this->_owner = owner;
 }
 
-bool fb::game::item::active()
+bool item::active()
 {
     if (this->empty())
         std::ignore = this->_owner->items.remove(*this);
@@ -143,7 +145,7 @@ bool fb::game::item::active()
     return false;
 }
 
-fb::game::item* fb::game::item::split(uint16_t count)
+item* item::split(uint16_t count)
 {
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && this->_count > count)
@@ -157,7 +159,7 @@ fb::game::item* fb::game::item::split(uint16_t count)
     }
 }
 
-void fb::game::item::merge(fb::game::item& item)
+void item::merge(item& item)
 {
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
@@ -170,7 +172,7 @@ void fb::game::item::merge(fb::game::item& item)
     auto remain = this->fill(item.count());
     item.count(remain);
 
-    auto listener = this->_owner->get_listener<fb::game::character>();
+    auto listener = this->_owner->get_listener<character>();
 
     if (listener != nullptr)
     {
@@ -182,7 +184,7 @@ void fb::game::item::merge(fb::game::item& item)
         this->_owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
-fb::protocol::internal::Item fb::game::item::to_protocol(EQUIPMENT_PARTS parts) const
+fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
 {
     if (this->_owner == nullptr)
         throw std::runtime_error("cannot convert to protocol because owner is empty");

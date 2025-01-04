@@ -18,15 +18,15 @@ public:
 
 public:
 #ifndef BOT
-    fb::game::character&    ch;
-    const fb::model::model& model;
+    const fb::game::character& ch;
+    const fb::model::model&    model;
 #else
 
 #endif
 
 public:
 #ifndef BOT
-    external_info(fb::game::character& ch, const fb::model::model& model);
+    external_info(const fb::game::character& ch, const fb::model::model& model);
 #else
     external_info() = default;
 #endif

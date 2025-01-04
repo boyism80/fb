@@ -10,7 +10,7 @@ void context::on_dialog(character&               me,
                         bool                     button_next,
                         dialog::interaction      interaction)
 {
-    this->send(me, fb_resp::dialog(object, message, button_prev, button_next, interaction), scope::SELF);
+    me.send(fb_resp::dialog(object, message, button_prev, button_next, interaction));
 }
 
 void context::on_dialog(character&                      me,
@@ -19,7 +19,7 @@ void context::on_dialog(character&                      me,
                         const std::vector<std::string>& menus,
                         dialog::interaction             interaction)
 {
-    this->send(me, fb_resp::dialog_menu(npc, menus, message, interaction), scope::SELF);
+    me.send(fb_resp::dialog_menu(npc, menus, message, interaction));
 }
 
 void context::on_dialog(character&                  me,
@@ -28,7 +28,7 @@ void context::on_dialog(character&                  me,
                         const std::vector<uint8_t>& item_slots,
                         dialog::interaction         interaction)
 {
-    this->send(me, fb_resp::dialog_slot(npc, item_slots, message, interaction), scope::SELF);
+    me.send(fb_resp::dialog_slot(npc, item_slots, message, interaction));
 }
 
 void context::on_dialog(character&                me,
@@ -38,7 +38,7 @@ void context::on_dialog(character&                me,
                         uint16_t                  pursuit,
                         dialog::interaction       interaction)
 {
-    this->send(me, fb_resp::dialog_item(npc, pairs, message, pursuit, interaction), scope::SELF);
+    me.send(fb_resp::dialog_item(npc, pairs, message, pursuit, interaction));
 }
 
 void context::on_dialog(character&            me,
@@ -46,7 +46,7 @@ void context::on_dialog(character&            me,
                         const std::string&    message,
                         dialog::interaction   interaction)
 {
-    this->send(me, fb_resp::dialog_input(npc, message, interaction), scope::SELF);
+    me.send(fb_resp::dialog_input(npc, message, interaction));
 }
 
 void context::on_dialog(character&            me,
@@ -58,5 +58,5 @@ void context::on_dialog(character&            me,
                         bool                  prev,
                         dialog::interaction   interaction)
 {
-    this->send(me, fb_resp::dialog_input_ext(npc, message, top, bottom, maxlen, prev, interaction), scope::SELF);
+    me.send(fb_resp::dialog_input_ext(npc, message, top, bottom, maxlen, prev, interaction));
 }

@@ -3,7 +3,7 @@
 
 #include <fb/game/object.h>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a life.
@@ -14,21 +14,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
     struct listener;
-
-    /**
-     * @brief      { struct_description }
-     */
-    struct initial_params : public fb::game::object::initial_params
-    {
-    public:
-        uint32_t hp  = 0;
-        uint32_t mp  = 0;
-        uint32_t exp = 0;
-    };
+    struct initial_params;
 
 protected:
     uint32_t  _hp = 0, _mp = 0;
@@ -43,9 +30,10 @@ protected:
      *
      * @param      context  The context
      * @param[in]  model    The model
-     * @param[in]  config   The configuration
+     * @param[in]  params   The parameters
      */
     life(fb::game::context& context, const fb::model::life& model, const initial_params& params);
+
     /**
      * @brief      Destroys the object.
      */
@@ -56,60 +44,70 @@ public:
      * @brief      { function_description }
      */
     virtual void attack();
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t hp() const;
+    uint32_t hp() const;
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    virtual void hp(uint32_t value);
+    void hp(uint32_t value);
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t mp() const;
+    uint32_t mp() const;
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    virtual void mp(uint32_t value);
+    void mp(uint32_t value);
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t base_hp() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t base_mp() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t exp() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t defensive_physical() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t defensive_magical() const;
+
     /**
      * @brief      { function_description }
      *
@@ -119,6 +117,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t heal(uint32_t value, fb::game::object* from = nullptr);
+
     /**
      * @brief      { function_description }
      *
@@ -129,6 +128,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false);
+
     /**
      * @brief      { function_description }
      *
@@ -138,6 +138,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     virtual uint32_t mp_up(uint32_t value, fb::game::object* from = nullptr);
+
     /**
      * @brief      { function_description }
      *
@@ -149,9 +150,25 @@ public:
     virtual uint32_t mp_down(uint32_t value, fb::game::object* from = nullptr);
 
     /**
+     * @brief      Updates the given value.
+     *
+     * @param[in]  value  The value
+     */
+    virtual void update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN);
+
+    /**
      * @brief      { function_description }
      *
-     * @param      from  The from
+     * @param[in]  diff      The difference
+     * @param[in]  critical  The critical
+     */
+    void update_hp(uint32_t diff, bool critical);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      from          The from
+     * @param[in]  destroy_type  The destroy type
      */
     virtual void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
 
@@ -161,6 +178,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     CONDITION condition() const;
+
     /**
      * @brief      { function_description }
      *
@@ -169,6 +187,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     CONDITION condition_add(CONDITION value);
+
     /**
      * @brief      { function_description }
      *
@@ -177,6 +196,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     CONDITION condition_remove(CONDITION value);
+
     /**
      * @brief      Determines if condition contains.
      *
@@ -185,12 +205,14 @@ public:
      * @return     True if condition contains, False otherwise.
      */
     bool condition_contains(CONDITION value) const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     virtual bool alive() const;
+
     /**
      * @brief      { function_description }
      *
@@ -199,6 +221,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool active(const fb::model::spell& spell);
+
     /**
      * @brief      { function_description }
      *
@@ -208,6 +231,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool active(const fb::model::spell& spell, uint32_t fd);
+
     /**
      * @brief      { function_description }
      *
@@ -217,6 +241,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool active(const fb::model::spell& spell, const std::string& message);
+
     /**
      * @brief      { function_description }
      *
@@ -227,9 +252,20 @@ public:
      */
     bool active(const fb::model::spell& spell, fb::game::object& to);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  action    The action
+     * @param[in]  duration  The duration
+     * @param[in]  sound     The sound
+     */
+    virtual void action(ACTION action, DURATION duration, uint8_t sound = 0x00);
+
 public:
     /**
      * @brief      { function_description }
+     *
+     * @param[in]  size  The size
      *
      * @return     { description_of_the_return_value }
      */
@@ -242,24 +278,27 @@ public:
      *
      * @return     The critical.
      */
-    virtual bool calculate_critical(fb::game::life& you) const;
+    virtual bool calculate_critical(life& you) const;
 
     /**
-     * @brief      Called on calculate damage.
+     * @brief      Calculates the damage.
      *
+     * @param[in]  damage    The damage
+     * @param[in]  you       You
      * @param[in]  critical  The critical
      *
-     * @return     { description_of_the_return_value }
+     * @return     The damage.
      */
-    virtual uint32_t calculate_damage(uint32_t damage, const fb::game::life& you, bool critical) const;
+    virtual uint32_t calculate_damage(uint32_t damage, const life& you, bool critical) const;
+
     /**
-     * @brief      Called on calculate critical.
+     * @brief      Calculates the miss.
      *
      * @param      you   You
      *
-     * @return     { description_of_the_return_value }
+     * @return     The miss.
      */
-    virtual bool calculate_miss(fb::game::life& you) const;
+    virtual bool calculate_miss(life& you) const;
 
 public:
     /**
@@ -270,6 +309,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_hp(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -278,6 +318,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_mp(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -286,6 +327,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_base_hp(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -294,6 +336,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_base_mp(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -302,6 +345,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_hp_inc(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -310,6 +354,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_hp_dec(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -318,6 +363,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_mp_inc(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -326,6 +372,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_mp_dec(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -334,6 +381,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_action(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -342,6 +390,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_spell(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -350,6 +399,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_damage(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -366,37 +416,51 @@ public:
 struct life::listener : public virtual fb::game::object::listener, public virtual fb::game::spells::listener
 {
     /**
+     * @brief      Called on action.
+     *
+     * @param      me        { parameter_description }
+     * @param[in]  action    The action
+     * @param[in]  duration  The duration
+     * @param[in]  sound     The sound
+     */
+    virtual void on_action(life& me, ACTION action, DURATION duration, uint8_t sound) = 0;
+
+    /**
      * @brief      Called on attack.
      *
      * @param      me    { parameter_description }
-     * @param      you   You
      */
     virtual void on_attack(life& me) = 0;
+
     /**
-     * @brief      Called on die.
+     * @brief      Called on dead.
      *
      * @param      me    { parameter_description }
      * @param      you   You
      */
     virtual void on_dead(life& me, object* you) = 0;
+
     /**
-     * @brief      Called on hp.
+     * @brief      Called on update hp.
      *
-     * @param      me       { parameter_description }
-     * @param[in]  before   The before
-     * @param[in]  current  The current
+     * @param      me        { parameter_description }
+     * @param[in]  diff      The difference
+     * @param[in]  critical  The critical
      */
-    virtual void on_hp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from) = 0;
-    /**
-     * @brief      Called on mp.
-     *
-     * @param      me       { parameter_description }
-     * @param[in]  before   The before
-     * @param[in]  current  The current
-     */
-    virtual void on_mp_changed(life& me, uint32_t before, uint32_t current, bool critical, fb::game::object* from) = 0;
+    virtual void on_update_hp(life& me, uint32_t diff, bool critical) = 0;
 };
 
-}} // namespace fb::game
+/**
+ * @brief      { struct_description }
+ */
+struct life::initial_params : public fb::game::object::initial_params
+{
+public:
+    uint32_t hp  = 0;
+    uint32_t mp  = 0;
+    uint32_t exp = 0;
+};
+
+} // namespace fb::game
 
 #endif // !__LIFE_H__

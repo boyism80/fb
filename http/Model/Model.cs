@@ -584,6 +584,35 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum Option
+    {
+        [EnumMember(Value = "EXTENSION")]
+        Extension = 0x00, 
+        [EnumMember(Value = "WHISPER")]
+        Whisper = 0x01, 
+        [EnumMember(Value = "GROUP")]
+        Group = 0x02, 
+        [EnumMember(Value = "ROAR")]
+        Roar = 0x03, 
+        [EnumMember(Value = "ROAR_WORLDS")]
+        RoarWorlds = 0x04, 
+        [EnumMember(Value = "MAGIC_EFFECT")]
+        MagicEffect = 0x05, 
+        [EnumMember(Value = "WEATHER_EFFECT")]
+        WeatherEffect = 0x06, 
+        [EnumMember(Value = "FIXED_MOVE")]
+        FixedMove = 0x07, 
+        [EnumMember(Value = "TRADE")]
+        Trade = 0x08, 
+        [EnumMember(Value = "FAST_MOVE")]
+        FastMove = 0x09, 
+        [EnumMember(Value = "EFFECT_SOUND")]
+        EffectSound = 0x0a, 
+        [EnumMember(Value = "PK_PROTECT")]
+        PkProtect = 0x0b
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Regex
     {
         [EnumMember(Value = "SELL")]
@@ -616,35 +645,6 @@ namespace Fb.Model.EnumValue
         HoldItemList = 13, 
         [EnumMember(Value = "HOLD_ITEM_COUNT")]
         HoldItemCount = 14
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum Setting
-    {
-        [EnumMember(Value = "EXTENSION")]
-        Extension = 0x00, 
-        [EnumMember(Value = "WHISPER")]
-        Whisper = 0x01, 
-        [EnumMember(Value = "GROUP")]
-        Group = 0x02, 
-        [EnumMember(Value = "ROAR")]
-        Roar = 0x03, 
-        [EnumMember(Value = "ROAR_WORLDS")]
-        RoarWorlds = 0x04, 
-        [EnumMember(Value = "MAGIC_EFFECT")]
-        MagicEffect = 0x05, 
-        [EnumMember(Value = "WEATHER_EFFECT")]
-        WeatherEffect = 0x06, 
-        [EnumMember(Value = "FIXED_MOVE")]
-        FixedMove = 0x07, 
-        [EnumMember(Value = "TRADE")]
-        Trade = 0x08, 
-        [EnumMember(Value = "FAST_MOVE")]
-        FastMove = 0x09, 
-        [EnumMember(Value = "EFFECT_SOUND")]
-        EffectSound = 0x0a, 
-        [EnumMember(Value = "PK_PROTECT")]
-        PkProtect = 0x0b
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -927,6 +927,8 @@ namespace Fb.Model.ConstValue
         public const string MessageDoorUnlock = "문을 열었습니다.";
         public const string MessageDoorLocked = "문이 잠겼습니다.";
         public const string MessageErrorUnknown = "올바르지 않은 명령입니다.";
+        public const string MessageNotReadyGameServer = "비바람이 휘몰아치고 있습니다.";
+        public const string MessageUnknownError = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
     }
 
 }

@@ -4,9 +4,7 @@
 #include <fb/lua.h>
 #include <fb/model/model.h>
 
-using namespace fb::model;
-
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a map of .
@@ -36,10 +34,10 @@ private:
     bool _locked = false;
 
 public:
-    const fb::game::map&   map;
-    const fb::model::door& model;
-    const point16_t        position, pivot;
-    const uint16_t         width;
+    const fb::game::map&       map;
+    const fb::model::door&     model;
+    const fb::model::point16_t position, pivot;
+    const uint16_t             width;
 
 public:
     /**
@@ -50,11 +48,11 @@ public:
      * @param[in]  position  The position
      * @param[in]  opened    Indicates if opened
      */
-    door(const fb::game::map&   map,
-         const fb::model::door& model,
-         const point16_t&       position,
-         const point16_t&       pivot,
-         bool                   opened);
+    door(const fb::game::map&        map,
+         const fb::model::door&      model,
+         const fb::model::point16_t& position,
+         const fb::model::point16_t& pivot,
+         bool                        opened);
     /**
      * @brief      Constructs a new instance.
      *
@@ -126,6 +124,6 @@ public:
     static int builtin_opened(lua_State* lua);
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__DOOR_H__
