@@ -751,7 +751,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
     {
         try
         {
-            auto&& resp = co_await this->write_mail(*ch, request.user, request.title, request.contents);
+            auto&& resp = co_await this->send_mail(*ch, request.user, request.title, request.contents);
             ch->show_board_message("우편을 보냈습니다.", true, true);
         }
         catch (std::exception& e)

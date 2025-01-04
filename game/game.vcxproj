@@ -243,6 +243,7 @@
     <ClCompile Include="lib\context\context.npc_interaction.cpp" />
     <ClCompile Include="lib\context\context.timer.cpp" />
     <ClCompile Include="lib\context\context.timer.thread.cpp" />
+    <ClCompile Include="lib\context\context.whisper.cpp" />
     <ClCompile Include="lib\dialog.cpp" />
     <ClCompile Include="lib\door.builtin.cpp" />
     <ClCompile Include="lib\door.container.cpp" />

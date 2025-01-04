@@ -37,7 +37,7 @@ void context::on_write_mail(const internal_resp::WriteMail& resp)
 }
 
 async::task<internal_resp::WriteMail>
-context::write_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
+context::send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents)
 {
     auto   thread = ch.thread();
     auto&& resp   = co_await this->post<internal_reqs::WriteMail, internal_resp::WriteMail>(

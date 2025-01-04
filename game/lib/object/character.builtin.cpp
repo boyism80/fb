@@ -40,6 +40,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"erase_trace",         character::builtin_erase_trace},
 {"switch_context",      character::builtin_switch_context},
 {"whisper",             character::builtin_whisper},
+{"send_mail",           character::builtin_send_mail},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1184,6 +1185,47 @@ int character::builtin_whisper(lua_State* lua)
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
         co_await fn(context, thread, me, to, message);
+    });
+
+    return thread->yield(1);
+}
+
+int character::builtin_send_mail(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto me      = thread->touserdata<character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto to       = thread->tostring(2);
+    auto title    = thread->tostring(3);
+    auto contents = thread->tostring(4);
+
+    static auto fn = [](fb::game::context*   context,
+                        fb::lua::context*    thread,
+                        fb::game::character* ch,
+                        const std::string&   to,
+                        const std::string&   title,
+                        const std::string&   contents) -> async::task<void> {
+        try
+        {
+            co_await context->send_mail(*ch, to, title, contents);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+
+        thread->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, me, to, title, contents);
     });
 
     return thread->yield(1);

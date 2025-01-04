@@ -557,7 +557,7 @@ async::task<bool> context::handle_command_write_mail(character& ch, Json::Value&
         {
             auto title    = std::format("MAIL TITLE {}", i);
             auto contents = std::format("MAIL CONTENTS {}", i);
-            co_await this->write_mail(ch, to, title, contents);
+            co_await this->send_mail(ch, to, title, contents);
             if (!this->assert_socket(fd))
                 break;
         }

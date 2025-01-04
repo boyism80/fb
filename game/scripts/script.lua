@@ -210,9 +210,23 @@ function sample_whisper(me)
     end
 end
 
+function sample_send_mail(me)
+    local npc = name2npc('낙랑')
+    local name = npc:input(me, '상대 이름')
+    local title = npc:input(me, '제목')
+    local contents = npc:input(me, '내용')
+
+    local error = me:send_mail(name, title, contents)
+    if error ~= nil then
+        npc:dialog(me, error)
+    else
+        npc:dialog(me, '성공')
+    end
+end
+
 function func(me)
 
-    sample_whisper(me)
+    sample_send_mail(me)
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

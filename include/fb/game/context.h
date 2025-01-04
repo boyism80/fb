@@ -560,7 +560,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<internal_resp::WriteMail>
-    write_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
+    send_mail(const character& ch, const std::string& to, const std::string& title, const std::string& contents);
 
     /**
      * @brief      { function_description }
