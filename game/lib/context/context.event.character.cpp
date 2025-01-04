@@ -123,16 +123,16 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
             break;
 
         case ERROR_CODE::SERVER_NOT_READY:
-            throw std::runtime_error("비바람이 휘몰아치고 있습니다.");
+            throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
 
         default:
-            throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
+            throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response.error));
         }
 
         auto ch     = socket.data();
         std::ignore = co_await ch->map(nullptr);
 
-        this->save(*ch);
+        std::ignore = this->save(*ch);
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         writer.write<uint32_t>(me.id());
@@ -150,7 +150,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
     }
     catch (boost::system::error_code& /*e*/)
     {
-        error = "비바람이 휘몰아치고 있습니다.";
+        error = _TEXT(MESSAGE_NOT_READY_GAME_SERVER);
     }
 
     auto ch = this->_sockets.template lock<character*>([fd](auto& container) -> character* {

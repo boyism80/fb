@@ -927,6 +927,8 @@ namespace Fb.Model.ConstValue
         public const string MessageDoorUnlock = "문을 열었습니다.";
         public const string MessageDoorLocked = "문이 잠겼습니다.";
         public const string MessageErrorUnknown = "올바르지 않은 명령입니다.";
+        public const string MessageNotReadyGameServer = "비바람이 휘몰아치고 있습니다.";
+        public const string MessageUnknownError = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
     }
 
 }

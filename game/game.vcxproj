@@ -224,6 +224,7 @@
     <ClCompile Include="lib\clan.member.builtin.cpp" />
     <ClCompile Include="lib\clan.member.cpp" />
     <ClCompile Include="lib\context\context.amqp.cpp" />
+    <ClCompile Include="lib\context\context.board.cpp" />
     <ClCompile Include="lib\context\context.builtin.cpp" />
     <ClCompile Include="lib\context\context.clan.cpp" />
     <ClCompile Include="lib\context\context.command.cpp" />

@@ -2514,6 +2514,8 @@ public:
     inline static constexpr const char* MESSAGE_DOOR_UNLOCK = "문을 열었습니다.";
     inline static constexpr const char* MESSAGE_DOOR_LOCKED = "문이 잠겼습니다.";
     inline static constexpr const char* MESSAGE_ERROR_UNKNOWN = "올바르지 않은 명령입니다.";
+    inline static constexpr const char* MESSAGE_NOT_READY_GAME_SERVER = "비바람이 휘몰아치고 있습니다.";
+    inline static constexpr const char* MESSAGE_UNKNOWN_ERROR = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
 
 private:
     string() = default;

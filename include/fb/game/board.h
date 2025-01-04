@@ -67,6 +67,7 @@ public:
     const std::string uname;
     const std::string title;
     const std::string contents;
+    const bool        next;
 
 public:
     /**
@@ -88,7 +89,8 @@ public:
             const std::string& title,
             uint8_t            month,
             uint8_t            day,
-            const std::string& contents = "") :
+            const std::string& contents = "",
+            bool               next     = false) :
         id(id),
         section(section),
         user(user),
@@ -96,7 +98,8 @@ public:
         title(title),
         month(month),
         day(day),
-        contents(contents)
+        contents(contents),
+        next(next)
     { }
     ~article() = default;
 };

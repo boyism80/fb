@@ -13,7 +13,7 @@ void context::assert_clan(uint32_t error) const
         throw std::runtime_error(std::format("클랜명이 이미 존재함"));
 
     default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), error));
     }
 }
 

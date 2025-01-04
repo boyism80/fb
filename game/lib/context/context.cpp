@@ -529,7 +529,7 @@ void context::assert_whisper(const internal_resp::Whisper& response) const
         throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", response.to));
 
     default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR), response.error));
     }
 }
 
