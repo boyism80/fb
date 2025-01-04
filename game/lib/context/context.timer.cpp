@@ -1,4 +1,4 @@
-#include "context.h"
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -16,9 +16,14 @@ async::task<void> context::handle_heart_beat()
 
 async::task<void> context::handle_time()
 {
-    auto updated = datetime();
+    auto updated = fb::model::datetime();
     if (this->_time.hours() != updated.hours())
-        this->send(fb_resp::time(updated.hours()));
+    {
+        this->foreach_ch([hours = updated.hours()](auto& ch) -> async::task<void> {
+            ch.update_time(hours);
+            co_return;
+        });
+    }
 
     this->_time = updated;
     co_return;

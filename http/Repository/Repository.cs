@@ -219,7 +219,7 @@ namespace Http.Reepository
                     return value;
                 }
 
-                var redis = _redisService.Redis(key);
+                var redis = _redisService.Redis(key.GetHash());
                 var redisValues = await redis.Connection.JsonHashGetAllAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
@@ -290,7 +290,7 @@ namespace Http.Reepository
                 if (_local.TryGetValue(key.GetRedisKey(), out var localValues))
                     return localValues.Values.Select(x => JsonConvert.DeserializeObject<TModel>(x)).Where(x => !x.Deleted);
 
-                var redis = _redisService.Redis(key);
+                var redis = _redisService.Redis(key.GetHash());
                 var redisValues = await redis.Connection.JsonHashGetAsync<TModel>(key.GetRedisKey());
                 if (redisValues.Count > 0)
                 {
@@ -338,7 +338,7 @@ namespace Http.Reepository
             {
                 value.UpdatedDate = DateTime.Now;
 
-                var redis = _redisService.Redis(value).Connection;
+                var redis = _redisService.Redis(value.GetHash()).Connection;
                 await redis.TransactAsync(cmd =>
                 {
                     cmd.Enqueue(trans => trans.JsonHashSetAsync(value.GetRedisKey(), value.GetRedisField(), value));

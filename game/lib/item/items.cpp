@@ -1,6 +1,6 @@
-#include <character.h>
-#include <item.h>
-#include <map.h>
+#include <fb/game/character.h>
+#include <fb/game/item.h>
+#include <fb/game/map.h>
 
 fb::game::items::items(fb::game::character& owner) :
     inventory(owner),
@@ -29,7 +29,7 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
     try
     {
         if (this->free() == false)
-            throw std::runtime_error(message::exception::INVENTORY_OVERFLOW);
+            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
 
         fb::game::item* item = nullptr;
         switch (parts)
@@ -88,9 +88,9 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
         }
 
         auto index = this->add(item);
+        this->_owner.update(STATE_LEVEL::LEVEL_MAX);
         if (listener != nullptr)
         {
-            listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MAX);
             listener->on_equipment_off(this->_owner, parts, index);
         }
 
@@ -141,12 +141,10 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             else
                 std::ignore = cash->destroy();
 
-            if (listener != nullptr)
-                listener->on_updated(this->_owner, STATE_LEVEL::LEVEL_MIN);
-
+            this->_owner.update(STATE_LEVEL::LEVEL_MIN);
             if (remain != 0)
             {
-                this->_owner.message(message::money::FULL);
+                this->_owner.message(_TEXT(MESSAGE_MONEY_FULL));
                 if (stop_if_remained)
                     break;
             }
@@ -183,9 +181,6 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             }
         }
     }
-
-    if (listener != nullptr)
-        listener->on_item_changed(this->_owner, updates);
     return std::ref(indices);
 }
 
@@ -282,6 +277,24 @@ std::vector<uint8_t> fb::game::items::index_all(const fb::model::item& item) con
     }
 
     return result;
+}
+
+bool fb::game::items::update(uint8_t index) const
+{
+    auto item = this->at(index);
+    if (item == nullptr)
+        return false;
+
+    auto remained = item->count() - item->trade_count();
+    auto listener = this->_owner.get_listener<fb::game::character>();
+    if (listener != nullptr)
+    {
+        if (remained == 0)
+            listener->on_item_remove(this->_owner, index, ITEM_DELETE_TYPE::NONE);
+        else
+            listener->on_item_update(this->_owner, index);
+    }
+    return true;
 }
 
 fb::game::equipment* fb::game::items::wear(EQUIPMENT_PARTS parts, fb::game::equipment* item)
@@ -506,7 +519,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
-            throw std::runtime_error(message::exception::CANNOT_DROP_ITEM);
+            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_DROP_ITEM));
 
         auto dropped = this->remove(*item, count, ITEM_DELETE_TYPE::DROP);
         if (dropped != nullptr)
@@ -587,7 +600,7 @@ bool fb::game::items::throws(uint8_t index)
 
         auto& model = item->based<fb::model::item>();
         if (model.trade == false)
-            throw std::runtime_error(message::exception::CANNOT_THROW_ITEM);
+            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_CANNOT_THROW_ITEM));
 
         auto map = this->_owner.map();
         if (map == nullptr)
@@ -636,15 +649,7 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
     if (listener != nullptr)
     {
         auto current = this->at(index);
-
         listener->on_item_update(this->_owner, index);
-        if (current == nullptr)
-            listener->on_item_lost(this->_owner, std::vector<uint8_t>{index});
-        else
-            listener->on_item_changed(this->_owner,
-                                      fb::game::item::container{
-                                          {index, current}
-            });
     }
 
     return splitted;

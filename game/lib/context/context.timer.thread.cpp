@@ -1,8 +1,8 @@
-#include "context.h"
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
-async::task<void> context::handle_mob_action(const datetime& now, std::thread::id id)
+async::task<void> context::handle_mob_action(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
     auto params = thread->template data<thread_params>();
@@ -33,7 +33,7 @@ async::task<void> context::handle_mob_action(const datetime& now, std::thread::i
     co_return;
 }
 
-async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::id id)
+async::task<void> context::handle_mob_respawn(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
     auto params = thread->template data<thread_params>();
@@ -45,7 +45,7 @@ async::task<void> context::handle_mob_respawn(const datetime& now, std::thread::
     co_return;
 }
 
-async::task<void> context::handle_buff_timer(const datetime& now, std::thread::id id)
+async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
     auto params = thread->template data<thread_params>();
@@ -79,7 +79,7 @@ async::task<void> context::handle_buff_timer(const datetime& now, std::thread::i
     co_return;
 }
 
-async::task<void> context::handle_save_timer(const datetime& now, std::thread::id id)
+async::task<void> context::handle_save_timer(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);
     auto params = thread->template data<thread_params>();

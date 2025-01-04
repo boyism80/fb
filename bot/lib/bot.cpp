@@ -1,5 +1,5 @@
-#include <bot.h>
-#include <bot.container.h>
+#include <fb/bot/bot.h>
+#include <fb/bot/bot.container.h>
 
 using namespace fb::bot;
 
@@ -40,7 +40,7 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
             auto cmd = reader.read<uint8_t>();
             if (this->decrypt_policy(cmd))
             {
-                size = this->_cryptor.decrypt(stream, reader.seek() - 1, size);
+                size = this->_crypto.decrypt(stream, reader.seek() - 1, size);
             }
 
             reader.flush();
@@ -52,7 +52,7 @@ async::task<void> base_bot::on_receive(fb::stream& stream)
             }
             else
             {
-                auto protocol = std::shared_ptr<fb::protocol::base::header>(co_await this->_deserializer[cmd](reader));
+                auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
                 this->thread()->enqueue(
                     [this, cmd, protocol, id = this->id](auto& thread) -> async::task<void> {
                         // TODO: check socket alive
@@ -144,12 +144,12 @@ async::task<void> base_bot::on_closed()
 
 bool base_bot::on_encrypt(fb::stream& out)
 {
-    return this->_cryptor.encrypt(out);
+    return this->_crypto.encrypt(out);
 }
 
 bool base_bot::on_wrap(fb::stream& out)
 {
-    return this->_cryptor.wrap(out);
+    return this->_crypto.wrap(out);
 }
 
 bool base_bot::decrypt_policy(int cmd) const

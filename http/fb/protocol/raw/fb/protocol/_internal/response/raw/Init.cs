@@ -30,6 +30,7 @@ public struct Init : IFlatbufferObject
   public fb.protocol._internal.raw.Option? Option { get { int o = __p.__offset(14); return o != 0 ? (fb.protocol._internal.raw.Option?)(new fb.protocol._internal.raw.Option()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public fb.protocol._internal.raw.Trace? Traces(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.Trace?)(new fb.protocol._internal.raw.Trace()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int TracesLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public uint Mail { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
       Offset<fb.protocol._internal.raw.Character> characterOffset = default(Offset<fb.protocol._internal.raw.Character>),
@@ -38,8 +39,10 @@ public struct Init : IFlatbufferObject
       VectorOffset itemsOffset = default(VectorOffset),
       VectorOffset spellsOffset = default(VectorOffset),
       Offset<fb.protocol._internal.raw.Option> optionOffset = default(Offset<fb.protocol._internal.raw.Option>),
-      VectorOffset tracesOffset = default(VectorOffset)) {
-    builder.StartTable(7);
+      VectorOffset tracesOffset = default(VectorOffset),
+      uint mail = 0) {
+    builder.StartTable(8);
+    Init.AddMail(builder, mail);
     Init.AddTraces(builder, tracesOffset);
     Init.AddOption(builder, optionOffset);
     Init.AddSpells(builder, spellsOffset);
@@ -50,7 +53,7 @@ public struct Init : IFlatbufferObject
     return Init.EndInit(builder);
   }
 
-  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartInit(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddCharacter(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Character> characterOffset) { builder.AddOffset(0, characterOffset.Value, 0); }
   public static void AddGroup(FlatBufferBuilder builder, Offset<nullable.nullable_uint> groupOffset) { builder.AddOffset(1, groupOffset.Value, 0); }
   public static void AddClan(FlatBufferBuilder builder, Offset<nullable.nullable_uint> clanOffset) { builder.AddOffset(2, clanOffset.Value, 0); }
@@ -73,6 +76,7 @@ public struct Init : IFlatbufferObject
   public static VectorOffset CreateTracesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Trace>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateTracesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Trace>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartTracesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddMail(FlatBufferBuilder builder, uint mail) { builder.AddUint(7, mail, 0); }
   public static Offset<fb.protocol._internal.response.raw.Init> EndInit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.response.raw.Init>(o);
@@ -94,6 +98,7 @@ static public class InitVerify
       && verifier.VerifyVectorOfTables(tablePos, 12 /*Spells*/, fb.protocol._internal.raw.SpellVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 14 /*Option*/, fb.protocol._internal.raw.OptionVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 16 /*Traces*/, fb.protocol._internal.raw.TraceVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 18 /*Mail*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

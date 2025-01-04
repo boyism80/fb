@@ -100,18 +100,6 @@ table Save {
 }
 
 
-table GetArticle {
-  section: uint;
-  article: uint;
-}
-
-
-table GetArticleList {
-  section: uint;
-  position: uint;
-}
-
-
 table WriteArticle {
   section: uint;
   user: uint;
@@ -123,6 +111,19 @@ table WriteArticle {
 table DeleteArticle {
   id: uint;
   user: uint;
+}
+
+table WriteMail {
+  sender: uint;
+  user: string;
+  title: string;
+  contents: string;
+  host: uint;
+}
+
+table DeleteMail {
+  user: uint;
+  id: ushort;
 }
 
 

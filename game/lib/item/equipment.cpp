@@ -1,6 +1,6 @@
 #include <algorithm>
-#include <context.h>
-#include <item.h>
+#include <fb/game/context.h>
+#include <fb/game/item.h>
 
 fb::game::equipment::equipment(fb::game::context& context, const fb::model::equipment& model) :
     item(context, model)
@@ -79,7 +79,7 @@ bool fb::game::equipment::active()
         break;
 
     default:
-        throw equipment::not_equipment_exception();
+        throw std::runtime_error("입을 수 없는 물건입니다.");
     }
 
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로
@@ -153,11 +153,11 @@ std::string fb::game::equipment::tip_message() const
         switch (dsl.header)
         {
         case DSL::class_t:
-            cls = dsl::class_t(dsl.params).value;
+            cls = fb::model::dsl::class_t(dsl.params).value;
             break;
 
         case DSL::level:
-            level = dsl::level(dsl.params).min.value_or(0);
+            level = fb::model::dsl::level(dsl.params).min.value_or(0);
             break;
         }
     }

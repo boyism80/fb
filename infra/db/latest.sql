@@ -44,7 +44,7 @@ CREATE TABLE `board` (
   PRIMARY KEY (`id`),
   KEY `fk.board.owner_idx` (`user`),
   CONSTRAINT `fk.board.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -157,6 +157,28 @@ CREATE TABLE `item` (
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mail`
+--
+
+DROP TABLE IF EXISTS `mail`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mail` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `user` int unsigned NOT NULL,
+  `sender` int NOT NULL,
+  `title` varchar(64) NOT NULL,
+  `contents` varchar(256) NOT NULL,
+  `read` tinyint NOT NULL DEFAULT '0',
+  `deleted` tinyint NOT NULL DEFAULT '0',
+  `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`,`user`),
+  KEY `IX_UNAME` (`user`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -468,6 +490,106 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_GET_LIST` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_GET_LIST`(IN user INT, IN position INT, IN count INT)
+BEGIN
+    SELECT mail.`id`,
+           mail.`user`,
+           mail.`sender`,
+           mail.`title`,
+           mail.`read`,
+           mail.`created_date`
+    FROM mail
+    LEFT JOIN `name` AS N
+    ON mail.sender = N.id
+    WHERE mail.`user` = user AND mail.`deleted` = 0 AND position >= mail.`id`
+    ORDER BY mail.`id` DESC
+    LIMIT 0, count;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_READ` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_READ`(IN user INT, IN id INT)
+BEGIN
+	  UPDATE mail
+	  SET `read` = 1
+	  WHERE mail.`id` = id AND 
+			mail.`user` = user AND 
+			mail.`deleted` = 0;
+
+	SELECT * FROM `mail`
+    WHERE mail.`id` = id AND
+          mail.`user` = user AND
+          `deleted` = 0;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_WRITE` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_WRITE`(
+    IN user INT, 
+    IN sender INT, 
+    IN title NVARCHAR(64), 
+    IN contents NVARCHAR(256)
+)
+BEGIN
+    DECLARE id TINYINT;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 0 AS RESULT;
+    END;
+    
+    START TRANSACTION;
+    SELECT IFNULL(MAX(mail.`id`), 0) INTO id FROM mail WHERE mail.`user` = user FOR UPDATE;
+
+    INSERT INTO mail (`id`, `user`, `sender`, `title`, `contents`)
+    VALUES (id + 1, user, sender, title, contents);
+    
+    COMMIT;
+    SELECT 1 AS RESULT;
+    SELECT * 
+    FROM mail 
+    WHERE mail.`id` = id + 1 AND 
+          mail.`user` = user;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `USP_NAME_GET_ID` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -524,4 +646,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-28 17:19:22
+-- Dump completed on 2025-01-03  2:58:27

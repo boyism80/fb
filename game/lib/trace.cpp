@@ -1,4 +1,4 @@
-#include <trace.h>
+#include <fb/game/trace.h>
 
 using namespace fb::game;
 

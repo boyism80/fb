@@ -18,6 +18,7 @@ namespace Http.Service
         public ClanRepository Clan => Bind<ClanRepository>();
         public ClanMemberRepository ClanMember => Bind<ClanMemberRepository>();
         public CharacterSyncRepository CharacterSync => Bind<CharacterSyncRepository>();
+        public MailRepository Mail => Bind<MailRepository>();
 
         public uint SharedDbSize
         {

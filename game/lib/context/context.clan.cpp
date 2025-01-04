@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -13,7 +13,7 @@ void context::assert_clan(uint32_t error) const
         throw std::runtime_error(std::format("클랜명이 이미 존재함"));
 
     default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", error));
+        throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), error));
     }
 }
 
@@ -74,40 +74,20 @@ void context::update_clan(clan&                                                 
                           fb::protocol::internal::Clan&                          resp1,
                           const std::vector<fb::protocol::internal::ClanMember>& resp2) const
 {
-    auto members  = std::vector<clan_member>{};
-    auto modulars = std::unordered_map<uint32_t, std::vector<std::string>>{};
+    auto members = std::vector<clan_member>{};
     for (auto& member : resp2)
     {
-        auto cm   = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
-        auto hash = this->_shard.mod(member.name);
-        if (modulars.contains(hash) == false)
-            modulars.insert({hash, {}});
-
-        modulars[hash].push_back(member.name);
+        auto cm = clan_member{member.name, static_cast<CLAN_POSITION>(member.position)};
         members.push_back(std::move(cm));
     }
 
     clan.update(resp1.name, resp1.title, members);
-
-    for (auto& [hash, names] : modulars)
-    {
-        this->_shard[hash]->characters.lock(
-            [&clan, &names, &members](fb::game::shard_params::character_container& characters) {
-                for (auto& name : names)
-                {
-                    if (!characters.contains(name))
-                        continue;
-
-                    clan.attach_character(*characters.at(name));
-                }
-            });
-    }
 }
 
 async::task<void> context::create_clan(character& me, const std::string& name)
 {
     if (me.clan() != nullptr)
-        throw std::runtime_error("클랜 이미 있음");
+        throw std::runtime_error(_TEXT(MESSAGE_ALREADY_JOINED_CLAN));
 
     auto   fd   = me.fd();
     auto&& resp = co_await this->post<internal_reqs::CreateClan, internal_resp::CreateClan>(
@@ -151,7 +131,7 @@ async::task<void> context::destroy_clan(character& me)
 {
     auto& clan_lock = me.clan();
     if (clan_lock == nullptr)
-        throw std::runtime_error("클랜이 없음");
+        throw std::runtime_error(_TEXT(MESSAGE_NOT_JOINED_CLAN));
 
     auto clan_name = std::string{};
     auto clan_id   = uint32_t{};
@@ -256,12 +236,12 @@ void context::on_clan_join_member(const internal_resp::JoinClan& resp)
     this->assert_clan(resp.error);
 
     this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch = this->_shard[resp.member.name]->characters.template lock<character*>(
-            [&resp](auto& container) -> character* {
-                if (container.contains(resp.member.name) == false)
+        auto ch =
+            this->_shard[resp.member.name]->names.template lock<character*>([&resp](auto& ch_names) -> character* {
+                if (ch_names.contains(resp.member.name) == false)
                     return nullptr;
 
-                return container.at(resp.member.name);
+                return ch_names.at(resp.member.name);
             });
 
         if (ch != nullptr)
@@ -291,13 +271,12 @@ void context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
     this->assert_clan(resp.error);
 
     this->upsert_clan_then(resp.clan, [this, resp](auto& clan_lock) {
-        auto ch =
-            this->_shard[resp.uname]->characters.template lock<character*>([&resp](auto& container) -> character* {
-                if (container.contains(resp.uname) == false)
-                    return nullptr;
+        auto ch = this->_shard[resp.uname]->names.template lock<character*>([&resp](auto& ch_names) -> character* {
+            if (ch_names.contains(resp.uname) == false)
+                return nullptr;
 
-                return container.at(resp.uname);
-            });
+            return ch_names.at(resp.uname);
+        });
 
         if (ch != nullptr)
         {

@@ -3,6 +3,7 @@ using Http.Extension;
 using Http.Model;
 using Http.Service;
 using System.Data;
+using static org.apache.zookeeper.ZooDefs;
 
 namespace Http.Reepository
 {
@@ -169,6 +170,20 @@ namespace Http.Reepository
                 return result.ElementAt(0);
 
             return null;
+        }
+
+        public async Task<string> GetName(uint id)
+        {
+            await using var conn = _dbContext.Connection(-1);
+            var result = await conn.QueryFirstOrDefaultAsync<CharacterName>($"SELECT id, name FROM name WHERE id = {id}");
+            return result?.Name;
+        }
+
+        public async Task<IReadOnlyDictionary<uint, string>> GetName(IEnumerable<uint> ids)
+        {
+            await using var conn = _dbContext.Connection(-1);
+            var result = await conn.QueryAsync<CharacterName>($"SELECT id, name FROM name WHERE id IN ({string.Join(',', ids)})");
+            return result.ToDictionary(x => x.Id, x => x.Name);
         }
     }
 }

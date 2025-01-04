@@ -1,6 +1,6 @@
-#include <bot.login.h>
-#include <bot.game.h>
-#include <bot.container.h>
+#include <fb/bot/bot.login.h>
+#include <fb/bot/bot.game.h>
+#include <fb/bot/bot.container.h>
 
 using namespace fb::bot;
 
@@ -20,7 +20,7 @@ login_bot::login_bot(bot_container& owner, uint32_t id, const fb::stream& params
     auto key_size = reader.read<uint8_t>();
     auto enc_key  = new uint8_t[key_size];
     reader.read(enc_key, key_size);
-    this->_cryptor = fb::cryptor(enc_type, enc_key);
+    this->_crypto = fb::crypto(enc_type, enc_key);
     delete[] enc_key;
 }
 
@@ -36,7 +36,7 @@ async::task<void> login_bot::on_connected()
 
     co_await base_bot::on_connected();
     this->send(
-        fb::protocol::login::request::agreement(this->_cryptor.type(), this->_cryptor.KEY_SIZE, this->_cryptor.key()),
+        fb::protocol::login::request::agreement(this->_crypto.type(), this->_crypto.KEY_SIZE, this->_crypto.key()),
         false,
         true);
 }
@@ -67,7 +67,7 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
     try
     {
         auto&& response1 = co_await this->request<fb::protocol::login::response::message>(
-            fb::protocol::login::request::account::create(id, pw));
+            fb::protocol::login::request::create(id, pw));
         if (response1.text.empty() == false)
             throw std::runtime_error("request error");
 
@@ -79,7 +79,7 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
         uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
         uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
         co_await this->request<fb::protocol::login::response::message>(
-            fb::protocol::login::request::account::complete{hair, sex, nation, creature});
+            fb::protocol::login::request::complete{hair, sex, nation, creature});
 
         while (true)
         {

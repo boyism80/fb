@@ -1,4 +1,4 @@
-#include <map.h>
+#include <fb/game/map.h>
 
 using namespace fb::game;
 
@@ -103,7 +103,7 @@ int fb::game::map::builtin_nears(lua_State* lua)
     thread->remove(-1);
 
     auto type  = argc < 3 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(3));
-    auto nears = map->nears(point16_t{x, y}, type);
+    auto nears = map->nears(fb::model::point16_t{x, y}, type);
 
     thread->new_table();
     for (int i = 0; i < nears.size(); i++)
@@ -125,7 +125,7 @@ int fb::game::map::builtin_movable(lua_State* lua)
     if (map == nullptr)
         return 0;
 
-    auto position = point16_t();
+    auto position = fb::model::point16_t();
 
     if (lua_istable(lua, 2))
     {

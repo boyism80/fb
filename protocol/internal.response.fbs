@@ -68,6 +68,30 @@ table WriteArticle {
 }
 
 
+table GetMail {
+  mail: fb.protocol.internal.Mail;
+  unread: ushort;
+  error: uint;
+}
+
+table GetMailList {
+  summary_list: [fb.protocol.internal.MailSummary];
+  error: uint;
+}
+
+table WriteMail {
+  mail: fb.protocol.internal.Mail;
+  host: uint;
+  unread: ushort;
+  error: uint;
+}
+
+table DeleteMail {
+  unread: uint;
+  error: uint;
+}
+
+
 table ChangePw {
   error_code: uint;
 }
@@ -98,6 +122,7 @@ table Init {
   spells: [fb.protocol.internal.Spell];
   option: fb.protocol.internal.Option;
   traces: [fb.protocol.internal.Trace];
+  mail: uint;
 }
 
 

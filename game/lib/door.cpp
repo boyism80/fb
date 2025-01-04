@@ -1,13 +1,15 @@
-#include <character.h>
-#include <context.h>
-#include <door.h>
-#include <map.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
+#include <fb/game/door.h>
+#include <fb/game/map.h>
 
-fb::game::door::door(const fb::game::map&   map,
-                     const fb::model::door& model,
-                     const point16_t&       position,
-                     const point16_t&       pivot,
-                     bool                   opened) :
+using namespace fb::game;
+
+door::door(const fb::game::map&        map,
+           const fb::model::door&      model,
+           const fb::model::point16_t& position,
+           const fb::model::point16_t& pivot,
+           bool                        opened) :
     map(map),
     model(model),
     position(position),
@@ -16,10 +18,10 @@ fb::game::door::door(const fb::game::map&   map,
     width(static_cast<uint16_t>(model.pairs.size()))
 { }
 
-fb::game::door::~door()
+door::~door()
 { }
 
-bool fb::game::door::toggle()
+bool door::toggle()
 {
     for (int i = 0; i < this->width; i++)
     {
@@ -39,17 +41,17 @@ bool fb::game::door::toggle()
     return true;
 }
 
-bool fb::game::door::opened() const
+bool door::opened() const
 {
     return this->_opened;
 }
 
-bool fb::game::door::locked() const
+bool door::locked() const
 {
     return this->_locked;
 }
 
-void fb::game::door::lock(bool value)
+void door::lock(bool value)
 {
     this->_locked = value;
 }

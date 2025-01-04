@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/game/context.h>
 using namespace fb::game;
 
 async::task<bool> context::handle_command_map(character& ch, Json::Value& parameters)
@@ -26,7 +26,7 @@ async::task<bool> context::handle_command_map(character& ch, Json::Value& parame
     }
 
     auto& map   = this->maps[model->id];
-    std::ignore = co_await ch.map(&map, point16_t(x, y));
+    std::ignore = co_await ch.map(&map, fb::model::point16_t(x, y));
     co_return true;
 }
 
@@ -39,7 +39,7 @@ async::task<bool> context::handle_command_sound(character& ch, Json::Value& para
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::object::sound(ch, SOUND(value)), scope::PIVOT);
+    ch.sound(SOUND(value));
     co_return true;
 }
 
@@ -52,7 +52,7 @@ async::task<bool> context::handle_command_action(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::character::action(ch, ACTION(value), DURATION::SPELL), scope::PIVOT);
+    ch.action(ACTION(value), DURATION::SPELL);
     co_return true;
 }
 
@@ -65,7 +65,7 @@ async::task<bool> context::handle_command_weather(character& ch, Json::Value& pa
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::weather(WEATHER_TYPE(value)), scope::PIVOT);
+    ch.weather(WEATHER_TYPE(value));
     co_return true;
 }
 
@@ -78,7 +78,7 @@ async::task<bool> context::handle_command_bright(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::bright(value), scope::PIVOT);
+    ch.bright(value);
     co_return true;
 }
 
@@ -91,7 +91,7 @@ async::task<bool> context::handle_command_timer(character& ch, Json::Value& para
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::timer(value), scope::PIVOT);
+    ch.timer(value, TIMER_TYPE::DECREASE);
     co_return true;
 }
 
@@ -104,7 +104,7 @@ async::task<bool> context::handle_command_effect(character& ch, Json::Value& par
         co_return false;
 
     auto value = parameters[0].asInt();
-    this->send(ch, fb_resp::object::effect(ch, value), scope::PIVOT);
+    ch.effect(value);
     co_return true;
 }
 
@@ -122,9 +122,9 @@ async::task<bool> context::handle_command_disguise(character& ch, Json::Value& p
         co_return true;
 
     ch.disguise(mob->look);
-    this->send(ch, fb_resp::object::effect(ch, 0x03), scope::PIVOT);
-    this->send(ch, fb_resp::character::action(ch, ACTION::CAST_SPELL, DURATION::SPELL), scope::PIVOT);
-    this->send(ch, fb_resp::object::sound(ch, SOUND::DISGUISE), scope::PIVOT);
+    ch.effect(0x03);
+    ch.action(ACTION::CAST_SPELL, DURATION::SPELL);
+    ch.sound(SOUND::DISGUISE);
     co_return true;
 }
 
@@ -169,8 +169,6 @@ async::task<bool> context::handle_command_class(character& ch, Json::Value& para
 
     ch.cls(class_type);
     ch.promotion(promotion);
-    this->send(ch, fb_resp::character::id(ch), scope::SELF);
-    this->send(ch, fb_resp::character::state(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
     co_return true;
 }
 
@@ -184,7 +182,34 @@ async::task<bool> context::handle_command_level(character& ch, Json::Value& para
 
     auto level = parameters[0].asInt();
     ch.level(level);
-    this->send(ch, fb_resp::character::state(ch, STATE_LEVEL::LEVEL_MAX), scope::SELF);
+    co_return true;
+}
+
+async::task<bool> context::handle_command_hp(character& ch, Json::Value& parameters)
+{
+    if (parameters.size() < 1)
+        co_return false;
+
+    if (parameters[0].isNumeric() == false)
+        co_return false;
+
+    auto hp = parameters[0].asUInt();
+    ch.base_hp(hp);
+    ch.hp(hp);
+    co_return true;
+}
+
+async::task<bool> context::handle_command_mp(character& ch, Json::Value& parameters)
+{
+    if (parameters.size() < 1)
+        co_return false;
+
+    if (parameters[0].isNumeric() == false)
+        co_return false;
+
+    auto mp = parameters[0].asUInt();
+    ch.base_mp(mp);
+    ch.mp(mp);
     co_return true;
 }
 
@@ -243,7 +268,7 @@ async::task<bool> context::handle_command_world(character& ch, Json::Value& para
         {
             if (point.name == name)
             {
-                ch.send(fb_resp::map::worlds(this->model, id, index));
+                ch.show_world_map(id, index);
                 co_return true;
             }
         }
@@ -334,7 +359,17 @@ async::task<bool> context::handle_command_tile(character& ch, Json::Value& param
 
 async::task<bool> context::handle_command_save(character& ch, Json::Value& parameters)
 {
-    co_await this->save(ch);
+    for (int i = 0; i < this->threads.size(); i++)
+    {
+        std::ignore = this->threads[i]->dispatch([this](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [id, character] : params->characters)
+            {
+                std::ignore = this->save(*character);
+            }
+            co_return;
+        });
+    }
     co_return true;
 }
 
@@ -373,7 +408,7 @@ async::task<bool> context::handle_command_randmap(character& ch, Json::Value& pa
     auto  x     = map->width() > 0 ? std::rand() % map->width() : 0;
     auto  y     = map->height() > 0 ? std::rand() % map->height() : 0;
 
-    co_return co_await ch.map(map, point16_t(x, y));
+    co_return co_await ch.map(map, fb::model::point16_t(x, y));
 }
 
 async::task<bool> context::handle_command_npc(character& ch, Json::Value& parameters)
@@ -484,5 +519,116 @@ async::task<bool> context::handle_map_tile(character& ch, Json::Value& parameter
         co_return false;
 
     ch.message(std::format("id: {}, object: {}, block: {}", tile->id, tile->object, tile->blocked));
+    co_return true;
+}
+
+async::task<bool> context::handle_command_ad(character& ch, Json::Value& parameters)
+{
+    auto width  = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 300;
+    auto height = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 120;
+    auto url    = parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString()
+                                                                     : std::string{"https://www.google.com"};
+    auto time   = parameters.size() >= 4 && parameters[3].isNumeric() ? parameters[3].asInt() : 60;
+
+    ch.send(fb::protocol::game::response::ad(width, height, url, time));
+    co_return true;
+}
+
+async::task<bool> context::handle_command_web(character& ch, Json::Value& parameters)
+{
+    auto type = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : 0;
+    auto url  = parameters.size() >= 2 && parameters[1].isString() ? parameters[1].asString()
+                                                                   : std::string{"https://www.google.com"};
+    auto message =
+        parameters.size() >= 3 && parameters[2].isString() ? parameters[2].asString() : std::string{"default message"};
+
+    ch.send(fb::protocol::game::response::web(type, url, message));
+    co_return true;
+}
+
+async::task<bool> context::handle_command_write_mail(character& ch, Json::Value& parameters)
+{
+    auto to    = parameters.size() >= 1 && parameters[0].isString() ? parameters[0].asString() : ch.name();
+    auto count = parameters.size() >= 2 && parameters[1].isNumeric() ? parameters[1].asInt() : 1;
+    auto fd    = ch.fd();
+    try
+    {
+        for (int i = 0; i < count; i++)
+        {
+            auto title    = std::format("MAIL TITLE {}", i);
+            auto contents = std::format("MAIL CONTENTS {}", i);
+            co_await this->send_mail(ch, to, title, contents);
+            if (!this->assert_socket(fd))
+                break;
+        }
+    }
+    catch (std::exception& e)
+    {
+        if (!this->assert_socket(fd))
+            ch.message(e.what());
+    }
+
+    co_return true;
+}
+
+async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& parameters)
+{
+    auto fd = ch.fd();
+    try
+    {
+        auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
+        if (!this->assert_socket(fd))
+            co_return false;
+
+        this->assert_mail(resp.error);
+
+        auto i = 0;
+        for (auto& mail : resp.summary_list)
+        {
+            auto&& resp = co_await this->read_mail(ch, mail.id);
+            if (!this->assert_socket(fd))
+                break;
+            i++;
+        }
+
+        ch.message(std::format("{}개의 메일 읽음 처리", i));
+    }
+    catch (std::exception& e)
+    {
+        if (this->assert_socket(fd))
+            ch.message(e.what());
+    }
+
+    co_return true;
+}
+
+async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value& parameters)
+{
+    auto fd = ch.fd();
+    try
+    {
+        auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
+        if (!this->assert_socket(fd))
+            co_return false;
+
+        this->assert_mail(resp.error);
+
+        auto i = 0;
+        for (auto& mail : resp.summary_list)
+        {
+            auto&& resp = co_await this->delete_mail(ch, mail.id);
+            if (!this->assert_socket(fd))
+                break;
+            i++;
+        }
+
+        ch.message(std::format("{}개의 메일 삭제", i));
+    }
+    catch (std::exception& e)
+    {
+        if (this->assert_socket(fd))
+            ch.message(e.what());
+    }
+
     co_return true;
 }

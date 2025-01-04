@@ -165,6 +165,35 @@ namespace fb.protocol._internal
                 builder.Build(value.Contents),
                 builder.Build(value.CreatedDate));
         }
+        public static Offset<fb.protocol._internal.raw.MailSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.MailSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.MailSummary.CreateMailSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.Sender),
+                builder.Build(value.SenderName),
+                builder.Build(value.Read),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol._internal.raw.Mail> Build(this FlatBufferBuilder builder, fb.protocol._internal.Mail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Mail.CreateMail(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.Sender),
+                builder.Build(value.SenderName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.Read),
+                builder.Build(value.CreatedDate));
+        }
         public static Offset<fb.protocol._internal.raw.Group> Build(this FlatBufferBuilder builder, fb.protocol._internal.Group value)
         {
             if (value == null)
@@ -347,24 +376,6 @@ namespace fb.protocol._internal
                 builder.Build(value.Spells),
                 builder.Build(value.Traces));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticle value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetArticle.CreateGetArticle(builder,
-                builder.Build(value.Section),
-                builder.Build(value.Article));
-        }
-        public static Offset<fb.protocol._internal.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticleList value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetArticleList.CreateGetArticleList(builder,
-                builder.Build(value.Section),
-                builder.Build(value.Position));
-        }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
             if (value == null)
@@ -384,6 +395,27 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
                 builder.Build(value.Id),
                 builder.Build(value.User));
+        }
+        public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
+                builder.Build(value.Sender),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.Host));
+        }
+        public static Offset<fb.protocol._internal.request.raw.DeleteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeleteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.User),
+                builder.Build(value.Id));
         }
         public static Offset<fb.protocol._internal.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetOption value)
         {
@@ -574,6 +606,45 @@ namespace fb.protocol._internal
             return fb.protocol._internal.response.raw.WriteArticle.CreateWriteArticle(builder,
                 builder.Build(value.Success));
         }
+        public static Offset<fb.protocol._internal.response.raw.GetMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.GetMail.CreateGetMail(builder,
+                builder.Build(value.Mail),
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.GetMailList> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetMailList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.GetMailList.CreateGetMailList(builder,
+                builder.Build(value.SummaryList),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.WriteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.WriteMail.CreateWriteMail(builder,
+                builder.Build(value.Mail),
+                builder.Build(value.Host),
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.DeleteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.DeleteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol._internal.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ChangePw value)
         {
             if (value == null)
@@ -620,7 +691,8 @@ namespace fb.protocol._internal
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
                 builder.Build(value.Option),
-                builder.Build(value.Traces));
+                builder.Build(value.Traces),
+                builder.Build(value.Mail));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -801,6 +873,10 @@ namespace fb.protocol._internal
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.MailSummary> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.MailSummary>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ClanMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ClanMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -824,6 +900,8 @@ namespace fb.protocol._internal
         Option,
         ArticleSummary,
         Article,
+        MailSummary,
+        Mail,
         Group,
         Trace,
         Clan,
@@ -985,6 +1063,35 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Contents),
                 builder.Build(value.CreatedDate));
         }
+        public static Offset<fb.protocol._internal.raw.MailSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.MailSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.MailSummary.CreateMailSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.Sender),
+                builder.Build(value.SenderName),
+                builder.Build(value.Read),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol._internal.raw.Mail> Build(this FlatBufferBuilder builder, fb.protocol._internal.Mail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Mail.CreateMail(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.Sender),
+                builder.Build(value.SenderName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.Read),
+                builder.Build(value.CreatedDate));
+        }
         public static Offset<fb.protocol._internal.raw.Group> Build(this FlatBufferBuilder builder, fb.protocol._internal.Group value)
         {
             if (value == null)
@@ -1167,24 +1274,6 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Spells),
                 builder.Build(value.Traces));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticle value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetArticle.CreateGetArticle(builder,
-                builder.Build(value.Section),
-                builder.Build(value.Article));
-        }
-        public static Offset<fb.protocol._internal.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticleList value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetArticleList.CreateGetArticleList(builder,
-                builder.Build(value.Section),
-                builder.Build(value.Position));
-        }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
             if (value == null)
@@ -1204,6 +1293,27 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
                 builder.Build(value.Id),
                 builder.Build(value.User));
+        }
+        public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
+                builder.Build(value.Sender),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.Host));
+        }
+        public static Offset<fb.protocol._internal.request.raw.DeleteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeleteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.User),
+                builder.Build(value.Id));
         }
         public static Offset<fb.protocol._internal.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetOption value)
         {
@@ -1394,6 +1504,45 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.response.raw.WriteArticle.CreateWriteArticle(builder,
                 builder.Build(value.Success));
         }
+        public static Offset<fb.protocol._internal.response.raw.GetMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.GetMail.CreateGetMail(builder,
+                builder.Build(value.Mail),
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.GetMailList> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetMailList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.GetMailList.CreateGetMailList(builder,
+                builder.Build(value.SummaryList),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.WriteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.WriteMail.CreateWriteMail(builder,
+                builder.Build(value.Mail),
+                builder.Build(value.Host),
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.DeleteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.DeleteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol._internal.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ChangePw value)
         {
             if (value == null)
@@ -1440,7 +1589,8 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
                 builder.Build(value.Option),
-                builder.Build(value.Traces));
+                builder.Build(value.Traces),
+                builder.Build(value.Mail));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -1621,6 +1771,10 @@ namespace fb.protocol._internal.request
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.MailSummary> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.MailSummary>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ClanMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ClanMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -1651,10 +1805,10 @@ namespace fb.protocol._internal.request
         MakeCharacter,
         ReserveName,
         Save,
-        GetArticle,
-        GetArticleList,
         WriteArticle,
         DeleteArticle,
+        WriteMail,
+        DeleteMail,
         SetOption,
         EnterGroup,
         BroadcastGroup,
@@ -1822,6 +1976,35 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Contents),
                 builder.Build(value.CreatedDate));
         }
+        public static Offset<fb.protocol._internal.raw.MailSummary> Build(this FlatBufferBuilder builder, fb.protocol._internal.MailSummary value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.MailSummary.CreateMailSummary(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.Sender),
+                builder.Build(value.SenderName),
+                builder.Build(value.Read),
+                builder.Build(value.Title),
+                builder.Build(value.CreatedDate));
+        }
+        public static Offset<fb.protocol._internal.raw.Mail> Build(this FlatBufferBuilder builder, fb.protocol._internal.Mail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Mail.CreateMail(builder,
+                builder.Build(value.Id),
+                builder.Build(value.User),
+                builder.Build(value.Sender),
+                builder.Build(value.SenderName),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.Read),
+                builder.Build(value.CreatedDate));
+        }
         public static Offset<fb.protocol._internal.raw.Group> Build(this FlatBufferBuilder builder, fb.protocol._internal.Group value)
         {
             if (value == null)
@@ -2004,24 +2187,6 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Spells),
                 builder.Build(value.Traces));
         }
-        public static Offset<fb.protocol._internal.request.raw.GetArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticle value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetArticle.CreateGetArticle(builder,
-                builder.Build(value.Section),
-                builder.Build(value.Article));
-        }
-        public static Offset<fb.protocol._internal.request.raw.GetArticleList> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.GetArticleList value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.GetArticleList.CreateGetArticleList(builder,
-                builder.Build(value.Section),
-                builder.Build(value.Position));
-        }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
             if (value == null)
@@ -2041,6 +2206,27 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.DeleteArticle.CreateDeleteArticle(builder,
                 builder.Build(value.Id),
                 builder.Build(value.User));
+        }
+        public static Offset<fb.protocol._internal.request.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.WriteMail.CreateWriteMail(builder,
+                builder.Build(value.Sender),
+                builder.Build(value.User),
+                builder.Build(value.Title),
+                builder.Build(value.Contents),
+                builder.Build(value.Host));
+        }
+        public static Offset<fb.protocol._internal.request.raw.DeleteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.DeleteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.request.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.User),
+                builder.Build(value.Id));
         }
         public static Offset<fb.protocol._internal.request.raw.SetOption> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.SetOption value)
         {
@@ -2231,6 +2417,45 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.response.raw.WriteArticle.CreateWriteArticle(builder,
                 builder.Build(value.Success));
         }
+        public static Offset<fb.protocol._internal.response.raw.GetMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.GetMail.CreateGetMail(builder,
+                builder.Build(value.Mail),
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.GetMailList> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.GetMailList value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.GetMailList.CreateGetMailList(builder,
+                builder.Build(value.SummaryList),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.WriteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.WriteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.WriteMail.CreateWriteMail(builder,
+                builder.Build(value.Mail),
+                builder.Build(value.Host),
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
+        public static Offset<fb.protocol._internal.response.raw.DeleteMail> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.DeleteMail value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.response.raw.DeleteMail.CreateDeleteMail(builder,
+                builder.Build(value.Unread),
+                builder.Build(value.Error));
+        }
         public static Offset<fb.protocol._internal.response.raw.ChangePw> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.ChangePw value)
         {
             if (value == null)
@@ -2277,7 +2502,8 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
                 builder.Build(value.Option),
-                builder.Build(value.Traces));
+                builder.Build(value.Traces),
+                builder.Build(value.Mail));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
         {
@@ -2458,6 +2684,10 @@ namespace fb.protocol._internal.response
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ArticleSummary>(value.Select(x => Build(builder, x)).ToArray());
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.MailSummary> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.MailSummary>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ClanMember> value)
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.ClanMember>(value.Select(x => Build(builder, x)).ToArray());
@@ -2484,6 +2714,10 @@ namespace fb.protocol._internal.response
         GetArticle,
         GetArticleList,
         WriteArticle,
+        GetMail,
+        GetMailList,
+        WriteMail,
+        DeleteMail,
         ChangePw,
         GetUid,
         InitCharacter,
@@ -2855,6 +3089,90 @@ namespace fb.protocol._internal
             return new Article(bytes);
         }
     }
+    public class MailSummary : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.MailSummary;
+        public ushort Id { get; set; } = 0;
+        public uint User { get; set; } = 0;
+        public uint Sender { get; set; } = 0;
+        public string SenderName { get; set; } = string.Empty;
+        public bool Read { get; set; } = false;
+        public string Title { get; set; } = string.Empty;
+        public string CreatedDate { get; set; } = string.Empty;
+
+        public MailSummary()
+        { }
+
+        public MailSummary(fb.protocol._internal.raw.MailSummary raw)
+        {
+            Id = raw.Id;
+            User = raw.User;
+            Sender = raw.Sender;
+            SenderName = raw.SenderName;
+            Read = raw.Read;
+            Title = raw.Title;
+            CreatedDate = raw.CreatedDate;
+        }
+
+        public MailSummary(byte[] bytes) : this(fb.protocol._internal.raw.MailSummary.GetRootAsMailSummary(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static MailSummary Deserialize(byte[] bytes)
+        {
+            return new MailSummary(bytes);
+        }
+    }
+    public class Mail : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Mail;
+        public ushort Id { get; set; } = 0;
+        public uint User { get; set; } = 0;
+        public uint Sender { get; set; } = 0;
+        public string SenderName { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Contents { get; set; } = string.Empty;
+        public bool Read { get; set; } = false;
+        public string CreatedDate { get; set; } = string.Empty;
+
+        public Mail()
+        { }
+
+        public Mail(fb.protocol._internal.raw.Mail raw)
+        {
+            Id = raw.Id;
+            User = raw.User;
+            Sender = raw.Sender;
+            SenderName = raw.SenderName;
+            Title = raw.Title;
+            Contents = raw.Contents;
+            Read = raw.Read;
+            CreatedDate = raw.CreatedDate;
+        }
+
+        public Mail(byte[] bytes) : this(fb.protocol._internal.raw.Mail.GetRootAsMail(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Mail Deserialize(byte[] bytes)
+        {
+            return new Mail(bytes);
+        }
+    }
     public class Group : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Group;
@@ -3001,6 +3319,8 @@ namespace fb.protocol._internal
                 FlatBufferProtocolType.Option => typeof(fb.protocol._internal.Option),
                 FlatBufferProtocolType.ArticleSummary => typeof(fb.protocol._internal.ArticleSummary),
                 FlatBufferProtocolType.Article => typeof(fb.protocol._internal.Article),
+                FlatBufferProtocolType.MailSummary => typeof(fb.protocol._internal.MailSummary),
+                FlatBufferProtocolType.Mail => typeof(fb.protocol._internal.Mail),
                 FlatBufferProtocolType.Group => typeof(fb.protocol._internal.Group),
                 FlatBufferProtocolType.Trace => typeof(fb.protocol._internal.Trace),
                 FlatBufferProtocolType.Clan => typeof(fb.protocol._internal.Clan),
@@ -3479,68 +3799,6 @@ namespace fb.protocol._internal.request
             return new Save(bytes);
         }
     }
-    public class GetArticle : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetArticle;
-        public uint Section { get; set; } = 0;
-        public uint Article { get; set; } = 0;
-
-        public GetArticle()
-        { }
-
-        public GetArticle(fb.protocol._internal.request.raw.GetArticle raw)
-        {
-            Section = raw.Section;
-            Article = raw.Article;
-        }
-
-        public GetArticle(byte[] bytes) : this(fb.protocol._internal.request.raw.GetArticle.GetRootAsGetArticle(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
-        }
-
-        public static GetArticle Deserialize(byte[] bytes)
-        {
-            return new GetArticle(bytes);
-        }
-    }
-    public class GetArticleList : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.GetArticleList;
-        public uint Section { get; set; } = 0;
-        public uint Position { get; set; } = 0;
-
-        public GetArticleList()
-        { }
-
-        public GetArticleList(fb.protocol._internal.request.raw.GetArticleList raw)
-        {
-            Section = raw.Section;
-            Position = raw.Position;
-        }
-
-        public GetArticleList(byte[] bytes) : this(fb.protocol._internal.request.raw.GetArticleList.GetRootAsGetArticleList(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
-        }
-
-        public static GetArticleList Deserialize(byte[] bytes)
-        {
-            return new GetArticleList(bytes);
-        }
-    }
     public class WriteArticle : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.WriteArticle;
@@ -3605,6 +3863,74 @@ namespace fb.protocol._internal.request
         public static DeleteArticle Deserialize(byte[] bytes)
         {
             return new DeleteArticle(bytes);
+        }
+    }
+    public class WriteMail : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.WriteMail;
+        public uint Sender { get; set; } = 0;
+        public string User { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Contents { get; set; } = string.Empty;
+        public uint Host { get; set; } = 0;
+
+        public WriteMail()
+        { }
+
+        public WriteMail(fb.protocol._internal.request.raw.WriteMail raw)
+        {
+            Sender = raw.Sender;
+            User = raw.User;
+            Title = raw.Title;
+            Contents = raw.Contents;
+            Host = raw.Host;
+        }
+
+        public WriteMail(byte[] bytes) : this(fb.protocol._internal.request.raw.WriteMail.GetRootAsWriteMail(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static WriteMail Deserialize(byte[] bytes)
+        {
+            return new WriteMail(bytes);
+        }
+    }
+    public class DeleteMail : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.DeleteMail;
+        public uint User { get; set; } = 0;
+        public ushort Id { get; set; } = 0;
+
+        public DeleteMail()
+        { }
+
+        public DeleteMail(fb.protocol._internal.request.raw.DeleteMail raw)
+        {
+            User = raw.User;
+            Id = raw.Id;
+        }
+
+        public DeleteMail(byte[] bytes) : this(fb.protocol._internal.request.raw.DeleteMail.GetRootAsDeleteMail(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static DeleteMail Deserialize(byte[] bytes)
+        {
+            return new DeleteMail(bytes);
         }
     }
     public class SetOption : IFlatBufferEx
@@ -3952,10 +4278,10 @@ namespace fb.protocol._internal.request
                 FlatBufferProtocolType.MakeCharacter => typeof(fb.protocol._internal.request.MakeCharacter),
                 FlatBufferProtocolType.ReserveName => typeof(fb.protocol._internal.request.ReserveName),
                 FlatBufferProtocolType.Save => typeof(fb.protocol._internal.request.Save),
-                FlatBufferProtocolType.GetArticle => typeof(fb.protocol._internal.request.GetArticle),
-                FlatBufferProtocolType.GetArticleList => typeof(fb.protocol._internal.request.GetArticleList),
                 FlatBufferProtocolType.WriteArticle => typeof(fb.protocol._internal.request.WriteArticle),
                 FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol._internal.request.DeleteArticle),
+                FlatBufferProtocolType.WriteMail => typeof(fb.protocol._internal.request.WriteMail),
+                FlatBufferProtocolType.DeleteMail => typeof(fb.protocol._internal.request.DeleteMail),
                 FlatBufferProtocolType.SetOption => typeof(fb.protocol._internal.request.SetOption),
                 FlatBufferProtocolType.EnterGroup => typeof(fb.protocol._internal.request.EnterGroup),
                 FlatBufferProtocolType.BroadcastGroup => typeof(fb.protocol._internal.request.BroadcastGroup),
@@ -4286,6 +4612,136 @@ namespace fb.protocol._internal.response
             return new WriteArticle(bytes);
         }
     }
+    public class GetMail : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.GetMail;
+        public fb.protocol._internal.Mail Mail { get; set; } = new fb.protocol._internal.Mail();
+        public ushort Unread { get; set; } = 0;
+        public uint Error { get; set; } = 0;
+
+        public GetMail()
+        { }
+
+        public GetMail(fb.protocol._internal.response.raw.GetMail raw)
+        {
+            Mail = new Mail(raw.Mail.Value);
+            Unread = raw.Unread;
+            Error = raw.Error;
+        }
+
+        public GetMail(byte[] bytes) : this(fb.protocol._internal.response.raw.GetMail.GetRootAsGetMail(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static GetMail Deserialize(byte[] bytes)
+        {
+            return new GetMail(bytes);
+        }
+    }
+    public class GetMailList : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.GetMailList;
+        public List<fb.protocol._internal.MailSummary> SummaryList { get; set; } = new List<fb.protocol._internal.MailSummary>();
+        public uint Error { get; set; } = 0;
+
+        public GetMailList()
+        { }
+
+        public GetMailList(fb.protocol._internal.response.raw.GetMailList raw)
+        {
+            SummaryList = Enumerable.Range(0, raw.SummaryListLength).Select(i => raw.SummaryList(i)).Select(x => new MailSummary(x.Value)).ToList();
+            Error = raw.Error;
+        }
+
+        public GetMailList(byte[] bytes) : this(fb.protocol._internal.response.raw.GetMailList.GetRootAsGetMailList(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static GetMailList Deserialize(byte[] bytes)
+        {
+            return new GetMailList(bytes);
+        }
+    }
+    public class WriteMail : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.WriteMail;
+        public fb.protocol._internal.Mail Mail { get; set; } = new fb.protocol._internal.Mail();
+        public uint Host { get; set; } = 0;
+        public ushort Unread { get; set; } = 0;
+        public uint Error { get; set; } = 0;
+
+        public WriteMail()
+        { }
+
+        public WriteMail(fb.protocol._internal.response.raw.WriteMail raw)
+        {
+            Mail = new Mail(raw.Mail.Value);
+            Host = raw.Host;
+            Unread = raw.Unread;
+            Error = raw.Error;
+        }
+
+        public WriteMail(byte[] bytes) : this(fb.protocol._internal.response.raw.WriteMail.GetRootAsWriteMail(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static WriteMail Deserialize(byte[] bytes)
+        {
+            return new WriteMail(bytes);
+        }
+    }
+    public class DeleteMail : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.DeleteMail;
+        public uint Unread { get; set; } = 0;
+        public uint Error { get; set; } = 0;
+
+        public DeleteMail()
+        { }
+
+        public DeleteMail(fb.protocol._internal.response.raw.DeleteMail raw)
+        {
+            Unread = raw.Unread;
+            Error = raw.Error;
+        }
+
+        public DeleteMail(byte[] bytes) : this(fb.protocol._internal.response.raw.DeleteMail.GetRootAsDeleteMail(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static DeleteMail Deserialize(byte[] bytes)
+        {
+            return new DeleteMail(bytes);
+        }
+    }
     public class ChangePw : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.ChangePw;
@@ -4416,6 +4872,7 @@ namespace fb.protocol._internal.response
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
         public fb.protocol._internal.Option Option { get; set; } = new fb.protocol._internal.Option();
         public List<fb.protocol._internal.Trace> Traces { get; set; } = new List<fb.protocol._internal.Trace>();
+        public uint Mail { get; set; } = 0;
 
         public Init()
         { }
@@ -4429,6 +4886,7 @@ namespace fb.protocol._internal.response
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
             Option = new Option(raw.Option.Value);
             Traces = Enumerable.Range(0, raw.TracesLength).Select(i => raw.Traces(i)).Select(x => new Trace(x.Value)).ToList();
+            Mail = raw.Mail;
         }
 
         public Init(byte[] bytes) : this(fb.protocol._internal.response.raw.Init.GetRootAsInit(new ByteBuffer(bytes)))
@@ -4965,6 +5423,10 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.GetArticle => typeof(fb.protocol._internal.response.GetArticle),
                 FlatBufferProtocolType.GetArticleList => typeof(fb.protocol._internal.response.GetArticleList),
                 FlatBufferProtocolType.WriteArticle => typeof(fb.protocol._internal.response.WriteArticle),
+                FlatBufferProtocolType.GetMail => typeof(fb.protocol._internal.response.GetMail),
+                FlatBufferProtocolType.GetMailList => typeof(fb.protocol._internal.response.GetMailList),
+                FlatBufferProtocolType.WriteMail => typeof(fb.protocol._internal.response.WriteMail),
+                FlatBufferProtocolType.DeleteMail => typeof(fb.protocol._internal.response.DeleteMail),
                 FlatBufferProtocolType.ChangePw => typeof(fb.protocol._internal.response.ChangePw),
                 FlatBufferProtocolType.GetUid => typeof(fb.protocol._internal.response.GetUid),
                 FlatBufferProtocolType.InitCharacter => typeof(fb.protocol._internal.response.InitCharacter),

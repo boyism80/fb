@@ -1,10 +1,8 @@
-#include <shard.h>
+#include <fb/game/shard.h>
 
 using namespace fb::game;
 
-shard_params::shard_params() :
-    groups(),
-    characters()
+shard_params::shard_params()
 { }
 
 shard::shard()

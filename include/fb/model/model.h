@@ -14,6 +14,8 @@
 #include <json/json.h>
 #include <fstream>
 #include <unordered_map>
+#include <functional>
+#include <mutex>
 #include <model.additional.h>
 #ifdef LUA
 extern "C"
@@ -268,7 +270,9 @@ enum class BOARD_ACTION
     ARTICLES = 0x02, 
     ARTICLE = 0x03, 
     WRITE = 0x04, 
-    DELETE = 0x05
+    DELETE = 0x05, 
+    SEND_MAIL = 0x06, 
+    MAIL = 0x09
 }; // end of enum 'BOARD_ACTION'
 
 template <>
@@ -281,7 +285,9 @@ inline BOARD_ACTION enum_parse<BOARD_ACTION>(const std::string k)
         { "ARTICLES", BOARD_ACTION::ARTICLES }, 
         { "ARTICLE", BOARD_ACTION::ARTICLE }, 
         { "WRITE", BOARD_ACTION::WRITE }, 
-        { "DELETE", BOARD_ACTION::DELETE }
+        { "DELETE", BOARD_ACTION::DELETE }, 
+        { "SEND_MAIL", BOARD_ACTION::SEND_MAIL }, 
+        { "MAIL", BOARD_ACTION::MAIL }
     };
 
     auto i = enums.find(k);
@@ -301,7 +307,9 @@ inline const char* enum_tostring<BOARD_ACTION>(BOARD_ACTION k)
         { BOARD_ACTION::ARTICLES, "ARTICLES" }, 
         { BOARD_ACTION::ARTICLE, "ARTICLE" }, 
         { BOARD_ACTION::WRITE, "WRITE" }, 
-        { BOARD_ACTION::DELETE, "DELETE" }
+        { BOARD_ACTION::DELETE, "DELETE" }, 
+        { BOARD_ACTION::SEND_MAIL, "SEND_MAIL" }, 
+        { BOARD_ACTION::MAIL, "MAIL" }
     };
 
     auto i = enums.find(k);
@@ -1039,7 +1047,9 @@ enum class ERROR_CODE
     CLAN_CANNOT_LEAVEE_MASTER = 30, 
     NOT_FOUND_CHARACTER_SYNC = 31, 
     CLAN_TITLE_NOT_CHANGED = 32, 
-    CLAN_TITLE_TOO_SHORT = 33
+    CLAN_TITLE_TOO_SHORT = 33, 
+    MAIL_NOT_EXISTS = 34, 
+    NOT_FOUND_MAIL = 35
 }; // end of enum 'ERROR_CODE'
 
 template <>
@@ -1080,7 +1090,9 @@ inline ERROR_CODE enum_parse<ERROR_CODE>(const std::string k)
         { "CLAN_CANNOT_LEAVEE_MASTER", ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER }, 
         { "NOT_FOUND_CHARACTER_SYNC", ERROR_CODE::NOT_FOUND_CHARACTER_SYNC }, 
         { "CLAN_TITLE_NOT_CHANGED", ERROR_CODE::CLAN_TITLE_NOT_CHANGED }, 
-        { "CLAN_TITLE_TOO_SHORT", ERROR_CODE::CLAN_TITLE_TOO_SHORT }
+        { "CLAN_TITLE_TOO_SHORT", ERROR_CODE::CLAN_TITLE_TOO_SHORT }, 
+        { "MAIL_NOT_EXISTS", ERROR_CODE::MAIL_NOT_EXISTS }, 
+        { "NOT_FOUND_MAIL", ERROR_CODE::NOT_FOUND_MAIL }
     };
 
     auto i = enums.find(k);
@@ -1128,7 +1140,9 @@ inline const char* enum_tostring<ERROR_CODE>(ERROR_CODE k)
         { ERROR_CODE::CLAN_CANNOT_LEAVEE_MASTER, "CLAN_CANNOT_LEAVEE_MASTER" }, 
         { ERROR_CODE::NOT_FOUND_CHARACTER_SYNC, "NOT_FOUND_CHARACTER_SYNC" }, 
         { ERROR_CODE::CLAN_TITLE_NOT_CHANGED, "CLAN_TITLE_NOT_CHANGED" }, 
-        { ERROR_CODE::CLAN_TITLE_TOO_SHORT, "CLAN_TITLE_TOO_SHORT" }
+        { ERROR_CODE::CLAN_TITLE_TOO_SHORT, "CLAN_TITLE_TOO_SHORT" }, 
+        { ERROR_CODE::MAIL_NOT_EXISTS, "MAIL_NOT_EXISTS" }, 
+        { ERROR_CODE::NOT_FOUND_MAIL, "NOT_FOUND_MAIL" }
     };
 
     auto i = enums.find(k);
@@ -1383,6 +1397,44 @@ inline const char* enum_tostring<ITEM_TYPE>(ITEM_TYPE k)
         { ITEM_TYPE::AUXILIARY, "AUXILIARY" }, 
         { ITEM_TYPE::BOW, "BOW" }, 
         { ITEM_TYPE::PACKAGE, "PACKAGE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class MAIL_BUTTON_ENABLE
+{
+    NONE = 0x00, 
+    NEW = 0x02
+}; // end of enum 'MAIL_BUTTON_ENABLE'
+
+template <>
+inline MAIL_BUTTON_ENABLE enum_parse<MAIL_BUTTON_ENABLE>(const std::string k)
+{
+    static const std::unordered_map<std::string, MAIL_BUTTON_ENABLE> enums
+    {
+        { "NONE", MAIL_BUTTON_ENABLE::NONE }, 
+        { "NEW", MAIL_BUTTON_ENABLE::NEW }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<MAIL_BUTTON_ENABLE>(MAIL_BUTTON_ENABLE k)
+{
+    static const std::unordered_map<MAIL_BUTTON_ENABLE, const char*> enums
+    {
+        { MAIL_BUTTON_ENABLE::NONE, "NONE" }, 
+        { MAIL_BUTTON_ENABLE::NEW, "NEW" }
     };
 
     auto i = enums.find(k);
@@ -1724,6 +1776,74 @@ inline const char* enum_tostring<OBJECT_TYPE>(OBJECT_TYPE k)
     return i->second;
 }
 
+enum class OPTION
+{
+    EXTENSION = 0x00, 
+    WHISPER = 0x01, 
+    GROUP = 0x02, 
+    ROAR = 0x03, 
+    ROAR_WORLDS = 0x04, 
+    MAGIC_EFFECT = 0x05, 
+    WEATHER_EFFECT = 0x06, 
+    FIXED_MOVE = 0x07, 
+    TRADE = 0x08, 
+    FAST_MOVE = 0x09, 
+    EFFECT_SOUND = 0x0A, 
+    PK_PROTECT = 0x0B
+}; // end of enum 'OPTION'
+
+template <>
+inline OPTION enum_parse<OPTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, OPTION> enums
+    {
+        { "EXTENSION", OPTION::EXTENSION }, 
+        { "WHISPER", OPTION::WHISPER }, 
+        { "GROUP", OPTION::GROUP }, 
+        { "ROAR", OPTION::ROAR }, 
+        { "ROAR_WORLDS", OPTION::ROAR_WORLDS }, 
+        { "MAGIC_EFFECT", OPTION::MAGIC_EFFECT }, 
+        { "WEATHER_EFFECT", OPTION::WEATHER_EFFECT }, 
+        { "FIXED_MOVE", OPTION::FIXED_MOVE }, 
+        { "TRADE", OPTION::TRADE }, 
+        { "FAST_MOVE", OPTION::FAST_MOVE }, 
+        { "EFFECT_SOUND", OPTION::EFFECT_SOUND }, 
+        { "PK_PROTECT", OPTION::PK_PROTECT }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<OPTION>(OPTION k)
+{
+    static const std::unordered_map<OPTION, const char*> enums
+    {
+        { OPTION::EXTENSION, "EXTENSION" }, 
+        { OPTION::WHISPER, "WHISPER" }, 
+        { OPTION::GROUP, "GROUP" }, 
+        { OPTION::ROAR, "ROAR" }, 
+        { OPTION::ROAR_WORLDS, "ROAR_WORLDS" }, 
+        { OPTION::MAGIC_EFFECT, "MAGIC_EFFECT" }, 
+        { OPTION::WEATHER_EFFECT, "WEATHER_EFFECT" }, 
+        { OPTION::FIXED_MOVE, "FIXED_MOVE" }, 
+        { OPTION::TRADE, "TRADE" }, 
+        { OPTION::FAST_MOVE, "FAST_MOVE" }, 
+        { OPTION::EFFECT_SOUND, "EFFECT_SOUND" }, 
+        { OPTION::PK_PROTECT, "PK_PROTECT" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class REGEX
 {
     SELL = 0, 
@@ -1792,74 +1912,6 @@ inline const char* enum_tostring<REGEX>(REGEX k)
         { REGEX::RENAME_WEAPON, "RENAME_WEAPON" }, 
         { REGEX::HOLD_ITEM_LIST, "HOLD_ITEM_LIST" }, 
         { REGEX::HOLD_ITEM_COUNT, "HOLD_ITEM_COUNT" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-enum class SETTING
-{
-    EXTENSION = 0x00, 
-    WHISPER = 0x01, 
-    GROUP = 0x02, 
-    ROAR = 0x03, 
-    ROAR_WORLDS = 0x04, 
-    MAGIC_EFFECT = 0x05, 
-    WEATHER_EFFECT = 0x06, 
-    FIXED_MOVE = 0x07, 
-    TRADE = 0x08, 
-    FAST_MOVE = 0x09, 
-    EFFECT_SOUND = 0x0A, 
-    PK_PROTECT = 0x0B
-}; // end of enum 'SETTING'
-
-template <>
-inline SETTING enum_parse<SETTING>(const std::string k)
-{
-    static const std::unordered_map<std::string, SETTING> enums
-    {
-        { "EXTENSION", SETTING::EXTENSION }, 
-        { "WHISPER", SETTING::WHISPER }, 
-        { "GROUP", SETTING::GROUP }, 
-        { "ROAR", SETTING::ROAR }, 
-        { "ROAR_WORLDS", SETTING::ROAR_WORLDS }, 
-        { "MAGIC_EFFECT", SETTING::MAGIC_EFFECT }, 
-        { "WEATHER_EFFECT", SETTING::WEATHER_EFFECT }, 
-        { "FIXED_MOVE", SETTING::FIXED_MOVE }, 
-        { "TRADE", SETTING::TRADE }, 
-        { "FAST_MOVE", SETTING::FAST_MOVE }, 
-        { "EFFECT_SOUND", SETTING::EFFECT_SOUND }, 
-        { "PK_PROTECT", SETTING::PK_PROTECT }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<SETTING>(SETTING k)
-{
-    static const std::unordered_map<SETTING, const char*> enums
-    {
-        { SETTING::EXTENSION, "EXTENSION" }, 
-        { SETTING::WHISPER, "WHISPER" }, 
-        { SETTING::GROUP, "GROUP" }, 
-        { SETTING::ROAR, "ROAR" }, 
-        { SETTING::ROAR_WORLDS, "ROAR_WORLDS" }, 
-        { SETTING::MAGIC_EFFECT, "MAGIC_EFFECT" }, 
-        { SETTING::WEATHER_EFFECT, "WEATHER_EFFECT" }, 
-        { SETTING::FIXED_MOVE, "FIXED_MOVE" }, 
-        { SETTING::TRADE, "TRADE" }, 
-        { SETTING::FAST_MOVE, "FAST_MOVE" }, 
-        { SETTING::EFFECT_SOUND, "EFFECT_SOUND" }, 
-        { SETTING::PK_PROTECT, "PK_PROTECT" }
     };
 
     auto i = enums.find(k);
@@ -2351,17 +2403,17 @@ DECLARE_CONST_REGEX_EXTENSION
 class string
 {
 public:
-    inline static constexpr const char* ACCOUNT_INVALID_NAME = "이름이 길거나 적합하지 않습니다.";
-    inline static constexpr const char* ACCOUNT_ALREADY_LOGIN = "이미 접속중입니다.";
-    inline static constexpr const char* ACCOUNT_NOT_FOUND_NAME = "존재하지 않는 이름입니다.";
-    inline static constexpr const char* ACCOUNT_PASSWORD_SIZE = "암호는 4자 이상 8자 이하";
-    inline static constexpr const char* ACCOUNT_INVALID_PASSWORD = "비밀번호가 올바르지 않습니다.";
-    inline static constexpr const char* ACCOUNT_SIMPLE_PASSWORD = "암호가 단순합니다.";
-    inline static constexpr const char* ACCOUNT_SUCCESS_REGISTER_ACCOUNT = "등록완료, 이어하기를 선택하세요.";
-    inline static constexpr const char* ACCOUNT_SUCCESS_CHANGE_PASSWORD = "변경됐다리";
-    inline static constexpr const char* ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
-    inline static constexpr const char* ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
-    inline static constexpr const char* ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_INVALID_NAME = "이름이 길거나 적합하지 않습니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_ALREADY_LOGIN = "이미 접속중입니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_NOT_FOUND_NAME = "존재하지 않는 이름입니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_PASSWORD_SIZE = "암호는 4자 이상 8자 이하";
+    inline static constexpr const char* MESSAGE_ACCOUNT_INVALID_PASSWORD = "비밀번호가 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_SIMPLE_PASSWORD = "암호가 단순합니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_SUCCESS_REGISTER_ACCOUNT = "등록완료, 이어하기를 선택하세요.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_SUCCESS_CHANGE_PASSWORD = "변경됐다리";
+    inline static constexpr const char* MESSAGE_ACCOUNT_INVALID_BIRTHDAY = "생년월일이 올바르지 않습니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION = "기존 암호화 동일합니다.";
+    inline static constexpr const char* MESSAGE_ACCOUNT_ALREADY_EXISTS = "이미 존재하는 이름입니다.";
     inline static constexpr const char* MESSAGE_ASSET_MAP_LOADED = "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_REGEX_LOADED = "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})";
     inline static constexpr const char* MESSAGE_ASSET_WORLD_MAP_LOADED = "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})";
@@ -2414,7 +2466,7 @@ public:
     inline static constexpr const char* MESSAGE_GROUP_DISABLED_TARGET = "상대방이 그룹 거부 상태입니다.";
     inline static constexpr const char* MESSAGE_GROUP_NOT_OWNER = "그룹장만 할 수 있습니다.";
     inline static constexpr const char* MESSAGE_GROUP_FULL_MEMBER = "자리가 없습니다.";
-    inline static constexpr const char* MESSAGE_GROUP_ALREADY_JOINED = "님은 이미 그룹 참여 중입니다.";
+    inline static constexpr const char* MESSAGE_GROUP_ALREADY_JOINED = "{}님은 이미 그룹 참여 중입니다.";
     inline static constexpr const char* MESSAGE_GROUP_JOINED = "님 그룹에 참여";
     inline static constexpr const char* MESSAGE_GROUP_LEFT = "님 그룹 탈퇴";
     inline static constexpr const char* MESSAGE_EXCEPTION_RIDDING = "말을 타고는 할 수 없습니다.";
@@ -2462,6 +2514,46 @@ public:
     inline static constexpr const char* MESSAGE_DOOR_UNLOCK = "문을 열었습니다.";
     inline static constexpr const char* MESSAGE_DOOR_LOCKED = "문이 잠겼습니다.";
     inline static constexpr const char* MESSAGE_ERROR_UNKNOWN = "올바르지 않은 명령입니다.";
+    inline static constexpr const char* MESSAGE_NOT_READY_GAME_SERVER = "비바람이 휘몰아치고 있습니다.";
+    inline static constexpr const char* MESSAGE_UNKNOWN_ERROR_WITH_CODE = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
+    inline static constexpr const char* MESSAGE_NOT_FOUND_ITEM = "아이템이 없습니다.";
+    inline static constexpr const char* MESSAGE_ITEM_FULL = "더 이상 가질 수 없습니다.";
+    inline static constexpr const char* MESSAGE_WRITE_BOARD_FAILED = "게시글 작성 실패";
+    inline static constexpr const char* MESSAGE_INVALID_USER_NAME = "존재하지 않는 유저입니다.";
+    inline static constexpr const char* MESSAGE_NOT_FOUND_MAIL = "메일이 없습니다.";
+    inline static constexpr const char* MESSAGE_CANNOT_GROUP_SELF = "자기 자신과는 그룹할 수 없습니다.";
+    inline static constexpr const char* MESSAGE_ALREADY_JOINED_GROUP = "이미 그룹 참여중입니다.";
+    inline static constexpr const char* MESSAGE_USER_NOT_LOGIN = "{}님은 바람의나라에 없습니다.";
+    inline static constexpr const char* MESSAGE_ALREADY_JOINED_CLAN = "클랜 이미 있음";
+    inline static constexpr const char* MESSAGE_WHISPER_DISABLED_MINE = "당신은 귓속말 거부 상태입니다.";
+    inline static constexpr const char* MESSAGE_WHISPER_DISABLED_TARGET = "{}님은 귓속말 거부 상태입니다.";
+    inline static constexpr const char* MESSAGE_CANNOT_EQUIP_ITEM = "입을 수 없는 물건입니다.";
+    inline static constexpr const char* MESSAGE_NOT_JOINED_CLAN = "클랜이 없음";
+    inline static constexpr const char* MESSAGE_INVALID_SELL_ITEM = "뭘 팔아?";
+    inline static constexpr const char* MESSAGE_NO_HAVE_ITEM = "가지고 있지도 않으면서...";
+    inline static constexpr const char* MESSAGE_ITEM_NOT_BUY = "그런 물건은 안 삽니다.";
+    inline static constexpr const char* MESSAGE_INVALID_ITEM_COUNT = "뭐래는거야..";
+    inline static constexpr const char* MESSAGE_NOT_ENOUGH_ITEM_COUNT = "갯수가 모자라는데요?";
+    inline static constexpr const char* MESSAGE_INVALID_BUY_ITEM_NAME = "뭘 사?";
+    inline static constexpr const char* MESSAGE_ITEM_NOT_SELL = "그런 물건은 안 팝니다.";
+    inline static constexpr const char* MESSAGE_TOO_MANY_COUNT = "그렇게나 많이요?";
+    inline static constexpr const char* MESSAGE_NOT_ENOUGH_MONEY = "돈이 모자랍니다.";
+    inline static constexpr const char* MESSAGE_REPAIR_INVALID_NAME = "뭘 고쳐줘?";
+    inline static constexpr const char* MESSAGE_HAVE_NO_ITEM = "가지고 있지 않은데요";
+    inline static constexpr const char* MESSAGE_ALREADY_REPAIRED = "이미 고쳐져 있습니다.";
+    inline static constexpr const char* MESSAGE_NOT_ANY_REPAIRABLE = "고칠 물건이 없습니다.";
+    inline static constexpr const char* MESSAGE_CANNOT_DEPOSITE_MORE = "더 이상 맡길 수 없습니다.";
+    inline static constexpr const char* MESSAGE_NOT_DEPOSITED_MONEY = "맡아둔 돈이 없습니다.";
+    inline static constexpr const char* MESSAGE_NOT_DEPOSITED_ENOUGH = "그만큼 맡기지 않았습니다.";
+    inline static constexpr const char* MESSAGE_HAVE_MUCH_MONEY = "소지금이 너무 많습니다.";
+    inline static constexpr const char* MESSAGE_NOT_DEPOSITED_THIS_ITEM = "그런 물품은 맡아두고 있지 않습니다.";
+    inline static constexpr const char* MESSAGE_UNKNOWN_ERROR = "알 수 없는 에러";
+    inline static constexpr const char* MESSAGE_INVALID_ITEM_NAME = "그게 뭐야?";
+    inline static constexpr const char* MESSAGE_WEAWPON_NAME_TOO_SHORT = "이름이 너무 짧습니다.";
+    inline static constexpr const char* MESSAGE_WEAPON_NAME_TOO_LONG = "이름이 너무 깁니다.";
+    inline static constexpr const char* MESSAGE_INVALID_WEAPON_NAME = "그렇게 바꿀 수 없습니다.";
+    inline static constexpr const char* MESSAGE_NO_ANY_DEPOSITED = "맡긴 물건이 없습니다.";
+    inline static constexpr const char* MESSAGE_NO_ITEM_DEPOSITED = "그런 물건은 맡고 있지 않습니다.";
 
 private:
     string() = default;
@@ -2505,6 +2597,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "BOARD_ACTION_WRITE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::DELETE);
     lua_setglobal(lua, "BOARD_ACTION_DELETE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::SEND_MAIL);
+    lua_setglobal(lua, "BOARD_ACTION_SEND_MAIL");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_ACTION::MAIL);
+    lua_setglobal(lua, "BOARD_ACTION_MAIL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::NONE);
     lua_setglobal(lua, "BOARD_BUTTON_ENABLE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::NEXT);
@@ -2715,6 +2811,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_NOT_CHANGED");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::CLAN_TITLE_TOO_SHORT);
     lua_setglobal(lua, "ERROR_CODE_CLAN_TITLE_TOO_SHORT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::MAIL_NOT_EXISTS);
+    lua_setglobal(lua, "ERROR_CODE_MAIL_NOT_EXISTS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ERROR_CODE::NOT_FOUND_MAIL);
+    lua_setglobal(lua, "ERROR_CODE_NOT_FOUND_MAIL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::NONE);
     lua_setglobal(lua, "HEAD_MARKER_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::HEAD_MARKER::RED);
@@ -2799,6 +2899,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "ITEM_TYPE_BOW");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ITEM_TYPE::PACKAGE);
     lua_setglobal(lua, "ITEM_TYPE_PACKAGE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAIL_BUTTON_ENABLE::NONE);
+    lua_setglobal(lua, "MAIL_BUTTON_ENABLE_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAIL_BUTTON_ENABLE::NEW);
+    lua_setglobal(lua, "MAIL_BUTTON_ENABLE_NEW");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAP_EFFECT_TYPE::NONE);
     lua_setglobal(lua, "MAP_EFFECT_TYPE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::MAP_EFFECT_TYPE::FIRE);
@@ -2871,6 +2975,30 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "OBJECT_TYPE_OBJECT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OBJECT_TYPE::LIFE);
     lua_setglobal(lua, "OBJECT_TYPE_LIFE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::EXTENSION);
+    lua_setglobal(lua, "OPTION_EXTENSION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::WHISPER);
+    lua_setglobal(lua, "OPTION_WHISPER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::GROUP);
+    lua_setglobal(lua, "OPTION_GROUP");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::ROAR);
+    lua_setglobal(lua, "OPTION_ROAR");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::ROAR_WORLDS);
+    lua_setglobal(lua, "OPTION_ROAR_WORLDS");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::MAGIC_EFFECT);
+    lua_setglobal(lua, "OPTION_MAGIC_EFFECT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::WEATHER_EFFECT);
+    lua_setglobal(lua, "OPTION_WEATHER_EFFECT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::FIXED_MOVE);
+    lua_setglobal(lua, "OPTION_FIXED_MOVE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::TRADE);
+    lua_setglobal(lua, "OPTION_TRADE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::FAST_MOVE);
+    lua_setglobal(lua, "OPTION_FAST_MOVE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::EFFECT_SOUND);
+    lua_setglobal(lua, "OPTION_EFFECT_SOUND");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::OPTION::PK_PROTECT);
+    lua_setglobal(lua, "OPTION_PK_PROTECT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::SELL);
     lua_setglobal(lua, "REGEX_SELL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::BUY);
@@ -2901,30 +3029,6 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "REGEX_HOLD_ITEM_LIST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::HOLD_ITEM_COUNT);
     lua_setglobal(lua, "REGEX_HOLD_ITEM_COUNT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::EXTENSION);
-    lua_setglobal(lua, "SETTING_EXTENSION");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::WHISPER);
-    lua_setglobal(lua, "SETTING_WHISPER");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::GROUP);
-    lua_setglobal(lua, "SETTING_GROUP");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::ROAR);
-    lua_setglobal(lua, "SETTING_ROAR");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::ROAR_WORLDS);
-    lua_setglobal(lua, "SETTING_ROAR_WORLDS");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::MAGIC_EFFECT);
-    lua_setglobal(lua, "SETTING_MAGIC_EFFECT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::WEATHER_EFFECT);
-    lua_setglobal(lua, "SETTING_WEATHER_EFFECT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::FIXED_MOVE);
-    lua_setglobal(lua, "SETTING_FIXED_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::TRADE);
-    lua_setglobal(lua, "SETTING_TRADE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::FAST_MOVE);
-    lua_setglobal(lua, "SETTING_FAST_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::EFFECT_SOUND);
-    lua_setglobal(lua, "SETTING_EFFECT_SOUND");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SETTING::PK_PROTECT);
-    lua_setglobal(lua, "SETTING_PK_PROTECT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::MAN);
     lua_setglobal(lua, "SEX_MAN");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::WOMAN);

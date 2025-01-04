@@ -1,5 +1,5 @@
-#include <context.h>
-#include <door.h>
+#include <fb/game/context.h>
+#include <fb/game/door.h>
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
@@ -22,8 +22,12 @@ int fb::game::door::builtin_toggle(lua_State* lua)
     lua_pushboolean(lua, door->opened());
 
     auto context = thread->env<fb::game::context>("context");
-    auto size    = size8_t((uint8_t)door->model.pairs.size(), 1);
-    context->send(fb::protocol::game::response::map::update(door->map, door->pivot, size), door->map);
+    auto size    = fb::model::size8_t((uint8_t)door->model.pairs.size(), 1);
+    for (auto& obj : door->map.nears(door->pivot, OBJECT_TYPE::CHARACTER))
+    {
+        auto ch = static_cast<character*>(obj);
+        ch->update_map(door->map, door->pivot, size);
+    }
     return 1;
 }
 

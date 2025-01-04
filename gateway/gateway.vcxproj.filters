@@ -10,19 +10,40 @@
     <Filter Include="Header Files">
       <UniqueIdentifier>{2b25ef46-55be-4410-9f0e-6c4cc62161ca}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\protocol">
+      <UniqueIdentifier>{2a7f3645-f89c-4519-8d8e-9cedd65d459a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\protocol">
+      <UniqueIdentifier>{73c720ab-ef34-4fa3-b5ff-6a075b993faf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
       <Filter>Resources</Filter>
     </ClInclude>
-    <ClInclude Include="include\context.h">
+    <ClInclude Include="..\include\fb\gateway\context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\session.h">
+    <ClInclude Include="..\include\fb\gateway\protocol.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\util.h">
+    <ClInclude Include="..\include\fb\gateway\session.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\gateway\util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\gateway\protocol\crypto.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\gateway\protocol\endpoint.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\gateway\protocol\version.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\gateway\protocol\welcome.h">
+      <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -47,6 +68,21 @@
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.crypto.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.endpoint.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.version.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.welcome.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\endpoint.cpp">
+      <Filter>Source Files\protocol</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-#include <context.h>
+#include <fb/game/context.h>
 using namespace fb::game;
 using namespace std::chrono_literals;
 
@@ -119,7 +119,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_pickup);         // 아이템 줍기 핸들러
     this->bind(&context::handle_emotion);        // 감정표현 핸들러
     this->bind(&context::handle_update_map);     // 맵 데이터 업데이트 핸들러
-    this->bind(&context::handle_refresh);        // 새로고침 핸들러
+    this->bind(&context::handle_update_screen);  // 새로고침 핸들러
     this->bind(&context::handle_active_item);    // 아이템 사용 핸들러
     this->bind(&context::handle_inactive_item);  // 아이템 장착 해제 핸들러
     this->bind(&context::handle_drop_item);      // 아이템 버리기 핸들러
@@ -145,8 +145,6 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_world);          // 월드맵 핸들러
 
     this->bind_timer(&context::handle_heart_beat, 1s);
-    this->bind_timer(&context::handle_time, 1min); // 세계 시간 타이머
-
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
     this->bind_thread_timer(&context::handle_mob_respawn, 1s);   // 몹 리젠 타이머
     this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머
@@ -166,6 +164,8 @@ async::task<void> context::handle_start()
     this->command("몬스터생성", &context::handle_command_mob, true);
     this->command("직업바꾸기", &context::handle_command_class, true);
     this->command("레벨바꾸기", &context::handle_command_level, true);
+    this->command("체력바꾸기", &context::handle_command_hp, true);
+    this->command("마력바꾸기", &context::handle_command_mp, true);
     this->command("아이템생성", &context::handle_command_item, true);
     this->command("월드맵", &context::handle_command_world, true);
     this->command("스크립트", &context::handle_command_script, true);
@@ -182,6 +182,11 @@ async::task<void> context::handle_start()
     this->command("동시성테스트", &context::handle_command_concurrency, true);
     this->command("sleep", &context::handle_command_sleep, true);
     this->command("맵타일", &context::handle_map_tile, true);
+    this->command("광고", &context::handle_command_ad, true);
+    this->command("웹", &context::handle_command_web, true);
+    this->command("메일쓰기", &context::handle_command_write_mail, true);
+    this->command("메일읽기", &context::handle_command_read_mail, true);
+    this->command("메일삭제", &context::handle_command_delete_mail, true);
 
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
@@ -198,6 +203,18 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_rename_weapon);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_list);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_count);
+
+    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Pong);
+    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
+    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
+    this->bind_amqp("fb.global", &context::handle_amqp_Pong);
+    this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
+    this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
+    this->bind_amqp("fb.clan", &context::handle_amqp_SetClanTitle);
+    this->bind_amqp("fb.clan", &context::handle_amqp_JoinClan);
+    this->bind_amqp("fb.clan", &context::handle_amqp_LeaveClan);
+    this->bind_amqp("fb.clan", &context::handle_amqp_BroadcastClan);
+    this->bind_amqp("fb.mail", &context::handle_amqp_WriteMail);
 }
 
 bool context::decrypt_policy(uint8_t cmd) const
@@ -226,14 +243,19 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     if (ch->trade.trading())
         ch->trade.cancel();
 
+    auto id = ch->id();
+    this->_shard[id]->ids.lock([&id](auto& ids) {
+        ids.erase(id);
+    });
+
     auto& name = ch->name();
-    this->_shard[name]->characters.lock([&name](auto& characters) {
-        characters.erase(name);
+    this->_shard[name]->names.lock([&name](auto& names) {
+        names.erase(name);
     });
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
-    this->save(*ch);
+    co_await this->save(*ch);
     std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
@@ -261,15 +283,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     co_return true;
 }
 
-async::task<void> context::handle_timer(uint64_t elapsed_milliseconds)
-{
-    for (auto& [key, map] : this->maps)
-        co_await map.on_timer(elapsed_milliseconds);
-}
-
 std::string context::elapsed_message(const std::string& dt)
 {
-    auto elapsed = datetime() - datetime(dt);
+    auto elapsed = fb::model::datetime() - fb::model::datetime(dt);
     if (elapsed.total_milliseconds() > 1000 * 60)
     {
         auto sstream = std::stringstream();
@@ -324,16 +340,16 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
 
     for (auto& [mod, names] : g)
     {
-        this->_shard[mod]->characters.lock([this, &names, &fn, &miss](auto& characters) {
+        this->_shard[mod]->names.lock([this, &names, &fn, &miss](auto& ch_names) {
             for (auto& name : names)
             {
-                if (!characters.contains(name))
+                if (!ch_names.contains(name))
                 {
                     miss(name);
                     continue;
                 }
 
-                auto ch     = characters[name];
+                auto ch     = ch_names[name];
                 auto thread = ch->thread();
                 std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
                     if (this->assert_socket(fd) == false)
@@ -352,6 +368,22 @@ void context::foreach_ch(const std::vector<std::string>& names, const std::funct
     });
 }
 
+void context::foreach_ch(const std::function<void(fb::game::character&)>& fn)
+{
+    for (int i = 0, n = this->threads.size(); i < n; i++)
+    {
+        auto thread = this->threads.at(i);
+        std::ignore = thread->dispatch([=](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [_, ch] : params->characters)
+            {
+                fn(*ch);
+            }
+            co_return;
+        });
+    }
+}
+
 async::task<bool> context::init_ch(const internal::Character&           response,
                                    character&                           ch,
                                    std::optional<uint32_t>              group,
@@ -362,7 +394,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.id(response.id);
     ch.name(response.name);
     ch.pw(response.pw);
-    ch.updated_date(datetime(response.updated_date));
+    ch.updated_date(fb::model::datetime(response.updated_date));
     ch.admin(response.admin);
     ch.cls(static_cast<CLASS>(response.class_type));
     ch.color(response.color);
@@ -399,47 +431,42 @@ async::task<bool> context::init_ch(const internal::Character&           response
         position_y = uint32_t(transfer.value().position.y);
     }
 
-    if (co_await ch.map(&this->maps[map], point16_t(position_x, position_y)) == false)
-        co_return false;
-
     if (group.has_value())
     {
-        auto gid = group.value();
-        this->upsert_group_then(gid, [&ch](auto& group_lock_ptr) {
-            group_lock_ptr->lock([&ch](auto& group) {
+        this->upsert_group_then(group.value(), [&ch](auto& lock) {
+            lock->lock([&ch](auto& group) {
                 group.enter(ch);
             });
-            ch.group(group_lock_ptr);
+            ch.group(lock);
         });
     }
 
     if (clan.has_value())
     {
-        auto id = clan.value();
-        this->upsert_clan_then(id, [&ch](auto& clan_lock_ptr) {
-            clan_lock_ptr->lock([&ch](auto& clan) {
+        this->upsert_clan_then(clan.value(), [&ch](auto& lock) {
+            lock->lock([&ch](auto& clan) {
                 clan.attach_character(ch);
             });
-            ch.clan(clan_lock_ptr);
+            ch.clan(lock);
         });
     }
 
-    co_return true;
+    co_return co_await ch.map(&this->maps[map], fb::model::point16_t(position_x, position_y));
 }
 
 void context::init_option(const internal::Option& response, fb::game::character& ch)
 {
-    ch.option(SETTING::WHISPER, response.whisper, false);
-    ch.option(SETTING::GROUP, response.group, false);
-    ch.option(SETTING::ROAR, response.roar, false);
-    ch.option(SETTING::ROAR_WORLDS, response.roar_worlds, false);
-    ch.option(SETTING::MAGIC_EFFECT, response.magic_effect, false);
-    ch.option(SETTING::WEATHER_EFFECT, response.weather_effect, false);
-    ch.option(SETTING::FIXED_MOVE, response.fixed_move, false);
-    ch.option(SETTING::TRADE, response.trade, false);
-    ch.option(SETTING::FAST_MOVE, response.fast_move, false);
-    ch.option(SETTING::EFFECT_SOUND, response.effect_sound, false);
-    ch.option(SETTING::PK_PROTECT, response.pk_protect, false);
+    ch.option(OPTION::WHISPER, response.whisper, false);
+    ch.option(OPTION::GROUP, response.group, false);
+    ch.option(OPTION::ROAR, response.roar, false);
+    ch.option(OPTION::ROAR_WORLDS, response.roar_worlds, false);
+    ch.option(OPTION::MAGIC_EFFECT, response.magic_effect, false);
+    ch.option(OPTION::WEATHER_EFFECT, response.weather_effect, false);
+    ch.option(OPTION::FIXED_MOVE, response.fixed_move, false);
+    ch.option(OPTION::TRADE, response.trade, false);
+    ch.option(OPTION::FAST_MOVE, response.fast_move, false);
+    ch.option(OPTION::EFFECT_SOUND, response.effect_sound, false);
+    ch.option(OPTION::PK_PROTECT, response.pk_protect, false);
 }
 
 void context::init_items(const std::vector<internal::Item>& response, character& ch)
@@ -488,41 +515,19 @@ void context::init_traces(const std::vector<fb::protocol::internal::Trace>& resp
     }
 }
 
-void context::assert_whisper(const internal_resp::Whisper& response) const
-{
-    switch (static_cast<ERROR_CODE>(response.error))
-    {
-    case ERROR_CODE::NONE:
-        return;
-
-    case ERROR_CODE::OFFLINE:
-        throw std::runtime_error(std::format("{}님은 바람의나라에 없습니다.", response.to));
-
-    case ERROR_CODE::DISABLED_WHISPER_TARGET:
-        throw std::runtime_error(std::format("{}님은 귓속말 거부 상태입니다.", response.to));
-
-    default:
-        throw std::runtime_error(std::format("알 수 없는 에러가 발생했습니다. (에러코드 : {})", response.error));
-    }
-}
-
 character* context::handle_accepted(fb::socket<character>& socket)
 {
     return this->make<character>(socket);
 }
 
-void context::send(object&                           object,
-                   const fb::protocol::base::header& header,
-                   context::scope                    scope,
-                   bool                              exclude_self,
-                   bool                              encrypt)
+void context::send(object&                     object,
+                   const fb::protocol::header& header,
+                   context::scope              scope,
+                   bool                        exclude_self,
+                   bool                        encrypt)
 {
     switch (scope)
     {
-    case context::scope::SELF:
-        object.send(header, encrypt);
-        break;
-
     case context::scope::PIVOT:
     {
         auto nears = object.showings(OBJECT_TYPE::CHARACTER);
@@ -539,7 +544,7 @@ void context::send(object&                           object,
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
             return;
 
-        auto& ch                = static_cast<character&>(object);
+        auto& ch                = static_cast<const character&>(object);
         auto& shared_group_lock = ch.group();
         if (shared_group_lock == nullptr)
             return;
@@ -571,98 +576,12 @@ void context::send(object&                           object,
 
     case context::scope::WORLD:
     {
-        this->send(header, encrypt);
-    }
-    break;
-    }
-}
-
-void context::send(object& object, const protocol_generator& fn, context::scope scope, bool exclude_self, bool encrypt)
-{
-    switch (scope)
-    {
-    case context::scope::SELF:
-        object.send(*fn(object).get(), encrypt);
-        break;
-
-    case context::scope::PIVOT:
-    {
-        auto nears = object.showings(OBJECT_TYPE::CHARACTER);
-        if (!exclude_self)
-            object.send(*fn(object).get(), encrypt);
-
-        for (auto& x : nears)
-            x->send(*fn(*x).get(), encrypt);
-    }
-    break;
-
-    case context::scope::GROUP:
-    {
-        if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            return;
-
-        auto& ch                = static_cast<character&>(object);
-        auto& shared_group_lock = ch.group();
-        if (shared_group_lock == nullptr)
-            return;
-
-        shared_group_lock->lock([&fn, encrypt](auto& group) {
-            for (auto ch : group.characters())
-            {
-                ch->send(*fn(*ch).get(), encrypt);
-            }
+        this->foreach_ch([header, encrypt](auto& ch) -> async::task<void> {
+            ch.send(header, encrypt);
+            co_return;
         });
     }
     break;
-
-    case context::scope::MAP:
-    {
-        for (const auto& [seq, obj] : object.map()->objects)
-        {
-            if (exclude_self && obj == object)
-                continue;
-
-            obj.send(*fn(obj).get(), encrypt);
-        }
-    }
-    break;
-
-    case context::scope::WORLD:
-    {
-        for (int i = 0, n = this->threads.size(); i < n; i++)
-        {
-            auto thread = this->threads.at(i);
-            auto params = thread->data<thread_params>();
-            for (auto& [_, ch] : params->characters)
-            {
-                ch->send(*fn(*ch).get(), encrypt); // TODO: check thread switch required
-            }
-        }
-    }
-    break;
-    }
-}
-
-void context::send(const fb::protocol::base::header& response, const map& map, bool encrypt)
-{
-    auto thread = map.thread();
-    auto params = thread->data<thread_params>();
-    for (auto& [_, ch] : params->characters)
-    {
-        ch->send(response, encrypt);
-    }
-}
-
-void context::send(const fb::protocol::base::header& response, bool encrypt)
-{
-    for (int i = 0, n = this->threads.size(); i < n; i++)
-    {
-        auto thread = this->threads.at(i);
-        auto params = thread->data<thread_params>();
-        for (auto& [_, ch] : params->characters)
-        {
-            ch->send(response, encrypt); // TODO: check thread switch required
-        }
     }
 }
 
@@ -716,10 +635,14 @@ async::task<void> context::save(character& ch)
         traces.push_back(internal::Trace{ch.id(), model, trace->text});
     }
 
+    auto fd     = ch.fd();
     std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
         internal_reqs::Save{ch.to_protocol(), items, spells, traces});
+
+    if (this->assert_socket(fd))
+        ch.send(fb_resp::save());
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const
@@ -760,97 +683,23 @@ void context::amqp_thread()
 
             auto& queue1 = this->_amqp->declare_queue();
             queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-            queue1.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
-                co_return;
-            });
-            queue1.handler<internal_resp::KickOut>([this](auto& response) -> async::task<void> {
-                auto ch = this->_shard[response.name]->characters.template lock<character*>(
-                    [&name = response.name](shard_params::character_container& container) -> character* {
-                        if (!container.contains(name))
-                            return nullptr;
-
-                        return container.at(name);
-                    });
-
-                if (ch == nullptr)
-                    co_return;
-
-                auto& socket = static_cast<fb::socket<character>&>(*ch);
-                socket.close();
-            });
-
-            queue1.handler<internal_resp::Whisper>([this](auto& response) -> async::task<void> {
-                if (response.host == fb::config<uint16_t>("id"))
-                    co_return;
-
-                try
-                {
-                    this->assert_whisper(response);
-                    this->foreach_ch(response.to, [&response](auto& you) {
-                        you.message(std::format("{}> {}", response.from, response.message), MESSAGE_TYPE::NOTIFY);
-                    });
-                }
-                catch (std::exception& e)
-                {
-                    this->foreach_ch(response.from, [&response, error = e.what()](auto& me) {
-                        me.message(error, MESSAGE_TYPE::NOTIFY);
-                    });
-                }
-            });
+            this->bind_amqp(queue1);
 
             auto& queue2 = this->_amqp->declare_queue();
             queue2.bind("amq.direct", "fb.global");
-            queue2.handler<internal_resp::Pong>([](auto& response) -> async::task<void> {
-                co_return;
-            });
+            this->bind_amqp(queue2);
 
             auto& queue3 = this->_amqp->declare_queue();
             queue3.bind("amq.direct", "fb.group");
-            queue3.handler<internal_resp::EnterGroup>([this](internal_resp::EnterGroup& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_enter_group(response);
-            });
-
-            queue3.handler<internal_resp::LeaveGroup>([this](internal_resp::LeaveGroup& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_leave_group(response);
-            });
+            this->bind_amqp(queue3);
 
             auto& queue4 = this->_amqp->declare_queue();
             queue4.bind("amq.direct", "fb.clan");
-            queue4.handler<internal_resp::SetClanTitle>(
-                [this](internal_resp::SetClanTitle& response) -> async::task<void> {
-                    if (response.host == fb::config<uint32_t>("id"))
-                        co_return;
+            this->bind_amqp(queue4);
 
-                    this->on_clan_title_changed(response);
-                });
-
-            queue4.handler<internal_resp::JoinClan>([this](internal_resp::JoinClan& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_clan_join_member(response);
-            });
-
-            queue4.handler<internal_resp::LeaveClan>([this](internal_resp::LeaveClan& response) -> async::task<void> {
-                if (response.host == fb::config<uint32_t>("id"))
-                    co_return;
-
-                this->on_clan_leave_member(response);
-            });
-
-            queue4.handler<internal_resp::BroadcastClan>(
-                [this](internal_resp::BroadcastClan& response) -> async::task<void> {
-                    if (response.host == fb::config<uint32_t>("id"))
-                        co_return;
-
-                    this->on_clan_broadcast(response);
-                });
+            auto& queue5 = this->_amqp->declare_queue();
+            queue5.bind("amq.direct", "fb.mail");
+            this->bind_amqp(queue5);
         }
         catch (std::exception& e)
         {
@@ -877,7 +726,7 @@ void context::amqp_thread()
 // TODO : 클릭도 인터페이스로
 void context::handle_click_mob(character& ch, mob& mob)
 {
-    this->send(ch, fb_resp::character::message(mob.name(), MESSAGE_TYPE::STATE), scope::SELF);
+    ch.send(fb_resp::message(mob.name(), MESSAGE_TYPE::STATE));
 }
 
 void context::handle_click_npc(character& ch, npc& npc)
@@ -924,7 +773,7 @@ async::task<bool> context::handle_command(character& ch, const std::string& mess
             return std::isdigit(c);
         });
         if (digit)
-            parameters.append(std::stoi(*i));
+            parameters.append(static_cast<uint64_t>(std::stoul(*i)));
         else
             parameters.append(*i);
     }

@@ -1,7 +1,8 @@
-#include <clan.h>
-#include <context.h>
+#include <fb/game/clan.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
+using namespace fb::model;
 
 clan::clan(context& context, uint32_t id) :
     _context(context),

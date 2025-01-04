@@ -1,5 +1,5 @@
-#include <context.h>
-#include <map.h>
+#include <fb/game/context.h>
+#include <fb/game/map.h>
 #include <fb/model/model.h>
 
 bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool is_open) const

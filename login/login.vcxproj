@@ -45,12 +45,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir);$(SolutionDir)\include;$(SolutionDir)\protocol;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(ProjectDir)\include;$(BOOST_SDK);$(IncludePath);$(SolutionDir)\lib\include;</IncludePath>
+    <IncludePath>$(SolutionDir)\include;$(SolutionDir)\dependency\include;$(SolutionDir)\dependency\include\zlib;$(ProjectDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)\dependency\lib;$(SolutionDir)\dependency\lib\boost;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -98,9 +98,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\context.h" />
-    <ClInclude Include="include\gateway.h" />
-    <ClInclude Include="include\session.h" />
+    <ClInclude Include="..\include\fb\login\context.h" />
+    <ClInclude Include="..\include\fb\login\gateway.h" />
+    <ClInclude Include="..\include\fb\login\protocol.h" />
+    <ClInclude Include="..\include\fb\login\protocol\agreement.h" />
+    <ClInclude Include="..\include\fb\login\protocol\complete.h" />
+    <ClInclude Include="..\include\fb\login\protocol\create.h" />
+    <ClInclude Include="..\include\fb\login\protocol\header.h" />
+    <ClInclude Include="..\include\fb\login\protocol\login.h" />
+    <ClInclude Include="..\include\fb\login\protocol\message.h" />
+    <ClInclude Include="..\include\fb\login\protocol\transfer.h" />
+    <ClInclude Include="..\include\fb\login\protocol\update_pw.h" />
+    <ClInclude Include="..\include\fb\login\session.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +121,11 @@
   <ItemGroup>
     <ClCompile Include="lib\context.cpp" />
     <ClCompile Include="lib\gateway.cpp" />
+    <ClCompile Include="lib\protocol\protocol.agreement.cpp" />
+    <ClCompile Include="lib\protocol\protocol.complete.cpp" />
+    <ClCompile Include="lib\protocol\protocol.create.cpp" />
+    <ClCompile Include="lib\protocol\protocol.login.cpp" />
+    <ClCompile Include="lib\protocol\protocol.update_pw.cpp" />
     <ClCompile Include="lib\session.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>

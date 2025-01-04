@@ -96,6 +96,27 @@ table Article {
     created_date: string;
 }
 
+table MailSummary {
+    id: ushort;
+    user: uint;
+    sender: uint;
+    sender_name: string;
+    read: bool;
+    title: string;
+    created_date: string;
+}
+
+table Mail {
+    id: ushort;
+    user: uint;
+    sender: uint;
+    sender_name: string;
+    title: string;
+    contents: string;
+    read: bool;
+    created_date: string;
+}
+
 table Group {
     id: uint;
     master: string;

@@ -4,11 +4,11 @@ using Fb.Model.EnumValue;
 using Http;
 using Http.Model;
 using Http.Service;
-using Medallion.Threading.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
+using Option = Http.Model.Option;
 using Protocol = fb.protocol._internal;
 using Request = fb.protocol._internal.request;
 using Response = fb.protocol._internal.response;
@@ -103,7 +103,7 @@ namespace Internal.Controllers
         [HttpPost("reserve-name")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
-            // µ¿½Ã¼º Á¦¾î ÇÊ¿ä
+            // ï¿½ï¿½ï¿½Ã¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
             await using var connection = _dbContext.Connection(-1);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
@@ -243,7 +243,8 @@ namespace Internal.Controllers
                     Traces = traces.Select(_mapper.Map<Protocol.Trace>).ToList(),
                     Option = _mapper.Map<Protocol.Option>(option),
                     Clan = sync.Clan,
-                    Group = sync.Group
+                    Group = sync.Group,
+                    Mail = await _dbContext.Mail.Unread(uid)
                 };
             }
         }
@@ -312,49 +313,49 @@ namespace Internal.Controllers
                 var option = await _dbContext.Option.Get(request.User) ??
                     throw new Exception($"option {request.User} not found");
 
-                switch ((Setting)request.Type)
+                switch ((Fb.Model.EnumValue.Option)request.Type)
                 {
-                    case Setting.Whisper:
+                    case Fb.Model.EnumValue.Option.Whisper:
                         option.Whisper = request.Enabled;
                         break;
 
-                    case Setting.Group:
+                    case Fb.Model.EnumValue.Option.Group:
                         option.Group = request.Enabled;
                         break;
 
-                    case Setting.Roar:
+                    case Fb.Model.EnumValue.Option.Roar:
                         option.Roar = request.Enabled;
                         break;
 
-                    case Setting.RoarWorlds:
+                    case Fb.Model.EnumValue.Option.RoarWorlds:
                         option.RoarWorlds = request.Enabled;
                         break;
 
-                    case Setting.MagicEffect:
+                    case Fb.Model.EnumValue.Option.MagicEffect:
                         option.MagicEffect = request.Enabled;
                         break;
 
-                    case Setting.WeatherEffect:
+                    case Fb.Model.EnumValue.Option.WeatherEffect:
                         option.WeatherEffect = request.Enabled;
                         break;
 
-                    case Setting.FixedMove:
+                    case Fb.Model.EnumValue.Option.FixedMove:
                         option.FixedMove = request.Enabled;
                         break;
 
-                    case Setting.Trade:
+                    case Fb.Model.EnumValue.Option.Trade:
                         option.Trade = request.Enabled;
                         break;
 
-                    case Setting.FastMove:
+                    case Fb.Model.EnumValue.Option.FastMove:
                         option.FastMove = request.Enabled;
                         break;
 
-                    case Setting.EffectSound:
+                    case Fb.Model.EnumValue.Option.EffectSound:
                         option.EffectSound = request.Enabled;
                         break;
 
-                    case Setting.PkProtect:
+                    case Fb.Model.EnumValue.Option.PkProtect:
                         option.PkProtect = request.Enabled;
                         break;
 

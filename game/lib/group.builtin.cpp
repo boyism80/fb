@@ -1,5 +1,5 @@
-#include <group.h>
-#include <context.h>
+#include <fb/game/group.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -73,7 +73,7 @@ int group::builtin_nears(lua_State* lua)
     y = (uint16_t)thread->tointeger(-1);
     thread->remove(-1);
 
-    auto nears = group->nears(*map, point16_t{x, y});
+    auto nears = group->nears(*map, fb::model::point16_t{x, y});
     thread->new_table();
     for (int i = 0; i < nears.size(); i++)
     {

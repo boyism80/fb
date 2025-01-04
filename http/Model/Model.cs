@@ -62,7 +62,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "WRITE")]
         Write = 0x04, 
         [EnumMember(Value = "DELETE")]
-        Delete = 0x05
+        Delete = 0x05, 
+        [EnumMember(Value = "SEND_MAIL")]
+        SendMail = 0x06, 
+        [EnumMember(Value = "MAIL")]
+        Mail = 0x09
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -352,7 +356,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "CLAN_TITLE_NOT_CHANGED")]
         ClanTitleNotChanged = 32, 
         [EnumMember(Value = "CLAN_TITLE_TOO_SHORT")]
-        ClanTitleTooShort = 33
+        ClanTitleTooShort = 33, 
+        [EnumMember(Value = "MAIL_NOT_EXISTS")]
+        MailNotExists = 34, 
+        [EnumMember(Value = "NOT_FOUND_MAIL")]
+        NotFoundMail = 35
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -457,6 +465,15 @@ namespace Fb.Model.EnumValue
         Bow = 10, 
         [EnumMember(Value = "PACKAGE")]
         Package = 11
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum MailButtonEnable
+    {
+        [EnumMember(Value = "NONE")]
+        None = 0x00, 
+        [EnumMember(Value = "NEW")]
+        New = 0x02
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -567,6 +584,35 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum Option
+    {
+        [EnumMember(Value = "EXTENSION")]
+        Extension = 0x00, 
+        [EnumMember(Value = "WHISPER")]
+        Whisper = 0x01, 
+        [EnumMember(Value = "GROUP")]
+        Group = 0x02, 
+        [EnumMember(Value = "ROAR")]
+        Roar = 0x03, 
+        [EnumMember(Value = "ROAR_WORLDS")]
+        RoarWorlds = 0x04, 
+        [EnumMember(Value = "MAGIC_EFFECT")]
+        MagicEffect = 0x05, 
+        [EnumMember(Value = "WEATHER_EFFECT")]
+        WeatherEffect = 0x06, 
+        [EnumMember(Value = "FIXED_MOVE")]
+        FixedMove = 0x07, 
+        [EnumMember(Value = "TRADE")]
+        Trade = 0x08, 
+        [EnumMember(Value = "FAST_MOVE")]
+        FastMove = 0x09, 
+        [EnumMember(Value = "EFFECT_SOUND")]
+        EffectSound = 0x0a, 
+        [EnumMember(Value = "PK_PROTECT")]
+        PkProtect = 0x0b
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum Regex
     {
         [EnumMember(Value = "SELL")]
@@ -599,35 +645,6 @@ namespace Fb.Model.EnumValue
         HoldItemList = 13, 
         [EnumMember(Value = "HOLD_ITEM_COUNT")]
         HoldItemCount = 14
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum Setting
-    {
-        [EnumMember(Value = "EXTENSION")]
-        Extension = 0x00, 
-        [EnumMember(Value = "WHISPER")]
-        Whisper = 0x01, 
-        [EnumMember(Value = "GROUP")]
-        Group = 0x02, 
-        [EnumMember(Value = "ROAR")]
-        Roar = 0x03, 
-        [EnumMember(Value = "ROAR_WORLDS")]
-        RoarWorlds = 0x04, 
-        [EnumMember(Value = "MAGIC_EFFECT")]
-        MagicEffect = 0x05, 
-        [EnumMember(Value = "WEATHER_EFFECT")]
-        WeatherEffect = 0x06, 
-        [EnumMember(Value = "FIXED_MOVE")]
-        FixedMove = 0x07, 
-        [EnumMember(Value = "TRADE")]
-        Trade = 0x08, 
-        [EnumMember(Value = "FAST_MOVE")]
-        FastMove = 0x09, 
-        [EnumMember(Value = "EFFECT_SOUND")]
-        EffectSound = 0x0a, 
-        [EnumMember(Value = "PK_PROTECT")]
-        PkProtect = 0x0b
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -799,17 +816,17 @@ namespace Fb.Model.ConstValue
 
     public static class String
     {
-        public const string AccountInvalidName = "이름이 길거나 적합하지 않습니다.";
-        public const string AccountAlreadyLogin = "이미 접속중입니다.";
-        public const string AccountNotFoundName = "존재하지 않는 이름입니다.";
-        public const string AccountPasswordSize = "암호는 4자 이상 8자 이하";
-        public const string AccountInvalidPassword = "비밀번호가 올바르지 않습니다.";
-        public const string AccountSimplePassword = "암호가 단순합니다.";
-        public const string AccountSuccessRegisterAccount = "등록완료, 이어하기를 선택하세요.";
-        public const string AccountSuccessChangePassword = "변경됐다리";
-        public const string AccountInvalidBirthday = "생년월일이 올바르지 않습니다.";
-        public const string AccountNewPwEqualization = "기존 암호화 동일합니다.";
-        public const string AccountAlreadyExists = "이미 존재하는 이름입니다.";
+        public const string MessageAccountInvalidName = "이름이 길거나 적합하지 않습니다.";
+        public const string MessageAccountAlreadyLogin = "이미 접속중입니다.";
+        public const string MessageAccountNotFoundName = "존재하지 않는 이름입니다.";
+        public const string MessageAccountPasswordSize = "암호는 4자 이상 8자 이하";
+        public const string MessageAccountInvalidPassword = "비밀번호가 올바르지 않습니다.";
+        public const string MessageAccountSimplePassword = "암호가 단순합니다.";
+        public const string MessageAccountSuccessRegisterAccount = "등록완료, 이어하기를 선택하세요.";
+        public const string MessageAccountSuccessChangePassword = "변경됐다리";
+        public const string MessageAccountInvalidBirthday = "생년월일이 올바르지 않습니다.";
+        public const string MessageAccountNewPwEqualization = "기존 암호화 동일합니다.";
+        public const string MessageAccountAlreadyExists = "이미 존재하는 이름입니다.";
         public const string MessageAssetMapLoaded = "* [{:0.2f}%] 맵 정보를 읽었습니다. ({})";
         public const string MessageAssetRegexLoaded = "* [{:0.2f}%] 정규표현식 정보를 읽었습니다. ({})";
         public const string MessageAssetWorldMapLoaded = "* [{:0.2f}%] 월드맵 정보를 읽었습니다. ({})";
@@ -862,7 +879,7 @@ namespace Fb.Model.ConstValue
         public const string MessageGroupDisabledTarget = "상대방이 그룹 거부 상태입니다.";
         public const string MessageGroupNotOwner = "그룹장만 할 수 있습니다.";
         public const string MessageGroupFullMember = "자리가 없습니다.";
-        public const string MessageGroupAlreadyJoined = "님은 이미 그룹 참여 중입니다.";
+        public const string MessageGroupAlreadyJoined = "{}님은 이미 그룹 참여 중입니다.";
         public const string MessageGroupJoined = "님 그룹에 참여";
         public const string MessageGroupLeft = "님 그룹 탈퇴";
         public const string MessageExceptionRidding = "말을 타고는 할 수 없습니다.";
@@ -910,6 +927,46 @@ namespace Fb.Model.ConstValue
         public const string MessageDoorUnlock = "문을 열었습니다.";
         public const string MessageDoorLocked = "문이 잠겼습니다.";
         public const string MessageErrorUnknown = "올바르지 않은 명령입니다.";
+        public const string MessageNotReadyGameServer = "비바람이 휘몰아치고 있습니다.";
+        public const string MessageUnknownErrorWithCode = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
+        public const string MessageNotFoundItem = "아이템이 없습니다.";
+        public const string MessageItemFull = "더 이상 가질 수 없습니다.";
+        public const string MessageWriteBoardFailed = "게시글 작성 실패";
+        public const string MessageInvalidUserName = "존재하지 않는 유저입니다.";
+        public const string MessageNotFoundMail = "메일이 없습니다.";
+        public const string MessageCannotGroupSelf = "자기 자신과는 그룹할 수 없습니다.";
+        public const string MessageAlreadyJoinedGroup = "이미 그룹 참여중입니다.";
+        public const string MessageUserNotLogin = "{}님은 바람의나라에 없습니다.";
+        public const string MessageAlreadyJoinedClan = "클랜 이미 있음";
+        public const string MessageWhisperDisabledMine = "당신은 귓속말 거부 상태입니다.";
+        public const string MessageWhisperDisabledTarget = "{}님은 귓속말 거부 상태입니다.";
+        public const string MessageCannotEquipItem = "입을 수 없는 물건입니다.";
+        public const string MessageNotJoinedClan = "클랜이 없음";
+        public const string MessageInvalidSellItem = "뭘 팔아?";
+        public const string MessageNoHaveItem = "가지고 있지도 않으면서...";
+        public const string MessageItemNotBuy = "그런 물건은 안 삽니다.";
+        public const string MessageInvalidItemCount = "뭐래는거야..";
+        public const string MessageNotEnoughItemCount = "갯수가 모자라는데요?";
+        public const string MessageInvalidBuyItemName = "뭘 사?";
+        public const string MessageItemNotSell = "그런 물건은 안 팝니다.";
+        public const string MessageTooManyCount = "그렇게나 많이요?";
+        public const string MessageNotEnoughMoney = "돈이 모자랍니다.";
+        public const string MessageRepairInvalidName = "뭘 고쳐줘?";
+        public const string MessageHaveNoItem = "가지고 있지 않은데요";
+        public const string MessageAlreadyRepaired = "이미 고쳐져 있습니다.";
+        public const string MessageNotAnyRepairable = "고칠 물건이 없습니다.";
+        public const string MessageCannotDepositeMore = "더 이상 맡길 수 없습니다.";
+        public const string MessageNotDepositedMoney = "맡아둔 돈이 없습니다.";
+        public const string MessageNotDepositedEnough = "그만큼 맡기지 않았습니다.";
+        public const string MessageHaveMuchMoney = "소지금이 너무 많습니다.";
+        public const string MessageNotDepositedThisItem = "그런 물품은 맡아두고 있지 않습니다.";
+        public const string MessageUnknownError = "알 수 없는 에러";
+        public const string MessageInvalidItemName = "그게 뭐야?";
+        public const string MessageWeawponNameTooShort = "이름이 너무 짧습니다.";
+        public const string MessageWeaponNameTooLong = "이름이 너무 깁니다.";
+        public const string MessageInvalidWeaponName = "그렇게 바꿀 수 없습니다.";
+        public const string MessageNoAnyDeposited = "맡긴 물건이 없습니다.";
+        public const string MessageNoItemDeposited = "그런 물건은 맡고 있지 않습니다.";
     }
 
 }

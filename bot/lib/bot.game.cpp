@@ -1,5 +1,5 @@
-#include <bot.game.h>
-#include <bot.container.h>
+#include <fb/bot/bot.game.h>
+#include <fb/bot/bot.container.h>
 
 using namespace fb::bot;
 
@@ -40,7 +40,7 @@ game_bot::game_bot(bot_container& owner, uint32_t id, const fb::stream& params) 
     auto key_size = reader.read<uint8_t>();
     auto enc_key  = new uint8_t[key_size];
     reader.read(enc_key, key_size);
-    this->_cryptor = fb::cryptor(enc_type, enc_key);
+    this->_crypto = fb::crypto(enc_type, enc_key);
     delete[] enc_key;
 
     this->_transfer_buffer = params;
@@ -57,7 +57,7 @@ async::task<void> game_bot::on_connected()
     }
 
     co_await base_bot::on_connected();
-    auto&& resp = co_await this->request<fb::protocol::game::response::map::config>(
+    auto&& resp = co_await this->request<fb::protocol::game::response::map_config>(
         fb::protocol::game::request::login(this->_transfer_buffer),
         false,
         true);
@@ -98,13 +98,13 @@ async::task<void> game_bot::on_timer(const fb::model::datetime& now)
     this->_next_action_time = datetime + std::chrono::steady_clock::duration(rand_term);
 }
 
-async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::character::id& response)
+async::task<void> game_bot::handle_sequence(const fb::protocol::game::response::id& response)
 {
     this->_sequence = response.sequence;
     co_return;
 }
 
-async::task<void> game_bot::handle_spell_update(const fb::protocol::game::response::spell::update& response)
+async::task<void> game_bot::handle_spell_update(const fb::protocol::game::response::spell_update& response)
 {
     co_return;
 }
@@ -114,12 +114,12 @@ async::task<void> game_bot::handle_time(const fb::protocol::game::response::time
     co_return;
 }
 
-async::task<void> game_bot::handle_state(const fb::protocol::game::response::character::state& response)
+async::task<void> game_bot::handle_state(const fb::protocol::game::response::update_internal& response)
 {
     co_return;
 }
 
-async::task<void> game_bot::handle_option(const fb::protocol::game::response::character::option& response)
+async::task<void> game_bot::handle_option(const fb::protocol::game::response::option& response)
 {
     co_return;
 }
@@ -134,23 +134,23 @@ async::task<void> game_bot::handle_chat(const fb::protocol::game::response::chat
     co_return;
 }
 
-async::task<void> game_bot::handle_action(const fb::protocol::game::response::life::action& response)
+async::task<void> game_bot::handle_action(const fb::protocol::game::response::action& response)
 {
     co_return;
 }
 
-async::task<void> game_bot::handle_direction(const fb::protocol::game::response::object::direction& response)
+async::task<void> game_bot::handle_direction(const fb::protocol::game::response::direction& response)
 {
     co_return;
 }
 
-async::task<void> game_bot::handle_position(const fb::protocol::game::response::character::position& response)
+async::task<void> game_bot::handle_position(const fb::protocol::game::response::position& response)
 {
     this->_position = response.abs;
     co_return;
 }
 
-async::task<void> game_bot::handle_move(const fb::protocol::game::response::object::move& response)
+async::task<void> game_bot::handle_move(const fb::protocol::game::response::move& response)
 {
     if (this->_sequence != response.id)
         co_return;
@@ -158,7 +158,7 @@ async::task<void> game_bot::handle_move(const fb::protocol::game::response::obje
     this->_position = response.position;
 }
 
-async::task<void> game_bot::handle_map(const fb::protocol::game::response::map::config& response)
+async::task<void> game_bot::handle_map(const fb::protocol::game::response::map_config& response)
 {
     co_return;
 }
@@ -257,13 +257,12 @@ async::task<void> game_bot::pattern_board_sections()
     std::mt19937                    gen(device());
     std::uniform_int_distribution<> dist(0, 1);
 
-    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::SECTIONS));
+    this->send(fb::protocol::game::request::board(BOARD_ACTION::SECTIONS));
 
     auto section = (uint32_t)dist(gen);
-    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::ARTICLES, section));
-    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::ARTICLE, section, 0));
-    this->send(
-        fb::protocol::game::request::board::board(BOARD_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(fb::protocol::game::request::board::board(BOARD_ACTION::DELETE, section, 0));
+    this->send(fb::protocol::game::request::board(BOARD_ACTION::ARTICLES, section));
+    this->send(fb::protocol::game::request::board(BOARD_ACTION::ARTICLE, section, 0));
+    this->send(fb::protocol::game::request::board(BOARD_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(fb::protocol::game::request::board(BOARD_ACTION::DELETE, section, 0));
     co_return;
 }

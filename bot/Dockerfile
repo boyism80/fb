@@ -2,7 +2,9 @@ FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
 
 WORKDIR /app
 COPY include ./include
-COPY lib/include ./lib/include
+COPY gateway/lib/protocol ./gateway/lib/protocol
+COPY login/lib/protocol ./login/lib/protocol
+COPY game/lib/protocol ./game/lib/protocol
 COPY bot ./bot
 
 WORKDIR /app/bot/build

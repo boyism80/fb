@@ -1,5 +1,5 @@
-#include <character.h>
-#include <context.h>
+#include <fb/game/character.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -39,6 +39,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"push_trace",          character::builtin_push_trace},
 {"erase_trace",         character::builtin_erase_trace},
 {"switch_context",      character::builtin_switch_context},
+{"whisper",             character::builtin_whisper},
+{"send_mail",           character::builtin_send_mail},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -534,10 +536,8 @@ int character::builtin_class(lua_State* lua)
         {
             auto context = thread->env<fb::game::context>("context");
 
-            context->send(*ch, fb::protocol::game::response::character::id(*ch), context::scope::SELF);
-            context->send(*ch,
-                          fb::protocol::game::response::character::state(*ch, STATE_LEVEL::LEVEL_MAX),
-                          context::scope::SELF);
+            ch->send(fb::protocol::game::response::id(*ch));
+            ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
             thread->pushboolean(true);
         }
     }
@@ -568,9 +568,7 @@ int character::builtin_level(lua_State* lua)
         ch->level(level);
 
         auto context = thread->env<fb::game::context>("context");
-        context->send(*ch,
-                      fb::protocol::game::response::character::state(*ch, STATE_LEVEL::LEVEL_MAX),
-                      context::scope::SELF);
+        ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
         return 0;
     }
 }
@@ -1151,4 +1149,84 @@ int character::builtin_switch_context(lua_State* lua)
 
     thread->pushboolean(me->dialog.switch_context(you->dialog));
     return 1;
+}
+
+int character::builtin_whisper(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto me      = thread->touserdata<character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto to      = thread->tostring(2);
+    auto message = thread->tostring(3);
+
+    static auto fn = [](fb::game::context*   context,
+                        fb::lua::context*    thread,
+                        fb::game::character* ch,
+                        const std::string&   to,
+                        const std::string&   message) -> async::task<void> {
+        try
+        {
+            co_await context->whisper(*ch, to, message);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+
+        thread->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, me, to, message);
+    });
+
+    return thread->yield(1);
+}
+
+int character::builtin_send_mail(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto me      = thread->touserdata<character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto to       = thread->tostring(2);
+    auto title    = thread->tostring(3);
+    auto contents = thread->tostring(4);
+
+    static auto fn = [](fb::game::context*   context,
+                        fb::lua::context*    thread,
+                        fb::game::character* ch,
+                        const std::string&   to,
+                        const std::string&   title,
+                        const std::string&   contents) -> async::task<void> {
+        try
+        {
+            co_await context->send_mail(*ch, to, title, contents);
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+        }
+
+        thread->resume(1);
+    };
+
+    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+        co_await fn(context, thread, me, to, title, contents);
+    });
+
+    return thread->yield(1);
 }
