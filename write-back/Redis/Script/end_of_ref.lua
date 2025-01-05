@@ -7,7 +7,7 @@ for i = 1, LENGTH do
     local field = ARGV[offset + i]
     local count = tonumber(ARGV[offset + i + 1])
     local ref = redis.call('hincrby', COUNT_REFS, field, count * -count)
-    if tonumber(ref) == 0 then
+    if tonumber(ref) <= 0 then
         redis.call('hdel', COUNT_REFS, field)
         redis.call('expire', field, EXPIRY)
     end

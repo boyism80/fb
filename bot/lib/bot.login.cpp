@@ -66,10 +66,18 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
 
     try
     {
-        auto&& response1 = co_await this->request<fb::protocol::login::response::message>(
-            fb::protocol::login::request::create(id, pw));
-        if (response1.text.empty() == false)
-            throw std::runtime_error("request error");
+        auto thread = this->thread();
+
+        while (true)
+        {
+            auto&& resp = co_await this->request<fb::protocol::login::response::message>(
+                fb::protocol::login::request::create(id, pw));
+
+            if (resp.type == 0x00)
+                break;
+
+            co_await thread->sleep(100ms);
+        }
 
         std::random_device rd;
         std::mt19937       gen(rd());
@@ -78,17 +86,25 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
         uint8_t sex      = std::uniform_int_distribution<>(0, 1)(gen);
         uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
         uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
-        co_await this->request<fb::protocol::login::response::message>(
-            fb::protocol::login::request::complete{hair, sex, nation, creature});
+
+        while (true)
+        {
+            auto&& resp = co_await this->request<fb::protocol::login::response::message>(
+                fb::protocol::login::request::complete{hair, sex, nation, creature});
+
+            if (resp.type == 0x00)
+                break;
+
+            co_await thread->sleep(100ms);
+        }
 
         while (true)
         {
             auto&& resp = co_await this->request<fb::protocol::login::response::message>(
                 fb::protocol::login::request::login{id, pw});
-            if (resp.text.empty())
+            if (resp.type == 0x00)
                 break;
 
-            auto thread = this->thread();
             co_await thread->sleep(1000ms);
         }
     }

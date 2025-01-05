@@ -118,9 +118,7 @@ async::task<bool> context::handle_agreement(fb::socket<session>& socket, const r
 async::task<bool> context::handle_create_account(fb::socket<session>& socket, const request::create& request)
 {
     // 여기는 task handler
-    auto fd         = socket.fd();
-    auto error      = std::string();
-    auto error_code = 0x0E;
+    auto fd = socket.fd();
 
     try
     {
@@ -179,26 +177,25 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
     }
     catch (login_exception& e)
     {
-        error      = e.what();
-        error_code = e.type();
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        error      = e.what();
-        error_code = 0x0E;
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), 0x0E));
     }
 
-    if (this->assert_socket(fd) == false)
-        co_return false;
-
-    socket.send(response::message(error, error_code));
+    co_return true;
 }
 
 async::task<bool> context::handle_complete(fb::socket<session>& socket, const request::complete& request)
 {
-    auto fd         = socket.fd();
-    auto error      = std::string();
-    auto error_code = 0x0E;
+    auto fd = socket.fd();
 
     try
     {
@@ -223,28 +220,27 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
     }
     catch (login_exception& e)
     {
-        error      = e.what();
-        error_code = e.type();
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), e.type()));
     }
-    catch (std::exception&)
+    catch (std::exception& e)
     {
-        co_return false;
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), 0x0E));
     }
 
-    if (this->assert_socket(fd) == false)
-        co_return false;
-
-    socket.send(response::message(error, error_code));
     co_return true;
 }
 
 async::task<bool> context::handle_login(fb::socket<session>& socket, const request::login& request)
 {
-    auto delay      = fb::config<uint32_t>("transfer delay");
-    auto name       = std::string(request.id);
-    auto pw         = std::string(request.pw);
-    auto error      = std::string();
-    auto error_code = 0x0E;
+    auto delay = fb::config<uint32_t>("transfer delay");
+    auto name  = std::string(request.id);
+    auto pw    = std::string(request.pw);
     co_await this->sleep(std::chrono::seconds(delay));
 
     auto fd = socket.fd();
@@ -310,32 +306,32 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
     }
     catch (login_exception& e)
     {
-        error      = e.what();
-        error_code = e.type();
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), e.type()));
     }
     catch (boost::system::error_code& e)
     {
-        error      = std::format("({})", e.value());
-        error_code = 0x0E;
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(std::format("({})", e.value()), 0x0E));
     }
     catch (std::exception& e)
     {
-        error      = e.what();
-        error_code = 0x0E;
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), 0x0E));
     }
 
-    if (this->assert_socket(fd) == false)
-        co_return false;
-
-    socket.send(response::message(error, error_code));
     co_return true;
 }
 
 async::task<bool> context::handle_change_password(fb::socket<session>& socket, const request::update_pw& request)
 {
-    auto fd         = socket.fd();
-    auto error      = std::string();
-    auto error_code = 0x0E;
+    auto fd = socket.fd();
     try
     {
         // co_await this->_auth_service.change_pw(request.name, request.pw, request.new_pw, request.birthday);
@@ -403,18 +399,18 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
     }
     catch (login_exception& e)
     {
-        error      = e.what();
-        error_code = e.type();
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        error      = e.what();
-        error_code = 0x0E;
+        if (this->assert_socket(fd) == false)
+            co_return false;
+
+        socket.send(response::message(e.what(), 0x0E));
     }
 
-    if (this->assert_socket(fd) == false)
-        co_return false;
-
-    socket.send(response::message(error, error_code));
     co_return true;
 }

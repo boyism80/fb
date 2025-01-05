@@ -322,20 +322,25 @@ private:
                 else
                 {
                     auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
-                    this->threads.enqueue(
-                        socket,                                                    // pivot
-                        [this, protocol, fd = socket.fd()](auto& thread) -> bool { // condition
-                            return this->assert_socket(fd);
-                        },
-                        [this, cmd, &socket, protocol](auto&) -> async::task<void> { // fn
-                            std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
-                        },
-                        [](auto& error) { // error
-                            fb::logger::fatal(error.what());
-                        },
-                        []() { // success
+                    auto fd = socket.fd();
+                    std::ignore = socket.thread()->dispatch([this, protocol, &socket, fd, cmd](auto&) -> async::task<void> {
 
-                        });
+                        try
+                        {
+                            if(this->assert_socket(fd) == false)
+                                co_return;
+
+                            std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                        }
+                        catch(std::exception& e)
+                        {
+                            fb::logger::fatal(e.what());
+                        }
+                        catch(...)
+                        {
+                            fb::logger::fatal("unhandled exception");
+                        }
+                    });
                 }
 
                 reader.seek(size - sizeof(uint8_t));
