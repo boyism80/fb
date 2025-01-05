@@ -421,7 +421,7 @@ map* object::map() const
 void object::update_sector()
 {
     this->assert_thread();
-    
+
     auto before = this->_sector;
     auto after  = this->_map->sector_at(this->_position);
     if (before == after)
@@ -545,7 +545,14 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             auto before_map = this->_map;
             this->_map      = nullptr;
             this->_position = fb::model::point16_t(1, 1);
-            this->update_sector();
+
+            // don't call 'update_sector'
+            // when object's map has changed, active thread is changed too.
+            if (this->_sector != nullptr)
+            {
+                this->_sector->erase(*this);
+                this->_sector = nullptr;
+            }
             if (this->_listener != nullptr)
                 this->_listener->on_map_changed(*this, before_map, this->_map);
 
