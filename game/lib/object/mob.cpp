@@ -31,7 +31,7 @@ void rezen::spawn(std::thread::id thread_id)
     if (map.active == false)
         return;
 
-    if (map.activated() == false)
+    if (map.is_active() == false)
         return;
 
     auto thread = this->_context.thread(map);

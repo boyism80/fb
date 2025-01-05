@@ -3,11 +3,7 @@
 
 using namespace fb::game;
 
-fb::game::map::map(fb::game::context&    context,
-                   const fb::model::map& model,
-                   bool                  active,
-                   const void*           data,
-                   size_t                size) :
+map::map(fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size) :
     context(context),
     model(model),
     active(active),
@@ -43,10 +39,10 @@ fb::game::map::map(fb::game::context&    context,
     this->update_door();
 }
 
-fb::game::map::~map()
+map::~map()
 { }
 
-void fb::game::map::update_door()
+void map::update_door()
 {
     auto pivot = fb::model::point16_t{0, 0};
     while (pivot.y < this->_size.height)
@@ -82,12 +78,12 @@ void fb::game::map::update_door()
     }
 }
 
-uint64_t fb::game::map::index(const fb::model::point16_t& p) const
+uint64_t map::index(const fb::model::point16_t& p) const
 {
     return (uint64_t)p.y * (uint64_t)this->_size.width + (uint64_t)p.x;
 }
 
-fb::model::point16_t fb::game::map::point(uint64_t i) const
+fb::model::point16_t map::point(uint64_t i) const
 {
     auto y = uint16_t(i / this->_size.width);
     auto x = uint16_t(i % this->_size.width);
@@ -95,7 +91,7 @@ fb::model::point16_t fb::game::map::point(uint64_t i) const
     return fb::model::point16_t(x, y);
 }
 
-bool fb::game::map::blocked(uint16_t x, uint16_t y) const
+bool map::blocked(uint16_t x, uint16_t y) const
 {
     if (x >= this->_size.width)
         return true;
@@ -106,7 +102,7 @@ bool fb::game::map::blocked(uint16_t x, uint16_t y) const
     return this->_tiles[y * this->_size.width + x].blocked;
 }
 
-bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
+bool map::block(uint16_t x, uint16_t y, bool option)
 {
     if (this->_tiles == nullptr)
         return false;
@@ -121,47 +117,47 @@ bool fb::game::map::block(uint16_t x, uint16_t y, bool option)
     return true;
 }
 
-// fb::game::map::EFFECT fb::game::map::effect() const
+// map::EFFECT map::effect() const
 // {
 //     return this->_effect;
 // }
 
-// MAP_OPTION fb::game::map::option() const
+// MAP_OPTION map::option() const
 // {
 //     return this->_option;
 // }
 
-uint16_t fb::game::map::width() const
+uint16_t map::width() const
 {
     return this->_size.width;
 }
 
-uint16_t fb::game::map::height() const
+uint16_t map::height() const
 {
     return this->_size.height;
 }
 
-fb::model::size16_t fb::game::map::size() const
+fb::model::size16_t map::size() const
 {
     return this->_size;
 }
 
-// uint8_t fb::game::map::bgm() const
+// uint8_t map::bgm() const
 // {
 //     return this->_bgm;
 // }
 
-bool fb::game::map::loaded() const
+bool map::loaded() const
 {
     return this->_size.width > 0 && this->_size.height > 0;
 }
 
-bool fb::game::map::existable(const fb::model::point16_t position) const
+bool map::existable(const fb::model::point16_t position) const
 {
     return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;
 }
 
-bool fb::game::map::movable(const fb::model::point16_t position) const
+bool map::movable(const fb::model::point16_t position) const
 {
     if (this->existable(position) == false)
         return false;
@@ -184,7 +180,7 @@ bool fb::game::map::movable(const fb::model::point16_t position) const
     return true;
 }
 
-bool fb::game::map::movable(const object& object, DIRECTION direction) const
+bool map::movable(const object& object, DIRECTION direction) const
 {
     fb::model::point16_t position = object.position();
 
@@ -213,12 +209,12 @@ bool fb::game::map::movable(const object& object, DIRECTION direction) const
     return true;
 }
 
-bool fb::game::map::movable_forward(const object& object, uint16_t step) const
+bool map::movable_forward(const object& object, uint16_t step) const
 {
     return this->movable(object, object.direction());
 }
 
-const fb::model::warp* fb::game::map::warpable(const fb::model::point16_t& position) const
+const fb::model::warp* map::warpable(const fb::model::point16_t& position) const
 {
     auto& warps = this->context.model.warp;
     if (warps.contains(this->model.id) == false)
@@ -233,27 +229,26 @@ const fb::model::warp* fb::game::map::warpable(const fb::model::point16_t& posit
     return nullptr;
 }
 
-bool fb::game::map::update(object& object)
+bool map::is_active() const
 {
     if (this->_sectors == nullptr)
         return false;
 
-    auto sector = this->_sectors->at(object.position());
-    if (sector == nullptr)
+    if (this->objects.size() == 0)
         return false;
 
-    return object.sector(sector);
+    return this->_sectors->is_active();
 }
 
-bool fb::game::map::activated() const
+sector* map::sector_at(const fb::model::point16_t& position)
 {
     if (this->_sectors == nullptr)
-        return false;
+        return nullptr;
 
-    return this->_sectors->activated();
+    return this->_sectors->at(position);
 }
 
-std::vector<fb::game::object*> fb::game::map::nears(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> map::nears(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     if (this->_sectors == nullptr)
         return std::vector<fb::game::object*>{};
@@ -261,7 +256,7 @@ std::vector<fb::game::object*> fb::game::map::nears(const fb::model::point16_t& 
         return this->_sectors->objects(pivot, type);
 }
 
-std::vector<fb::game::object*> fb::game::map::belows(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
+std::vector<fb::game::object*> map::belows(const fb::model::point16_t& pivot, OBJECT_TYPE type) const
 {
     auto objects = std::vector<fb::game::object*>();
     try
@@ -280,20 +275,12 @@ std::vector<fb::game::object*> fb::game::map::belows(const fb::model::point16_t&
     return std::move(objects);
 }
 
-std::vector<fb::game::object*> fb::game::map::activateds(OBJECT_TYPE type)
-{
-    if (this->_sectors == nullptr)
-        return std::vector<fb::game::object*>{};
-    else
-        return this->_sectors->activated_objects(type);
-}
-
-fb::thread* fb::game::map::thread() const
+fb::thread* map::thread() const
 {
     return this->context.threads.modular(this->model.id);
 }
 
-fb::game::map::tile* fb::game::map::operator() (uint16_t x, uint16_t y) const
+map::tile* map::operator() (uint16_t x, uint16_t y) const
 {
     if (x > this->_size.width)
         return nullptr;

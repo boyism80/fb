@@ -163,7 +163,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
     if (refresh)
         this->update_position();
 
-    this->_map->update(*this);
+    this->update_sector();
 
     auto nears_before = this->_map->nears(before);
     auto nears_after  = this->_map->nears(this->_position);
@@ -418,6 +418,27 @@ map* object::map() const
     return this->_map;
 }
 
+void object::update_sector()
+{
+    this->assert_thread();
+    
+    auto before = this->_sector;
+    auto after  = this->_map->sector_at(this->_position);
+    if (before == after)
+        return;
+
+    if (before)
+        before->erase(*this);
+
+    this->_sector = nullptr;
+    if (this->_map == nullptr)
+        return;
+
+    this->_sector = after;
+    if (after != nullptr)
+        after->push(*this);
+}
+
 bool object::sight(const fb::model::point16_t& position) const
 {
     this->assert_thread();
@@ -439,29 +460,6 @@ bool object::sight(const object& object) const
         return false;
 
     return this->sight(object._position);
-}
-
-bool object::sector(fb::game::sector* sector)
-{
-    this->assert_thread();
-
-    if (this->_sector == sector)
-        return false;
-
-    if (this->_sector != nullptr)
-        this->_sector->erase(*this);
-
-    this->_sector = sector;
-    if (sector != nullptr)
-        sector->push(*this);
-    return true;
-}
-
-sector* object::sector()
-{
-    this->assert_thread();
-
-    return this->_sector;
 }
 
 bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you, const fb::game::map* map)
@@ -544,12 +542,10 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             // erase cache of map
             this->_map->objects.pop(*this);
 
-            // reset default map and position
-            this->sector(nullptr);
-
             auto before_map = this->_map;
             this->_map      = nullptr;
             this->_position = fb::model::point16_t(1, 1);
+            this->update_sector();
             if (this->_listener != nullptr)
                 this->_listener->on_map_changed(*this, before_map, this->_map);
 
@@ -587,9 +583,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         this->_map = map;
         this->assert_thread();
         this->_position = before_position;
-
-        // update section
-        this->_map->update(*this);
+        this->update_sector();
 
         // insert character into map cache
         this->_map->objects.push(*this);

@@ -38,18 +38,17 @@ public:
     using std::vector<fb::game::object*>::size;
 
 private:
-    const uint32_t               _id        = 0;
-    bool                         _activated = false;
-    std::function<void(sector&)> _state_changed;
+    const uint32_t _id              = 0;
+    uint32_t       _character_count = 0;
+    bool           _activated       = false;
 
 public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  id             The identifier
-     * @param[in]  state_changed  The state changed
+     * @param[in]  id    The identifier
      */
-    sector(uint32_t id, const std::function<void(sector&)>& state_changed);
+    sector(uint32_t id);
     /**
      * @brief      Destroys the object.
      */
@@ -75,11 +74,11 @@ public:
      */
     uint32_t id() const;
     /**
-     * @brief      { function_description }
+     * @brief      Determines if active.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if active, False otherwise.
      */
-    bool activated() const;
+    bool is_active() const;
 };
 
 /**
@@ -91,12 +90,11 @@ public:
     using unique_sectors = std::vector<std::unique_ptr<sector>>;
 
 private:
-    const fb::model::size16_t   _map_size = fb::model::size16_t(0, 0);
-    const fb::model::size16_t   _size     = fb::model::size16_t(0, 0);
-    const uint32_t              _rows = 0, _columns = 0;
-    const uint32_t              _count = 0;
-    unique_sectors              _pool;
-    std::map<uint32_t, sector*> _activated_cache;
+    const fb::model::size16_t _map_size = fb::model::size16_t(0, 0);
+    const fb::model::size16_t _size     = fb::model::size16_t(0, 0);
+    const uint32_t            _rows = 0, _columns = 0;
+    const uint32_t            _count = 0;
+    unique_sectors            _pool;
 
 public:
     /**
@@ -155,7 +153,7 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    std::set<sector*> activated_sectors() const;
+    std::set<sector*> active_sectors() const;
 
 public:
     /**
@@ -174,14 +172,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     sector* at(uint32_t index) const;
-    /**
-     * @brief      { function_description }
-     *
-     * @param      object  The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t push(fb::game::object& object);
 
 public:
     /**
@@ -216,13 +206,13 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> activated_objects(OBJECT_TYPE type) const;
+    std::vector<object*> objects(OBJECT_TYPE type) const;
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    bool activated() const;
+    bool is_active() const;
 };
 
 } // namespace fb::game

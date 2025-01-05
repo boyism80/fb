@@ -54,12 +54,14 @@ public:
      * @param[in]  size     The size
      */
     map(fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
+
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  <unnamed>  { parameter_description }
      */
     map(const fb::game::map&) = delete;
+
     /**
      * @brief      Destroys the object.
      */
@@ -80,6 +82,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     uint64_t index(const fb::model::point16_t& p) const;
+
     /**
      * @brief      { function_description }
      *
@@ -88,6 +91,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::model::point16_t point(uint64_t i) const;
+
     /**
      * @brief      { function_description }
      *
@@ -97,6 +101,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool blocked(uint16_t x, uint16_t y) const;
+
     /**
      * @brief      { function_description }
      *
@@ -107,30 +112,35 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool block(uint16_t x, uint16_t y, bool option);
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     uint16_t width() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     uint16_t height() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     fb::model::size16_t size() const;
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     bool loaded() const;
+
     /**
      * @brief      { function_description }
      *
@@ -139,6 +149,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool existable(const fb::model::point16_t position) const;
+
     /**
      * @brief      { function_description }
      *
@@ -147,6 +158,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool movable(const fb::model::point16_t position) const;
+
     /**
      * @brief      { function_description }
      *
@@ -156,6 +168,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool movable(const object& object, DIRECTION direction) const;
+
     /**
      * @brief      { function_description }
      *
@@ -165,6 +178,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool movable_forward(const object& object, uint16_t step = 1) const;
+
     /**
      * @brief      { function_description }
      *
@@ -173,20 +187,23 @@ public:
      * @return     { description_of_the_return_value }
      */
     const fb::model::warp* warpable(const fb::model::point16_t& position) const;
-    /**
-     * @brief      Updates the given object.
-     *
-     * @param      object  The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool update(object& object);
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    bool activated() const;
+    bool is_active() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    sector* sector_at(const fb::model::point16_t& position);
+
     /**
      * @brief      { function_description }
      *
@@ -196,6 +213,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     std::vector<object*> nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+
     /**
      * @brief      { function_description }
      *
@@ -205,14 +223,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     std::vector<object*> belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  type  The type
-     *
-     * @return     { description_of_the_return_value }
-     */
-    std::vector<object*> activateds(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN);
 
     /**
      * @brief      { function_description }
@@ -241,6 +251,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_width(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -249,6 +260,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_height(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -257,6 +269,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_area(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -274,6 +287,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_nears(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -282,6 +296,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_movable(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -290,6 +305,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_door(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -298,6 +314,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_doors(lua_State* lua);
+
     /**
      * @brief      Determines if builtin contains.
      *

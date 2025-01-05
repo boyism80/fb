@@ -359,19 +359,8 @@ public:
 
     /**
      * @brief      { function_description }
-     *
-     * @param      sector  The sector
-     *
-     * @return     { description_of_the_return_value }
      */
-    bool sector(fb::game::sector* sector);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    fb::game::sector* sector();
+    void update_sector();
 
     /**
      * @brief      { function_description }
