@@ -202,6 +202,11 @@ public:
      * @brief      { function_description }
      */
     void drop_items();
+
+    /**
+     * @brief      { function_description }
+     */
+    void assert_thread() const;
 };
 
 /**

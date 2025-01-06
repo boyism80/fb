@@ -6,6 +6,8 @@
 #endif
 
 #define _TEXT(k) fb::model::const_value::string::k
+#define READ_LOCK(m)    auto _ = std::shared_lock<std::shared_mutex>(m)
+#define WRITE_LOCK(m)   auto _ = std::lock_guard<std::shared_mutex>(m)
 
 #include <type_traits>
 

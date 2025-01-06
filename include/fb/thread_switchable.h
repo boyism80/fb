@@ -2,6 +2,7 @@
 #define __THREAD_SWITCHABLE_H__
 
 #include <stdexcept>
+#include <fb/lua.h>
 
 namespace fb {
 
@@ -13,13 +14,23 @@ class thread;
 /**
  * @brief      This class describes a thread switchable.
  */
-class thread_switchable
+class thread_switchable : public lua::luable
 {
+public:
+    LUA_PROTOTYPE
+    
 protected:
     /**
      * @brief      Constructs a new instance.
      */
     thread_switchable() = default;
+
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  id    The identifier
+     */
+    thread_switchable(uint32_t id);
 
 public:
     /**

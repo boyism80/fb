@@ -9,7 +9,7 @@ namespace fb::game {
 /**
  * @brief      This class describes a group.
  */
-class group : public lua::luable, public fb::thread_switchable
+class group : public fb::thread_switchable
 {
 public:
     LUA_PROTOTYPE

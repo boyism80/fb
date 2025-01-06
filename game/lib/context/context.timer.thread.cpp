@@ -12,22 +12,26 @@ async::task<void> context::handle_mob_action(const fb::model::datetime& now, std
         if (map->active == false)
             continue;
 
-        const auto mobs = map->activateds(OBJECT_TYPE::MOB);
+        if (map->is_active() == false)
+            continue;
 
-        for (auto x : mobs)
+        for (auto& [_, obj] : map->objects)
         {
-            auto mob = static_cast<fb::game::mob*>(x);
-            if (mob->alive() == false)
+            if (obj.is(OBJECT_TYPE::MOB) == false)
                 continue;
 
-            auto target = mob->target();
+            auto& mob = static_cast<fb::game::mob&>(obj);
+            if (mob.alive() == false)
+                continue;
+
+            auto target = mob.target();
             if (target == nullptr || map->objects.contains(*target) == false || target->alive() == false)
-                mob->target(nullptr);
+                mob.target(nullptr);
 
-            if (mob->action())
+            if (mob.action())
                 continue;
 
-            mob->AI(now);
+            mob.AI(now);
         }
     }
     co_return;

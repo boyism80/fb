@@ -22,9 +22,8 @@ async::task<void> context::handle_start()
     co_await fb::acceptor<character>::handle_start();
 
     lua::env<context>("context", this);
-    lua::build<map, lua::luable>();
+
     lua::build<door, lua::luable>();
-    lua::build<group, lua::luable>();
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
     lua::build<trace, lua::luable>();
@@ -32,7 +31,9 @@ async::task<void> context::handle_start()
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::trace, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
-    lua::build<object, lua::luable>();
+    lua::build<map, fb::thread_switchable>();
+    lua::build<group, fb::thread_switchable>();
+    lua::build<object, fb::thread_switchable>();
     lua::build<fb::model::life, fb::model::object>();
     lua::build<life, object>();
     lua::build<fb::model::mob, fb::model::life>();
@@ -50,6 +51,7 @@ async::task<void> context::handle_start()
     lua::build("name2npc", builtin_name2npc);
     lua::build("name2map", builtin_name2map);
     lua::build("broadcast", builtin_broadcast);
+    lua::build("assert_alive", builtin_assert_alive);
     lua::build("pursuit_sell", builtin_pursuit_sell);
     lua::build("pursuit_buy", builtin_pursuit_buy);
     lua::build("sell_price", builtin_sell_price);
@@ -260,6 +262,8 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
                                                                                     "/in-game/logout",
                                                                                     internal_reqs::Logout{ch->name()});
 
+    co_await this->update_thread(*ch);
+
     auto& group_lock = ch->group();
     if (group_lock != nullptr)
     {
@@ -352,9 +356,7 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
                 auto ch     = ch_names[name];
                 auto thread = ch->thread();
                 std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
-                    if (this->assert_socket(fd) == false)
-                        co_return;
-
+                    co_await this->update_thread(*ch);
                     fn(*ch);
                 });
             }
@@ -641,8 +643,8 @@ async::task<void> context::save(character& ch)
         "/user/save",
         internal_reqs::Save{ch.to_protocol(), items, spells, traces});
 
-    if (this->assert_socket(fd))
-        ch.send(fb_resp::save());
+    co_await this->update_thread(ch);
+    ch.send(fb_resp::save());
 }
 
 uint32_t context::thread_id(const fb::socket<character>& socket) const

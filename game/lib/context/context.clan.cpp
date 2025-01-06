@@ -115,8 +115,7 @@ async::task<void> context::create_clan(character& me, const std::string& name)
                 return;
 
             auto& clan_lock_ptr = clans.at(id);
-
-            if (this->assert_socket(fd))
+            if (this->alive(me))
             {
                 me.clan(clan_lock_ptr);
                 clan_lock_ptr->lock([this, &me](fb::game::clan& clan) {

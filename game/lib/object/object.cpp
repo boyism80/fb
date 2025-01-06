@@ -6,7 +6,7 @@
 using namespace fb::game;
 
 object::object(fb::game::context& context, const fb::model::object& model, const initial_params& params) :
-    luable(params.id),
+    fb::thread_switchable(params.id),
     context(context),
     _listener(&context),
     _sequence(params.id),
@@ -16,6 +16,7 @@ object::object(fb::game::context& context, const fb::model::object& model, const
     _map(params.map),
     buffs(*this)
 {
+    this->context.push_alive(*this);
     if (this->_listener != nullptr)
     {
         this->_listener->on_create(*this);
@@ -33,6 +34,7 @@ object::object(const object& right) :
 
 object::~object()
 {
+    this->context.pop_alive(*this);
     if (this->_listener != nullptr)
     {
         this->_listener->on_destroy(*this);
@@ -163,7 +165,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
     if (refresh)
         this->update_position();
 
-    this->_map->update(*this);
+    this->update_sector();
 
     auto nears_before = this->_map->nears(before);
     auto nears_after  = this->_map->nears(this->_position);
@@ -413,9 +415,31 @@ bool object::direction(DIRECTION value)
 
 map* object::map() const
 {
+    READ_LOCK(this->_map_mutex);
     this->assert_thread();
 
     return this->_map;
+}
+
+void object::update_sector()
+{
+    this->assert_thread();
+
+    auto before = this->_sector;
+    auto after  = this->_map->sector_at(this->_position);
+    if (before == after)
+        return;
+
+    if (before)
+        before->erase(*this);
+
+    this->_sector = nullptr;
+    if (this->_map == nullptr)
+        return;
+
+    this->_sector = after;
+    if (after != nullptr)
+        after->push(*this);
 }
 
 bool object::sight(const fb::model::point16_t& position) const
@@ -439,29 +463,6 @@ bool object::sight(const object& object) const
         return false;
 
     return this->sight(object._position);
-}
-
-bool object::sector(fb::game::sector* sector)
-{
-    this->assert_thread();
-
-    if (this->_sector == sector)
-        return false;
-
-    if (this->_sector != nullptr)
-        this->_sector->erase(*this);
-
-    this->_sector = sector;
-    if (sector != nullptr)
-        sector->push(*this);
-    return true;
-}
-
-sector* object::sector()
-{
-    this->assert_thread();
-
-    return this->_sector;
 }
 
 bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you, const fb::game::map* map)
@@ -507,6 +508,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
 {
     this->assert_thread();
 
+    auto& context = this->context;
     try
     {
         if (this->_map_lock)
@@ -524,7 +526,6 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         if (map == nullptr)
         {
             auto thread = this->_map->thread();
-            thread->pop_ptr(this);
             if (this->is(OBJECT_TYPE::CHARACTER))
             {
                 auto params = thread->template data<thread_params>();
@@ -544,12 +545,22 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             // erase cache of map
             this->_map->objects.pop(*this);
 
-            // reset default map and position
-            this->sector(nullptr);
+            // don't call 'update_sector'
+            // when object's map has changed, active thread is changed too.
+            if (this->_sector != nullptr)
+            {
+                this->_sector->erase(*this);
+                this->_sector = nullptr;
+            }
 
             auto before_map = this->_map;
-            this->_map      = nullptr;
+            {
+                WRITE_LOCK(this->_map_mutex);
+                this->_map = nullptr;
+            }
+            co_await this->context.update_thread(*this);
             this->_position = fb::model::point16_t(1, 1);
+
             if (this->_listener != nullptr)
                 this->_listener->on_map_changed(*this, before_map, this->_map);
 
@@ -562,34 +573,29 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         // here the character is on some map.
         // set map to null.
         auto before_map      = this->_map;
-        auto before_position = position;
+        auto before_position = fb::model::point16_t{position};
         std::ignore          = co_await this->map(nullptr);
         this->_map_lock      = true;
 
-        // switch thread of destination map
-        // and insert character into thread cache.
-        auto thread = map->thread();
-        if (thread != nullptr)
-        {
-            if (thread != this->context.threads.current())
-                co_await thread->switching();
-            thread->push_ptr(this);
-
-            if (this->is(OBJECT_TYPE::CHARACTER))
-            {
-                auto params = thread->template data<thread_params>();
-                auto ch     = static_cast<character*>(this);
-                params->characters.insert({ch->id(), ch});
-            }
-        }
-
         // update destination map and position
-        this->_map = map;
-        this->assert_thread();
+        {
+            WRITE_LOCK(this->_map_mutex);
+            this->_map = map;
+        }
+        co_await this->context.update_thread(*this);
         this->_position = before_position;
 
-        // update section
-        this->_map->update(*this);
+        // switch thread of destination map
+        // and insert character into thread cache.
+        auto thread = this->thread();
+        if (this->is(OBJECT_TYPE::CHARACTER))
+        {
+            auto params = thread->template data<thread_params>();
+            auto ch     = static_cast<character*>(this);
+            params->characters.insert({ch->id(), ch});
+        }
+
+        this->update_sector();
 
         // insert character into map cache
         this->_map->objects.push(*this);
@@ -855,18 +861,12 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
 
 fb::thread* object::thread() const
 {
+    READ_LOCK(this->_map_mutex);
+
     if (this->_map == nullptr)
         return this->context.threads.modular(this->_sequence);
     else
         return this->context.threads.modular(this->_map->model.id);
-}
-
-void object::assert_thread() const
-{
-    if (this->_map == nullptr)
-        return;
-
-    fb::thread_switchable::assert_thread();
 }
 
 void object::update_id()

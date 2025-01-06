@@ -10,7 +10,6 @@ async::task<bool> context::handle_login(fb::socket<character>&                  
     if (ch->inited())
         co_return false;
 
-    // Set crypt data
     socket.crt(request.enc_type, request.enc_key);
 
     ch->name(request.name);
@@ -23,8 +22,7 @@ async::task<bool> context::handle_login(fb::socket<character>&                  
     auto transfer = request.transfer;
     auto delay    = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
-    if (this->assert_socket(fd) == false)
-        co_return false;
+    co_await this->update_thread(*ch);
 
     auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
         "internal",
@@ -34,14 +32,12 @@ async::task<bool> context::handle_login(fb::socket<character>&                  
         co_return false;
 
     auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
-    if (this->assert_socket(fd) == false)
-        co_return false;
+    co_await this->update_thread(*ch);
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
 
-    auto thread = ch->thread();
-    thread->assert_ptr(ch);
+    this->update_thread(*ch);
     ch->unread_mail(response.mail);
 
     this->init_items(response.items, *ch);
@@ -624,8 +620,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (mail)
             {
                 auto&& resp = co_await this->mail_list(*ch, request.offset, 20);
-                if (this->assert_socket(fd) == false)
-                    co_return false;
+                co_await this->update_thread(*ch);
 
                 ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
             }
@@ -633,8 +628,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             {
                 auto   section  = request.section;
                 auto&& articles = co_await this->board_list(request.section, request.offset);
-                if (this->assert_socket(fd) == false)
-                    co_return false;
+                co_await this->update_thread(*ch);
 
                 auto& model = this->model.board[section];
                 auto  flag  = BOARD_BUTTON_ENABLE::UP;
@@ -646,7 +640,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            ch->show_board_message(e.what(), false, mail);
+            if (this->alive(*ch))
+                ch->show_board_message(e.what(), false, mail);
         }
     }
     break;
@@ -665,8 +660,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             else
             {
                 auto&& article = co_await this->read_board(request.section, request.article);
-                if (this->assert_socket(fd) == false)
-                    co_return false;
+                co_await this->update_thread(*ch);
 
                 auto flag = BOARD_BUTTON_ENABLE::NONE;
                 if (article.next)
@@ -680,7 +674,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            ch->show_board_message(e.what(), false, mail);
+            if (this->alive(*ch))
+                ch->show_board_message(e.what(), false, mail);
         }
     }
     break;
@@ -690,14 +685,14 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             co_await this->write_board(*ch, request.section, request.title, request.contents);
-            if (this->assert_socket(fd) == false)
-                co_return false;
+            co_await this->update_thread(*ch);
 
             ch->show_board_message(_TEXT(MESSAGE_BOARD_WRITE), true, true);
         }
         catch (std::exception& e)
         {
-            ch->show_board_message(e.what(), false, false);
+            if (this->alive(*ch))
+                ch->show_board_message(e.what(), false, false);
         }
     }
     break;
@@ -715,15 +710,15 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             else
             {
                 co_await this->delete_board(*ch, request.section, request.article);
-                if (this->assert_socket(fd) == false)
-                    co_return false;
+                co_await this->update_thread(*ch);
 
                 ch->show_board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false);
             }
         }
         catch (std::exception& e)
         {
-            ch->show_board_message(e.what(), false, mail);
+            if (this->alive(*ch))
+                ch->show_board_message(e.what(), false, mail);
         }
     }
     break;
@@ -733,16 +728,15 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             auto&& resp = co_await this->mail_list(*ch, 0xFFFF, 20); // TODO: 20 -> const
-            if (this->assert_socket(fd) == false)
-                co_return false;
+            co_await this->update_thread(*ch);
 
             this->assert_mail(resp.error);
             ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
         }
         catch (std::exception& e)
         {
-            ch->show_board_message(e.what(), false, true);
-            co_return true;
+            if (this->alive(*ch))
+                ch->show_board_message(e.what(), false, true);
         }
     }
     break;
@@ -756,10 +750,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         }
         catch (std::exception& e)
         {
-            if (this->assert_socket(fd) == false)
-                co_return false;
-
-            ch->show_board_message(e.what(), false, true);
+            if (this->alive(*ch))
+                ch->show_board_message(e.what(), false, true);
         }
     }
     break;
@@ -929,10 +921,8 @@ async::task<bool> context::handle_whisper(fb::socket<character>&                
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        me->message(e.what(), MESSAGE_TYPE::NOTIFY);
+        if(this->alive(*me))
+            me->message(e.what(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
 }

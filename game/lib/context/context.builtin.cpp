@@ -357,3 +357,17 @@ int fb::game::context::builtin_broadcast(lua_State* lua)
     });
     return 0;
 }
+
+int fb::game::context::builtin_assert_alive(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto obj     = thread->touserdata<fb::game::object>(1);
+
+    thread->pushboolean(context->alive(*obj));
+    return 1;
+}

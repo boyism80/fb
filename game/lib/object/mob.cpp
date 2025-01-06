@@ -31,7 +31,7 @@ void rezen::spawn(std::thread::id thread_id)
     if (map.active == false)
         return;
 
-    if (map.activated() == false)
+    if (map.is_active() == false)
         return;
 
     auto thread = this->_context.thread(map);
@@ -187,10 +187,8 @@ life* mob::fix()
         if (this->_target == nullptr)
             throw nullptr;
 
-        auto thread = this->thread();
-        if (thread == nullptr)
-            return nullptr;
-        thread->assert_ptr(this->_target);
+        if (this->context.alive(*this->_target) == false)
+            throw nullptr;
 
         if (this->_target->alive() == false)
             throw nullptr;
@@ -386,8 +384,10 @@ void mob::drop_items()
 
     // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();
-    auto& drop  = this->context.model.drop[model.drop];
+    if (model.drop.empty())
+        return;
 
+    auto& drop = this->context.model.drop[model.drop];
     for (auto& dsl : drop.dsl)
     {
         switch (dsl.header)
@@ -405,4 +405,12 @@ void mob::drop_items()
         break;
         }
     }
+}
+
+void mob::assert_thread() const
+{
+    if (this->_map != nullptr)
+        object::assert_thread();
+    else
+        return;
 }

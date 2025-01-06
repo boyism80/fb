@@ -5,9 +5,8 @@
 
 using namespace fb::game;
 
-sector::sector(uint32_t id, const std::function<void(sector&)>& state_changed) :
-    _id(id),
-    _state_changed(state_changed)
+sector::sector(uint32_t id) :
+    _id(id)
 { }
 
 sector::~sector()
@@ -17,34 +16,20 @@ void sector::push(object& object)
 {
     this->push_back(&object);
     if (object.is(OBJECT_TYPE::CHARACTER))
-    {
-        if (this->_activated)
-            return;
-
-        this->_activated = true;
-        this->_state_changed(*this);
-    }
+        this->_character_count++;
 }
 
-// sector
 void sector::erase(object& object)
 {
+    object.assert_thread();
+
     auto found = std::find(this->begin(), this->end(), &object);
     if (found == this->end())
         return;
 
     std::vector<fb::game::object*>::erase(found);
-
-    // 섹터에서 세션을 지워낸 경우 active 상태를 검사한다.
     if (object.is(OBJECT_TYPE::CHARACTER))
-    {
-        this->_activated = std::find_if(this->begin(), this->end(), [](auto x) {
-                               return x->is(OBJECT_TYPE::CHARACTER);
-                           }) != this->end();
-
-        if (this->_activated == false)
-            this->_state_changed(*this);
-    }
+        this->_character_count--;
 }
 
 uint32_t sector::id() const
@@ -52,12 +37,11 @@ uint32_t sector::id() const
     return this->_id;
 }
 
-bool sector::activated() const
+bool sector::is_active() const
 {
-    return this->_activated;
+    return this->_character_count > 0;
 }
 
-// sectors
 sectors::sectors(const fb::model::size16_t& map_size, const fb::model::size16_t& size) :
     _map_size(map_size),
     _size(size),
@@ -65,15 +49,10 @@ sectors::sectors(const fb::model::size16_t& map_size, const fb::model::size16_t&
     _columns((map_size.width / size.width) + ((map_size.width % size.width) ? 1 : 0)),
     _count(_rows * _columns)
 {
-    auto& cache    = this->_activated_cache;
-    auto  callback = [&cache](sector& x) {
-        if (x.activated())
-            cache[x.id()] = &x;
-        else
-            cache.erase(x.id());
-    };
     for (auto i = 0; i < this->_count; i++)
-        this->_pool.push_back(std::make_unique<sector>(i, callback));
+    {
+        this->_pool.push_back(std::make_unique<sector>(i));
+    }
 }
 
 uint32_t sectors::index(const fb::model::point16_t& position) const
@@ -83,12 +62,15 @@ uint32_t sectors::index(const fb::model::point16_t& position) const
     return (y / this->_size.height) * this->_columns + (x / this->_size.width);
 }
 
-std::set<sector*> sectors::activated_sectors() const
+std::set<sector*> sectors::active_sectors() const
 {
     auto sectors = std::set<sector*>();
-    for (auto& x : this->_activated_cache)
+    for (auto& sector_ptr : this->_pool)
     {
-        auto&& nears = this->nears(x.first);
+        if (sector_ptr->is_active() == false)
+            continue;
+
+        auto&& nears = this->nears(sector_ptr->id());
         sectors.insert(nears.begin(), nears.end());
     }
 
@@ -107,15 +89,6 @@ sector* sectors::at(uint32_t index) const
         return nullptr;
 
     return this->_pool[index].get();
-}
-
-uint32_t sectors::push(object& object)
-{
-    auto index  = this->index(object.position());
-    auto sector = this->at(index);
-    object.sector(sector);
-
-    return index;
 }
 
 std::vector<sector*> sectors::nears(uint32_t index) const
@@ -221,10 +194,10 @@ std::vector<object*> sectors::objects(const fb::model::point16_t& pivot, OBJECT_
     }
 }
 
-std::vector<object*> sectors::activated_objects(OBJECT_TYPE type) const
+std::vector<object*> sectors::objects(OBJECT_TYPE type) const
 {
     auto result = std::vector<object*>();
-    for (auto& sector : this->activated_sectors())
+    for (auto& sector : this->active_sectors())
     {
         std::copy_if(sector->begin(), sector->end(), std::back_inserter(result), [type](auto x) {
             return type == OBJECT_TYPE::UNKNOWN || x->is(type);
@@ -234,7 +207,13 @@ std::vector<object*> sectors::activated_objects(OBJECT_TYPE type) const
     return std::move(result);
 }
 
-bool sectors::activated() const
+bool sectors::is_active() const
 {
-    return this->_activated_cache.size() > 0;
+    for (auto& sector_ptr : this->_pool)
+    {
+        if (sector_ptr->is_active())
+            return true;
+    }
+
+    return false;
 }

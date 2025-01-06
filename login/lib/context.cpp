@@ -132,8 +132,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
             "/user/reserve-name",
             internal::request::ReserveName{name});
 
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         if (response1.uid == -1)
             throw id_exception("이미 존재하는 이름입니다.");
@@ -163,8 +162,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
             });
 
         // 여기서 새로운 promise handler
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         if (response2.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
@@ -177,17 +175,13 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
     }
     catch (login_exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), 0x0E));
     }
 
     co_return true;
@@ -207,8 +201,7 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
             "internal",
             "/user/mk-ch",
             internal::request::MakeCharacter{session->pk, request.hair, request.sex, request.nation, request.creature});
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         if (response.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
@@ -220,17 +213,13 @@ async::task<bool> context::handle_complete(fb::socket<session>& socket, const re
     }
     catch (login_exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), 0x0E));
     }
 
     co_return true;
@@ -249,8 +238,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
         this->assert_account(name, pw);
 
         auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
@@ -260,8 +248,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             "internal",
             "/user/authenticate",
             internal::request::Authenticate{uid, pw});
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         switch (response2.error_code)
         {
@@ -277,8 +264,7 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
             "internal",
             "/in-game/transfer",
             internal::request::Transfer{fb::protocol::internal::Service ::Game, this->model.map[map].host, name, true});
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         switch (static_cast<ERROR_CODE>(response3.error))
         {
@@ -306,24 +292,18 @@ async::task<bool> context::handle_login(fb::socket<session>& socket, const reque
     }
     catch (login_exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), e.type()));
     }
     catch (boost::system::error_code& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(std::format("({})", e.value()), 0x0E));
+        if (this->alive(socket))
+            socket.send(response::message(std::format("({})", e.value()), 0x0E));
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), 0x0E));
     }
 
     co_return true;
@@ -366,8 +346,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
             throw newpw_exception(_TEXT(MESSAGE_ACCOUNT_NEW_PW_EQUALIZATION));
 
         auto&& response = co_await this->get<internal::response::GetUid>("internal", std::format("/user/uid/{}", name));
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         if (response.success == false)
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
@@ -379,8 +358,7 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
             "/user/change-pw",
             internal::request::ChangePw{uid, pw, new_pw, birthday});
 
-        if (this->assert_socket(fd) == false)
-            co_return false;
+        co_await this->update_thread(socket);
 
         switch (response2.error_code)
         {
@@ -399,17 +377,13 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
     }
     catch (login_exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), e.type()));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), e.type()));
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd) == false)
-            co_return false;
-
-        socket.send(response::message(e.what(), 0x0E));
+        if (this->alive(socket))
+            socket.send(response::message(e.what(), 0x0E));
     }
 
     co_return true;

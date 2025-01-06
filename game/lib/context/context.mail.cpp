@@ -44,7 +44,7 @@ context::send_mail(const character& ch, const std::string& to, const std::string
         "internal",
         "/mail/write",
         internal_reqs::WriteMail{ch.id(), to, title, contents, config<uint32_t>("id")});
-    thread->assert_ptr(&ch);
+    co_await this->update_thread(ch);
 
     this->assert_mail(resp.error);
     this->on_write_mail(resp);
@@ -65,7 +65,7 @@ async::task<internal_resp::GetMail> context::read_mail(character& ch, uint16_t i
     auto   url    = std::format("/mail/{}/{}", ch.id(), id);
     auto   thread = ch.thread();
     auto&& resp   = co_await this->get<internal_resp::GetMail>("internal", url);
-    thread->assert_ptr(&ch);
+    co_await this->update_thread(ch);
 
     this->assert_mail(resp.error);
     ch.unread_mail(resp.unread);
@@ -79,7 +79,7 @@ async::task<internal_resp::DeleteMail> context::delete_mail(character& ch, uint1
         "internal",
         "/mail/delete",
         internal_reqs::DeleteMail{ch.id(), id});
-    thread->assert_ptr(&ch);
+    co_await this->update_thread(ch);
     this->assert_mail(resp.error);
     ch.unread_mail(resp.unread);
     co_return std::move(resp);

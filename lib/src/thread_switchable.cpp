@@ -1,6 +1,14 @@
 #include <fb/thread_switchable.h>
 #include <fb/thread.h>
 
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::thread_switchable, "fb.thread.switchable")
+END_LUA_EXTENSION; // clang-format on
+
+fb::thread_switchable::thread_switchable(uint32_t id) :
+    fb::lua::luable(id)
+{ }
+
 void fb::thread_switchable::assert_thread() const
 {
 #if defined DEBUG | defined _DEBUG

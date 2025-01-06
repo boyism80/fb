@@ -88,25 +88,6 @@ void fb::thread::exit()
     this->_mutex_timer.unlock();
 }
 
-void fb::thread::push_ptr(const void* ptr)
-{
-    this->assert_exec();
-    this->_ptrs.insert(static_cast<const void*>(ptr));
-}
-
-void fb::thread::pop_ptr(const void* ptr)
-{
-    this->assert_exec();
-    this->_ptrs.erase(static_cast<const void*>(ptr));
-}
-
-void fb::thread::assert_ptr(const void* ptr) const
-{
-    this->assert_exec();
-    if (this->_ptrs.contains(ptr) == false)
-        throw std::runtime_error(std::format("ptr {:p} does not contains in thread", ptr));
-}
-
 void fb::thread::settimer(const fb::timer::handle_callback_type& fn,
                           const fb::model::timespan&             duration,
                           bool                                   disposable)
