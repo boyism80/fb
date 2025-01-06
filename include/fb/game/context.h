@@ -1667,15 +1667,6 @@ public:
     void on_update_map(character& ch, const fb::game::map& map) override final;
 
     /**
-     * @brief      Called when map changed.
-     *
-     * @param      me      { parameter_description }
-     * @param      before  The before
-     * @param      after   The after
-     */
-    void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) override final;
-
-    /**
      * @brief      Called on update bgm.
      *
      * @param      ch      { parameter_description }

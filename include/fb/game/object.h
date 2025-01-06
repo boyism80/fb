@@ -873,15 +873,6 @@ struct object::listener
     virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
 
     /**
-     * @brief      Called when map changed.
-     *
-     * @param      me      { parameter_description }
-     * @param      before  The before
-     * @param      after   The after
-     */
-    virtual void on_map_changed(fb::game::object& me, fb::game::map* before, fb::game::map* after) = 0;
-
-    /**
      * @brief      Called on create.
      *
      * @param      me    { parameter_description }

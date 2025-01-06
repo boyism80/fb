@@ -146,34 +146,26 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
     }
     catch (std::exception& e)
     {
-        error = e.what();
+        if (this->alive(me))
+        {
+            me.update_map();
+            this->on_message(me, e.what(), MESSAGE_TYPE::STATE);
+        }
     }
     catch (boost::system::error_code& /*e*/)
     {
-        error = _TEXT(MESSAGE_NOT_READY_GAME_SERVER);
+        if (this->alive(me))
+        {
+            me.update_map();
+            this->on_message(me, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
+        }
     }
-
-    auto ch = this->_sockets.template lock<character*>([fd](auto& container) -> character* {
-        if (container.contains(fd))
-            return container.at(fd)->data();
-
-        return nullptr;
-    });
-    if (ch != nullptr)
-    {
-        ch->refresh_map();
-        this->on_message(*ch, error, MESSAGE_TYPE::STATE);
-    }
-    co_return false;
 }
 
 void context::on_update_map(character& ch, const fb::game::map& map)
 {
     ch.send(fb_resp::map_config(map));
 }
-
-void context::on_map_changed(object& me, map* before, map* after)
-{ }
 
 void context::on_update_bgm(character& ch, uint16_t bgm, uint8_t volume)
 {

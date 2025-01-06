@@ -1145,6 +1145,12 @@ void character::update_map(const fb::game::map& map)
         listener->on_update_map(*this, map);
 }
 
+void character::update_map()
+{
+    if (this->_map != nullptr)
+        this->update_map(*this->_map);
+}
+
 void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size)
 {
     auto listener = this->get_listener<character>();
@@ -1377,18 +1383,6 @@ bool character::alive() const
     this->assert_thread();
 
     return this->_state != STATE::GHOST;
-}
-
-void character::refresh_map()
-{
-    this->assert_thread();
-
-    if (this->_map == nullptr)
-        return;
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_map_changed(*this, this->_map, this->_map);
 }
 
 bool character::condition(const std::vector<fb::model::dsl>& conditions) const
