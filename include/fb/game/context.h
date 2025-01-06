@@ -10,6 +10,7 @@
 #include <fb/game/listener.h>
 #include <fb/game/thread_params.h>
 #include <fb/game/map/container.h>
+#include <fb/hash.h>
 #include <fb/game/shard.h>
 
 using namespace fb::protocol::internal;
@@ -65,7 +66,7 @@ private:
     fb::model::datetime               _time;
     std::unique_ptr<fb::amqp::socket> _amqp;
     std::unique_ptr<std::thread>      _amqp_thread;
-    fb::game::shard                   _shard;
+    fb::hash<shard_params>            _shard;
     std::vector<npc_interaction_func> _npc_interaction_funcs;
 
 public:
@@ -2540,6 +2541,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_broadcast(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_assert_alive(lua_State* lua);
 };
 
 } // namespace fb::game

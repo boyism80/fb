@@ -184,6 +184,14 @@ void item::merge(item& item)
         this->_owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
+void fb::game::item::assert_thread() const
+{
+    if (this->_owner != nullptr)
+        this->_owner->assert_thread();
+    else
+        object::assert_thread();
+}
+
 fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
 {
     if (this->_owner == nullptr)

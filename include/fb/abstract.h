@@ -3,11 +3,19 @@
 
 #include <boost/asio.hpp>
 #include <fb/thread_container.h>
+#include <fb/hash.h>
+#include <fb/locker.h>
 
 namespace fb {
 
 class context
 {
+public:
+    using hash_switchable = fb::hash<fb::locker<std::unordered_set<fb::thread_switchable*>>>;
+
+private:
+    hash_switchable _hash_switchable;
+
 protected:
     boost::asio::io_context& _boost_context;
 
@@ -61,6 +69,12 @@ protected:
 
 public:
     virtual ~context() = default;
+
+public:
+    void              push_alive(const fb::thread_switchable& obj);
+    void              pop_alive(const fb::thread_switchable& obj);
+    bool              alive(const fb::thread_switchable& obj) const;
+    async::task<void> update_thread(const fb::thread_switchable& obj);
 
 public:
     operator boost::asio::io_context& () const;

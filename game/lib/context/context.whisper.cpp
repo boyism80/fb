@@ -35,18 +35,13 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
     auto fd = from.fd();
     if (target != nullptr)
     {
-        auto thread = from.thread();
-
-        co_await target->thread()->switching();
+        co_await this->update_thread(*target);
         if (target->option(OPTION::WHISPER) == false)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), to));
 
         target->message(std::format("{}> {}", from.name(), message), MESSAGE_TYPE::NOTIFY);
 
-        co_await thread->switching();
-        if (this->assert_socket(fd) == false)
-            co_return;
-
+        co_await this->update_thread(from);
         from.message(std::format("{}< {}", target->name(), message), MESSAGE_TYPE::NOTIFY);
     }
     else
@@ -55,10 +50,8 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
             "internal",
             "/in-game/whisper",
             internal_reqs::Whisper{from.name(), to, message});
-
-        if (this->assert_socket(fd) == false)
-            co_return;
-
+        co_await this->update_thread(from);
+        
         this->on_whisper(resp);
         from.message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
     }

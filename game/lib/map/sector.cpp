@@ -21,6 +21,8 @@ void sector::push(object& object)
 
 void sector::erase(object& object)
 {
+    object.assert_thread();
+
     auto found = std::find(this->begin(), this->end(), &object);
     if (found == this->end())
         return;

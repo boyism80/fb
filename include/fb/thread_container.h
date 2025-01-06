@@ -8,6 +8,8 @@
 
 namespace fb {
 
+class context;
+
 /**
  * @brief      This class describes thread_container.
  */
@@ -19,9 +21,9 @@ public:
     using unique_id_list          = std::unique_ptr<std::thread::id[]>;
 
 private:
-    boost::asio::io_context& _context;
-    unique_thread_container  _thread_container;
-    unique_id_list           _keys;
+    context&                _context;
+    unique_thread_container _thread_container;
+    unique_id_list          _keys;
 
 public:
     /**
@@ -29,7 +31,7 @@ public:
      *
      * @param      context  The context
      */
-    thread_container(boost::asio::io_context& context, uint32_t count);
+    thread_container(fb::context& context, uint32_t count);
     /**
      * @brief      Destroys the object.
      */

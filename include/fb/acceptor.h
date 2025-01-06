@@ -8,7 +8,6 @@
 #include <fb/socket.h>
 #include <httplib.h>
 #include <iomanip>
-#include <fb/locker.h>
 #include <fb/amqp.h>
 
 using namespace std::chrono_literals;
@@ -265,7 +264,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool assert_socket(uint32_t fd)
+    bool connected(uint32_t fd)
     {
         return this->_sockets.template lock<bool>([fd](auto& container) {
             if (container.contains(fd))
@@ -322,25 +321,25 @@ private:
                 else
                 {
                     auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
-                    auto fd = socket.fd();
-                    std::ignore = socket.thread()->dispatch([this, protocol, &socket, fd, cmd](auto&) -> async::task<void> {
+                    auto fd       = socket.fd();
+                    std::ignore =
+                        socket.thread()->dispatch([this, protocol, &socket, fd, cmd](auto&) -> async::task<void> {
+                            try
+                            {
+                                if (this->connected(fd) == false)
+                                    co_return;
 
-                        try
-                        {
-                            if(this->assert_socket(fd) == false)
-                                co_return;
-
-                            std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
-                        }
-                        catch(std::exception& e)
-                        {
-                            fb::logger::fatal(e.what());
-                        }
-                        catch(...)
-                        {
-                            fb::logger::fatal("unhandled exception");
-                        }
-                    });
+                                std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                            }
+                            catch (std::exception& e)
+                            {
+                                fb::logger::fatal(e.what());
+                            }
+                            catch (...)
+                            {
+                                fb::logger::fatal("unhandled exception");
+                            }
+                        });
                 }
 
                 reader.seek(size - sizeof(uint8_t));
@@ -362,6 +361,16 @@ private:
     }
 
 private:
+    async::task<void> erase(fb::socket<T>& socket)
+    {
+        std::ignore = co_await this->handle_disconnected(socket);
+        this->pop_alive(socket);
+
+        this->_sockets.lock([fd = socket.fd()](auto& container) {
+            container.erase(fd);
+        });
+    }
+
     /**
      * @brief      { function_description }
      */
@@ -384,11 +393,8 @@ private:
                 if (socket.data() == nullptr)
                     co_return;
 
-                co_await this->threads.switching(socket);
-                std::ignore = co_await this->handle_disconnected(socket);
-
-                this->_sockets.lock([fd = socket.fd()](auto& container) {
-                    container.erase(fd);
+                co_await this->threads.dispatch(socket, [this, &socket](auto&) -> async::task<void> {
+                    co_await this->erase(socket);
                 });
             }
             catch (std::exception& e)
@@ -414,6 +420,7 @@ private:
                     auto fd = socket->fd();
                     container.insert({fd, std::move(socket)});
                 });
+                this->push_alive(*ptr);
                 async::awaitable_get(this->handle_connected(*ptr));
 
                 boost::asio::co_spawn(*this, ptr->recv(), boost::asio::detached);
@@ -570,6 +577,7 @@ protected:
     {
         lua::build<lua::luable>();
         lua::build<fb::thread, lua::luable>();
+        lua::build<fb::thread_switchable, lua::luable>();
         co_return;
     }
 

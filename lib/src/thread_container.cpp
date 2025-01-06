@@ -1,8 +1,9 @@
 #include <fb/thread_container.h>
+#include <fb/abstract.h>
 
 using namespace fb;
 
-thread_container::thread_container(boost::asio::io_context& context, uint32_t count) :
+thread_container::thread_container(fb::context& context, uint32_t count) :
     _context(context)
 {
     if (count > 0)
@@ -32,14 +33,18 @@ void thread_container::enqueue(thread_switchable&                          pivot
             if (condition(thread) == false)
                 throw std::runtime_error("condition not satisfied");
 
+            if (this->_context.alive(pivot) == false)
+                throw std::runtime_error("pivot is not alive");
+
             auto active_thread = pivot.thread();
             if (active_thread != &thread)
             {
                 this->enqueue(pivot, condition, fn);
-                throw std::runtime_error("active thread not matched");
             }
-
-            co_return co_await fn(*active_thread);
+            else
+            {
+                co_await fn(*active_thread);
+            }
         },
         error,
         callback);

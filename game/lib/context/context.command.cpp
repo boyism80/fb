@@ -196,6 +196,9 @@ async::task<bool> context::handle_command_hp(character& ch, Json::Value& paramet
     auto hp = parameters[0].asUInt();
     ch.base_hp(hp);
     ch.hp(hp);
+    if (ch.state() == STATE::GHOST)
+        ch.state(STATE::NORMAL);
+
     co_return true;
 }
 
@@ -558,13 +561,12 @@ async::task<bool> context::handle_command_write_mail(character& ch, Json::Value&
             auto title    = std::format("MAIL TITLE {}", i);
             auto contents = std::format("MAIL CONTENTS {}", i);
             co_await this->send_mail(ch, to, title, contents);
-            if (!this->assert_socket(fd))
-                break;
+            co_await this->update_thread(ch);
         }
     }
     catch (std::exception& e)
     {
-        if (!this->assert_socket(fd))
+        if (this->alive(ch))
             ch.message(e.what());
     }
 
@@ -577,8 +579,7 @@ async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& 
     try
     {
         auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
-        if (!this->assert_socket(fd))
-            co_return false;
+        co_await this->update_thread(ch);
 
         this->assert_mail(resp.error);
 
@@ -586,8 +587,7 @@ async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& 
         for (auto& mail : resp.summary_list)
         {
             auto&& resp = co_await this->read_mail(ch, mail.id);
-            if (!this->assert_socket(fd))
-                break;
+            co_await this->update_thread(ch);
             i++;
         }
 
@@ -595,7 +595,7 @@ async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& 
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd))
+        if (this->alive(ch))
             ch.message(e.what());
     }
 
@@ -608,8 +608,7 @@ async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value
     try
     {
         auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
-        if (!this->assert_socket(fd))
-            co_return false;
+        co_await this->update_thread(ch);
 
         this->assert_mail(resp.error);
 
@@ -617,8 +616,7 @@ async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value
         for (auto& mail : resp.summary_list)
         {
             auto&& resp = co_await this->delete_mail(ch, mail.id);
-            if (!this->assert_socket(fd))
-                break;
+            co_await this->update_thread(ch);
             i++;
         }
 
@@ -626,7 +624,7 @@ async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value
     }
     catch (std::exception& e)
     {
-        if (this->assert_socket(fd))
+        if (this->alive(ch))
             ch.message(e.what());
     }
 

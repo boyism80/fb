@@ -187,10 +187,8 @@ life* mob::fix()
         if (this->_target == nullptr)
             throw nullptr;
 
-        auto thread = this->thread();
-        if (thread == nullptr)
-            return nullptr;
-        thread->assert_ptr(this->_target);
+        if (this->context.alive(*this->_target) == false)
+            throw nullptr;
 
         if (this->_target->alive() == false)
             throw nullptr;
@@ -405,4 +403,12 @@ void mob::drop_items()
         break;
         }
     }
+}
+
+void mob::assert_thread() const
+{
+    if (this->_map != nullptr)
+        object::assert_thread();
+    else
+        return;
 }

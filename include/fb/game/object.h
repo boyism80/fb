@@ -8,6 +8,7 @@
 #include <fb/model/model.h>
 #include <fb/game/spell.h>
 #include <async/task.h>
+#include <shared_mutex>
 
 using namespace fb::model::enum_value;
 
@@ -25,7 +26,7 @@ class sectors;
 /**
  * @brief      This class describes an object.
  */
-class object : public lua::luable, public fb::thread_switchable
+class object : public fb::thread_switchable
 {
 public:
     struct listener;
@@ -51,6 +52,7 @@ protected:
     fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
     DIRECTION                _direction = DIRECTION::BOTTOM;
     fb::game::map*           _map       = nullptr;
+    mutable std::shared_mutex             _map_mutex;
 
 public:
     fb::game::context& context;
@@ -531,11 +533,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::thread* thread() const override;
-
-    /**
-     * @brief      { function_description }
-     */
-    void assert_thread() const override;
 
     /**
      * @brief      { function_description }

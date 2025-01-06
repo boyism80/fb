@@ -219,6 +219,11 @@ public:
      */
     virtual void merge(fb::game::item& item);
 
+    /**
+     * @brief      { function_description }
+     */
+    void assert_thread() const override;
+
 public:
     /**
      * @brief      Returns a protocol representation of the object.

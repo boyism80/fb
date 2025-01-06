@@ -148,27 +148,6 @@ public:
         return static_cast<ReturnType*>(this->_data);
     }
 
-    /**
-     * @brief      Pushes a pointer.
-     *
-     * @param      ptr   The pointer
-     */
-    void push_ptr(const void* ptr);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ptr   The pointer
-     */
-    void pop_ptr(const void* ptr);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ptr   The pointer
-     */
-    void assert_ptr(const void* ptr) const;
-
 public:
     /**
      * @brief      { function_description }
@@ -280,9 +259,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> switching();
-
-public:
-    static int builtin_assert_ptr(lua_State* lua);
 };
 
 } // namespace fb

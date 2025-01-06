@@ -10,7 +10,7 @@ namespace fb::game {
 /**
  * @brief      This class describes a map of .
  */
-class map : public lua::luable, public fb::thread_switchable
+class map : public fb::thread_switchable
 {
 public:
     LUA_PROTOTYPE

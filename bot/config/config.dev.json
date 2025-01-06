@@ -3,9 +3,9 @@
 	"ip": "192.168.0.181",
 	"port": 30000,
 	"io_size": 5,
-	"interval": 5000,
-	"spawn_per_interval": 50,
-	"spawn_count": 1000,
+	"interval": 10000,
+	"spawn_per_interval": 100,
+	"spawn_count": 3000,
 	"thread": {
 		"logic": 12
 	}

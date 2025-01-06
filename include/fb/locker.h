@@ -4,7 +4,6 @@
 #include <mutex>
 #include <functional>
 #include <shared_mutex>
-#include <fb/abstract.h>
 #include <fb/logger.h>
 
 namespace fb {
