@@ -384,8 +384,10 @@ void mob::drop_items()
 
     // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();
-    auto& drop  = this->context.model.drop[model.drop];
+    if (model.drop.empty())
+        return;
 
+    auto& drop = this->context.model.drop[model.drop];
     for (auto& dsl : drop.dsl)
     {
         switch (dsl.header)
