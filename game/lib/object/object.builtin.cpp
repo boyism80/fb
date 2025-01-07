@@ -21,8 +21,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
 {"effect",              fb::game::object::builtin_effect},
 {"map",                 fb::game::object::builtin_map},
 {"mkitem",              fb::game::object::builtin_mkitem},
-{"showings",            fb::game::object::builtin_showings},
-{"showns",              fb::game::object::builtin_showns},
+{"sight_in",            fb::game::object::builtin_sight_in},
+{"nears",               fb::game::object::builtin_nears},
 {"front",               fb::game::object::builtin_front},
 {"is",                  fb::game::object::builtin_is},
 {"thread",              fb::game::object::builtin_thread},
@@ -527,7 +527,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_showings(lua_State* lua)
+int fb::game::object::builtin_sight_in(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -544,7 +544,7 @@ int fb::game::object::builtin_showings(lua_State* lua)
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
 
     thread->new_table();
-    const auto& objects = obj->showns(filter);
+    const auto& objects = obj->sight_in(filter);
 
     for (int i = 0; i < objects.size(); i++)
     {
@@ -555,7 +555,7 @@ int fb::game::object::builtin_showings(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_showns(lua_State* lua)
+int fb::game::object::builtin_nears(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -572,8 +572,7 @@ int fb::game::object::builtin_showns(lua_State* lua)
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
 
     thread->new_table();
-    const auto& objects = obj->showings(filter);
-
+    const auto& objects = obj->nears(filter);
     for (int i = 0; i < objects.size(); i++)
     {
         thread->pushobject(objects[i]);

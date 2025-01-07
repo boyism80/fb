@@ -217,7 +217,7 @@ life* mob::find_target()
         return nullptr;
 
     auto min_distance_sqrt = 0xFFFFFFFF;
-    for (auto x : this->showings(OBJECT_TYPE::CHARACTER))
+    for (auto x : this->sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto life = static_cast<fb::game::life*>(x);
         if (life->alive() == false)

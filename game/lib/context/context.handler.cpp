@@ -587,7 +587,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     }
     else
     {
-        for (auto npc : ch->showings(OBJECT_TYPE::NPC))
+        for (auto npc : ch->sight_in(OBJECT_TYPE::NPC))
         {
             npcs.push_back(static_cast<fb::game::npc*>(npc));
         }

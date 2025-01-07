@@ -532,11 +532,10 @@ void context::send(object&                     object,
     {
     case context::scope::PIVOT:
     {
-        auto nears = object.showings(OBJECT_TYPE::CHARACTER);
         if (!exclude_self)
             object.send(header, encrypt);
 
-        for (auto& x : nears)
+        for (auto& x : object.nears(OBJECT_TYPE::CHARACTER))
             x->send(header, encrypt);
     }
     break;

@@ -27,7 +27,7 @@ public:
     fb::locker<character_name_container> names;
 
 public:
-    shard_params() = default;
+    shard_params()                    = default;
     shard_params(const shard_params&) = delete;
     shard_params(shard_params&&)      = default;
     ~shard_params()                   = default;
