@@ -51,7 +51,7 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
             "/in-game/whisper",
             internal_reqs::Whisper{from.name(), to, message});
         co_await this->update_thread(from);
-        
+
         this->on_whisper(resp);
         from.message(std::format("{}< {}", to, message), MESSAGE_TYPE::NOTIFY);
     }

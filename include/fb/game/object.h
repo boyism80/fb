@@ -46,13 +46,13 @@ private:
     fb::game::sector*           _sector  = nullptr;
 
 protected:
-    uint32_t                 _sequence = 0;
-    const fb::model::object& _model;
-    bool                     _map_lock  = false;
-    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
-    DIRECTION                _direction = DIRECTION::BOTTOM;
-    fb::game::map*           _map       = nullptr;
-    mutable std::shared_mutex             _map_mutex;
+    uint32_t                  _sequence = 0;
+    const fb::model::object&  _model;
+    bool                      _map_lock  = false;
+    fb::model::point16_t      _position  = fb::model::point16_t(0, 0);
+    DIRECTION                 _direction = DIRECTION::BOTTOM;
+    fb::game::map*            _map       = nullptr;
+    mutable std::shared_mutex _map_mutex;
 
 public:
     fb::game::context& context;
@@ -490,20 +490,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> showings(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  source    The source
-     * @param[in]  position  The position
-     * @param[in]  type      The type
-     *
-     * @return     { description_of_the_return_value }
-     */
-    std::vector<object*> showings(const std::vector<object*>& source,
-                                  const fb::model::point16_t& position,
-                                  OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> sight_in(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      { function_description }
@@ -512,20 +499,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> showns(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  source    The source
-     * @param[in]  position  The position
-     * @param[in]  type      The type
-     *
-     * @return     { description_of_the_return_value }
-     */
-    std::vector<object*> showns(const std::vector<object*>& source,
-                                const fb::model::point16_t& position,
-                                OBJECT_TYPE                 type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
      * @brief      { function_description }
@@ -744,7 +718,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_showings(lua_State* lua);
+    static int builtin_sight_in(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -753,7 +727,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_showns(lua_State* lua);
+    static int builtin_nears(lua_State* lua);
 
     /**
      * @brief      { function_description }

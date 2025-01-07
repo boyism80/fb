@@ -167,104 +167,39 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
 
     this->update_sector();
 
-    auto nears_before = this->_map->nears(before);
-    auto nears_after  = this->_map->nears(this->_position);
-
-    // leave
+    for (auto obj : this->_map->nears(before))
     {
-        // 내 이전 위치에서 내 시야에 보이는 오브젝트들
-        auto befores = this->showings(nears_before, before);
-        std::sort(befores.begin(), befores.end());
+        if (this == obj)
+            continue;
 
-        // 내 현재 위치에서 내 시야에 보이는 오브젝트들
-        auto afters = this->showings(nears_after, this->_position);
-        std::sort(afters.begin(), afters.end());
-
-        // 내가 이동한 뒤 내 시야에서 사라진 오브젝트들
-        auto hides = std::vector<object*>();
-        std::set_difference(befores.begin(),
-                            befores.end(),
-                            afters.begin(),
-                            afters.end(),
-                            std::inserter(hides, hides.begin()));
-        for (auto x : hides)
-            x->hide(*this, DESTROY_TYPE::DEFAULT);
-
-        // 내가 이동한 뒤 내 시야에서 나타난 오브젝트들
-        auto shows = std::vector<object*>();
-        std::set_difference(afters.begin(),
-                            afters.end(),
-                            befores.begin(),
-                            befores.end(),
-                            std::inserter(shows, shows.begin()));
-
-        for (auto x : shows)
+        // 상대 시야에서 내가 사라짐
+        if (obj->sight(before) && !obj->sight(*this))
         {
-            x->update_external(*this, false);
+            obj->hide(*this);
         }
 
-        if (refresh)
+        // 내 시야에서 상대방이 사라짐
+        if (sight(before, obj->_position, this->_map) && !this->sight(*obj))
         {
-            // 내가 이동한 뒤 내 시야에 여전히 남은 오브젝트들
-            auto stay = std::vector<object*>();
-            std::set_difference(afters.begin(),
-                                afters.end(),
-                                shows.begin(),
-                                shows.end(),
-                                std::inserter(stay, stay.begin()));
-            for (auto x : stay)
-            {
-                x->update_external(*this, false);
-            }
+            this->hide(*obj);
         }
     }
 
-    // enter
+    for (auto obj : this->_map->nears(this->_position))
     {
-        // 내 이전 위치에서 내가 포함된 시야를 가진 오브젝트들
-        auto befores = this->showns(nears_before, before);
-        std::sort(befores.begin(), befores.end());
+        if (this == obj)
+            continue;
 
-        // 내 현재 위치에서 내가 포함된 시야를 가진 오브젝트들
-        auto afters = this->showns(nears_after, this->_position);
-        std::sort(afters.begin(), afters.end());
-
-        // 내가 이동한 뒤 자기 시야에서 내가 사라진 오브젝트들
-        auto hides = std::vector<object*>();
-        std::set_difference(befores.begin(),
-                            befores.end(),
-                            afters.begin(),
-                            afters.end(),
-                            std::inserter(hides, hides.begin()));
-        for (auto x : hides)
-            this->hide(*x, DESTROY_TYPE::DEFAULT);
-
-        // 내가 이동한 뒤 자기 시야에서 내가 나타난 오브젝트들
-        auto shows = std::vector<object*>();
-        std::set_difference(afters.begin(),
-                            afters.end(),
-                            befores.begin(),
-                            befores.end(),
-                            std::inserter(shows, shows.begin()));
-
-        for (auto x : shows)
+        // 상대 시야에 내가 추가됨
+        if (this->visible() && !obj->sight(before) && obj->sight(*this))
         {
-            this->update_external(*x, false);
+            this->update_external(*obj, false);
         }
 
-        if (refresh)
+        // 내 시야에 상대가 추가됨
+        if (obj->visible() && !sight(before, obj->_position, this->_map) && this->sight(*obj))
         {
-            // 내가 이동한 뒤 자기 시야에 여전히 내가 포함된 시야를 가진 오브젝트들
-            auto stay = std::vector<object*>();
-            std::set_difference(afters.begin(),
-                                afters.end(),
-                                shows.begin(),
-                                shows.end(),
-                                std::inserter(stay, stay.begin()));
-            for (auto x : stay)
-            {
-                this->update_external(*x, false);
-            }
+            obj->update_external(*this, false);
         }
     }
 
@@ -720,76 +655,41 @@ std::vector<object*> object::forwards(OBJECT_TYPE type) const
     return this->sides(this->_direction, type);
 }
 
-std::vector<object*> object::showns(OBJECT_TYPE type) const
+std::vector<object*> object::sight_in(OBJECT_TYPE type) const
 {
-    this->assert_thread();
+    auto result = std::vector<object*>{};
+    for (auto obj : this->nears())
+    {
+        if (this->sight(*obj) == false && obj->sight(*this))
+            continue;
 
-    if (this->_map == nullptr)
-        return std::vector<object*>{};
+        result.push_back(obj);
+    }
 
-    return this->showns(this->_map->nears(this->_position), this->_position, type);
+    return std::move(result);
 }
 
-std::vector<object*> object::showns(const std::vector<object*>& source,
-                                    const fb::model::point16_t& position,
-                                    OBJECT_TYPE                 type) const
+std::vector<object*> object::nears(OBJECT_TYPE type) const
 {
-    this->assert_thread();
-
-    auto objects = std::vector<object*>();
     if (this->_map == nullptr)
-        return objects;
+        return {};
 
-    std::copy_if(source.begin(), source.end(), std::back_inserter(objects), [&](auto x) {
-        if (this == x)
-            return false;
+    auto result = std::vector<object*>{};
+    for (auto obj : this->_map->nears(this->_position))
+    {
+        if (this == obj)
+            continue;
 
-        if (x->visible() == false)
-            return false;
+        if (obj->visible() == false)
+            continue;
 
-        if (type != OBJECT_TYPE::UNKNOWN && x->is(type) == false)
-            return false;
+        if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
+            continue;
 
-        return sight(position, x->_position, this->_map);
-    });
+        result.push_back(obj);
+    }
 
-    return std::move(objects);
-}
-
-std::vector<object*> object::showings(OBJECT_TYPE type) const
-{
-    this->assert_thread();
-
-    if (this->_map == nullptr)
-        return std::vector<object*>{};
-    else
-        return this->showings(this->_map->nears(this->_position), this->_position, type);
-}
-
-std::vector<object*> object::showings(const std::vector<object*>& source,
-                                      const fb::model::point16_t& position,
-                                      OBJECT_TYPE                 type) const
-{
-    this->assert_thread();
-
-    auto objects = std::vector<object*>();
-    if (this->_map == nullptr)
-        return objects;
-
-    std::copy_if(source.begin(), source.end(), std::back_inserter(objects), [&](auto x) {
-        if (x == this)
-            return false;
-
-        if (x->visible() == false)
-            return false;
-
-        if (type != OBJECT_TYPE::UNKNOWN && x->is(type) == false)
-            return false;
-
-        return x->sight(position);
-    });
-
-    return std::move(objects);
+    return std::move(result);
 }
 
 bool object::visible() const
