@@ -97,13 +97,13 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
     if (ENUM_IN(this->level, STATE_LEVEL::CROWD_CONTROL))
     {
         if (reader.read<uint8_t>())
-            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::MOVE;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::DIRECTION;
         if (reader.read<uint8_t>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::SIGHT;
         if (reader.read<uint8_t>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::HEAR;
         if (reader.read<uint8_t>())
-            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::ORAL;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::CHAT;
         if (reader.read<uint8_t>())
             this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::MAP;
     }
