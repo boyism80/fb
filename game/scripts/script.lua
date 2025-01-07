@@ -224,9 +224,18 @@ function sample_send_mail(me)
     end
 end
 
+function sample_map(me)
+    local npc = name2npc('낙랑')
+    local name = npc:input(me, '맵 이름')
+    local error = me:map(name)
+    if error ~= nil then
+        npc:dialog(me, error)
+    end
+end
+
 function func(me)
 
-    sample_send_mail(me)
+    sample_map(me)
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

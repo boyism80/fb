@@ -4,33 +4,33 @@
 using namespace fb::game;
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::object, "fb.game.object")
-{"model",               fb::game::object::builtin_model},
-{"__eq",                fb::game::object::builtin_eq},
-{"__tostring",          fb::game::object::builtin_tostring},
-{"id",                  fb::game::object::builtin_id},
-{"name",                fb::game::object::builtin_name},
-{"sound",               fb::game::object::builtin_sound},
-{"position",            fb::game::object::builtin_position},
-{"direction",           fb::game::object::builtin_direction},
-{"chat",                fb::game::object::builtin_chat},
-{"message",             fb::game::object::builtin_message},
-{"buff",                fb::game::object::builtin_buff},
-{"isbuff",              fb::game::object::builtin_isbuff},
-{"unbuff",              fb::game::object::builtin_unbuff},
-{"effect",              fb::game::object::builtin_effect},
-{"map",                 fb::game::object::builtin_map},
-{"mkitem",              fb::game::object::builtin_mkitem},
-{"sight_in",            fb::game::object::builtin_sight_in},
-{"nears",               fb::game::object::builtin_nears},
-{"front",               fb::game::object::builtin_front},
-{"is",                  fb::game::object::builtin_is},
-{"thread",              fb::game::object::builtin_thread},
-{"ptr",                 fb::game::object::builtin_ptr},
-{"near",                fb::game::object::builtin_near},
+IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
+{"model",               object::builtin_model},
+{"__eq",                object::builtin_eq},
+{"__tostring",          object::builtin_tostring},
+{"id",                  object::builtin_id},
+{"name",                object::builtin_name},
+{"sound",               object::builtin_sound},
+{"position",            object::builtin_position},
+{"direction",           object::builtin_direction},
+{"chat",                object::builtin_chat},
+{"message",             object::builtin_message},
+{"buff",                object::builtin_buff},
+{"isbuff",              object::builtin_isbuff},
+{"unbuff",              object::builtin_unbuff},
+{"effect",              object::builtin_effect},
+{"map",                 object::builtin_map},
+{"mkitem",              object::builtin_mkitem},
+{"sight_in",            object::builtin_sight_in},
+{"nears",               object::builtin_nears},
+{"front",               object::builtin_front},
+{"is",                  object::builtin_is},
+{"thread",              object::builtin_thread},
+{"ptr",                 object::builtin_ptr},
+{"near",                object::builtin_near},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::object::builtin_model(lua_State* lua)
+int object::builtin_model(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -48,7 +48,7 @@ int fb::game::object::builtin_model(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_id(lua_State* lua)
+int object::builtin_id(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -65,7 +65,7 @@ int fb::game::object::builtin_id(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_eq(lua_State* lua)
+int object::builtin_eq(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -87,7 +87,7 @@ int fb::game::object::builtin_eq(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_tostring(lua_State* lua)
+int object::builtin_tostring(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -103,7 +103,7 @@ int fb::game::object::builtin_tostring(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_name(lua_State* lua)
+int object::builtin_name(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -120,7 +120,7 @@ int fb::game::object::builtin_name(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_sound(lua_State* lua)
+int object::builtin_sound(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -140,7 +140,7 @@ int fb::game::object::builtin_sound(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_position(lua_State* lua)
+int object::builtin_position(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -205,7 +205,7 @@ int fb::game::object::builtin_position(lua_State* lua)
     return 0;
 }
 
-int fb::game::object::builtin_direction(lua_State* lua)
+int object::builtin_direction(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -235,7 +235,7 @@ int fb::game::object::builtin_direction(lua_State* lua)
     }
 }
 
-int fb::game::object::builtin_chat(lua_State* lua)
+int object::builtin_chat(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -273,7 +273,7 @@ int fb::game::object::builtin_chat(lua_State* lua)
     return 0;
 }
 
-int fb::game::object::builtin_message(lua_State* lua)
+int object::builtin_message(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -298,7 +298,7 @@ int fb::game::object::builtin_message(lua_State* lua)
     return 0;
 }
 
-int fb::game::object::builtin_buff(lua_State* lua)
+int object::builtin_buff(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -325,7 +325,7 @@ int fb::game::object::builtin_buff(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_unbuff(lua_State* lua)
+int object::builtin_unbuff(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -363,7 +363,7 @@ int fb::game::object::builtin_unbuff(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_isbuff(lua_State* lua)
+int object::builtin_isbuff(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -400,7 +400,7 @@ int fb::game::object::builtin_isbuff(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_effect(lua_State* lua)
+int object::builtin_effect(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -422,49 +422,66 @@ int fb::game::object::builtin_effect(lua_State* lua)
     return 0;
 }
 
-int fb::game::object::builtin_map(lua_State* lua)
+int object::builtin_map(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
         return 0;
 
-    auto ctx = thread->env<fb::game::context>("context");
-    try
-    {
-        auto argc = thread->argc();
-        auto obj  = thread->touserdata<object>(1);
-        if (obj == nullptr)
-            return 0;
+    auto ctx  = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto obj  = thread->touserdata<object>(1);
+    if (obj == nullptr)
+        return 0;
 
-        if (argc == 1)
+    if (argc == 1)
+    {
+        auto map = obj->map();
+        if (map == nullptr)
+            thread->pushnil();
+        else
+            thread->pushobject(map);
+        return 1;
+    }
+
+    static auto fn = [](fb::game::context*   context,
+                        fb::lua::context*    thread,
+                        fb::game::object*    obj,
+                        fb::game::map*       map,
+                        fb::model::point16_t position) -> async::task<void> {
+        try
         {
-            auto map = obj->map();
-            if (map == nullptr)
-                thread->pushnil();
-            else
-                thread->pushobject(map);
-            return 1;
+            if (co_await obj->map(map, position) == false)
+                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+
+            thread->pushnil();
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
         }
 
+        thread->resume(1);
+    };
+
+    try
+    {
         fb::game::map* map = nullptr;
         if (thread->is_obj(2))
         {
             map = thread->touserdata<fb::game::map>(2);
             if (map == nullptr)
-                return 0;
-
-            if (map == nullptr)
-                throw std::exception();
+                throw std::runtime_error("올바르지 않은 맵입니다.");
         }
         else if (thread->is_str(2))
         {
             map = ctx->maps.name2map(thread->tostring(2));
             if (map == nullptr)
-                throw std::exception();
+                throw std::runtime_error("올바르지 않은 맵입니다.");
         }
         else
         {
-            throw std::exception();
+            throw std::runtime_error("올바르지 않은 맵입니다.");
         }
 
         fb::model::point16_t position;
@@ -485,18 +502,19 @@ int fb::game::object::builtin_map(lua_State* lua)
         }
         else
         {
-            throw std::exception();
         }
 
-        obj->map(map, position);
+        fn(ctx, thread, obj, map, position);
+        return thread->yield(1);
     }
-    catch (...)
-    { }
-
-    return 0;
+    catch (std::exception& e)
+    {
+        thread->pushstring(e.what());
+        return 1;
+    }
 }
 
-int fb::game::object::builtin_mkitem(lua_State* lua)
+int object::builtin_mkitem(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -527,7 +545,7 @@ int fb::game::object::builtin_mkitem(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_sight_in(lua_State* lua)
+int object::builtin_sight_in(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -555,7 +573,7 @@ int fb::game::object::builtin_sight_in(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_nears(lua_State* lua)
+int object::builtin_nears(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -582,7 +600,7 @@ int fb::game::object::builtin_nears(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_front(lua_State* lua)
+int object::builtin_front(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -606,7 +624,7 @@ int fb::game::object::builtin_front(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_is(lua_State* lua)
+int object::builtin_is(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -625,7 +643,7 @@ int fb::game::object::builtin_is(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_thread(lua_State* lua)
+int object::builtin_thread(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -648,7 +666,7 @@ int fb::game::object::builtin_thread(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_ptr(lua_State* lua)
+int object::builtin_ptr(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
@@ -665,7 +683,7 @@ int fb::game::object::builtin_ptr(lua_State* lua)
     return 1;
 }
 
-int fb::game::object::builtin_near(lua_State* lua)
+int object::builtin_near(lua_State* lua)
 {
     auto thread = lua::get(lua);
     if (thread == nullptr)
