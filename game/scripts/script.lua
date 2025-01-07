@@ -235,7 +235,7 @@ end
 
 function samplee_cc(me)
     local npc = name2npc('낙랑')
-    local selected = npc:menu(me, '선택', {'방향역전', '암흑', '채팅금지'})
+    local selected = npc:menu(me, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
     if selected == nil then
         return
     end
@@ -248,6 +248,8 @@ function samplee_cc(me)
         cc = CROWD_CONTROL_SIGHT
     elseif selected == 2 then
         cc = CROWD_CONTROL_CHAT
+    elseif selected == 3 then
+        cc = CROWD_CONTROL_HEAR
     end
 
     if (current & cc) == cc then
