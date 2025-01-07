@@ -560,10 +560,6 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             }
             co_await this->context.update_thread(*this);
             this->_position = fb::model::point16_t(1, 1);
-
-            if (this->_listener != nullptr)
-                this->_listener->on_map_changed(*this, before_map, this->_map);
-
             co_return true;
         }
 
@@ -599,11 +595,6 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
 
         // insert character into map cache
         this->_map->objects.push(*this);
-
-        // broadcast near characters
-        if (this->_listener != nullptr)
-            this->_listener->on_map_changed(*this, before_map, map);
-
         this->update_id();
         this->update_map(*map);
         this->update_position();

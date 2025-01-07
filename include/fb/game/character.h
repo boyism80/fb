@@ -886,6 +886,11 @@ public:
 
     /**
      * @brief      { function_description }
+     */
+    void update_map();
+
+    /**
+     * @brief      { function_description }
      *
      * @param[in]  map    The map
      * @param[in]  begin  The begin
@@ -1040,11 +1045,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool alive() const;
-
-    /**
-     * @brief      { function_description }
-     */
-    void refresh_map();
 
     /**
      * @brief      { function_description }

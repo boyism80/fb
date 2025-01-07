@@ -131,6 +131,8 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             auto  params = fb::model::dsl::world(warp->dest.params);
             auto& world  = this->model.world[params.id][params.index];
+            co_await ch->map(nullptr);
+            co_await this->update_thread(*ch);
             ch->show_world_map(params.id, params.index);
         }
         break;
@@ -532,12 +534,11 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
 
     if (ch->map() == &this->maps[after.map])
     {
-        ch->refresh_map();
+        ch->update_map();
     }
     else
     {
         std::ignore = co_await ch->map(&this->maps[after.map], after.position);
-        co_await this->save(*ch);
     }
     co_return true;
 }
@@ -921,7 +922,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>&                
     }
     catch (std::exception& e)
     {
-        if(this->alive(*me))
+        if (this->alive(*me))
             me->message(e.what(), MESSAGE_TYPE::NOTIFY);
     }
     co_return true;
