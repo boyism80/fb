@@ -575,7 +575,6 @@ async::task<bool> context::handle_command_write_mail(character& ch, Json::Value&
 
 async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& parameters)
 {
-    auto fd = ch.fd();
     try
     {
         auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
@@ -604,7 +603,6 @@ async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& 
 
 async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value& parameters)
 {
-    auto fd = ch.fd();
     try
     {
         auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);

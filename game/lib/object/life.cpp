@@ -152,34 +152,40 @@ uint32_t life::defensive_magical() const
     return static_cast<const fb::model::life&>(this->_model).defensive_magical;
 }
 
-CONDITION life::condition() const
+CROWD_CONTROL life::crowd_control() const
 {
     this->assert_thread();
 
-    return this->_condition;
+    return this->_crowd_control;
 }
 
-CONDITION life::condition_add(CONDITION value)
+void life::crowd_control(CROWD_CONTROL value)
 {
-    this->assert_thread();
-
-    this->_condition = CONDITION(this->_condition | value);
-    return this->_condition;
+    this->_crowd_control = value;
+    this->update(STATE_LEVEL::CROWD_CONTROL);
 }
 
-CONDITION life::condition_remove(CONDITION value)
+CROWD_CONTROL life::add_cc(CROWD_CONTROL value)
 {
     this->assert_thread();
 
-    this->_condition = CONDITION(this->_condition & ~value);
-    return this->_condition;
+    this->crowd_control(CROWD_CONTROL(this->_crowd_control | value));
+    return this->_crowd_control;
 }
 
-bool life::condition_contains(CONDITION value) const
+CROWD_CONTROL life::remove_cc(CROWD_CONTROL value)
 {
     this->assert_thread();
 
-    return uint32_t(this->_condition) & uint32_t(value);
+    this->crowd_control(CROWD_CONTROL(this->_crowd_control & ~value));
+    return this->_crowd_control;
+}
+
+bool life::condition_contains(CROWD_CONTROL value) const
+{
+    this->assert_thread();
+
+    return uint32_t(this->_crowd_control) & uint32_t(value);
 }
 
 bool life::alive() const

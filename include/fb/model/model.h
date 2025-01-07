@@ -539,56 +539,6 @@ inline const char* enum_tostring<CLASS>(CLASS k)
     return i->second;
 }
 
-enum class CONDITION
-{
-    NONE = 0x00, 
-    MOVE = 0x01, 
-    SIGHT = 0x02, 
-    HEAR = 0x04, 
-    ORAL = 0x08, 
-    MAP = 0x10
-}; // end of enum 'CONDITION'
-
-template <>
-inline CONDITION enum_parse<CONDITION>(const std::string k)
-{
-    static const std::unordered_map<std::string, CONDITION> enums
-    {
-        { "NONE", CONDITION::NONE }, 
-        { "MOVE", CONDITION::MOVE }, 
-        { "SIGHT", CONDITION::SIGHT }, 
-        { "HEAR", CONDITION::HEAR }, 
-        { "ORAL", CONDITION::ORAL }, 
-        { "MAP", CONDITION::MAP }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<CONDITION>(CONDITION k)
-{
-    static const std::unordered_map<CONDITION, const char*> enums
-    {
-        { CONDITION::NONE, "NONE" }, 
-        { CONDITION::MOVE, "MOVE" }, 
-        { CONDITION::SIGHT, "SIGHT" }, 
-        { CONDITION::HEAR, "HEAR" }, 
-        { CONDITION::ORAL, "ORAL" }, 
-        { CONDITION::MAP, "MAP" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
 enum class CREATURE
 {
     PHOENIX = 0x00, 
@@ -624,6 +574,56 @@ inline const char* enum_tostring<CREATURE>(CREATURE k)
         { CREATURE::TIGER, "TIGER" }, 
         { CREATURE::TURTLE, "TURTLE" }, 
         { CREATURE::DRAGON, "DRAGON" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class CROWD_CONTROL
+{
+    NONE = 0x00, 
+    DIRECTION = 0x01, 
+    SIGHT = 0x02, 
+    HEAR = 0x04, 
+    CHAT = 0x08, 
+    MAP = 0x10
+}; // end of enum 'CROWD_CONTROL'
+
+template <>
+inline CROWD_CONTROL enum_parse<CROWD_CONTROL>(const std::string k)
+{
+    static const std::unordered_map<std::string, CROWD_CONTROL> enums
+    {
+        { "NONE", CROWD_CONTROL::NONE }, 
+        { "DIRECTION", CROWD_CONTROL::DIRECTION }, 
+        { "SIGHT", CROWD_CONTROL::SIGHT }, 
+        { "HEAR", CROWD_CONTROL::HEAR }, 
+        { "CHAT", CROWD_CONTROL::CHAT }, 
+        { "MAP", CROWD_CONTROL::MAP }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CROWD_CONTROL>(CROWD_CONTROL k)
+{
+    static const std::unordered_map<CROWD_CONTROL, const char*> enums
+    {
+        { CROWD_CONTROL::NONE, "NONE" }, 
+        { CROWD_CONTROL::DIRECTION, "DIRECTION" }, 
+        { CROWD_CONTROL::SIGHT, "SIGHT" }, 
+        { CROWD_CONTROL::HEAR, "HEAR" }, 
+        { CROWD_CONTROL::CHAT, "CHAT" }, 
+        { CROWD_CONTROL::MAP, "MAP" }
     };
 
     auto i = enums.find(k);
@@ -2117,13 +2117,13 @@ inline const char* enum_tostring<STATE>(STATE k)
 
 enum class STATE_LEVEL
 {
-    CONDITION = 0x08, 
+    CROWD_CONTROL = 0x08, 
     EXP_MONEY = 0x10, 
     HP_MP = 0x20, 
     BASED = 0x40, 
-    LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CONDITION, 
-    LEVEL_MIN = EXP_MONEY | CONDITION, 
-    LEVEL_MIDDLE = HP_MP | EXP_MONEY | CONDITION
+    LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CROWD_CONTROL, 
+    LEVEL_MIN = EXP_MONEY | CROWD_CONTROL, 
+    LEVEL_MIDDLE = HP_MP | EXP_MONEY | CROWD_CONTROL
 }; // end of enum 'STATE_LEVEL'
 
 template <>
@@ -2131,7 +2131,7 @@ inline STATE_LEVEL enum_parse<STATE_LEVEL>(const std::string k)
 {
     static const std::unordered_map<std::string, STATE_LEVEL> enums
     {
-        { "CONDITION", STATE_LEVEL::CONDITION }, 
+        { "CROWD_CONTROL", STATE_LEVEL::CROWD_CONTROL }, 
         { "EXP_MONEY", STATE_LEVEL::EXP_MONEY }, 
         { "HP_MP", STATE_LEVEL::HP_MP }, 
         { "BASED", STATE_LEVEL::BASED }, 
@@ -2152,7 +2152,7 @@ inline const char* enum_tostring<STATE_LEVEL>(STATE_LEVEL k)
 {
     static const std::unordered_map<STATE_LEVEL, const char*> enums
     {
-        { STATE_LEVEL::CONDITION, "CONDITION" }, 
+        { STATE_LEVEL::CROWD_CONTROL, "CROWD_CONTROL" }, 
         { STATE_LEVEL::EXP_MONEY, "EXP_MONEY" }, 
         { STATE_LEVEL::HP_MP, "HP_MP" }, 
         { STATE_LEVEL::BASED, "BASED" }, 
@@ -2641,18 +2641,6 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CLASS_MAGICION");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::ASCETIC);
     lua_setglobal(lua, "CLASS_ASCETIC");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::NONE);
-    lua_setglobal(lua, "CONDITION_NONE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::MOVE);
-    lua_setglobal(lua, "CONDITION_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::SIGHT);
-    lua_setglobal(lua, "CONDITION_SIGHT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::HEAR);
-    lua_setglobal(lua, "CONDITION_HEAR");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::ORAL);
-    lua_setglobal(lua, "CONDITION_ORAL");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::MAP);
-    lua_setglobal(lua, "CONDITION_MAP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::PHOENIX);
     lua_setglobal(lua, "CREATURE_PHOENIX");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::TIGER);
@@ -2661,6 +2649,18 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CREATURE_TURTLE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::DRAGON);
     lua_setglobal(lua, "CREATURE_DRAGON");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::NONE);
+    lua_setglobal(lua, "CROWD_CONTROL_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::DIRECTION);
+    lua_setglobal(lua, "CROWD_CONTROL_DIRECTION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::SIGHT);
+    lua_setglobal(lua, "CROWD_CONTROL_SIGHT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::HEAR);
+    lua_setglobal(lua, "CROWD_CONTROL_HEAR");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::CHAT);
+    lua_setglobal(lua, "CROWD_CONTROL_CHAT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::MAP);
+    lua_setglobal(lua, "CROWD_CONTROL_MAP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DEATH_PENALTY::NONE);
     lua_setglobal(lua, "DEATH_PENALTY_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DEATH_PENALTY::DROP);
@@ -3073,8 +3073,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "STATE_HALF_CLOACK");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE::CLOACK);
     lua_setglobal(lua, "STATE_CLOACK");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::CONDITION);
-    lua_setglobal(lua, "STATE_LEVEL_CONDITION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::CROWD_CONTROL);
+    lua_setglobal(lua, "STATE_LEVEL_CROWD_CONTROL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::EXP_MONEY);
     lua_setglobal(lua, "STATE_LEVEL_EXP_MONEY");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::HP_MP);

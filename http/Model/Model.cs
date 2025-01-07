@@ -135,23 +135,6 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Condition
-    {
-        [EnumMember(Value = "NONE")]
-        None = 0x00, 
-        [EnumMember(Value = "MOVE")]
-        Move = 0x01, 
-        [EnumMember(Value = "SIGHT")]
-        Sight = 0x02, 
-        [EnumMember(Value = "HEAR")]
-        Hear = 0x04, 
-        [EnumMember(Value = "ORAL")]
-        Oral = 0x08, 
-        [EnumMember(Value = "MAP")]
-        Map = 0x10
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
     public enum Creature
     {
         [EnumMember(Value = "PHOENIX")]
@@ -162,6 +145,23 @@ namespace Fb.Model.EnumValue
         Turtle = 0x02, 
         [EnumMember(Value = "DRAGON")]
         Dragon = 0x03
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum CrowdControl
+    {
+        [EnumMember(Value = "NONE")]
+        None = 0x00, 
+        [EnumMember(Value = "DIRECTION")]
+        Direction = 0x01, 
+        [EnumMember(Value = "SIGHT")]
+        Sight = 0x02, 
+        [EnumMember(Value = "HEAR")]
+        Hear = 0x04, 
+        [EnumMember(Value = "CHAT")]
+        Chat = 0x08, 
+        [EnumMember(Value = "MAP")]
+        Map = 0x10
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -714,8 +714,8 @@ namespace Fb.Model.EnumValue
     [JsonConverter(typeof(StringEnumConverter))]
     public enum StateLevel
     {
-        [EnumMember(Value = "CONDITION")]
-        Condition = 0x08, 
+        [EnumMember(Value = "CROWD_CONTROL")]
+        CrowdControl = 0x08, 
         [EnumMember(Value = "EXP_MONEY")]
         ExpMoney = 0x10, 
         [EnumMember(Value = "HP_MP")]
@@ -723,11 +723,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "BASED")]
         Based = 0x40, 
         [EnumMember(Value = "LEVEL_MAX")]
-        LevelMax = Based | HpMp | ExpMoney | Condition, 
+        LevelMax = Based | HpMp | ExpMoney | CrowdControl, 
         [EnumMember(Value = "LEVEL_MIN")]
-        LevelMin = ExpMoney | Condition, 
+        LevelMin = ExpMoney | CrowdControl, 
         [EnumMember(Value = "LEVEL_MIDDLE")]
-        LevelMiddle = HpMp | ExpMoney | Condition
+        LevelMiddle = HpMp | ExpMoney | CrowdControl
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

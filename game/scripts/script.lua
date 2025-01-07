@@ -233,9 +233,33 @@ function sample_map(me)
     end
 end
 
+function samplee_cc(me)
+    local npc = name2npc('낙랑')
+    local selected = npc:menu(me, '선택', {'방향역전', '암흑', '채팅금지'})
+    if selected == nil then
+        return
+    end
+
+    local current = me:cc()
+    local cc = CROWD_CONTROL_NONE
+    if selected == 0 then
+        cc = CROWD_CONTROL_DIRECTION
+    elseif selected == 1 then
+        cc = CROWD_CONTROL_SIGHT
+    elseif selected == 2 then
+        cc = CROWD_CONTROL_CHAT
+    end
+
+    if (current & cc) == cc then
+        me:cc(current & ~cc)
+    else
+        me:cc(current | cc)
+    end
+end
+
 function func(me)
 
-    sample_map(me)
+    samplee_cc(me)
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

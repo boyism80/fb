@@ -46,17 +46,17 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
         writer.write<uint32_t>(this->ch.money() - this->ch.trade.money()); // money
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::CONDITION))
+    if (ENUM_IN(this->level, STATE_LEVEL::CROWD_CONTROL))
     {
-        writer.write<uint8_t>(this->ch.condition_contains(CONDITION::MOVE));  // condition::move
-        writer.write<uint8_t>(this->ch.condition_contains(CONDITION::SIGHT)); // condition::sight
-        writer.write<uint8_t>(this->ch.condition_contains(CONDITION::HEAR));  // condition::hear?
-        writer.write<uint8_t>(this->ch.condition_contains(CONDITION::ORAL));  // condition:oral
-        writer.write<uint8_t>(this->ch.condition_contains(CONDITION::MAP));   // condition:map?
+        writer.write<uint8_t>(this->ch.condition_contains(CROWD_CONTROL::DIRECTION));
+        writer.write<uint8_t>(this->ch.condition_contains(CROWD_CONTROL::SIGHT));
+        writer.write<uint8_t>(this->ch.condition_contains(CROWD_CONTROL::HEAR));
+        writer.write<uint8_t>(this->ch.condition_contains(CROWD_CONTROL::CHAT));
+        writer.write<uint8_t>(this->ch.condition_contains(CROWD_CONTROL::MAP));
     }
 
     writer.write<uint8_t>(this->ch.unread_mail());
-    writer.write<uint8_t>(true); // fast move
+    writer.write<uint8_t>(this->ch.option(OPTION::FAST_MOVE));
     writer.write<uint8_t>(0x00);
 }
 #else
@@ -94,18 +94,18 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
         this->ch_money = reader.read<uint32_t>();
     }
 
-    if (ENUM_IN(this->level, STATE_LEVEL::CONDITION))
+    if (ENUM_IN(this->level, STATE_LEVEL::CROWD_CONTROL))
     {
         if (reader.read<uint8_t>())
-            this->ch_condition |= (uint32_t)CONDITION::MOVE;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::MOVE;
         if (reader.read<uint8_t>())
-            this->ch_condition |= (uint32_t)CONDITION::SIGHT;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::SIGHT;
         if (reader.read<uint8_t>())
-            this->ch_condition |= (uint32_t)CONDITION::HEAR;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::HEAR;
         if (reader.read<uint8_t>())
-            this->ch_condition |= (uint32_t)CONDITION::ORAL;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::ORAL;
         if (reader.read<uint8_t>())
-            this->ch_condition |= (uint32_t)CONDITION::MAP;
+            this->ch_crowd_control |= (uint32_t)CROWD_CONTROL::MAP;
     }
 
     this->ch_mail      = reader.read<uint8_t>();

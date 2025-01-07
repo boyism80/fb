@@ -17,6 +17,9 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"spell",               fb::game::life::builtin_spell},
 {"damage",              fb::game::life::builtin_damage},
 {"cast",                fb::game::life::builtin_cast},
+{"cc",                  fb::game::life::builtin_cc},
+{"add_cc",              fb::game::life::builtin_add_cc},
+{"remove_cc",           fb::game::life::builtin_remove_cc},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::life::builtin_hp(lua_State* lua)
@@ -279,5 +282,66 @@ int fb::game::life::builtin_cast(lua_State* lua)
 
     x->pushobject(spell).resume(3);
 
+    return 0;
+}
+
+int fb::game::life::builtin_cc(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto me      = thread->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        thread->pushinteger(static_cast<uint32_t>(me->crowd_control()));
+        return 1;
+    }
+    else
+    {
+        auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
+        me->crowd_control(cc);
+        return 0;
+    }
+
+    return 0;
+}
+
+int fb::game::life::builtin_add_cc(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto me      = thread->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
+    me->add_cc(cc);
+    return 0;
+}
+
+int fb::game::life::builtin_remove_cc(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto me      = thread->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
+    me->remove_cc(cc);
     return 0;
 }

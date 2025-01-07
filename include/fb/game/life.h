@@ -18,8 +18,8 @@ public:
     struct initial_params;
 
 protected:
-    uint32_t  _hp = 0, _mp = 0;
-    CONDITION _condition = CONDITION::NONE;
+    uint32_t      _hp = 0, _mp = 0;
+    CROWD_CONTROL _crowd_control = CROWD_CONTROL::NONE;
 
 public:
     fb::game::spells spells;
@@ -177,7 +177,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    CONDITION condition() const;
+    CROWD_CONTROL crowd_control() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void crowd_control(CROWD_CONTROL value);
 
     /**
      * @brief      { function_description }
@@ -186,7 +193,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    CONDITION condition_add(CONDITION value);
+    CROWD_CONTROL add_cc(CROWD_CONTROL value);
 
     /**
      * @brief      { function_description }
@@ -195,7 +202,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    CONDITION condition_remove(CONDITION value);
+    CROWD_CONTROL remove_cc(CROWD_CONTROL value);
 
     /**
      * @brief      Determines if condition contains.
@@ -204,7 +211,7 @@ public:
      *
      * @return     True if condition contains, False otherwise.
      */
-    bool condition_contains(CONDITION value) const;
+    bool condition_contains(CROWD_CONTROL value) const;
 
     /**
      * @brief      { function_description }
@@ -408,6 +415,33 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_cast(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_cc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_add_cc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_remove_cc(lua_State* lua);
 };
 
 /**
