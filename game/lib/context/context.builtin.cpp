@@ -105,6 +105,83 @@ int fb::game::context::builtin_name2map(lua_State* lua)
     return 1;
 }
 
+int fb::game::context::builtin_name2ch(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto name    = thread->tostring(1);
+
+    auto ch = context->_shard[name]->names.template lock<character*>([&name](auto& names) -> character* {
+        if (names.contains(name) == false)
+            return nullptr;
+
+        return names.at(name);
+    });
+
+    if (ch == nullptr)
+    {
+        thread->pushnil();
+        return 1;
+    }
+
+    if (argc == 1)
+    {
+        thread->pushobject(ch);
+        return 1;
+    }
+
+    if (lua_type(lua, 2) == LUA_TFUNCTION)
+    {
+        static auto static_func = [](fb::lua::context* thread) {
+            lua_call(*thread, 1, LUA_MULTRET);
+
+            thread->remove(-thread->argc());
+            return thread->argc();
+        };
+
+        if (ch == nullptr)
+        {
+            thread->pushnil();
+            return static_func(thread);
+        }
+        else if (ch->thread()->id() == std::this_thread::get_id())
+        {
+            thread->pushobject(ch);
+            return static_func(thread);
+        }
+        else
+        {
+            static auto lazy =
+                [](fb::game::context* context, fb::lua::context* thread, character* ch) -> async::task<void> {
+                co_await context->update_thread(*ch);
+
+                thread->pushobject(*ch);
+                auto argc = static_func(thread);
+                thread->resume(argc);
+            };
+            async::awaitable_then(lazy(context, thread, ch), [thread](auto result) {
+                try
+                {
+                    result();
+                }
+                catch (std::exception& e)
+                {
+                    thread->pushnil();
+                    thread->resume(1);
+                }
+            });
+            return thread->yield(1);
+        }
+    }
+
+    thread->pushnil();
+    return 1;
+}
+
 int fb::game::context::builtin_name2item(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
