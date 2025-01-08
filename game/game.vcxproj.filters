@@ -534,6 +534,9 @@
     <ClCompile Include="lib\context\context.whisper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.object.miss.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

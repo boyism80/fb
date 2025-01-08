@@ -1095,7 +1095,7 @@ namespace Fb.Model
         [JsonProperty("option")]
         public Fb.Model.EnumValue.MapOption Option { get; set; }
         [JsonProperty("cardinal")]
-        public Dictionary<Fb.Model.EnumValue.CardinalDirection, Area<ushort>> Cardinal { get; set; }
+        public Dictionary<Fb.Model.EnumValue.CardinalDirection, Dsl> Cardinal { get; set; }
         [JsonProperty("resurrection")]
         public Dictionary<Fb.Model.EnumValue.CardinalDirection, uint> Resurrection { get; set; }
         [JsonProperty("teleport")]
@@ -1634,6 +1634,10 @@ namespace Fb.Model
             public ushort X { get; set; }
             [JsonProperty("y")]
             public ushort Y { get; set; }
+            [JsonProperty("right")]
+            public ushort Right { get; set; }
+            [JsonProperty("bottom")]
+            public ushort Bottom { get; set; }
 
             public static Map Parse(object[] parameters)
             {
@@ -1641,7 +1645,9 @@ namespace Fb.Model
                 {
                     Id = (uint)parameters[0],
                     X = (ushort)parameters[1],
-                    Y = (ushort)parameters[2]
+                    Y = (ushort)parameters[2],
+                    Right = (ushort)parameters[3],
+                    Bottom = (ushort)parameters[4]
                 };
             }
 
@@ -1650,7 +1656,7 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Map,
-                    Params = new object[] {Id, X, Y}
+                    Params = new object[] {Id, X, Y, Right, Bottom}
                 };
             }
         }

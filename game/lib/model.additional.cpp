@@ -10,6 +10,9 @@ END_LUA_EXTENSION; // clang-format on
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"name",                fb::model::map::builtin_name},
+{"root",                fb::model::map::builtin_root},
+{"cardinal",            fb::model::map::builtin_cardinal},
+{"resurrection",        fb::model::map::builtin_resurrection},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
@@ -62,8 +65,8 @@ END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::trace, "fb.model.trace")
-{"id",                	fb::model::trace::builtin_id},
+{"id",                  fb::model::trace::builtin_id},
 {"look",                fb::model::trace::builtin_look},
-{"color",            	fb::model::trace::builtin_color},
-{"text",          		fb::model::trace::builtin_text},
+{"color",               fb::model::trace::builtin_color},
+{"text",                fb::model::trace::builtin_text},
 END_LUA_EXTENSION; // clang-format on

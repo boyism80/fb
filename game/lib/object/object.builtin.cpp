@@ -487,6 +487,13 @@ int object::builtin_map(lua_State* lua)
             if (map == nullptr)
                 throw std::runtime_error("올바르지 않은 맵입니다.");
         }
+        else if (thread->is_num(2))
+        {
+            auto id = thread->tointeger(2);
+            if (ctx->maps.contains(id) == false)
+                throw std::runtime_error("올바르지 않은 맵입니다.");
+            map = &ctx->maps[id];
+        }
         else
         {
             throw std::runtime_error("올바르지 않은 맵입니다.");
@@ -515,7 +522,9 @@ int object::builtin_map(lua_State* lua)
         {
         }
 
-        fn(ctx, thread, obj, map, position);
+        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            co_await fn(ctx, thread, obj, map, position);
+        });
         return thread->yield(1);
     }
     catch (std::exception& e)

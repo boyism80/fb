@@ -145,6 +145,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_door);           // 도어 핸들러
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
+    this->bind(&context::handle_object_miss);
 
     this->bind_timer(&context::handle_heart_beat, 1s);
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
@@ -536,7 +537,12 @@ void context::send(object&                     object,
             object.send(header, encrypt);
 
         for (auto& x : object.nears(OBJECT_TYPE::CHARACTER))
+        {
+            if (x->sight(object) == false)
+                continue;
+
             x->send(header, encrypt);
+        }
     }
     break;
 

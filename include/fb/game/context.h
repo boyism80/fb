@@ -1056,6 +1056,16 @@ public:
      */
     [[nodiscard]] async::task<bool> handle_world(fb::socket<fb::game::character>&, const fb_reqs::map_world&);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      <unnamed>  { parameter_description }
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_object_miss(fb::socket<fb::game::character>&, const fb_reqs::miss&);
+
 public:
     /**
      * @brief      { function_description }

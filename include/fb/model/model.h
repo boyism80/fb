@@ -3501,28 +3501,36 @@ public:
     const uint32_t id;
     const uint16_t x;
     const uint16_t y;
+    const uint16_t right;
+    const uint16_t bottom;
 
 public:
-    map(uint32_t id, uint16_t x, uint16_t y) : 
+    map(uint32_t id, uint16_t x, uint16_t y, uint16_t right, uint16_t bottom) : 
         id(id),
         x(x),
-        y(y)
+        y(y),
+        right(right),
+        bottom(bottom)
     { }
     map(const Json::Value& json) : 
         id(fb::model::build<uint32_t>(json[0])),
         x(fb::model::build<uint16_t>(json[1])),
-        y(fb::model::build<uint16_t>(json[2]))
+        y(fb::model::build<uint16_t>(json[2])),
+        right(fb::model::build<uint16_t>(json[3])),
+        bottom(fb::model::build<uint16_t>(json[4]))
     { }
     map(const std::vector<std::any>& parameters) : 
         id(any_cast<uint32_t>(parameters[0])),
         x(any_cast<uint16_t>(parameters[1])),
-        y(any_cast<uint16_t>(parameters[2]))
+        y(any_cast<uint16_t>(parameters[2])),
+        right(any_cast<uint16_t>(parameters[3])),
+        bottom(any_cast<uint16_t>(parameters[4]))
     { }
 
 public:
     fb::model::dsl to_dsl()
     {
-        return fb::model::dsl(fb::model::enum_value::DSL::map, {id, x, y});
+        return fb::model::dsl(fb::model::enum_value::DSL::map, {id, x, y, right, bottom});
     }
 };
 
@@ -3988,7 +3996,7 @@ public:
     const fb::model::enum_value::MAP_EFFECT_TYPE effect;
     const uint8_t host;
     const fb::model::enum_value::MAP_OPTION option;
-    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, area<uint16_t>> cardinal;
+    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, fb::model::dsl> cardinal;
     const std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t> resurrection;
     const std::vector<fb::model::dsl> teleport;
 #endif
@@ -4008,7 +4016,7 @@ DECLARE_MAP_CONSTRUCTOR
         effect(fb::model::build<fb::model::enum_value::MAP_EFFECT_TYPE>(json["effect"])),
         host(fb::model::build<uint8_t>(json["host"])),
         option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"])),
-        cardinal(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, area<uint16_t>>>(json["cardinal"])),
+        cardinal(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, fb::model::dsl>>(json["cardinal"])),
         resurrection(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t>>(json["resurrection"])),
         teleport(fb::model::build<std::vector<fb::model::dsl>>(json["teleport"]))
 #ifdef DECLARE_MAP_INITIALIZER

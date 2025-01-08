@@ -156,12 +156,6 @@ bool context::resume(int argc, bool auto_release)
         throw std::runtime_error("this context is not lua thread");
 
     auto main = static_cast<fb::lua::main*>(this->owner);
-    if (main != &lua::container::ist().get())
-    {
-        fb::logger::fatal("lua thread mismatched");
-        return false;
-    }
-
     if (this->_state == LUA_PENDING)
         return *this;
 

@@ -543,6 +543,25 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
     co_return true;
 }
 
+async::task<bool> context::handle_object_miss(fb::socket<character>& socket, const fb_reqs::miss& request)
+{
+    auto ch = socket.data();
+    if (ch->inited() == false)
+        co_return true;
+
+    auto map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    auto obj = map->objects[request.sequence];
+    if (obj == nullptr)
+        co_return true;
+
+    fb::logger::info("{} 오브젝트 미스", obj->sequence());
+
+    co_return true;
+}
+
 async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_reqs::group& request)
 {
     auto me = socket.data();
@@ -875,7 +894,7 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (model == nullptr)
         co_return false;
 
-    request.parse(model->type);
+    const_cast<fb_reqs::spell_cast&>(request).parse(model->type);
     switch (model->type)
     {
     case SPELL_TYPE::INPUT:

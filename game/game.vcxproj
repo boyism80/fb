@@ -353,6 +353,7 @@
     <ClCompile Include="lib\protocol\protocol.object.direction.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.effect.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.hide.cpp" />
+    <ClCompile Include="lib\protocol\protocol.object.miss.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.move.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.show.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.sound.cpp" />

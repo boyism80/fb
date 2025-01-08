@@ -165,6 +165,9 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
     if (refresh)
         this->update_position();
 
+    if (sight(before, this->_position, this->_map) == false)
+        this->update_external(*this, false);
+
     this->update_sector();
 
     for (auto obj : this->_map->nears(before))

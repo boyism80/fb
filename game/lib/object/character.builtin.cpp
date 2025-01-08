@@ -41,6 +41,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"switch_context",      character::builtin_switch_context},
 {"whisper",             character::builtin_whisper},
 {"send_mail",           character::builtin_send_mail},
+{"assert_state",        character::builtin_assert_state},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -804,27 +805,21 @@ int character::builtin_group(lua_State* lua)
     {
         // 그룹 Lock scope는 스크립트 내의 다음 yield를
         // 만나기 전까지 유효
-        ch->thread()->enqueue(
-            [=](auto&) -> async::task<void> {
-                if (ch->_group == nullptr)
-                {
-                    thread->pushnil();
+        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            if (ch->_group == nullptr)
+            {
+                thread->pushnil();
+                thread->resume(1);
+            }
+            else
+            {
+                ch->_group->lock([=](auto& group) {
+                    thread->pushobject(group);
                     thread->resume(1);
-                }
-                else
-                {
-                    ch->_group->lock([=](auto& group) {
-                        thread->pushobject(group);
-                        thread->resume(1);
-                    });
-                }
-                co_return;
-            },
-            [](auto& e) {
-            },
-            []() {
-            });
-
+                });
+            }
+            co_return;
+        });
         return thread->yield(1);
     }
     else if (lua_type(lua, 2) == LUA_TFUNCTION)
@@ -878,7 +873,7 @@ int character::builtin_create_group(lua_State* lua)
         thread->resume(1);
     };
 
-    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+    context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
         co_await fn(context, thread, *ch, name);
     });
 
@@ -901,7 +896,7 @@ int character::builtin_clan(lua_State* lua)
     {
         // 그룹 Lock scope는 스크립트 내의 다음 yield를
         // 만나기 전까지 유효
-        std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
             if (ch->_clan == nullptr)
             {
                 thread->pushnil();
@@ -916,7 +911,6 @@ int character::builtin_clan(lua_State* lua)
             }
             co_return;
         });
-
         return thread->yield(1);
     }
     else if (lua_type(lua, 2) == LUA_TFUNCTION)
@@ -978,7 +972,7 @@ int character::builtin_create_clan(lua_State* lua)
         thread->resume(1);
     };
 
-    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+    context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
         co_await fn(context, thread, *ch, name);
     });
 
@@ -1010,7 +1004,7 @@ int character::builtin_destroy_clan(lua_State* lua)
         thread->resume(1);
     };
 
-    std::ignore = ch->thread()->dispatch([=](auto&) -> async::task<void> {
+    context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
         co_await fn(context, thread, *ch);
     });
 
@@ -1183,7 +1177,7 @@ int character::builtin_whisper(lua_State* lua)
         thread->resume(1);
     };
 
-    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+    context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
         co_await fn(context, thread, me, to, message);
     });
 
@@ -1224,9 +1218,39 @@ int character::builtin_send_mail(lua_State* lua)
         thread->resume(1);
     };
 
-    std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
+    context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
         co_await fn(context, thread, me, to, title, contents);
     });
 
     return thread->yield(1);
+}
+
+int character::builtin_assert_state(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto me = thread->touserdata<character>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto argc   = thread->argc();
+    auto values = std::vector<STATE>{};
+    for (int i = 1; i < argc; i++)
+    {
+        values.push_back(static_cast<STATE>(thread->tointeger(i + 1)));
+    }
+
+    try
+    {
+        me->assert_state(values);
+        thread->pushnil();
+        return 1;
+    }
+    catch (std::exception& e)
+    {
+        thread->pushstring(e.what());
+        return 1;
+    }
 }
