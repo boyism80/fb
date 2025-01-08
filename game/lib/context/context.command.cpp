@@ -14,19 +14,18 @@ async::task<bool> context::handle_command_map(character& ch, Json::Value& parame
     if (model == nullptr)
         co_return false;
 
-    auto x = 0;
-    auto y = 0;
+    auto& map = this->maps[model->id];
     if (parameters.size() == 3)
     {
-        if (parameters[1].isNumeric())
-            x = parameters[1].asInt();
-
-        if (parameters[2].isNumeric())
-            y = parameters[2].asInt();
+        auto x      = parameters[1].isNumeric() ? parameters[1].asInt() : 0;
+        auto y      = parameters[2].isNumeric() ? parameters[2].asInt() : 0;
+        std::ignore = co_await ch.map(&map, fb::model::point16_t(x, y));
+    }
+    else
+    {
+        std::ignore = co_await ch.map(&map);
     }
 
-    auto& map   = this->maps[model->id];
-    std::ignore = co_await ch.map(&map, fb::model::point16_t(x, y));
     co_return true;
 }
 

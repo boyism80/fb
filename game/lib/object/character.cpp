@@ -57,7 +57,7 @@ async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t&
     }
     else
     {
-        if (co_await object::map(map, position, destroy_type) == false)
+        if (co_await object::map(map, position) == false)
             co_return false;
 
         co_return true;

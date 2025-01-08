@@ -439,6 +439,43 @@ bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you
     return begin.x <= you.x && end.x >= you.x && begin.y <= you.y && end.y >= you.y;
 }
 
+async::task<bool> object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
+{
+    this->assert_thread();
+
+    if (map == nullptr)
+    {
+        co_return co_await this->map(map, fb::model::point16_t{0, 0}, destroy_type);
+    }
+    else
+    {
+        if (map->model.teleport.size() == 0)
+        {
+            co_return co_await this->map(map, fb::model::point16_t{0, 0}, destroy_type);
+        }
+
+        auto& dsl = map->model.teleport.at(random<uint32_t>(0, map->model.teleport.size() - 1));
+        switch (dsl.header)
+        {
+        case DSL::area:
+        {
+            auto params = fb::model::dsl::area(dsl.params);
+            auto x      = random<uint16_t>(params.left, params.right);
+            auto y      = random<uint16_t>(params.top, params.bottom);
+            co_return co_await this->map(map, fb::model::point16_t{x, y});
+        }
+        break;
+
+        case DSL::point:
+        {
+            auto params = fb::model::dsl::point(dsl.params);
+            co_return co_await this->map(map, fb::model::point16_t{params.x, params.y});
+        }
+        break;
+        }
+    }
+}
+
 async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
@@ -473,7 +510,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
                 for (auto x : this->_map->nears(this->_position))
                 {
                     if (x != this)
-                        x->hide(*this, destroy_type);
+                        x->hide(*this);
                 }
             }
 

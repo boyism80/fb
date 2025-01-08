@@ -155,10 +155,20 @@ public:
      *
      * @return     The object type.
      */
-    OBJECT_TYPE                     what() const override final;
+    OBJECT_TYPE what() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      map           The map
+     * @param[in]  position      The position
+     * @param[in]  destroy_type  The destroy type
+     *
+     * @return     { description_of_the_return_value }
+     */
     [[nodiscard]] async::task<bool> map(fb::game::map*              map,
-                                        const fb::model::point16_t& position = fb::model::point16_t{0, 0},
-                                        DESTROY_TYPE destroy_type            = DESTROY_TYPE::DEFAULT) override final;
+                                        const fb::model::point16_t& position,
+                                        DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:
     operator fb::socket<character>& ();

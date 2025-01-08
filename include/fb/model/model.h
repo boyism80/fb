@@ -189,6 +189,38 @@ DECLARE_RANGE_EXTENSION
 #endif
 }; // end of struct range
 
+template <typename T>
+struct area
+{
+public:
+    using value_type = T;
+
+public:
+    T left = 0;
+    T top = 0;
+    T right = 0;
+    T bottom = 0;
+
+public:
+    area() = default;
+    area(T left, T top, T right, T bottom) : left(left), top(top), right(right), bottom(bottom)
+    { }
+
+public:
+    bool operator == (const area<T>& r) const
+    {
+        return this->left == r.left && this->top == r.top && this->right == r.right && this->bottom == r.bottom;
+    }
+
+    bool operator != (const area<T>& r) const
+    {
+        return this->left != r.left || this->top != r.top || this->right != r.right || this->bottom != r.bottom;
+    }
+#ifdef DECLARE_AREA_EXTENSION
+DECLARE_AREA_EXTENSION
+#endif
+}; // end of struct area
+
 #pragma endregion
 
 #ifdef DECLARE_AFTER_TYPE
@@ -395,6 +427,50 @@ inline const char* enum_tostring<BUNDLE_TYPE>(BUNDLE_TYPE k)
         { BUNDLE_TYPE::NONE, "NONE" }, 
         { BUNDLE_TYPE::BUNDLE, "BUNDLE" }, 
         { BUNDLE_TYPE::PACKAGE, "PACKAGE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class CARDINAL_DIRECTION
+{
+    EAST = 1, 
+    WEST = 2, 
+    SOUTH = 3, 
+    NORTH = 4
+}; // end of enum 'CARDINAL_DIRECTION'
+
+template <>
+inline CARDINAL_DIRECTION enum_parse<CARDINAL_DIRECTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, CARDINAL_DIRECTION> enums
+    {
+        { "EAST", CARDINAL_DIRECTION::EAST }, 
+        { "WEST", CARDINAL_DIRECTION::WEST }, 
+        { "SOUTH", CARDINAL_DIRECTION::SOUTH }, 
+        { "NORTH", CARDINAL_DIRECTION::NORTH }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CARDINAL_DIRECTION>(CARDINAL_DIRECTION k)
+{
+    static const std::unordered_map<CARDINAL_DIRECTION, const char*> enums
+    {
+        { CARDINAL_DIRECTION::EAST, "EAST" }, 
+        { CARDINAL_DIRECTION::WEST, "WEST" }, 
+        { CARDINAL_DIRECTION::SOUTH, "SOUTH" }, 
+        { CARDINAL_DIRECTION::NORTH, "NORTH" }
     };
 
     auto i = enums.find(k);
@@ -809,7 +885,9 @@ enum class DSL
     class_t = 7, 
     admin = 8, 
     world = 9, 
-    map = 10
+    map = 10, 
+    area = 11, 
+    point = 12
 }; // end of enum 'DSL'
 
 template <>
@@ -827,7 +905,9 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "class_t", DSL::class_t }, 
         { "admin", DSL::admin }, 
         { "world", DSL::world }, 
-        { "map", DSL::map }
+        { "map", DSL::map }, 
+        { "area", DSL::area }, 
+        { "point", DSL::point }
     };
 
     auto i = enums.find(k);
@@ -852,7 +932,9 @@ inline const char* enum_tostring<DSL>(DSL k)
         { DSL::class_t, "class_t" }, 
         { DSL::admin, "admin" }, 
         { DSL::world, "world" }, 
-        { DSL::map, "map" }
+        { DSL::map, "map" }, 
+        { DSL::area, "area" }, 
+        { DSL::point, "point" }
     };
 
     auto i = enums.find(k);
@@ -2615,6 +2697,14 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "BUNDLE_TYPE_BUNDLE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::PACKAGE);
     lua_setglobal(lua, "BUNDLE_TYPE_PACKAGE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::EAST);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_EAST");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::WEST);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_WEST");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::SOUTH);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_SOUTH");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::NORTH);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_NORTH");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CHAT_TYPE::NORMAL);
     lua_setglobal(lua, "CHAT_TYPE_NORMAL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CHAT_TYPE::SHOUT);
@@ -2707,6 +2797,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DSL_world");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::map);
     lua_setglobal(lua, "DSL_map");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::area);
+    lua_setglobal(lua, "DSL_area");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::point);
+    lua_setglobal(lua, "DSL_point");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DURATION::FAST);
     lua_setglobal(lua, "DURATION_FAST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DURATION::ATTACK);
@@ -3153,6 +3247,10 @@ template <typename>   constexpr bool is_range_impl = false;
 template <typename T> constexpr bool is_range_impl<fb::model::range<T>> = true;
 template <typename T> constexpr bool is_range = is_range_impl<std::decay_t<T>>;
 
+template <typename>   constexpr bool is_area_impl = false;
+template <typename T> constexpr bool is_area_impl<fb::model::area<T>> = true;
+template <typename T> constexpr bool is_area = is_area_impl<std::decay_t<T>>;
+
 template <typename T> inline static T build(const Json::Value& json);
 template <> int8_t build<int8_t>(const Json::Value& json);
 template <> uint8_t build<uint8_t>(const Json::Value& json);
@@ -3176,12 +3274,14 @@ class dsl
 {
 public:
     class admin;
+    class area;
     class class_t;
     class dexteritry;
     class intelligence;
     class item;
     class level;
     class map;
+    class point;
     class promotion;
     class sex;
     class strength;
@@ -3223,6 +3323,42 @@ public:
     fb::model::dsl to_dsl()
     {
         return fb::model::dsl(fb::model::enum_value::DSL::admin, {value});
+    }
+};
+
+
+class fb::model::dsl::area
+{
+public:
+    const uint16_t left;
+    const uint16_t top;
+    const uint16_t right;
+    const uint16_t bottom;
+
+public:
+    area(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) : 
+        left(left),
+        top(top),
+        right(right),
+        bottom(bottom)
+    { }
+    area(const Json::Value& json) : 
+        left(fb::model::build<uint16_t>(json[0])),
+        top(fb::model::build<uint16_t>(json[1])),
+        right(fb::model::build<uint16_t>(json[2])),
+        bottom(fb::model::build<uint16_t>(json[3]))
+    { }
+    area(const std::vector<std::any>& parameters) : 
+        left(any_cast<uint16_t>(parameters[0])),
+        top(any_cast<uint16_t>(parameters[1])),
+        right(any_cast<uint16_t>(parameters[2])),
+        bottom(any_cast<uint16_t>(parameters[3]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::area, {left, top, right, bottom});
     }
 };
 
@@ -3391,6 +3527,34 @@ public:
 };
 
 
+class fb::model::dsl::point
+{
+public:
+    const uint16_t x;
+    const uint16_t y;
+
+public:
+    point(uint16_t x, uint16_t y) : 
+        x(x),
+        y(y)
+    { }
+    point(const Json::Value& json) : 
+        x(fb::model::build<uint16_t>(json[0])),
+        y(fb::model::build<uint16_t>(json[1]))
+    { }
+    point(const std::vector<std::any>& parameters) : 
+        x(any_cast<uint16_t>(parameters[0])),
+        y(any_cast<uint16_t>(parameters[1]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::point, {x, y});
+    }
+};
+
+
 class fb::model::dsl::promotion
 {
 public:
@@ -3496,12 +3660,14 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
     static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
     {
         { fb::model::enum_value::DSL::admin, [](const Json::Value& json) { return fb::model::dsl::admin(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::area, [](const Json::Value& json) { return fb::model::dsl::area(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::class_t, [](const Json::Value& json) { return fb::model::dsl::class_t(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::dexteritry, [](const Json::Value& json) { return fb::model::dsl::dexteritry(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::intelligence, [](const Json::Value& json) { return fb::model::dsl::intelligence(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::map, [](const Json::Value& json) { return fb::model::dsl::map(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::point, [](const Json::Value& json) { return fb::model::dsl::point(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::sex, [](const Json::Value& json) { return fb::model::dsl::sex(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }},
@@ -3822,6 +3988,9 @@ public:
     const fb::model::enum_value::MAP_EFFECT_TYPE effect;
     const uint8_t host;
     const fb::model::enum_value::MAP_OPTION option;
+    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, area<uint16_t>> cardinal;
+    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t> resurrection;
+    const std::vector<fb::model::dsl> teleport;
 #endif
 
 #ifdef DECLARE_MAP_CUSTOM_CONSTRUCTOR
@@ -3838,7 +4007,10 @@ DECLARE_MAP_CONSTRUCTOR
         bgm(fb::model::build<uint16_t>(json["bgm"])),
         effect(fb::model::build<fb::model::enum_value::MAP_EFFECT_TYPE>(json["effect"])),
         host(fb::model::build<uint8_t>(json["host"])),
-        option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"]))
+        option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"])),
+        cardinal(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, area<uint16_t>>>(json["cardinal"])),
+        resurrection(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t>>(json["resurrection"])),
+        teleport(fb::model::build<std::vector<fb::model::dsl>>(json["teleport"]))
 #ifdef DECLARE_MAP_INITIALIZER
 DECLARE_MAP_INITIALIZER
 #endif
@@ -5849,6 +6021,15 @@ template <typename T> T build(const Json::Value& json)
         auto max = build<typename T::value_type>(json["max"]);
 
         return range(min, max);
+    }
+    else if constexpr (is_area<T>)
+    {
+        auto left = build<typename T::value_type>(json["left"]);
+        auto top = build<typename T::value_type>(json["top"]);
+        auto right = build<typename T::value_type>(json["right"]);
+        auto bottom = build<typename T::value_type>(json["bottom"]);
+
+        return area(left, top, right, bottom);
     }
     else
     {

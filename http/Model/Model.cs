@@ -25,6 +25,14 @@ namespace Fb.Model
         public T Min { get; set; }
         public T Max { get; set; }
     }
+
+    public struct Area<T>
+    {
+        public T Left { get; set; }
+        public T Top { get; set; }
+        public T Right { get; set; }
+        public T Bottom { get; set; }
+    }
 }
 
 namespace Fb.Model.EnumValue
@@ -91,6 +99,19 @@ namespace Fb.Model.EnumValue
         Bundle = 1, 
         [EnumMember(Value = "PACKAGE")]
         Package = 2
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum CardinalDirection
+    {
+        [EnumMember(Value = "EAST")]
+        East = 1, 
+        [EnumMember(Value = "WEST")]
+        West = 2, 
+        [EnumMember(Value = "SOUTH")]
+        South = 3, 
+        [EnumMember(Value = "NORTH")]
+        North = 4
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -232,7 +253,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "world")]
         World = 9, 
         [EnumMember(Value = "map")]
-        Map = 10
+        Map = 10, 
+        [EnumMember(Value = "area")]
+        Area = 11, 
+        [EnumMember(Value = "point")]
+        Point = 12
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1069,6 +1094,12 @@ namespace Fb.Model
         public byte Host { get; set; }
         [JsonProperty("option")]
         public Fb.Model.EnumValue.MapOption Option { get; set; }
+        [JsonProperty("cardinal")]
+        public Dictionary<Fb.Model.EnumValue.CardinalDirection, Area<ushort>> Cardinal { get; set; }
+        [JsonProperty("resurrection")]
+        public Dictionary<Fb.Model.EnumValue.CardinalDirection, uint> Resurrection { get; set; }
+        [JsonProperty("teleport")]
+        public List<Dsl> Teleport { get; set; }
     }
 
     public class MobSpawn
@@ -1445,6 +1476,37 @@ namespace Fb.Model
                 };
             }
         }
+        public class Area
+        {
+            [JsonProperty("left")]
+            public ushort Left { get; set; }
+            [JsonProperty("top")]
+            public ushort Top { get; set; }
+            [JsonProperty("right")]
+            public ushort Right { get; set; }
+            [JsonProperty("bottom")]
+            public ushort Bottom { get; set; }
+
+            public static Area Parse(object[] parameters)
+            {
+                return new Area
+                {
+                    Left = (ushort)parameters[0],
+                    Top = (ushort)parameters[1],
+                    Right = (ushort)parameters[2],
+                    Bottom = (ushort)parameters[3]
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Area,
+                    Params = new object[] {Left, Top, Right, Bottom}
+                };
+            }
+        }
         public class ClassT
         {
             [JsonProperty("value")]
@@ -1589,6 +1651,31 @@ namespace Fb.Model
                 {
                     Header = Fb.Model.EnumValue.Dsl.Map,
                     Params = new object[] {Id, X, Y}
+                };
+            }
+        }
+        public class Point
+        {
+            [JsonProperty("x")]
+            public ushort X { get; set; }
+            [JsonProperty("y")]
+            public ushort Y { get; set; }
+
+            public static Point Parse(object[] parameters)
+            {
+                return new Point
+                {
+                    X = (ushort)parameters[0],
+                    Y = (ushort)parameters[1]
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Point,
+                    Params = new object[] {X, Y}
                 };
             }
         }

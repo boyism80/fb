@@ -444,15 +444,23 @@ int object::builtin_map(lua_State* lua)
         return 1;
     }
 
-    static auto fn = [](fb::game::context*   context,
-                        fb::lua::context*    thread,
-                        fb::game::object*    obj,
-                        fb::game::map*       map,
-                        fb::model::point16_t position) -> async::task<void> {
+    static auto fn = [](fb::game::context*                  context,
+                        fb::lua::context*                   thread,
+                        fb::game::object*                   obj,
+                        fb::game::map*                      map,
+                        std::optional<fb::model::point16_t> position) -> async::task<void> {
         try
         {
-            if (co_await obj->map(map, position) == false)
-                throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            if (position.has_value())
+            {
+                if (co_await obj->map(map, position.value()) == false)
+                    throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            }
+            else
+            {
+                if (co_await obj->map(map) == false)
+                    throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            }
 
             thread->pushnil();
         }
@@ -484,21 +492,24 @@ int object::builtin_map(lua_State* lua)
             throw std::runtime_error("올바르지 않은 맵입니다.");
         }
 
-        fb::model::point16_t position;
+        auto position = std::optional<fb::model::point16_t>{};
         if (thread->is_table(3))
         {
             thread->rawgeti(3, 1);
-            position.x = (uint16_t)thread->tointeger(-1);
+            auto x = (uint16_t)thread->tointeger(-1);
             thread->remove(-1);
 
             thread->rawgeti(3, 2);
-            position.y = (uint16_t)thread->tointeger(-1);
+            auto y = (uint16_t)thread->tointeger(-1);
             thread->remove(-1);
+
+            position = fb::model::point16_t{x, y};
         }
         else if (thread->is_num(3) && thread->is_num(4))
         {
-            position.x = (uint16_t)thread->tointeger(3);
-            position.y = (uint16_t)thread->tointeger(4);
+            auto x   = (uint16_t)thread->tointeger(3);
+            auto y   = (uint16_t)thread->tointeger(4);
+            position = fb::model::point16_t{x, y};
         }
         else
         {

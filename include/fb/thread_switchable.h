@@ -18,7 +18,7 @@ class thread_switchable : public lua::luable
 {
 public:
     LUA_PROTOTYPE
-    
+
 protected:
     /**
      * @brief      Constructs a new instance.
