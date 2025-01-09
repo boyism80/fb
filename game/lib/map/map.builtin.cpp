@@ -1,4 +1,5 @@
 #include <fb/game/map.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -136,23 +137,23 @@ int fb::game::map::builtin_movable(lua_State* lua)
     if (thread == nullptr)
         return 0;
 
+    auto ctx = thread->env<fb::game::context>("context");
     auto map = thread->touserdata<fb::game::map>(1);
     if (map == nullptr)
         return 0;
 
     auto position = fb::model::point16_t();
-
-    if (lua_istable(lua, 2))
+    if (lua_istable(*thread, 2))
     {
-        lua_rawgeti(lua, 2, 1);
+        lua_rawgeti(*thread, 2, 1);
         position.x = (uint16_t)thread->tointeger(-1);
-        lua_remove(lua, -1);
+        lua_remove(*thread, -1);
 
-        lua_rawgeti(lua, 2, 2);
+        lua_rawgeti(*thread, 2, 2);
         position.y = (uint16_t)thread->tointeger(-1);
-        lua_remove(lua, -1);
+        lua_remove(*thread, -1);
     }
-    else if (lua_isnumber(lua, 2) && lua_isnumber(lua, 3))
+    else if (lua_isnumber(*thread, 2) && lua_isnumber(*thread, 3))
     {
         position.x = (uint16_t)thread->tointeger(2);
         position.y = (uint16_t)thread->tointeger(3);
@@ -163,8 +164,20 @@ int fb::game::map::builtin_movable(lua_State* lua)
         return 1;
     }
 
-    thread->pushboolean(map->movable(position));
-    return 1;
+    if (map->thread() == ctx->threads.current())
+    {
+        thread->pushboolean(map->movable(position));
+        return 1;
+    }
+    else
+    {
+        std::ignore = map->thread()->dispatch([=](auto&) -> async::task<void> {
+            thread->pushboolean(map->movable(position));
+            thread->resume(1);
+            co_return;
+        });
+        return thread->yield(1);
+    }
 }
 
 int fb::game::map::builtin_door(lua_State* lua)

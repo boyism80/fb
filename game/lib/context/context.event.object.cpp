@@ -50,7 +50,7 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
 
 void context::on_direction(object& me)
 {
-    this->send(me, fb_resp::direction(me), scope::PIVOT, true);
+    this->send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
 void context::on_update_external(object& me, bool light)

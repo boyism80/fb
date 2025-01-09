@@ -193,16 +193,31 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         if (this == obj)
             continue;
 
-        // 상대 시야에 내가 추가됨
-        if (this->visible() && !obj->sight(before) && obj->sight(*this))
+        if (this->visible())
         {
-            this->update_external(*obj, false);
+            auto before_sight = obj->sight(before);
+            auto after_sight  = obj->sight(*this);
+
+            if (!before_sight && after_sight) // 상대 시야에 내가 추가됨
+            {
+                this->update_external(*obj, false);
+            }
+            else if (refresh && before_sight && after_sight) // 상대 시야에 원래 있었는데 위치 강제이동
+            {
+                this->update_external(*obj, false);
+            }
+            else
+            {
+            }
         }
 
         // 내 시야에 상대가 추가됨
-        if (obj->visible() && !sight(before, obj->_position, this->_map) && this->sight(*obj))
+        if (obj->visible())
         {
-            obj->update_external(*this, false);
+            if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
+            {
+                obj->update_external(*this, false);
+            }
         }
     }
 
