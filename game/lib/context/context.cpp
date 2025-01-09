@@ -81,11 +81,12 @@ async::task<void> context::handle_start()
     {
         auto& ist = fb::lua::context_pool::ist();
         fb::model::lua::map_enum(ist);
-        fb::lua::load("scripts/script.lua");
-        fb::lua::load("scripts/common/npc.lua");
-        fb::lua::load("scripts/common/door.lua");
-        fb::lua::load("scripts/common/pickup.lua");
-        fb::lua::load("scripts/common/attack.lua");
+        fb::lua::load("scripts/spell.lua");
+        fb::lua::dump("scripts/script.lua");
+        fb::lua::dump("scripts/common/npc.lua");
+        fb::lua::dump("scripts/common/door.lua");
+        fb::lua::dump("scripts/common/pickup.lua");
+        fb::lua::dump("scripts/common/attack.lua");
 
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();
@@ -164,6 +165,7 @@ async::task<void> context::handle_start()
     this->command("변신", &context::handle_command_disguise, true);
     this->command("변신해제", &context::handle_command_undisguise, true);
     this->command("마법배우기", &context::handle_command_spell, true);
+    this->command("마법지우기", &context::handle_command_remove_spell, true);
     this->command("몬스터생성", &context::handle_command_mob, true);
     this->command("직업바꾸기", &context::handle_command_class, true);
     this->command("레벨바꾸기", &context::handle_command_level, true);

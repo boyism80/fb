@@ -249,7 +249,7 @@ bool life::active(const fb::model::spell& spell, fb::game::object& to)
     if (this->sight(to) == false)
         return true;
 
-    thread->pushobject(this).pushobject(spell).pushobject(&to).resume(3);
+    thread->pushobject(this).pushobject(&to).pushobject(spell).resume(3);
     return true;
 }
 

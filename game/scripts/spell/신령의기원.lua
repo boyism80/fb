@@ -1,4 +1,4 @@
-function on_cast(me, spell, you)
+function on_cast(me, you, spell)
     local mp = 1000
     if me:mp() < mp then
         me:message('마력이 모자랍니다.')

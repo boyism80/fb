@@ -1310,6 +1310,16 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    [[nodiscard]] async::task<bool> handle_command_remove_spell(fb::game::character& ch, Json::Value& parameters);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
     [[nodiscard]] async::task<bool> handle_command_item(fb::game::character& ch, Json::Value& parameters);
 
     /**

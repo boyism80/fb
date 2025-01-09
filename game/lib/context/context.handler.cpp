@@ -894,6 +894,10 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (model == nullptr)
         co_return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/spell.lua");
+#endif
+
     const_cast<fb_reqs::spell_cast&>(request).parse(model->type);
     switch (model->type)
     {

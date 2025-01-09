@@ -96,6 +96,13 @@ void build(const std::string& name, lua_CFunction fn);
  *
  * @param[in]  path  The path
  */
+void dump(const std::string& path);
+
+/**
+ * @brief      { function_description }
+ *
+ * @param[in]  path  The path
+ */
 void load(const std::string& path);
 
 /**
@@ -727,7 +734,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool load_file(const std::string& path);
+    bool dump_file(const std::string& path);
     /**
      * @brief      Pops the object.
      *
@@ -941,7 +948,7 @@ fb::lua::context& fb::lua::context::from(const std::string& fmt, Args&&... args)
     luaL_dofile(*this, fname.c_str());
 #else
     auto context_pool = static_cast<fb::lua::context_pool*>(this->owner);
-    context_pool->load_file(fname);
+    context_pool->dump_file(fname);
     if (context_pool->_bytecodes.contains(fname) == false)
     {
         fb::logger::fatal("cannot find script {}", fname);

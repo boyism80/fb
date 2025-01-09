@@ -20,10 +20,16 @@ void fb::lua::build(const std::string& name, lua_CFunction fn)
     ist.build(name, fn);
 }
 
+void fb::lua::dump(const std::string& path)
+{
+    auto& ist = context_pool::ist();
+    ist.dump_file(path);
+}
+
 void fb::lua::load(const std::string& path)
 {
     auto& ist = context_pool::ist();
-    ist.load_file(path);
+    luaL_dofile(ist, path.c_str());
 }
 
 void luable::to_lua(lua_State* ctx) const
@@ -237,7 +243,7 @@ context* context_pool::get(lua_State& ctx)
     return found->second.get();
 }
 
-bool context_pool::load_file(const std::string& path)
+bool context_pool::dump_file(const std::string& path)
 {
     if (path.empty())
         return true;

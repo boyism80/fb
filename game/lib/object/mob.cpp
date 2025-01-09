@@ -324,9 +324,6 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
     this->assert_thread();
 
     auto result = life::damage(value, from, critical);
-    if (from == nullptr)
-        return result;
-
     if (!this->alive())
     {
         this->kill(from, DESTROY_TYPE::DEAD);

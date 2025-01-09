@@ -235,6 +235,31 @@ async::task<bool> context::handle_command_spell(character& ch, Json::Value& para
     co_return true;
 }
 
+async::task<bool> context::handle_command_remove_spell(character& ch, Json::Value& parameters)
+{
+    auto slot = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : -1;
+
+    if (parameters.size() == 0)
+    {
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto spell = ch.spells[i];
+            if (spell == nullptr)
+                continue;
+
+            ch.spells.remove(i);
+        }
+    }
+    else
+    {
+        if (ch.spells.remove(slot) == false)
+            co_return true;
+    }
+
+    co_await this->save(ch);
+    co_return true;
+}
+
 async::task<bool> context::handle_command_item(character& ch, Json::Value& parameters)
 {
     if (parameters.size() < 1)

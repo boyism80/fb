@@ -35,7 +35,7 @@ function on_cast(me, spell)
         return
     end
 
-    local front = me:front(0xff & (~ITEM))
+    local front = me:front(0xff & (~OBJECT_TYPE_ITEM))
     if front == nil then
         return
     end
@@ -48,7 +48,8 @@ function on_cast(me, spell)
         if me:isbuff('투명') and front:is(MOB | CHARACTER) then
             me:unbuff('투명')
         end
-        me:action(ACTION_ATTACK, 0x0a, 0x1e)
+        me:action(1, 15, 30)
         me:message('비영승보를 외웠습니다.')
+        front:sound(30)
     end
 end
