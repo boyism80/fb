@@ -575,7 +575,7 @@ void fb::game::items::pickup(bool boost)
             std::ignore = this->_owner.items.add(belows[0]);
         }
 
-        auto thread = lua::get();
+        auto thread = lua::new_context();
         if (thread == nullptr)
             return;
 

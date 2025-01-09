@@ -269,7 +269,7 @@ int fb::game::life::builtin_cast(lua_State* lua)
     if (spell == nullptr)
         return 0;
 
-    auto x = lua::get();
+    auto x = lua::new_context();
     if (x == nullptr)
         return 0;
 

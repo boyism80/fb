@@ -119,7 +119,7 @@ bool mob::action()
 
     if (this->_attack_thread == nullptr)
     {
-        this->_attack_thread = fb::lua::get();
+        this->_attack_thread = fb::lua::new_context();
         if (this->_attack_thread == nullptr)
             return false;
 

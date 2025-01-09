@@ -128,57 +128,33 @@ int fb::game::context::builtin_name2ch(lua_State* lua)
         return 1;
     }
 
-    if (argc == 1)
+    if (ch->thread() == context->threads.current())
     {
         thread->pushobject(ch);
         return 1;
     }
-
-    if (lua_type(lua, 2) == LUA_TFUNCTION)
+    else
     {
-        static auto static_func = [](fb::lua::context* thread) {
-            lua_call(*thread, 1, LUA_MULTRET);
-
-            thread->remove(-thread->argc());
-            return thread->argc();
+        static auto static_func =
+            [](fb::game::context* context, fb::lua::context* thread, character* ch) -> async::task<void> {
+            co_await context->update_thread(*ch);
+            thread->pushobject(ch);
+            thread->resume(1);
         };
 
-        if (ch == nullptr)
-        {
-            thread->pushnil();
-            return static_func(thread);
-        }
-        else if (ch->thread()->id() == std::this_thread::get_id())
-        {
-            thread->pushobject(ch);
-            return static_func(thread);
-        }
-        else
-        {
-            static auto lazy =
-                [](fb::game::context* context, fb::lua::context* thread, character* ch) -> async::task<void> {
-                co_await context->update_thread(*ch);
-
-                thread->pushobject(*ch);
-                auto argc = static_func(thread);
-                thread->resume(argc);
-            };
-            async::awaitable_then(lazy(context, thread, ch), [thread](auto result) {
-                try
-                {
-                    result();
-                }
-                catch (std::exception& e)
-                {
-                    thread->pushnil();
-                    thread->resume(1);
-                }
-            });
-            return thread->yield(1);
-        }
+        async::awaitable_then(static_func(context, thread, ch), [thread](auto result) {
+            try
+            {
+                result();
+            }
+            catch (std::exception& e)
+            {
+                thread->pushnil();
+                thread->resume(1);
+            }
+        });
+        thread->yield(1);
     }
-
-    thread->pushnil();
     return 1;
 }
 

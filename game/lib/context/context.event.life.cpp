@@ -53,7 +53,7 @@ void context::on_attack(life& me)
     auto damage = me.calculate_damage(me.auto_attack_damage(mob_size), *front, critical);
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
-        auto thread = lua::get();
+        auto thread = lua::new_context();
         thread->from("scripts/common/attack.lua");
         thread->func("on_attack");
         thread->pushobject(me);

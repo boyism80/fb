@@ -79,16 +79,15 @@ async::task<void> context::handle_start()
     auto async_tasks = std::vector<async::task<void>>();
     for (auto& [thread, maps] : maps_division)
     {
-        async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto& ist  = lua::container::ist();
-            auto& main = ist.get();
-            fb::model::lua::map_enum(main);
-            main.load_file("scripts/script.lua");
-            main.load_file("scripts/common/npc.lua");
-            main.load_file("scripts/common/door.lua");
-            main.load_file("scripts/common/pickup.lua");
-            main.load_file("scripts/common/attack.lua");
+        auto& ist = fb::lua::context_pool::ist();
+        fb::model::lua::map_enum(ist);
+        fb::lua::load("scripts/script.lua");
+        fb::lua::load("scripts/common/npc.lua");
+        fb::lua::load("scripts/common/door.lua");
+        fb::lua::load("scripts/common/pickup.lua");
+        fb::lua::load("scripts/common/attack.lua");
 
+        async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();
             for (auto map : maps)
             {

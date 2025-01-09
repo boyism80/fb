@@ -2,31 +2,28 @@
 
 using namespace fb::lua;
 
-context* fb::lua::get()
+context* fb::lua::new_context()
 {
-    auto& main = container::ist().get();
-    return main.pop();
+    auto& ist = context_pool::ist();
+    return ist.pop();
 }
 
 context* fb::lua::get(lua_State* ctx)
 {
-    auto& main = container::ist().get();
-    return main.get(*ctx);
+    auto& ist = context_pool::ist();
+    return ist.get(*ctx);
 }
 
 void fb::lua::build(const std::string& name, lua_CFunction fn)
 {
-    auto& ist = container::ist();
-    ist.init_fn([name, fn](main& m) {
-        m.build(name, fn);
-    });
-    // lua_register(main::get(), name.c_str(), fn);
+    auto& ist = context_pool::ist();
+    ist.build(name, fn);
 }
 
 void fb::lua::load(const std::string& path)
 {
-    auto& ist = container::ist();
-    ist.load(path);
+    auto& ist = context_pool::ist();
+    ist.load_file(path);
 }
 
 void luable::to_lua(lua_State* ctx) const
@@ -155,7 +152,7 @@ bool context::resume(int argc, bool auto_release)
     if (this->owner == nullptr)
         throw std::runtime_error("this context is not lua thread");
 
-    auto main = static_cast<fb::lua::main*>(this->owner);
+    auto context_pool = static_cast<fb::lua::context_pool*>(this->owner);
     if (this->_state == LUA_PENDING)
         return *this;
 
@@ -174,12 +171,12 @@ bool context::resume(int argc, bool auto_release)
     case LUA_ERRERR:
         fb::logger::fatal("lua error message : {}", this->tostring(-1).c_str());
         lua_pop(*this, 1);
-        main->revoke(*this);
+        context_pool->revoke(*this);
         return false;
 
     default:
         if (auto_release)
-            main->release(*this);
+            context_pool->release(*this);
         return true;
     }
 }
@@ -191,15 +188,15 @@ int context::state() const
 
 void context::release()
 {
-    auto main = static_cast<fb::lua::main*>(this->owner);
+    auto context_pool = static_cast<fb::lua::context_pool*>(this->owner);
     switch (this->_state)
     {
     case LUA_OK:
-        main->release(*this);
+        context_pool->release(*this);
         break;
 
     default:
-        main->revoke(*this);
+        context_pool->revoke(*this);
         break;
     }
 }
@@ -214,21 +211,25 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-main::main() :
+context_pool::context_pool() :
     context(::luaL_newstate())
 {
     luaL_openlibs(*this);
 }
 
-main::~main()
+context_pool::~context_pool()
 {
+    auto _ = std::lock_guard(this->_mutex);
+
     this->idle.clear();
     this->busy.clear();
     lua_close(*this);
 }
 
-context* main::get(lua_State& ctx)
+context* context_pool::get(lua_State& ctx)
 {
+    auto _ = std::lock_guard(this->_mutex);
+
     auto found = this->busy.find(&ctx);
     if (found == this->busy.end())
         return nullptr;
@@ -236,7 +237,7 @@ context* main::get(lua_State& ctx)
     return found->second.get();
 }
 
-bool main::load_file(const std::string& path)
+bool context_pool::load_file(const std::string& path)
 {
     if (path.empty())
         return true;
@@ -248,7 +249,7 @@ bool main::load_file(const std::string& path)
     void*      params[] = {this, (void*)path.c_str()};
     const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* params) {
         auto casted = (void**)(params);
-        auto ist    = (main*)casted[0];
+        auto ist    = (context_pool*)casted[0];
         auto path   = (const char*)casted[1];
         if (ist->_bytecodes.contains(path) == false)
             ist->_bytecodes[path] = std::vector<char>();
@@ -263,8 +264,10 @@ bool main::load_file(const std::string& path)
     return true;
 }
 
-context* main::pop()
+context* context_pool::pop()
 {
+    auto _ = std::lock_guard(this->_mutex);
+
     if (this->idle.empty() == false)
     {
         auto& ctx = this->idle.begin()->second;
@@ -290,8 +293,10 @@ context* main::pop()
     }
 }
 
-context& main::release(context& ctx)
+context& context_pool::release(context& ctx)
 {
+    auto _ = std::lock_guard(this->_mutex);
+
     if (this->busy.contains(ctx) == false)
         return ctx;
 
@@ -310,13 +315,26 @@ context& main::release(context& ctx)
     return *this->idle[key];
 }
 
-void main::revoke(context& ctx)
+void context_pool::revoke(context& ctx)
 {
+    auto _ = std::lock_guard(this->_mutex);
+
     auto i = this->busy.find(ctx);
     if (i == this->busy.end())
         return;
 
     this->busy.erase(i);
+}
+
+fb::lua::context_pool& fb::lua::context_pool::ist()
+{
+    static std::once_flag                _flag;
+    static std::unique_ptr<context_pool> _ist;
+
+    std::call_once(_flag, [] {
+        _ist = std::unique_ptr<context_pool>(new context_pool());
+    });
+    return *_ist;
 }
 
 thread::thread(context& owner) :
@@ -332,59 +350,4 @@ thread::thread(thread&& ctx) :
 thread::~thread()
 {
     luaL_unref(this->_ctx, LUA_REGISTRYINDEX, this->ref);
-}
-
-fb::lua::container::container()
-{
-    this->init_fn([this](main& m) {
-        for (auto& path : this->_scripts)
-            m.load_file(path);
-    });
-}
-
-fb::lua::container::~container()
-{ }
-
-main& fb::lua::container::get()
-{
-    std::lock_guard gd(this->_mutex);
-
-    auto id = (uint32_t)std::hash<std::thread::id>{}(std::this_thread::get_id());
-    if (this->_mains.contains(id) == false)
-    {
-        auto ptr = std::unique_ptr<main>(new main());
-        for (auto& fn : this->_init_funcs)
-        {
-            fn(*ptr);
-        }
-        this->_mains.insert({id, std::move(ptr)});
-    }
-
-    return *this->_mains[id];
-}
-
-void fb::lua::container::init_fn(init_func&& fn)
-{
-    this->_init_funcs.push_back(fn);
-}
-
-void fb::lua::container::load(const std::string& path)
-{
-    std::lock_guard gd(this->_mutex);
-
-    if (path.empty())
-        return;
-
-    this->_scripts.push_back(path);
-}
-
-fb::lua::container& fb::lua::container::ist()
-{
-    static std::once_flag             _flag;
-    static std::unique_ptr<container> _ist;
-
-    std::call_once(_flag, [] {
-        _ist = std::unique_ptr<container>(new container());
-    });
-    return *_ist;
 }

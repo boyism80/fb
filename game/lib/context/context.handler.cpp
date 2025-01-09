@@ -919,7 +919,7 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    auto thread = lua::get();
+    auto thread = lua::new_context();
     if (thread == nullptr)
         co_return true;
 

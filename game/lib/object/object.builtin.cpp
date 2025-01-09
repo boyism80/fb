@@ -14,7 +14,6 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"position",            object::builtin_position},
 {"direction",           object::builtin_direction},
 {"chat",                object::builtin_chat},
-{"message",             object::builtin_message},
 {"buff",                object::builtin_buff},
 {"isbuff",              object::builtin_isbuff},
 {"unbuff",              object::builtin_unbuff},
@@ -131,13 +130,22 @@ int object::builtin_sound(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
+    auto sound = static_cast<SOUND>(thread->tointeger(2));
+    if (obj->thread() == ctx->threads.current())
+    {
+        obj->sound(sound);
+        return 0;
+    }
+    else
+    {
+        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            obj->sound(sound);
+            thread->resume(0);
+            co_return;
+        });
 
-    auto sound = thread->tointeger(2);
-
-    ctx->send(*obj, fb::protocol::game::response::sound(*obj, SOUND(sound)), context::scope::PIVOT);
-    thread->pushinteger(-1);
-    return 1;
+        return thread->yield(0);
+    }
 }
 
 int object::builtin_position(lua_State* lua)
@@ -156,53 +164,59 @@ int object::builtin_position(lua_State* lua)
 
     if (argc == 1)
     {
-        thread->pushinteger(obj->_position.x);
-        thread->pushinteger(obj->_position.y);
-        return 2;
-    }
-
-    uint16_t x, y;
-    if (thread->is_table(2))
-    {
-        thread->rawgeti(2, 1);
-        x = (uint16_t)thread->tointeger(-1);
-        thread->remove(-1);
-
-        thread->rawgeti(2, 2);
-        y = (uint16_t)thread->tointeger(-1);
-        thread->remove(-1);
-    }
-    else
-    {
-        x = (uint16_t)thread->tointeger(2);
-        y = (uint16_t)thread->tointeger(3);
-    }
-
-    obj->position(x, y, true);
-
-    if (obj->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto map = obj->map();
-        if (map == nullptr)
-            return 0;
-
-        for (auto x : map->nears(obj->position(), OBJECT_TYPE::CHARACTER))
+        if (obj->thread() == ctx->threads.current())
         {
-            obj->update_external(*x, false);
+            thread->pushinteger(obj->_position.x);
+            thread->pushinteger(obj->_position.y);
+            return 2;
+        }
+        else
+        {
+            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+                thread->pushinteger(obj->_position.x);
+                thread->pushinteger(obj->_position.y);
+                thread->resume(2);
+                co_return;
+            });
+            return thread->yield(2);
         }
     }
+
+    static auto static_func = [](fb::lua::context* thread, object* obj) {
+        uint16_t x, y;
+        if (thread->is_table(2))
+        {
+            thread->rawgeti(2, 1);
+            x = (uint16_t)thread->tointeger(-1);
+            thread->remove(-1);
+
+            thread->rawgeti(2, 2);
+            y = (uint16_t)thread->tointeger(-1);
+            thread->remove(-1);
+        }
+        else
+        {
+            x = (uint16_t)thread->tointeger(2);
+            y = (uint16_t)thread->tointeger(3);
+        }
+
+        obj->position(x, y, true);
+    };
+    if (obj->thread() == ctx->threads.current())
+    {
+        static_func(thread, obj);
+        return 0;
+    }
     else
     {
-        ctx->send(*obj, fb::protocol::game::response::update(*obj), context::scope::PIVOT);
-    }
+        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            static_func(thread, obj);
+            thread->resume(0);
+            co_return;
+        });
 
-    if (obj->is(OBJECT_TYPE::CHARACTER))
-    {
-        auto ch = static_cast<character*>(obj);
-        ch->update_position();
+        return thread->yield(0);
     }
-
-    return 0;
 }
 
 int object::builtin_direction(lua_State* lua)
@@ -217,21 +231,40 @@ int object::builtin_direction(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
     if (argc == 1)
     {
-        thread->pushinteger(obj->_direction);
-        return 1;
+        if (obj->thread() == ctx->threads.current())
+        {
+            thread->pushinteger(obj->_direction);
+            return 1;
+        }
+        else
+        {
+            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+                thread->pushinteger(obj->_direction);
+                thread->resume(1);
+                co_return;
+            });
+            return thread->yield(1);
+        }
     }
     else
     {
-        auto direction = DIRECTION(thread->tointeger(2));
-        auto ctx       = thread->env<fb::game::context>("context");
-
-        std::ignore = obj->direction(direction);
-        ctx->send(*obj, fb::protocol::game::response::direction(*obj), context::scope::PIVOT);
-        return 0;
+        auto direction = static_cast<DIRECTION>(thread->tointeger(2));
+        if (obj->thread() == ctx->threads.current())
+        {
+            obj->direction(direction);
+            return 0;
+        }
+        else
+        {
+            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+                obj->direction(direction);
+                thread->resume(0);
+                co_return;
+            });
+            return thread->yield(0);
+        }
     }
 }
 
@@ -247,55 +280,42 @@ int object::builtin_chat(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    if (obj->is(OBJECT_TYPE::ITEM))
-        return 0;
-
-    obj->assert_thread();
-
     auto message  = thread->tostring(2);
     auto type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
     auto decorate = argc < 4 ? true : thread->toboolean(4);
 
-    std::stringstream sstream;
-    if (decorate)
-    {
-        if (type == CHAT_TYPE::SHOUT)
-            sstream << obj->name() << "! " << message;
+    static auto static_func = [](const std::string& message, CHAT_TYPE type, bool decorate, object* obj) {
+        auto sstream = std::stringstream{};
+        if (decorate)
+        {
+            if (type == CHAT_TYPE::SHOUT)
+                sstream << obj->name() << "! " << message;
+            else
+                sstream << obj->name() << ": " << message;
+        }
         else
-            sstream << obj->name() << ": " << message;
+        {
+            sstream << message;
+        }
+
+        if (obj->is(OBJECT_TYPE::ITEM) == false)
+            obj->chat(message, type);
+    };
+
+    if (obj->thread() == ctx->threads.current())
+    {
+        static_func(message, type, decorate, obj);
+        return 0;
     }
     else
     {
-        sstream << message;
+        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            static_func(message, type, decorate, obj);
+            thread->resume(0);
+            co_return;
+        });
+        return thread->yield(0);
     }
-
-    obj->chat(message, type);
-    return 0;
-}
-
-int object::builtin_message(lua_State* lua)
-{
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto ctx  = thread->env<fb::game::context>("context");
-    auto argc = thread->argc();
-    auto obj  = thread->touserdata<object>(1);
-    if (obj == nullptr)
-        return 0;
-
-    obj->assert_thread();
-
-    auto message = thread->tostring(2);
-    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
-
-    if (obj->is(OBJECT_TYPE::CHARACTER))
-    {
-        obj->send(fb::protocol::game::response::message(message, type));
-    }
-
-    return 0;
 }
 
 int object::builtin_buff(lua_State* lua)
@@ -411,15 +431,21 @@ int object::builtin_effect(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    auto effect = (uint8_t)thread->tointeger(2);
-
-    if (obj->is(OBJECT_TYPE::ITEM) == false)
+    auto effect = static_cast<uint8_t>(thread->tointeger(2));
+    if (obj->thread() == ctx->threads.current())
     {
-        ctx->send(*obj, fb::protocol::game::response::effect(*obj, effect), context::scope::PIVOT);
+        obj->effect(effect);
+        return 0;
     }
-    return 0;
+    else
+    {
+        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            obj->effect(effect);
+            thread->resume(0);
+            co_return;
+        });
+        return thread->yield(0);
+    }
 }
 
 int object::builtin_map(lua_State* lua)
@@ -436,44 +462,64 @@ int object::builtin_map(lua_State* lua)
 
     if (argc == 1)
     {
-        auto map = obj->map();
-        if (map == nullptr)
-            thread->pushnil();
-        else
-            thread->pushobject(map);
-        return 1;
-    }
-
-    static auto fn = [](fb::game::context*                  context,
-                        fb::lua::context*                   thread,
-                        fb::game::object*                   obj,
-                        fb::game::map*                      map,
-                        std::optional<fb::model::point16_t> position) -> async::task<void> {
-        try
+        if (obj->thread() == ctx->threads.current())
         {
-            if (position.has_value())
-            {
-                if (co_await obj->map(map, position.value()) == false)
-                    throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-            }
+            auto map = obj->map();
+            if (map == nullptr)
+                thread->pushnil();
             else
-            {
-                if (co_await obj->map(map) == false)
-                    throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-            }
-
-            thread->pushnil();
+                thread->pushobject(map);
+            return 1;
         }
-        catch (std::exception& e)
+        else
         {
-            thread->pushstring(e.what());
-        }
+            static auto static_func = [](fb::game::context* context, fb::lua::context* thread, object* obj) {
+                auto map = obj->map();
+                if (map == nullptr)
+                    thread->pushnil();
+                else
+                    thread->pushobject(map);
+                thread->resume(1);
+            };
 
-        thread->resume(1);
-    };
+            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+                static_func(ctx, thread, obj);
+                co_return;
+            });
+            return thread->yield(1);
+        }
+    }
 
     try
     {
+        static auto static_func = [](fb::game::context*                  context,
+                                     fb::lua::context*                   thread,
+                                     fb::game::object*                   obj,
+                                     fb::game::map*                      map,
+                                     std::optional<fb::model::point16_t> position) -> async::task<void> {
+            try
+            {
+                if (position.has_value())
+                {
+                    if (co_await obj->map(map, position.value()) == false)
+                        throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+                }
+                else
+                {
+                    if (co_await obj->map(map) == false)
+                        throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+                }
+
+                thread->pushnil();
+            }
+            catch (std::exception& e)
+            {
+                thread->pushstring(e.what());
+            }
+
+            thread->resume(1);
+        };
+
         fb::game::map* map = nullptr;
         if (thread->is_obj(2))
         {
@@ -523,7 +569,7 @@ int object::builtin_map(lua_State* lua)
         }
 
         ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            co_await fn(ctx, thread, obj, map, position);
+            co_await static_func(ctx, thread, obj, map, position);
         });
         return thread->yield(1);
     }

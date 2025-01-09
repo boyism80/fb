@@ -125,7 +125,7 @@ void context::on_unbuff(object& me, buff& buff)
     if (buff.model.uncast.empty())
         return;
 
-    auto thread = lua::get();
+    auto thread = lua::new_context();
     if (thread == nullptr)
         return;
     thread->from(buff.model.uncast.c_str()).func("on_uncast").pushobject(me).pushobject(buff.model).resume(2);
