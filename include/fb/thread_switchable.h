@@ -50,6 +50,13 @@ public:
      * @brief      { function_description }
      */
     virtual void assert_thread() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual bool matched_thread() const;
 };
 
 } // namespace fb

@@ -20,3 +20,8 @@ void fb::thread_switchable::assert_thread() const
         throw std::runtime_error("active thread not matched");
 #endif
 }
+
+bool fb::thread_switchable::matched_thread() const
+{
+    return std::this_thread::get_id() == this->thread()->id();
+}

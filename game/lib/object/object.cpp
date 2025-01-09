@@ -528,7 +528,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
                 for (auto x : this->_map->nears(this->_position))
                 {
                     if (x != this)
-                        x->hide(*this);
+                        x->hide(*this, destroy_type);
                 }
             }
 

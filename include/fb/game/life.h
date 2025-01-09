@@ -351,7 +351,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hp_inc(lua_State* lua);
+    static int builtin_heal(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -360,7 +360,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hp_dec(lua_State* lua);
+    static int builtin_damage(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -369,7 +369,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp_inc(lua_State* lua);
+    static int builtin_mp_up(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -378,7 +378,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp_dec(lua_State* lua);
+    static int builtin_mp_down(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -397,15 +397,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_spell(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_damage(lua_State* lua);
 
     /**
      * @brief      { function_description }

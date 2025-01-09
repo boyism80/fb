@@ -7,15 +7,14 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"__eq",                fb::game::object::builtin_eq},
 {"hp",                  fb::game::life::builtin_hp},
 {"mp",                  fb::game::life::builtin_mp},
-{"hp_inc",              fb::game::life::builtin_hp_inc},
-{"mp_inc",              fb::game::life::builtin_mp_inc},
-{"hp_dec",              fb::game::life::builtin_hp_dec},
-{"mp_dec",              fb::game::life::builtin_mp_dec},
+{"heal",                fb::game::life::builtin_heal},
+{"damage",              fb::game::life::builtin_damage},
+{"mp_up",               fb::game::life::builtin_mp_up},
+{"mp_down",             fb::game::life::builtin_mp_down},
 {"base_hp",             fb::game::life::builtin_base_hp},
 {"base_mp",             fb::game::life::builtin_base_mp},
 {"action",              fb::game::life::builtin_action},
 {"spell",               fb::game::life::builtin_spell},
-{"damage",              fb::game::life::builtin_damage},
 {"cast",                fb::game::life::builtin_cast},
 {"cc",                  fb::game::life::builtin_cc},
 {"add_cc",              fb::game::life::builtin_add_cc},
@@ -106,7 +105,7 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     return 1;
 }
 
-int fb::game::life::builtin_hp_inc(lua_State* lua)
+int fb::game::life::builtin_heal(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -114,17 +113,27 @@ int fb::game::life::builtin_hp_inc(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::life>(1);
-    if (object == nullptr)
+    auto obj     = thread->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
         return 0;
 
     auto value = (uint32_t)thread->tointeger(2);
-
-    object->heal(value);
-    return 0;
+    if (obj->matched_thread())
+    {
+        obj->heal(value);
+        return 0;
+    }
+    else
+    {
+        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            obj->heal(value);
+            co_return;
+        });
+        return thread->yield(0);
+    }
 }
 
-int fb::game::life::builtin_hp_dec(lua_State* lua)
+int fb::game::life::builtin_damage(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -132,17 +141,29 @@ int fb::game::life::builtin_hp_dec(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::life>(1);
-    if (object == nullptr)
+    auto obj     = thread->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
         return 0;
 
-    auto value = (uint32_t)thread->tointeger(2);
-
-    object->damage(value);
-    return 0;
+    auto value    = (uint32_t)thread->tointeger(2);
+    auto from     = argc >= 3 ? thread->touserdata<fb::game::object>(3) : nullptr;
+    auto critical = argc >= 4 ? thread->toboolean(4) : false;
+    if (obj->matched_thread())
+    {
+        obj->damage(value, from, critical);
+        return 0;
+    }
+    else
+    {
+        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            obj->damage(value, from, critical);
+            co_return;
+        });
+        return thread->yield(0);
+    }
 }
 
-int fb::game::life::builtin_mp_inc(lua_State* lua)
+int fb::game::life::builtin_mp_up(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -150,17 +171,27 @@ int fb::game::life::builtin_mp_inc(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::life>(1);
-    if (object == nullptr)
+    auto obj     = thread->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
         return 0;
 
     auto value = (uint32_t)thread->tointeger(2);
-
-    object->mp_up(value);
-    return 0;
+    if (obj->matched_thread())
+    {
+        obj->mp_up(value);
+        return 0;
+    }
+    else
+    {
+        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            obj->mp_up(value);
+            co_return;
+        });
+        return thread->yield(0);
+    }
 }
 
-int fb::game::life::builtin_mp_dec(lua_State* lua)
+int fb::game::life::builtin_mp_down(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -168,14 +199,24 @@ int fb::game::life::builtin_mp_dec(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto object  = thread->touserdata<fb::game::life>(1);
-    if (object == nullptr)
+    auto obj     = thread->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
         return 0;
 
     auto value = (uint32_t)thread->tointeger(2);
-
-    object->mp_down(value);
-    return 0;
+    if (obj->matched_thread())
+    {
+        obj->mp_down(value);
+        return 0;
+    }
+    else
+    {
+        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            obj->mp_down(value);
+            co_return;
+        });
+        return thread->yield(0);
+    }
 }
 
 int fb::game::life::builtin_action(lua_State* lua)
@@ -186,17 +227,14 @@ int fb::game::life::builtin_action(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto life    = thread->touserdata<fb::game::life>(1);
-    if (life == nullptr)
+    auto obj     = thread->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
         return 0;
 
     auto action   = thread->tointeger(2);
     auto duration = argc < 3 ? static_cast<int>(DURATION::SPELL) : thread->tointeger(3);
     auto sound    = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
-
-    context->send(*life,
-                  fb::protocol::game::response::action{*life, ACTION(action), DURATION(duration), sound},
-                  context::scope::PIVOT);
+    obj->action(ACTION(action), DURATION(duration), sound);
     return 0;
 }
 
@@ -215,32 +253,6 @@ int fb::game::life::builtin_spell(lua_State* lua)
     auto index = (int)thread->tointeger(2);
 
     thread->pushobject(life->spells[index]);
-    return 1;
-}
-
-int fb::game::life::builtin_damage(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto me      = thread->touserdata<fb::game::life>(1);
-    if (me == nullptr)
-        return 0;
-
-    auto you = thread->touserdata<fb::game::life>(2);
-    if (you == nullptr)
-        return 0;
-
-    auto map = me->map();
-    if (map == nullptr || map->objects.contains(*you) == false)
-        return 0;
-
-    auto damage = (uint32_t)thread->tointeger(3);
-    me->damage(damage, you, false);
-    thread->pushboolean(you->visible());
     return 1;
 }
 

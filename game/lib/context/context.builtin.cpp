@@ -128,7 +128,7 @@ int fb::game::context::builtin_name2ch(lua_State* lua)
         return 1;
     }
 
-    if (ch->thread() == context->threads.current())
+    if (ch->matched_thread())
     {
         thread->pushobject(ch);
         return 1;
