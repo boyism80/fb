@@ -239,7 +239,7 @@ namespace Internal.Controllers
                 Error = (uint)ErrorCode.None
             };
 
-            _rabbitMqService.Publish(response, "amq.direct", $"fb.game.global");
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.global");
             return response;
         }
     }
