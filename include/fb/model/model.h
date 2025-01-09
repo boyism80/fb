@@ -395,6 +395,44 @@ inline const char* enum_tostring<BOARD_BUTTON_ENABLE>(BOARD_BUTTON_ENABLE k)
     return i->second;
 }
 
+enum class BROADCAST_TYPE
+{
+    WORLD = 1, 
+    GLOBAL = 2
+}; // end of enum 'BROADCAST_TYPE'
+
+template <>
+inline BROADCAST_TYPE enum_parse<BROADCAST_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, BROADCAST_TYPE> enums
+    {
+        { "WORLD", BROADCAST_TYPE::WORLD }, 
+        { "GLOBAL", BROADCAST_TYPE::GLOBAL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<BROADCAST_TYPE>(BROADCAST_TYPE k)
+{
+    static const std::unordered_map<BROADCAST_TYPE, const char*> enums
+    {
+        { BROADCAST_TYPE::WORLD, "WORLD" }, 
+        { BROADCAST_TYPE::GLOBAL, "GLOBAL" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class BUNDLE_TYPE
 {
     NONE = 0, 
@@ -2691,6 +2729,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "BOARD_BUTTON_ENABLE_UP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::WRITE);
     lua_setglobal(lua, "BOARD_BUTTON_ENABLE_WRITE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BROADCAST_TYPE::WORLD);
+    lua_setglobal(lua, "BROADCAST_TYPE_WORLD");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BROADCAST_TYPE::GLOBAL);
+    lua_setglobal(lua, "BROADCAST_TYPE_GLOBAL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::NONE);
     lua_setglobal(lua, "BUNDLE_TYPE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::BUNDLE);

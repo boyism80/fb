@@ -7,6 +7,14 @@ async::task<void> context::handle_amqp_Pong(const internal_resp::Pong& resp)
     co_return;
 }
 
+async::task<void> context::handle_amqp_Broadcast(const internal_resp::Broadcast& resp)
+{
+    if (resp.host == fb::config<uint32_t>("id"))
+        co_return;
+
+    this->on_broadcast(resp);
+}
+
 async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& resp)
 {
     auto ch = this->_shard[resp.name]->names.template lock<character*>([&name = resp.name](auto& names) -> character* {

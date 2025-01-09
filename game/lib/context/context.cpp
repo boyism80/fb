@@ -211,6 +211,7 @@ async::task<void> context::handle_start()
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
     this->bind_amqp("fb.global", &context::handle_amqp_Pong);
+    this->bind_amqp("fb.global", &context::handle_amqp_Broadcast);
     this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
     this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
     this->bind_amqp("fb.clan", &context::handle_amqp_SetClanTitle);
@@ -786,4 +787,33 @@ async::task<bool> context::handle_command(character& ch, const std::string& mess
     }
 
     co_return co_await found->second.fn(ch, parameters);
+}
+
+async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)
+{
+    switch (broadcast_type)
+    {
+    case BROADCAST_TYPE::GLOBAL:
+    {
+        auto&& resp = co_await this->post<internal_reqs::Broadcast, internal_resp::Broadcast>(
+            "internal",
+            "/in-game/broadcast",
+            internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+        this->on_broadcast(resp);
+    }
+    break;
+
+    case BROADCAST_TYPE::WORLD:
+    {
+        this->foreach_ch([message, type](auto& ch) {
+            ch.message(message, type);
+        });
+    }
+    break;
+    }
+}
+
+void context::on_broadcast(const internal_resp::Broadcast& resp)
+{
+    std::ignore = this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
 }

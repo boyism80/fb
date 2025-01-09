@@ -91,6 +91,15 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum BroadcastType
+    {
+        [EnumMember(Value = "WORLD")]
+        World = 1, 
+        [EnumMember(Value = "GLOBAL")]
+        Global = 2
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum BundleType
     {
         [EnumMember(Value = "NONE")]

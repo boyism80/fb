@@ -399,16 +399,24 @@ int fb::game::context::builtin_broadcast(lua_State* lua)
     if (thread == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto text    = thread->tostring(1);
-    auto type    = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(2));
+    auto context    = thread->env<fb::game::context>("context");
+    auto argc       = thread->argc();
+    auto text       = thread->tostring(1);
+    auto type       = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(2));
+    auto broad_type = argc < 3 ? BROADCAST_TYPE::GLOBAL : static_cast<BROADCAST_TYPE>(thread->tointeger(3));
 
-    context->foreach_ch([text, type](auto& ch) -> async::task<void> {
-        ch.message(text, type);
-        co_return;
-    });
-    return 0;
+    if (broad_type == BROADCAST_TYPE::WORLD)
+    {
+        context->broadcast(text, type, broad_type);
+        return 0;
+    }
+    else
+    {
+        async::awaitable_then(context->broadcast(text, type, broad_type), [thread](auto result) {
+            thread->resume(0);
+        });
+        return thread->yield(0);
+    }
 }
 
 int fb::game::context::builtin_assert_alive(lua_State* lua)

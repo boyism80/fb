@@ -183,3 +183,9 @@ table BroadcastClan {
   message: string;
   type: ubyte;
 }
+
+table Broadcast {
+  host: uint;
+  message: string;
+  type: ubyte;
+}

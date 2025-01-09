@@ -220,3 +220,10 @@ table BroadcastClan {
   type: ubyte;
   error: uint;
 }
+
+table Broadcast {
+  host: uint;
+  message: string;
+  type: ubyte;
+  error: uint;
+}

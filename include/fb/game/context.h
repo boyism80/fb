@@ -271,6 +271,13 @@ private:
     void on_leave_group(const internal_resp::LeaveGroup& resp);
 
     /**
+     * @brief      Called on broadcast.
+     *
+     * @param[in]  resp  The response
+     */
+    void on_broadcast(const internal_resp::Broadcast& resp);
+
+    /**
      * @brief      Called on group broadcast.
      *
      * @param[in]  resp  The response
@@ -467,6 +474,19 @@ public:
      * @brief      { function_description }
      */
     void amqp_thread();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  message         The message
+     * @param[in]  type            The type
+     * @param[in]  broadcast_type  The broadcast type
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> broadcast(const std::string& message,
+                                              MESSAGE_TYPE       type,
+                                              BROADCAST_TYPE     broadcast_type);
 
     /**
      * @brief      Creates a group.
@@ -1501,6 +1521,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> handle_amqp_Pong(const internal_resp::Pong& response);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_Broadcast(const internal_resp::Broadcast& response);
 
     /**
      * @brief      { function_description }
