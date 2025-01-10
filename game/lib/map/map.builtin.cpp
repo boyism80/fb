@@ -87,10 +87,12 @@ int fb::game::map::builtin_objects(lua_State* lua)
     thread->new_table();
     const auto& objects = map->objects;
 
-    for (int i = 0; i < objects.size(); i++)
+    int i = 0;
+    for (auto& [_, obj] : map->objects)
     {
-        thread->pushobject(map->objects[i]);
+        thread->pushobject(obj);
         lua_rawseti(lua, -2, i + 1);
+        i++;
     }
 
     return 1;
