@@ -12,7 +12,7 @@ namespace Http.Service
 
         public Redis(RedisHost host)
         {
-            _redis = ConnectionMultiplexer.Connect($"{host.Host}:{host.Port}");
+            _redis = ConnectionMultiplexer.Connect($"{host.Host}:{host.Port},abortConnect=false,connectTimeout=30000,responseTimeout=30000");
 
             LoadScriptFiles(Path.Combine("Redis", "Script"));
         }
