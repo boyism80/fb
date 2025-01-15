@@ -18,17 +18,21 @@ async::task<void> update_internal::serialize(fb::stream_writer<big_endian>& writ
 
     if (ENUM_IN(this->level, STATE_LEVEL::BASED))
     {
+        auto strength     = (uint16_t)this->ch.strength() + (uint16_t)this->ch.buff_str();
+        auto intelligence = (uint16_t)this->ch.intelligence() + (uint16_t)this->ch.buff_int();
+        auto dexterity    = (uint16_t)this->ch.dexterity() + (uint16_t)this->ch.buff_dex();
+
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.nation()));   // nation
         writer.write<uint8_t>(static_cast<uint8_t>(this->ch.creature())); // creature
         writer.write<uint8_t>(0x00);                                      // Unknown (clan?)
         writer.write<uint8_t>(this->ch.level());                          // level
         writer.write<uint32_t>(this->ch.base_hp());                       // base hp
         writer.write<uint32_t>(this->ch.base_mp());                       // base mp
-        writer.write<uint8_t>(this->ch.strength());
-        writer.write<uint8_t>(this->ch.intelligence());
+        writer.write<uint8_t>(std::min<uint16_t>(255, strength));
+        writer.write<uint8_t>(std::min<uint16_t>(255, intelligence));
         writer.write<uint8_t>(0x03);
         writer.write<uint8_t>(0x03);
-        writer.write<uint8_t>(this->ch.dexteritry());
+        writer.write<uint8_t>(std::min<uint16_t>(255, dexterity));
         writer.write<uint8_t>(0x03);
         writer.write<uint32_t>(0x00);
         writer.write<uint8_t>(0x00);
@@ -76,7 +80,7 @@ async::task<void> update_internal::deserialize(fb::stream_reader<big_endian>& re
         this->ch_intelligence = reader.read<uint8_t>();
         reader.read<uint8_t>();
         reader.read<uint8_t>();
-        this->ch_dexteritry = reader.read<uint8_t>();
+        this->ch_dexterity = reader.read<uint8_t>();
         reader.read<uint8_t>();
         reader.read<uint32_t>();
         reader.read<uint8_t>();

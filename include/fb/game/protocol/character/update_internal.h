@@ -28,7 +28,7 @@ public:
     uint32_t    ch_base_mp       = 0;
     uint8_t     ch_strength      = 0;
     uint8_t     ch_intelligence  = 0;
-    uint8_t     ch_dexteritry    = 0;
+    uint8_t     ch_dexterity    = 0;
     uint32_t    ch_hp            = 0;
     uint32_t    ch_mp            = 0;
     uint32_t    ch_exp           = 0;

@@ -188,6 +188,8 @@ void fb::game::item::assert_thread() const
 {
     if (this->_owner != nullptr)
         this->_owner->assert_thread();
+    else if (this->_map == nullptr)
+        return;
     else
         object::assert_thread();
 }

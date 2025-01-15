@@ -918,7 +918,7 @@ enum class DSL
     sex = 2, 
     strength = 3, 
     intelligence = 4, 
-    dexteritry = 5, 
+    dexterity = 5, 
     promotion = 6, 
     class_t = 7, 
     admin = 8, 
@@ -938,7 +938,7 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "sex", DSL::sex }, 
         { "strength", DSL::strength }, 
         { "intelligence", DSL::intelligence }, 
-        { "dexteritry", DSL::dexteritry }, 
+        { "dexterity", DSL::dexterity }, 
         { "promotion", DSL::promotion }, 
         { "class_t", DSL::class_t }, 
         { "admin", DSL::admin }, 
@@ -965,7 +965,7 @@ inline const char* enum_tostring<DSL>(DSL k)
         { DSL::sex, "sex" }, 
         { DSL::strength, "strength" }, 
         { DSL::intelligence, "intelligence" }, 
-        { DSL::dexteritry, "dexteritry" }, 
+        { DSL::dexterity, "dexterity" }, 
         { DSL::promotion, "promotion" }, 
         { DSL::class_t, "class_t" }, 
         { DSL::admin, "admin" }, 
@@ -2827,8 +2827,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DSL_strength");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::intelligence);
     lua_setglobal(lua, "DSL_intelligence");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::dexteritry);
-    lua_setglobal(lua, "DSL_dexteritry");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::dexterity);
+    lua_setglobal(lua, "DSL_dexterity");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::promotion);
     lua_setglobal(lua, "DSL_promotion");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::class_t);
@@ -3318,7 +3318,7 @@ public:
     class admin;
     class area;
     class class_t;
-    class dexteritry;
+    class dexterity;
     class intelligence;
     class item;
     class level;
@@ -3429,26 +3429,26 @@ public:
 };
 
 
-class fb::model::dsl::dexteritry
+class fb::model::dsl::dexterity
 {
 public:
     const uint8_t value;
 
 public:
-    dexteritry(uint8_t value) : 
+    dexterity(uint8_t value) : 
         value(value)
     { }
-    dexteritry(const Json::Value& json) : 
+    dexterity(const Json::Value& json) : 
         value(fb::model::build<uint8_t>(json[0]))
     { }
-    dexteritry(const std::vector<std::any>& parameters) : 
+    dexterity(const std::vector<std::any>& parameters) : 
         value(any_cast<uint8_t>(parameters[0]))
     { }
 
 public:
     fb::model::dsl to_dsl()
     {
-        return fb::model::dsl(fb::model::enum_value::DSL::dexteritry, {value});
+        return fb::model::dsl(fb::model::enum_value::DSL::dexterity, {value});
     }
 };
 
@@ -3712,7 +3712,7 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
         { fb::model::enum_value::DSL::admin, [](const Json::Value& json) { return fb::model::dsl::admin(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::area, [](const Json::Value& json) { return fb::model::dsl::area(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::class_t, [](const Json::Value& json) { return fb::model::dsl::class_t(json).to_dsl().params; }},
-        { fb::model::enum_value::DSL::dexteritry, [](const Json::Value& json) { return fb::model::dsl::dexteritry(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::dexterity, [](const Json::Value& json) { return fb::model::dsl::dexterity(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::intelligence, [](const Json::Value& json) { return fb::model::dsl::intelligence(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }},
@@ -3745,7 +3745,7 @@ DECLARE_ABILITY_FIELDS
 public:
     const fb::model::enum_value::CLASS parent;
     const uint8_t level;
-    const uint8_t dexteritry;
+    const uint8_t dexterity;
     const uint8_t intelligence;
     const uint8_t strength;
     const uint32_t exp;
@@ -3764,7 +3764,7 @@ DECLARE_ABILITY_CONSTRUCTOR
 #endif
         parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
         level(fb::model::build<uint8_t>(json["level"])),
-        dexteritry(fb::model::build<uint8_t>(json["dexteritry"])),
+        dexterity(fb::model::build<uint8_t>(json["dexterity"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
         exp(fb::model::build<uint32_t>(json["exp"])),
@@ -4861,7 +4861,7 @@ public:
     const uint8_t damage;
     const uint8_t strength;
     const uint8_t intelligence;
-    const uint8_t dexteritry;
+    const uint8_t dexterity;
     const uint32_t base_hp;
     const uint32_t base_mp;
     const float hp_percentage;
@@ -4885,7 +4885,7 @@ public:
         damage(fb::model::build<uint8_t>(json["damage"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
-        dexteritry(fb::model::build<uint8_t>(json["dexteritry"])),
+        dexterity(fb::model::build<uint8_t>(json["dexterity"])),
         base_hp(fb::model::build<uint32_t>(json["base_hp"])),
         base_mp(fb::model::build<uint32_t>(json["base_mp"])),
         hp_percentage(fb::model::build<float>(json["hp_percentage"])),

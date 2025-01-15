@@ -445,7 +445,7 @@ bool character::level_up()
     auto& ability = this->context.model.ability[this->_class][this->_level];
     this->strength_up(ability.strength);
     this->intelligence_up(ability.intelligence);
-    this->dexteritry_up(ability.dexteritry);
+    this->dexterity_up(ability.dexterity);
     this->base_hp_up(ability.hp + std::rand() % 10);
     this->base_mp_up(ability.mp + std::rand() % 10);
 
@@ -542,6 +542,7 @@ void character::strength(uint8_t value)
     this->assert_thread();
 
     this->_strength = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 void character::strength_up(uint8_t value)
@@ -549,6 +550,7 @@ void character::strength_up(uint8_t value)
     this->assert_thread();
 
     this->_strength += value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 uint8_t character::intelligence() const
@@ -563,6 +565,7 @@ void character::intelligence(uint8_t value)
     this->assert_thread();
 
     this->_intelligence = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 void character::intelligence_up(uint8_t value)
@@ -570,27 +573,75 @@ void character::intelligence_up(uint8_t value)
     this->assert_thread();
 
     this->_intelligence += value;
+    this->update(STATE_LEVEL::BASED);
 }
 
-uint8_t character::dexteritry() const
+uint8_t character::dexterity() const
 {
     this->assert_thread();
 
-    return this->_dexteritry;
+    return this->_dexterity;
 }
 
-void character::dexteritry(uint8_t value)
+void character::dexterity(uint8_t value)
 {
     this->assert_thread();
 
-    this->_dexteritry = value;
+    this->_dexterity = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
-void character::dexteritry_up(uint8_t value)
+void character::dexterity_up(uint8_t value)
 {
     this->assert_thread();
 
-    this->_dexteritry += value;
+    this->_dexterity += value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+uint8_t character::buff_str() const
+{
+    this->assert_thread();
+
+    return this->_buff_str;
+}
+
+void character::buff_str(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_str = value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+uint8_t character::buff_dex() const
+{
+    this->assert_thread();
+
+    return this->_buff_dex;
+}
+
+void character::buff_dex(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_dex = value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+uint8_t character::buff_int() const
+{
+    this->assert_thread();
+
+    return this->_buff_int;
+}
+
+void character::buff_int(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_int = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 uint32_t character::exp() const
@@ -608,7 +659,7 @@ void character::exp(uint32_t value)
         return;
 
     this->_experience = value;
-    this->update(STATE_LEVEL::LEVEL_MIN);
+    this->update(STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
@@ -689,11 +740,13 @@ uint32_t character::reduce_exp(uint32_t value)
     {
         uint32_t lack     = value - this->_experience;
         this->_experience = 0;
+        this->update(STATE_LEVEL::EXP_MONEY);
         return lack;
     }
     else
     {
         this->_experience -= value;
+        this->update(STATE_LEVEL::EXP_MONEY);
         return 0;
     }
 }
@@ -744,7 +797,7 @@ void character::money(uint32_t value)
     this->assert_thread();
 
     this->_money = value;
-    this->update(STATE_LEVEL::LEVEL_MIN);
+    this->update(STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -1423,10 +1476,10 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         }
         break;
 
-        case DSL::dexteritry:
+        case DSL::dexterity:
         {
-            auto params = fb::model::dsl::dexteritry(dsl.params);
-            if (params.value > this->_dexteritry)
+            auto params = fb::model::dsl::dexterity(dsl.params);
+            if (params.value > this->_dexterity)
                 return false;
         }
         break;

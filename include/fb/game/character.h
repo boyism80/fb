@@ -15,8 +15,17 @@
 
 namespace fb::game {
 
+/**
+ * @brief      This class describes a map of .
+ */
 class map;
+/**
+ * @brief      This class describes a clan.
+ */
 class clan;
+/**
+ * @brief      This class describes a group.
+ */
 class group;
 
 using group_lock        = fb::locker<group>;
@@ -69,10 +78,13 @@ private:
     uint32_t                _experience         = 0;
     uint8_t                 _strength           = 0;
     uint8_t                 _intelligence       = 0;
-    uint8_t                 _dexteritry         = 0;
+    uint8_t                 _dexterity          = 0;
     uint8_t                 _damage             = 0; // 공격수정
     uint8_t                 _hit                = 0; // 명중수정
     uint8_t                 _regenerative       = 0; // 재생력
+    uint8_t                 _buff_str           = 0;
+    uint8_t                 _buff_int           = 0;
+    uint8_t                 _buff_dex           = 0;
     NATION                  _nation             = NATION::GOGURYEO;
     CREATURE                _creature           = CREATURE::DRAGON;
     SEX                     _sex                = SEX::ALL;
@@ -89,7 +101,7 @@ private:
     shared_clan_lock        _clan              = nullptr;
     uint16_t                _unread_mail       = 0;
     bool                    _options[0x0B + 1] = {
-        0,
+        1,
     };
 
 public:
@@ -600,21 +612,63 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t dexteritry() const;
+    uint8_t dexterity() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void dexteritry(uint8_t value);
+    void dexterity(uint8_t value);
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void dexteritry_up(uint8_t value);
+    void dexterity_up(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_str() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_str(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_dex() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_dex(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_int() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_int(uint8_t value);
 
     /**
      * @brief      { function_description }
@@ -1279,7 +1333,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_strength(lua_State* lua);
+    static int builtin_str(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1288,7 +1342,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_dexterity(lua_State* lua);
+    static int builtin_dex(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1297,7 +1351,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_intelligence(lua_State* lua);
+    static int builtin_int(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1559,6 +1613,10 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_message(lua_State* lua);
+
+    static int builtin_buff_str(lua_State* lua);
+    static int builtin_buff_dex(lua_State* lua);
+    static int builtin_buff_int(lua_State* lua);
 };
 
 /**

@@ -133,8 +133,8 @@ std::string fb::game::equipment::tip_message() const
     if (model.strength)
         sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model.strength);
 
-    if (model.dexteritry)
-        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model.dexteritry);
+    if (model.dexterity)
+        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model.dexterity);
 
     if (model.intelligence)
         sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(model.intelligence);

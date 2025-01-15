@@ -12,9 +12,9 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"exp",                 character::builtin_exp},
 {"base_hp",             character::builtin_base_hp},
 {"base_mp",             character::builtin_base_mp},
-{"str",                 character::builtin_strength},
-{"dex",                 character::builtin_dexterity},
-{"int",                 character::builtin_intelligence},
+{"str",                 character::builtin_str},
+{"dex",                 character::builtin_dex},
+{"int",                 character::builtin_int},
 {"item",                character::builtin_item},
 {"items",               character::builtin_items},
 {"dropitem",            character::builtin_item_drop},
@@ -43,6 +43,9 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"send_mail",           character::builtin_send_mail},
 {"assert_state",        character::builtin_assert_state},
 {"message",             character::builtin_message},
+{"buff_str",            character::builtin_buff_str},
+{"buff_dex",            character::builtin_buff_dex},
+{"buff_int",            character::builtin_buff_int},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -195,7 +198,7 @@ int character::builtin_base_mp(lua_State* lua)
     }
 }
 
-int character::builtin_strength(lua_State* lua)
+int character::builtin_str(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -209,18 +212,51 @@ int character::builtin_strength(lua_State* lua)
 
     if (argc == 1)
     {
-        thread->pushinteger(ch->strength());
-        return 1;
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->strength());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->strength());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
     }
     else
     {
-        auto value = (uint8_t)thread->tointeger(2);
-        ch->strength(value);
-        return 0;
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->strength(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->strength(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
     }
 }
 
-int character::builtin_dexterity(lua_State* lua)
+int character::builtin_dex(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -234,18 +270,51 @@ int character::builtin_dexterity(lua_State* lua)
 
     if (argc == 1)
     {
-        thread->pushinteger(ch->dexteritry());
-        return 1;
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->dexterity());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->dexterity());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
     }
     else
     {
-        auto value = (uint8_t)thread->tointeger(2);
-        ch->dexteritry(value);
-        return 0;
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->dexterity(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->dexterity(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
     }
 }
 
-int character::builtin_intelligence(lua_State* lua)
+int character::builtin_int(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -259,14 +328,47 @@ int character::builtin_intelligence(lua_State* lua)
 
     if (argc == 1)
     {
-        thread->pushinteger(ch->intelligence());
-        return 1;
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->intelligence());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->intelligence());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
     }
     else
     {
-        auto value = (uint8_t)thread->tointeger(2);
-        ch->intelligence(value);
-        return 0;
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->intelligence(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->intelligence(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
     }
 }
 
@@ -1308,5 +1410,179 @@ int character::builtin_message(lua_State* lua)
         });
 
         return thread->yield(0);
+    }
+}
+
+int fb::game::character::builtin_buff_str(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->buff_str());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->buff_str());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->buff_str(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->buff_str(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int fb::game::character::builtin_buff_dex(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->buff_dex());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->buff_dex());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->buff_dex(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->buff_dex(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int fb::game::character::builtin_buff_int(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->buff_int());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->buff_int());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->buff_int(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->buff_int(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
     }
 }

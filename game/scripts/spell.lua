@@ -42,6 +42,28 @@ function spell_cast(me, you, spell, mp, sound, effect)
     return true
 end
 
+function buff_cast(me, you, spell, mp, sound, effect)
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    if you:isbuff(spell) then
+        me:message('이미 걸려있습니다.')
+        return false
+    end
+
+    you:effect(effect)
+    you:sound(sound)
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
+        you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
+    end
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    return true
+end
+
 function spell_damage(me, you, spell, damage, mp, sound, effect)
     if not you:is(OBJECT_TYPE_LIFE) then
         return me:message('대상이 올바르지 않습니다.')
@@ -138,7 +160,7 @@ function spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
         return
     end
 
-    if spell_cast(me, me, spell, mp, sound, effect) then
+    if buff_cast(me, me, spell, mp, sound, effect) then
         me:disguise(look)
         me:buff(spell, buff_time)
     end

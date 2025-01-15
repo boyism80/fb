@@ -251,8 +251,8 @@ namespace Fb.Model.EnumValue
         Strength = 3, 
         [EnumMember(Value = "intelligence")]
         Intelligence = 4, 
-        [EnumMember(Value = "dexteritry")]
-        Dexteritry = 5, 
+        [EnumMember(Value = "dexterity")]
+        Dexterity = 5, 
         [EnumMember(Value = "promotion")]
         Promotion = 6, 
         [EnumMember(Value = "class_t")]
@@ -1013,8 +1013,8 @@ namespace Fb.Model
         public Fb.Model.EnumValue.Class Parent { get; set; }
         [JsonProperty("level")]
         public byte Level { get; set; }
-        [JsonProperty("dexteritry")]
-        public byte Dexteritry { get; set; }
+        [JsonProperty("dexterity")]
+        public byte Dexterity { get; set; }
         [JsonProperty("intelligence")]
         public byte Intelligence { get; set; }
         [JsonProperty("strength")]
@@ -1375,8 +1375,8 @@ namespace Fb.Model
         public byte Strength { get; set; }
         [JsonProperty("intelligence")]
         public byte Intelligence { get; set; }
-        [JsonProperty("dexteritry")]
-        public byte Dexteritry { get; set; }
+        [JsonProperty("dexterity")]
+        public byte Dexterity { get; set; }
         [JsonProperty("base_hp")]
         public uint BaseHp { get; set; }
         [JsonProperty("base_mp")]
@@ -1538,14 +1538,14 @@ namespace Fb.Model
                 };
             }
         }
-        public class Dexteritry
+        public class Dexterity
         {
             [JsonProperty("value")]
             public byte Value { get; set; }
 
-            public static Dexteritry Parse(object[] parameters)
+            public static Dexterity Parse(object[] parameters)
             {
-                return new Dexteritry
+                return new Dexterity
                 {
                     Value = (byte)parameters[0]
                 };
@@ -1555,7 +1555,7 @@ namespace Fb.Model
             {
                 return new Dsl
                 {
-                    Header = Fb.Model.EnumValue.Dsl.Dexteritry,
+                    Header = Fb.Model.EnumValue.Dsl.Dexterity,
                     Params = new object[] {Value}
                 };
             }
