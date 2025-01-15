@@ -85,14 +85,14 @@ std::chrono::milliseconds fb::game::buff::time() const
     return this->_time;
 }
 
-void fb::game::buff::time_inc(uint32_t inc)
+void fb::game::buff::time_inc(const std::chrono::steady_clock::duration& inc)
 {
-    this->_time++;
+    this->_time += std::chrono::duration_cast<std::chrono::milliseconds>(inc);
 }
 
-void fb::game::buff::time_dec(uint32_t dec)
+void fb::game::buff::time_dec(const std::chrono::steady_clock::duration& dec)
 {
-    this->_time--;
+    this->_time -= std::chrono::duration_cast<std::chrono::milliseconds>(dec);
 }
 
 fb::game::buffs::buffs(fb::game::object& owner) :
@@ -120,7 +120,11 @@ bool fb::game::buffs::push_back(buff& buff)
 fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
 {
     if (this->contains(model.id))
-        return nullptr;
+    {
+        auto buff = this->at(model.id);
+        buff->time(std::chrono::seconds(seconds));
+        return buff;
+    }
 
     auto& context = this->_owner.context;
     auto  created = context.make<fb::game::buff>(model, seconds);

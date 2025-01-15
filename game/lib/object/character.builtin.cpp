@@ -481,20 +481,43 @@ int character::builtin_disguise(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
+    auto value = std::optional<uint16_t>{};
+    if (argc >= 2 && lua_type(lua, 2) == LUA_TNUMBER)
+        value = static_cast<uint16_t>(thread->tointeger(2));
+
+    static auto static_func = [](fb::lua::context* thread, character* ch, int argc, std::optional<uint16_t> value) {
+        if (argc == 1)
+        {
+            thread->pushinteger(ch->disguise().value());
+            return 1;
+        }
+        else if (value.has_value())
+        {
+            ch->disguise(value.value());
+            return 0;
+        }
+        else
+        {
+            ch->undisguise();
+            return 0;
+        }
+    };
+
+    if (ch->matched_thread())
     {
-        thread->pushinteger(ch->disguise().value());
-        return 1;
-    }
-    else if (luaL_checkinteger(lua, 2))
-    {
-        ch->disguise((uint16_t)thread->tointeger(2));
-        return 0;
+        return static_func(thread, ch, argc, value);
     }
     else
     {
-        ch->undisguise();
-        return 0;
+        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            auto n = static_func(thread, ch, argc, value);
+            if (n == 0)
+                thread->pushnil();
+
+            thread->resume(1);
+            co_return;
+        });
+        return thread->yield(1);
     }
 }
 

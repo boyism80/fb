@@ -150,13 +150,13 @@ public:
      *
      * @param[in]  inc   The increment
      */
-    void time_inc(uint32_t inc);
+    void time_inc(const std::chrono::steady_clock::duration& inc);
     /**
      * @brief      { function_description }
      *
      * @param[in]  dec   The decrement
      */
-    void time_dec(uint32_t dec);
+    void time_dec(const std::chrono::steady_clock::duration& dec);
 };
 
 /**

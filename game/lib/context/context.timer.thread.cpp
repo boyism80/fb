@@ -70,7 +70,7 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
             auto ended_buffs = std::vector<buff*>();
             for (auto& [id, buff] : obj.buffs)
             {
-                buff->time_dec(1);
+                buff->time_dec(1s);
                 if (buff->time() <= 0ms)
                     ended_buffs.push_back(buff);
             }

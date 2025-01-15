@@ -296,8 +296,6 @@ void character::disguise(uint16_t value)
 
     this->_disguise = value;
     this->state(STATE::DISGUISE);
-
-    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 void character::undisguise()
@@ -495,9 +493,6 @@ STATE character::state() const
 void character::state(STATE value)
 {
     this->assert_thread();
-
-    if (this->_state == value)
-        return;
 
     this->_state = value;
     this->update_external(false);

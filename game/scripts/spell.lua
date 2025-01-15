@@ -117,3 +117,33 @@ function spell_heal_near(me, you, spell, hp, mp, sound, effect)
         end
     end
 end
+
+function spell_disguise_look(me, mobs, name)
+    for k, v in pairs(mobs) do
+        if k == name then
+            return v
+        end
+    end
+
+    me:message('변신 가능한 동물')
+    for k, v in pairs(mobs) do
+        me:message(k)
+    end
+    return nil
+end
+
+function spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
+    local look = spell_disguise_look(me, mobs, name)
+    if look == nil then
+        return
+    end
+
+    if spell_cast(me, me, spell, mp, sound, effect) then
+        me:disguise(look)
+        me:buff(spell, buff_time)
+    end
+end
+
+function unbuff(me, spell)
+    me:message(string.format('%s 해제', spell:name()))
+end
