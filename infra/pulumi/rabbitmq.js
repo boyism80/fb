@@ -16,6 +16,9 @@ module.exports = {
                     template: {
                         metadata: { labels: { app: "rabbitmq" } },
                         spec: {
+                            nodeSelector: {
+                                "kubernetes.io/hostname": "ubuntu-1"
+                            },
                             containers: [{
                                 name: "rabbitmq",
                                 image: "rabbitmq:management",
