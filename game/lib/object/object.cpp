@@ -715,6 +715,9 @@ std::vector<object*> object::sight_in(OBJECT_TYPE type) const
     auto result = std::vector<object*>{};
     for (auto obj : this->nears())
     {
+        if (obj->is(type) == false)
+            continue;
+
         if (this->sight(*obj) == false && obj->sight(*this))
             continue;
 

@@ -19,6 +19,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"cc",                  fb::game::life::builtin_cc},
 {"add_cc",              fb::game::life::builtin_add_cc},
 {"remove_cc",           fb::game::life::builtin_remove_cc},
+{"attack",              fb::game::life::builtin_attack},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::life::builtin_hp(lua_State* lua)
@@ -356,4 +357,36 @@ int fb::game::life::builtin_remove_cc(lua_State* lua)
     auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
     me->remove_cc(cc);
     return 0;
+}
+
+int fb::game::life::builtin_attack(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto me      = thread->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    auto duration = argc >= 2 ? static_cast<DURATION>(thread->tointeger(2)) : DURATION::ATTACK;
+    if (me->matched_thread())
+    {
+        me->attack(duration);
+        return 0;
+    }
+    else
+    {
+        static auto static_func = [](fb::lua::context* thread, life* me, DURATION duration) {
+            me->attack(duration);
+            thread->resume(0);
+        };
+        context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
+            static_func(thread, me, duration);
+            co_return;
+        });
+        return thread->yield(0);
+    }
 }

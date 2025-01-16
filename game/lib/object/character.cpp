@@ -163,7 +163,7 @@ void character::admin(bool value)
     this->_admin = value;
 }
 
-void character::attack()
+void character::attack(DURATION duration)
 {
     this->assert_thread();
 
@@ -172,7 +172,7 @@ void character::attack()
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
-        life::attack();
+        life::attack(duration);
     }
     catch (std::exception& e)
     {

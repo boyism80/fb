@@ -41,14 +41,9 @@ function on_cast(me, spell)
     end
 
     local direction = me:direction()
-    if lookup(me, front, (direction + 0) % 4) or 
-       lookup(me, front, (direction + 3) % 4) or
-       lookup(me, front, (direction + 1) % 4) then
-
-        if me:isbuff('투명') and front:is(MOB | CHARACTER) then
-            me:unbuff('투명')
-        end
-        me:action(1, 15, 30)
+    if lookup(me, front, (direction + 0) % 4) or lookup(me, front, (direction + 3) % 4) or lookup(me, front, (direction + 1) % 4) then
+        me:attack(14)
+        me:action(ACTION_CAST_SPELL, 20)
         me:message('비영승보를 외웠습니다.')
         front:sound(30)
     end

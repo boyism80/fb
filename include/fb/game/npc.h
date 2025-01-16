@@ -177,6 +177,11 @@ public:
      */
     bool hold_item_count(const fb::game::character& ch, const fb::model::item* item);
 
+    /**
+     * @brief      { function_description }
+     */
+    void assert_thread() const override final;
+
 public:
     /**
      * @brief      { function_description }

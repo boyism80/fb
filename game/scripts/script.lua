@@ -261,7 +261,8 @@ end
 
 function func(me)
 
-    samplee_cc(me)
+    -- samplee_cc(me)
+    me:attack()
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

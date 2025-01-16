@@ -70,7 +70,7 @@ void life::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
         listener->on_dead(*this, from);
 }
 
-void life::attack()
+void life::attack(DURATION duration)
 {
     this->assert_thread();
 
@@ -82,7 +82,7 @@ void life::attack()
 
     auto listener = this->get_listener<life>();
     if (listener != nullptr)
-        listener->on_attack(*this);
+        listener->on_attack(*this, duration);
 }
 
 uint32_t life::hp() const

@@ -245,7 +245,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    void attack() override final;
+    void attack(DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      { function_description }

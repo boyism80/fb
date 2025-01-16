@@ -1745,7 +1745,7 @@ public:
      *
      * @param      me    { parameter_description }
      */
-    void on_attack(life& me) override final;
+    void on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      Called on dead.

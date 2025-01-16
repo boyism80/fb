@@ -206,7 +206,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    void assert_thread() const;
+    void assert_thread() const override final;
 };
 
 /**

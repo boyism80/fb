@@ -3,21 +3,18 @@
 
 using namespace fb::game;
 
-fb::game::npc::npc(fb::game::context& context, const fb::model::npc& model) :
+npc::npc(fb::game::context& context, const fb::model::npc& model) :
     fb::game::object(context, model, initial_params())
 { }
 
-fb::game::npc::npc(const npc& right) :
+npc::npc(const npc& right) :
     object(right)
 { }
 
-fb::game::npc::~npc()
+npc::~npc()
 { }
 
-bool fb::game::npc::buy(fb::game::character&    ch,
-                        const fb::model::item*  item_model,
-                        std::optional<uint16_t> count,
-                        bool                    bought)
+bool npc::buy(fb::game::character& ch, const fb::model::item* item_model, std::optional<uint16_t> count, bool bought)
 {
     this->assert_thread();
 
@@ -101,7 +98,7 @@ bool fb::game::npc::buy(fb::game::character&    ch,
     return false;
 }
 
-bool fb::game::npc::sell(fb::game::character& ch, const fb::model::item* item_model, uint16_t count, bool sold)
+bool npc::sell(fb::game::character& ch, const fb::model::item* item_model, uint16_t count, bool sold)
 {
     this->assert_thread();
 
@@ -164,7 +161,7 @@ bool fb::game::npc::sell(fb::game::character& ch, const fb::model::item* item_mo
     return false;
 }
 
-bool fb::game::npc::repair(fb::game::character& ch, const fb::model::item* item_model, bool done)
+bool npc::repair(fb::game::character& ch, const fb::model::item* item_model, bool done)
 {
     this->assert_thread();
 
@@ -276,7 +273,7 @@ bool fb::game::npc::repair(fb::game::character& ch, const fb::model::item* item_
     return false;
 }
 
-bool fb::game::npc::hold_money(fb::game::character& ch, std::optional<uint32_t> money)
+bool npc::hold_money(fb::game::character& ch, std::optional<uint32_t> money)
 {
     this->assert_thread();
 
@@ -313,7 +310,7 @@ bool fb::game::npc::hold_money(fb::game::character& ch, std::optional<uint32_t> 
     return false;
 }
 
-bool fb::game::npc::return_money(fb::game::character& ch, std::optional<uint32_t> money)
+bool npc::return_money(fb::game::character& ch, std::optional<uint32_t> money)
 {
     this->assert_thread();
 
@@ -350,7 +347,7 @@ bool fb::game::npc::return_money(fb::game::character& ch, std::optional<uint32_t
     return false;
 }
 
-bool fb::game::npc::hold_item(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count)
+bool npc::hold_item(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count)
 {
     this->assert_thread();
 
@@ -407,7 +404,7 @@ bool fb::game::npc::hold_item(fb::game::character& ch, const fb::model::item* it
     return false;
 }
 
-bool fb::game::npc::return_item(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count)
+bool npc::return_item(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count)
 {
     this->assert_thread();
 
@@ -463,7 +460,7 @@ bool fb::game::npc::return_item(fb::game::character& ch, const fb::model::item* 
     return false;
 }
 
-void fb::game::npc::sell_list()
+void npc::sell_list()
 {
     this->assert_thread();
 
@@ -496,7 +493,7 @@ void fb::game::npc::sell_list()
     this->chat(sstream.str());
 }
 
-void fb::game::npc::buy_list()
+void npc::buy_list()
 {
     this->assert_thread();
 
@@ -526,7 +523,7 @@ void fb::game::npc::buy_list()
     this->chat(sstream.str());
 }
 
-void fb::game::npc::sell_price(const fb::model::item* item)
+void npc::sell_price(const fb::model::item* item)
 {
     this->assert_thread();
 
@@ -554,7 +551,7 @@ void fb::game::npc::sell_price(const fb::model::item* item)
     }
 }
 
-void fb::game::npc::buy_price(const fb::model::item* item)
+void npc::buy_price(const fb::model::item* item)
 {
     this->assert_thread();
 
@@ -582,7 +579,7 @@ void fb::game::npc::buy_price(const fb::model::item* item)
     }
 }
 
-bool fb::game::npc::deposited_money(const fb::game::character& ch)
+bool npc::deposited_money(const fb::game::character& ch)
 {
     this->assert_thread();
 
@@ -599,7 +596,7 @@ bool fb::game::npc::deposited_money(const fb::game::character& ch)
     return true;
 }
 
-bool fb::game::npc::rename_weapon(fb::game::character& ch, const fb::model::item* item, const std::string& name)
+bool npc::rename_weapon(fb::game::character& ch, const fb::model::item* item, const std::string& name)
 {
     this->assert_thread();
 
@@ -652,7 +649,7 @@ bool fb::game::npc::rename_weapon(fb::game::character& ch, const fb::model::item
     return false;
 }
 
-bool fb::game::npc::hold_item_list(const fb::game::character& ch)
+bool npc::hold_item_list(const fb::game::character& ch)
 {
     this->assert_thread();
 
@@ -695,7 +692,7 @@ bool fb::game::npc::hold_item_list(const fb::game::character& ch)
     return false;
 }
 
-bool fb::game::npc::hold_item_count(const fb::game::character& ch, const fb::model::item* item)
+bool npc::hold_item_count(const fb::game::character& ch, const fb::model::item* item)
 {
     this->assert_thread();
 
@@ -721,4 +718,12 @@ bool fb::game::npc::hold_item_count(const fb::game::character& ch, const fb::mod
     }
 
     return false;
+}
+
+void npc::assert_thread() const
+{
+    if (this->_map != nullptr)
+        object::assert_thread();
+    else
+        return;
 }

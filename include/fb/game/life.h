@@ -43,7 +43,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    virtual void attack();
+    virtual void attack(DURATION duration = DURATION::ATTACK);
 
     /**
      * @brief      { function_description }
@@ -433,6 +433,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_remove_cc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_attack(lua_State* lua);
 };
 
 /**
@@ -455,7 +464,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_attack(life& me) = 0;
+    virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
 
     /**
      * @brief      Called on dead.

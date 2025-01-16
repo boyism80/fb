@@ -7,11 +7,11 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
     this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
 }
 
-void context::on_attack(life& me)
+void context::on_attack(life& me, DURATION duration)
 {
     static auto PK = false;
 
-    me.action(ACTION::ATTACK, DURATION::ATTACK);
+    me.action(ACTION::ATTACK, duration);
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
         auto* weapon = static_cast<character&>(me).items.weapon();
