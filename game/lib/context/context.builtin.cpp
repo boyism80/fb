@@ -407,7 +407,7 @@ int fb::game::context::builtin_broadcast(lua_State* lua)
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
-        context->broadcast(text, type, broad_type);
+        std::ignore = context->broadcast(text, type, broad_type);
         return 0;
     }
     else
