@@ -63,6 +63,9 @@ module.exports = function () {
                                     },
                                 },
                                 spec: {
+                                    nodeSelector: {
+                                        cpu: "epyc"
+                                    },
                                     containers: [
                                         {
                                             name: "game",

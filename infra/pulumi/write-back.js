@@ -47,6 +47,9 @@ module.exports = {
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
+                            nodeSelector: {
+                                cpu: "epyc"
+                            },
                             containers: [{
                                 name: "write-back",
                                 image: "ghcr.io/boyism80/fb/write-back:latest",
