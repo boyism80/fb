@@ -19,6 +19,7 @@ public:
 
 protected:
     uint32_t      _hp = 0, _mp = 0;
+    uint16_t      _damage_rate   = 1, _skill_damage_rate = 1;
     CROWD_CONTROL _crowd_control = CROWD_CONTROL::NONE;
 
 public:
@@ -307,6 +308,32 @@ public:
      */
     virtual bool calculate_miss(life& you) const;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t damage_rate() const;
+
+    /**
+     * @brief      { function_description }
+     */
+    void damage_rate(uint16_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t skill_damage_rate() const;
+    
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void skill_damage_rate(uint16_t value);
+
 public:
     /**
      * @brief      { function_description }
@@ -442,6 +469,24 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_attack(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_damage_rate(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_skill_damage_rate(lua_State* lua);
 };
 
 /**

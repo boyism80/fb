@@ -20,6 +20,8 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"add_cc",              fb::game::life::builtin_add_cc},
 {"remove_cc",           fb::game::life::builtin_remove_cc},
 {"attack",              fb::game::life::builtin_attack},
+{"damage_rate",         fb::game::life::builtin_damage_rate},
+{"skill_damage_rate",   fb::game::life::builtin_skill_damage_rate},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::life::builtin_hp(lua_State* lua)
@@ -388,5 +390,115 @@ int fb::game::life::builtin_attack(lua_State* lua)
             co_return;
         });
         return thread->yield(0);
+    }
+}
+
+int fb::game::life::builtin_damage_rate(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto me      = thread->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (me->matched_thread())
+        {
+            thread->pushinteger(me->damage_rate());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, life* me) {
+                thread->pushinteger(me->damage_rate());
+                thread->resume(1);
+            };
+            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
+                static_func(thread, me);
+                co_return;
+            });
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        if (me->matched_thread())
+        {
+            me->damage_rate(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, life* me, uint16_t value) {
+                me->damage_rate(value);
+                thread->resume(0);
+            };
+            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
+                static_func(thread, me, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int fb::game::life::builtin_skill_damage_rate(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto me      = thread->touserdata<fb::game::life>(1);
+    if (me == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (me->matched_thread())
+        {
+            thread->pushinteger(me->skill_damage_rate());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, life* me) {
+                thread->pushinteger(me->skill_damage_rate());
+                thread->resume(1);
+            };
+            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
+                static_func(thread, me);
+                co_return;
+            });
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        if (me->matched_thread())
+        {
+            me->skill_damage_rate(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, life* me, uint16_t value) {
+                me->skill_damage_rate(value);
+                thread->resume(0);
+            };
+            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
+                static_func(thread, me, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
     }
 }
