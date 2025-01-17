@@ -9,7 +9,7 @@ RUN cmake ..
 RUN cmake --build . --config Release --parallel
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
-RUN apk add zip unzip
+RUN apt-get install zip unzip -y
 
 WORKDIR /app
 COPY --from=build /app/game/build/app .

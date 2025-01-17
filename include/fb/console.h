@@ -7,7 +7,7 @@
 #include <locale.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include <curses.h>
+#include <ncursesw/curses.h>
 #endif
 #include <iostream>
 #include <stdarg.h>

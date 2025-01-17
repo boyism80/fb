@@ -62,6 +62,7 @@ ELSE()
                                 jsoncpp
                                 z
                                 pthread
+                                crypto
                                 lua
                                 boost_program_options
                                 cpp_redis
