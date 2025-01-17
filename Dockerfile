@@ -9,14 +9,12 @@ RUN ./ExcelTableConverter --dir=/app/resources/table --lang="c++|c#"
 RUN mv output /output
 
 
-FROM --platform=$BUILDPLATFORM ubuntu:24.04
-
-RUN apt-get update -y
-RUN apt-get upgrade -y
-RUN apt-get install git gcc-14 g++-14 gdb make cmake libssl-dev libstdc++-14-dev wget -y
-RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g++
-RUN apt-get install libncurses5-dev libncursesw5-dev -y
-
+FROM --platform=$BUILDPLATFORM alpine:3.21.2
+RUN apk add build-base
+RUN apk add boost-dev
+RUN apk add cmake
+RUN apk add ncurses-dev
+RUN apk add git
 
 WORKDIR /app
 RUN git clone https://github.com/open-source-parsers/jsoncpp
@@ -75,15 +73,6 @@ RUN git checkout v1.1.0
 RUN cp -r /app/cpp-async/include/async /usr/local/include/async
 
 WORKDIR /app
-RUN git clone https://github.com/boostorg/boost
-WORKDIR /app/boost
-RUN git checkout boost-1.84.0
-RUN git submodule update --init --recursive
-RUN ./bootstrap.sh
-RUN ./b2
-RUN ./b2 install
-
-WORKDIR /app
 RUN git clone --recursive https://github.com/cpp-redis/cpp_redis.git
 WORKDIR /app/cpp_redis/tacopie
 RUN git fetch origin pull/5/head:cmake-fixes && git checkout cmake-fixes
@@ -108,8 +97,6 @@ RUN make install
 RUN rm -rf /app
 WORKDIR /fb/data
 COPY --from=data-build /output .
-WORKDIR /
-RUN ldconfig
 
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
