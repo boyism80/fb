@@ -64,6 +64,47 @@ function buff_cast(me, you, spell, mp, sound, effect)
     return true
 end
 
+function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    if you == nil then
+        return false
+    end
+
+    if type(you) == 'userdata' then
+        you = {you}
+    end
+    if #you == 0 then
+        return false
+    end
+
+    me:chat(type(you))
+
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    me:action(ACTION_ATTACK, DURATION_ATTACK, 1)
+
+    local damaged = false
+    local rate = me:skill_damage_rate() / 1000.0
+    for _, obj in pairs(you) do
+        obj:effect(effect)
+        obj:sound(sound)
+        if obj:is(OBJECT_TYPE_LIFE) then
+            obj:damage(math.floor(damage * rate), me)
+            damaged = true
+        end
+    end
+
+    if damaged then
+        me:hp(math.max(10, me:hp() - hp))
+    end
+    me:chat(message)
+    return true
+end
+
 function spell_damage(me, you, spell, damage, mp, sound, effect)
     if not you:is(OBJECT_TYPE_LIFE) then
         return me:message('대상이 올바르지 않습니다.')
@@ -168,4 +209,35 @@ end
 
 function unbuff(me, spell)
     me:message(string.format('%s 해제', spell:name()))
+end
+
+function front_obj(x, y, direction, step, objects, type)
+    if type == nil then
+        type = 0xFF & ~OBJECT_TYPE_ITEM
+    end
+
+    if direction == DIRECTION_LEFT then
+        x = x-step
+    elseif direction == DIRECTION_RIGHT then
+        x = x+step
+    elseif direction == DIRECTION_TOP then
+        y = y-step
+    else
+        y = y+step
+    end
+
+    for _, obj in pairs(objects) do
+        local obj_x, obj_y =  obj:position()
+        if x == obj_x and y == obj_y and obj:is(type) then
+            return obj
+        end
+    end
+
+    return nil
+end
+
+function failed_attack_spell(me)
+    local message = '허공난무 흐미 실패닷'
+    me:chat(message)
+    broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE_SHOUT, BROADCAST_TYPE_WORLD)
 end

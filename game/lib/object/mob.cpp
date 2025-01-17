@@ -341,7 +341,7 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
 
     default:
     {
-        if (from->is(OBJECT_TYPE::LIFE))
+        if (from != nullptr && from->is(OBJECT_TYPE::LIFE))
         {
             if (this->_target == nullptr)
             {

@@ -303,7 +303,7 @@ uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical)
 {
     this->assert_thread();
 
-    auto rate = this->damage_rate();
+    auto rate = this->damage_rate() / 1000.0f;
     if (life.direction() == this->direction())
         rate *= 2;
 
@@ -314,25 +314,25 @@ uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical)
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
 
-    return damage * rate;
+    return static_cast<uint32_t>(damage * rate);
 }
 
-uint16_t fb::game::life::damage_rate() const
+uint32_t fb::game::life::damage_rate() const
 {
     return this->_damage_rate;
 }
 
-void fb::game::life::damage_rate(uint16_t value)
+void fb::game::life::damage_rate(uint32_t value)
 {
     this->_damage_rate = value;
 }
 
-uint16_t fb::game::life::skill_damage_rate() const
+uint32_t fb::game::life::skill_damage_rate() const
 {
     return this->_skill_damage_rate;
 }
 
-void fb::game::life::skill_damage_rate(uint16_t value)
+void fb::game::life::skill_damage_rate(uint32_t value)
 {
     this->_skill_damage_rate = value;
 }

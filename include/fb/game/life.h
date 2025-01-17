@@ -19,7 +19,7 @@ public:
 
 protected:
     uint32_t      _hp = 0, _mp = 0;
-    uint16_t      _damage_rate   = 1, _skill_damage_rate = 1;
+    uint32_t      _damage_rate = 1000, _skill_damage_rate = 1000;
     CROWD_CONTROL _crowd_control = CROWD_CONTROL::NONE;
 
 public:
@@ -313,26 +313,26 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint16_t damage_rate() const;
+    uint32_t damage_rate() const;
 
     /**
      * @brief      { function_description }
      */
-    void damage_rate(uint16_t value);
+    void damage_rate(uint32_t value);
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    uint16_t skill_damage_rate() const;
-    
+    uint32_t skill_damage_rate() const;
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void skill_damage_rate(uint16_t value);
+    void skill_damage_rate(uint32_t value);
 
 public:
     /**
