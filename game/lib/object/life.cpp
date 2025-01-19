@@ -138,18 +138,34 @@ uint32_t life::exp() const
     return static_cast<const fb::model::life&>(this->_model).exp;
 }
 
-uint32_t life::defensive_physical() const
+int8_t life::base_phydef() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).defensive_physical;
 }
 
-uint32_t life::defensive_magical() const
+int8_t life::base_magdef() const
 {
     this->assert_thread();
 
     return static_cast<const fb::model::life&>(this->_model).defensive_magical;
+}
+
+int8_t life::phydef() const
+{
+    this->assert_thread();
+
+    auto sum = (int16_t)this->base_phydef() + (int16_t)this->buff_phydef();
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+}
+
+int8_t life::magdef() const
+{
+    this->assert_thread();
+
+    auto sum = (int16_t)this->base_magdef() + (int16_t)this->buff_magdef();
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
 }
 
 CROWD_CONTROL life::crowd_control() const
@@ -303,6 +319,10 @@ uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical)
 {
     this->assert_thread();
 
+    auto n                 = (100 - life.phydef()) / 10;
+    auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
+    auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
+
     auto rate = this->damage_rate() / 1000.0f;
     if (life.direction() == this->direction())
         rate *= 2;
@@ -310,10 +330,7 @@ uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical)
     if (critical)
         rate *= 2;
 
-    auto n                 = (100 - life.defensive_physical()) / 10;
-    auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
-    auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
-
+    rate /= (life.damage_derate() / 1000.0f);
     return static_cast<uint32_t>(damage * rate);
 }
 
@@ -335,4 +352,54 @@ uint32_t fb::game::life::skill_damage_rate() const
 void fb::game::life::skill_damage_rate(uint32_t value)
 {
     this->_skill_damage_rate = value;
+}
+
+uint32_t fb::game::life::damage_derate() const
+{
+    return this->_damage_derate;
+}
+
+void fb::game::life::damage_derate(uint32_t value)
+{
+    this->_damage_derate = value;
+}
+
+int8_t life::buff_phydef() const
+{
+    this->assert_thread();
+
+    return this->_buff_phydef;
+}
+
+void life::buff_phydef(int8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_phydef = value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+int8_t life::buff_magdef() const
+{
+    this->assert_thread();
+
+    return this->_buff_magdef;
+}
+
+void life::buff_magdef(int8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_magdef = value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+void fb::game::life::paralysis(bool value)
+{
+    this->_paralysis = value;
+}
+
+bool fb::game::life::paralysis() const
+{
+    return this->_paralysis;
 }

@@ -256,6 +256,12 @@ void mob::AI(const fb::model::datetime& now)
 
     try
     {
+        if (this->paralysis())
+            return;
+
+        if (ENUM_IN(this->crowd_control(), CROWD_CONTROL::SIGHT))
+            return;
+
         auto& model = this->based<fb::model::mob>();
         if (now < this->_action_time + model.speed)
             return;

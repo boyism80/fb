@@ -11,9 +11,9 @@ function on_cast(me, spell)
     me:unbuff('삼중공격')
     me:unbuff('오중공격')
     me:buff(spell, buff_time)
-    me:damage_rate(me:damage_rate() + 3)
+    me:damage_rate(me:damage_rate() + 3000)
 end
 
 function on_uncast(me, spell)
-    me:damage_rate(me:damage_rate() - 3)
+    me:damage_rate(me:damage_rate() - 3000)
 end

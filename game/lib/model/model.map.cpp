@@ -1,6 +1,20 @@
 #include <fb/model/model.h>
 #include <fb/game/context.h>
 
+int fb::model::map::builtin_id(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto map = thread->touserdata<fb::model::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    thread->pushinteger(map->id);
+    return 1;
+}
+
 int fb::model::map::builtin_name(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

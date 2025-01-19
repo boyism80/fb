@@ -5,7 +5,7 @@
 #include <fb/game/inventory.h>
 #include <fb/model/model.h>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes an object.
@@ -245,6 +245,6 @@ public:
     buff* operator[] (uint32_t id) const;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__SPELL_H__

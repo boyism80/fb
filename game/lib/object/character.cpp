@@ -309,32 +309,62 @@ void character::undisguise()
     this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
-uint32_t character::defensive_physical() const
+int8_t character::base_phydef() const
 {
     this->assert_thread();
 
-    return this->_defensive_physical;
+    return this->_base_phydef;
 }
 
-void character::defensive_physical(uint8_t value)
+void character::base_phydef(int8_t value)
 {
     this->assert_thread();
 
-    this->_defensive_physical = value;
+    this->_base_phydef = value;
 }
 
-uint32_t character::defensive_magical() const
+int8_t character::phydef() const
 {
     this->assert_thread();
 
-    return this->_defensive_magical;
+    auto sum = (int16_t)life::phydef();
+    for (auto& [_, equipment] : this->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        sum += equipment->based<fb::model::equipment>().defensive_physical;
+    }
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
 }
 
-void character::defensive_magical(uint8_t value)
+int8_t character::magdef() const
 {
     this->assert_thread();
 
-    this->_defensive_magical = value;
+    auto sum = (int16_t)life::magdef();
+    for (auto& [_, equipment] : this->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        sum += equipment->based<fb::model::equipment>().defensive_magical;
+    }
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+}
+
+int8_t character::base_magdef() const
+{
+    this->assert_thread();
+
+    return this->_base_magdef;
+}
+
+void character::base_magdef(int8_t value)
+{
+    this->assert_thread();
+
+    this->_base_magdef = value;
 }
 
 void character::base_hp_up(uint32_t value)

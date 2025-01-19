@@ -47,8 +47,7 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     sstream.str(std::string());
-    sstream << "갑옷 강도  " << me.defensive_physical() << "  " << me.regenerative() << " S  "
-            << me.defensive_magical();
+    sstream << "갑옷 강도  " << me.phydef() << "  " << me.regenerative() << " S  " << me.magdef();
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 

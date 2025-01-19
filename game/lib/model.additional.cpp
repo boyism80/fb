@@ -9,6 +9,7 @@ END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
+{"id",                  fb::model::map::builtin_id},
 {"name",                fb::model::map::builtin_name},
 {"root",                fb::model::map::builtin_root},
 {"cardinal",            fb::model::map::builtin_cardinal},

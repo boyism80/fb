@@ -20,7 +20,11 @@ public:
 protected:
     uint32_t      _hp = 0, _mp = 0;
     uint32_t      _damage_rate = 1000, _skill_damage_rate = 1000;
+    uint32_t      _damage_derate = 1000;
     CROWD_CONTROL _crowd_control = CROWD_CONTROL::NONE;
+    int8_t        _buff_phydef   = 0;
+    int8_t        _buff_magdef   = 0;
+    bool          _paralysis     = false;
 
 public:
     fb::game::spells spells;
@@ -100,14 +104,28 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t defensive_physical() const;
+    virtual int8_t base_phydef() const;
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t defensive_magical() const;
+    virtual int8_t base_magdef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t phydef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t magdef() const;
 
     /**
      * @brief      { function_description }
@@ -334,6 +352,60 @@ public:
      */
     void skill_damage_rate(uint32_t value);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t damage_derate() const;
+
+    /**
+     * @brief      { function_description }
+     */
+    void damage_derate(uint32_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_phydef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_phydef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_magdef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_magdef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void paralysis(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool paralysis() const;
+
 public:
     /**
      * @brief      { function_description }
@@ -487,6 +559,42 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_skill_damage_rate(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_damage_derate(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_phydef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_magdef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_paralysis(lua_State* lua);
 };
 
 /**

@@ -36,11 +36,6 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
         scp = scope::MAP;
         break;
 
-    case CHAT_TYPE::BLUE:
-    case CHAT_TYPE::LIGHT_BLUE:
-        scp = scope::WORLD;
-        break;
-
     default:
         scp = scope::PIVOT;
         break;

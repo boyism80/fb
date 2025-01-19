@@ -101,6 +101,12 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
     if (map == nullptr)
         co_return true;
 
+    if (ch->paralysis())
+    {
+        ch->update_position();
+        co_return true;
+    }
+
     // TODO: 실제로 이동하지 않고 이동했을때의 위치를 구해서
     // 해당 위치에서 워프가 가능한지 확인하고
     // 워프가능하면 워프처리, 그렇지 않다면 해당 위치로 이동한다.

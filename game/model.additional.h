@@ -318,6 +318,7 @@ public:                                          \
     LUA_PROTOTYPE                                \
                                                  \
 public:                                          \
+    static int builtin_id(lua_State* lua);       \
     static int builtin_name(lua_State* lua);     \
     static int builtin_root(lua_State* lua);     \
     static int builtin_cardinal(lua_State* lua); \

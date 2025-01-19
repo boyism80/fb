@@ -25,7 +25,19 @@ function near(me, type)
     return result
 end
 
-function spell_cast(me, you, spell, mp, sound, effect)
+function spell_cast(me, you, spell, mp, sound, effect, no_assert)
+    if no_assert == nil then
+        no_assert = false
+    end
+
+    if not no_assert then
+        local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+        if error ~= nil then
+            me:message(error)
+            return
+        end
+    end
+
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -43,6 +55,17 @@ function spell_cast(me, you, spell, mp, sound, effect)
 end
 
 function buff_cast(me, you, spell, mp, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
+    if not you:is(OBJECT_TYPE_LIFE) then
+        me:message('걸리지 않습니다.')
+        return false
+    end
+
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -64,7 +87,47 @@ function buff_cast(me, you, spell, mp, sound, effect)
     return true
 end
 
+function debuff_cast(me, you, spell, mp, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
+    if not you:is(OBJECT_TYPE_LIFE) then
+        me:message('걸리지 않습니다.')
+        return false
+    end
+
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    if you:isbuff(spell) then
+        me:message('이미 걸려있습니다.')
+        return false
+    end
+
+    you:effect(effect)
+    you:sound(sound)
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
+        you:message(string.format('%s님이 %s 걸었습니다.', me:name(), name_with(spell:name())))
+    end
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    return true
+end
+
+
 function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -81,8 +144,6 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
     if #you == 0 then
         return false
     end
-
-    me:chat(type(you))
 
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     me:action(ACTION_ATTACK, DURATION_ATTACK, 1)
@@ -101,17 +162,25 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
     if damaged then
         me:hp(math.max(10, me:hp() - hp))
     end
-    me:chat(message)
+    me:chat(message, CHAT_TYPE_BLUE)
     return true
 end
 
 function spell_damage(me, you, spell, damage, mp, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
     if not you:is(OBJECT_TYPE_LIFE) then
-        return me:message('대상이 올바르지 않습니다.')
+        me:message('대상이 올바르지 않습니다.')
+        return false
     end
 
     if me:mp() < mp then
-        return me:message('마력이 부족합니다.')
+        me:message('마력이 부족합니다.')
+        return false
     end
     me:mp_down(mp)
 
@@ -122,11 +191,13 @@ function spell_damage(me, you, spell, damage, mp, sound, effect)
         you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
     end
     you:damage(damage, me)
+    return true
 end
 
 function spell_damage_near(me, spell, damage, mp, sound, effect)
     if me:mp() < mp then
-        return me:message('마력이 부족합니다.')
+        me:message('마력이 부족합니다.')
+        return false
     end
     me:mp_down(mp)
 
@@ -139,9 +210,17 @@ function spell_damage_near(me, spell, damage, mp, sound, effect)
         end
         you:damage(damage, me)
     end
+
+    return true
 end
 
 function spell_heal(me, you, spell, hp, mp, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
     if not you:is(OBJECT_TYPE_CHARACTER) then
         me:message('대상이 올바르지 않습니다.')
         return
@@ -152,9 +231,16 @@ function spell_heal(me, you, spell, hp, mp, sound, effect)
     end
 
     you:heal(hp)
+    return true
 end
 
 function spell_heal_near(me, you, spell, hp, mp, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
     if not you:is(OBJECT_TYPE_CHARACTER) then
         me:message('대상이 올바르지 않습니다.')
         return
@@ -179,6 +265,45 @@ function spell_heal_near(me, you, spell, hp, mp, sound, effect)
             ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
         end
     end
+    return true
+end
+
+function spell_heal_group(me, spell, hp, mp, sound, effect)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+
+    local group = me:group()
+    if group == nil then
+        me:message('가입된 그룹이 없습니다.')
+        return false
+    end
+
+    if me:mp() < mp then
+        me:message('마력이 모자랍니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+
+    for _, ch in pairs(group:nears(map, {me:position()})) do
+        if me ~= ch then
+            ch:heal(hp)
+            ch:effect(effect)
+            ch:sound(sound)
+            ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
+        end
+    end
+    return true
 end
 
 function spell_disguise_look(me, mobs, name)
@@ -196,6 +321,12 @@ function spell_disguise_look(me, mobs, name)
 end
 
 function spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
     local look = spell_disguise_look(me, mobs, name)
     if look == nil then
         return
@@ -208,7 +339,9 @@ function spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
 end
 
 function unbuff(me, spell)
-    me:message(string.format('%s 해제', spell:name()))
+    if me:is(OBJECT_TYPE_CHARACTER) then
+        me:message(string.format('%s 해제', spell:name()))
+    end
 end
 
 function front_obj(x, y, direction, step, objects, type)
@@ -238,6 +371,6 @@ end
 
 function failed_attack_spell(me)
     local message = '허공난무 흐미 실패닷'
-    me:chat(message)
+    me:chat(message, CHAT_TYPE_BLUE)
     broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE_SHOUT, BROADCAST_TYPE_WORLD)
 end
