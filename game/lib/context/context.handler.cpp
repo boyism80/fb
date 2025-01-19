@@ -595,14 +595,25 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         co_return true;
 
     auto message = std::string{request.message};
-    auto shout   = request.shout;
+    auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     if (co_await handle_command(*ch, message))
         co_return true;
 
-    ch->chat(message, shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL);
+    switch (type)
+    {
+    case CHAT_TYPE::NORMAL:
+        message = std::format("{}: ", ch->name(), message);
+        break;
+
+    case CHAT_TYPE::SHOUT:
+        message = std::format("{}! ", ch->name(), message);
+        break;
+    }
+
+    ch->chat(message, type);
 
     auto npcs = std::vector<npc*>();
-    if (shout)
+    if (type == CHAT_TYPE::SHOUT)
     {
         for (auto& [fd, obj] : ch->map()->objects)
         {

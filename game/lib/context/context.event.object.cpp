@@ -17,18 +17,6 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
     if (me.is(OBJECT_TYPE::ITEM))
         return;
 
-    auto sstream = std::stringstream();
-    switch (chat_type)
-    {
-    case CHAT_TYPE::SHOUT:
-        sstream << me.name() << "! " << message;
-        break;
-
-    default:
-        sstream << me.name() << ": " << message;
-        break;
-    }
-
     auto scp = scope::PIVOT;
     switch (chat_type)
     {
@@ -40,7 +28,7 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
         scp = scope::PIVOT;
         break;
     }
-    this->send(me, fb_resp::chat(me, sstream.str(), chat_type), scp);
+    this->send(me, fb_resp::chat(me, message, chat_type), scp);
 }
 
 void context::on_direction(object& me)

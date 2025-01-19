@@ -162,7 +162,7 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
     if damaged then
         me:hp(math.max(10, me:hp() - hp))
     end
-    me:chat(message, CHAT_TYPE_BLUE)
+    me:chat(message, CHAT_TYPE_BLUE, false)
     return true
 end
 
