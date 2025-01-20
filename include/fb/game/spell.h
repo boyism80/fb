@@ -102,14 +102,18 @@ struct spells::listener
 /**
  * @brief      This class describes a buffer.
  */
-class buff
+class buff : public lua::luable
 {
+public:
+    LUA_PROTOTYPE
+
 private:
     std::chrono::milliseconds _time;
 
 public:
     const fb::model::spell&  model;
     const fb::game::context& context;
+    const fb::game::object*  caster;
 
 public:
     /**
@@ -117,9 +121,13 @@ public:
      *
      * @param[in]  context  The context
      * @param[in]  model    The model
+     * @param[in]  caster   The caster
      * @param[in]  seconds  The seconds
      */
-    buff(const fb::game::context& context, const fb::model::spell& model, uint32_t seconds);
+    buff(const fb::game::context& context,
+         const fb::model::spell&  model,
+         const fb::game::object*  caster,
+         uint32_t                 seconds);
     /**
      * @brief      Destroys the object.
      */
@@ -157,6 +165,16 @@ public:
      * @param[in]  dec   The decrement
      */
     void time_dec(const std::chrono::steady_clock::duration& dec);
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_time(lua_State* lua);
 };
 
 /**
@@ -216,7 +234,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    buff* push_back(const fb::model::spell& spell, uint32_t seconds);
+    buff* push_back(const fb::model::spell& spell, uint32_t seconds, const fb::game::object* caster = nullptr);
     /**
      * @brief      Removes the specified identifier.
      *

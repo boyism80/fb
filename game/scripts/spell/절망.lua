@@ -4,7 +4,7 @@ function on_cast(me, you, spell)
     local effect = 14
     local buff_time = 10
     if debuff_cast(me, you, spell, mp, sound, effect) then
-        you:buff(spell, buff_time)
+        you:buff(spell, buff_time, me)
         you:add_cc(CROWD_CONTROL_SIGHT)
     end
 end
@@ -14,7 +14,7 @@ function on_uncast(me, spell)
     me:remove_cc(CROWD_CONTROL_SIGHT)
 end
 
-function on_concast(me, spell)
+function on_concast(me, caster, buff)
 
 end
 

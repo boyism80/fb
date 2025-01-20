@@ -1,7 +1,7 @@
 function on_cast(me, you, spell)
-	if not you:is(OBJECT_TYPE_CHARACTER) then
-		return me:message('걸리지 않습니다.')
-	end
+    if not you:is(OBJECT_TYPE_CHARACTER) then
+        return me:message('걸리지 않습니다.')
+    end
 
     local mp = 30
     local sound = 21
@@ -9,11 +9,14 @@ function on_cast(me, you, spell)
     local buff_time = 5
     if buff_cast(me, you, spell, mp, sound, effect) then
         you:buff_str(you:buff_str()+3)
-        you:buff(spell, buff_time)
+        you:buff(spell, buff_time, me)
     end
 end
 
 function on_uncast(me, spell)
     me:buff_str(me:buff_str()-3)
     unbuff(me, spell)
+end
+
+function on_init_buff(me, spell)
 end

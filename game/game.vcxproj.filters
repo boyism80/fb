@@ -537,6 +537,9 @@
     <ClCompile Include="lib\protocol\protocol.object.miss.cpp">
       <Filter>Source Files\protocol</Filter>
     </ClCompile>
+    <ClCompile Include="lib\buff.builtin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">

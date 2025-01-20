@@ -63,6 +63,27 @@ int fb::game::context::builtin_name2mob(lua_State* lua)
     return 1;
 }
 
+int fb::game::context::builtin_name2spell(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto name    = thread->tostring(1);
+    auto spell   = context->model.spell.name2spell(name);
+
+    if (spell == nullptr)
+    {
+        thread->pushnil();
+    }
+    else
+    {
+        thread->pushobject(spell);
+    }
+    return 1;
+}
+
 int fb::game::context::builtin_name2npc(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

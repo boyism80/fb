@@ -5,7 +5,7 @@ function on_cast(me, you, spell)
     local buff_time = 425
     if debuff_cast(me, you, spell, mp, sound, effect) then
         you:buff_phydef(you:buff_phydef() + 50)
-        you:buff(spell, buff_time)
+        you:buff(spell, buff_time, me)
     end
 end
 

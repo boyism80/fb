@@ -62,21 +62,43 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
         if (map->objects.size() == 0)
             continue;
 
+        auto concast = std::vector<fb::game::object*>{};
         for (auto& [fd, obj] : map->objects)
         {
             if (obj.buffs.size() == 0)
                 continue;
 
+            concast.push_back(&obj);
+        }
+
+        for (auto obj : concast)
+        {
             auto ended_buffs = std::vector<buff*>();
-            for (auto& [id, buff] : obj.buffs)
+            for (auto& [id, buff] : obj->buffs)
             {
                 buff->time_dec(1s);
                 if (buff->time() <= 0ms)
+                {
                     ended_buffs.push_back(buff);
+                    continue;
+                }
+
+                if (buff->model.concast.empty() == false)
+                {
+                    auto lua = lua::new_context();
+                    lua->from(buff->model.concast.c_str()).func("on_concast").pushobject(obj);
+                    if (buff->caster == nullptr)
+                        lua->pushnil();
+                    else
+                        lua->pushobject(buff->caster);
+                    lua->pushobject(buff);
+                    lua->resume(3);
+                    continue;
+                }
             }
 
             for (auto& buff : ended_buffs)
-                std::ignore = obj.buffs.remove(buff->model);
+                std::ignore = obj->buffs.remove(buff->model);
         }
     }
 

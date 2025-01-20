@@ -1,3 +1,21 @@
+function relative_buff_name(buff_name)
+    local values = {
+        {'혼마술', '저주', '귀염추혼소'},
+        {'무장', '자동무장'},
+        {'보호', '자동보호'}
+    }
+
+    for _, names in pairs(values) do
+        for _, name in pairs(names) do
+            if buff_name == name then
+                return names
+            end
+        end
+    end
+
+    return {buff_name}
+end
+
 function near(me, type)
     local result = {}
     local map = me:map()
@@ -72,7 +90,7 @@ function buff_cast(me, you, spell, mp, sound, effect)
     end
     me:mp_down(mp)
 
-    if you:isbuff(spell) then
+    if you:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         me:message('이미 걸려있습니다.')
         return false
     end
@@ -105,7 +123,7 @@ function debuff_cast(me, you, spell, mp, sound, effect)
     end
     me:mp_down(mp)
 
-    if you:isbuff(spell) then
+    if you:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         me:message('이미 걸려있습니다.')
         return false
     end
@@ -190,7 +208,9 @@ function spell_damage(me, you, spell, damage, mp, sound, effect)
     if you:is(OBJECT_TYPE_CHARACTER) then
         you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
     end
-    you:damage(damage, me)
+
+    local rate = me:skill_damage_rate() / 1000.0
+    you:damage(math.floor(damage*rate), me)
     return true
 end
 
@@ -203,14 +223,51 @@ function spell_damage_near(me, spell, damage, mp, sound, effect)
 
     me:sound(sound)
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+
+    local rate = me:skill_damage_rate() / 1000.0
     for _, you in pairs(near(me, OBJECT_TYPE_LIFE)) do
         you:effect(effect)
         if you:is(OBJECT_TYPE_CHARACTER) then
             you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
-        you:damage(damage, me)
+        you:damage(math.floor(damage*rate), me)
     end
 
+    return true
+end
+
+function spell_damage_area(me, you, spell, damage, mp, sound, effect_me, effect_you)
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        me:message(error)
+        return false
+    end
+
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    if type(you) == 'userdata' then
+        you = {you}
+    end
+
+    local rate = me:skill_damage_rate() / 1000.0
+    for _, obj in pairs(you) do
+        if obj:is(OBJECT_TYPE_CHARACTER) then
+            obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
+        end
+        if effect_you ~= nil then
+            obj:effect(effect_you)
+        end
+        obj:damage(math.floor(damage*rate), me)
+    end
+    me:sound(sound)
+    if effect_me ~= nil then
+        me:effect(effect_me)
+    end
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
     return true
 end
 

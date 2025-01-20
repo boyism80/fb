@@ -152,8 +152,11 @@ int fb::game::life::builtin_damage(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    auto value    = (uint32_t)thread->tointeger(2);
-    auto from     = argc >= 3 ? thread->touserdata<fb::game::object>(3) : nullptr;
+    auto value = (uint32_t)thread->tointeger(2);
+    auto from  = static_cast<fb::game::object*>(nullptr);
+    if (argc >= 3 && lua_type(lua, 3) == LUA_TUSERDATA)
+        from = thread->touserdata<fb::game::object>(3);
+
     auto critical = argc >= 4 ? thread->toboolean(4) : false;
     if (obj->matched_thread())
     {

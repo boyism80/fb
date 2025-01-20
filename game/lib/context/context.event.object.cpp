@@ -105,7 +105,7 @@ void context::on_move(object& me, const fb::model::point16_t& before)
 
 void context::on_unbuff(object& me, buff& buff)
 {
-    if (buff.model.uncast.empty())
+    if (buff.model.uncast == "")
         return;
 
     auto thread = lua::new_context();

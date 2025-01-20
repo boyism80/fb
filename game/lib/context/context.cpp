@@ -27,6 +27,7 @@ async::task<void> context::handle_start()
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
     lua::build<trace, lua::luable>();
+    lua::build<buff, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::trace, lua::luable>();
@@ -47,6 +48,7 @@ async::task<void> context::handle_start()
     lua::build("seed", builtin_seed);
     lua::build("sleep", builtin_sleep);
     lua::build("name2mob", builtin_name2mob);
+    lua::build("name2spell", builtin_name2spell);
     lua::build("name2item", builtin_name2item);
     lua::build("name2npc", builtin_name2npc);
     lua::build("name2map", builtin_name2map);

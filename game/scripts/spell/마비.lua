@@ -4,7 +4,7 @@ function on_cast(me, you, spell)
     local effect = 1
     local buff_time = 20
     if debuff_cast(me, you, spell, mp, sound, effect) then
-        you:buff(spell, buff_time)
+        you:buff(spell, buff_time, me)
         you:paralysis(true)
     end
 end

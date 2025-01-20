@@ -219,6 +219,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\board.cpp" />
+    <ClCompile Include="lib\buff.builtin.cpp" />
     <ClCompile Include="lib\clan.builtin.cpp" />
     <ClCompile Include="lib\clan.cpp" />
     <ClCompile Include="lib\clan.member.builtin.cpp" />

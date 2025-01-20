@@ -5,7 +5,7 @@ function on_cast(me, you, spell)
     local buff_time = 180
     if buff_cast(me, you, spell, mp, sound, effect) then
     	you:damage_derate(you:damage_derate() + 1000)
-        you:buff(spell, buff_time)
+        you:buff(spell, buff_time, me)
     end
 end
 

@@ -17,6 +17,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"buff",                object::builtin_buff},
 {"isbuff",              object::builtin_isbuff},
 {"unbuff",              object::builtin_unbuff},
+{"buffs",               object::builtin_buffs},
 {"effect",              object::builtin_effect},
 {"map",                 object::builtin_map},
 {"mkitem",              object::builtin_mkitem},
@@ -299,7 +300,7 @@ int object::builtin_chat(lua_State* lua)
         }
 
         if (obj->is(OBJECT_TYPE::ITEM) == false)
-            obj->chat(message, type);
+            obj->chat(sstream.str(), type);
     };
 
     if (obj->thread() == ctx->threads.current())
@@ -324,19 +325,22 @@ int object::builtin_buff(lua_State* lua)
     if (thread == nullptr)
         return 0;
 
-    auto ctx = thread->env<fb::game::context>("context");
-    auto obj = thread->touserdata<object>(1);
+    auto argc = thread->argc();
+    auto ctx  = thread->env<fb::game::context>("context");
+    auto obj  = thread->touserdata<object>(1);
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
+    if (ctx->alive(*obj) == false)
+        return 0;
 
     auto spell = thread->touserdata<fb::model::spell>(2);
     if (spell == nullptr)
         return 0;
 
     auto seconds = (uint32_t)thread->tointeger(3);
-    auto buff    = obj->buffs.push_back(*spell, seconds);
+    auto caster  = argc >= 4 ? thread->touserdata<fb::game::object>(4) : nullptr;
+    auto buff    = obj->buffs.push_back(*spell, seconds, caster);
     if (buff == nullptr)
         thread->pushnil();
     else
@@ -369,11 +373,11 @@ int object::builtin_unbuff(lua_State* lua)
     }
     else if (thread->is_obj(2))
     {
-        auto buff = thread->touserdata<fb::model::spell>(2);
+        auto buff = thread->touserdata<fb::game::buff>(2);
         if (buff == nullptr)
             return 0;
 
-        thread->pushboolean(obj->buffs.remove(*buff));
+        thread->pushboolean(obj->buffs.remove(buff->model.id));
     }
     else
     {
@@ -396,27 +400,38 @@ int object::builtin_isbuff(lua_State* lua)
 
     obj->assert_thread();
 
-    if (thread->is_str(2))
+    auto argc = thread->argc();
+    for (int i = 1; i < argc; i++)
     {
-        auto name  = thread->tostring(2);
-        auto model = ctx->model.spell.name2spell(name);
-        if (model == nullptr)
-            thread->pushboolean(false);
-        else
-            thread->pushboolean(obj->buffs.contains(*model));
-    }
-    else if (thread->is_obj(2))
-    {
-        auto buff = thread->touserdata<fb::model::spell>(2);
-        if (buff == nullptr)
-            return 0;
+        if (thread->is_str(i + 1))
+        {
+            auto name  = thread->tostring(i + 1);
+            auto model = ctx->model.spell.name2spell(name);
+            if (model == nullptr)
+                continue;
 
-        thread->pushboolean(obj->buffs.contains(*buff));
+            if (obj->buffs.contains(*model) == false)
+                continue;
+
+            thread->pushboolean(true);
+            return 1;
+        }
+
+        if (thread->is_obj(i + 1))
+        {
+            auto buff = thread->touserdata<fb::game::buff>(i + 1);
+            if (buff == nullptr)
+                continue;
+
+            if (obj->buffs.contains(buff->model.id) == false)
+                continue;
+
+            thread->pushboolean(true);
+            return 1;
+        }
     }
-    else
-    {
-        thread->pushboolean(false);
-    }
+
+    thread->pushboolean(false);
     return 1;
 }
 
@@ -654,11 +669,24 @@ int object::builtin_nears(lua_State* lua)
     obj->assert_thread();
 
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
+    auto width  = argc < 3 ? -1 : thread->tointeger(3);
+    auto height = argc < 4 ? -1 : thread->tointeger(4);
 
     thread->new_table();
     const auto& objects = obj->nears(filter);
     for (int i = 0; i < objects.size(); i++)
     {
+        if (width != -1 && height != -1)
+        {
+            if (objects[i]->_position.x < obj->_position.x - width ||
+                objects[i]->_position.x > obj->_position.x + width)
+                continue;
+
+            if (objects[i]->_position.y < obj->_position.y - height ||
+                objects[i]->_position.y > obj->_position.y + height)
+                continue;
+        }
+
         thread->pushobject(objects[i]);
         thread->rawseti(-2, uint64_t(i + 1));
     }
@@ -780,5 +808,28 @@ int object::builtin_near(lua_State* lua)
         }
     }
     thread->pushboolean(found);
+    return 1;
+}
+
+int object::builtin_buffs(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto obj     = thread->touserdata<fb::game::object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    thread->new_table();
+    auto i = 0;
+    for (auto& [_, buff] : obj->buffs)
+    {
+        thread->pushinteger(i + 1);
+        thread->pushobject(buff);
+        lua_settable(lua, -3);
+    }
+
     return 1;
 }

@@ -71,9 +71,13 @@ bool fb::game::spells::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-fb::game::buff::buff(const fb::game::context& context, const fb::model::spell& model, uint32_t seconds) :
+fb::game::buff::buff(const fb::game::context& context,
+                     const fb::model::spell&  model,
+                     const fb::game::object*  caster,
+                     uint32_t                 seconds) :
     context(context),
     model(model),
+    caster(caster),
     _time(seconds * 1000)
 { }
 
@@ -117,7 +121,9 @@ bool fb::game::buffs::push_back(buff& buff)
     return true;
 }
 
-fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32_t seconds)
+fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model,
+                                           uint32_t                seconds,
+                                           const fb::game::object* caster)
 {
     if (this->contains(model.id))
     {
@@ -127,7 +133,7 @@ fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model, uint32
     }
 
     auto& context = this->_owner.context;
-    auto  created = context.make<fb::game::buff>(model, seconds);
+    auto  created = context.make<fb::game::buff>(model, caster, seconds);
     if (this->push_back(*created) == false)
     {
         std::ignore = context.destroy(*created);
