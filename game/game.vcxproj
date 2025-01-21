@@ -209,6 +209,7 @@
     <ClInclude Include="..\include\fb\game\trace.h" />
     <ClInclude Include="..\include\fb\game\trade.h" />
     <ClInclude Include="..\include\fb\game\worker.h" />
+    <ClInclude Include="model.additional.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -256,6 +257,7 @@
     <ClCompile Include="lib\item\bow.cpp" />
     <ClCompile Include="lib\item\cash.cpp" />
     <ClCompile Include="lib\item\consume.cpp" />
+    <ClCompile Include="lib\item\equipment.builtin.cpp" />
     <ClCompile Include="lib\item\equipment.cpp" />
     <ClCompile Include="lib\item\helmet.cpp" />
     <ClCompile Include="lib\item\item.builtin.cpp" />
@@ -264,6 +266,7 @@
     <ClCompile Include="lib\item\pack.cpp" />
     <ClCompile Include="lib\item\ring.cpp" />
     <ClCompile Include="lib\item\shield.cpp" />
+    <ClCompile Include="lib\item\weapon.builtin.cpp" />
     <ClCompile Include="lib\item\weapon.cpp" />
     <ClCompile Include="lib\listener.cpp" />
     <ClCompile Include="lib\map\map.builtin.cpp" />
@@ -285,6 +288,7 @@
     <ClCompile Include="lib\model\model.sell.cpp" />
     <ClCompile Include="lib\model\model.spell.cpp" />
     <ClCompile Include="lib\model\model.trace.cpp" />
+    <ClCompile Include="lib\model\model.weapon.cpp" />
     <ClCompile Include="lib\model\mst.recipe.cpp" />
     <ClCompile Include="lib\object\character.builtin.cpp" />
     <ClCompile Include="lib\object\character.cpp" />

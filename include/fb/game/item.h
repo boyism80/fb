@@ -484,6 +484,9 @@ public:
 class equipment : public item
 {
 public:
+    LUA_PROTOTYPE
+
+public:
     /**
      * @brief      { struct_description }
      */
@@ -596,6 +599,9 @@ struct equipment::listener : public virtual fb::game::item::listener
  */
 class weapon : public equipment
 {
+public:
+    LUA_PROTOTYPE
+
 public:
     /**
      * @brief      This class describes types.

@@ -17,6 +17,3 @@ function on_uncast(me, spell)
     me:buff_str(me:buff_str()-3)
     unbuff(me, spell)
 end
-
-function on_init_buff(me, spell)
-end

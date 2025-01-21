@@ -12,8 +12,8 @@ function on_cast(me, you, spell)
     end
     me:mp_down(mp)
 
-    local success = math.random() > 0.5
-    if not success then
+    local success = math.random() < 0.5
+    if not debug() and not success then
         return me:message('무력화 실패')
     end
 

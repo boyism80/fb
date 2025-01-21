@@ -25,6 +25,9 @@ protected:
     int8_t        _buff_phydef   = 0;
     int8_t        _buff_magdef   = 0;
     bool          _paralysis     = false;
+    uint8_t       _dam           = 0; // 공격수정
+    uint8_t       _hit           = 0; // 명중수정
+    bool          _invincible    = false;
 
 public:
     fb::game::spells spells;
@@ -287,6 +290,34 @@ public:
      */
     virtual void action(ACTION action, DURATION duration, uint8_t sound = 0x00);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t dam() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void dam(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t hit() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void hit(uint8_t value);
+
 public:
     /**
      * @brief      { function_description }
@@ -405,6 +436,20 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool paralysis() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void invincible(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool invincible() const;
 
 public:
     /**
@@ -595,6 +640,33 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_paralysis(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_invincible(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_dam(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_hit(lua_State* lua);
 };
 
 /**

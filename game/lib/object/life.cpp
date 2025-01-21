@@ -28,6 +28,9 @@ uint32_t life::damage(uint32_t value, fb::game::object* from, bool critical)
 {
     this->assert_thread();
 
+    if (this->invincible())
+        return 0;
+
     auto before = this->_hp;
     this->hp(this->_hp - std::min(value, this->_hp));
     this->update_hp(before - this->_hp, critical);
@@ -402,4 +405,42 @@ void fb::game::life::paralysis(bool value)
 bool fb::game::life::paralysis() const
 {
     return this->_paralysis;
+}
+
+void fb::game::life::invincible(bool value)
+{
+    this->_invincible = value;
+}
+
+bool fb::game::life::invincible() const
+{
+    return this->_invincible;
+}
+
+uint32_t life::dam() const
+{
+    this->assert_thread();
+
+    return this->_dam;
+}
+
+void life::dam(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_dam = value;
+}
+
+uint32_t life::hit() const
+{
+    this->assert_thread();
+
+    return this->_hit;
+}
+
+void life::hit(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_hit = value;
 }

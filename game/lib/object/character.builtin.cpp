@@ -47,6 +47,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"buff_dex",            character::builtin_buff_dex},
 {"buff_int",            character::builtin_buff_int},
 {"nation",              character::builtin_nation},
+{"weapon",              character::builtin_weapon},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1639,6 +1640,70 @@ int fb::game::character::builtin_nation(lua_State* lua)
 
             context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
                 static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int fb::game::character::builtin_weapon(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        auto weapon = ch->items.weapon();
+        if (ch->matched_thread())
+        {
+            if (weapon == nullptr)
+                thread->pushnil();
+            else
+                thread->pushobject(weapon);
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, fb::game::weapon* weapon) {
+                if (weapon == nullptr)
+                    thread->pushnil();
+                else
+                    thread->pushobject(weapon);
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, weapon);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto weapon = thread->touserdata<fb::game::weapon>(2);
+        if (ch->matched_thread())
+        {
+            ch->items.weapon(weapon);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, fb::game::weapon* weapon) {
+                ch->items.weapon(weapon);
+                thread->resume(0);
+            };
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, weapon);
                 co_return;
             });
             return thread->yield(0);

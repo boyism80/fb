@@ -248,6 +248,37 @@ function spell_damage_near(me, spell, damage, mp, sound, effect)
     return true
 end
 
+function spell_damage_near_target(me, you, spell, damage, mp, sound, effect)
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    me:sound(sound)
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+
+    local rate = me:skill_damage_rate() / 1000.0
+    local targets = near(you, OBJECT_TYPE_LIFE)
+    table.insert(targets, you)
+    for _, you in pairs(targets) do
+        if me == you then
+            goto CONTINUE_SPELL_DAMAGE_NEAR_TARGET
+        end
+        if effect ~= nil then
+            you:effect(effect)
+        end
+        if you:is(OBJECT_TYPE_CHARACTER) then
+            you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
+        end
+        you:damage(math.floor(damage*rate), me)
+
+::CONTINUE_SPELL_DAMAGE_NEAR_TARGET::
+    end
+
+    return true
+end
+
 function spell_damage_area(me, you, spell, damage, mp, sound, effect_me, effect_you)
     local error = me:assert_state(STATE_GHOST, STATE_RIDING)
     if error ~= nil then

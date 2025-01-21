@@ -829,6 +829,8 @@ int object::builtin_buffs(lua_State* lua)
         thread->pushinteger(i + 1);
         thread->pushobject(buff);
         lua_settable(lua, -3);
+
+        i++;
     }
 
     return 1;

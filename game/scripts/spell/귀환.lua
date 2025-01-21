@@ -1,4 +1,17 @@
 function on_cast(me, spell)
+    local sound = 33
+    local mp = 30
+    local error = me:assert_state(STATE_GHOST, STATE_RIDING)
+    if error ~= nil then
+        return me:message(error)
+    end
+
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
     local maps = nil
     if me:nation() == NATION_GOGURYEO then
         maps = {29, 30, 31, 8016, 8017, 8018, 8043, 8044, 8045, 8070, 8071, 8072, 8097, 8098, 8099, 8124, 8125, 8126, 8151, 8152, 8153, 8178, 8179, 8180, 8205, 8206, 8207, 8232, 8233, 8234, 8259, 8260, 8261}
@@ -9,12 +22,12 @@ function on_cast(me, spell)
     math.randomseed(seed())
     local i = math.random(1, #maps)
     local map = maps[i]
-
-    local effect = nil
-    local sound = 33
-    local mp = 30
-    if not spell_cast(me, me, spell, mp, sound, effect) then
-        return
+    error = me:map(map)
+    if error ~= nil then
+        return me:message(error)
     end
-    me:map(map)
+
+    me:sound(sound)
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
 end

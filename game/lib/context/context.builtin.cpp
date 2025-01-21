@@ -414,6 +414,20 @@ int fb::game::context::builtin_cp949(lua_State* lua)
     return 1;
 }
 
+int fb::game::context::builtin_debug(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+#if defined DEBUG | defined _DEBUG
+    thread->pushboolean(true);
+#else
+    thread->pushboolean(false);
+#endif
+    return 1;
+}
+
 int fb::game::context::builtin_broadcast(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

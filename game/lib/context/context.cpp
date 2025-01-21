@@ -42,7 +42,10 @@ async::task<void> context::handle_start()
     lua::build<fb::model::npc, fb::model::object>();
     lua::build<npc, object>();
     lua::build<fb::model::item, fb::model::object>();
+    lua::build<fb::model::weapon, fb::model::item>();
     lua::build<item, object>();
+    lua::build<equipment, item>();
+    lua::build<weapon, equipment>();
     lua::build<character, life>();
 
     lua::build("seed", builtin_seed);
@@ -64,6 +67,7 @@ async::task<void> context::handle_start()
     lua::build("name_with", builtin_name_with);
     lua::build("assert_korean", builtin_assert_korean);
     lua::build("CP949", builtin_cp949);
+    lua::build("debug", builtin_debug);
 
     auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
     for (int i = 0; i < this->threads.count(); i++)

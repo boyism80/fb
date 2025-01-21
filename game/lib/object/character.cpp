@@ -1123,34 +1123,6 @@ item* character::withdraw_item(const fb::model::item& item, uint16_t count)
     return this->withdraw_item((uint8_t)index, count);
 }
 
-uint32_t character::damage() const
-{
-    this->assert_thread();
-
-    return this->_damage;
-}
-
-void character::damage(uint8_t value)
-{
-    this->assert_thread();
-
-    this->_damage = value;
-}
-
-uint32_t character::hit() const
-{
-    this->assert_thread();
-
-    return this->_hit;
-}
-
-void character::hit(uint8_t value)
-{
-    this->assert_thread();
-
-    this->_hit = value;
-}
-
 uint32_t character::regenerative() const
 {
     this->assert_thread();

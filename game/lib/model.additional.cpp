@@ -27,6 +27,8 @@ END_LUA_EXTENSION; // clang-format on
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
 {"speed",               fb::model::mob::builtin_speed},
+{"size",                fb::model::mob::builtin_size},
+{"damage",              fb::model::mob::builtin_damage},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
@@ -62,6 +64,13 @@ IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
 {"repair_price",        fb::model::item::builtin_repair_price},
 {"rename_price",        fb::model::item::builtin_rename_price},
 {"deposit_price",       fb::model::item::builtin_deposit_price},
+END_LUA_EXTENSION; // clang-format on
+
+// clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
+{"damage_small",        fb::model::weapon::builtin_damage_small},
+{"damage_large",        fb::model::weapon::builtin_damage_large},
+{"sound",        		fb::model::weapon::builtin_sound},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off

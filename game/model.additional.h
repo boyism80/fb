@@ -181,6 +181,9 @@ public:                                               \
 #define DECLARE_WEAPON_EXTENSION                                                                         \
                                                                                                          \
 public:                                                                                                  \
+    LUA_PROTOTYPE                                                                                        \
+                                                                                                         \
+public:                                                                                                  \
     fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
     virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
     {                                                                                                    \
@@ -205,7 +208,10 @@ public:                                                                         
         default:                                                                                         \
             return enum_value::WEAPON_TYPE::UNKNOWN;                                                     \
         }                                                                                                \
-    }
+    }                                                                                                    \
+    static int builtin_damage_small(lua_State* lua);                                                     \
+    static int builtin_damage_large(lua_State* lua);                                                     \
+    static int builtin_sound(lua_State* lua);
 
 #define DECLARE_ARMOR_EXTENSION                                                                          \
                                                                                                          \
@@ -293,7 +299,9 @@ public:                                                \
     OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB) \
                                                        \
 public:                                                \
-    static int builtin_speed(lua_State* lua);
+    static int builtin_speed(lua_State* lua);          \
+    static int builtin_size(lua_State* lua);           \
+    static int builtin_damage(lua_State* lua);
 
 #define DECLARE_MOB_CONTAINER_EXTENSION \
                                         \

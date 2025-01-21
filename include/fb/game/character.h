@@ -79,8 +79,6 @@ private:
     uint8_t                 _strength        = 0;
     uint8_t                 _intelligence    = 0;
     uint8_t                 _dexterity       = 0;
-    uint8_t                 _damage          = 0; // 공격수정
-    uint8_t                 _hit             = 0; // 명중수정
     uint8_t                 _regenerative    = 0; // 재생력
     uint8_t                 _buff_str        = 0;
     uint8_t                 _buff_int        = 0;
@@ -885,34 +883,6 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t damage() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void damage(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t hit() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void hit(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
     uint32_t regenerative() const;
 
     /**
@@ -1663,6 +1633,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_nation(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_weapon(lua_State* lua);
 };
 
 /**

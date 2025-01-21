@@ -32,6 +32,7 @@ public:
      * @param[in]  model    The model
      */
     rezen(fb::game::context& context, const fb::model::mob_spawn& model);
+    
     /**
      * @brief      Destroys the object.
      */
@@ -41,6 +42,7 @@ public:
      * @brief      { function_description }
      */
     void decrease();
+    
     /**
      * @brief      { function_description }
      *
@@ -82,6 +84,7 @@ private:
     fb::model::datetime _action_time;
     fb::game::rezen*    _rezen         = nullptr;
     fb::game::life*     _target        = nullptr;
+    fb::game::life*     _oblivion      = nullptr;
     lua::context*       _attack_thread = nullptr;
 
 public:
@@ -93,12 +96,14 @@ public:
      * @param[in]  config   The configuration
      */
     mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
+    
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  right  The right
      */
     mob(const mob& right);
+    
     /**
      * @brief      Destroys the object.
      */
@@ -111,6 +116,7 @@ private:
      * @return     { description_of_the_return_value }
      */
     fb::game::life* find_target();
+    
     /**
      * @brief      { function_description }
      *
@@ -127,42 +133,63 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool action();
+    
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     const fb::model::datetime& action_time() const;
+    
     /**
      * @brief      { function_description }
      *
      * @param[in]  dt    { parameter_description }
      */
     void action_time(const fb::model::datetime& dt);
+    
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     fb::game::life* target() const;
+    
     /**
      * @brief      { function_description }
      *
      * @param      value  The value
      */
     void target(fb::game::life* value);
+    
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::game::life* oblivion() const;
+    
+    /**
+     * @brief      { function_description }
+     *
+     * @param      value  The value
+     */
+    void oblivion(fb::game::life* value);
+    
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     fb::game::life* fix();
+    
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      */
     void AI(const fb::model::datetime& now);
+    
     /**
      * @brief      { function_description }
      *
@@ -207,6 +234,25 @@ public:
      * @brief      { function_description }
      */
     void assert_thread() const override final;
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_target(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_oblivion(lua_State* lua);
 };
 
 /**

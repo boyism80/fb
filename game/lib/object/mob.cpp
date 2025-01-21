@@ -178,6 +178,20 @@ void mob::target(life* value)
     this->_target = value;
 }
 
+life* mob::oblivion() const
+{
+    this->assert_thread();
+
+    return this->_oblivion;
+}
+
+void mob::oblivion(life* value)
+{
+    this->assert_thread();
+
+    this->_oblivion = value;
+}
+
 life* mob::fix()
 {
     this->assert_thread();
@@ -220,6 +234,9 @@ life* mob::find_target()
     for (auto x : this->sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto life = static_cast<fb::game::life*>(x);
+        if (life == this->_oblivion)
+            continue;
+
         if (life->alive() == false)
             continue;
 

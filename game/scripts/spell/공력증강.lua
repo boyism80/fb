@@ -14,8 +14,8 @@ function on_cast(me, spell)
     end
     me:mp_down(mp)
 
-    local success = math.random() > 0.5
-    if not success then
+    local success = math.random() < 0.5
+    if not debug() and not success then
         return me:message('정신집중에 실패하였습니다.')
     end
 

@@ -9,61 +9,11 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
 
 void context::on_attack(life& me, DURATION duration)
 {
-    static auto PK = false;
-
-    me.action(ACTION::ATTACK, duration);
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto* weapon = static_cast<character&>(me).items.weapon();
-        if (weapon != nullptr)
-        {
-            auto sound = weapon->based<fb::model::weapon>().sound;
-            me.sound(sound != 0 ? SOUND(sound) : SOUND::SWING);
-        }
-    }
-
-    auto front = static_cast<fb::game::life*>(me.forward(OBJECT_TYPE::LIFE));
-    if (front == nullptr)
-        return;
-
-    if (!PK && me.is(OBJECT_TYPE::CHARACTER) && front->is(OBJECT_TYPE::CHARACTER))
-        return;
-
-    auto miss = me.calculate_miss(*front);
-    if (miss)
-        return;
-
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto* weapon = static_cast<character&>(me).items.weapon();
-        if (weapon != nullptr)
-        {
-            auto sound = weapon->based<fb::model::weapon>().sound;
-            front->sound(SOUND::DAMAGE);
-        }
-    }
-
-    auto critical = me.calculate_critical(*front);
-    auto mob_size = MOB_SIZE::LARGE;
-    if (front->is(OBJECT_TYPE::MOB))
-    {
-        auto& model = static_cast<fb::game::mob*>(front)->based<fb::model::mob>();
-        mob_size    = model.size;
-    }
-    auto damage = me.calculate_damage(me.auto_attack_damage(mob_size), *front, critical);
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto thread = lua::new_context();
-        thread->from("scripts/common/attack.lua");
-        thread->func("on_attack");
-        thread->pushobject(me);
-        thread->pushobject(*front);
-        thread->pushinteger(damage);
-        thread->resume(3, false);
-        damage = thread->tointeger(1);
-        thread->release();
-    }
-    front->damage(damage, &me, critical);
+    auto thread = lua::new_context();
+    thread->from("scripts/common/attack.lua");
+    thread->func("on_attack");
+    thread->pushobject(me);
+    thread->resume(1);
 }
 
 void context::on_dead(life& me, object* you)
