@@ -602,11 +602,11 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     switch (type)
     {
     case CHAT_TYPE::NORMAL:
-        message = std::format("{}: ", ch->name(), message);
+        message = std::format("{}: {}", ch->name(), message);
         break;
 
     case CHAT_TYPE::SHOUT:
-        message = std::format("{}! ", ch->name(), message);
+        message = std::format("{}! {}", ch->name(), message);
         break;
     }
 

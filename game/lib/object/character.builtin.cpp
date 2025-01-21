@@ -46,6 +46,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"buff_str",            character::builtin_buff_str},
 {"buff_dex",            character::builtin_buff_dex},
 {"buff_int",            character::builtin_buff_int},
+{"nation",              character::builtin_nation},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1575,6 +1576,64 @@ int fb::game::character::builtin_buff_int(lua_State* lua)
         {
             static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
                 ch->buff_int(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int fb::game::character::builtin_nation(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(static_cast<uint8_t>(ch->nation()));
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(static_cast<uint8_t>(ch->nation()));
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = static_cast<NATION>(thread->tointeger(2));
+        if (ch->matched_thread())
+        {
+            ch->nation(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, NATION value) {
+                ch->nation(value);
                 thread->resume(0);
             };
 

@@ -62,7 +62,9 @@ function spell_cast(me, you, spell, mp, sound, effect, no_assert)
     end
     me:mp_down(mp)
 
-    you:effect(effect)
+    if effect ~= nil then
+        you:effect(effect)
+    end
     you:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
@@ -95,7 +97,9 @@ function buff_cast(me, you, spell, mp, sound, effect)
         return false
     end
 
-    you:effect(effect)
+    if effect ~= nil then
+        you:effect(effect)
+    end
     you:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
@@ -128,7 +132,9 @@ function debuff_cast(me, you, spell, mp, sound, effect)
         return false
     end
 
-    you:effect(effect)
+    if effect ~= nil then
+        you:effect(effect)
+    end
     you:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
@@ -169,7 +175,9 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
     local damaged = false
     local rate = me:skill_damage_rate() / 1000.0
     for _, obj in pairs(you) do
-        obj:effect(effect)
+        if effect ~= nil then
+            obj:effect(effect)
+        end
         obj:sound(sound)
         if obj:is(OBJECT_TYPE_LIFE) then
             obj:damage(math.floor(damage * rate), me)
@@ -202,7 +210,9 @@ function spell_damage(me, you, spell, damage, mp, sound, effect)
     end
     me:mp_down(mp)
 
-    you:effect(effect)
+    if effect ~= nil then
+        you:effect(effect)
+    end
     you:sound(sound)
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
     if you:is(OBJECT_TYPE_CHARACTER) then
@@ -226,7 +236,9 @@ function spell_damage_near(me, spell, damage, mp, sound, effect)
 
     local rate = me:skill_damage_rate() / 1000.0
     for _, you in pairs(near(me, OBJECT_TYPE_LIFE)) do
-        you:effect(effect)
+        if effect ~= nil then
+            you:effect(effect)
+        end
         if you:is(OBJECT_TYPE_CHARACTER) then
             you:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
@@ -316,7 +328,9 @@ function spell_heal_near(me, you, spell, hp, mp, sound, effect)
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     for _, ch in pairs(targets) do
         ch:heal(hp)
-        ch:effect(effect)
+        if effect ~= nil then
+            ch:effect(effect)
+        end
         ch:sound(sound)
         if me ~= ch then
             ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
@@ -355,7 +369,9 @@ function spell_heal_group(me, spell, hp, mp, sound, effect)
     for _, ch in pairs(group:nears(map, {me:position()})) do
         if me ~= ch then
             ch:heal(hp)
-            ch:effect(effect)
+            if effect ~= nil then
+                ch:effect(effect)
+            end
             ch:sound(sound)
             ch:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
         end

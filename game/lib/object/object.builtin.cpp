@@ -542,18 +542,18 @@ int object::builtin_map(lua_State* lua)
             if (map == nullptr)
                 throw std::runtime_error("올바르지 않은 맵입니다.");
         }
-        else if (thread->is_str(2))
-        {
-            map = ctx->maps.name2map(thread->tostring(2));
-            if (map == nullptr)
-                throw std::runtime_error("올바르지 않은 맵입니다.");
-        }
         else if (thread->is_num(2))
         {
             auto id = thread->tointeger(2);
             if (ctx->maps.contains(id) == false)
                 throw std::runtime_error("올바르지 않은 맵입니다.");
             map = &ctx->maps[id];
+        }
+        else if (thread->is_str(2))
+        {
+            map = ctx->maps.name2map(thread->tostring(2));
+            if (map == nullptr)
+                throw std::runtime_error("올바르지 않은 맵입니다.");
         }
         else
         {

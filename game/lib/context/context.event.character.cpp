@@ -149,16 +149,20 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
         if (this->alive(me))
         {
             me.update_map();
+            me.update_external(false);
             this->on_message(me, e.what(), MESSAGE_TYPE::STATE);
         }
+        co_return false;
     }
     catch (boost::system::error_code& /*e*/)
     {
         if (this->alive(me))
         {
             me.update_map();
+            me.update_external(false);
             this->on_message(me, _TEXT(MESSAGE_NOT_READY_GAME_SERVER), MESSAGE_TYPE::STATE);
         }
+        co_return false;
     }
 }
 
