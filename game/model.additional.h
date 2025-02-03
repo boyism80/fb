@@ -301,7 +301,8 @@ public:                                                \
 public:                                                \
     static int builtin_speed(lua_State* lua);          \
     static int builtin_size(lua_State* lua);           \
-    static int builtin_damage(lua_State* lua);
+    static int builtin_damage(lua_State* lua);         \
+    static int builtin_drop(lua_State* lua);
 
 #define DECLARE_MOB_CONTAINER_EXTENSION \
                                         \
@@ -366,11 +367,12 @@ public:                                      \
     static int builtin_name(lua_State* lua); \
     static int builtin_message(lua_State* lua);
 
-#define DECLARE_PROMOTION_CONTAINER_EXTENSION                                     \
-                                                                                  \
-public:                                                                           \
-    const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const; \
-    bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const;
+#define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                               \
+                                                                                                            \
+public:                                                                                                     \
+    const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const;                           \
+    bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const; \
+    bool             class2name(enum_value::CLASS& cls, uint8_t& promotion, std::string& name) const;
 
 #define DECLARE_CONST_REGEX_EXTENSION                                                                              \
                                                                                                                    \

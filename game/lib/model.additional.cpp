@@ -29,6 +29,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
 {"speed",               fb::model::mob::builtin_speed},
 {"size",                fb::model::mob::builtin_size},
 {"damage",              fb::model::mob::builtin_damage},
+{"drop",                fb::model::mob::builtin_drop},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off

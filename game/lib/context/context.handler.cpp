@@ -110,7 +110,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
     // TODO: 실제로 이동하지 않고 이동했을때의 위치를 구해서
     // 해당 위치에서 워프가 가능한지 확인하고
     // 워프가능하면 워프처리, 그렇지 않다면 해당 위치로 이동한다.
-    auto forward = ch->position_forward(request.direction);
+    auto forward = ch->side_position(request.direction);
 
     // 워프 위치라면 워프한다.
     const auto warp = map->warpable(forward);

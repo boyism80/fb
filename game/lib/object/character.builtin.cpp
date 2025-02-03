@@ -48,6 +48,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"buff_int",            character::builtin_buff_int},
 {"nation",              character::builtin_nation},
 {"weapon",              character::builtin_weapon},
+{"title",               character::builtin_title},
+{"gain",                character::builtin_gain},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1709,4 +1711,85 @@ int fb::game::character::builtin_weapon(lua_State* lua)
             return thread->yield(0);
         }
     }
+}
+
+int character::builtin_title(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushstring(ch->title());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushstring(ch->title());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tostring(2);
+        if (ch->matched_thread())
+        {
+            ch->title(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, const std::string& value) {
+                ch->title(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int character::builtin_gain(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto items = std::vector<fb::game::item*>{};
+    for (int i = 2; i <= argc; i++)
+    {
+        auto item = thread->touserdata<fb::game::item>(i);
+        items.push_back(item);
+    }
+
+    ch->items.add(items, true);
+    return 0;
 }

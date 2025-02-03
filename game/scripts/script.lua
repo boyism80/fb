@@ -261,10 +261,7 @@ end
 
 function func(me)
 
-    -- samplee_cc(me)
-    me:unbuff('무장')
-    me:unbuff('혼마술')
-    me:unbuff('저주')
+    me:title('')
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

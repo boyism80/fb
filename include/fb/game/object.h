@@ -242,22 +242,6 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::model::point16_t position_forward() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  direction  The direction
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::model::point16_t position_forward(DIRECTION direction) const;
-
-    /**
-     * @brief      { function_description }
-     *
      * @param[in]  x        { parameter_description }
      * @param[in]  y        { parameter_description }
      * @param[in]  refresh  The refresh
@@ -392,6 +376,24 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool sight(const fb::game::object& object) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  direction  The direction
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::model::point16_t side_position(DIRECTION direction) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  direction  The direction
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::model::point16_t front_position() const;
 
     /**
      * @brief      { function_description }
@@ -640,6 +642,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_position(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_front_position(lua_State* lua);
 
     /**
      * @brief      { function_description }

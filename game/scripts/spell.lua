@@ -279,7 +279,7 @@ function spell_damage_near_target(me, you, spell, damage, mp, sound, effect)
     return true
 end
 
-function spell_damage_area(me, you, spell, damage, mp, sound, effect_me, effect_you)
+function spell_damage_area(me, you, spell, damage, hp, mp, sound, effect_me, effect_you)
     local error = me:assert_state(STATE_GHOST, STATE_RIDING)
     if error ~= nil then
         me:message(error)
@@ -311,6 +311,10 @@ function spell_damage_area(me, you, spell, damage, mp, sound, effect_me, effect_
         me:effect(effect_me)
     end
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    me:chat(hp)
+    if hp ~= nil then
+        me:hp(me:hp() - hp)
+    end
     return true
 end
 

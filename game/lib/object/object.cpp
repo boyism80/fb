@@ -279,41 +279,6 @@ bool object::move(DIRECTION direction)
     return true;
 }
 
-const fb::model::point16_t object::position_forward() const
-{
-    this->assert_thread();
-
-    return this->position_forward(this->_direction);
-}
-
-const fb::model::point16_t object::position_forward(DIRECTION direction) const
-{
-    this->assert_thread();
-
-    auto current = fb::model::point16_t(this->_position);
-    auto forward = fb::model::point16_t(current);
-    forward.forward(direction);
-    if (this->_map->movable(forward))
-        return forward;
-
-    auto left = fb::model::point16_t(current);
-    left.left(this->_direction);
-    if (this->_map->movable(left))
-        return left;
-
-    auto right = fb::model::point16_t(current);
-    right.right(this->_direction);
-    if (this->_map->movable(right))
-        return right;
-
-    auto backward = fb::model::point16_t(current);
-    backward.backward(this->_direction);
-    if (this->_map->movable(backward))
-        return backward;
-
-    return current;
-}
-
 uint16_t object::x() const
 {
     this->assert_thread();
@@ -612,15 +577,9 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
     }
 }
 
-object* object::side(DIRECTION direction, OBJECT_TYPE type) const
+fb::model::point16_t object::side_position(DIRECTION direction) const
 {
-    this->assert_thread();
-
-    auto map = this->_map;
-    if (map == nullptr)
-        return nullptr;
-
-    fb::model::point16_t front = this->position();
+    auto front = this->position();
     switch (direction)
     {
     case DIRECTION::TOP:
@@ -640,6 +599,23 @@ object* object::side(DIRECTION direction, OBJECT_TYPE type) const
         break;
     }
 
+    return front;
+}
+
+fb::model::point16_t object::front_position() const
+{
+    return this->side_position(this->_direction);
+}
+
+object* object::side(DIRECTION direction, OBJECT_TYPE type) const
+{
+    this->assert_thread();
+
+    auto map = this->_map;
+    if (map == nullptr)
+        return nullptr;
+
+    auto front = side_position(direction);
     if (map->existable(front) == false)
         return nullptr;
 

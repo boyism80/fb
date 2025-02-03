@@ -1417,7 +1417,7 @@ void character::unride()
 
         auto& model = this->context.model.mob[fb::model::const_value::mob::horse];
         auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
-        horse->map(this->_map, this->position_forward());
+        horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
         this->message(_TEXT(MESSAGE_RIDE_OFF));

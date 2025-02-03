@@ -12,6 +12,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"name",                object::builtin_name},
 {"sound",               object::builtin_sound},
 {"position",            object::builtin_position},
+{"front_position",      object::builtin_front_position},
 {"direction",           object::builtin_direction},
 {"chat",                object::builtin_chat},
 {"buff",                object::builtin_buff},
@@ -217,6 +218,40 @@ int object::builtin_position(lua_State* lua)
         });
 
         return thread->yield(0);
+    }
+}
+
+int object::builtin_front_position(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto ctx  = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto obj  = thread->touserdata<object>(1);
+    if (obj == nullptr)
+        return 0;
+
+    obj->assert_thread();
+
+    if (obj->thread() == ctx->threads.current())
+    {
+        auto position = obj->front_position();
+        thread->pushinteger(position.x);
+        thread->pushinteger(position.y);
+        return 2;
+    }
+    else
+    {
+        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+            auto position = obj->front_position();
+            thread->pushinteger(position.x);
+            thread->pushinteger(position.y);
+            thread->resume(2);
+            co_return;
+        });
+        return thread->yield(2);
     }
 }
 

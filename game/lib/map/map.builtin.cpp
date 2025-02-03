@@ -15,6 +15,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"door",                fb::game::map::builtin_door},
 {"doors",               fb::game::map::builtin_doors},
 {"contains",            fb::game::map::builtin_contains},
+{"belows",              fb::game::map::builtin_belows},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::map::builtin_model(lua_State* lua)
@@ -252,5 +253,33 @@ int fb::game::map::builtin_contains(lua_State* lua)
     }
 
     thread->pushboolean(false);
+    return 1;
+}
+
+int fb::game::map::builtin_belows(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto map  = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto x    = thread->tointeger(2);
+    auto y    = thread->tointeger(3);
+    auto type = argc < 4 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(4));
+
+    thread->new_table();
+    auto i = 0;
+    for (auto below : map->belows(fb::model::point16_t(x, y), type))
+    {
+        thread->pushinteger(i + 1);
+        thread->pushobject(below);
+        lua_settable(lua, -3);
+
+        i++;
+    }
     return 1;
 }
