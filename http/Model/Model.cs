@@ -1357,6 +1357,10 @@ namespace Fb.Model
 
     public class Equipment : Fb.Model.Item
     {
+        [JsonProperty("script_inactive")]
+        public string ScriptInactive { get; set; }
+        [JsonProperty("script_concast")]
+        public string ScriptConcast { get; set; }
         [JsonProperty("dress")]
         public ushort Dress { get; set; }
         [JsonProperty("durability")]

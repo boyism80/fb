@@ -42,7 +42,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"whisper",             character::builtin_whisper},
 {"send_mail",           character::builtin_send_mail},
 {"assert_state",        character::builtin_assert_state},
-{"message",             character::builtin_message},
 {"buff_str",            character::builtin_buff_str},
 {"buff_dex",            character::builtin_buff_dex},
 {"buff_int",            character::builtin_buff_int},
@@ -1386,38 +1385,6 @@ int character::builtin_assert_state(lua_State* lua)
     {
         thread->pushstring(e.what());
         return 1;
-    }
-}
-
-int character::builtin_message(lua_State* lua)
-{
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto ctx  = thread->env<fb::game::context>("context");
-    auto argc = thread->argc();
-    auto ch   = thread->touserdata<character>(1);
-    if (ch == nullptr)
-        return 0;
-
-    auto message = thread->tostring(2);
-    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
-
-    if (ch->thread() == ctx->threads.current())
-    {
-        ch->message(message, type);
-        return 0;
-    }
-    else
-    {
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            ch->message(message, type);
-            thread->resume(0);
-            co_return;
-        });
-
-        return thread->yield(0);
     }
 }
 

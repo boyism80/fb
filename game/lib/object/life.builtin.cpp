@@ -5,6 +5,7 @@
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"__eq",                fb::game::object::builtin_eq},
+{"message",             fb::game::life::builtin_message},
 {"hp",                  fb::game::life::builtin_hp},
 {"mp",                  fb::game::life::builtin_mp},
 {"heal",                fb::game::life::builtin_heal},
@@ -31,6 +32,42 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"dam",                 fb::game::life::builtin_dam},
 {"cover",               fb::game::life::builtin_cover},
 END_LUA_EXTENSION; // clang-format on
+
+int fb::game::life::builtin_message(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto ctx  = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto obj  = thread->touserdata<fb::game::life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (obj->is(OBJECT_TYPE::CHARACTER) == false)
+        return 0;
+
+    auto ch      = static_cast<fb::game::character*>(obj);
+    auto message = thread->tostring(2);
+    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
+
+    if (ch->thread() == ctx->threads.current())
+    {
+        ch->message(message, type);
+        return 0;
+    }
+    else
+    {
+        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            ch->message(message, type);
+            thread->resume(0);
+            co_return;
+        });
+
+        return thread->yield(0);
+    }
+}
 
 int fb::game::life::builtin_hp(lua_State* lua)
 {
@@ -278,36 +315,50 @@ int fb::game::life::builtin_cast(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     auto argc    = thread->argc();
-    auto me      = thread->touserdata<fb::game::life>(1);
+    auto offset  = 1;
+    auto me      = thread->touserdata<fb::game::life>(offset++);
     if (me == nullptr)
         return 0;
 
-    auto you = thread->touserdata<fb::game::life>(2);
-    if (you == nullptr)
+    fb::game::life* you = nullptr;
+    if (argc == 2)
+        you = me;
+    else if (lua_type(lua, offset) == LUA_TUSERDATA)
+        you = thread->touserdata<fb::game::life>(offset++);
+    else
         you = nullptr;
 
     auto map = me->map();
     if (map == nullptr || map->objects.contains(*you) == false)
         return 0;
 
-    auto name  = thread->tostring(3);
+    auto name  = thread->tostring(offset++);
     auto spell = context->model.spell.name2spell(name);
     if (spell == nullptr)
         return 0;
+
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/spell.lua");
+#endif
 
     auto x = lua::new_context();
     if (x == nullptr)
         return 0;
 
-    x->from(spell->cast.c_str()).func("on_cast").pushobject(me);
+    x->from(spell->cast.c_str());
+    x->func("on_cast");
+    x->pushobject(me);
 
-    if (you != nullptr)
-        x->pushobject(you);
-    else
-        x->pushnil();
+    if (argc > 2)
+    {
+        if (you != nullptr)
+            x->pushobject(you);
+        else
+            x->pushnil();
+    }
 
-    x->pushobject(spell).resume(3);
-
+    x->pushobject(spell);
+    x->resume(argc);
     return 0;
 }
 

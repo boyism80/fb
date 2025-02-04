@@ -4852,6 +4852,8 @@ class equipment : public fb::model::item
 DECLARE_EQUIPMENT_FIELDS
 #else
 public:
+    const std::string script_inactive;
+    const std::string script_concast;
     const uint16_t dress;
     const uint32_t durability;
     const std::optional<double> repair;
@@ -4876,6 +4878,8 @@ DECLARE_EQUIPMENT_CUSTOM_CONSTRUCTOR
 #else
 public:
     equipment(const Json::Value& json) : fb::model::item(json),
+        script_inactive(fb::model::build<std::string>(json["script_inactive"])),
+        script_concast(fb::model::build<std::string>(json["script_concast"])),
         dress(fb::model::build<uint16_t>(json["dress"])),
         durability(fb::model::build<uint32_t>(json["durability"])),
         repair(fb::model::build<std::optional<double>>(json["repair"])),

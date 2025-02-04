@@ -11,5 +11,5 @@ end
 
 function on_uncast(me, spell)
     me:state(STATE_NORMAL)
-    me:message('투명 해제')
+    unbuff(me, spell)
 end

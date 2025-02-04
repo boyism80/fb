@@ -1125,6 +1125,16 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    [[nodiscard]] async::task<void> handle_gear_timer(const fb::model::datetime& now, std::thread::id id);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  now   The now
+     * @param[in]  id    The identifier
+     *
+     * @return     { description_of_the_return_value }
+     */
     [[nodiscard]] async::task<void> handle_save_timer(const fb::model::datetime& now, std::thread::id id);
 
     /**

@@ -105,6 +105,65 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
     co_return;
 }
 
+async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std::thread::id id)
+{
+    auto thread = this->threads.at(id);
+    auto params = thread->template data<thread_params>();
+    auto lua    = fb::lua::new_context();
+
+    for (auto& [_, map] : params->maps)
+    {
+        if (map->active == false)
+            continue;
+
+        if (map->objects.size() == 0)
+            continue;
+
+        auto concast = std::unordered_map<fb::game::character*, std::vector<fb::game::equipment*>>{};
+        for (auto& [fd, obj] : map->objects)
+        {
+            if (obj.is(OBJECT_TYPE::CHARACTER) == false)
+                continue;
+
+            auto& ch = static_cast<fb::game::character&>(obj);
+            for (auto& [part, item] : ch.items.equipments())
+            {
+                if (item == nullptr)
+                    continue;
+
+                auto  equipment = static_cast<fb::game::equipment*>(item);
+                auto& model     = equipment->based<fb::model::equipment>();
+                if (model.script_concast == "")
+                    continue;
+
+                if (concast.contains(&ch) == false)
+                    concast.insert({&ch, {}});
+
+                concast[&ch].push_back(equipment);
+            }
+        }
+
+        for (auto& [ch, equipments] : concast)
+        {
+            for (auto equipment : equipments)
+            {
+                auto& model = equipment->based<fb::model::equipment>();
+
+#if defined DEBUG | defined _DEBUG
+                lua->from(model.script_concast);
+#endif
+                lua->func("on_concast");
+                lua->pushobject(ch);
+                lua->pushobject(equipment);
+                lua->resume(2, false);
+            }
+        }
+    }
+
+    lua->release();
+    co_return;
+}
+
 async::task<void> context::handle_save_timer(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);

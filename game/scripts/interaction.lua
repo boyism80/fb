@@ -183,9 +183,11 @@ function on_equipment_inactive(me, parts, equipment)
 end
 
 function on_pickup(me)
-    if me:isbuff('투명') then
-        me:state(STATE_NORMAL)
-        me:unbuff('투명')
+    for _, buff_name in pairs(relative_buff_name('투명')) do
+        if me:isbuff(buff_name) then
+            me:state(STATE_NORMAL)
+            me:unbuff(buff_name)
+        end
     end
 
     any_action(me)
