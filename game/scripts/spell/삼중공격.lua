@@ -16,4 +16,5 @@ end
 
 function on_uncast(me, spell)
     me:damage_rate(me:damage_rate() - 2000)
+    unbuff(me, spell)
 end

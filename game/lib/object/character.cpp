@@ -105,6 +105,17 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
     if (from == nullptr)
         return result;
 
+    for (auto mob : this->spawned_mobs())
+    {
+        if (mob->target() != nullptr)
+            continue;
+
+        if (from->is(OBJECT_TYPE::LIFE) == false)
+            continue;
+
+        mob->target(static_cast<fb::game::life*>(from));
+    }
+
     if (this->_hp == 0)
         this->kill(from, DESTROY_TYPE::DEAD);
 
@@ -1739,6 +1750,59 @@ void fb::game::character::weapon_damage(uint16_t value)
 uint16_t fb::game::character::weapon_damage() const
 {
     return this->_weapon_damage;
+}
+
+void fb::game::character::detect(bool value)
+{
+    this->assert_thread();
+    this->_detect = value;
+
+    for (auto obj : this->nears(OBJECT_TYPE::CHARACTER))
+    {
+        auto ch = static_cast<character*>(obj);
+        if (ch->state() != STATE::HALF_CLOACK)
+            continue;
+
+        ch->update_external(*this, true);
+    }
+}
+
+bool fb::game::character::detect() const
+{
+    return this->_detect;
+}
+
+fb::game::mob* fb::game::character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position)
+{
+    auto map = this->_map;
+    if (map == nullptr)
+        return nullptr;
+
+    auto mob = model.make<fb::game::mob>(this->context, fb::game::mob::initial_params{.alive = true, .owner = this});
+    mob->map(map, position);
+    this->_spawned_mobs.push_back(mob);
+    return mob;
+}
+
+const std::vector<fb::game::mob*>& fb::game::character::spawned_mobs() const
+{
+    return this->_spawned_mobs;
+}
+
+bool fb::game::character::detach_spawned_mob(fb::game::mob& mob)
+{
+    if (mob.owner != this)
+        return false;
+
+    if (this->_spawned_mobs.size() == 0)
+        return false;
+
+    auto i = std::find(this->_spawned_mobs.begin(), this->_spawned_mobs.end(), &mob);
+    if (i == this->_spawned_mobs.end())
+        return false;
+
+    this->_spawned_mobs.erase(i);
+    return true;
 }
 
 void character::bright(uint8_t value)

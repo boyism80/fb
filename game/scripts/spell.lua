@@ -148,7 +148,7 @@ function debuff_cast(me, you, spell, mp, sound, effect)
 end
 
 
-function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
+function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect, preprocess)
     local error = me:assert_state(STATE_GHOST, STATE_RIDING)
     if error ~= nil then
         me:message(error)
@@ -170,6 +170,12 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect)
     end
     if #you == 0 then
         return false
+    end
+
+    if preprocess ~= nil then
+        for _, obj in pairs(you) do
+            preprocess(me, obj)
+        end
     end
 
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))

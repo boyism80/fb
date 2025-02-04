@@ -141,6 +141,18 @@ fb::game::buff* fb::game::buffs::push_back(const fb::model::spell& model,
     }
     else
     {
+        auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+        thread->from(model.cast);
+#endif
+        thread->func("on_buff");
+        thread->pushobject(this->_owner);
+        if (caster == nullptr)
+            thread->pushnil();
+        else
+            thread->pushobject(caster);
+        thread->pushobject(created);
+        thread->resume(3);
         return created;
     }
 }

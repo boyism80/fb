@@ -14,22 +14,26 @@ update_external::update_external(const fb::game::character& ch, const fb::game::
 #endif
 
 #ifndef BOT
-bool update_external::clock_visible() const
+bool update_external::is_detected() const
 {
+    if (this->ch.admin())
+        return true;
+
     if (&this->ch == &this->to)
         return true;
 
     if (this->to.is(OBJECT_TYPE::CHARACTER) == false)
         return false;
 
-    // TODO: to 에게 걸린 버프가 있어서 그게 투명 다 감지하는 버프면
-    // return true
+    auto& you = static_cast<const fb::game::character&>(this->to);
+    if (you.detect())
+        return true;
 
     auto& mine = this->ch.group();
     if (mine == nullptr)
         return false;
 
-    auto& your = static_cast<const fb::game::character&>(this->to).group();
+    auto& your = you.group();
     if (your == nullptr)
         return false;
 
@@ -80,7 +84,7 @@ async::task<void> update_external::serialize(fb::stream_writer<big_endian>& writ
     {
     case STATE::HALF_CLOACK:
     {
-        if (this->clock_visible())
+        if (this->is_detected())
             writer.write<uint8_t>(static_cast<uint8_t>(STATE::HALF_CLOACK));
         else
             writer.write<uint8_t>(static_cast<uint8_t>(STATE::CLOACK));

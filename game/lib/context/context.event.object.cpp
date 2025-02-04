@@ -33,6 +33,14 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
 
 void context::on_direction(object& me)
 {
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_direction");
+    thread->pushobject(me);
+    thread->resume(1);
+
     this->send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
@@ -47,7 +55,7 @@ void context::on_update_external(object& me, bool light)
         for (auto obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
         {
             auto you = static_cast<character*>(obj);
-            you->send(fb_resp::update_external(static_cast<character&>(me), me, light));
+            you->send(fb_resp::update_external(static_cast<character&>(me), *you, light));
         }
     }
     else
@@ -59,7 +67,7 @@ void context::on_update_external(object& me, bool light)
 void context::on_update_external(object& me, object& you, bool light)
 {
     if (me.is(OBJECT_TYPE::CHARACTER))
-        you.send(fb_resp::update_external(static_cast<character&>(me), me, light));
+        you.send(fb_resp::update_external(static_cast<character&>(me), you, light));
     else
         you.send(fb_resp::update(me));
 }
@@ -100,6 +108,14 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void context::on_move(object& me, const fb::model::point16_t& before)
 {
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_move");
+    thread->pushobject(me);
+    thread->resume(1);
+
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
 

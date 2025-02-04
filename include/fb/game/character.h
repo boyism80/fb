@@ -99,6 +99,8 @@ private:
     shared_clan_lock        _clan              = nullptr;
     uint16_t                _unread_mail       = 0;
     uint16_t                _weapon_damage     = 0;
+    bool                    _detect            = false;
+    std::vector<mob*>       _spawned_mobs      = {};
     bool                    _options[0x0B + 1] = {
         1,
     };
@@ -1264,6 +1266,46 @@ public:
     uint16_t weapon_damage() const;
 
     /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void detect(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool detect() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  model     The model
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::vector<fb::game::mob*>& spawned_mobs() const;
+
+    /**
+     * @brief      Detaches the spawned mob.
+     *
+     * @param      mob   The mob
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool detach_spawned_mob(fb::game::mob& mob);
+
+    /**
      * @brief      Returns a protocol representation of the object.
      *
      * @return     Protocol representation of the object.
@@ -1684,6 +1726,33 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_weapon_damage(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_detect(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_spawn_mob(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_spawned_mobs(lua_State* lua);
 };
 
 /**

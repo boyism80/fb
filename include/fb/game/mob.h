@@ -32,7 +32,7 @@ public:
      * @param[in]  model    The model
      */
     rezen(fb::game::context& context, const fb::model::mob_spawn& model);
-    
+
     /**
      * @brief      Destroys the object.
      */
@@ -42,7 +42,7 @@ public:
      * @brief      { function_description }
      */
     void decrease();
-    
+
     /**
      * @brief      { function_description }
      *
@@ -77,6 +77,7 @@ public:
     public:
         const bool             alive = false;
         fb::game::rezen* const rezen = nullptr;
+        fb::game::character*   owner = nullptr;
     };
 
 private:
@@ -88,6 +89,9 @@ private:
     lua::context*       _attack_thread = nullptr;
 
 public:
+    fb::game::character* owner = nullptr;
+
+public:
     /**
      * @brief      Constructs a new instance.
      *
@@ -96,14 +100,14 @@ public:
      * @param[in]  config   The configuration
      */
     mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
-    
+
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  right  The right
      */
     mob(const mob& right);
-    
+
     /**
      * @brief      Destroys the object.
      */
@@ -116,7 +120,7 @@ private:
      * @return     { description_of_the_return_value }
      */
     fb::game::life* find_target();
-    
+
     /**
      * @brief      { function_description }
      *
@@ -124,7 +128,16 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool near_target(DIRECTION& out) const;
+    bool near_target(const fb::game::life& target, DIRECTION& out) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool move_step(const fb::model::point16_t& position);
 
 public:
     /**
@@ -133,63 +146,63 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool action();
-    
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     const fb::model::datetime& action_time() const;
-    
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  dt    { parameter_description }
      */
     void action_time(const fb::model::datetime& dt);
-    
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     fb::game::life* target() const;
-    
+
     /**
      * @brief      { function_description }
      *
      * @param      value  The value
      */
     void target(fb::game::life* value);
-    
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     fb::game::life* oblivion() const;
-    
+
     /**
      * @brief      { function_description }
      *
      * @param      value  The value
      */
     void oblivion(fb::game::life* value);
-    
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::life* fix();
-    
+    fb::game::life* repair_target();
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      */
     void AI(const fb::model::datetime& now);
-    
+
     /**
      * @brief      { function_description }
      *

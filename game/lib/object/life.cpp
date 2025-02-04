@@ -28,6 +28,18 @@ uint32_t life::damage(uint32_t value, fb::game::object* from, bool critical)
 {
     this->assert_thread();
 
+    if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
+    {
+        auto ch = static_cast<fb::game::character*>(from);
+        for (auto mob : ch->spawned_mobs())
+        {
+            if (mob == this)
+                continue;
+
+            mob->target(this);
+        }
+    }
+
     if (this->invincible())
         return 0;
 

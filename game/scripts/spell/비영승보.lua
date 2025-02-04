@@ -1,5 +1,3 @@
--- TOP = 0x00, RIGHT = 0x01, BOTTOM = 0x02, LEFT = 0x03
-
 function lookup(me, you, direction)
     local map = me:map()
     

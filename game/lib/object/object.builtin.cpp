@@ -233,11 +233,12 @@ int object::builtin_front_position(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
+    auto step = argc < 2 ? 1 : thread->tointeger(2);
     obj->assert_thread();
 
     if (obj->thread() == ctx->threads.current())
     {
-        auto position = obj->front_position();
+        auto position = obj->front_position(step);
         thread->pushinteger(position.x);
         thread->pushinteger(position.y);
         return 2;
@@ -245,7 +246,7 @@ int object::builtin_front_position(lua_State* lua)
     else
     {
         ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            auto position = obj->front_position();
+            auto position = obj->front_position(step);
             thread->pushinteger(position.x);
             thread->pushinteger(position.y);
             thread->resume(2);
@@ -369,7 +370,21 @@ int object::builtin_buff(lua_State* lua)
     if (ctx->alive(*obj) == false)
         return 0;
 
-    auto spell = thread->touserdata<fb::model::spell>(2);
+    fb::model::spell* spell = nullptr;
+    switch (lua_type(lua, 2))
+    {
+    case LUA_TUSERDATA:
+        spell = thread->touserdata<fb::model::spell>(2);
+        break;
+
+    case LUA_TSTRING:
+        spell = ctx->model.spell.name2spell(thread->tostring(2));
+        break;
+
+    default:
+        return 0;
+    }
+
     if (spell == nullptr)
         return 0;
 
@@ -377,10 +392,12 @@ int object::builtin_buff(lua_State* lua)
     auto caster  = argc >= 4 ? thread->touserdata<fb::game::object>(4) : nullptr;
     auto buff    = obj->buffs.push_back(*spell, seconds, caster);
     if (buff == nullptr)
+    {
         thread->pushnil();
-    else
-        obj->send(fb::protocol::game::response::spell_buff(*buff));
+        return 1;
+    }
 
+    obj->send(fb::protocol::game::response::spell_buff(*buff));
     return 1;
 }
 

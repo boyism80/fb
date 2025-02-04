@@ -35,9 +35,13 @@ function is_back_attack(me, you)
     end
 end
 
-function damage(me, you, rate)
+function damage(me, you, rate, additional_attack)
     if rate == nil then
         rate = 1.0
+    end
+
+    if additional_attack == nil then
+        additional_attack = false
     end
 
     local size = MOB_SIZE_SMALL
@@ -63,11 +67,7 @@ function damage(me, you, rate)
         damage = math.random(min, max)
     end
 
-    local damage_rate = 1.0 + me:damage_rate() / 1000.0
-    if me:isbuff('투명') then
-        damage_rate = damage_rate * 8
-    end
-    
+    local damage_rate = me:damage_rate() / 1000.0
     if is_back_attack(me, you) then
         damage_rate = damage_rate * 2
     end
@@ -77,17 +77,25 @@ function damage(me, you, rate)
         damage_rate = damage_rate * 2
     end
 
-    damage_rate = damage_rate / (you:damage_derate() / 1000.0)
-    if me:is(OBJECT_TYPE_CHARACTER) then
-        you:sound(SOUND_DAMAGE)
+    if me:isbuff('투명') then
+        damage_rate = damage_rate * 8
     end
-    you:damage(math.floor(damage * damage_rate * rate), me, critical)
+
+    damage_rate = damage_rate / (you:damage_derate() / 1000.0)
+    local damage = math.floor(damage * damage_rate * rate)
+    you:damage(damage, me, critical)
 end
 
-function on_attack(me)
-    me:action(ACTION_ATTACK, DURATION_ATTACK)
+function on_attack(me, additional_attack)
+    if additional_attack == nil then
+        additional_attack = false
+    end
 
-    if me:is(OBJECT_TYPE_CHARACTER) then
+    if not additional_attack then
+        me:action(ACTION_ATTACK, DURATION_ATTACK)
+    end
+
+    if me:is(OBJECT_TYPE_CHARACTER) and not additional_attack then
         local weapon = me:weapon()
         if weapon ~= nil then
             local model = weapon:model()
@@ -153,10 +161,16 @@ function on_attack(me)
     if me:isbuff('투명') and count > 0 then
         me:unbuff('투명')
     end
+
+    if me:isbuff('분신') and not additional_attack then
+        on_attack(me, true)
+    end
+
+    any_action(me)
 end
 
 function on_equipment_active(me, parts, equipment)
-    
+    any_action(me)
 end
 
 function on_equipment_inactive(me, parts, equipment)
@@ -164,33 +178,53 @@ function on_equipment_inactive(me, parts, equipment)
         me:message('무기의 푸른빛이 사라집니다.')
         me:weapon_damage(0)
     end
+
+    any_action(me)
 end
 
-function on_pickup(ch)
-    if ch:state() == 0x05 then
-        ch:state(0x00)
-        ch:unbuff('투명')
+function on_pickup(me)
+    if me:isbuff('투명') then
+        me:state(STATE_NORMAL)
+        me:unbuff('투명')
     end
+
+    any_action(me)
 end
 
-function on_door(ch)
-    local map = ch:map()
-    local door = map:door(ch)
+function on_door(me)
+    local map = me:map()
+    local door = map:door(me)
     if door == nil then
         return
     end
 
-    local key = ch:item('파란열쇠')
+    local key = me:item('파란열쇠')
     local locked = door:locked()
     if door:locked() and key == nil then
-        ch:message('문이 잠겨있습니다.')
+        me:message('문이 잠겨있습니다.')
         return
     end
 
     local opened = door:toggle()
     if opened then
-        ch:message('문을 열었습니다.')
+        me:message('문을 열었습니다.')
     else
-        ch:message('문을 닫았습니다.')
+        me:message('문을 닫았습니다.')
+    end
+
+    any_action(me)
+end
+
+function on_move(me)
+    any_action(me)
+end
+
+function on_direction(me)
+    any_action(me)
+end
+
+function any_action(me)
+    if me:isbuff('운기') then
+        me:unbuff('운기')
     end
 end

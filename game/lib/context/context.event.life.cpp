@@ -25,6 +25,9 @@ void context::on_dead(life& me, object* you)
     case OBJECT_TYPE::MOB:
     {
         auto& mob = static_cast<fb::game::mob&>(me);
+        if (mob.owner != nullptr)
+            return;
+
         mob.drop_items();
 
         if (you != nullptr && you->is(OBJECT_TYPE::CHARACTER))

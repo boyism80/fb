@@ -51,6 +51,9 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"title",               character::builtin_title},
 {"gain",                character::builtin_gain},
 {"weapon_damage",       character::builtin_weapon_damage},
+{"detect",              character::builtin_detect},
+{"spawn_mob",           character::builtin_spawn_mob},
+{"spawned_mobs",        character::builtin_spawned_mobs},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1851,4 +1854,144 @@ int fb::game::character::builtin_weapon_damage(lua_State* lua)
             return thread->yield(0);
         }
     }
+}
+
+int character::builtin_detect(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushboolean(ch->detect());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushboolean(ch->detect());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->toboolean(2);
+        if (ch->matched_thread())
+        {
+            ch->detect(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, bool value) {
+                ch->detect(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int character::builtin_spawn_mob(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto map = ch->map();
+    if (map == nullptr)
+    {
+        thread->pushnil();
+        return 1;
+    }
+
+    auto name  = thread->tostring(2);
+    auto model = context->model.mob.name2mob(name);
+    if (model == nullptr)
+    {
+        thread->pushnil();
+        return 1;
+    }
+
+    uint16_t x, y;
+    if (argc < 3)
+    {
+        x = ch->x();
+        y = ch->y();
+    }
+    else if (thread->is_table(3))
+    {
+        thread->rawgeti(3, 1);
+        x = (uint16_t)thread->tointeger(-1);
+        thread->remove(-1);
+
+        thread->rawgeti(3, 2);
+        y = (uint16_t)thread->tointeger(-1);
+        thread->remove(-1);
+    }
+    else
+    {
+        x = (uint16_t)thread->tointeger(3);
+        y = (uint16_t)thread->tointeger(4);
+    }
+
+    auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y));
+    if (mob == nullptr)
+        thread->pushnil();
+    else
+        thread->pushobject(mob);
+    return 1;
+}
+
+int character::builtin_spawned_mobs(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    thread->new_table();
+    auto i = 0;
+    for (auto mob : ch->spawned_mobs())
+    {
+        thread->pushinteger(i + 1);
+        thread->pushobject(mob);
+        lua_settable(lua, -3);
+
+        i++;
+    }
+
+    return 1;
 }
