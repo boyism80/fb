@@ -274,7 +274,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool move(DIRECTION direction);
+    virtual bool move(DIRECTION direction);
 
     /**
      * @brief      { function_description }
@@ -381,19 +381,20 @@ public:
      * @brief      { function_description }
      *
      * @param[in]  direction  The direction
+     * @param[in]  step       The step
      *
      * @return     { description_of_the_return_value }
      */
-    fb::model::point16_t side_position(DIRECTION direction) const;
+    fb::model::point16_t side_position(DIRECTION direction, int step = 1) const;
 
     /**
      * @brief      { function_description }
      *
-     * @param[in]  direction  The direction
+     * @param[in]  step  The step
      *
      * @return     { description_of_the_return_value }
      */
-    fb::model::point16_t front_position() const;
+    fb::model::point16_t front_position(int step = 1) const;
 
     /**
      * @brief      { function_description }

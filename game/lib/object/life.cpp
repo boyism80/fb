@@ -399,6 +399,8 @@ void life::buff_magdef(int8_t value)
 
 void fb::game::life::paralysis(bool value)
 {
+    this->assert_thread();
+
     this->_paralysis = value;
 }
 
@@ -409,12 +411,26 @@ bool fb::game::life::paralysis() const
 
 void fb::game::life::invincible(bool value)
 {
+    this->assert_thread();
+
     this->_invincible = value;
 }
 
 bool fb::game::life::invincible() const
 {
     return this->_invincible;
+}
+
+void fb::game::life::cover(bool value)
+{
+    this->assert_thread();
+
+    this->_cover = value;
+}
+
+bool fb::game::life::cover() const
+{
+    return this->_cover;
 }
 
 uint32_t life::dam() const

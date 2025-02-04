@@ -10,7 +10,9 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
 void context::on_attack(life& me, DURATION duration)
 {
     auto thread = lua::new_context();
-    thread->from("scripts/common/attack.lua");
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
     thread->func("on_attack");
     thread->pushobject(me);
     thread->resume(1);

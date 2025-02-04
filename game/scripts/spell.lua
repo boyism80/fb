@@ -65,7 +65,10 @@ function spell_cast(me, you, spell, mp, sound, effect, no_assert)
     if effect ~= nil then
         you:effect(effect)
     end
-    you:sound(sound)
+
+    if sound ~= nil then
+        you:sound(sound)
+    end
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
         you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
@@ -311,7 +314,6 @@ function spell_damage_area(me, you, spell, damage, hp, mp, sound, effect_me, eff
         me:effect(effect_me)
     end
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
-    me:chat(hp)
     if hp ~= nil then
         me:hp(me:hp() - hp)
     end
@@ -481,4 +483,23 @@ function failed_attack_spell(me)
     local message = '허공난무 흐미 실패닷'
     me:chat(message, CHAT_TYPE_BLUE)
     broadcast(string.format('[%s]: %s', me:name(), message), MESSAGE_TYPE_SHOUT, BROADCAST_TYPE_WORLD)
+end
+
+function spell_weapon_damage(me, mp, message, damage)
+    local mp = 60
+    if me:mp() < mp then
+        me:message('마력이 부족합니다.')
+        return false
+    end
+    me:mp_down(mp)
+
+    local weapon = me:weapon()
+    if weapon ~= nil and weapon:model():name() == message then
+        me:message(string.format('%s 푸른 빛으로 빛납니다.', name_with(message, '이', '가')))
+        me:weapon_damage(damage)
+        return true
+    else
+        me:message('마법이 실패했습니다.')
+        return false
+    end
 end

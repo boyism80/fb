@@ -235,6 +235,15 @@ public:
      */
     void assert_thread() const override final;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  direction  The direction
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool move(DIRECTION direction) override final;
+
 public:
     /**
      * @brief      { function_description }

@@ -1,4 +1,9 @@
 function on_cast(me, spell)
+    local map = me:map()
+    if map == nil then
+        return
+    end
+
     local hp = me:hp()*2 // 3
     local mp = 140
     local effect = 105
@@ -10,15 +15,15 @@ function on_cast(me, spell)
     end
     me:mp_down(mp)
 
-    local nears = me:nears(0xFF & ~OBJECT_TYPE_ITEM)
-    local x, y = me:position()
-    local direction = me:direction()
     for i = 1, 3 do
-        if front_obj(x, y, direction, i, nears) ~= nil then
+        if not map:movable(me, i) then
             return failed_attack_spell(me)
         end
     end
 
+    local nears = me:nears(0xFF & ~OBJECT_TYPE_ITEM)
+    local x, y = me:position()
+    local direction = me:direction()
     local front = front_obj(x, y, direction, 4, nears, OBJECT_TYPE_LIFE)
     if front == nil then
         return failed_attack_spell(me)

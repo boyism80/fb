@@ -28,6 +28,7 @@ protected:
     uint8_t       _dam           = 0; // 공격수정
     uint8_t       _hit           = 0; // 명중수정
     bool          _invincible    = false;
+    bool          _cover         = false;
 
 public:
     fb::game::spells spells;
@@ -451,6 +452,20 @@ public:
      */
     bool invincible() const;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void cover(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool cover() const;
+
 public:
     /**
      * @brief      { function_description }
@@ -667,6 +682,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_hit(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_cover(lua_State* lua);
 };
 
 /**

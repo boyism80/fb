@@ -161,6 +161,17 @@ int fb::game::map::builtin_movable(lua_State* lua)
         position.x = (uint16_t)thread->tointeger(2);
         position.y = (uint16_t)thread->tointeger(3);
     }
+    else if (lua_isuserdata(*thread, 2))
+    {
+        auto obj = thread->touserdata<object>(2);
+        if (obj == nullptr)
+            return 0;
+
+        auto argc = thread->argc();
+        auto step = argc < 3 ? 1 : thread->tointeger(3);
+
+        position = obj->front_position(step);
+    }
     else
     {
         thread->pushboolean(false);

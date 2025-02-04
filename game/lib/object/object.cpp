@@ -245,26 +245,7 @@ bool object::move(DIRECTION direction)
     if (this->_map == nullptr)
         return false;
 
-    auto after = this->_position;
-    switch (direction)
-    {
-    case DIRECTION::TOP:
-        after.y--;
-        break;
-
-    case DIRECTION::BOTTOM:
-        after.y++;
-        break;
-
-    case DIRECTION::LEFT:
-        after.x--;
-        break;
-
-    case DIRECTION::RIGHT:
-        after.x++;
-        break;
-    }
-
+    auto after = this->side_position(direction);
     if (this->_map->movable(after) == false)
         return false;
 
@@ -577,34 +558,34 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
     }
 }
 
-fb::model::point16_t object::side_position(DIRECTION direction) const
+fb::model::point16_t object::side_position(DIRECTION direction, int step) const
 {
     auto front = this->position();
     switch (direction)
     {
     case DIRECTION::TOP:
-        front.y--;
+        front.y -= step;
         break;
 
     case DIRECTION::BOTTOM:
-        front.y++;
+        front.y += step;
         break;
 
     case DIRECTION::LEFT:
-        front.x--;
+        front.x -= step;
         break;
 
     case DIRECTION::RIGHT:
-        front.x++;
+        front.x += step;
         break;
     }
 
     return front;
 }
 
-fb::model::point16_t object::front_position() const
+fb::model::point16_t object::front_position(int step) const
 {
-    return this->side_position(this->_direction);
+    return this->side_position(this->_direction, step);
 }
 
 object* object::side(DIRECTION direction, OBJECT_TYPE type) const

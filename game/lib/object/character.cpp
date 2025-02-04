@@ -1729,6 +1729,18 @@ void character::update_id()
         listener->on_update_id(*this);
 }
 
+void fb::game::character::weapon_damage(uint16_t value)
+{
+    this->assert_thread();
+
+    this->_weapon_damage = value;
+}
+
+uint16_t fb::game::character::weapon_damage() const
+{
+    return this->_weapon_damage;
+}
+
 void character::bright(uint8_t value)
 {
     auto listener = this->get_listener<character>();

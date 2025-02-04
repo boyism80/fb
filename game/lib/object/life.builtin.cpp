@@ -29,6 +29,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"invincible",          fb::game::life::builtin_invincible},
 {"hit",                 fb::game::life::builtin_hit},
 {"dam",                 fb::game::life::builtin_dam},
+{"cover",               fb::game::life::builtin_cover},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::life::builtin_hp(lua_State* lua)
@@ -904,6 +905,64 @@ int fb::game::life::builtin_dam(lua_State* lua)
         {
             static auto static_func = [](fb::lua::context* thread, life* obj, uint8_t value) {
                 obj->dam(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+                static_func(thread, obj, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
+}
+
+int fb::game::life::builtin_cover(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto obj     = thread->touserdata<life>(1);
+    if (obj == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (obj->matched_thread())
+        {
+            thread->pushboolean(obj->cover());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, life* obj) {
+                thread->pushboolean(obj->cover());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
+                static_func(thread, obj);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->toboolean(2);
+        if (obj->matched_thread())
+        {
+            obj->cover(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, life* obj, uint8_t value) {
+                obj->cover(value);
                 thread->resume(0);
             };
 

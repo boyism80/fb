@@ -53,10 +53,10 @@ function damage(me, you, rate)
             damage = math.random(1, 5)
         elseif size == MOB_SIZE_SMALL then
             local min, max = weapon:model():damage_small()
-            damage = math.random(min, max)
+            damage = math.random(min, max) + me:weapon_damage()
         else
             local min, max = weapon:model():damage_large()
-            damage = math.random(min, max)
+            damage = math.random(min, max) + me:weapon_damage()
         end
     else
         local min, max = me:model():damage()
@@ -152,5 +152,45 @@ function on_attack(me)
 
     if me:isbuff('투명') and count > 0 then
         me:unbuff('투명')
+    end
+end
+
+function on_equipment_active(me, parts, equipment)
+    
+end
+
+function on_equipment_inactive(me, parts, equipment)
+    if me:weapon_damage() > 0 then
+        me:message('무기의 푸른빛이 사라집니다.')
+        me:weapon_damage(0)
+    end
+end
+
+function on_pickup(ch)
+    if ch:state() == 0x05 then
+        ch:state(0x00)
+        ch:unbuff('투명')
+    end
+end
+
+function on_door(ch)
+    local map = ch:map()
+    local door = map:door(ch)
+    if door == nil then
+        return
+    end
+
+    local key = ch:item('파란열쇠')
+    local locked = door:locked()
+    if door:locked() and key == nil then
+        ch:message('문이 잠겨있습니다.')
+        return
+    end
+
+    local opened = door:toggle()
+    if opened then
+        ch:message('문을 열었습니다.')
+    else
+        ch:message('문을 닫았습니다.')
     end
 end

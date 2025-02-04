@@ -3,8 +3,7 @@
 using namespace fb::game;
 using namespace std::chrono_literals;
 
-async::task<bool> context::handle_login(fb::socket<character>&                    socket,
-                                        const fb::protocol::game::request::login& request)
+async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_reqs::login& request)
 {
     auto ch = socket.data();
     if (ch->inited())
@@ -101,7 +100,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
     if (map == nullptr)
         co_return true;
 
-    if (ch->paralysis())
+    if (ch->paralysis() || ch->cover())
     {
         ch->update_position();
         co_return true;
@@ -944,12 +943,17 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
     if (thread == nullptr)
         co_return true;
 
-    thread->from("scripts/common/door.lua").func("on_door").pushobject(ch).resume(1);
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+
+    thread->func("on_door");
+    thread->pushobject(ch);
+    thread->resume(1);
     co_return true;
 }
 
-async::task<bool> context::handle_whisper(fb::socket<character>&                      socket,
-                                          const fb::protocol::game::request::whisper& request)
+async::task<bool> context::handle_whisper(fb::socket<character>& socket, const fb_reqs::whisper& request)
 {
     auto me = socket.data();
     if (me->inited() == false)

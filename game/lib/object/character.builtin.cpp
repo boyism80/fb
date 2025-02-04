@@ -50,6 +50,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"weapon",              character::builtin_weapon},
 {"title",               character::builtin_title},
 {"gain",                character::builtin_gain},
+{"weapon_damage",       character::builtin_weapon_damage},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1792,4 +1793,62 @@ int character::builtin_gain(lua_State* lua)
 
     ch->items.add(items, true);
     return 0;
+}
+
+int fb::game::character::builtin_weapon_damage(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->matched_thread())
+        {
+            thread->pushinteger(ch->weapon_damage());
+            return 1;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch) {
+                thread->pushinteger(ch->weapon_damage());
+                thread->resume(1);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch);
+                co_return;
+            });
+
+            return thread->yield(1);
+        }
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        if (ch->matched_thread())
+        {
+            ch->weapon_damage(value);
+            return 0;
+        }
+        else
+        {
+            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
+                ch->weapon_damage(value);
+                thread->resume(0);
+            };
+
+            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+                static_func(thread, ch, value);
+                co_return;
+            });
+            return thread->yield(0);
+        }
+    }
 }

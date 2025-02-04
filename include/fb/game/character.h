@@ -98,6 +98,7 @@ private:
     shared_group_lock       _group             = nullptr;
     shared_clan_lock        _clan              = nullptr;
     uint16_t                _unread_mail       = 0;
+    uint16_t                _weapon_damage     = 0;
     bool                    _options[0x0B + 1] = {
         1,
     };
@@ -1249,6 +1250,20 @@ public:
     void update_id() override final;
 
     /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void weapon_damage(uint16_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t weapon_damage() const;
+
+    /**
      * @brief      Returns a protocol representation of the object.
      *
      * @return     Protocol representation of the object.
@@ -1606,7 +1621,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_buff_str(lua_State* lua);
-    
+
     /**
      * @brief      { function_description }
      *
@@ -1615,7 +1630,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_buff_dex(lua_State* lua);
-    
+
     /**
      * @brief      { function_description }
      *
@@ -1660,6 +1675,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_gain(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_weapon_damage(lua_State* lua);
 };
 
 /**

@@ -88,11 +88,9 @@ async::task<void> context::handle_start()
         auto& ist = fb::lua::context_pool::ist();
         fb::model::lua::map_enum(ist);
         fb::lua::load("scripts/spell.lua");
+        fb::lua::load("scripts/interaction.lua");
         fb::lua::dump("scripts/script.lua");
         fb::lua::dump("scripts/common/npc.lua");
-        fb::lua::dump("scripts/common/door.lua");
-        fb::lua::dump("scripts/common/pickup.lua");
-        fb::lua::dump("scripts/common/attack.lua");
 
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();

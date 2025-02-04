@@ -434,3 +434,36 @@ void mob::assert_thread() const
     else
         return;
 }
+
+bool mob::move(DIRECTION direction)
+{
+    auto map = this->map();
+    if (map == nullptr)
+        return false;
+
+    auto position = this->side_position(direction);
+    for (auto obj : map->nears(position, OBJECT_TYPE::LIFE))
+    {
+        if (obj == this)
+            continue;
+
+        auto life = static_cast<fb::game::life*>(obj);
+        if (life->cover() == false)
+            continue;
+
+        const auto& life_position = life->position();
+        if (life_position.x > 0 && life_position.x - 1 == position.x && life_position.y == position.y)
+            return false;
+
+        if (life_position.x < map->width() - 1 && life_position.x + 1 == position.x && life_position.y == position.y)
+            return false;
+
+        if (life_position.y > 0 && life_position.y - 1 == position.y && life_position.x == position.x)
+            return false;
+
+        if (life_position.y < map->height() - 1 && life_position.y + 1 == position.y && life_position.x == position.x)
+            return false;
+    }
+
+    return fb::game::object::move(direction);
+}
