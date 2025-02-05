@@ -148,10 +148,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
             for (auto equipment : equipments)
             {
                 auto& model = equipment->based<fb::model::equipment>();
-
-#if defined DEBUG | defined _DEBUG
                 lua->from(model.script_concast);
-#endif
                 lua->func("on_concast");
                 lua->pushobject(ch);
                 lua->pushobject(equipment);
