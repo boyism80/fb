@@ -21,12 +21,15 @@ function on_cast(me, spell)
     end
 
     if buff_cast(me, me, spell, mp, sound, effect) then
-        me:invincible(true)
         me:buff(spell, buff_time)
     end
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:invincible(true)
+end
+
+function on_unbuff(me, spell)
     me:invincible(false)
-    unbuff(me, spell)
+
 end

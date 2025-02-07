@@ -5,11 +5,13 @@ function on_cast(me, spell)
 
     me:sound(8)
     me:effect(110)
-    me:buff_phydef(me:buff_phydef() -10)
     me:buff(spell, 180, me)
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:buff_phydef(me:buff_phydef() -10)
+end
+
+function on_unbuff(me, spell)
     me:buff_phydef(me:buff_phydef() + 10)
-    unbuff(me, spell)
 end

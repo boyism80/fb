@@ -5,10 +5,14 @@ function on_cast(me, spell)
     local buff_time = 21
     if buff_cast(me, me, spell, mp, sound, effect) then
         me:buff(spell, buff_time)
-        me:cover(true)
     end
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:cover(true)
+end
+
+function on_unbuff(me, spell)
     me:cover(false)
+
 end

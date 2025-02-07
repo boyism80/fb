@@ -14,7 +14,10 @@ function on_cast(me, spell, name)
     spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
 end
 
-function on_uncast(me, spell)
-    unbuff(me, spell)
+function on_buff(me, spell)
+    
+end
+
+function on_unbuff(me, spell)
     me:disguise(nil)
 end

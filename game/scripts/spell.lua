@@ -145,7 +145,10 @@ function debuff_cast(me, you, spell, mp, sound, effect)
     if effect ~= nil then
         you:effect(effect)
     end
-    you:sound(sound)
+    
+    if sound ~= nil then
+        you:sound(sound)
+    end
     me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
         if me:is(OBJECT_TYPE_CHARACTER) then
@@ -474,14 +477,8 @@ function spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
     end
 
     if buff_cast(me, me, spell, mp, sound, effect) then
-        me:disguise(look)
-        me:buff(spell, buff_time)
-    end
-end
-
-function unbuff(me, spell)
-    if me:is(OBJECT_TYPE_CHARACTER) then
-        me:message(string.format('%s 해제', spell:name()))
+    
+        me:buff(spell, buff_time, look)
     end
 end
 

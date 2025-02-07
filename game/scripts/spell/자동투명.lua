@@ -4,11 +4,14 @@ function on_cast(me, spell)
         return false
     end
 
-    me:state(STATE_HALF_CLOACK)
     me:buff(spell, buff_time)
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:state(STATE_HALF_CLOACK)
+end
+
+function on_unbuff(me, spell)
     me:state(STATE_NORMAL)
-    unbuff(me, spell)
+
 end

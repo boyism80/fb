@@ -15,7 +15,26 @@ void context::on_attack(life& me, DURATION duration)
 #endif
     thread->func("on_attack");
     thread->pushobject(me);
-    thread->resume(1);
+    thread->resume(1, false);
+
+    if (me.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch     = static_cast<character&>(me);
+        auto  weapon = ch.items.weapon();
+        if (weapon != nullptr)
+        {
+            auto& model = weapon->based<fb::model::weapon>();
+            if (model.script_attack != "")
+            {
+                thread->from(model.script_attack);
+                thread->func("on_attack");
+                thread->pushobject(ch);
+                thread->pushobject(weapon);
+                thread->resume(2, false);
+            }
+        }
+    }
+    thread->release();
 }
 
 void context::on_dead(life& me, object* you)

@@ -5,11 +5,14 @@ function on_cast(me, spell)
 
     me:sound(8)
     me:effect(110)
-    me:damage_derate(me:damage_derate() + 1000)
     me:buff(spell, 180, me)
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:damage_derate(me:damage_derate() + 1000)
+end
+
+function on_unbuff(me, spell)
     me:damage_derate(me:damage_derate() - 1000)
-    unbuff(me, spell)
+
 end

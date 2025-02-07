@@ -1,7 +1,6 @@
 function on_cast(me, spell)
     local function preprocess(me, you)
         you:buff('무형술', 2, me)
-        you:buff_phydef(me:buff_phydef() - 40)
     end
 
     local effect = 92

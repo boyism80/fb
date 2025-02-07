@@ -4475,7 +4475,8 @@ public:
     const std::string name;
     const fb::model::enum_value::SPELL_TYPE type;
     const std::string cast;
-    const std::string uncast;
+    const std::string buff;
+    const std::string unbuff;
     const std::string concast;
     const std::string message;
 #endif
@@ -4492,7 +4493,8 @@ DECLARE_SPELL_CONSTRUCTOR
         name(fb::model::build<std::string>(json["name"])),
         type(fb::model::build<fb::model::enum_value::SPELL_TYPE>(json["type"])),
         cast(fb::model::build<std::string>(json["cast"])),
-        uncast(fb::model::build<std::string>(json["uncast"])),
+        buff(fb::model::build<std::string>(json["buff"])),
+        unbuff(fb::model::build<std::string>(json["unbuff"])),
         concast(fb::model::build<std::string>(json["concast"])),
         message(fb::model::build<std::string>(json["message"]))
 #ifdef DECLARE_SPELL_INITIALIZER
@@ -5088,6 +5090,7 @@ class weapon : public fb::model::equipment
 DECLARE_WEAPON_FIELDS
 #else
 public:
+    const std::string script_attack;
     const range<uint32_t> damage_small;
     const range<uint32_t> damage_large;
     const uint16_t sound;
@@ -5100,6 +5103,7 @@ DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
 #else
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
+        script_attack(fb::model::build<std::string>(json["script_attack"])),
         damage_small(fb::model::build<range<uint32_t>>(json["damage_small"])),
         damage_large(fb::model::build<range<uint32_t>>(json["damage_large"])),
         sound(fb::model::build<uint16_t>(json["sound"])),

@@ -8,13 +8,16 @@ function on_cast(me, you, spell)
     local effect = 34
     local buff_time = 4
     if buff_cast(me, you, spell, mp, sound, effect) then
-    	you:oblivion(me)
-    	you:target(nil)
     	you:buff(spell, buff_time, me)
     end
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:oblivion(me)
+    me:target(nil)
+end
+
+function on_unbuff(me, spell)
     me:oblivion(nil)
-    unbuff(me, spell)
+
 end

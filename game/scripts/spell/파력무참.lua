@@ -8,8 +8,12 @@ function on_cast(me, spell)
     end
 end
 
-function on_uncast(me, spell)
-    unbuff(me, spell)
+function on_buff(me, spell)
+
+end
+
+function on_unbuff(me, spell)
+
 end
 
 function on_concast(me, caster, buff)
@@ -31,8 +35,6 @@ function on_concast(me, caster, buff)
     for _, obj in pairs(targets) do
         count = count + 1
         obj:effect(107)
-        obj:damage_rate(obj:damage_rate() + 1000)
-        obj:skill_damage_rate(obj:skill_damage_rate() + 1000)
         obj:buff(spell, 2, me)
         if me ~= obj and obj:is(OBJECT_TYPE_CHARACTER) then
             obj:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))

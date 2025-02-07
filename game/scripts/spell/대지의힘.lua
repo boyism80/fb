@@ -8,12 +8,15 @@ function on_cast(me, you, spell)
     local effect = 11
     local buff_time = 5
     if buff_cast(me, you, spell, mp, sound, effect) then
-        you:buff_str(you:buff_str()+3)
         you:buff(spell, buff_time, me)
     end
 end
 
-function on_uncast(me, spell)
+function on_buff(me, spell)
+    me:buff_str(me:buff_str()+3)
+end
+
+function on_unbuff(me, spell)
     me:buff_str(me:buff_str()-3)
-    unbuff(me, spell)
+
 end

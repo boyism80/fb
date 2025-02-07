@@ -1710,6 +1710,14 @@ public:
     void on_move(fb::game::object& me, const fb::model::point16_t& before) override final;
 
     /**
+     * @brief      Called on buffer.
+     *
+     * @param      me    { parameter_description }
+     * @param      buff  The buffer
+     */
+    void on_buff(fb::game::object& me, fb::game::buff& buff) override final;
+
+    /**
      * @brief      Called on unbuff.
      *
      * @param      me    { parameter_description }

@@ -4,17 +4,19 @@ function on_cast(me, spell)
     local effect = 72
     local buff_time = 600
 
-    if not buff_cast(me, me, spell, mp, sound, effect) then
-        return
+    if buff_cast(me, me, spell, mp, sound, effect) then
+        me:buff(spell, buff_time)
     end
+end
+
+function on_buff(me, spell)
     me:unbuff('이중공격')
     me:unbuff('삼중공격')
     me:unbuff('오중공격')
-    me:buff(spell, buff_time)
     me:damage_rate(me:damage_rate() + 3000)
 end
 
-function on_uncast(me, spell)
+function on_unbuff(me, spell)
     me:damage_rate(me:damage_rate() - 3000)
-    unbuff(me, spell)
+
 end

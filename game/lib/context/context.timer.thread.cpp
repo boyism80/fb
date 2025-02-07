@@ -24,6 +24,9 @@ async::task<void> context::handle_mob_action(const fb::model::datetime& now, std
             if (mob.alive() == false)
                 continue;
 
+            if (mob.paralysis())
+                continue;
+
             auto target = mob.target();
             if (target == nullptr || map->objects.contains(*target) == false || target->alive() == false)
                 mob.target(nullptr);

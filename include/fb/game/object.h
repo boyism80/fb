@@ -862,6 +862,14 @@ struct object::listener
     virtual void on_move(fb::game::object& me, const fb::model::point16_t& before) = 0;
 
     /**
+     * @brief      Called on buffer.
+     *
+     * @param      me    { parameter_description }
+     * @param      buff  The buffer
+     */
+    virtual void on_buff(fb::game::object& me, fb::game::buff& buff) = 0;
+
+    /**
      * @brief      Called on unbuff.
      *
      * @param      me    { parameter_description }

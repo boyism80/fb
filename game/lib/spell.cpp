@@ -118,6 +118,11 @@ bool fb::game::buffs::push_back(buff& buff)
         return false;
 
     this->insert({model.id, &buff});
+
+    auto listener = this->_owner.get_listener<fb::game::character>();
+    if (listener != nullptr)
+        listener->on_buff(this->_owner, buff);
+
     return true;
 }
 

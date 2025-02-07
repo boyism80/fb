@@ -307,9 +307,6 @@ void mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
 
-    if (this->paralysis())
-        return;
-
     if (ENUM_IN(this->crowd_control(), CROWD_CONTROL::SIGHT))
         return;
 

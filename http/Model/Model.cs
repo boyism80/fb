@@ -1225,8 +1225,10 @@ namespace Fb.Model
         public Fb.Model.EnumValue.SpellType Type { get; set; }
         [JsonProperty("cast")]
         public string Cast { get; set; }
-        [JsonProperty("uncast")]
-        public string Uncast { get; set; }
+        [JsonProperty("buff")]
+        public string Buff { get; set; }
+        [JsonProperty("unbuff")]
+        public string Unbuff { get; set; }
         [JsonProperty("concast")]
         public string Concast { get; set; }
         [JsonProperty("message")]
@@ -1449,6 +1451,8 @@ namespace Fb.Model
 
     public class Weapon : Fb.Model.Equipment
     {
+        [JsonProperty("script_attack")]
+        public string ScriptAttack { get; set; }
         [JsonProperty("damage_small")]
         public Range<uint> DamageSmall { get; set; }
         [JsonProperty("damage_large")]

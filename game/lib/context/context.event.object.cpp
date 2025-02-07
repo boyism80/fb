@@ -119,16 +119,43 @@ void context::on_move(object& me, const fb::model::point16_t& before)
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
 
-void context::on_unbuff(object& me, buff& buff)
+void context::on_buff(object& me, buff& buff)
 {
-    if (buff.model.uncast == "")
+    if (buff.model.buff == "")
         return;
 
     auto thread = lua::new_context();
     if (thread == nullptr)
         return;
-    thread->from(buff.model.uncast.c_str()).func("on_uncast").pushobject(me).pushobject(buff.model).resume(2);
+    thread->from(buff.model.buff.c_str());
+    thread->func("on_buff");
+    thread->pushobject(me);
+    thread->pushobject(buff.model);
+    thread->resume(2);
+
+    me.send(fb::protocol::game::response::spell_buff(buff));
+}
+
+void context::on_unbuff(object& me, buff& buff)
+{
+    if (buff.model.unbuff == "")
+        return;
+
+    auto thread = lua::new_context();
+    if (thread == nullptr)
+        return;
+    thread->from(buff.model.unbuff.c_str());
+    thread->func("on_unbuff");
+    thread->pushobject(me);
+    thread->pushobject(buff.model);
+    thread->resume(2);
     me.send(fb_resp::spell_unbuff(buff));
+
+    if (me.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch = static_cast<character&>(me);
+        ch.message(std::format("{} 해제", buff.model.name));
+    }
 }
 
 void context::on_sound(object& me, SOUND sound)
