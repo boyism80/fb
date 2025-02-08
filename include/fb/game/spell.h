@@ -26,6 +26,8 @@ public:
 
 private:
     fb::model::datetime _next;
+    fb::model::datetime _internal_next;
+    uint8_t             _internal_cast_count = 0;
 
 public:
     const fb::game::context& context;
@@ -73,6 +75,13 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @return     { description_of_the_return_value }
+     */
+    bool update_lock();
+
+    /**
+     * @brief      { function_description }
+     *
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -87,6 +96,8 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_delay(lua_State* lua);
+
+    static int builtin_delay2(lua_State* lua);
 };
 
 /**

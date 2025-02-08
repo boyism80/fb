@@ -34,6 +34,21 @@ const fb::model::datetime& fb::game::spell::next() const
     return this->_next;
 }
 
+bool fb::game::spell::update_lock()
+{
+    if (fb::model::datetime() > this->_internal_next)
+    {
+        this->_internal_next       = fb::model::datetime() + 500ms;
+        this->_internal_cast_count = 0;
+    }
+
+    if (this->_internal_cast_count > 3)
+        return false;
+
+    this->_internal_cast_count++;
+    return true;
+}
+
 spells::spells(life& owner) :
     inventory(owner)
 { }

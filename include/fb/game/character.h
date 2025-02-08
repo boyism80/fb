@@ -95,12 +95,14 @@ private:
     uint32_t                _deposited_money = 0;
     std::vector<item*>      _deposited_items;
     std::string             _title;
-    shared_group_lock       _group             = nullptr;
-    shared_clan_lock        _clan              = nullptr;
-    uint16_t                _unread_mail       = 0;
-    uint16_t                _weapon_damage     = 0;
-    bool                    _detect            = false;
-    std::vector<mob*>       _spawned_mobs      = {};
+    shared_group_lock       _group         = nullptr;
+    shared_clan_lock        _clan          = nullptr;
+    uint16_t                _unread_mail   = 0;
+    uint16_t                _weapon_damage = 0;
+    bool                    _detect        = false;
+    std::vector<mob*>       _spawned_mobs  = {};
+    fb::model::datetime     _last_spell_cast;
+    uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
         1,
     };

@@ -13,7 +13,7 @@ spell_remove::spell_remove(const fb::game::life& me, uint8_t index) :
 async::task<void> spell_remove::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    auto spell = this->me.spells.at(index);
+    auto spell = this->me.spells.at(this->index);
     if (spell != nullptr)
         co_return;
 

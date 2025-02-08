@@ -49,6 +49,7 @@
 #include <fb/game/protocol/spell/spell_unbuff.h>
 #include <fb/game/protocol/spell/spell_update.h>
 #include <fb/game/protocol/spell/spell_remove.h>
+#include <fb/game/protocol/spell/spell_delay.h>
 #include <fb/game/protocol/character/update_external.h>
 #include <fb/game/protocol/character/id.h>
 #include <fb/game/protocol/character/update_internal.h>

@@ -549,6 +549,9 @@
     <ClCompile Include="lib\item\weapon.builtin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.spell.delay.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -901,6 +904,9 @@
     </ClInclude>
     <ClInclude Include="model.additional.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_delay.h">
+      <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

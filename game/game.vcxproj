@@ -181,6 +181,7 @@
     <ClInclude Include="..\include\fb\game\protocol\self_info.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_buff.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_cast.h" />
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_delay.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_remove.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_unbuff.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_update.h" />
@@ -363,6 +364,7 @@
     <ClCompile Include="lib\protocol\protocol.object.show.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.sound.cpp" />
     <ClCompile Include="lib\protocol\protocol.pick.up.cpp" />
+    <ClCompile Include="lib\protocol\protocol.spell.delay.cpp" />
     <ClCompile Include="lib\protocol\protocol.update.option.cpp" />
     <ClCompile Include="lib\protocol\protocol.update.screen.cpp" />
     <ClCompile Include="lib\protocol\protocol.save.cpp" />
