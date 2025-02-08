@@ -59,6 +59,7 @@ namespace Http.Reepository
                         `owner`,
                         `slot`,
                         `model`,
+                        `next`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
@@ -66,11 +67,13 @@ namespace Http.Reepository
                         {value.Owner.Escape()},
                         {value.Slot.Escape()},
                         {value.Model.Escape()},
+                        {value.Next.Escape()},
                         {value.Deleted.Escape()},
                         {value.CreatedDate.Escape()},
                         {value.UpdatedDate.Escape()})
                     ON DUPLICATE KEY UPDATE
                         `model`=VALUES(`model`),
+                        `next`=VALUES(`next`),
                         `deleted`=VALUES(`deleted`),
                         `updated_date`=VALUES(`updated_date`);
                     """;
@@ -86,6 +89,7 @@ namespace Http.Reepository
                         ({spell.Owner.Escape()},
                          {spell.Slot.Escape()},
                          {spell.Model.Escape()},
+                         {spell.Next.Escape()},
                          {spell.Deleted.Escape()},
                          {spell.CreatedDate.Escape()},
                          {spell.UpdatedDate.Escape()})
@@ -97,12 +101,14 @@ namespace Http.Reepository
                         `owner`,
                         `slot`,
                         `model`,
+                        `next`,
                         `deleted`,
                         `created_date`,
                         `updated_date`)
                     VALUES {string.Join(',', args)}
                     ON DUPLICATE KEY UPDATE
                         `model`=VALUES(`model`),
+                        `next`=VALUES(`next`),
                         `deleted`=VALUES(`deleted`),
                         `created_date`=VALUES(`created_date`),
                         `updated_date`=VALUES(`updated_date`);

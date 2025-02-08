@@ -31,6 +31,7 @@ public class Program
 
             cfg.CreateMap<Http.Model.Spell, Spell>()
             .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
+            .ForMember(x => x.Next, x => x.MapFrom(u => u.Next.ToString("yyyy-MM-dd HH:mm:ss")))
             .ReverseMap();
 
             cfg.CreateMap<Http.Model.Item, Item>()

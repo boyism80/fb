@@ -1,5 +1,5 @@
 function on_cast(me, spell)
-    if me:isbuff(table.unpack(relative_buff_name(spell:name()))) then
+    if me:isbuff(table.unpack(relative_buff_name(spell:model():name()))) then
         return false
     end
 

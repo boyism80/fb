@@ -100,6 +100,9 @@ function on_attack(me, additional_attack)
         if weapon ~= nil then
             local model = weapon:model()
             local sound = model:sound()
+            if sound == 0 then
+                sound = SOUND_SWING
+            end
             me:sound(sound)
         end
     end

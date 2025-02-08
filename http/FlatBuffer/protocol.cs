@@ -119,7 +119,8 @@ namespace fb.protocol._internal
             return fb.protocol._internal.raw.Spell.CreateSpell(builder,
                 builder.Build(value.User),
                 builder.Build(value.Slot),
-                builder.Build(value.Model));
+                builder.Build(value.Model),
+                builder.Build(value.Next));
         }
         public static Offset<fb.protocol._internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol._internal.Option value)
         {
@@ -1038,7 +1039,8 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.raw.Spell.CreateSpell(builder,
                 builder.Build(value.User),
                 builder.Build(value.Slot),
-                builder.Build(value.Model));
+                builder.Build(value.Model),
+                builder.Build(value.Next));
         }
         public static Offset<fb.protocol._internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol._internal.Option value)
         {
@@ -1973,7 +1975,8 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.raw.Spell.CreateSpell(builder,
                 builder.Build(value.User),
                 builder.Build(value.Slot),
-                builder.Build(value.Model));
+                builder.Build(value.Model),
+                builder.Build(value.Next));
         }
         public static Offset<fb.protocol._internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol._internal.Option value)
         {
@@ -3000,6 +3003,7 @@ namespace fb.protocol._internal
         public uint User { get; set; } = 0;
         public byte Slot { get; set; } = 0;
         public uint Model { get; set; } = 0;
+        public string Next { get; set; } = string.Empty;
 
         public Spell()
         { }
@@ -3009,6 +3013,7 @@ namespace fb.protocol._internal
             User = raw.User;
             Slot = raw.Slot;
             Model = raw.Model;
+            Next = raw.Next;
         }
 
         public Spell(byte[] bytes) : this(fb.protocol._internal.raw.Spell.GetRootAsSpell(new ByteBuffer(bytes)))

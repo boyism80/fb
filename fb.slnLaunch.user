@@ -21,6 +21,11 @@
         "Path": "internal\\internal.csproj",
         "Action": "Start",
         "DebugTarget": "internal"
+      },
+      {
+        "Path": "write-back\\write-back.csproj",
+        "Action": "Start",
+        "DebugTarget": "write-back"
       }
     ]
   }

@@ -250,7 +250,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell);
+    bool active(fb::game::spell& spell);
 
     /**
      * @brief      { function_description }
@@ -260,7 +260,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell, uint32_t fd);
+    bool active(fb::game::spell& spell, uint32_t fd);
 
     /**
      * @brief      { function_description }
@@ -270,7 +270,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell, const std::string& message);
+    bool active(fb::game::spell& spell, const std::string& message);
 
     /**
      * @brief      { function_description }
@@ -280,7 +280,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell, fb::game::object& to);
+    bool active(fb::game::spell& spell, fb::game::object& to);
 
     /**
      * @brief      { function_description }
@@ -475,7 +475,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_message(lua_State* lua);
-    
+
     /**
      * @brief      { function_description }
      *

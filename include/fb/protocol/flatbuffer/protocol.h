@@ -715,20 +715,21 @@ public:
     uint32_t user = 0;
     uint8_t slot = 0;
     uint32_t model = 0;
+    std::string next;
 
 public:
     Spell() = default;
 
     Spell(const Spell& x)
-        : user(x.user), slot(x.slot), model(x.model)
+        : user(x.user), slot(x.slot), model(x.model), next(x.next)
     { }
 
-    Spell(uint32_t user, uint8_t slot, uint32_t model)
-        : user(user), slot(slot), model(model)
+    Spell(uint32_t user, uint8_t slot, uint32_t model, const std::string& next)
+        : user(user), slot(slot), model(model), next(next)
     { }
 
     Spell(const fb::protocol::internal::raw::Spell& raw)
-        : user(raw.user()), slot(raw.slot()), model(raw.model())
+        : user(raw.user()), slot(raw.slot()), model(raw.model()), next(flatbuffers::option::decode(raw.next()->c_str()))
     { }
 
 public:
@@ -3961,7 +3962,8 @@ flatbuffers::Offset<fb::protocol::internal::raw::Spell> build<fb::protocol::inte
     return fb::protocol::internal::raw::CreateSpell(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint8_t>(builder, value.slot),
-            flatbuffers::build<uint32_t>(builder, value.model));
+            flatbuffers::build<uint32_t>(builder, value.model),
+            flatbuffers::build<std::string>(builder, value.next));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Option> build<fb::protocol::internal::Option>(FlatBufferBuilder& builder, const fb::protocol::internal::Option& value)

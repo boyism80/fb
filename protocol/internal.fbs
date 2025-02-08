@@ -62,6 +62,7 @@ table Spell {
     user: uint;
     slot: ubyte;
     model: uint;
+    next: string;
 }
 
 table Option {

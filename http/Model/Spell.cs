@@ -15,5 +15,6 @@ namespace Http.Model
     public class Spell : SpellKey, IModel
     {
         public required int Model { get; set; }
+        public DateTime Next { get; set; }
     }
 }

@@ -27,6 +27,7 @@ async::task<void> context::handle_start()
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
     lua::build<trace, lua::luable>();
+    lua::build<spell, lua::luable>();
     lua::build<buff, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
@@ -511,7 +512,13 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
             continue;
 
         auto& model = this->model.spell[x.model];
-        ch.spells.add(model, x.slot);
+        auto  delay = fb::model::datetime(x.next) - fb::model::datetime();
+        auto  sec   = delay.seconds();
+        if (sec >= 0)
+            sec += (delay.milliseconds() > 0 ? 1 : 0);
+        else
+            sec = 0;
+        ch.spells.add(model, x.slot, sec);
     }
 }
 
@@ -641,7 +648,7 @@ async::task<void> context::save(character& ch)
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{ch.id(), i, spell->id});
+        spells.push_back(internal::Spell{ch.id(), i, spell->model.id, spell->next().to_string()});
     }
 
     auto traces = std::vector<internal::Trace>();

@@ -14,5 +14,4 @@ end
 
 function on_unbuff(me, spell)
     me:buff_phydef(me:buff_phydef() + 10)
-
 end

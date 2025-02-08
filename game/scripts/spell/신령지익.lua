@@ -37,7 +37,7 @@ function on_concast(me, caster, buff)
         obj:effect(117)
         obj:buff(spell, 2, me)
         if me ~= obj and obj:is(OBJECT_TYPE_CHARACTER) then
-            obj:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
+            obj:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:model():name())))
         end
     end
 

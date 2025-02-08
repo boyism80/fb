@@ -226,7 +226,7 @@ bool life::alive() const
     return this->_hp != 0;
 }
 
-bool life::active(const fb::model::spell& spell, const std::string& message)
+bool life::active(fb::game::spell& spell, const std::string& message)
 {
     this->assert_thread();
 
@@ -234,16 +234,19 @@ bool life::active(const fb::model::spell& spell, const std::string& message)
     if (thread == nullptr)
         return false;
 
-    thread->from(spell.cast.c_str()).func("on_cast");
-
-    if (spell.type != SPELL_TYPE::INPUT)
+    thread->from(spell.model.cast.c_str());
+    thread->func("on_cast");
+    if (spell.model.type != SPELL_TYPE::INPUT)
         return false;
 
-    thread->pushobject(this).pushobject(spell).pushstring(message).resume(3);
+    thread->pushobject(this);
+    thread->pushobject(spell);
+    thread->pushstring(message);
+    thread->resume(3);
     return true;
 }
 
-bool life::active(const fb::model::spell& spell, uint32_t fd)
+bool life::active(fb::game::spell& spell, uint32_t fd)
 {
     this->assert_thread();
 
@@ -257,7 +260,7 @@ bool life::active(const fb::model::spell& spell, uint32_t fd)
     return this->active(spell, *to);
 }
 
-bool life::active(const fb::model::spell& spell, fb::game::object& to)
+bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
 
@@ -265,9 +268,9 @@ bool life::active(const fb::model::spell& spell, fb::game::object& to)
     if (thread == nullptr)
         return false;
 
-    thread->from(spell.cast.c_str()).func("on_cast");
-
-    if (spell.type != SPELL_TYPE::TARGET)
+    thread->from(spell.model.cast.c_str());
+    thread->func("on_cast");
+    if (spell.model.type != SPELL_TYPE::TARGET)
         return false;
 
     auto map = this->map();
@@ -280,11 +283,14 @@ bool life::active(const fb::model::spell& spell, fb::game::object& to)
     if (this->sight(to) == false)
         return true;
 
-    thread->pushobject(this).pushobject(&to).pushobject(spell).resume(3);
+    thread->pushobject(this);
+    thread->pushobject(&to);
+    thread->pushobject(spell);
+    thread->resume(3);
     return true;
 }
 
-bool life::active(const fb::model::spell& spell)
+bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
 
@@ -292,12 +298,14 @@ bool life::active(const fb::model::spell& spell)
     if (thread == nullptr)
         return false;
 
-    thread->from(spell.cast.c_str()).func("on_cast");
-
-    if (spell.type != SPELL_TYPE::NORMAL)
+    thread->from(spell.model.cast.c_str());
+    thread->func("on_cast");
+    if (spell.model.type != SPELL_TYPE::NORMAL)
         return false;
 
-    thread->pushobject(this).pushobject(spell).resume(2);
+    thread->pushobject(this);
+    thread->pushobject(spell);
+    thread->resume(2);
     return true;
 }
 

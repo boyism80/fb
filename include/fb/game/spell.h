@@ -17,9 +17,82 @@ class object;
 class life;
 
 /**
+ * @brief      This class describes a spell.
+ */
+class spell : public lua::luable
+{
+public:
+    LUA_PROTOTYPE
+
+private:
+    fb::model::datetime _next;
+
+public:
+    const fb::game::context& context;
+    const fb::game::life&    owner;
+    const fb::model::spell&  model;
+
+public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  context  The context
+     * @param[in]  model    The model
+     */
+    spell(const fb::game::context& context,
+          const fb::game::life&    owner,
+          const fb::model::spell&  model,
+          uint16_t                 delay = 0);
+    /**
+     * @brief      Destroys the object.
+     */
+    ~spell();
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void delay(uint16_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t delay() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const fb::model::datetime& next() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_model(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_delay(lua_State* lua);
+};
+
+/**
  * @brief      This class describes spells.
  */
-class spells : public fb::game::inventory<const fb::model::spell>
+class spells : public fb::game::inventory<fb::game::spell>
 {
 public:
     /**
@@ -49,7 +122,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t add(const fb::model::spell& element) override;
+    uint8_t add(fb::game::spell& element) override;
+
     /**
      * @brief      { function_description }
      *
@@ -58,7 +132,26 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t add(const fb::model::spell& element, uint8_t index) override;
+    uint8_t add(fb::game::spell& element, uint8_t index) override;
+
+    /**
+     * @brief      Adds the specified model.
+     *
+     * @param[in]  model  The model
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t add(const fb::model::spell& model, uint8_t slot, uint16_t delay);
+
+    /**
+     * @brief      Adds the specified model.
+     *
+     * @param[in]  model  The model
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t add(const fb::model::spell& model);
+
     /**
      * @brief      Removes the specified index.
      *
@@ -111,8 +204,8 @@ private:
     std::chrono::milliseconds _time;
 
 public:
-    const fb::model::spell&  model;
     const fb::game::context& context;
+    const fb::model::spell&  model;
     const fb::game::object*  caster;
 
 public:
@@ -240,6 +333,7 @@ public:
      *
      * @param[in]  spell    The spell
      * @param[in]  seconds  The seconds
+     * @param[in]  caster   The caster
      *
      * @return     { description_of_the_return_value }
      */

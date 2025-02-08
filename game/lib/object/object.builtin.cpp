@@ -370,27 +370,27 @@ int object::builtin_buff(lua_State* lua)
     if (ctx->alive(*obj) == false)
         return 0;
 
-    fb::model::spell* spell = nullptr;
+    const fb::model::spell* model = nullptr;
     switch (lua_type(lua, 2))
     {
     case LUA_TUSERDATA:
-        spell = thread->touserdata<fb::model::spell>(2);
+        model = &thread->touserdata<fb::game::spell>(2)->model;
         break;
 
     case LUA_TSTRING:
-        spell = ctx->model.spell.name2spell(thread->tostring(2));
+        model = ctx->model.spell.name2spell(thread->tostring(2));
         break;
 
     default:
         return 0;
     }
 
-    if (spell == nullptr)
+    if (model == nullptr)
         return 0;
 
     auto seconds = (uint32_t)thread->tointeger(3);
     auto caster  = argc >= 4 ? thread->touserdata<fb::game::object>(4) : nullptr;
-    auto buff    = obj->buffs.push_back(*spell, seconds, caster);
+    auto buff    = obj->buffs.push_back(*model, seconds, caster);
     if (buff == nullptr)
     {
         thread->pushnil();

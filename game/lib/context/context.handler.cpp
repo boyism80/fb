@@ -906,27 +906,34 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (request.slot > CONTAINER_CAPACITY - 1)
         co_return false;
 
-    auto model = ch->spells[request.slot];
-    if (model == nullptr)
+    auto spell = ch->spells[request.slot];
+    if (spell == nullptr)
         co_return false;
+
+    auto delay = spell->delay();
+    if (delay > 0)
+    {
+        ch->message(std::format("{}초 후에 사용할 수 있습니다.", delay));
+        co_return true;
+    }
 
 #if defined DEBUG | defined _DEBUG
     fb::lua::load("scripts/spell.lua");
 #endif
 
-    const_cast<fb_reqs::spell_cast&>(request).parse(model->type);
-    switch (model->type)
+    const_cast<fb_reqs::spell_cast&>(request).parse(spell->model.type);
+    switch (spell->model.type)
     {
     case SPELL_TYPE::INPUT:
-        ch->active(*model, request.message);
+        ch->active(*spell, request.message);
         break;
 
     case SPELL_TYPE::TARGET:
-        ch->active(*model, request.fd);
+        ch->active(*spell, request.fd);
         break;
 
     case SPELL_TYPE::NORMAL:
-        ch->active(*model);
+        ch->active(*spell);
         break;
     }
 
