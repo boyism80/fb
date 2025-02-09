@@ -94,6 +94,7 @@ namespace fb.protocol._internal
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
+                builder.Build(value.Buffs),
                 builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol._internal.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol._internal.Item value)
@@ -121,6 +122,15 @@ namespace fb.protocol._internal
                 builder.Build(value.Slot),
                 builder.Build(value.Model),
                 builder.Build(value.Next));
+        }
+        public static Offset<fb.protocol._internal.raw.Buff> Build(this FlatBufferBuilder builder, fb.protocol._internal.Buff value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Buff.CreateBuff(builder,
+                builder.Build(value.Model),
+                builder.Build(value.Time));
         }
         public static Offset<fb.protocol._internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol._internal.Option value)
         {
@@ -869,6 +879,10 @@ namespace fb.protocol._internal
                 builder.Build(value.Type),
                 builder.Build(value.Error));
         }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
+        }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
         {
             var offsets = value.ConvertAll(x => builder.Build(x).Value);
@@ -919,6 +933,7 @@ namespace fb.protocol._internal
         Character,
         Item,
         Spell,
+        Buff,
         Option,
         ArticleSummary,
         Article,
@@ -1014,6 +1029,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
+                builder.Build(value.Buffs),
                 builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol._internal.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol._internal.Item value)
@@ -1041,6 +1057,15 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Slot),
                 builder.Build(value.Model),
                 builder.Build(value.Next));
+        }
+        public static Offset<fb.protocol._internal.raw.Buff> Build(this FlatBufferBuilder builder, fb.protocol._internal.Buff value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Buff.CreateBuff(builder,
+                builder.Build(value.Model),
+                builder.Build(value.Time));
         }
         public static Offset<fb.protocol._internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol._internal.Option value)
         {
@@ -1788,6 +1813,10 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.Error));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
         {
@@ -1950,6 +1979,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.RingRightColor),
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
+                builder.Build(value.Buffs),
                 builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol._internal.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol._internal.Item value)
@@ -1977,6 +2007,15 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Slot),
                 builder.Build(value.Model),
                 builder.Build(value.Next));
+        }
+        public static Offset<fb.protocol._internal.raw.Buff> Build(this FlatBufferBuilder builder, fb.protocol._internal.Buff value)
+        {
+            if (value == null)
+                return default;
+
+            return fb.protocol._internal.raw.Buff.CreateBuff(builder,
+                builder.Build(value.Model),
+                builder.Build(value.Time));
         }
         public static Offset<fb.protocol._internal.raw.Option> Build(this FlatBufferBuilder builder, fb.protocol._internal.Option value)
         {
@@ -2724,6 +2763,10 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Message),
                 builder.Build(value.Type),
                 builder.Build(value.Error));
+        }
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Buff> value)
+        {
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Buff>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<string> value)
         {
@@ -2894,6 +2937,7 @@ namespace fb.protocol._internal
         public byte? RingRightColor { get; set; } = null;
         public byte? AuxTopColor { get; set; } = null;
         public byte? AuxBotColor { get; set; } = null;
+        public List<fb.protocol._internal.Buff> Buffs { get; set; } = new List<fb.protocol._internal.Buff>();
         public string UpdatedDate { get; set; } = string.Empty;
 
         public Character()
@@ -2935,6 +2979,7 @@ namespace fb.protocol._internal
             RingRightColor = raw.RingRightColor != null ? (byte?)raw.RingRightColor.Value.Value : null;
             AuxTopColor = raw.AuxTopColor != null ? (byte?)raw.AuxTopColor.Value.Value : null;
             AuxBotColor = raw.AuxBotColor != null ? (byte?)raw.AuxBotColor.Value.Value : null;
+            Buffs = Enumerable.Range(0, raw.BuffsLength).Select(i => raw.Buffs(i)).Select(x => new Buff(x.Value)).ToList();
             UpdatedDate = raw.UpdatedDate;
         }
 
@@ -3030,6 +3075,37 @@ namespace fb.protocol._internal
         public static Spell Deserialize(byte[] bytes)
         {
             return new Spell(bytes);
+        }
+    }
+    public class Buff : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Buff;
+        public uint Model { get; set; } = 0;
+        public uint Time { get; set; } = 0;
+
+        public Buff()
+        { }
+
+        public Buff(fb.protocol._internal.raw.Buff raw)
+        {
+            Model = raw.Model;
+            Time = raw.Time;
+        }
+
+        public Buff(byte[] bytes) : this(fb.protocol._internal.raw.Buff.GetRootAsBuff(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Buff Deserialize(byte[] bytes)
+        {
+            return new Buff(bytes);
         }
     }
     public class Option : IFlatBufferEx
@@ -3386,6 +3462,7 @@ namespace fb.protocol._internal
                 FlatBufferProtocolType.Character => typeof(fb.protocol._internal.Character),
                 FlatBufferProtocolType.Item => typeof(fb.protocol._internal.Item),
                 FlatBufferProtocolType.Spell => typeof(fb.protocol._internal.Spell),
+                FlatBufferProtocolType.Buff => typeof(fb.protocol._internal.Buff),
                 FlatBufferProtocolType.Option => typeof(fb.protocol._internal.Option),
                 FlatBufferProtocolType.ArticleSummary => typeof(fb.protocol._internal.ArticleSummary),
                 FlatBufferProtocolType.Article => typeof(fb.protocol._internal.Article),

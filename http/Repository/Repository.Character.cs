@@ -2,8 +2,8 @@ using Dapper;
 using Http.Extension;
 using Http.Model;
 using Http.Service;
+using Newtonsoft.Json;
 using System.Data;
-using static org.apache.zookeeper.ZooDefs;
 
 namespace Http.Reepository
 {
@@ -73,6 +73,7 @@ namespace Http.Reepository
                     `ring_right_color`,
                     `aux_top_color`,
                     `aux_bot_color`,
+                    `buffs`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -113,6 +114,7 @@ namespace Http.Reepository
                     {value.RingRightColor.Escape()},
                     {value.AuxTopColor.Escape()},
                     {value.AuxBotColor.Escape()},
+                    {JsonConvert.SerializeObject(value.Buffs).Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -151,6 +153,7 @@ namespace Http.Reepository
                     `ring_right_color`=VALUES(`ring_right_color`),
                     `aux_top_color`=VALUES(`aux_top_color`),
                     `aux_bot_color`=VALUES(`aux_bot_color`),
+                    `buffs`=VALUES(`buffs`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;

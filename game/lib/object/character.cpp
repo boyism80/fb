@@ -1596,6 +1596,12 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
+
+    for (auto& [_, buff] : this->buffs)
+    {
+        auto time = (uint32_t)(buff->time().count() / 1000);
+        dto.buffs.push_back({buff->model.id, time});
+    }
     return dto;
 }
 

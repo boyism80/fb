@@ -431,6 +431,12 @@ async::task<bool> context::init_ch(const internal::Character&           response
     else
         ch.undisguise();
 
+    for (auto& buff : response.buffs)
+    {
+        auto& model = this->model.spell[buff.model];
+        ch.buffs.push_back(model, buff.time);
+    }
+
     if (this->maps.contains(map) == false)
         co_return false;
 
