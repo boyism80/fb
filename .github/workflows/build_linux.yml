@@ -136,7 +136,7 @@ jobs:
             SERVICE=write-back
 
   gateway:
-    runs-on: [self-hosted, linux, build, epyc]
+    runs-on: [self-hosted, linux, build]
     permissions:
       contents: read
       packages: write
@@ -177,7 +177,7 @@ jobs:
           file: gateway/Dockerfile
 
   login:
-    runs-on: [self-hosted, linux, build, epyc]
+    runs-on: [self-hosted, linux, build]
     permissions:
       contents: read
       packages: write
