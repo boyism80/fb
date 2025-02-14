@@ -27,6 +27,8 @@ async::task<void> context::handle_start()
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
     lua::build<trace, lua::luable>();
+    lua::build<spell, lua::luable>();
+    lua::build<buff, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
     lua::build<fb::model::trace, lua::luable>();
@@ -41,15 +43,20 @@ async::task<void> context::handle_start()
     lua::build<fb::model::npc, fb::model::object>();
     lua::build<npc, object>();
     lua::build<fb::model::item, fb::model::object>();
+    lua::build<fb::model::weapon, fb::model::item>();
     lua::build<item, object>();
+    lua::build<equipment, item>();
+    lua::build<weapon, equipment>();
     lua::build<character, life>();
 
     lua::build("seed", builtin_seed);
     lua::build("sleep", builtin_sleep);
     lua::build("name2mob", builtin_name2mob);
+    lua::build("name2spell", builtin_name2spell);
     lua::build("name2item", builtin_name2item);
     lua::build("name2npc", builtin_name2npc);
     lua::build("name2map", builtin_name2map);
+    lua::build("name2ch", builtin_name2ch);
     lua::build("broadcast", builtin_broadcast);
     lua::build("assert_alive", builtin_assert_alive);
     lua::build("pursuit_sell", builtin_pursuit_sell);
@@ -61,6 +68,7 @@ async::task<void> context::handle_start()
     lua::build("name_with", builtin_name_with);
     lua::build("assert_korean", builtin_assert_korean);
     lua::build("CP949", builtin_cp949);
+    lua::build("debug", builtin_debug);
 
     auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
     for (int i = 0; i < this->threads.count(); i++)
@@ -78,16 +86,14 @@ async::task<void> context::handle_start()
     auto async_tasks = std::vector<async::task<void>>();
     for (auto& [thread, maps] : maps_division)
     {
-        async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
-            auto& ist  = lua::container::ist();
-            auto& main = ist.get();
-            fb::model::lua::map_enum(main);
-            main.load_file("scripts/script.lua");
-            main.load_file("scripts/common/npc.lua");
-            main.load_file("scripts/common/door.lua");
-            main.load_file("scripts/common/pickup.lua");
-            main.load_file("scripts/common/attack.lua");
+        auto& ist = fb::lua::context_pool::ist();
+        fb::model::lua::map_enum(ist);
+        fb::lua::load("scripts/spell.lua");
+        fb::lua::load("scripts/interaction.lua");
+        fb::lua::dump("scripts/script.lua");
+        fb::lua::dump("scripts/common/npc.lua");
 
+        async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();
             for (auto map : maps)
             {
@@ -145,11 +151,13 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_door);           // 도어 핸들러
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
+    this->bind(&context::handle_object_miss);
 
     this->bind_timer(&context::handle_heart_beat, 1s);
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
     this->bind_thread_timer(&context::handle_mob_respawn, 1s);   // 몹 리젠 타이머
     this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머
+    this->bind_thread_timer(&context::handle_gear_timer, 1s);
     this->bind_thread_timer(&context::handle_save_timer,
                             std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
 
@@ -163,6 +171,7 @@ async::task<void> context::handle_start()
     this->command("변신", &context::handle_command_disguise, true);
     this->command("변신해제", &context::handle_command_undisguise, true);
     this->command("마법배우기", &context::handle_command_spell, true);
+    this->command("마법지우기", &context::handle_command_remove_spell, true);
     this->command("몬스터생성", &context::handle_command_mob, true);
     this->command("직업바꾸기", &context::handle_command_class, true);
     this->command("레벨바꾸기", &context::handle_command_level, true);
@@ -210,6 +219,7 @@ async::task<void> context::handle_start()
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
     this->bind_amqp("fb.global", &context::handle_amqp_Pong);
+    this->bind_amqp("fb.global", &context::handle_amqp_Broadcast);
     this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
     this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
     this->bind_amqp("fb.clan", &context::handle_amqp_SetClanTitle);
@@ -421,6 +431,12 @@ async::task<bool> context::init_ch(const internal::Character&           response
     else
         ch.undisguise();
 
+    for (auto& buff : response.buffs)
+    {
+        auto& model = this->model.spell[buff.model];
+        ch.buffs.push_back(model, buff.time);
+    }
+
     if (this->maps.contains(map) == false)
         co_return false;
 
@@ -502,7 +518,13 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
             continue;
 
         auto& model = this->model.spell[x.model];
-        ch.spells.add(model, x.slot);
+        auto  delay = fb::model::datetime(x.next) - fb::model::datetime();
+        auto  sec   = delay.seconds();
+        if (sec >= 0)
+            sec += (delay.milliseconds() > 0 ? 1 : 0);
+        else
+            sec = 0;
+        ch.spells.add(model, x.slot, sec);
     }
 }
 
@@ -536,7 +558,12 @@ void context::send(object&                     object,
             object.send(header, encrypt);
 
         for (auto& x : object.nears(OBJECT_TYPE::CHARACTER))
+        {
+            if (x->sight(object) == false)
+                continue;
+
             x->send(header, encrypt);
+        }
     }
     break;
 
@@ -627,7 +654,7 @@ async::task<void> context::save(character& ch)
         if (spell == nullptr)
             continue;
 
-        spells.push_back(internal::Spell{ch.id(), i, spell->id});
+        spells.push_back(internal::Spell{ch.id(), i, spell->model.id, spell->next().to_string()});
     }
 
     auto traces = std::vector<internal::Trace>();
@@ -780,4 +807,33 @@ async::task<bool> context::handle_command(character& ch, const std::string& mess
     }
 
     co_return co_await found->second.fn(ch, parameters);
+}
+
+async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)
+{
+    switch (broadcast_type)
+    {
+    case BROADCAST_TYPE::GLOBAL:
+    {
+        auto&& resp = co_await this->post<internal_reqs::Broadcast, internal_resp::Broadcast>(
+            "internal",
+            "/in-game/broadcast",
+            internal_reqs::Broadcast{fb::config<uint32_t>("id"), message, static_cast<uint8_t>(type)});
+        this->on_broadcast(resp);
+    }
+    break;
+
+    case BROADCAST_TYPE::WORLD:
+    {
+        this->foreach_ch([message, type](auto& ch) {
+            ch.message(message, type);
+        });
+    }
+    break;
+    }
+}
+
+void context::on_broadcast(const internal_resp::Broadcast& resp)
+{
+    std::ignore = this->broadcast(resp.message, static_cast<MESSAGE_TYPE>(resp.type), BROADCAST_TYPE::WORLD);
 }

@@ -15,8 +15,17 @@
 
 namespace fb::game {
 
+/**
+ * @brief      This class describes a map of .
+ */
 class map;
+/**
+ * @brief      This class describes a clan.
+ */
 class clan;
+/**
+ * @brief      This class describes a group.
+ */
 class group;
 
 using group_lock        = fb::locker<group>;
@@ -59,37 +68,43 @@ private:
     std::string             _name;
     std::string             _pw;
     fb::model::datetime     _updated_date;
-    uint16_t                _look               = 0;
-    uint8_t                 _color              = 0;
-    std::optional<uint8_t>  _armor_color        = 0;
-    int16_t                 _defensive_physical = 0;
-    int16_t                 _defensive_magical  = 0;
-    uint32_t                _base_hp            = 0;
-    uint32_t                _base_mp            = 0;
-    uint32_t                _experience         = 0;
-    uint8_t                 _strength           = 0;
-    uint8_t                 _intelligence       = 0;
-    uint8_t                 _dexteritry         = 0;
-    uint8_t                 _damage             = 0; // 공격수정
-    uint8_t                 _hit                = 0; // 명중수정
-    uint8_t                 _regenerative       = 0; // 재생력
-    NATION                  _nation             = NATION::GOGURYEO;
-    CREATURE                _creature           = CREATURE::DRAGON;
-    SEX                     _sex                = SEX::ALL;
-    STATE                   _state              = STATE::NORMAL;
-    uint8_t                 _level              = 1;
-    CLASS                   _class              = CLASS::NONE;
-    uint8_t                 _promotion          = 0;
-    uint32_t                _money              = 0;
-    std::optional<uint16_t> _disguise           = 0;
-    uint32_t                _deposited_money    = 0;
+    uint16_t                _look            = 0;
+    uint8_t                 _color           = 0;
+    std::optional<uint8_t>  _armor_color     = 0;
+    int16_t                 _base_phydef     = 0;
+    int16_t                 _base_magdef     = 0;
+    uint32_t                _base_hp         = 0;
+    uint32_t                _base_mp         = 0;
+    uint32_t                _experience      = 0;
+    uint8_t                 _strength        = 0;
+    uint8_t                 _intelligence    = 0;
+    uint8_t                 _dexterity       = 0;
+    uint8_t                 _regenerative    = 0; // 재생력
+    uint8_t                 _buff_str        = 0;
+    uint8_t                 _buff_int        = 0;
+    uint8_t                 _buff_dex        = 0;
+    NATION                  _nation          = NATION::GOGURYEO;
+    CREATURE                _creature        = CREATURE::DRAGON;
+    SEX                     _sex             = SEX::ALL;
+    STATE                   _state           = STATE::NORMAL;
+    uint8_t                 _level           = 1;
+    CLASS                   _class           = CLASS::NONE;
+    uint8_t                 _promotion       = 0;
+    uint32_t                _money           = 0;
+    std::optional<uint16_t> _disguise        = 0;
+    uint32_t                _deposited_money = 0;
     std::vector<item*>      _deposited_items;
     std::string             _title;
-    shared_group_lock       _group             = nullptr;
-    shared_clan_lock        _clan              = nullptr;
-    uint16_t                _unread_mail       = 0;
+    shared_group_lock       _group         = nullptr;
+    shared_clan_lock        _clan          = nullptr;
+    uint16_t                _unread_mail   = 0;
+    uint16_t                _weapon_damage = 0;
+    bool                    _detect        = false;
+    std::vector<mob*>       _spawned_mobs  = {};
+    fb::model::datetime     _last_spell_cast;
+    uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
-        0,
+        1,
     };
 
 public:
@@ -155,10 +170,20 @@ public:
      *
      * @return     The object type.
      */
-    OBJECT_TYPE                     what() const override final;
+    OBJECT_TYPE what() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      map           The map
+     * @param[in]  position      The position
+     * @param[in]  destroy_type  The destroy type
+     *
+     * @return     { description_of_the_return_value }
+     */
     [[nodiscard]] async::task<bool> map(fb::game::map*              map,
-                                        const fb::model::point16_t& position = fb::model::point16_t{0, 0},
-                                        DESTROY_TYPE destroy_type            = DESTROY_TYPE::DEFAULT) override final;
+                                        const fb::model::point16_t& position,
+                                        DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
 public:
     operator fb::socket<character>& ();
@@ -223,7 +248,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    void attack() override final;
+    void attack(DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      { function_description }
@@ -362,28 +387,42 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t defensive_physical() const;
+    int8_t base_phydef() const override final;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void defensive_physical(uint8_t value);
+    void base_phydef(int8_t value);
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t defensive_magical() const;
+    int8_t base_magdef() const override final;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void defensive_magical(uint8_t value);
+    void base_magdef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t phydef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t magdef() const override final;
 
     /**
      * @brief      { function_description }
@@ -590,21 +629,63 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t dexteritry() const;
+    uint8_t dexterity() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void dexteritry(uint8_t value);
+    void dexterity(uint8_t value);
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void dexteritry_up(uint8_t value);
+    void dexterity_up(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_str() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_str(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_dex() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_dex(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_int() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_int(uint8_t value);
 
     /**
      * @brief      { function_description }
@@ -801,34 +882,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     item* withdraw_item(const fb::model::item& item, uint16_t count);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t damage() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void damage(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t hit() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void hit(uint8_t value);
 
     /**
      * @brief      { function_description }
@@ -1201,6 +1254,60 @@ public:
     void update_id() override final;
 
     /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void weapon_damage(uint16_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t weapon_damage() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void detect(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool detect() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  model     The model
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::vector<fb::game::mob*>& spawned_mobs() const;
+
+    /**
+     * @brief      Detaches the spawned mob.
+     *
+     * @param      mob   The mob
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool detach_spawned_mob(fb::game::mob& mob);
+
+    /**
      * @brief      Returns a protocol representation of the object.
      *
      * @return     Protocol representation of the object.
@@ -1269,7 +1376,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_strength(lua_State* lua);
+    static int builtin_str(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1278,7 +1385,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_dexterity(lua_State* lua);
+    static int builtin_dex(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1287,7 +1394,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_intelligence(lua_State* lua);
+    static int builtin_int(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1531,6 +1638,114 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_send_mail(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_assert_state(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_str(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_dex(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_int(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_nation(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_weapon(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_title(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_gain(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_weapon_damage(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_detect(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_spawn_mob(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_spawned_mobs(lua_State* lua);
 };
 
 /**

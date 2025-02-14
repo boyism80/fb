@@ -54,6 +54,9 @@ module.exports = {
                         metadata: { labels: appLabels },
                         spec: {
                             containers: [{
+                                nodeSelector: {
+                                    cpu: "epyc"
+                                },
                                 name: "internal",
                                 image: "ghcr.io/boyism80/fb/internal:latest",
                                 imagePullPolicy: "Always",

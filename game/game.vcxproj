@@ -181,6 +181,7 @@
     <ClInclude Include="..\include\fb\game\protocol\self_info.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_buff.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_cast.h" />
+    <ClInclude Include="..\include\fb\game\protocol\spell\spell_delay.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_remove.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_unbuff.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_update.h" />
@@ -209,6 +210,7 @@
     <ClInclude Include="..\include\fb\game\trace.h" />
     <ClInclude Include="..\include\fb\game\trade.h" />
     <ClInclude Include="..\include\fb\game\worker.h" />
+    <ClInclude Include="model.additional.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
@@ -219,6 +221,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lib\board.cpp" />
+    <ClCompile Include="lib\buff.builtin.cpp" />
     <ClCompile Include="lib\clan.builtin.cpp" />
     <ClCompile Include="lib\clan.cpp" />
     <ClCompile Include="lib\clan.member.builtin.cpp" />
@@ -255,6 +258,7 @@
     <ClCompile Include="lib\item\bow.cpp" />
     <ClCompile Include="lib\item\cash.cpp" />
     <ClCompile Include="lib\item\consume.cpp" />
+    <ClCompile Include="lib\item\equipment.builtin.cpp" />
     <ClCompile Include="lib\item\equipment.cpp" />
     <ClCompile Include="lib\item\helmet.cpp" />
     <ClCompile Include="lib\item\item.builtin.cpp" />
@@ -263,6 +267,7 @@
     <ClCompile Include="lib\item\pack.cpp" />
     <ClCompile Include="lib\item\ring.cpp" />
     <ClCompile Include="lib\item\shield.cpp" />
+    <ClCompile Include="lib\item\weapon.builtin.cpp" />
     <ClCompile Include="lib\item\weapon.cpp" />
     <ClCompile Include="lib\listener.cpp" />
     <ClCompile Include="lib\map\map.builtin.cpp" />
@@ -284,6 +289,7 @@
     <ClCompile Include="lib\model\model.sell.cpp" />
     <ClCompile Include="lib\model\model.spell.cpp" />
     <ClCompile Include="lib\model\model.trace.cpp" />
+    <ClCompile Include="lib\model\model.weapon.cpp" />
     <ClCompile Include="lib\model\mst.recipe.cpp" />
     <ClCompile Include="lib\object\character.builtin.cpp" />
     <ClCompile Include="lib\object\character.cpp" />
@@ -353,10 +359,12 @@
     <ClCompile Include="lib\protocol\protocol.object.direction.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.effect.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.hide.cpp" />
+    <ClCompile Include="lib\protocol\protocol.object.miss.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.move.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.show.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.sound.cpp" />
     <ClCompile Include="lib\protocol\protocol.pick.up.cpp" />
+    <ClCompile Include="lib\protocol\protocol.spell.delay.cpp" />
     <ClCompile Include="lib\protocol\protocol.update.option.cpp" />
     <ClCompile Include="lib\protocol\protocol.update.screen.cpp" />
     <ClCompile Include="lib\protocol\protocol.save.cpp" />

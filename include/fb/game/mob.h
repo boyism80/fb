@@ -32,6 +32,7 @@ public:
      * @param[in]  model    The model
      */
     rezen(fb::game::context& context, const fb::model::mob_spawn& model);
+
     /**
      * @brief      Destroys the object.
      */
@@ -41,6 +42,7 @@ public:
      * @brief      { function_description }
      */
     void decrease();
+
     /**
      * @brief      { function_description }
      *
@@ -75,6 +77,7 @@ public:
     public:
         const bool             alive = false;
         fb::game::rezen* const rezen = nullptr;
+        fb::game::character*   owner = nullptr;
     };
 
 private:
@@ -82,7 +85,11 @@ private:
     fb::model::datetime _action_time;
     fb::game::rezen*    _rezen         = nullptr;
     fb::game::life*     _target        = nullptr;
+    fb::game::life*     _oblivion      = nullptr;
     lua::context*       _attack_thread = nullptr;
+
+public:
+    fb::game::character* owner = nullptr;
 
 public:
     /**
@@ -93,12 +100,14 @@ public:
      * @param[in]  config   The configuration
      */
     mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
+
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  right  The right
      */
     mob(const mob& right);
+
     /**
      * @brief      Destroys the object.
      */
@@ -111,6 +120,7 @@ private:
      * @return     { description_of_the_return_value }
      */
     fb::game::life* find_target();
+
     /**
      * @brief      { function_description }
      *
@@ -118,7 +128,16 @@ private:
      *
      * @return     { description_of_the_return_value }
      */
-    bool near_target(DIRECTION& out) const;
+    bool near_target(const fb::game::life& target, DIRECTION& out) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  position  The position
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool move_step(const fb::model::point16_t& position);
 
 public:
     /**
@@ -127,42 +146,63 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool action();
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     const fb::model::datetime& action_time() const;
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  dt    { parameter_description }
      */
     void action_time(const fb::model::datetime& dt);
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
     fb::game::life* target() const;
+
     /**
      * @brief      { function_description }
      *
      * @param      value  The value
      */
     void target(fb::game::life* value);
+
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::life* fix();
+    fb::game::life* oblivion() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      value  The value
+     */
+    void oblivion(fb::game::life* value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::game::life* repair_target();
+
     /**
      * @brief      { function_description }
      *
      * @param[in]  now   The now
      */
     void AI(const fb::model::datetime& now);
+
     /**
      * @brief      { function_description }
      *
@@ -206,7 +246,35 @@ public:
     /**
      * @brief      { function_description }
      */
-    void assert_thread() const;
+    void assert_thread() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  direction  The direction
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool move(DIRECTION direction) override final;
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_target(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_oblivion(lua_State* lua);
 };
 
 /**

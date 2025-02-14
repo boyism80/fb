@@ -19,7 +19,7 @@ void context::on_item_swap(character& me, uint8_t src, uint8_t dst)
 
 void context::on_item_active(character& me, item& item)
 {
-    auto thread = lua::get();
+    auto thread = lua::new_context();
     if (thread == nullptr)
         return;
 

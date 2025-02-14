@@ -54,6 +54,9 @@ module.exports = function () {
                                     },
                                 },
                                 spec: {
+                                    nodeSelector: {
+                                        "kubernetes.io/hostname": "ubuntu-1"
+                                    },
                                     containers: [
                                         {
                                             name: "mysql",

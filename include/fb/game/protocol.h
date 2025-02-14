@@ -49,6 +49,7 @@
 #include <fb/game/protocol/spell/spell_unbuff.h>
 #include <fb/game/protocol/spell/spell_update.h>
 #include <fb/game/protocol/spell/spell_remove.h>
+#include <fb/game/protocol/spell/spell_delay.h>
 #include <fb/game/protocol/character/update_external.h>
 #include <fb/game/protocol/character/id.h>
 #include <fb/game/protocol/character/update_internal.h>
@@ -82,6 +83,7 @@
 #include <fb/game/protocol/object/move.h>
 #include <fb/game/protocol/object/sound.h>
 #include <fb/game/protocol/object/effect.h>
+#include <fb/game/protocol/object/miss.h>
 #include <fb/game/protocol/trade/trade_dialog.h>
 #include <fb/game/protocol/trade/trade_upload.h>
 #include <fb/game/protocol/trade/trade_bundle.h>

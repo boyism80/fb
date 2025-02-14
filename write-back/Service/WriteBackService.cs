@@ -65,7 +65,10 @@ namespace WriteBack.Service
                         count = 100
                     });
                     if (result.Length == 0)
+                    {
+                        await Task.Delay(_delay, stoppingToken);
                         continue;
+                    }
 
                     await using var dbConn = _dbContext.Connection(db);
                     var backgroundCommitEntryList = ((RedisResult[])result).Select((x => JsonConvert.DeserializeObject<BackgroundCommitEntry>(x.ToString())));

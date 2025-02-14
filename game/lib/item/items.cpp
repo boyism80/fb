@@ -82,20 +82,14 @@ uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
             if (this->_auxiliaries[1] != nullptr)
                 this->_auxiliaries[1] = nullptr;
             break;
-
-        default:
-            throw std::runtime_error("뭐지 병신 ㅋ");
         }
 
         auto index = this->add(item);
         this->_owner.update(STATE_LEVEL::LEVEL_MAX);
         if (listener != nullptr)
-        {
             listener->on_equipment_off(this->_owner, parts, index);
-        }
 
         this->_owner.update_external(false);
-
         return index;
     }
     catch (std::exception& e)
@@ -575,11 +569,16 @@ void fb::game::items::pickup(bool boost)
             std::ignore = this->_owner.items.add(belows[0]);
         }
 
-        auto thread = lua::get();
+        auto thread = lua::new_context();
         if (thread == nullptr)
             return;
 
-        thread->from("scripts/common/pickup.lua").func("on_pickup").pushobject(this->_owner).resume(1);
+#if defined DEBUG | defined _DEBUG
+        thread->from("scripts/interaction.lua");
+#endif
+        thread->func("on_pickup");
+        thread->pushobject(this->_owner);
+        thread->resume(1);
     }
     catch (std::exception& e)
     {

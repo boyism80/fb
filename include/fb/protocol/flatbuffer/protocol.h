@@ -11,6 +11,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.character_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.item_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.spell_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.buff_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.option_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.articlesummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.article_generated.h>
@@ -48,6 +49,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.leaveclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.setclantitle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcastclan_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.broadcast_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.kickout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.logout_generated.h>
@@ -82,6 +84,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.leaveclan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.setclantitle_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcastclan_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.response.broadcast_generated.h>
 
 namespace fb::protocol::internal
 {
@@ -89,6 +92,7 @@ namespace fb::protocol::internal
     class Character;
     class Item;
     class Spell;
+    class Buff;
     class Option;
     class ArticleSummary;
     class Article;
@@ -131,6 +135,7 @@ namespace fb::protocol::internal::request
     class LeaveClan;
     class SetClanTitle;
     class BroadcastClan;
+    class Broadcast;
 } // end of namespace fb::protocol::internal::request
 namespace fb::protocol::internal::response
 {
@@ -168,6 +173,7 @@ namespace fb::protocol::internal::response
     class LeaveClan;
     class SetClanTitle;
     class BroadcastClan;
+    class Broadcast;
 } // end of namespace fb::protocol::internal::response
 
 
@@ -263,6 +269,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Position> { typedef 
 template <> struct FlatBufferOffset<fb::protocol::internal::Character> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Character> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Item> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Item> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Spell> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Spell> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::Buff> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Buff> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Option> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Option> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ArticleSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ArticleSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Article> type; };
@@ -300,6 +307,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::request::JoinClan> {
 template <> struct FlatBufferOffset<fb::protocol::internal::request::LeaveClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::LeaveClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::SetClanTitle> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::BroadcastClan> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Broadcast> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::KickOut> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Login> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Logout> type; };
@@ -334,6 +342,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::response::JoinClan> 
 template <> struct FlatBufferOffset<fb::protocol::internal::response::LeaveClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::LeaveClan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::SetClanTitle> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::SetClanTitle> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::response::BroadcastClan> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::response::Broadcast> { typedef flatbuffers::Offset<fb::protocol::internal::response::raw::Broadcast> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Service> { typedef fb::protocol::internal::raw::Service type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::GroupAction> { typedef fb::protocol::internal::raw::GroupAction type; };
 template <typename T> struct FlatBufferOffset<std::optional<T>> { typedef typename FlatBufferOffset<T>::type type; };
@@ -351,6 +360,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Item> build<fb::protocol::internal::Item>(FlatBufferBuilder& builder, const fb::protocol::internal::Item& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Spell> build<fb::protocol::internal::Spell>(FlatBufferBuilder& builder, const fb::protocol::internal::Spell& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::Buff> build<fb::protocol::internal::Buff>(FlatBufferBuilder& builder, const fb::protocol::internal::Buff& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Option> build<fb::protocol::internal::Option>(FlatBufferBuilder& builder, const fb::protocol::internal::Option& value);
 template <>
@@ -426,6 +437,8 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::SetClanTitle> build<fb
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> build<fb::protocol::internal::request::BroadcastClan>(FlatBufferBuilder& builder, const fb::protocol::internal::request::BroadcastClan& value);
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> build<fb::protocol::internal::request::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Broadcast& value);
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::Login> build<fb::protocol::internal::response::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Login& value);
@@ -493,6 +506,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::SetClanTitle> build<fb::protocol::internal::response::SetClanTitle>(FlatBufferBuilder& builder, const fb::protocol::internal::response::SetClanTitle& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> build<fb::protocol::internal::response::BroadcastClan>(FlatBufferBuilder& builder, const fb::protocol::internal::response::BroadcastClan& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::Broadcast> build<fb::protocol::internal::response::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Broadcast& value);
 
 template <typename T> inline static
 std::vector<T> unpack(const flatbuffers::Vector<typename FlatBufferOffset<T>::type> *value);
@@ -526,6 +541,7 @@ enum class FlatBufferProtocolType
     Character,
     Item,
     Spell,
+    Buff,
     Option,
     ArticleSummary,
     Article,
@@ -617,21 +633,22 @@ public:
     std::optional<uint8_t> ring_right_color = std::nullopt;
     std::optional<uint8_t> aux_top_color = std::nullopt;
     std::optional<uint8_t> aux_bot_color = std::nullopt;
+    std::vector<fb::protocol::internal::Buff> buffs = {};
     std::string updated_date;
 
 public:
     Character() = default;
 
     Character(const Character& x)
-        : id(x.id), name(x.name), pw(x.pw), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), updated_date(x.updated_date)
+        : id(x.id), name(x.name), pw(x.pw), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), buffs(x.buffs), updated_date(x.updated_date)
     { }
 
-    Character(uint32_t id, const std::string& name, const std::string& pw, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, const std::string& updated_date)
-        : id(id), name(name), pw(pw), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), updated_date(updated_date)
+    Character(uint32_t id, const std::string& name, const std::string& pw, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, std::vector<fb::protocol::internal::Buff> buffs, const std::string& updated_date)
+        : id(id), name(name), pw(pw), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), buffs(buffs), updated_date(updated_date)
     { }
 
     Character(const fb::protocol::internal::raw::Character& raw)
-        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), buffs(unpack<fb::protocol::internal::Buff>(raw.buffs())), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
     { }
 
 public:
@@ -705,20 +722,21 @@ public:
     uint32_t user = 0;
     uint8_t slot = 0;
     uint32_t model = 0;
+    std::string next;
 
 public:
     Spell() = default;
 
     Spell(const Spell& x)
-        : user(x.user), slot(x.slot), model(x.model)
+        : user(x.user), slot(x.slot), model(x.model), next(x.next)
     { }
 
-    Spell(uint32_t user, uint8_t slot, uint32_t model)
-        : user(user), slot(slot), model(model)
+    Spell(uint32_t user, uint8_t slot, uint32_t model, const std::string& next)
+        : user(user), slot(slot), model(model), next(next)
     { }
 
     Spell(const fb::protocol::internal::raw::Spell& raw)
-        : user(raw.user()), slot(raw.slot()), model(raw.model())
+        : user(raw.user()), slot(raw.slot()), model(raw.model()), next(flatbuffers::option::decode(raw.next()->c_str()))
     { }
 
 public:
@@ -735,6 +753,46 @@ public:
     {
         auto raw = fb::protocol::internal::raw::GetSpell(bytes);
         return Spell(*raw);
+    }
+};
+class Buff
+{
+public:
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Buff;
+
+public:
+    uint32_t model = 0;
+    uint32_t time = 0;
+
+public:
+    Buff() = default;
+
+    Buff(const Buff& x)
+        : model(x.model), time(x.time)
+    { }
+
+    Buff(uint32_t model, uint32_t time)
+        : model(model), time(time)
+    { }
+
+    Buff(const fb::protocol::internal::raw::Buff& raw)
+        : model(raw.model()), time(raw.time())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::Buff>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Buff Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::raw::GetBuff(bytes);
+        return Buff(*raw);
     }
 };
 class Option
@@ -1164,6 +1222,7 @@ enum class FlatBufferProtocolType
     LeaveClan,
     SetClanTitle,
     BroadcastClan,
+    Broadcast,
 };
 
 class Login
@@ -2314,6 +2373,47 @@ public:
         return BroadcastClan(*raw);
     }
 };
+class Broadcast
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Broadcast;
+
+public:
+    uint32_t host = 0;
+    std::string message;
+    uint8_t type = 0;
+
+public:
+    Broadcast() = default;
+
+    Broadcast(const Broadcast& x)
+        : host(x.host), message(x.message), type(x.type)
+    { }
+
+    Broadcast(uint32_t host, const std::string& message, uint8_t type)
+        : host(host), message(message), type(type)
+    { }
+
+    Broadcast(const fb::protocol::internal::request::raw::Broadcast& raw)
+        : host(raw.host()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::Broadcast>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Broadcast Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetBroadcast(bytes);
+        return Broadcast(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::internal::request
 
@@ -2355,6 +2455,7 @@ enum class FlatBufferProtocolType
     LeaveClan,
     SetClanTitle,
     BroadcastClan,
+    Broadcast,
 };
 
 class KickOut
@@ -3737,6 +3838,48 @@ public:
         return BroadcastClan(*raw);
     }
 };
+class Broadcast
+{
+public:
+    static inline fb::protocol::internal::response::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::response::FlatBufferProtocolType::Broadcast;
+
+public:
+    uint32_t host = 0;
+    std::string message;
+    uint8_t type = 0;
+    uint32_t error = 0;
+
+public:
+    Broadcast() = default;
+
+    Broadcast(const Broadcast& x)
+        : host(x.host), message(x.message), type(x.type), error(x.error)
+    { }
+
+    Broadcast(uint32_t host, const std::string& message, uint8_t type, uint32_t error)
+        : host(host), message(message), type(type), error(error)
+    { }
+
+    Broadcast(const fb::protocol::internal::response::raw::Broadcast& raw)
+        : host(raw.host()), message(flatbuffers::option::decode(raw.message()->c_str())), type(raw.type()), error(raw.error())
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::response::Broadcast>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Broadcast Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::response::raw::GetBroadcast(bytes);
+        return Broadcast(*raw);
+    }
+};
 
 } // end of namespace fb::protocol::internal::response
 
@@ -3845,6 +3988,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Character> build<fb::protocol::
             flatbuffers::build<std::optional<uint8_t>>(builder, value.ring_right_color),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.aux_top_color),
             flatbuffers::build<std::optional<uint8_t>>(builder, value.aux_bot_color),
+            flatbuffers::build<std::vector<fb::protocol::internal::Buff>>(builder, value.buffs),
             flatbuffers::build<std::string>(builder, value.updated_date));
 }
 template <>
@@ -3866,7 +4010,15 @@ flatbuffers::Offset<fb::protocol::internal::raw::Spell> build<fb::protocol::inte
     return fb::protocol::internal::raw::CreateSpell(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint8_t>(builder, value.slot),
-            flatbuffers::build<uint32_t>(builder, value.model));
+            flatbuffers::build<uint32_t>(builder, value.model),
+            flatbuffers::build<std::string>(builder, value.next));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::raw::Buff> build<fb::protocol::internal::Buff>(FlatBufferBuilder& builder, const fb::protocol::internal::Buff& value)
+{
+    return fb::protocol::internal::raw::CreateBuff(builder,
+            flatbuffers::build<uint32_t>(builder, value.model),
+            flatbuffers::build<uint32_t>(builder, value.time));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Option> build<fb::protocol::internal::Option>(FlatBufferBuilder& builder, const fb::protocol::internal::Option& value)
@@ -4188,6 +4340,14 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::BroadcastClan> build<f
             flatbuffers::build<uint8_t>(builder, value.type));
 }
 template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Broadcast> build<fb::protocol::internal::request::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Broadcast& value)
+{
+    return fb::protocol::internal::request::raw::CreateBroadcast(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
+            flatbuffers::build<std::string>(builder, value.message),
+            flatbuffers::build<uint8_t>(builder, value.type));
+}
+template <>
 flatbuffers::Offset<fb::protocol::internal::response::raw::KickOut> build<fb::protocol::internal::response::KickOut>(FlatBufferBuilder& builder, const fb::protocol::internal::response::KickOut& value)
 {
     return fb::protocol::internal::response::raw::CreateKickOut(builder,
@@ -4447,6 +4607,15 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::BroadcastClan> build<
     return fb::protocol::internal::response::raw::CreateBroadcastClan(builder,
             flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<uint32_t>(builder, value.clan),
+            flatbuffers::build<std::string>(builder, value.message),
+            flatbuffers::build<uint8_t>(builder, value.type),
+            flatbuffers::build<uint32_t>(builder, value.error));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::response::raw::Broadcast> build<fb::protocol::internal::response::Broadcast>(FlatBufferBuilder& builder, const fb::protocol::internal::response::Broadcast& value)
+{
+    return fb::protocol::internal::response::raw::CreateBroadcast(builder,
+            flatbuffers::build<uint32_t>(builder, value.host),
             flatbuffers::build<std::string>(builder, value.message),
             flatbuffers::build<uint8_t>(builder, value.type),
             flatbuffers::build<uint32_t>(builder, value.error));

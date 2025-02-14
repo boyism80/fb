@@ -227,5 +227,20 @@ namespace Internal.Controllers
                 };
             }
         }
+
+        [HttpPost("broadcast")]
+        public async Task<Response.Broadcast> Broadcast(Request.Broadcast request)
+        {
+            var response = new Response.Broadcast
+            {
+                Message = request.Message,
+                Type = request.Type,
+                Host = request.Host,
+                Error = (uint)ErrorCode.None
+            };
+
+            _rabbitMqService.Publish(response, "amq.direct", $"fb.global");
+            return response;
+        }
     }
 }

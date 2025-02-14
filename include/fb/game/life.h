@@ -18,8 +18,17 @@ public:
     struct initial_params;
 
 protected:
-    uint32_t  _hp = 0, _mp = 0;
-    CONDITION _condition = CONDITION::NONE;
+    uint32_t      _hp = 0, _mp = 0;
+    uint32_t      _damage_rate = 1000, _skill_damage_rate = 1000;
+    uint32_t      _damage_derate = 1000;
+    CROWD_CONTROL _crowd_control = CROWD_CONTROL::NONE;
+    int8_t        _buff_phydef   = 0;
+    int8_t        _buff_magdef   = 0;
+    bool          _paralysis     = false;
+    uint8_t       _dam           = 0; // 공격수정
+    uint8_t       _hit           = 0; // 명중수정
+    bool          _invincible    = false;
+    bool          _cover         = false;
 
 public:
     fb::game::spells spells;
@@ -43,7 +52,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    virtual void attack();
+    virtual void attack(DURATION duration = DURATION::ATTACK);
 
     /**
      * @brief      { function_description }
@@ -99,14 +108,28 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t defensive_physical() const;
+    virtual int8_t base_phydef() const;
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t defensive_magical() const;
+    virtual int8_t base_magdef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t phydef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t magdef() const;
 
     /**
      * @brief      { function_description }
@@ -177,7 +200,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    CONDITION condition() const;
+    CROWD_CONTROL crowd_control() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void crowd_control(CROWD_CONTROL value);
 
     /**
      * @brief      { function_description }
@@ -186,7 +216,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    CONDITION condition_add(CONDITION value);
+    CROWD_CONTROL add_cc(CROWD_CONTROL value);
 
     /**
      * @brief      { function_description }
@@ -195,7 +225,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    CONDITION condition_remove(CONDITION value);
+    CROWD_CONTROL remove_cc(CROWD_CONTROL value);
 
     /**
      * @brief      Determines if condition contains.
@@ -204,7 +234,7 @@ public:
      *
      * @return     True if condition contains, False otherwise.
      */
-    bool condition_contains(CONDITION value) const;
+    bool condition_contains(CROWD_CONTROL value) const;
 
     /**
      * @brief      { function_description }
@@ -220,7 +250,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell);
+    bool active(fb::game::spell& spell);
 
     /**
      * @brief      { function_description }
@@ -230,7 +260,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell, uint32_t fd);
+    bool active(fb::game::spell& spell, uint32_t fd);
 
     /**
      * @brief      { function_description }
@@ -240,7 +270,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell, const std::string& message);
+    bool active(fb::game::spell& spell, const std::string& message);
 
     /**
      * @brief      { function_description }
@@ -250,7 +280,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool active(const fb::model::spell& spell, fb::game::object& to);
+    bool active(fb::game::spell& spell, fb::game::object& to);
 
     /**
      * @brief      { function_description }
@@ -260,6 +290,34 @@ public:
      * @param[in]  sound     The sound
      */
     virtual void action(ACTION action, DURATION duration, uint8_t sound = 0x00);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t dam() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void dam(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t hit() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void hit(uint8_t value);
 
 public:
     /**
@@ -300,7 +358,124 @@ public:
      */
     virtual bool calculate_miss(life& you) const;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t damage_rate() const;
+
+    /**
+     * @brief      { function_description }
+     */
+    void damage_rate(uint32_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t skill_damage_rate() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void skill_damage_rate(uint32_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t damage_derate() const;
+
+    /**
+     * @brief      { function_description }
+     */
+    void damage_derate(uint32_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_phydef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_phydef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_magdef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_magdef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void paralysis(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool paralysis() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void invincible(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool invincible() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void cover(bool value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool cover() const;
+
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_message(lua_State* lua);
+
     /**
      * @brief      { function_description }
      *
@@ -344,7 +519,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hp_inc(lua_State* lua);
+    static int builtin_heal(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -353,7 +528,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hp_dec(lua_State* lua);
+    static int builtin_damage(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -362,7 +537,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp_inc(lua_State* lua);
+    static int builtin_mp_up(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -371,7 +546,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp_dec(lua_State* lua);
+    static int builtin_mp_down(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -398,7 +573,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_damage(lua_State* lua);
+    static int builtin_cast(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -407,7 +582,124 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cast(lua_State* lua);
+    static int builtin_cc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_add_cc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_remove_cc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_attack(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_damage_rate(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_skill_damage_rate(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_damage_derate(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_phydef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_magdef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_paralysis(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_invincible(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_dam(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_hit(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_cover(lua_State* lua);
 };
 
 /**
@@ -430,7 +722,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      *
      * @param      me    { parameter_description }
      */
-    virtual void on_attack(life& me) = 0;
+    virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
 
     /**
      * @brief      Called on dead.

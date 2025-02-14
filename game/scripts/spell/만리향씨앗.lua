@@ -1,7 +1,7 @@
-function on_uncast(me, spell)
+function on_unbuff(me, spell)
 
 end
 
-function on_concast(me, spell)
+function on_concast(me, caster, buff)
 
 end

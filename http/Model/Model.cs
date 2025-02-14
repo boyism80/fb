@@ -25,6 +25,14 @@ namespace Fb.Model
         public T Min { get; set; }
         public T Max { get; set; }
     }
+
+    public struct Area<T>
+    {
+        public T Left { get; set; }
+        public T Top { get; set; }
+        public T Right { get; set; }
+        public T Bottom { get; set; }
+    }
 }
 
 namespace Fb.Model.EnumValue
@@ -83,6 +91,15 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
+    public enum BroadcastType
+    {
+        [EnumMember(Value = "WORLD")]
+        World = 1, 
+        [EnumMember(Value = "GLOBAL")]
+        Global = 2
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
     public enum BundleType
     {
         [EnumMember(Value = "NONE")]
@@ -91,6 +108,19 @@ namespace Fb.Model.EnumValue
         Bundle = 1, 
         [EnumMember(Value = "PACKAGE")]
         Package = 2
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum CardinalDirection
+    {
+        [EnumMember(Value = "EAST")]
+        East = 1, 
+        [EnumMember(Value = "WEST")]
+        West = 2, 
+        [EnumMember(Value = "SOUTH")]
+        South = 3, 
+        [EnumMember(Value = "NORTH")]
+        North = 4
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -135,23 +165,6 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum Condition
-    {
-        [EnumMember(Value = "NONE")]
-        None = 0x00, 
-        [EnumMember(Value = "MOVE")]
-        Move = 0x01, 
-        [EnumMember(Value = "SIGHT")]
-        Sight = 0x02, 
-        [EnumMember(Value = "HEAR")]
-        Hear = 0x04, 
-        [EnumMember(Value = "ORAL")]
-        Oral = 0x08, 
-        [EnumMember(Value = "MAP")]
-        Map = 0x10
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
     public enum Creature
     {
         [EnumMember(Value = "PHOENIX")]
@@ -162,6 +175,23 @@ namespace Fb.Model.EnumValue
         Turtle = 0x02, 
         [EnumMember(Value = "DRAGON")]
         Dragon = 0x03
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum CrowdControl
+    {
+        [EnumMember(Value = "NONE")]
+        None = 0x00, 
+        [EnumMember(Value = "DIRECTION")]
+        Direction = 0x01, 
+        [EnumMember(Value = "SIGHT")]
+        Sight = 0x02, 
+        [EnumMember(Value = "HEAR")]
+        Hear = 0x04, 
+        [EnumMember(Value = "CHAT")]
+        Chat = 0x08, 
+        [EnumMember(Value = "MAP")]
+        Map = 0x10
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -221,8 +251,8 @@ namespace Fb.Model.EnumValue
         Strength = 3, 
         [EnumMember(Value = "intelligence")]
         Intelligence = 4, 
-        [EnumMember(Value = "dexteritry")]
-        Dexteritry = 5, 
+        [EnumMember(Value = "dexterity")]
+        Dexterity = 5, 
         [EnumMember(Value = "promotion")]
         Promotion = 6, 
         [EnumMember(Value = "class_t")]
@@ -232,7 +262,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "world")]
         World = 9, 
         [EnumMember(Value = "map")]
-        Map = 10
+        Map = 10, 
+        [EnumMember(Value = "area")]
+        Area = 11, 
+        [EnumMember(Value = "point")]
+        Point = 12
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -505,7 +539,7 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "ENABLE_PK")]
         EnablePk = 0x20, 
         [EnumMember(Value = "DISABLE_DIE_PENALTY")]
-        DisableDiePenalty = 0x30
+        DisableDiePenalty = 0x40
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -714,8 +748,8 @@ namespace Fb.Model.EnumValue
     [JsonConverter(typeof(StringEnumConverter))]
     public enum StateLevel
     {
-        [EnumMember(Value = "CONDITION")]
-        Condition = 0x08, 
+        [EnumMember(Value = "CROWD_CONTROL")]
+        CrowdControl = 0x08, 
         [EnumMember(Value = "EXP_MONEY")]
         ExpMoney = 0x10, 
         [EnumMember(Value = "HP_MP")]
@@ -723,11 +757,11 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "BASED")]
         Based = 0x40, 
         [EnumMember(Value = "LEVEL_MAX")]
-        LevelMax = Based | HpMp | ExpMoney | Condition, 
+        LevelMax = Based | HpMp | ExpMoney | CrowdControl, 
         [EnumMember(Value = "LEVEL_MIN")]
-        LevelMin = ExpMoney | Condition, 
+        LevelMin = ExpMoney | CrowdControl, 
         [EnumMember(Value = "LEVEL_MIDDLE")]
-        LevelMiddle = HpMp | ExpMoney | Condition
+        LevelMiddle = HpMp | ExpMoney | CrowdControl
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -979,8 +1013,8 @@ namespace Fb.Model
         public Fb.Model.EnumValue.Class Parent { get; set; }
         [JsonProperty("level")]
         public byte Level { get; set; }
-        [JsonProperty("dexteritry")]
-        public byte Dexteritry { get; set; }
+        [JsonProperty("dexterity")]
+        public byte Dexterity { get; set; }
         [JsonProperty("intelligence")]
         public byte Intelligence { get; set; }
         [JsonProperty("strength")]
@@ -1069,6 +1103,12 @@ namespace Fb.Model
         public byte Host { get; set; }
         [JsonProperty("option")]
         public Fb.Model.EnumValue.MapOption Option { get; set; }
+        [JsonProperty("cardinal")]
+        public Dictionary<Fb.Model.EnumValue.CardinalDirection, Dsl> Cardinal { get; set; }
+        [JsonProperty("resurrection")]
+        public Dictionary<Fb.Model.EnumValue.CardinalDirection, uint> Resurrection { get; set; }
+        [JsonProperty("teleport")]
+        public List<Dsl> Teleport { get; set; }
     }
 
     public class MobSpawn
@@ -1185,8 +1225,10 @@ namespace Fb.Model
         public Fb.Model.EnumValue.SpellType Type { get; set; }
         [JsonProperty("cast")]
         public string Cast { get; set; }
-        [JsonProperty("uncast")]
-        public string Uncast { get; set; }
+        [JsonProperty("buff")]
+        public string Buff { get; set; }
+        [JsonProperty("unbuff")]
+        public string Unbuff { get; set; }
         [JsonProperty("concast")]
         public string Concast { get; set; }
         [JsonProperty("message")]
@@ -1317,6 +1359,10 @@ namespace Fb.Model
 
     public class Equipment : Fb.Model.Item
     {
+        [JsonProperty("script_inactive")]
+        public string ScriptInactive { get; set; }
+        [JsonProperty("script_concast")]
+        public string ScriptConcast { get; set; }
         [JsonProperty("dress")]
         public ushort Dress { get; set; }
         [JsonProperty("durability")]
@@ -1335,8 +1381,8 @@ namespace Fb.Model
         public byte Strength { get; set; }
         [JsonProperty("intelligence")]
         public byte Intelligence { get; set; }
-        [JsonProperty("dexteritry")]
-        public byte Dexteritry { get; set; }
+        [JsonProperty("dexterity")]
+        public byte Dexterity { get; set; }
         [JsonProperty("base_hp")]
         public uint BaseHp { get; set; }
         [JsonProperty("base_mp")]
@@ -1405,6 +1451,8 @@ namespace Fb.Model
 
     public class Weapon : Fb.Model.Equipment
     {
+        [JsonProperty("script_attack")]
+        public string ScriptAttack { get; set; }
         [JsonProperty("damage_small")]
         public Range<uint> DamageSmall { get; set; }
         [JsonProperty("damage_large")]
@@ -1445,6 +1493,37 @@ namespace Fb.Model
                 };
             }
         }
+        public class Area
+        {
+            [JsonProperty("left")]
+            public ushort Left { get; set; }
+            [JsonProperty("top")]
+            public ushort Top { get; set; }
+            [JsonProperty("right")]
+            public ushort Right { get; set; }
+            [JsonProperty("bottom")]
+            public ushort Bottom { get; set; }
+
+            public static Area Parse(object[] parameters)
+            {
+                return new Area
+                {
+                    Left = (ushort)parameters[0],
+                    Top = (ushort)parameters[1],
+                    Right = (ushort)parameters[2],
+                    Bottom = (ushort)parameters[3]
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Area,
+                    Params = new object[] {Left, Top, Right, Bottom}
+                };
+            }
+        }
         public class ClassT
         {
             [JsonProperty("value")]
@@ -1467,14 +1546,14 @@ namespace Fb.Model
                 };
             }
         }
-        public class Dexteritry
+        public class Dexterity
         {
             [JsonProperty("value")]
             public byte Value { get; set; }
 
-            public static Dexteritry Parse(object[] parameters)
+            public static Dexterity Parse(object[] parameters)
             {
-                return new Dexteritry
+                return new Dexterity
                 {
                     Value = (byte)parameters[0]
                 };
@@ -1484,7 +1563,7 @@ namespace Fb.Model
             {
                 return new Dsl
                 {
-                    Header = Fb.Model.EnumValue.Dsl.Dexteritry,
+                    Header = Fb.Model.EnumValue.Dsl.Dexterity,
                     Params = new object[] {Value}
                 };
             }
@@ -1572,6 +1651,10 @@ namespace Fb.Model
             public ushort X { get; set; }
             [JsonProperty("y")]
             public ushort Y { get; set; }
+            [JsonProperty("right")]
+            public ushort Right { get; set; }
+            [JsonProperty("bottom")]
+            public ushort Bottom { get; set; }
 
             public static Map Parse(object[] parameters)
             {
@@ -1579,7 +1662,9 @@ namespace Fb.Model
                 {
                     Id = (uint)parameters[0],
                     X = (ushort)parameters[1],
-                    Y = (ushort)parameters[2]
+                    Y = (ushort)parameters[2],
+                    Right = (ushort)parameters[3],
+                    Bottom = (ushort)parameters[4]
                 };
             }
 
@@ -1588,7 +1673,32 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Map,
-                    Params = new object[] {Id, X, Y}
+                    Params = new object[] {Id, X, Y, Right, Bottom}
+                };
+            }
+        }
+        public class Point
+        {
+            [JsonProperty("x")]
+            public ushort X { get; set; }
+            [JsonProperty("y")]
+            public ushort Y { get; set; }
+
+            public static Point Parse(object[] parameters)
+            {
+                return new Point
+                {
+                    X = (ushort)parameters[0],
+                    Y = (ushort)parameters[1]
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Point,
+                    Params = new object[] {X, Y}
                 };
             }
         }

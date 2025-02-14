@@ -21,7 +21,6 @@ public:
     const fb::game::life& me;
     const uint32_t        damage;
     const bool            critical;
-    const uint8_t         percentage;
 #else
 
 #endif

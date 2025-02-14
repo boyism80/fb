@@ -7,63 +7,34 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
     this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
 }
 
-void context::on_attack(life& me)
+void context::on_attack(life& me, DURATION duration)
 {
-    static auto PK = false;
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_attack");
+    thread->pushobject(me);
+    thread->resume(1, false);
 
-    me.action(ACTION::ATTACK, DURATION::ATTACK);
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
-        auto* weapon = static_cast<character&>(me).items.weapon();
+        auto& ch     = static_cast<character&>(me);
+        auto  weapon = ch.items.weapon();
         if (weapon != nullptr)
         {
-            auto sound = weapon->based<fb::model::weapon>().sound;
-            me.sound(sound != 0 ? SOUND(sound) : SOUND::SWING);
+            auto& model = weapon->based<fb::model::weapon>();
+            if (model.script_attack != "")
+            {
+                thread->from(model.script_attack);
+                thread->func("on_attack");
+                thread->pushobject(ch);
+                thread->pushobject(weapon);
+                thread->resume(2, false);
+            }
         }
     }
-
-    auto front = static_cast<fb::game::life*>(me.forward(OBJECT_TYPE::LIFE));
-    if (front == nullptr)
-        return;
-
-    if (!PK && me.is(OBJECT_TYPE::CHARACTER) && front->is(OBJECT_TYPE::CHARACTER))
-        return;
-
-    auto miss = me.calculate_miss(*front);
-    if (miss)
-        return;
-
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto* weapon = static_cast<character&>(me).items.weapon();
-        if (weapon != nullptr)
-        {
-            auto sound = weapon->based<fb::model::weapon>().sound;
-            front->sound(SOUND::DAMAGE);
-        }
-    }
-
-    auto critical = me.calculate_critical(*front);
-    auto mob_size = MOB_SIZE::LARGE;
-    if (front->is(OBJECT_TYPE::MOB))
-    {
-        auto& model = static_cast<fb::game::mob*>(front)->based<fb::model::mob>();
-        mob_size    = model.size;
-    }
-    auto damage = me.calculate_damage(me.auto_attack_damage(mob_size), *front, critical);
-    if (me.is(OBJECT_TYPE::CHARACTER))
-    {
-        auto thread = lua::get();
-        thread->from("scripts/common/attack.lua");
-        thread->func("on_attack");
-        thread->pushobject(me);
-        thread->pushobject(*front);
-        thread->pushinteger(damage);
-        thread->resume(3, false);
-        damage = thread->tointeger(1);
-        thread->release();
-    }
-    front->damage(damage, &me, critical);
+    thread->release();
 }
 
 void context::on_dead(life& me, object* you)
@@ -73,6 +44,9 @@ void context::on_dead(life& me, object* you)
     case OBJECT_TYPE::MOB:
     {
         auto& mob = static_cast<fb::game::mob&>(me);
+        if (mob.owner != nullptr)
+            return;
+
         mob.drop_items();
 
         if (you != nullptr && you->is(OBJECT_TYPE::CHARACTER))

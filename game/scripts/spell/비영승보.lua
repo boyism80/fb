@@ -1,5 +1,3 @@
--- TOP = 0x00, RIGHT = 0x01, BOTTOM = 0x02, LEFT = 0x03
-
 function lookup(me, you, direction)
     local map = me:map()
     
@@ -35,20 +33,16 @@ function on_cast(me, spell)
         return
     end
 
-    local front = me:front(0xff & (~ITEM))
+    local front = me:front(0xff & (~OBJECT_TYPE_ITEM))
     if front == nil then
         return
     end
 
     local direction = me:direction()
-    if lookup(me, front, (direction + 0) % 4) or 
-       lookup(me, front, (direction + 3) % 4) or
-       lookup(me, front, (direction + 1) % 4) then
-
-        if me:isbuff('투명') and front:is(MOB | CHARACTER) then
-            me:unbuff('투명')
-        end
-        me:action(ACTION_ATTACK, 0x0a, 0x1e)
+    if lookup(me, front, (direction + 0) % 4) or lookup(me, front, (direction + 3) % 4) or lookup(me, front, (direction + 1) % 4) then
+        me:attack(14)
+        me:action(ACTION_CAST_SPELL, 20)
         me:message('비영승보를 외웠습니다.')
+        front:sound(30)
     end
 end

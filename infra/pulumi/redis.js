@@ -30,6 +30,9 @@ module.exports = {
                                 },
                             },
                             spec: {
+                                nodeSelector: {
+                                    "kubernetes.io/hostname": "ubuntu-1"
+                                },
                                 containers: [
                                     {
                                         name: "redis",

@@ -62,9 +62,9 @@ class luable;
  */
 class context;
 /**
- * @brief      This class describes a main.
+ * @brief      This class describes a context_pool.
  */
-class main;
+class context_pool;
 /**
  * @brief      This class describes a thread.
  */
@@ -75,7 +75,7 @@ class thread;
  *
  * @return     { description_of_the_return_value }
  */
-context* get();
+context* new_context();
 /**
  * @brief      Gets the specified context.
  *
@@ -91,6 +91,13 @@ context* get(lua_State* ctx);
  * @param[in]  fn    The function
  */
 void build(const std::string& name, lua_CFunction fn);
+/**
+ * @brief      { function_description }
+ *
+ * @param[in]  path  The path
+ */
+void dump(const std::string& path);
+
 /**
  * @brief      { function_description }
  *
@@ -665,9 +672,9 @@ public:
 };
 
 /**
- * @brief      This class describes a main.
+ * @brief      This class describes a context_pool.
  */
-class main : public context
+class context_pool : public context
 {
 public:
     using unique_lua_map = std::unordered_map<lua_State*, std::unique_ptr<thread>>;
@@ -675,6 +682,7 @@ public:
 
 private:
     bytecode_set _bytecodes;
+    std::mutex   _mutex;
 
 public:
     friend class context;
@@ -688,17 +696,17 @@ public:
     /**
      * @brief      Constructs a new instance.
      */
-    main();
+    context_pool();
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  <unnamed>  { parameter_description }
      */
-    main(const main&&) = delete;
+    context_pool(const context_pool&&) = delete;
     /**
      * @brief      Destroys the object.
      */
-    ~main();
+    ~context_pool();
 
 public:
     /**
@@ -708,7 +716,7 @@ public:
      *
      * @return     The result of the assignment
      */
-    main& operator= (main&) = delete;
+    context_pool& operator= (context_pool&) = delete;
     /**
      * @brief      Assignment operator.
      *
@@ -716,9 +724,7 @@ public:
      *
      * @return     The result of the assignment
      */
-    main& operator= (main&&) = delete;
-
-private:
+    context_pool& operator= (context_pool&&) = delete;
 
 public:
     /**
@@ -728,7 +734,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool load_file(const std::string& path);
+    bool dump_file(const std::string& path);
     /**
      * @brief      Pops the object.
      *
@@ -811,6 +817,8 @@ public:
     {
         lua_register(*this, name.c_str(), fn);
     }
+
+    static context_pool& ist();
 };
 
 /**
@@ -847,62 +855,6 @@ public:
 };
 
 /**
- * @brief      This class describes a container.
- */
-class container
-{
-    using main_set   = std::map<uint32_t, std::unique_ptr<main>>;
-    using init_func  = std::function<void(main&)>;
-    using init_funcs = std::vector<init_func>;
-
-private:
-    std::mutex               _mutex;
-    main_set                 _mains;
-    std::vector<std::string> _scripts;
-    init_funcs               _init_funcs;
-
-private:
-    /**
-     * @brief      Constructs a new instance.
-     */
-    container();
-
-public:
-    /**
-     * @brief      Destroys the object.
-     */
-    ~container();
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    main& get();
-    /**
-     * @brief      Initializes the function.
-     *
-     * @param      fn    The function
-     */
-    void init_fn(init_func&& fn);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  path  The path
-     */
-    void load(const std::string& path);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static container& ist();
-};
-
-/**
  * @brief      { function_description }
  *
  * @tparam     T     { description }
@@ -910,10 +862,8 @@ public:
 template <typename T>
 void build()
 {
-    auto& ist = container::ist();
-    ist.init_fn([](main& m) {
-        m.build<T>();
-    });
+    auto& ist = context_pool::ist();
+    ist.build<T>();
 }
 
 /**
@@ -925,10 +875,8 @@ void build()
 template <typename T, typename B>
 void build()
 {
-    auto& ist = container::ist();
-    ist.init_fn([](main& m) {
-        m.build<T, B>();
-    });
+    auto& ist = context_pool::ist();
+    ist.build<T, B>();
 }
 
 /**
@@ -942,10 +890,8 @@ void build()
 template <typename T>
 void env(const char* key, T* data)
 {
-    auto& ist = container::ist();
-    ist.init_fn([key, data](main& m) {
-        m.env(key, data);
-    });
+    auto& ist = context_pool::ist();
+    ist.env(key, data);
 }
 
 } // namespace fb::lua
@@ -1001,15 +947,15 @@ fb::lua::context& fb::lua::context::from(const std::string& fmt, Args&&... args)
 #if defined DEBUG || defined _DEBUG
     luaL_dofile(*this, fname.c_str());
 #else
-    auto main = static_cast<fb::lua::main*>(this->owner);
-    main->load_file(fname);
-    if (main->_bytecodes.contains(fname) == false)
+    auto context_pool = static_cast<fb::lua::context_pool*>(this->owner);
+    context_pool->dump_file(fname);
+    if (context_pool->_bytecodes.contains(fname) == false)
     {
         fb::logger::fatal("cannot find script {}", fname);
         return *this;
     }
 
-    auto& bytes = main->_bytecodes[fname];
+    auto& bytes = context_pool->_bytecodes[fname];
     if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 

@@ -1,3 +1,3 @@
-function on_uncast(me, spell)
+function on_unbuff(me, spell)
 
 end

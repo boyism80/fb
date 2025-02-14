@@ -66,13 +66,15 @@ public struct Character : IFlatbufferObject
   public nullable.nullable_ubyte? RingRightColor { get { int o = __p.__offset(66); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ubyte? AuxTopColor { get { int o = __p.__offset(68); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
   public nullable.nullable_ubyte? AuxBotColor { get { int o = __p.__offset(70); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public string UpdatedDate { get { int o = __p.__offset(72); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public fb.protocol._internal.raw.Buff? Buffs(int j) { int o = __p.__offset(72); return o != 0 ? (fb.protocol._internal.raw.Buff?)(new fb.protocol._internal.raw.Buff()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int BuffsLength { get { int o = __p.__offset(72); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public string UpdatedDate { get { int o = __p.__offset(74); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(72, 1); }
+  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(74, 1); }
 #else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(72); }
+  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(74); }
 #endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(72); }
+  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(74); }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
@@ -109,9 +111,11 @@ public struct Character : IFlatbufferObject
       Offset<nullable.nullable_ubyte> ring_right_colorOffset = default(Offset<nullable.nullable_ubyte>),
       Offset<nullable.nullable_ubyte> aux_top_colorOffset = default(Offset<nullable.nullable_ubyte>),
       Offset<nullable.nullable_ubyte> aux_bot_colorOffset = default(Offset<nullable.nullable_ubyte>),
+      VectorOffset buffsOffset = default(VectorOffset),
       StringOffset updated_dateOffset = default(StringOffset)) {
-    builder.StartTable(35);
+    builder.StartTable(36);
     Character.AddUpdatedDate(builder, updated_dateOffset);
+    Character.AddBuffs(builder, buffsOffset);
     Character.AddAuxBotColor(builder, aux_bot_colorOffset);
     Character.AddAuxTopColor(builder, aux_top_colorOffset);
     Character.AddRingRightColor(builder, ring_right_colorOffset);
@@ -149,7 +153,7 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(35); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(36); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
@@ -184,7 +188,13 @@ public struct Character : IFlatbufferObject
   public static void AddRingRightColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> ringRightColorOffset) { builder.AddOffset(31, ringRightColorOffset.Value, 0); }
   public static void AddAuxTopColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> auxTopColorOffset) { builder.AddOffset(32, auxTopColorOffset.Value, 0); }
   public static void AddAuxBotColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> auxBotColorOffset) { builder.AddOffset(33, auxBotColorOffset.Value, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(34, updatedDateOffset.Value, 0); }
+  public static void AddBuffs(FlatBufferBuilder builder, VectorOffset buffsOffset) { builder.AddOffset(34, buffsOffset.Value, 0); }
+  public static VectorOffset CreateBuffsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Buff>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Buff>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Buff>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Buff>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartBuffsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(35, updatedDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -233,7 +243,8 @@ static public class CharacterVerify
       && verifier.VerifyTable(tablePos, 66 /*RingRightColor*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 68 /*AuxTopColor*/, nullable.nullable_ubyteVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 70 /*AuxBotColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyString(tablePos, 72 /*UpdatedDate*/, false)
+      && verifier.VerifyVectorOfTables(tablePos, 72 /*Buffs*/, fb.protocol._internal.raw.BuffVerify.Verify, false)
+      && verifier.VerifyString(tablePos, 74 /*UpdatedDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

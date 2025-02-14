@@ -44,6 +44,7 @@ table Character {
     ring_right_color: ubyte?;
     aux_top_color: ubyte?;
     aux_bot_color: ubyte?;
+    buffs: [Buff];
     updated_date: string;
 }
 
@@ -62,6 +63,13 @@ table Spell {
     user: uint;
     slot: ubyte;
     model: uint;
+    next: string;
+}
+
+table Buff
+{
+    model: uint;
+    time: uint;
 }
 
 table Option {

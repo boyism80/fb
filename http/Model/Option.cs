@@ -12,16 +12,16 @@ namespace Http.Model
 
     public class Option : OptionKey, IModel
     {
-        public bool Whisper { get; set; }
-        public bool Group { get; set; }
-        public bool Roar { get; set; }
-        public bool RoarWorlds { get; set; }
-        public bool MagicEffect { get; set; }
-        public bool WeatherEffect { get; set; }
-        public bool FixedMove { get; set; }
-        public bool Trade { get; set; }
-        public bool FastMove { get; set; }
-        public bool EffectSound { get; set; }
-        public bool PkProtect { get; set; }
+        public bool Whisper { get; set; } = true;
+        public bool Group { get; set; } = true;
+        public bool Roar { get; set; } = true;
+        public bool RoarWorlds { get; set; } = true;
+        public bool MagicEffect { get; set; } = true;
+        public bool WeatherEffect { get; set; } = true;
+        public bool FixedMove { get; set; } = true;
+        public bool Trade { get; set; } = true;
+        public bool FastMove { get; set; } = true;
+        public bool EffectSound { get; set; } = true;
+        public bool PkProtect { get; set; } = true;
     }
 }

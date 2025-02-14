@@ -10,8 +10,8 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint8_t>((uint8_t)this->ch.defensive_physical());
-    writer.write<uint8_t>(this->ch.damage());
+    writer.write<int8_t>(this->ch.phydef());
+    writer.write<uint8_t>(this->ch.dam());
     writer.write<uint8_t>(this->ch.hit());
 
     auto& clan_lock_ptr = this->ch.clan();

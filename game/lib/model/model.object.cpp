@@ -79,31 +79,33 @@ int fb::model::object::builtin_dialog(lua_State* lua)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
-    try
+    auto object  = thread->touserdata<fb::model::object>(1);
+    if (object == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    if (argc < 3)
+        throw std::runtime_error("not enough parameters");
+
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
+        return 0;
+
+    auto message     = thread->tostring(3);
+    auto button_prev = argc < 4 ? false : thread->toboolean(4);
+    auto button_next = argc < 5 ? false : thread->toboolean(5);
+
+    if (ch->matched_thread())
     {
-        auto argc = thread->argc();
-        if (argc < 3)
-            throw std::runtime_error("not enough parameters");
-
-        auto context = thread->env<fb::game::context>("context");
-        auto object  = thread->touserdata<fb::model::object>(1);
-        if (object == nullptr)
-            return 0;
-
-        auto ch = thread->touserdata<fb::game::character>(2);
-        if (ch == nullptr)
-            return 0;
-
-        auto message     = thread->tostring(3);
-        auto button_prev = argc < 4 ? false : thread->toboolean(4);
-        auto button_next = argc < 5 ? false : thread->toboolean(5);
-
         ch->dialog.show(*object, message, button_prev, button_next);
-        return thread->yield(1);
+        return thread->yield(0);
     }
-    catch (std::exception&)
+    else
     {
-        thread->pushnil();
-        return 1;
+        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+            ch->dialog.show(*object, message, button_prev, button_next);
+            co_return;
+        });
+        return thread->yield(0);
     }
 }

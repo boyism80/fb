@@ -4,6 +4,16 @@ using namespace fb::game;
 
 void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_equipment_active");
+    thread->pushobject(me);
+    thread->pushinteger(parts);
+    thread->pushobject(item);
+    thread->resume(3);
+
     me.send(fb_resp::item_update_slot(me, parts));
     me.sound(SOUND::EQUIPMENT_ON);
 
@@ -47,12 +57,24 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 
     sstream.str(std::string());
-    sstream << "갑옷 강도  " << me.defensive_physical() << "  " << me.regenerative() << " S  "
-            << me.defensive_magical();
+    sstream << std::format("갑옷 강도  {}  {} S  {}", me.phydef(), me.regenerative(), me.magdef());
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 
 void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index)
 {
+    if (index == 0xFF)
+        return;
+
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_equipment_inactive");
+    thread->pushobject(me);
+    thread->pushinteger(parts);
+    thread->pushobject(me.items[index]);
+    thread->resume(3);
+
     me.sound(SOUND::EQUIPMENT_OFF);
 }

@@ -7,6 +7,7 @@
 #include <fb/thread_switchable.h>
 #include <fb/model/model.h>
 #include <fb/game/spell.h>
+#include <random.h>
 #include <async/task.h>
 #include <shared_mutex>
 
@@ -241,22 +242,6 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::model::point16_t position_forward() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  direction  The direction
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const fb::model::point16_t position_forward(DIRECTION direction) const;
-
-    /**
-     * @brief      { function_description }
-     *
      * @param[in]  x        { parameter_description }
      * @param[in]  y        { parameter_description }
      * @param[in]  refresh  The refresh
@@ -289,7 +274,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool move(DIRECTION direction);
+    virtual bool move(DIRECTION direction);
 
     /**
      * @brief      { function_description }
@@ -343,13 +328,23 @@ public:
      * @brief      { function_description }
      *
      * @param      map           The map
+     * @param[in]  destroy_type  The destroy type
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual async::task<bool> map(fb::game::map* map, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      map           The map
      * @param[in]  position      The position
      * @param[in]  destroy_type  The destroy type
      *
      * @return     { description_of_the_return_value }
      */
     virtual async::task<bool> map(fb::game::map*              map,
-                                  const fb::model::point16_t& position     = fb::model::point16_t{0, 0},
+                                  const fb::model::point16_t& position,
                                   DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT);
 
     /**
@@ -381,6 +376,25 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool sight(const fb::game::object& object) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  direction  The direction
+     * @param[in]  step       The step
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::model::point16_t side_position(DIRECTION direction, int step = 1) const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  step  The step
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::model::point16_t front_position(int step = 1) const;
 
     /**
      * @brief      { function_description }
@@ -637,6 +651,15 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_front_position(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_direction(lua_State* lua);
 
     /**
@@ -647,15 +670,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_chat(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_message(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -773,6 +787,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_near(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buffs(lua_State* lua);
 };
 
 /**
@@ -837,6 +860,14 @@ struct object::listener
      * @param[in]  before  The before
      */
     virtual void on_move(fb::game::object& me, const fb::model::point16_t& before) = 0;
+
+    /**
+     * @brief      Called on buffer.
+     *
+     * @param      me    { parameter_description }
+     * @param      buff  The buffer
+     */
+    virtual void on_buff(fb::game::object& me, fb::game::buff& buff) = 0;
 
     /**
      * @brief      Called on unbuff.

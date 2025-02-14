@@ -189,6 +189,38 @@ DECLARE_RANGE_EXTENSION
 #endif
 }; // end of struct range
 
+template <typename T>
+struct area
+{
+public:
+    using value_type = T;
+
+public:
+    T left = 0;
+    T top = 0;
+    T right = 0;
+    T bottom = 0;
+
+public:
+    area() = default;
+    area(T left, T top, T right, T bottom) : left(left), top(top), right(right), bottom(bottom)
+    { }
+
+public:
+    bool operator == (const area<T>& r) const
+    {
+        return this->left == r.left && this->top == r.top && this->right == r.right && this->bottom == r.bottom;
+    }
+
+    bool operator != (const area<T>& r) const
+    {
+        return this->left != r.left || this->top != r.top || this->right != r.right || this->bottom != r.bottom;
+    }
+#ifdef DECLARE_AREA_EXTENSION
+DECLARE_AREA_EXTENSION
+#endif
+}; // end of struct area
+
 #pragma endregion
 
 #ifdef DECLARE_AFTER_TYPE
@@ -363,6 +395,44 @@ inline const char* enum_tostring<BOARD_BUTTON_ENABLE>(BOARD_BUTTON_ENABLE k)
     return i->second;
 }
 
+enum class BROADCAST_TYPE
+{
+    WORLD = 1, 
+    GLOBAL = 2
+}; // end of enum 'BROADCAST_TYPE'
+
+template <>
+inline BROADCAST_TYPE enum_parse<BROADCAST_TYPE>(const std::string k)
+{
+    static const std::unordered_map<std::string, BROADCAST_TYPE> enums
+    {
+        { "WORLD", BROADCAST_TYPE::WORLD }, 
+        { "GLOBAL", BROADCAST_TYPE::GLOBAL }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<BROADCAST_TYPE>(BROADCAST_TYPE k)
+{
+    static const std::unordered_map<BROADCAST_TYPE, const char*> enums
+    {
+        { BROADCAST_TYPE::WORLD, "WORLD" }, 
+        { BROADCAST_TYPE::GLOBAL, "GLOBAL" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class BUNDLE_TYPE
 {
     NONE = 0, 
@@ -395,6 +465,50 @@ inline const char* enum_tostring<BUNDLE_TYPE>(BUNDLE_TYPE k)
         { BUNDLE_TYPE::NONE, "NONE" }, 
         { BUNDLE_TYPE::BUNDLE, "BUNDLE" }, 
         { BUNDLE_TYPE::PACKAGE, "PACKAGE" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class CARDINAL_DIRECTION
+{
+    EAST = 1, 
+    WEST = 2, 
+    SOUTH = 3, 
+    NORTH = 4
+}; // end of enum 'CARDINAL_DIRECTION'
+
+template <>
+inline CARDINAL_DIRECTION enum_parse<CARDINAL_DIRECTION>(const std::string k)
+{
+    static const std::unordered_map<std::string, CARDINAL_DIRECTION> enums
+    {
+        { "EAST", CARDINAL_DIRECTION::EAST }, 
+        { "WEST", CARDINAL_DIRECTION::WEST }, 
+        { "SOUTH", CARDINAL_DIRECTION::SOUTH }, 
+        { "NORTH", CARDINAL_DIRECTION::NORTH }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CARDINAL_DIRECTION>(CARDINAL_DIRECTION k)
+{
+    static const std::unordered_map<CARDINAL_DIRECTION, const char*> enums
+    {
+        { CARDINAL_DIRECTION::EAST, "EAST" }, 
+        { CARDINAL_DIRECTION::WEST, "WEST" }, 
+        { CARDINAL_DIRECTION::SOUTH, "SOUTH" }, 
+        { CARDINAL_DIRECTION::NORTH, "NORTH" }
     };
 
     auto i = enums.find(k);
@@ -539,56 +653,6 @@ inline const char* enum_tostring<CLASS>(CLASS k)
     return i->second;
 }
 
-enum class CONDITION
-{
-    NONE = 0x00, 
-    MOVE = 0x01, 
-    SIGHT = 0x02, 
-    HEAR = 0x04, 
-    ORAL = 0x08, 
-    MAP = 0x10
-}; // end of enum 'CONDITION'
-
-template <>
-inline CONDITION enum_parse<CONDITION>(const std::string k)
-{
-    static const std::unordered_map<std::string, CONDITION> enums
-    {
-        { "NONE", CONDITION::NONE }, 
-        { "MOVE", CONDITION::MOVE }, 
-        { "SIGHT", CONDITION::SIGHT }, 
-        { "HEAR", CONDITION::HEAR }, 
-        { "ORAL", CONDITION::ORAL }, 
-        { "MAP", CONDITION::MAP }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
-template <>
-inline const char* enum_tostring<CONDITION>(CONDITION k)
-{
-    static const std::unordered_map<CONDITION, const char*> enums
-    {
-        { CONDITION::NONE, "NONE" }, 
-        { CONDITION::MOVE, "MOVE" }, 
-        { CONDITION::SIGHT, "SIGHT" }, 
-        { CONDITION::HEAR, "HEAR" }, 
-        { CONDITION::ORAL, "ORAL" }, 
-        { CONDITION::MAP, "MAP" }
-    };
-
-    auto i = enums.find(k);
-    if (i == enums.end())
-        throw std::runtime_error("no enum value");
-
-    return i->second;
-}
-
 enum class CREATURE
 {
     PHOENIX = 0x00, 
@@ -624,6 +688,56 @@ inline const char* enum_tostring<CREATURE>(CREATURE k)
         { CREATURE::TIGER, "TIGER" }, 
         { CREATURE::TURTLE, "TURTLE" }, 
         { CREATURE::DRAGON, "DRAGON" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+enum class CROWD_CONTROL
+{
+    NONE = 0x00, 
+    DIRECTION = 0x01, 
+    SIGHT = 0x02, 
+    HEAR = 0x04, 
+    CHAT = 0x08, 
+    MAP = 0x10
+}; // end of enum 'CROWD_CONTROL'
+
+template <>
+inline CROWD_CONTROL enum_parse<CROWD_CONTROL>(const std::string k)
+{
+    static const std::unordered_map<std::string, CROWD_CONTROL> enums
+    {
+        { "NONE", CROWD_CONTROL::NONE }, 
+        { "DIRECTION", CROWD_CONTROL::DIRECTION }, 
+        { "SIGHT", CROWD_CONTROL::SIGHT }, 
+        { "HEAR", CROWD_CONTROL::HEAR }, 
+        { "CHAT", CROWD_CONTROL::CHAT }, 
+        { "MAP", CROWD_CONTROL::MAP }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<CROWD_CONTROL>(CROWD_CONTROL k)
+{
+    static const std::unordered_map<CROWD_CONTROL, const char*> enums
+    {
+        { CROWD_CONTROL::NONE, "NONE" }, 
+        { CROWD_CONTROL::DIRECTION, "DIRECTION" }, 
+        { CROWD_CONTROL::SIGHT, "SIGHT" }, 
+        { CROWD_CONTROL::HEAR, "HEAR" }, 
+        { CROWD_CONTROL::CHAT, "CHAT" }, 
+        { CROWD_CONTROL::MAP, "MAP" }
     };
 
     auto i = enums.find(k);
@@ -804,12 +918,14 @@ enum class DSL
     sex = 2, 
     strength = 3, 
     intelligence = 4, 
-    dexteritry = 5, 
+    dexterity = 5, 
     promotion = 6, 
     class_t = 7, 
     admin = 8, 
     world = 9, 
-    map = 10
+    map = 10, 
+    area = 11, 
+    point = 12
 }; // end of enum 'DSL'
 
 template <>
@@ -822,12 +938,14 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "sex", DSL::sex }, 
         { "strength", DSL::strength }, 
         { "intelligence", DSL::intelligence }, 
-        { "dexteritry", DSL::dexteritry }, 
+        { "dexterity", DSL::dexterity }, 
         { "promotion", DSL::promotion }, 
         { "class_t", DSL::class_t }, 
         { "admin", DSL::admin }, 
         { "world", DSL::world }, 
-        { "map", DSL::map }
+        { "map", DSL::map }, 
+        { "area", DSL::area }, 
+        { "point", DSL::point }
     };
 
     auto i = enums.find(k);
@@ -847,12 +965,14 @@ inline const char* enum_tostring<DSL>(DSL k)
         { DSL::sex, "sex" }, 
         { DSL::strength, "strength" }, 
         { DSL::intelligence, "intelligence" }, 
-        { DSL::dexteritry, "dexteritry" }, 
+        { DSL::dexterity, "dexterity" }, 
         { DSL::promotion, "promotion" }, 
         { DSL::class_t, "class_t" }, 
         { DSL::admin, "admin" }, 
         { DSL::world, "world" }, 
-        { DSL::map, "map" }
+        { DSL::map, "map" }, 
+        { DSL::area, "area" }, 
+        { DSL::point, "point" }
     };
 
     auto i = enums.find(k);
@@ -1494,7 +1614,7 @@ enum class MAP_OPTION
     DISABLE_SPELL = 0x08, 
     HUNTING_GROUND = 0x10, 
     ENABLE_PK = 0x20, 
-    DISABLE_DIE_PENALTY = 0x30
+    DISABLE_DIE_PENALTY = 0x40
 }; // end of enum 'MAP_OPTION'
 
 template <>
@@ -2117,13 +2237,13 @@ inline const char* enum_tostring<STATE>(STATE k)
 
 enum class STATE_LEVEL
 {
-    CONDITION = 0x08, 
+    CROWD_CONTROL = 0x08, 
     EXP_MONEY = 0x10, 
     HP_MP = 0x20, 
     BASED = 0x40, 
-    LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CONDITION, 
-    LEVEL_MIN = EXP_MONEY | CONDITION, 
-    LEVEL_MIDDLE = HP_MP | EXP_MONEY | CONDITION
+    LEVEL_MAX = BASED | HP_MP | EXP_MONEY | CROWD_CONTROL, 
+    LEVEL_MIN = EXP_MONEY | CROWD_CONTROL, 
+    LEVEL_MIDDLE = HP_MP | EXP_MONEY | CROWD_CONTROL
 }; // end of enum 'STATE_LEVEL'
 
 template <>
@@ -2131,7 +2251,7 @@ inline STATE_LEVEL enum_parse<STATE_LEVEL>(const std::string k)
 {
     static const std::unordered_map<std::string, STATE_LEVEL> enums
     {
-        { "CONDITION", STATE_LEVEL::CONDITION }, 
+        { "CROWD_CONTROL", STATE_LEVEL::CROWD_CONTROL }, 
         { "EXP_MONEY", STATE_LEVEL::EXP_MONEY }, 
         { "HP_MP", STATE_LEVEL::HP_MP }, 
         { "BASED", STATE_LEVEL::BASED }, 
@@ -2152,7 +2272,7 @@ inline const char* enum_tostring<STATE_LEVEL>(STATE_LEVEL k)
 {
     static const std::unordered_map<STATE_LEVEL, const char*> enums
     {
-        { STATE_LEVEL::CONDITION, "CONDITION" }, 
+        { STATE_LEVEL::CROWD_CONTROL, "CROWD_CONTROL" }, 
         { STATE_LEVEL::EXP_MONEY, "EXP_MONEY" }, 
         { STATE_LEVEL::HP_MP, "HP_MP" }, 
         { STATE_LEVEL::BASED, "BASED" }, 
@@ -2609,12 +2729,24 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "BOARD_BUTTON_ENABLE_UP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BOARD_BUTTON_ENABLE::WRITE);
     lua_setglobal(lua, "BOARD_BUTTON_ENABLE_WRITE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BROADCAST_TYPE::WORLD);
+    lua_setglobal(lua, "BROADCAST_TYPE_WORLD");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BROADCAST_TYPE::GLOBAL);
+    lua_setglobal(lua, "BROADCAST_TYPE_GLOBAL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::NONE);
     lua_setglobal(lua, "BUNDLE_TYPE_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::BUNDLE);
     lua_setglobal(lua, "BUNDLE_TYPE_BUNDLE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::BUNDLE_TYPE::PACKAGE);
     lua_setglobal(lua, "BUNDLE_TYPE_PACKAGE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::EAST);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_EAST");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::WEST);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_WEST");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::SOUTH);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_SOUTH");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CARDINAL_DIRECTION::NORTH);
+    lua_setglobal(lua, "CARDINAL_DIRECTION_NORTH");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CHAT_TYPE::NORMAL);
     lua_setglobal(lua, "CHAT_TYPE_NORMAL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CHAT_TYPE::SHOUT);
@@ -2641,18 +2773,6 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CLASS_MAGICION");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::ASCETIC);
     lua_setglobal(lua, "CLASS_ASCETIC");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::NONE);
-    lua_setglobal(lua, "CONDITION_NONE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::MOVE);
-    lua_setglobal(lua, "CONDITION_MOVE");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::SIGHT);
-    lua_setglobal(lua, "CONDITION_SIGHT");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::HEAR);
-    lua_setglobal(lua, "CONDITION_HEAR");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::ORAL);
-    lua_setglobal(lua, "CONDITION_ORAL");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CONDITION::MAP);
-    lua_setglobal(lua, "CONDITION_MAP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::PHOENIX);
     lua_setglobal(lua, "CREATURE_PHOENIX");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::TIGER);
@@ -2661,6 +2781,18 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CREATURE_TURTLE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::DRAGON);
     lua_setglobal(lua, "CREATURE_DRAGON");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::NONE);
+    lua_setglobal(lua, "CROWD_CONTROL_NONE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::DIRECTION);
+    lua_setglobal(lua, "CROWD_CONTROL_DIRECTION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::SIGHT);
+    lua_setglobal(lua, "CROWD_CONTROL_SIGHT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::HEAR);
+    lua_setglobal(lua, "CROWD_CONTROL_HEAR");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::CHAT);
+    lua_setglobal(lua, "CROWD_CONTROL_CHAT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CROWD_CONTROL::MAP);
+    lua_setglobal(lua, "CROWD_CONTROL_MAP");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DEATH_PENALTY::NONE);
     lua_setglobal(lua, "DEATH_PENALTY_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DEATH_PENALTY::DROP);
@@ -2695,8 +2827,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DSL_strength");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::intelligence);
     lua_setglobal(lua, "DSL_intelligence");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::dexteritry);
-    lua_setglobal(lua, "DSL_dexteritry");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::dexterity);
+    lua_setglobal(lua, "DSL_dexterity");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::promotion);
     lua_setglobal(lua, "DSL_promotion");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::class_t);
@@ -2707,6 +2839,10 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DSL_world");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::map);
     lua_setglobal(lua, "DSL_map");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::area);
+    lua_setglobal(lua, "DSL_area");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::point);
+    lua_setglobal(lua, "DSL_point");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DURATION::FAST);
     lua_setglobal(lua, "DURATION_FAST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DURATION::ATTACK);
@@ -3073,8 +3209,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "STATE_HALF_CLOACK");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE::CLOACK);
     lua_setglobal(lua, "STATE_CLOACK");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::CONDITION);
-    lua_setglobal(lua, "STATE_LEVEL_CONDITION");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::CROWD_CONTROL);
+    lua_setglobal(lua, "STATE_LEVEL_CROWD_CONTROL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::EXP_MONEY);
     lua_setglobal(lua, "STATE_LEVEL_EXP_MONEY");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::STATE_LEVEL::HP_MP);
@@ -3153,6 +3289,10 @@ template <typename>   constexpr bool is_range_impl = false;
 template <typename T> constexpr bool is_range_impl<fb::model::range<T>> = true;
 template <typename T> constexpr bool is_range = is_range_impl<std::decay_t<T>>;
 
+template <typename>   constexpr bool is_area_impl = false;
+template <typename T> constexpr bool is_area_impl<fb::model::area<T>> = true;
+template <typename T> constexpr bool is_area = is_area_impl<std::decay_t<T>>;
+
 template <typename T> inline static T build(const Json::Value& json);
 template <> int8_t build<int8_t>(const Json::Value& json);
 template <> uint8_t build<uint8_t>(const Json::Value& json);
@@ -3176,12 +3316,14 @@ class dsl
 {
 public:
     class admin;
+    class area;
     class class_t;
-    class dexteritry;
+    class dexterity;
     class intelligence;
     class item;
     class level;
     class map;
+    class point;
     class promotion;
     class sex;
     class strength;
@@ -3227,6 +3369,42 @@ public:
 };
 
 
+class fb::model::dsl::area
+{
+public:
+    const uint16_t left;
+    const uint16_t top;
+    const uint16_t right;
+    const uint16_t bottom;
+
+public:
+    area(uint16_t left, uint16_t top, uint16_t right, uint16_t bottom) : 
+        left(left),
+        top(top),
+        right(right),
+        bottom(bottom)
+    { }
+    area(const Json::Value& json) : 
+        left(fb::model::build<uint16_t>(json[0])),
+        top(fb::model::build<uint16_t>(json[1])),
+        right(fb::model::build<uint16_t>(json[2])),
+        bottom(fb::model::build<uint16_t>(json[3]))
+    { }
+    area(const std::vector<std::any>& parameters) : 
+        left(any_cast<uint16_t>(parameters[0])),
+        top(any_cast<uint16_t>(parameters[1])),
+        right(any_cast<uint16_t>(parameters[2])),
+        bottom(any_cast<uint16_t>(parameters[3]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::area, {left, top, right, bottom});
+    }
+};
+
+
 class fb::model::dsl::class_t
 {
 public:
@@ -3251,26 +3429,26 @@ public:
 };
 
 
-class fb::model::dsl::dexteritry
+class fb::model::dsl::dexterity
 {
 public:
     const uint8_t value;
 
 public:
-    dexteritry(uint8_t value) : 
+    dexterity(uint8_t value) : 
         value(value)
     { }
-    dexteritry(const Json::Value& json) : 
+    dexterity(const Json::Value& json) : 
         value(fb::model::build<uint8_t>(json[0]))
     { }
-    dexteritry(const std::vector<std::any>& parameters) : 
+    dexterity(const std::vector<std::any>& parameters) : 
         value(any_cast<uint8_t>(parameters[0]))
     { }
 
 public:
     fb::model::dsl to_dsl()
     {
-        return fb::model::dsl(fb::model::enum_value::DSL::dexteritry, {value});
+        return fb::model::dsl(fb::model::enum_value::DSL::dexterity, {value});
     }
 };
 
@@ -3365,28 +3543,64 @@ public:
     const uint32_t id;
     const uint16_t x;
     const uint16_t y;
+    const uint16_t right;
+    const uint16_t bottom;
 
 public:
-    map(uint32_t id, uint16_t x, uint16_t y) : 
+    map(uint32_t id, uint16_t x, uint16_t y, uint16_t right, uint16_t bottom) : 
         id(id),
         x(x),
-        y(y)
+        y(y),
+        right(right),
+        bottom(bottom)
     { }
     map(const Json::Value& json) : 
         id(fb::model::build<uint32_t>(json[0])),
         x(fb::model::build<uint16_t>(json[1])),
-        y(fb::model::build<uint16_t>(json[2]))
+        y(fb::model::build<uint16_t>(json[2])),
+        right(fb::model::build<uint16_t>(json[3])),
+        bottom(fb::model::build<uint16_t>(json[4]))
     { }
     map(const std::vector<std::any>& parameters) : 
         id(any_cast<uint32_t>(parameters[0])),
         x(any_cast<uint16_t>(parameters[1])),
-        y(any_cast<uint16_t>(parameters[2]))
+        y(any_cast<uint16_t>(parameters[2])),
+        right(any_cast<uint16_t>(parameters[3])),
+        bottom(any_cast<uint16_t>(parameters[4]))
     { }
 
 public:
     fb::model::dsl to_dsl()
     {
-        return fb::model::dsl(fb::model::enum_value::DSL::map, {id, x, y});
+        return fb::model::dsl(fb::model::enum_value::DSL::map, {id, x, y, right, bottom});
+    }
+};
+
+
+class fb::model::dsl::point
+{
+public:
+    const uint16_t x;
+    const uint16_t y;
+
+public:
+    point(uint16_t x, uint16_t y) : 
+        x(x),
+        y(y)
+    { }
+    point(const Json::Value& json) : 
+        x(fb::model::build<uint16_t>(json[0])),
+        y(fb::model::build<uint16_t>(json[1]))
+    { }
+    point(const std::vector<std::any>& parameters) : 
+        x(any_cast<uint16_t>(parameters[0])),
+        y(any_cast<uint16_t>(parameters[1]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::point, {x, y});
     }
 };
 
@@ -3496,12 +3710,14 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
     static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
     {
         { fb::model::enum_value::DSL::admin, [](const Json::Value& json) { return fb::model::dsl::admin(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::area, [](const Json::Value& json) { return fb::model::dsl::area(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::class_t, [](const Json::Value& json) { return fb::model::dsl::class_t(json).to_dsl().params; }},
-        { fb::model::enum_value::DSL::dexteritry, [](const Json::Value& json) { return fb::model::dsl::dexteritry(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::dexterity, [](const Json::Value& json) { return fb::model::dsl::dexterity(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::intelligence, [](const Json::Value& json) { return fb::model::dsl::intelligence(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::item, [](const Json::Value& json) { return fb::model::dsl::item(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::level, [](const Json::Value& json) { return fb::model::dsl::level(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::map, [](const Json::Value& json) { return fb::model::dsl::map(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::point, [](const Json::Value& json) { return fb::model::dsl::point(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::sex, [](const Json::Value& json) { return fb::model::dsl::sex(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }},
@@ -3529,7 +3745,7 @@ DECLARE_ABILITY_FIELDS
 public:
     const fb::model::enum_value::CLASS parent;
     const uint8_t level;
-    const uint8_t dexteritry;
+    const uint8_t dexterity;
     const uint8_t intelligence;
     const uint8_t strength;
     const uint32_t exp;
@@ -3548,7 +3764,7 @@ DECLARE_ABILITY_CONSTRUCTOR
 #endif
         parent(fb::model::build<fb::model::enum_value::CLASS>(json["parent"])),
         level(fb::model::build<uint8_t>(json["level"])),
-        dexteritry(fb::model::build<uint8_t>(json["dexteritry"])),
+        dexterity(fb::model::build<uint8_t>(json["dexterity"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
         exp(fb::model::build<uint32_t>(json["exp"])),
@@ -3822,6 +4038,9 @@ public:
     const fb::model::enum_value::MAP_EFFECT_TYPE effect;
     const uint8_t host;
     const fb::model::enum_value::MAP_OPTION option;
+    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, fb::model::dsl> cardinal;
+    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t> resurrection;
+    const std::vector<fb::model::dsl> teleport;
 #endif
 
 #ifdef DECLARE_MAP_CUSTOM_CONSTRUCTOR
@@ -3838,7 +4057,10 @@ DECLARE_MAP_CONSTRUCTOR
         bgm(fb::model::build<uint16_t>(json["bgm"])),
         effect(fb::model::build<fb::model::enum_value::MAP_EFFECT_TYPE>(json["effect"])),
         host(fb::model::build<uint8_t>(json["host"])),
-        option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"]))
+        option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"])),
+        cardinal(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, fb::model::dsl>>(json["cardinal"])),
+        resurrection(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t>>(json["resurrection"])),
+        teleport(fb::model::build<std::vector<fb::model::dsl>>(json["teleport"]))
 #ifdef DECLARE_MAP_INITIALIZER
 DECLARE_MAP_INITIALIZER
 #endif
@@ -4253,7 +4475,8 @@ public:
     const std::string name;
     const fb::model::enum_value::SPELL_TYPE type;
     const std::string cast;
-    const std::string uncast;
+    const std::string buff;
+    const std::string unbuff;
     const std::string concast;
     const std::string message;
 #endif
@@ -4270,7 +4493,8 @@ DECLARE_SPELL_CONSTRUCTOR
         name(fb::model::build<std::string>(json["name"])),
         type(fb::model::build<fb::model::enum_value::SPELL_TYPE>(json["type"])),
         cast(fb::model::build<std::string>(json["cast"])),
-        uncast(fb::model::build<std::string>(json["uncast"])),
+        buff(fb::model::build<std::string>(json["buff"])),
+        unbuff(fb::model::build<std::string>(json["unbuff"])),
         concast(fb::model::build<std::string>(json["concast"])),
         message(fb::model::build<std::string>(json["message"]))
 #ifdef DECLARE_SPELL_INITIALIZER
@@ -4630,6 +4854,8 @@ class equipment : public fb::model::item
 DECLARE_EQUIPMENT_FIELDS
 #else
 public:
+    const std::string script_inactive;
+    const std::string script_concast;
     const uint16_t dress;
     const uint32_t durability;
     const std::optional<double> repair;
@@ -4639,7 +4865,7 @@ public:
     const uint8_t damage;
     const uint8_t strength;
     const uint8_t intelligence;
-    const uint8_t dexteritry;
+    const uint8_t dexterity;
     const uint32_t base_hp;
     const uint32_t base_mp;
     const float hp_percentage;
@@ -4654,6 +4880,8 @@ DECLARE_EQUIPMENT_CUSTOM_CONSTRUCTOR
 #else
 public:
     equipment(const Json::Value& json) : fb::model::item(json),
+        script_inactive(fb::model::build<std::string>(json["script_inactive"])),
+        script_concast(fb::model::build<std::string>(json["script_concast"])),
         dress(fb::model::build<uint16_t>(json["dress"])),
         durability(fb::model::build<uint32_t>(json["durability"])),
         repair(fb::model::build<std::optional<double>>(json["repair"])),
@@ -4663,7 +4891,7 @@ public:
         damage(fb::model::build<uint8_t>(json["damage"])),
         strength(fb::model::build<uint8_t>(json["strength"])),
         intelligence(fb::model::build<uint8_t>(json["intelligence"])),
-        dexteritry(fb::model::build<uint8_t>(json["dexteritry"])),
+        dexterity(fb::model::build<uint8_t>(json["dexterity"])),
         base_hp(fb::model::build<uint32_t>(json["base_hp"])),
         base_mp(fb::model::build<uint32_t>(json["base_mp"])),
         hp_percentage(fb::model::build<float>(json["hp_percentage"])),
@@ -4862,6 +5090,7 @@ class weapon : public fb::model::equipment
 DECLARE_WEAPON_FIELDS
 #else
 public:
+    const std::string script_attack;
     const range<uint32_t> damage_small;
     const range<uint32_t> damage_large;
     const uint16_t sound;
@@ -4874,6 +5103,7 @@ DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
 #else
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
+        script_attack(fb::model::build<std::string>(json["script_attack"])),
         damage_small(fb::model::build<range<uint32_t>>(json["damage_small"])),
         damage_large(fb::model::build<range<uint32_t>>(json["damage_large"])),
         sound(fb::model::build<uint16_t>(json["sound"])),
@@ -5849,6 +6079,15 @@ template <typename T> T build(const Json::Value& json)
         auto max = build<typename T::value_type>(json["max"]);
 
         return range(min, max);
+    }
+    else if constexpr (is_area<T>)
+    {
+        auto left = build<typename T::value_type>(json["left"]);
+        auto top = build<typename T::value_type>(json["top"]);
+        auto right = build<typename T::value_type>(json["right"]);
+        auto bottom = build<typename T::value_type>(json["bottom"]);
+
+        return area(left, top, right, bottom);
     }
     else
     {

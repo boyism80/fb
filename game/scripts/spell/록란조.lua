@@ -1,3 +1,3 @@
-function on_concast(me, spell)
+function on_concast(me, caster, buff)
 
 end

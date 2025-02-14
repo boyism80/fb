@@ -14,19 +14,18 @@ async::task<bool> context::handle_command_map(character& ch, Json::Value& parame
     if (model == nullptr)
         co_return false;
 
-    auto x = 0;
-    auto y = 0;
+    auto& map = this->maps[model->id];
     if (parameters.size() == 3)
     {
-        if (parameters[1].isNumeric())
-            x = parameters[1].asInt();
-
-        if (parameters[2].isNumeric())
-            y = parameters[2].asInt();
+        auto x      = parameters[1].isNumeric() ? parameters[1].asInt() : 0;
+        auto y      = parameters[2].isNumeric() ? parameters[2].asInt() : 0;
+        std::ignore = co_await ch.map(&map, fb::model::point16_t(x, y));
+    }
+    else
+    {
+        std::ignore = co_await ch.map(&map);
     }
 
-    auto& map   = this->maps[model->id];
-    std::ignore = co_await ch.map(&map, fb::model::point16_t(x, y));
     co_return true;
 }
 
@@ -233,6 +232,31 @@ async::task<bool> context::handle_command_spell(character& ch, Json::Value& para
     if (slot == 0xFF)
         co_return false;
 
+    co_return true;
+}
+
+async::task<bool> context::handle_command_remove_spell(character& ch, Json::Value& parameters)
+{
+    auto slot = parameters.size() >= 1 && parameters[0].isNumeric() ? parameters[0].asInt() : -1;
+
+    if (parameters.size() == 0)
+    {
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto spell = ch.spells[i];
+            if (spell == nullptr)
+                continue;
+
+            ch.spells.remove(i);
+        }
+    }
+    else
+    {
+        if (ch.spells.remove(slot) == false)
+            co_return true;
+    }
+
+    co_await this->save(ch);
     co_return true;
 }
 
@@ -575,7 +599,6 @@ async::task<bool> context::handle_command_write_mail(character& ch, Json::Value&
 
 async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& parameters)
 {
-    auto fd = ch.fd();
     try
     {
         auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);
@@ -604,7 +627,6 @@ async::task<bool> context::handle_command_read_mail(character& ch, Json::Value& 
 
 async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value& parameters)
 {
-    auto fd = ch.fd();
     try
     {
         auto&& resp = co_await this->mail_list(ch, 0xFFFF, 0xFFFF);

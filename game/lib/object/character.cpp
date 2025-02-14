@@ -57,7 +57,7 @@ async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t&
     }
     else
     {
-        if (co_await object::map(map, position, destroy_type) == false)
+        if (co_await object::map(map, position) == false)
             co_return false;
 
         co_return true;
@@ -104,6 +104,17 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
     auto result = life::damage(value, from, critical);
     if (from == nullptr)
         return result;
+
+    for (auto mob : this->spawned_mobs())
+    {
+        if (mob->target() != nullptr)
+            continue;
+
+        if (from->is(OBJECT_TYPE::LIFE) == false)
+            continue;
+
+        mob->target(static_cast<fb::game::life*>(from));
+    }
 
     if (this->_hp == 0)
         this->kill(from, DESTROY_TYPE::DEAD);
@@ -163,7 +174,7 @@ void character::admin(bool value)
     this->_admin = value;
 }
 
-void character::attack()
+void character::attack(DURATION duration)
 {
     this->assert_thread();
 
@@ -172,7 +183,7 @@ void character::attack()
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
-        life::attack();
+        life::attack(duration);
     }
     catch (std::exception& e)
     {
@@ -296,8 +307,6 @@ void character::disguise(uint16_t value)
 
     this->_disguise = value;
     this->state(STATE::DISGUISE);
-
-    this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
 void character::undisguise()
@@ -311,32 +320,62 @@ void character::undisguise()
     this->update(STATE_LEVEL::LEVEL_MAX);
 }
 
-uint32_t character::defensive_physical() const
+int8_t character::base_phydef() const
 {
     this->assert_thread();
 
-    return this->_defensive_physical;
+    return this->_base_phydef;
 }
 
-void character::defensive_physical(uint8_t value)
+void character::base_phydef(int8_t value)
 {
     this->assert_thread();
 
-    this->_defensive_physical = value;
+    this->_base_phydef = value;
 }
 
-uint32_t character::defensive_magical() const
+int8_t character::phydef() const
 {
     this->assert_thread();
 
-    return this->_defensive_magical;
+    auto sum = (int16_t)life::phydef();
+    for (auto& [_, equipment] : this->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        sum += equipment->based<fb::model::equipment>().defensive_physical;
+    }
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
 }
 
-void character::defensive_magical(uint8_t value)
+int8_t character::magdef() const
 {
     this->assert_thread();
 
-    this->_defensive_magical = value;
+    auto sum = (int16_t)life::magdef();
+    for (auto& [_, equipment] : this->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        sum += equipment->based<fb::model::equipment>().defensive_magical;
+    }
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+}
+
+int8_t character::base_magdef() const
+{
+    this->assert_thread();
+
+    return this->_base_magdef;
+}
+
+void character::base_magdef(int8_t value)
+{
+    this->assert_thread();
+
+    this->_base_magdef = value;
 }
 
 void character::base_hp_up(uint32_t value)
@@ -447,7 +486,7 @@ bool character::level_up()
     auto& ability = this->context.model.ability[this->_class][this->_level];
     this->strength_up(ability.strength);
     this->intelligence_up(ability.intelligence);
-    this->dexteritry_up(ability.dexteritry);
+    this->dexterity_up(ability.dexterity);
     this->base_hp_up(ability.hp + std::rand() % 10);
     this->base_mp_up(ability.mp + std::rand() % 10);
 
@@ -495,9 +534,6 @@ STATE character::state() const
 void character::state(STATE value)
 {
     this->assert_thread();
-
-    if (this->_state == value)
-        return;
 
     this->_state = value;
     this->update_external(false);
@@ -547,6 +583,7 @@ void character::strength(uint8_t value)
     this->assert_thread();
 
     this->_strength = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 void character::strength_up(uint8_t value)
@@ -554,6 +591,7 @@ void character::strength_up(uint8_t value)
     this->assert_thread();
 
     this->_strength += value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 uint8_t character::intelligence() const
@@ -568,6 +606,7 @@ void character::intelligence(uint8_t value)
     this->assert_thread();
 
     this->_intelligence = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 void character::intelligence_up(uint8_t value)
@@ -575,27 +614,75 @@ void character::intelligence_up(uint8_t value)
     this->assert_thread();
 
     this->_intelligence += value;
+    this->update(STATE_LEVEL::BASED);
 }
 
-uint8_t character::dexteritry() const
+uint8_t character::dexterity() const
 {
     this->assert_thread();
 
-    return this->_dexteritry;
+    return this->_dexterity;
 }
 
-void character::dexteritry(uint8_t value)
+void character::dexterity(uint8_t value)
 {
     this->assert_thread();
 
-    this->_dexteritry = value;
+    this->_dexterity = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
-void character::dexteritry_up(uint8_t value)
+void character::dexterity_up(uint8_t value)
 {
     this->assert_thread();
 
-    this->_dexteritry += value;
+    this->_dexterity += value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+uint8_t character::buff_str() const
+{
+    this->assert_thread();
+
+    return this->_buff_str;
+}
+
+void character::buff_str(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_str = value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+uint8_t character::buff_dex() const
+{
+    this->assert_thread();
+
+    return this->_buff_dex;
+}
+
+void character::buff_dex(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_dex = value;
+    this->update(STATE_LEVEL::BASED);
+}
+
+uint8_t character::buff_int() const
+{
+    this->assert_thread();
+
+    return this->_buff_int;
+}
+
+void character::buff_int(uint8_t value)
+{
+    this->assert_thread();
+
+    this->_buff_int = value;
+    this->update(STATE_LEVEL::BASED);
 }
 
 uint32_t character::exp() const
@@ -613,7 +700,7 @@ void character::exp(uint32_t value)
         return;
 
     this->_experience = value;
-    this->update(STATE_LEVEL::LEVEL_MIN);
+    this->update(STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
@@ -694,11 +781,13 @@ uint32_t character::reduce_exp(uint32_t value)
     {
         uint32_t lack     = value - this->_experience;
         this->_experience = 0;
+        this->update(STATE_LEVEL::EXP_MONEY);
         return lack;
     }
     else
     {
         this->_experience -= value;
+        this->update(STATE_LEVEL::EXP_MONEY);
         return 0;
     }
 }
@@ -749,7 +838,7 @@ void character::money(uint32_t value)
     this->assert_thread();
 
     this->_money = value;
-    this->update(STATE_LEVEL::LEVEL_MIN);
+    this->update(STATE_LEVEL::EXP_MONEY);
 }
 
 uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
@@ -1043,34 +1132,6 @@ item* character::withdraw_item(const fb::model::item& item, uint16_t count)
 
     auto index = std::distance(this->_deposited_items.begin(), found);
     return this->withdraw_item((uint8_t)index, count);
-}
-
-uint32_t character::damage() const
-{
-    this->assert_thread();
-
-    return this->_damage;
-}
-
-void character::damage(uint8_t value)
-{
-    this->assert_thread();
-
-    this->_damage = value;
-}
-
-uint32_t character::hit() const
-{
-    this->assert_thread();
-
-    return this->_hit;
-}
-
-void character::hit(uint8_t value)
-{
-    this->assert_thread();
-
-    this->_hit = value;
 }
 
 uint32_t character::regenerative() const
@@ -1367,7 +1428,7 @@ void character::unride()
 
         auto& model = this->context.model.mob[fb::model::const_value::mob::horse];
         auto  horse = this->context.make<mob>(model, mob::initial_params{.alive = true});
-        horse->map(this->_map, this->position_forward());
+        horse->map(this->_map, this->front_position());
 
         this->state(STATE::NORMAL);
         this->message(_TEXT(MESSAGE_RIDE_OFF));
@@ -1428,10 +1489,10 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
         }
         break;
 
-        case DSL::dexteritry:
+        case DSL::dexterity:
         {
-            auto params = fb::model::dsl::dexteritry(dsl.params);
-            if (params.value > this->_dexteritry)
+            auto params = fb::model::dsl::dexterity(dsl.params);
+            if (params.value > this->_dexterity)
                 return false;
         }
         break;
@@ -1535,6 +1596,12 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
+
+    for (auto& [_, buff] : this->buffs)
+    {
+        auto time = (uint32_t)(buff->time().count() / 1000);
+        dto.buffs.push_back({buff->model.id, time});
+    }
     return dto;
 }
 
@@ -1677,6 +1744,71 @@ void character::update_id()
     auto listener = this->get_listener<character>();
     if (listener != nullptr)
         listener->on_update_id(*this);
+}
+
+void fb::game::character::weapon_damage(uint16_t value)
+{
+    this->assert_thread();
+
+    this->_weapon_damage = value;
+}
+
+uint16_t fb::game::character::weapon_damage() const
+{
+    return this->_weapon_damage;
+}
+
+void fb::game::character::detect(bool value)
+{
+    this->assert_thread();
+    this->_detect = value;
+
+    for (auto obj : this->nears(OBJECT_TYPE::CHARACTER))
+    {
+        auto ch = static_cast<character*>(obj);
+        if (ch->state() != STATE::HALF_CLOACK)
+            continue;
+
+        ch->update_external(*this, true);
+    }
+}
+
+bool fb::game::character::detect() const
+{
+    return this->_detect;
+}
+
+fb::game::mob* fb::game::character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position)
+{
+    auto map = this->_map;
+    if (map == nullptr)
+        return nullptr;
+
+    auto mob = model.make<fb::game::mob>(this->context, fb::game::mob::initial_params{.alive = true, .owner = this});
+    mob->map(map, position);
+    this->_spawned_mobs.push_back(mob);
+    return mob;
+}
+
+const std::vector<fb::game::mob*>& fb::game::character::spawned_mobs() const
+{
+    return this->_spawned_mobs;
+}
+
+bool fb::game::character::detach_spawned_mob(fb::game::mob& mob)
+{
+    if (mob.owner != this)
+        return false;
+
+    if (this->_spawned_mobs.size() == 0)
+        return false;
+
+    auto i = std::find(this->_spawned_mobs.begin(), this->_spawned_mobs.end(), &mob);
+    if (i == this->_spawned_mobs.end())
+        return false;
+
+    this->_spawned_mobs.erase(i);
+    return true;
 }
 
 void character::bright(uint8_t value)

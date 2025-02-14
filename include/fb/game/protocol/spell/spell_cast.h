@@ -14,7 +14,7 @@ public:
     inline static uint8_t header = 0x0F;
 
 private:
-    fb::stream_reader<big_endian>* _reader;
+    fb::stream buffer;
 
 public:
     mutable uint8_t                    slot;
@@ -28,7 +28,7 @@ public:
 public:
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
 
-    void parse(SPELL_TYPE type) const;
+    void parse(SPELL_TYPE type);
 };
 
 } // namespace fb::protocol::game::request

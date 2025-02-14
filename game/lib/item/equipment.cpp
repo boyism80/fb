@@ -84,9 +84,8 @@ bool fb::game::equipment::active()
 
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로
     // id를 유지시켜줘야 한다.
-    std::ignore = this->_owner->items.remove(*this);
-
-    std::ignore = this->_owner->items.add(before);
+    this->_owner->items.remove(*this);
+    this->_owner->items.add(before);
 
     auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
@@ -133,8 +132,8 @@ std::string fb::game::equipment::tip_message() const
     if (model.strength)
         sstream << std::left << std::setw(14) << std::endl << "힘 상승:" << std::to_string(model.strength);
 
-    if (model.dexteritry)
-        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model.dexteritry);
+    if (model.dexterity)
+        sstream << std::left << std::setw(14) << std::endl << "민첩성 상승:" << std::to_string(model.dexterity);
 
     if (model.intelligence)
         sstream << std::left << std::setw(14) << std::endl << "지력 상승:" << std::to_string(model.intelligence);

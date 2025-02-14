@@ -224,9 +224,44 @@ function sample_send_mail(me)
     end
 end
 
+function sample_map(me)
+    local npc = name2npc('낙랑')
+    local name = npc:input(me, '맵 이름')
+    local error = me:map(name)
+    if error ~= nil then
+        npc:dialog(me, error)
+    end
+end
+
+function samplee_cc(me)
+    local npc = name2npc('낙랑')
+    local selected = npc:menu(me, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
+    if selected == nil then
+        return
+    end
+
+    local current = me:cc()
+    local cc = CROWD_CONTROL_NONE
+    if selected == 0 then
+        cc = CROWD_CONTROL_DIRECTION
+    elseif selected == 1 then
+        cc = CROWD_CONTROL_SIGHT
+    elseif selected == 2 then
+        cc = CROWD_CONTROL_CHAT
+    elseif selected == 3 then
+        cc = CROWD_CONTROL_HEAR
+    end
+
+    if (current & cc) == cc then
+        me:cc(current & ~cc)
+    else
+        me:cc(current | cc)
+    end
+end
+
 function func(me)
 
-    sample_send_mail(me)
+    me:title('')
 
     -- local success, size = me:group(group_lock)
     -- local npc = name2npc('낙랑')

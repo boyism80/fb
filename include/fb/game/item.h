@@ -31,6 +31,9 @@ public:
     using container  = std::unordered_map<uint8_t, fb::game::item*>;
 
 public:
+    using object::map;
+
+public:
     friend class items;
 
 public:
@@ -91,8 +94,17 @@ public:
     virtual ~item();
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      map           The map
+     * @param[in]  position      The position
+     * @param[in]  destroy_type  The destroy type
+     *
+     * @return     { description_of_the_return_value }
+     */
     virtual async::task<bool> map(fb::game::map*              map,
-                                  const fb::model::point16_t& position     = fb::model::point16_t{0, 0},
+                                  const fb::model::point16_t& position,
                                   DESTROY_TYPE                destroy_type = DESTROY_TYPE::DEFAULT) override;
 
     /**
@@ -472,6 +484,9 @@ public:
 class equipment : public item
 {
 public:
+    LUA_PROTOTYPE
+
+public:
     /**
      * @brief      { struct_description }
      */
@@ -584,6 +599,9 @@ struct equipment::listener : public virtual fb::game::item::listener
  */
 class weapon : public equipment
 {
+public:
+    LUA_PROTOTYPE
+
 public:
     /**
      * @brief      This class describes types.

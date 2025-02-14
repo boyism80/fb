@@ -17,18 +17,6 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
     if (me.is(OBJECT_TYPE::ITEM))
         return;
 
-    auto sstream = std::stringstream();
-    switch (chat_type)
-    {
-    case CHAT_TYPE::SHOUT:
-        sstream << me.name() << "! " << message;
-        break;
-
-    default:
-        sstream << me.name() << ": " << message;
-        break;
-    }
-
     auto scp = scope::PIVOT;
     switch (chat_type)
     {
@@ -36,21 +24,24 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
         scp = scope::MAP;
         break;
 
-    case CHAT_TYPE::BLUE:
-    case CHAT_TYPE::LIGHT_BLUE:
-        scp = scope::WORLD;
-        break;
-
     default:
         scp = scope::PIVOT;
         break;
     }
-    this->send(me, fb_resp::chat(me, sstream.str(), chat_type), scp);
+    this->send(me, fb_resp::chat(me, message, chat_type), scp);
 }
 
 void context::on_direction(object& me)
 {
-    this->send(me, fb_resp::direction(me), scope::PIVOT, true);
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_direction");
+    thread->pushobject(me);
+    thread->resume(1);
+
+    this->send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
 void context::on_update_external(object& me, bool light)
@@ -64,7 +55,7 @@ void context::on_update_external(object& me, bool light)
         for (auto obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
         {
             auto you = static_cast<character*>(obj);
-            you->send(fb_resp::update_external(static_cast<character&>(me), me, light));
+            you->send(fb_resp::update_external(static_cast<character&>(me), *you, light));
         }
     }
     else
@@ -76,7 +67,7 @@ void context::on_update_external(object& me, bool light)
 void context::on_update_external(object& me, object& you, bool light)
 {
     if (me.is(OBJECT_TYPE::CHARACTER))
-        you.send(fb_resp::update_external(static_cast<character&>(me), me, light));
+        you.send(fb_resp::update_external(static_cast<character&>(me), you, light));
     else
         you.send(fb_resp::update(me));
 }
@@ -117,19 +108,54 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void context::on_move(object& me, const fb::model::point16_t& before)
 {
+    auto thread = lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+    thread->func("on_move");
+    thread->pushobject(me);
+    thread->resume(1);
+
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
+}
+
+void context::on_buff(object& me, buff& buff)
+{
+    if (buff.model.buff == "")
+        return;
+
+    auto thread = lua::new_context();
+    if (thread == nullptr)
+        return;
+    thread->from(buff.model.buff.c_str());
+    thread->func("on_buff");
+    thread->pushobject(me);
+    thread->pushobject(buff.model);
+    thread->resume(2);
+
+    me.send(fb::protocol::game::response::spell_buff(buff));
 }
 
 void context::on_unbuff(object& me, buff& buff)
 {
-    if (buff.model.uncast.empty())
+    if (buff.model.unbuff == "")
         return;
 
-    auto thread = lua::get();
+    auto thread = lua::new_context();
     if (thread == nullptr)
         return;
-    thread->from(buff.model.uncast.c_str()).func("on_uncast").pushobject(me).pushobject(buff.model).resume(2);
+    thread->from(buff.model.unbuff.c_str());
+    thread->func("on_unbuff");
+    thread->pushobject(me);
+    thread->pushobject(buff.model);
+    thread->resume(2);
     me.send(fb_resp::spell_unbuff(buff));
+
+    if (me.is(OBJECT_TYPE::CHARACTER))
+    {
+        auto& ch = static_cast<character&>(me);
+        ch.message(std::format("{} 해제", buff.model.name));
+    }
 }
 
 void context::on_sound(object& me, SOUND sound)

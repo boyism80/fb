@@ -23,22 +23,32 @@ public struct Spell : IFlatbufferObject
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public byte Slot { get { int o = __p.__offset(6); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public uint Model { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public string Next { get { int o = __p.__offset(10); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetNextBytes() { return __p.__vector_as_span<byte>(10, 1); }
+#else
+  public ArraySegment<byte>? GetNextBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public byte[] GetNextArray() { return __p.__vector_as_array<byte>(10); }
 
   public static Offset<fb.protocol._internal.raw.Spell> CreateSpell(FlatBufferBuilder builder,
       uint user = 0,
       byte slot = 0,
-      uint model = 0) {
-    builder.StartTable(3);
+      uint model = 0,
+      StringOffset nextOffset = default(StringOffset)) {
+    builder.StartTable(4);
+    Spell.AddNext(builder, nextOffset);
     Spell.AddModel(builder, model);
     Spell.AddUser(builder, user);
     Spell.AddSlot(builder, slot);
     return Spell.EndSpell(builder);
   }
 
-  public static void StartSpell(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartSpell(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddSlot(FlatBufferBuilder builder, byte slot) { builder.AddByte(1, slot, 0); }
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(2, model, 0); }
+  public static void AddNext(FlatBufferBuilder builder, StringOffset nextOffset) { builder.AddOffset(3, nextOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Spell> EndSpell(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Spell>(o);
@@ -56,6 +66,7 @@ static public class SpellVerify
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Slot*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 8 /*Model*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyString(tablePos, 10 /*Next*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

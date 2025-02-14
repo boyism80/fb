@@ -3,8 +3,7 @@
 using namespace fb::game;
 using namespace std::chrono_literals;
 
-async::task<bool> context::handle_login(fb::socket<character>&                    socket,
-                                        const fb::protocol::game::request::login& request)
+async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_reqs::login& request)
 {
     auto ch = socket.data();
     if (ch->inited())
@@ -101,10 +100,16 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
     if (map == nullptr)
         co_return true;
 
+    if (ch->paralysis() || ch->cover())
+    {
+        ch->update_position();
+        co_return true;
+    }
+
     // TODO: 실제로 이동하지 않고 이동했을때의 위치를 구해서
     // 해당 위치에서 워프가 가능한지 확인하고
     // 워프가능하면 워프처리, 그렇지 않다면 해당 위치로 이동한다.
-    auto forward = ch->position_forward(request.direction);
+    auto forward = ch->side_position(request.direction);
 
     // 워프 위치라면 워프한다.
     const auto warp = map->warpable(forward);
@@ -543,6 +548,25 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
     co_return true;
 }
 
+async::task<bool> context::handle_object_miss(fb::socket<character>& socket, const fb_reqs::miss& request)
+{
+    auto ch = socket.data();
+    if (ch->inited() == false)
+        co_return true;
+
+    auto map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    auto obj = map->objects[request.sequence];
+    if (obj == nullptr)
+        co_return true;
+
+    fb::logger::info("{} 오브젝트 미스", obj->sequence());
+
+    co_return true;
+}
+
 async::task<bool> context::handle_group(fb::socket<character>& socket, const fb_reqs::group& request)
 {
     auto me = socket.data();
@@ -569,15 +593,33 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
+    auto map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    if (ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
+        co_return true;
+
     auto message = std::string{request.message};
-    auto shout   = request.shout;
+    auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     if (co_await handle_command(*ch, message))
         co_return true;
 
-    ch->chat(message, shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL);
+    switch (type)
+    {
+    case CHAT_TYPE::NORMAL:
+        message = std::format("{}: {}", ch->name(), message);
+        break;
+
+    case CHAT_TYPE::SHOUT:
+        message = std::format("{}! {}", ch->name(), message);
+        break;
+    }
+
+    ch->chat(message, type);
 
     auto npcs = std::vector<npc*>();
-    if (shout)
+    if (type == CHAT_TYPE::SHOUT)
     {
         for (auto& [fd, obj] : ch->map()->objects)
         {
@@ -868,26 +910,50 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (ch->inited() == false)
         co_return true;
 
+    auto map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    if (ENUM_IN(map->model.option, MAP_OPTION::DISABLE_SPELL))
+    {
+        ch->message("마력이 미치지 않습니다.");
+        co_return true;
+    }
+
     if (request.slot > CONTAINER_CAPACITY - 1)
         co_return false;
 
-    auto model = ch->spells[request.slot];
-    if (model == nullptr)
+    auto spell = ch->spells[request.slot];
+    if (spell == nullptr)
         co_return false;
 
-    request.parse(model->type);
-    switch (model->type)
+    if (spell->update_lock() == false)
+        co_return true;
+
+    auto delay = spell->delay();
+    if (delay > 0)
+    {
+        ch->message(std::format("{}초 후에 사용할 수 있습니다.", delay));
+        co_return true;
+    }
+
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/spell.lua");
+#endif
+
+    const_cast<fb_reqs::spell_cast&>(request).parse(spell->model.type);
+    switch (spell->model.type)
     {
     case SPELL_TYPE::INPUT:
-        ch->active(*model, request.message);
+        ch->active(*spell, request.message);
         break;
 
     case SPELL_TYPE::TARGET:
-        ch->active(*model, request.fd);
+        ch->active(*spell, request.fd);
         break;
 
     case SPELL_TYPE::NORMAL:
-        ch->active(*model);
+        ch->active(*spell);
         break;
     }
 
@@ -900,20 +966,35 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    auto thread = lua::get();
+    auto thread = lua::new_context();
     if (thread == nullptr)
         co_return true;
 
-    thread->from("scripts/common/door.lua").func("on_door").pushobject(ch).resume(1);
+#if defined DEBUG | defined _DEBUG
+    thread->from("scripts/interaction.lua");
+#endif
+
+    thread->func("on_door");
+    thread->pushobject(ch);
+    thread->resume(1);
     co_return true;
 }
 
-async::task<bool> context::handle_whisper(fb::socket<character>&                      socket,
-                                          const fb::protocol::game::request::whisper& request)
+async::task<bool> context::handle_whisper(fb::socket<character>& socket, const fb_reqs::whisper& request)
 {
     auto me = socket.data();
     if (me->inited() == false)
         co_return true;
+
+    auto map = me->map();
+    if (map == nullptr)
+        co_return true;
+
+    if (ENUM_IN(map->model.option, MAP_OPTION::DISABLE_WHISPER))
+    {
+        me->message("귓속말을 할 수 없는 지역입니다.");
+        co_return true;
+    }
 
     auto fd = me->fd();
     try

@@ -18,7 +18,7 @@ class thread_switchable : public lua::luable
 {
 public:
     LUA_PROTOTYPE
-    
+
 protected:
     /**
      * @brief      Constructs a new instance.
@@ -50,6 +50,13 @@ public:
      * @brief      { function_description }
      */
     virtual void assert_thread() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual bool matched_thread() const;
 };
 
 } // namespace fb

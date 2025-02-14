@@ -9,7 +9,12 @@ END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
+{"id",                  fb::model::map::builtin_id},
 {"name",                fb::model::map::builtin_name},
+{"root",                fb::model::map::builtin_root},
+{"cardinal",            fb::model::map::builtin_cardinal},
+{"resurrection",        fb::model::map::builtin_resurrection},
+{"option",        		fb::model::map::builtin_option},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
@@ -23,6 +28,9 @@ END_LUA_EXTENSION; // clang-format on
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
 {"speed",               fb::model::mob::builtin_speed},
+{"size",                fb::model::mob::builtin_size},
+{"damage",              fb::model::mob::builtin_damage},
+{"drop",                fb::model::mob::builtin_drop},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
@@ -61,9 +69,16 @@ IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
+IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
+{"damage_small",        fb::model::weapon::builtin_damage_small},
+{"damage_large",        fb::model::weapon::builtin_damage_large},
+{"sound",        		fb::model::weapon::builtin_sound},
+END_LUA_EXTENSION; // clang-format on
+
+// clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::trace, "fb.model.trace")
-{"id",                	fb::model::trace::builtin_id},
+{"id",                  fb::model::trace::builtin_id},
 {"look",                fb::model::trace::builtin_look},
-{"color",            	fb::model::trace::builtin_color},
-{"text",          		fb::model::trace::builtin_text},
+{"color",               fb::model::trace::builtin_color},
+{"text",                fb::model::trace::builtin_text},
 END_LUA_EXTENSION; // clang-format on

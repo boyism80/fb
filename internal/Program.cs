@@ -1,7 +1,6 @@
 using AutoMapper;
 using Dapper;
 using fb.protocol._internal;
-using fb.protocol.db;
 using Http.Extension;
 using Http.Service;
 using Http.Worker;
@@ -14,15 +13,18 @@ public class Program
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
 
         var config = new MapperConfiguration(cfg =>
         {
             cfg.CreateMap<Http.Model.Character, Character>()
             .ForMember(x => x.ClassType, x => x.MapFrom(u => u.Class))
+            .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => u.UpdatedDate.ToString("yyyy-MM-dd HH:mm:ss")))
             .ForMember(x => x.Position, x => x.MapFrom(u => new Position { X = u.PositionX, Y = u.PositionY }));
 
             cfg.CreateMap<Character, Http.Model.Character>()
+            .ForMember(x => x.Buffs, x => x.MapFrom(u => u.Buffs))
             .ForMember(x => x.Class, x => x.MapFrom(u => u.ClassType))
             .ForMember(x => x.UpdatedDate, x => x.MapFrom(u => DateTime.Parse(u.UpdatedDate)))
             .ForMember(x => x.PositionX, x => x.MapFrom(u => u.Position.X))
@@ -31,6 +33,7 @@ public class Program
 
             cfg.CreateMap<Http.Model.Spell, Spell>()
             .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
+            .ForMember(x => x.Next, x => x.MapFrom(u => u.Next.ToString("yyyy-MM-dd HH:mm:ss")))
             .ReverseMap();
 
             cfg.CreateMap<Http.Model.Item, Item>()
@@ -57,6 +60,9 @@ public class Program
             .ForMember(x => x.CreatedDate, x => x.MapFrom(u => u.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")));
 
             cfg.CreateMap<Http.Model.Clan, Clan>();
+
+            cfg.CreateMap<Http.Model.Buff, Buff>()
+            .ReverseMap();
         });
 
         var builder = WebApplication.CreateBuilder(args);

@@ -33,3 +33,15 @@ bool fb::model::__promotion::name2class(const std::string&            name,
 
     return false;
 }
+
+bool fb::model::__promotion::class2name(fb::model::enum_value::CLASS& cls, uint8_t& promotion, std::string& name) const
+{
+    if (this->contains(cls) == false)
+        return false;
+
+    if ((*this)[cls].contains(promotion) == false)
+        return false;
+
+    name = (*this)[cls][promotion].name;
+    return true;
+}

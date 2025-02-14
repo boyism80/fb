@@ -1,3 +1,7 @@
-function on_cast(me, spell)
-
+function on_cast(me, you, spell)
+    local damage = math.floor(me:mp() * 1.5)
+    local mp = me:mp()
+    local sound = 73
+    local effect = 8
+    spell_damage_near_target(me, you, spell, damage, mp, sound, effect)
 end

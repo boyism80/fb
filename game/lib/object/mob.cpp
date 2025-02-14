@@ -85,7 +85,8 @@ void rezen::spawn(std::thread::id thread_id)
 
 mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params) :
     life(context, model, params),
-    _rezen(params.rezen)
+    _rezen(params.rezen),
+    owner(params.owner)
 {
     this->visible(params.alive);
     if (params.alive)
@@ -105,13 +106,16 @@ mob::~mob()
 {
     if (this->_rezen != nullptr)
         this->_rezen->decrease();
+
+    if (this->owner != nullptr && this->context.alive(*this->owner))
+        this->owner->detach_spawned_mob(*this);
 }
 
 bool mob::action()
 {
     this->assert_thread();
 
-    this->fix();
+    this->repair_target();
 
     auto& model = this->based<fb::model::mob>();
     if (model.attack_script.empty())
@@ -119,7 +123,7 @@ bool mob::action()
 
     if (this->_attack_thread == nullptr)
     {
-        this->_attack_thread = fb::lua::get();
+        this->_attack_thread = fb::lua::new_context();
         if (this->_attack_thread == nullptr)
             return false;
 
@@ -178,7 +182,21 @@ void mob::target(life* value)
     this->_target = value;
 }
 
-life* mob::fix()
+life* mob::oblivion() const
+{
+    this->assert_thread();
+
+    return this->_oblivion;
+}
+
+void mob::oblivion(life* value)
+{
+    this->assert_thread();
+
+    this->_oblivion = value;
+}
+
+life* mob::repair_target()
 {
     this->assert_thread();
 
@@ -216,10 +234,16 @@ life* mob::find_target()
     if (map == nullptr)
         return nullptr;
 
+    if (this->owner != nullptr)
+        return nullptr;
+
     auto min_distance_sqrt = 0xFFFFFFFF;
     for (auto x : this->sight_in(OBJECT_TYPE::CHARACTER))
     {
         auto life = static_cast<fb::game::life*>(x);
+        if (life == this->_oblivion)
+            continue;
+
         if (life->alive() == false)
             continue;
 
@@ -233,14 +257,14 @@ life* mob::find_target()
     return this->_target;
 }
 
-bool mob::near_target(DIRECTION& out) const
+bool mob::near_target(const fb::game::life& target, DIRECTION& out) const
 {
     this->assert_thread();
 
     for (int i = 0; i < 4; i++)
     {
         auto direction = DIRECTION(i);
-        if (this->side(direction, OBJECT_TYPE::CHARACTER) != this->_target)
+        if (this->side(direction, OBJECT_TYPE::LIFE) != &target)
             continue;
 
         out = direction;
@@ -250,64 +274,72 @@ bool mob::near_target(DIRECTION& out) const
     return false;
 }
 
+bool mob::move_step(const fb::model::point16_t& position)
+{
+    auto x_axis = bool(std::rand() % 2);
+    if (x_axis)
+    {
+        if (this->_position.x > position.x && this->move(DIRECTION::LEFT))
+            return true;
+        if (this->_position.x < position.x && this->move(DIRECTION::RIGHT))
+            return true;
+        if (this->_position.y > position.y && this->move(DIRECTION::TOP))
+            return true;
+        if (this->_position.y < position.y && this->move(DIRECTION::BOTTOM))
+            return true;
+    }
+    else
+    {
+        if (this->_position.y > position.y && this->move(DIRECTION::TOP))
+            return true;
+        if (this->_position.y < position.y && this->move(DIRECTION::BOTTOM))
+            return true;
+        if (this->_position.x > position.x && this->move(DIRECTION::LEFT))
+            return true;
+        if (this->_position.x < position.x && this->move(DIRECTION::RIGHT))
+            return true;
+    }
+
+    return false;
+}
+
 void mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
 
-    try
+    if (ENUM_IN(this->crowd_control(), CROWD_CONTROL::SIGHT))
+        return;
+
+    auto& model = this->based<fb::model::mob>();
+    if (now < this->_action_time + model.speed)
+        return;
+
+    // 유효한 타겟이 없으면 고쳐준다.
+    auto direction = DIRECTION::BOTTOM;
+    if (this->repair_target() == nullptr)
     {
-        auto& model = this->based<fb::model::mob>();
-        if (now < this->_action_time + model.speed)
-            return;
-
-        // 유효한 타겟이 없으면 고쳐준다.
-        auto direction = DIRECTION::BOTTOM;
-        if (this->fix() == nullptr)
-        {
+        if (this->owner == nullptr)
             this->move(DIRECTION(std::rand() % 4));
-        }
-        else if (this->near_target(direction))
-        {
+        else if (this->near_target(*this->owner, direction))
             this->direction(direction);
-            this->attack();
-        }
         else
+            this->move_step(this->owner->position());
+    }
+    else if (this->near_target(*this->_target, direction))
+    {
+        this->direction(direction);
+        this->attack();
+    }
+    else if (this->move_step(this->_target->position()) == false)
+    {
+        // 이동할 수 있는 방향으로 일단 이동한다.
+        auto random_direction = std::rand() % 4;
+        for (int i = 0; i < 4; i++)
         {
-            auto x_axis = bool(std::rand() % 2);
-            if (x_axis)
-            {
-                if (this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))
-                    throw nullptr;
-                if (this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))
-                    throw nullptr;
-                if (this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))
-                    throw nullptr;
-                if (this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM))
-                    throw nullptr;
-            }
-            else
-            {
-                if (this->_position.y > this->_target->y() && this->move(DIRECTION::TOP))
-                    throw nullptr;
-                if (this->_position.y < this->_target->y() && this->move(DIRECTION::BOTTOM))
-                    throw nullptr;
-                if (this->_position.x > this->_target->x() && this->move(DIRECTION::LEFT))
-                    throw nullptr;
-                if (this->_position.x < this->_target->x() && this->move(DIRECTION::RIGHT))
-                    throw nullptr;
-            }
-
-            // 이동할 수 있는 방향으로 일단 이동한다.
-            auto random_direction = std::rand() % 4;
-            for (int i = 0; i < 4; i++)
-            {
-                if (this->move(DIRECTION((random_direction + i) % 4)))
-                    throw nullptr;
-            }
+            if (this->move(DIRECTION((random_direction + i) % 4)))
+                throw nullptr;
         }
     }
-    catch (...)
-    { }
 
     this->_action_time = now;
 }
@@ -324,14 +356,14 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
     this->assert_thread();
 
     auto result = life::damage(value, from, critical);
-    if (from == nullptr)
-        return result;
-
     if (!this->alive())
     {
         this->kill(from, DESTROY_TYPE::DEAD);
         return result;
     }
+
+    if (this->owner != nullptr && this->owner == from)
+        return result;
 
     auto& model = this->based<fb::model::mob>();
     switch (model.attack_type)
@@ -344,7 +376,7 @@ uint32_t mob::damage(uint32_t value, object* from, bool critical)
 
     default:
     {
-        if (from->is(OBJECT_TYPE::LIFE))
+        if (from != nullptr && from->is(OBJECT_TYPE::LIFE))
         {
             if (this->_target == nullptr)
             {
@@ -413,4 +445,37 @@ void mob::assert_thread() const
         object::assert_thread();
     else
         return;
+}
+
+bool mob::move(DIRECTION direction)
+{
+    auto map = this->map();
+    if (map == nullptr)
+        return false;
+
+    auto position = this->side_position(direction);
+    for (auto obj : map->nears(position, OBJECT_TYPE::LIFE))
+    {
+        if (obj == this)
+            continue;
+
+        auto life = static_cast<fb::game::life*>(obj);
+        if (life->cover() == false)
+            continue;
+
+        const auto& life_position = life->position();
+        if (life_position.x > 0 && life_position.x - 1 == position.x && life_position.y == position.y)
+            return false;
+
+        if (life_position.x < map->width() - 1 && life_position.x + 1 == position.x && life_position.y == position.y)
+            return false;
+
+        if (life_position.y > 0 && life_position.y - 1 == position.y && life_position.x == position.x)
+            return false;
+
+        if (life_position.y < map->height() - 1 && life_position.y + 1 == position.y && life_position.x == position.x)
+            return false;
+    }
+
+    return fb::game::object::move(direction);
 }

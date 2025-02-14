@@ -5,7 +5,7 @@
 #include <fb/game/inventory.h>
 #include <fb/model/model.h>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes an object.
@@ -17,9 +17,93 @@ class object;
 class life;
 
 /**
+ * @brief      This class describes a spell.
+ */
+class spell : public lua::luable
+{
+public:
+    LUA_PROTOTYPE
+
+private:
+    fb::model::datetime _next;
+    fb::model::datetime _internal_next;
+    uint8_t             _internal_cast_count = 0;
+
+public:
+    const fb::game::context& context;
+    const fb::game::life&    owner;
+    const fb::model::spell&  model;
+
+public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  context  The context
+     * @param[in]  model    The model
+     */
+    spell(const fb::game::context& context,
+          const fb::game::life&    owner,
+          const fb::model::spell&  model,
+          uint16_t                 delay = 0);
+    /**
+     * @brief      Destroys the object.
+     */
+    ~spell();
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void delay(uint16_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint16_t delay() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const fb::model::datetime& next() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool update_lock();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_model(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_delay(lua_State* lua);
+
+    static int builtin_delay2(lua_State* lua);
+};
+
+/**
  * @brief      This class describes spells.
  */
-class spells : public fb::game::inventory<const fb::model::spell>
+class spells : public fb::game::inventory<fb::game::spell>
 {
 public:
     /**
@@ -49,7 +133,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t add(const fb::model::spell& element) override;
+    uint8_t add(fb::game::spell& element) override;
+
     /**
      * @brief      { function_description }
      *
@@ -58,7 +143,26 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint8_t add(const fb::model::spell& element, uint8_t index) override;
+    uint8_t add(fb::game::spell& element, uint8_t index) override;
+
+    /**
+     * @brief      Adds the specified model.
+     *
+     * @param[in]  model  The model
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t add(const fb::model::spell& model, uint8_t slot, uint16_t delay);
+
+    /**
+     * @brief      Adds the specified model.
+     *
+     * @param[in]  model  The model
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t add(const fb::model::spell& model);
+
     /**
      * @brief      Removes the specified index.
      *
@@ -102,14 +206,18 @@ struct spells::listener
 /**
  * @brief      This class describes a buffer.
  */
-class buff
+class buff : public lua::luable
 {
+public:
+    LUA_PROTOTYPE
+
 private:
     std::chrono::milliseconds _time;
 
 public:
-    const fb::model::spell&  model;
     const fb::game::context& context;
+    const fb::model::spell&  model;
+    const fb::game::object*  caster;
 
 public:
     /**
@@ -117,9 +225,13 @@ public:
      *
      * @param[in]  context  The context
      * @param[in]  model    The model
+     * @param[in]  caster   The caster
      * @param[in]  seconds  The seconds
      */
-    buff(const fb::game::context& context, const fb::model::spell& model, uint32_t seconds);
+    buff(const fb::game::context& context,
+         const fb::model::spell&  model,
+         const fb::game::object*  caster,
+         uint32_t                 seconds);
     /**
      * @brief      Destroys the object.
      */
@@ -150,13 +262,32 @@ public:
      *
      * @param[in]  inc   The increment
      */
-    void time_inc(uint32_t inc);
+    void time_inc(const std::chrono::steady_clock::duration& inc);
     /**
      * @brief      { function_description }
      *
      * @param[in]  dec   The decrement
      */
-    void time_dec(uint32_t dec);
+    void time_dec(const std::chrono::steady_clock::duration& dec);
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_model(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_time(lua_State* lua);
 };
 
 /**
@@ -213,10 +344,11 @@ public:
      *
      * @param[in]  spell    The spell
      * @param[in]  seconds  The seconds
+     * @param[in]  caster   The caster
      *
      * @return     { description_of_the_return_value }
      */
-    buff* push_back(const fb::model::spell& spell, uint32_t seconds);
+    buff* push_back(const fb::model::spell& spell, uint32_t seconds, const fb::game::object* caster = nullptr);
     /**
      * @brief      Removes the specified identifier.
      *
@@ -245,6 +377,6 @@ public:
     buff* operator[] (uint32_t id) const;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 #endif // !__SPELL_H__

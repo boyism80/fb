@@ -32,7 +32,7 @@ public:
 
 private:
 #ifndef BOT
-    bool        clock_visible() const;
+    bool        is_detected() const;
     HEAD_MARKER head_marker() const;
 #endif
 

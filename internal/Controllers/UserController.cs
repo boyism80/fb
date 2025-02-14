@@ -103,7 +103,6 @@ namespace Internal.Controllers
         [HttpPost("reserve-name")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
-            // ���ü� ���� �ʿ�
             await using var connection = _dbContext.Connection(-1);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {

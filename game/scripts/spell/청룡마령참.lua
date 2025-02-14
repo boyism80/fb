@@ -1,7 +1,9 @@
 function on_cast(me, you, spell)
     you:effect(0x89)
     you:sound(0x08)
-    you:message(string.format('%s가 청룡마령참을 가합니다.', me:name()))
+    if you:is(OBJECT_TYPE_CHARACTER) then
+        you:message(string.format('%s가 청룡마령참을 가합니다.', me:name()))
+    end
 
     me:action(0x03)
 end

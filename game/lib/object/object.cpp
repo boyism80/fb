@@ -165,6 +165,9 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
     if (refresh)
         this->update_position();
 
+    if (sight(before, this->_position, this->_map) == false)
+        this->update_external(*this, false);
+
     this->update_sector();
 
     for (auto obj : this->_map->nears(before))
@@ -190,16 +193,31 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         if (this == obj)
             continue;
 
-        // 상대 시야에 내가 추가됨
-        if (this->visible() && !obj->sight(before) && obj->sight(*this))
+        if (this->visible())
         {
-            this->update_external(*obj, false);
+            auto before_sight = obj->sight(before);
+            auto after_sight  = obj->sight(*this);
+
+            if (!before_sight && after_sight) // 상대 시야에 내가 추가됨
+            {
+                this->update_external(*obj, false);
+            }
+            else if (refresh && before_sight && after_sight) // 상대 시야에 원래 있었는데 위치 강제이동
+            {
+                this->update_external(*obj, false);
+            }
+            else
+            {
+            }
         }
 
         // 내 시야에 상대가 추가됨
-        if (obj->visible() && !sight(before, obj->_position, this->_map) && this->sight(*obj))
+        if (obj->visible())
         {
-            obj->update_external(*this, false);
+            if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
+            {
+                obj->update_external(*this, false);
+            }
         }
     }
 
@@ -227,26 +245,7 @@ bool object::move(DIRECTION direction)
     if (this->_map == nullptr)
         return false;
 
-    auto after = this->_position;
-    switch (direction)
-    {
-    case DIRECTION::TOP:
-        after.y--;
-        break;
-
-    case DIRECTION::BOTTOM:
-        after.y++;
-        break;
-
-    case DIRECTION::LEFT:
-        after.x--;
-        break;
-
-    case DIRECTION::RIGHT:
-        after.x++;
-        break;
-    }
-
+    auto after = this->side_position(direction);
     if (this->_map->movable(after) == false)
         return false;
 
@@ -259,41 +258,6 @@ bool object::move(DIRECTION direction)
         this->_listener->on_move(*this, before);
 
     return true;
-}
-
-const fb::model::point16_t object::position_forward() const
-{
-    this->assert_thread();
-
-    return this->position_forward(this->_direction);
-}
-
-const fb::model::point16_t object::position_forward(DIRECTION direction) const
-{
-    this->assert_thread();
-
-    auto current = fb::model::point16_t(this->_position);
-    auto forward = fb::model::point16_t(current);
-    forward.forward(direction);
-    if (this->_map->movable(forward))
-        return forward;
-
-    auto left = fb::model::point16_t(current);
-    left.left(this->_direction);
-    if (this->_map->movable(left))
-        return left;
-
-    auto right = fb::model::point16_t(current);
-    right.right(this->_direction);
-    if (this->_map->movable(right))
-        return right;
-
-    auto backward = fb::model::point16_t(current);
-    backward.backward(this->_direction);
-    if (this->_map->movable(backward))
-        return backward;
-
-    return current;
 }
 
 uint16_t object::x() const
@@ -439,6 +403,43 @@ bool object::sight(const fb::model::point16_t me, const fb::model::point16_t you
     return begin.x <= you.x && end.x >= you.x && begin.y <= you.y && end.y >= you.y;
 }
 
+async::task<bool> object::map(fb::game::map* map, DESTROY_TYPE destroy_type)
+{
+    this->assert_thread();
+
+    if (map == nullptr)
+    {
+        co_return co_await this->map(map, fb::model::point16_t{0, 0}, destroy_type);
+    }
+    else
+    {
+        if (map->model.teleport.size() == 0)
+        {
+            co_return co_await this->map(map, fb::model::point16_t{0, 0}, destroy_type);
+        }
+
+        auto& dsl = map->model.teleport.at(random<uint32_t>(0, map->model.teleport.size() - 1));
+        switch (dsl.header)
+        {
+        case DSL::area:
+        {
+            auto params = fb::model::dsl::area(dsl.params);
+            auto x      = random<uint16_t>(params.left, params.right);
+            auto y      = random<uint16_t>(params.top, params.bottom);
+            co_return co_await this->map(map, fb::model::point16_t{x, y});
+        }
+        break;
+
+        case DSL::point:
+        {
+            auto params = fb::model::dsl::point(dsl.params);
+            co_return co_await this->map(map, fb::model::point16_t{params.x, params.y});
+        }
+        break;
+        }
+    }
+}
+
 async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
@@ -557,6 +558,36 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
     }
 }
 
+fb::model::point16_t object::side_position(DIRECTION direction, int step) const
+{
+    auto front = this->position();
+    switch (direction)
+    {
+    case DIRECTION::TOP:
+        front.y -= step;
+        break;
+
+    case DIRECTION::BOTTOM:
+        front.y += step;
+        break;
+
+    case DIRECTION::LEFT:
+        front.x -= step;
+        break;
+
+    case DIRECTION::RIGHT:
+        front.x += step;
+        break;
+    }
+
+    return front;
+}
+
+fb::model::point16_t object::front_position(int step) const
+{
+    return this->side_position(this->_direction, step);
+}
+
 object* object::side(DIRECTION direction, OBJECT_TYPE type) const
 {
     this->assert_thread();
@@ -565,26 +596,7 @@ object* object::side(DIRECTION direction, OBJECT_TYPE type) const
     if (map == nullptr)
         return nullptr;
 
-    fb::model::point16_t front = this->position();
-    switch (direction)
-    {
-    case DIRECTION::TOP:
-        front.y--;
-        break;
-
-    case DIRECTION::BOTTOM:
-        front.y++;
-        break;
-
-    case DIRECTION::LEFT:
-        front.x--;
-        break;
-
-    case DIRECTION::RIGHT:
-        front.x++;
-        break;
-    }
-
+    auto front = side_position(direction);
     if (map->existable(front) == false)
         return nullptr;
 
@@ -660,6 +672,9 @@ std::vector<object*> object::sight_in(OBJECT_TYPE type) const
     auto result = std::vector<object*>{};
     for (auto obj : this->nears())
     {
+        if (obj->is(type) == false)
+            continue;
+
         if (this->sight(*obj) == false && obj->sight(*this))
             continue;
 
