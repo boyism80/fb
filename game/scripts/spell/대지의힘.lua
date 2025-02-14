@@ -18,5 +18,4 @@ end
 
 function on_unbuff(me, spell)
     me:buff_str(me:buff_str()-3)
-
 end

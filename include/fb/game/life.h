@@ -14,7 +14,13 @@ public:
     LUA_PROTOTYPE
 
 public:
+    /**
+     * @brief      { struct_description }
+     */
     struct listener;
+    /**
+     * @brief      { struct_description }
+     */
     struct initial_params;
 
 protected:
@@ -22,11 +28,7 @@ protected:
     uint32_t      _damage_rate = 1000, _skill_damage_rate = 1000;
     uint32_t      _damage_derate = 1000;
     CROWD_CONTROL _crowd_control = CROWD_CONTROL::NONE;
-    int8_t        _buff_phydef   = 0;
-    int8_t        _buff_magdef   = 0;
     bool          _paralysis     = false;
-    uint8_t       _dam           = 0; // 공격수정
-    uint8_t       _hit           = 0; // 명중수정
     bool          _invincible    = false;
     bool          _cover         = false;
 
@@ -48,9 +50,266 @@ protected:
      */
     virtual ~life();
 
+#pragma region stat
 public:
     /**
      * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint32_t base_hp() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint32_t buff_hp() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint32_t maxhp() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_hp(uint32_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint32_t base_mp() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint32_t buff_mp() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint32_t maxmp() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_mp(uint32_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t base_str() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t buff_str() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t str() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_str(uint8_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t base_dex() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t buff_dex() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t dex() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_dex(uint8_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t base_int() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t buff_int() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t intelligence() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_int(uint8_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t base_phydef() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t buff_phydef() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t phydef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_phydef(int8_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t base_magdef() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t buff_magdef() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual int8_t magdef() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_magdef(int8_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t base_dam() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t buff_dam() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t dam() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_dam(uint8_t value) = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t base_hit() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t buff_hit() const = 0;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual uint8_t hit() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    virtual void buff_hit(uint8_t value) = 0;
+#pragma endregion
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  duration  The duration
      */
     virtual void attack(DURATION duration = DURATION::ATTACK);
 
@@ -87,49 +346,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    virtual uint32_t base_hp() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual uint32_t base_mp() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
     virtual uint32_t exp() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual int8_t base_phydef() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual int8_t base_magdef() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual int8_t phydef() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    virtual int8_t magdef() const;
 
     /**
      * @brief      { function_description }
@@ -198,7 +415,7 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
+     * @return     The crowd control.
      */
     CROWD_CONTROL crowd_control() const;
 
@@ -210,20 +427,20 @@ public:
     void crowd_control(CROWD_CONTROL value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Adds a cc.
      *
      * @param[in]  value  The value
      *
-     * @return     { description_of_the_return_value }
+     * @return     The crowd control.
      */
     CROWD_CONTROL add_cc(CROWD_CONTROL value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Removes a cc.
      *
      * @param[in]  value  The value
      *
-     * @return     { description_of_the_return_value }
+     * @return     The crowd control.
      */
     CROWD_CONTROL remove_cc(CROWD_CONTROL value);
 
@@ -291,34 +508,6 @@ public:
      */
     virtual void action(ACTION action, DURATION duration, uint8_t sound = 0x00);
 
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t dam() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void dam(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t hit() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void hit(uint8_t value);
-
 public:
     /**
      * @brief      { function_description }
@@ -367,6 +556,8 @@ public:
 
     /**
      * @brief      { function_description }
+     *
+     * @param[in]  value  The value
      */
     void damage_rate(uint32_t value);
 
@@ -393,36 +584,10 @@ public:
 
     /**
      * @brief      { function_description }
+     *
+     * @param[in]  value  The value
      */
     void damage_derate(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void buff_phydef(int8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    int8_t buff_phydef() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void buff_magdef(int8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    int8_t buff_magdef() const;
 
     /**
      * @brief      { function_description }
@@ -466,6 +631,7 @@ public:
      */
     bool cover() const;
 
+#pragma region builtin
 public:
     /**
      * @brief      { function_description }
@@ -493,24 +659,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_mp(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_base_hp(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_base_mp(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -645,24 +793,6 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_phydef(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_buff_magdef(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
     static int builtin_paralysis(lua_State* lua);
 
     /**
@@ -681,6 +811,222 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_cover(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_hp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_hp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_maxhp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_mp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_mp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_maxmp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_str(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_str(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_str(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_dex(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_dex(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_dex(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_int(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_int(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_intelligence(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_phydef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_phydef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_phydef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_magdef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_magdef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_magdef(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_dam(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buff_dam(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_dam(lua_State* lua);
 
     /**
@@ -690,7 +1036,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hit(lua_State* lua);
+    static int builtin_base_hit(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -699,7 +1045,17 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cover(lua_State* lua);
+    static int builtin_buff_hit(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_hit(lua_State* lua);
+#pragma endregion
 };
 
 /**
@@ -720,7 +1076,8 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
     /**
      * @brief      Called on attack.
      *
-     * @param      me    { parameter_description }
+     * @param      me        { parameter_description }
+     * @param[in]  duration  The duration
      */
     virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
 

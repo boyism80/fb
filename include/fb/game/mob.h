@@ -87,6 +87,15 @@ private:
     fb::game::life*     _target        = nullptr;
     fb::game::life*     _oblivion      = nullptr;
     lua::context*       _attack_thread = nullptr;
+    uint32_t            _buff_hp;
+    uint32_t            _buff_mp;
+    uint8_t             _buff_str;
+    uint8_t             _buff_dex;
+    uint8_t             _buff_int;
+    int8_t              _buff_phydef;
+    int8_t              _buff_magdef;
+    uint8_t             _buff_dam;
+    uint8_t             _buff_hit;
 
 public:
     fb::game::character* owner = nullptr;
@@ -97,7 +106,8 @@ public:
      *
      * @param      context  The context
      * @param[in]  model    The model
-     * @param[in]  config   The configuration
+     * @param[in]  params   The parameters
+     * @param[in]  config  The configuration
      */
     mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
 
@@ -124,7 +134,8 @@ private:
     /**
      * @brief      { function_description }
      *
-     * @param      out   The out
+     * @param[in]  target  The target
+     * @param      out     The out
      *
      * @return     { description_of_the_return_value }
      */
@@ -138,6 +149,196 @@ private:
      * @return     { description_of_the_return_value }
      */
     bool move_step(const fb::model::point16_t& position);
+
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t base_hp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t buff_hp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_hp(uint32_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t base_mp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t buff_mp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_mp(uint32_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_str() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_str() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_str(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_dex() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_dex() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_dex(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_int() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_int() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_int(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t base_phydef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_phydef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_phydef(int8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t base_magdef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_magdef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_magdef(int8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_dam() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_dam() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_dam(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_hit() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_hit() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_hit(uint8_t value) override final;
 
 public:
     /**
@@ -257,6 +458,7 @@ public:
      */
     bool move(DIRECTION direction) override final;
 
+#pragma region builtin
 public:
     /**
      * @brief      { function_description }
@@ -275,6 +477,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_oblivion(lua_State* lua);
+#pragma endregion
 };
 
 /**

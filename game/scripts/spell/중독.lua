@@ -17,7 +17,7 @@ function on_unbuff(me, spell)
 end
 
 function on_concast(me, caster, buff)
-    local damage = math.min((me:base_hp() * 5) // 100, 14994)
+    local damage = math.min((me:maxhp() * 5) // 100, 14994)
     if damage > me:hp() - 100 then
         damage = math.max(0, me:hp() - 100)
     end

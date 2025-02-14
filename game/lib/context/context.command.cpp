@@ -652,3 +652,13 @@ async::task<bool> context::handle_command_delete_mail(character& ch, Json::Value
 
     co_return true;
 }
+
+async::task<bool> context::handle_command_reset_delay(character& ch, Json::Value& parameters)
+{
+    for (auto x : ch.spells)
+    {
+        if (x != nullptr)
+            x->delay(0);
+    }
+    co_return true;
+}

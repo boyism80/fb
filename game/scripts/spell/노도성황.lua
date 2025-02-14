@@ -17,7 +17,7 @@ function on_unbuff(me, spell)
 end
 
 function on_concast(me, caster, buff)
-    local damage = (me:base_hp() * 5) // 100
+    local damage = (me:maxhp() * 5) // 100
     me:damage(damage, caster)
     me:effect(96)
 end
