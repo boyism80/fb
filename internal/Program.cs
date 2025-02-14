@@ -4,7 +4,6 @@ using fb.protocol._internal;
 using Http.Extension;
 using Http.Service;
 using Http.Worker;
-using Newtonsoft.Json;
 
 namespace Http;
 
@@ -14,7 +13,7 @@ public class Program
     {
         Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
         SqlMapper.AddTypeHandler(typeof(List<uint>), new JsonTypeHandler());
-        SqlMapper.AddTypeHandler(typeof(List<Buff>), new JsonTypeHandler());
+        SqlMapper.AddTypeHandler(typeof(List<Model.Buff>), new JsonTypeHandler());
 
         var config = new MapperConfiguration(cfg =>
         {

@@ -1,4 +1,8 @@
 function on_cast(me, you, spell)
+    if not assert_map(me) then
+        return
+    end
+
     local mp = 1000
     local sound = 97
     local effect = 63

@@ -593,6 +593,13 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
+    auto map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    if (ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
+        co_return true;
+
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     if (co_await handle_command(*ch, message))
@@ -903,6 +910,16 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (ch->inited() == false)
         co_return true;
 
+    auto map = ch->map();
+    if (map == nullptr)
+        co_return true;
+
+    if (ENUM_IN(map->model.option, MAP_OPTION::DISABLE_SPELL))
+    {
+        ch->message("마력이 미치지 않습니다.");
+        co_return true;
+    }
+
     if (request.slot > CONTAINER_CAPACITY - 1)
         co_return false;
 
@@ -968,6 +985,16 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     auto me = socket.data();
     if (me->inited() == false)
         co_return true;
+
+    auto map = me->map();
+    if (map == nullptr)
+        co_return true;
+
+    if (ENUM_IN(map->model.option, MAP_OPTION::DISABLE_WHISPER))
+    {
+        me->message("귓속말을 할 수 없는 지역입니다.");
+        co_return true;
+    }
 
     auto fd = me->fd();
     try

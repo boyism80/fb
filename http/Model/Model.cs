@@ -539,7 +539,7 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "ENABLE_PK")]
         EnablePk = 0x20, 
         [EnumMember(Value = "DISABLE_DIE_PENALTY")]
-        DisableDiePenalty = 0x30
+        DisableDiePenalty = 0x40
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

@@ -14,6 +14,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"root",                fb::model::map::builtin_root},
 {"cardinal",            fb::model::map::builtin_cardinal},
 {"resurrection",        fb::model::map::builtin_resurrection},
+{"option",        		fb::model::map::builtin_option},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off

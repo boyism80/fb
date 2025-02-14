@@ -44,6 +44,62 @@ function near(me, type)
     return result
 end
 
+function assert_map_debuff(me, you)
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+
+    if not you:is(OBJECT_TYPE_LIFE) then
+        me:message('대상이 올바르지 않습니다.')
+        return false
+    end
+
+    local option = map:model():option()
+    if you:is(OBJECT_TYPE_CHARACTER) then
+        local pk = (option & MAP_OPTION_ENABLE_PK) == MAP_OPTION_ENABLE_PK
+        if not pk then
+            me:message('걸리지 않습니다.')
+            return false
+        end
+
+        if you:assert_state(STATE_GHOST) then
+            me:message('대상이 올바르지 않습니다.')
+            return false
+        end
+    end
+
+    return true
+end
+
+function assert_map_damage(me, you)
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+
+    if not you:is(OBJECT_TYPE_LIFE) then
+        me:message('대상이 올바르지 않습니다.')
+        return false
+    end
+
+    local option = map:model():option()
+    if you:is(OBJECT_TYPE_CHARACTER) then
+        local pk = (option & MAP_OPTION_ENABLE_PK) == MAP_OPTION_ENABLE_PK
+        if not pk then
+            me:message('대상이 올바르지 않습니다.')
+            return false
+        end
+
+        if you:assert_state(STATE_GHOST) then
+            me:message('대상이 올바르지 않습니다.')
+            return false
+        end
+    end
+
+    return true
+end
+
 function spell_cast(me, you, spell, mp, sound, effect, no_assert)
     if no_assert == nil then
         no_assert = false
@@ -126,6 +182,10 @@ function debuff_cast(me, you, spell, mp, sound, effect)
         end
     end
 
+    if not assert_map_debuff(me, you) then
+        return false
+    end
+
     if not you:is(OBJECT_TYPE_LIFE) then
         me:message('걸리지 않습니다.')
         return false
@@ -163,12 +223,23 @@ end
 
 
 function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect, preprocess)
+    local map = me:map()
+    if map == nil then
+        return false
+    end
+
     if me:is(OBJECT_TYPE_CHARACTER) then
         local error = me:assert_state(STATE_GHOST, STATE_RIDING)
         if error ~= nil then
             me:message(error)
             return false
         end
+    end
+
+    local option = map:model():option()
+    if (option & MAP_OPTION_DISABLE_SPELL) == MAP_OPTION_DISABLE_SPELL then
+        me:message('마력이 미치지 않습니다.')
+        return false
     end
 
     if me:mp() < mp then
@@ -197,6 +268,7 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect, pre
     me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
     me:action(ACTION_ATTACK, DURATION_ATTACK, 1)
 
+    local pk = (option & MAP_OPTION_ENABLE_PK) == MAP_OPTION_ENABLE_PK
     local damaged = false
     local rate = me:skill_damage_rate() / 1000.0
     for _, obj in pairs(you) do
@@ -204,7 +276,7 @@ function attack_cast(me, you, spell, hp, mp, damage, message, sound, effect, pre
             obj:effect(effect)
         end
         obj:sound(sound)
-        if obj:is(OBJECT_TYPE_LIFE) then
+        if (obj:is(OBJECT_TYPE_CHARACTER) and pk) or obj:is(OBJECT_TYPE_MOB) then
             obj:damage(math.floor(damage * rate), me)
             damaged = true
         end
@@ -228,6 +300,10 @@ function spell_damage(me, you, spell, damage, mp, sound, effect)
 
     if not you:is(OBJECT_TYPE_LIFE) then
         me:message('대상이 올바르지 않습니다.')
+        return false
+    end
+
+    if not assert_map_damage(me, you) then
         return false
     end
 

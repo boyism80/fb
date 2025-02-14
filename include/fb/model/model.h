@@ -1614,7 +1614,7 @@ enum class MAP_OPTION
     DISABLE_SPELL = 0x08, 
     HUNTING_GROUND = 0x10, 
     ENABLE_PK = 0x20, 
-    DISABLE_DIE_PENALTY = 0x30
+    DISABLE_DIE_PENALTY = 0x40
 }; // end of enum 'MAP_OPTION'
 
 template <>
