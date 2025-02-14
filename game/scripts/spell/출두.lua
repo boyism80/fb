@@ -35,30 +35,31 @@ end
 function on_cast(me, spell, name)
 
     if me:name() == name then
-        me:message('나 자신을 출두할 수 없습니다.')
-        return
+        return me:message('나 자신을 출두할 수 없습니다.')
     end
     local my_level = me:level()
     local ch = name2ch(name)
     if ch == nil then
-        me:message(string.format('%s님은 현재 바람의나라에 없습니다.', name))
-        return
+        return me:message(string.format('%s님은 현재 바람의나라에 없습니다.', name))
     end
     if ch:level() > my_level then
-        me:message('마력이 미치지 않습니다.')
-        return
+        return me:message('마력이 미치지 않습니다.')
     end
 
     local map = ch:map()
     if map == nil then
-        me:message('이동할 수 없는 공간입니다.')
-        return
+        return me:message('이동할 수 없는 공간입니다.')
     end
 
-    local x, y = ch:position()
-    local new_x, new_y, direction = lookup(map, x, y)
-    me:map(map, new_x, new_y)
-    me:direction(direction)
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 29)
-    me:effect(16)
+    local sound = 29
+    local effect = 16
+    local mp = 30
+    if spell_cast(me, me, spell, mp, sound, effect) then
+        local x, y = ch:position()
+        local new_x, new_y, direction = lookup(map, x, y)
+        me:map(map, new_x, new_y)
+        me:direction(direction)
+        me:effect(16)
+        me:sound(29)
+    end
 end

@@ -42,7 +42,6 @@ function on_cast(me, spell, name)
 
     local x, y = me:position()
     local direction = me:direction()
-
     local my_level = me:level()
     local ch = name2ch(name)
     if ch == nil then
@@ -54,8 +53,12 @@ function on_cast(me, spell, name)
         return
     end
 
-    local new_x, new_y = lookup(map, x, y, direction)
-    ch:map(map, new_x, new_y)
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 36)
-    me:effect(3)
+    local sound = 36
+    local effect = 3
+    local mp = 30
+    if spell_cast(me, me, spell, mp, sound, effect) then
+        local new_x, new_y = lookup(map, x, y, direction)
+        ch:map(map, new_x, new_y)
+        me:action(ACTION_CAST_SPELL, DURATION_SPELL)
+    end
 end
