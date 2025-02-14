@@ -19,8 +19,8 @@ function on_cast(me, spell)
         return me:message('정신집중에 실패하였습니다.')
     end
 
-    me:mp(me:base_mp())
-    me:hp(math.max(100, me:hp() - math.floor(me:base_mp() * 0.4)))
+    me:mp(me:maxmp())
+    me:hp(math.max(100, me:hp() - math.floor(me:maxmp() * 0.4)))
     me:effect(effect)
     me:sound(sound)
     me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))

@@ -206,6 +206,7 @@
     <ClInclude Include="..\include\fb\game\sector.h" />
     <ClInclude Include="..\include\fb\game\shard.h" />
     <ClInclude Include="..\include\fb\game\spell.h" />
+    <ClInclude Include="..\include\fb\game\stat.h" />
     <ClInclude Include="..\include\fb\game\thread_params.h" />
     <ClInclude Include="..\include\fb\game\trace.h" />
     <ClInclude Include="..\include\fb\game\trade.h" />

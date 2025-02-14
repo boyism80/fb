@@ -19,5 +19,5 @@ end
 function on_concast(me, caster, buff)
     me:effect(133)
     me:sound(2)
-    me:mp_up(me:base_mp() // 10)
+    me:mp_up(me:maxmp() // 10)
 end

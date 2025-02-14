@@ -3,7 +3,7 @@ function on_cast(me, you, spell)
     local mp = me:mp()//2
     local sound = 95
     local effect = 64
-    local delay = math.min(60, me:base_mp() // 10000)
+    local delay = math.min(60, me:maxmp() // 10000)
     if me:is(OBJECT_TYPE_CHARACTER) then
         local weapon = me:weapon()
         if weapon ~= nil then

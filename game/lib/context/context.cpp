@@ -198,6 +198,7 @@ async::task<void> context::handle_start()
     this->command("메일쓰기", &context::handle_command_write_mail, true);
     this->command("메일읽기", &context::handle_command_read_mail, true);
     this->command("메일삭제", &context::handle_command_delete_mail, true);
+    this->command("쿨타임초기화", &context::handle_command_reset_delay, true);
 
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);

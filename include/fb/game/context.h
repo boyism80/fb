@@ -1532,6 +1532,16 @@ public:
      */
     [[nodiscard]] async::task<bool> handle_command_delete_mail(character& ch, Json::Value& parameters);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch          { parameter_description }
+     * @param      parameters  The parameters
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_command_reset_delay(character& ch, Json::Value& parameters);
+
 public:
     /**
      * @brief      { function_description }

@@ -908,6 +908,9 @@
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_delay.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\fb\game\stat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\..\..\..\Desktop\baram.ico">

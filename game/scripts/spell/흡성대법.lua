@@ -8,7 +8,7 @@ function on_cast(me, you, spell)
     	return me:message('걸리지 않습니다.')
     end
 
-    if you:base_hp() > damage then
+    if you:maxhp() > damage then
     	return me:message('걸리지 않습니다.')
     end
     

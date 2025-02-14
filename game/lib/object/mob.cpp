@@ -479,3 +479,152 @@ bool mob::move(DIRECTION direction)
 
     return fb::game::object::move(direction);
 }
+
+uint32_t mob::base_hp() const
+{
+    auto& model = this->based<fb::model::mob>();
+    return model.hp;
+}
+
+uint32_t mob::buff_hp() const
+{
+    return this->_buff_hp;
+}
+
+void mob::buff_hp(uint32_t value)
+{
+    this->_buff_hp = value;
+}
+
+uint32_t mob::base_mp() const
+{
+    auto& model = this->based<fb::model::mob>();
+    return model.mp;
+}
+
+uint32_t mob::buff_mp() const
+{
+    return this->_buff_mp;
+}
+
+void mob::buff_mp(uint32_t value)
+{
+    this->_buff_mp = value;
+}
+
+uint8_t mob::base_str() const
+{
+    // auto& model = this->based<fb::model::mob>();
+    // return model.str;
+    return 0;
+}
+
+uint8_t mob::buff_str() const
+{
+    return this->_buff_str;
+}
+
+void mob::buff_str(uint8_t value)
+{
+    this->_buff_str = value;
+}
+
+uint8_t mob::base_dex() const
+{
+    // auto& model = this->based<fb::model::mob>();
+    // return model.dex;
+    return 0;
+}
+
+uint8_t mob::buff_dex() const
+{
+    return this->_buff_dex;
+}
+
+void mob::buff_dex(uint8_t value)
+{
+    this->_buff_dex = value;
+}
+
+uint8_t mob::base_int() const
+{
+    // auto& model = this->based<fb::model::mob>();
+    // return model.int;
+    return 0;
+}
+
+uint8_t mob::buff_int() const
+{
+    return this->_buff_int;
+}
+
+void mob::buff_int(uint8_t value)
+{
+    this->_buff_int = value;
+}
+
+int8_t mob::base_phydef() const
+{
+    auto& model = this->based<fb::model::mob>();
+    return model.defensive_physical;
+}
+
+int8_t mob::buff_phydef() const
+{
+    return this->_buff_phydef;
+}
+
+void mob::buff_phydef(int8_t value)
+{
+    this->_buff_phydef = value;
+}
+
+int8_t mob::base_magdef() const
+{
+    auto& model = this->based<fb::model::mob>();
+    return model.defensive_magical;
+}
+
+int8_t mob::buff_magdef() const
+{
+    return this->_buff_magdef;
+}
+
+void mob::buff_magdef(int8_t value)
+{
+    this->_buff_magdef = value;
+}
+
+uint8_t mob::base_dam() const
+{
+    // auto& model = this->based<fb::model::mob>();
+    // return model.dam;
+    return 0;
+}
+
+uint8_t mob::buff_dam() const
+{
+    return this->_buff_dam;
+}
+
+void mob::buff_dam(uint8_t value)
+{
+    this->_buff_dam = value;
+}
+
+uint8_t mob::base_hit() const
+{
+    // auto& model = this->based<fb::model::mob>();
+    // return model.hit;
+    return 0;
+}
+
+uint8_t mob::buff_hit() const
+{
+    return this->_buff_hit;
+}
+
+void mob::buff_hit(uint8_t value)
+{
+    this->_buff_hit = value;
+}

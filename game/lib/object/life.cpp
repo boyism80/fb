@@ -17,9 +17,8 @@ life::~life()
 uint32_t life::heal(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
-
     auto before = this->_hp;
-    this->hp(this->_hp + std::min(value, this->base_hp() - this->_hp));
+    this->hp(this->_hp + std::min(value, this->maxhp() - this->_hp));
     this->update_hp(this->_hp - before, false);
     return this->_hp - before;
 }
@@ -27,7 +26,6 @@ uint32_t life::heal(uint32_t value, fb::game::object* from)
 uint32_t life::damage(uint32_t value, fb::game::object* from, bool critical)
 {
     this->assert_thread();
-
     if (from != nullptr && from->is(OBJECT_TYPE::CHARACTER))
     {
         auto ch = static_cast<fb::game::character*>(from);
@@ -52,16 +50,14 @@ uint32_t life::damage(uint32_t value, fb::game::object* from, bool critical)
 uint32_t life::mp_up(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
-
     auto before = this->_mp;
-    this->mp(this->_mp + std::min(value, this->base_mp() - this->_mp));
+    this->mp(this->_mp + std::min(value, this->maxmp() - this->_mp));
     return this->_mp - before;
 }
 
 uint32_t life::mp_down(uint32_t value, fb::game::object* from)
 {
     this->assert_thread();
-
     auto before = this->_mp;
     this->mp(this->_mp - std::min(value, this->_mp));
     return before - this->_mp;
@@ -88,7 +84,6 @@ void life::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
 void life::attack(DURATION duration)
 {
     this->assert_thread();
-
     if (this->_map == nullptr)
         return;
 
@@ -103,14 +98,12 @@ void life::attack(DURATION duration)
 uint32_t life::hp() const
 {
     this->assert_thread();
-
     return this->_hp;
 }
 
 void life::hp(uint32_t value)
 {
     this->assert_thread();
-
     auto before = this->_hp;
     this->_hp   = value;
     this->update(STATE_LEVEL::HP_MP);
@@ -119,14 +112,12 @@ void life::hp(uint32_t value)
 uint32_t life::mp() const
 {
     this->assert_thread();
-
     return this->_mp;
 }
 
 void life::mp(uint32_t value)
 {
     this->assert_thread();
-
     auto before = this->_mp;
     this->_mp   = value;
     this->update(STATE_LEVEL::HP_MP);
@@ -135,58 +126,24 @@ void life::mp(uint32_t value)
 uint32_t life::base_hp() const
 {
     this->assert_thread();
-
     return static_cast<const fb::model::life&>(this->_model).hp;
 }
 
 uint32_t life::base_mp() const
 {
     this->assert_thread();
-
     return static_cast<const fb::model::life&>(this->_model).mp;
 }
 
 uint32_t life::exp() const
 {
     this->assert_thread();
-
     return static_cast<const fb::model::life&>(this->_model).exp;
-}
-
-int8_t life::base_phydef() const
-{
-    this->assert_thread();
-
-    return static_cast<const fb::model::life&>(this->_model).defensive_physical;
-}
-
-int8_t life::base_magdef() const
-{
-    this->assert_thread();
-
-    return static_cast<const fb::model::life&>(this->_model).defensive_magical;
-}
-
-int8_t life::phydef() const
-{
-    this->assert_thread();
-
-    auto sum = (int16_t)this->base_phydef() + (int16_t)this->buff_phydef();
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
-}
-
-int8_t life::magdef() const
-{
-    this->assert_thread();
-
-    auto sum = (int16_t)this->base_magdef() + (int16_t)this->buff_magdef();
-    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
 }
 
 CROWD_CONTROL life::crowd_control() const
 {
     this->assert_thread();
-
     return this->_crowd_control;
 }
 
@@ -199,7 +156,6 @@ void life::crowd_control(CROWD_CONTROL value)
 CROWD_CONTROL life::add_cc(CROWD_CONTROL value)
 {
     this->assert_thread();
-
     this->crowd_control(CROWD_CONTROL(this->_crowd_control | value));
     return this->_crowd_control;
 }
@@ -207,7 +163,6 @@ CROWD_CONTROL life::add_cc(CROWD_CONTROL value)
 CROWD_CONTROL life::remove_cc(CROWD_CONTROL value)
 {
     this->assert_thread();
-
     this->crowd_control(CROWD_CONTROL(this->_crowd_control & ~value));
     return this->_crowd_control;
 }
@@ -215,21 +170,18 @@ CROWD_CONTROL life::remove_cc(CROWD_CONTROL value)
 bool life::condition_contains(CROWD_CONTROL value) const
 {
     this->assert_thread();
-
     return uint32_t(this->_crowd_control) & uint32_t(value);
 }
 
 bool life::alive() const
 {
     this->assert_thread();
-
     return this->_hp != 0;
 }
 
 bool life::active(fb::game::spell& spell, const std::string& message)
 {
     this->assert_thread();
-
     auto thread = fb::lua::new_context();
     if (thread == nullptr)
         return false;
@@ -249,7 +201,6 @@ bool life::active(fb::game::spell& spell, const std::string& message)
 bool life::active(fb::game::spell& spell, uint32_t fd)
 {
     this->assert_thread();
-
     if (this->_map == nullptr)
         return false;
 
@@ -263,7 +214,6 @@ bool life::active(fb::game::spell& spell, uint32_t fd)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-
     auto thread = fb::lua::new_context();
     if (thread == nullptr)
         return false;
@@ -293,7 +243,6 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-
     auto thread = fb::lua::new_context();
     if (thread == nullptr)
         return false;
@@ -341,7 +290,6 @@ bool life::calculate_miss(life& you) const
 uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical) const
 {
     this->assert_thread();
-
     auto n                 = (100 - life.phydef()) / 10;
     auto defensive_percent = -125 + (n * (2 * 14.75f - (n - 1) / 2.0f)) / 2.0f;
     auto damage            = value - uint32_t(defensive_percent * (value / 100.0f));
@@ -357,126 +305,158 @@ uint32_t life::calculate_damage(uint32_t value, const life& life, bool critical)
     return static_cast<uint32_t>(damage * rate);
 }
 
-uint32_t fb::game::life::damage_rate() const
+uint32_t life::damage_rate() const
 {
     return this->_damage_rate;
 }
 
-void fb::game::life::damage_rate(uint32_t value)
+void life::damage_rate(uint32_t value)
 {
     this->_damage_rate = value;
 }
 
-uint32_t fb::game::life::skill_damage_rate() const
+uint32_t life::skill_damage_rate() const
 {
     return this->_skill_damage_rate;
 }
 
-void fb::game::life::skill_damage_rate(uint32_t value)
+void life::skill_damage_rate(uint32_t value)
 {
     this->_skill_damage_rate = value;
 }
 
-uint32_t fb::game::life::damage_derate() const
+uint32_t life::damage_derate() const
 {
     return this->_damage_derate;
 }
 
-void fb::game::life::damage_derate(uint32_t value)
+void life::damage_derate(uint32_t value)
 {
     this->_damage_derate = value;
 }
 
-int8_t life::buff_phydef() const
+void life::paralysis(bool value)
 {
     this->assert_thread();
-
-    return this->_buff_phydef;
-}
-
-void life::buff_phydef(int8_t value)
-{
-    this->assert_thread();
-
-    this->_buff_phydef = value;
-    this->update(STATE_LEVEL::BASED);
-}
-
-int8_t life::buff_magdef() const
-{
-    this->assert_thread();
-
-    return this->_buff_magdef;
-}
-
-void life::buff_magdef(int8_t value)
-{
-    this->assert_thread();
-
-    this->_buff_magdef = value;
-    this->update(STATE_LEVEL::BASED);
-}
-
-void fb::game::life::paralysis(bool value)
-{
-    this->assert_thread();
-
     this->_paralysis = value;
 }
 
-bool fb::game::life::paralysis() const
+bool life::paralysis() const
 {
     return this->_paralysis;
 }
 
-void fb::game::life::invincible(bool value)
+void life::invincible(bool value)
 {
     this->assert_thread();
-
     this->_invincible = value;
 }
 
-bool fb::game::life::invincible() const
+bool life::invincible() const
 {
     return this->_invincible;
 }
 
-void fb::game::life::cover(bool value)
+void life::cover(bool value)
 {
     this->assert_thread();
-
     this->_cover = value;
 }
 
-bool fb::game::life::cover() const
+bool life::cover() const
 {
     return this->_cover;
 }
 
-uint32_t life::dam() const
+uint32_t life::maxhp() const
 {
-    this->assert_thread();
+    auto base = this->base_hp();
+    auto buff = this->buff_hp();
+    auto max  = std::numeric_limits<uint32_t>::max();
+    if (max - base < buff)
+        return max;
 
-    return this->_dam;
+    return base + buff;
 }
 
-void life::dam(uint8_t value)
+uint32_t life::maxmp() const
 {
-    this->assert_thread();
+    auto base = this->base_mp();
+    auto buff = this->buff_mp();
+    auto max  = std::numeric_limits<uint32_t>::max();
+    if (max - base < buff)
+        return max;
 
-    this->_dam = value;
+    return base + buff;
 }
 
-uint32_t life::hit() const
+uint8_t life::str() const
 {
-    this->assert_thread();
+    auto base = this->base_str();
+    auto buff = this->buff_str();
+    auto max  = std::numeric_limits<uint8_t>::max();
+    if (max - base < buff)
+        return max;
 
-    return this->_hit;
+    return base + buff;
 }
 
-void life::hit(uint8_t value)
+uint8_t life::dex() const
 {
-    this->assert_thread();
+    auto base = this->base_dex();
+    auto buff = this->buff_dex();
+    auto max  = std::numeric_limits<uint8_t>::max();
+    if (max - base < buff)
+        return max;
 
-    this->_hit = value;
+    return base + buff;
+}
+
+uint8_t life::intelligence() const
+{
+    auto base = this->base_int();
+    auto buff = this->buff_int();
+    auto max  = std::numeric_limits<uint8_t>::max();
+    if (max - base < buff)
+        return max;
+
+    return base + buff;
+}
+
+int8_t life::phydef() const
+{
+    auto base = this->base_phydef();
+    auto buff = this->buff_phydef();
+    auto sum  = (int16_t)base + (int16_t)buff;
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+}
+
+int8_t life::magdef() const
+{
+    auto base = this->base_magdef();
+    auto buff = this->buff_magdef();
+    auto sum  = (int16_t)base + (int16_t)buff;
+    return (int8_t)std::max<int16_t>(-127, std::min<int16_t>(128, sum));
+}
+
+uint8_t life::dam() const
+{
+    auto base = this->base_dam();
+    auto buff = this->buff_dam();
+    auto max  = std::numeric_limits<uint8_t>::max();
+    if (max - base < buff)
+        return max;
+
+    return base + buff;
+}
+
+uint8_t life::hit() const
+{
+    auto base = this->base_hit();
+    auto buff = this->buff_hit();
+    auto max  = std::numeric_limits<uint8_t>::max();
+    if (max - base < buff)
+        return max;
+
+    return base + buff;
 }

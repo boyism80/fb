@@ -12,6 +12,7 @@
 #include <fb/game/trace.h>
 #include <fb/game/clan.h>
 #include <fb/game/board.h>
+#include <fb/game/stat.h>
 
 namespace fb::game {
 
@@ -68,21 +69,15 @@ private:
     std::string             _name;
     std::string             _pw;
     fb::model::datetime     _updated_date;
-    uint16_t                _look            = 0;
-    uint8_t                 _color           = 0;
-    std::optional<uint8_t>  _armor_color     = 0;
-    int16_t                 _base_phydef     = 0;
-    int16_t                 _base_magdef     = 0;
-    uint32_t                _base_hp         = 0;
-    uint32_t                _base_mp         = 0;
+    uint16_t                _look        = 0;
+    uint8_t                 _color       = 0;
+    std::optional<uint8_t>  _armor_color = 0;
+    stat_value<uint32_t>    _max_hp, _max_mp;
+    stat_value<uint8_t>     _str, _dex, _int;
+    stat_value<int32_t>     _phydef, _magdef;
+    stat_value<int32_t>     _dam, _hit;
     uint32_t                _experience      = 0;
-    uint8_t                 _strength        = 0;
-    uint8_t                 _intelligence    = 0;
-    uint8_t                 _dexterity       = 0;
     uint8_t                 _regenerative    = 0; // 재생력
-    uint8_t                 _buff_str        = 0;
-    uint8_t                 _buff_int        = 0;
-    uint8_t                 _buff_dex        = 0;
     NATION                  _nation          = NATION::GOGURYEO;
     CREATURE                _creature        = CREATURE::DRAGON;
     SEX                     _sex             = SEX::ALL;
@@ -247,6 +242,8 @@ public:
 
     /**
      * @brief      { function_description }
+     *
+     * @param[in]  duration  The duration
      */
     void attack(DURATION duration = DURATION::ATTACK) override final;
 
@@ -387,90 +384,6 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    int8_t base_phydef() const override final;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void base_phydef(int8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    int8_t base_magdef() const override final;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void base_magdef(int8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    int8_t phydef() const override final;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    int8_t magdef() const override final;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void base_hp_up(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void base_mp_up(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void base_hp(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void base_mp(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t base_hp() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t base_mp() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
     NATION nation() const;
 
     /**
@@ -581,111 +494,6 @@ public:
      * @param[in]  value  The value
      */
     void promotion(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t strength() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void strength(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void strength_up(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t intelligence() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void intelligence(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void intelligence_up(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t dexterity() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void dexterity(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void dexterity_up(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t buff_str() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void buff_str(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t buff_dex() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void buff_dex(uint8_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t buff_int() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void buff_int(uint8_t value);
 
     /**
      * @brief      { function_description }
@@ -1314,6 +1122,325 @@ public:
      */
     fb::protocol::internal::Character to_protocol() const;
 
+#pragma region stat
+public:
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t base_hp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t buff_hp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t maxhp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_hp(uint32_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_hp(uint32_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t base_mp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t buff_mp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t maxmp() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_mp(uint32_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_mp(uint32_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_str() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_str() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t str() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_str(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_str(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_dex() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_dex() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t dex() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_dex(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_dex(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_int() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_int() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t intelligence() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_int(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_int(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t base_phydef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_phydef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t phydef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_phydef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_phydef(int8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t base_magdef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t buff_magdef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int8_t magdef() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_magdef(int8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_magdef(int8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_dam() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_dam() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t dam() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_dam(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_dam(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t base_hit() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t buff_hit() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint8_t hit() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void base_hit(uint8_t value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void buff_hit(uint8_t value) override final;
+#pragma endregion
+
+#pragma region builtin
 public:
     /**
      * @brief      { function_description }
@@ -1350,51 +1477,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_exp(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_base_hp(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_base_mp(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_str(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_dex(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_int(lua_State* lua);
 
     /**
      * @brief      { function_description }
@@ -1655,33 +1737,6 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_str(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_buff_dex(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_buff_int(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
     static int builtin_nation(lua_State* lua);
 
     /**
@@ -1746,6 +1801,70 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_spawned_mobs(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_hp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_mp(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_str(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_dex(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_int(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_dam(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_base_hit(lua_State* lua);
+#pragma endregion
 };
 
 /**

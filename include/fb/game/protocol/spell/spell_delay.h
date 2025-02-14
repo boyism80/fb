@@ -19,8 +19,8 @@ public:
 
 public:
 #ifndef BOT
-	const fb::game::spell& spell;
-    const uint32_t delay;
+    const fb::game::spell& spell;
+    const uint32_t         delay;
 #else
 
 #endif
