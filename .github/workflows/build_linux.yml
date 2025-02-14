@@ -259,7 +259,7 @@ jobs:
           file: game/Dockerfile
 
   bot:
-    runs-on: [self-hosted, linux, build]
+    runs-on: [self-hosted, linux, build, epyc]
     permissions:
       contents: read
       packages: write
