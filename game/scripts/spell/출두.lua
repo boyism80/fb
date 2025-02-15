@@ -54,12 +54,13 @@ function on_cast(me, spell, name)
     local sound = 29
     local effect = 16
     local mp = 30
-    if spell_cast(me, me, spell, mp, sound, effect) then
+    if spell_cast(me, nil, nil, mp) then
         local x, y = ch:position()
         local new_x, new_y, direction = lookup(map, x, y)
         me:map(map, new_x, new_y)
         me:direction(direction)
-        me:effect(16)
-        me:sound(29)
+        me:sound(sound)
+        me:effect(effect)
+        me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
     end
 end

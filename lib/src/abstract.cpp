@@ -61,6 +61,28 @@ async::task<void> context::update_thread(const fb::thread_switchable& obj)
     }
 }
 
+int context::builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn)
+{
+    if (obj.matched_thread())
+    {
+        fn();
+        return n;
+    }
+    else
+    {
+        static auto static_func =
+            [](fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn) -> async::task<void> {
+            co_await fn();
+            lua->resume(n);
+        };
+
+        this->threads.enqueue(obj, [=](auto&) -> async::task<void> {
+            co_await static_func(lua, n, fn);
+        });
+        return lua->yield(n);
+    }
+}
+
 acceptable::acceptable(boost::asio::io_context& ctx, const std::string& name, uint32_t thread_count, uint16_t port) :
     fb::context(ctx, name, thread_count),
     boost::asio::ip::tcp::acceptor(ctx, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port))

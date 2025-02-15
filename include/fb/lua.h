@@ -380,7 +380,10 @@ public:
      */
     int tointeger(int offset)
     {
-        return (int)lua_tointeger(*this, offset);
+        if (this->argc() < offset)
+            return -1;
+        else
+            return (int)lua_tointeger(*this, offset);
     }
     /**
      * @brief      { function_description }
@@ -391,7 +394,10 @@ public:
      */
     lua_Integer tonumber(int offset)
     {
-        return lua_tonumber(*this, offset);
+        if (this->argc() < offset)
+            return -1;
+        else
+            return lua_tonumber(*this, offset);
     }
     /**
      * @brief      { function_description }
@@ -425,7 +431,10 @@ public:
      */
     bool toboolean(int offset)
     {
-        return lua_toboolean(*this, offset);
+        if (this->argc() < offset)
+            return false;
+        else
+            return lua_toboolean(*this, offset);
     }
     /**
      * @brief      { function_description }
@@ -462,7 +471,10 @@ public:
     template <typename T>
     T* touserdata(int offset)
     {
-        return *(T**)lua_touserdata(*this, offset);
+        if (this->argc() < offset)
+            return nullptr;
+        else
+            return *(T**)lua_touserdata(*this, offset);
     }
 
     /**
