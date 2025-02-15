@@ -149,34 +149,10 @@ int fb::game::context::builtin_name2ch(lua_State* lua)
         return 1;
     }
 
-    if (ch->matched_thread())
-    {
+    return context->builtin(*ch, thread, 1, [=]() -> async::task<void> {
         thread->pushobject(ch);
-        return 1;
-    }
-    else
-    {
-        static auto static_func =
-            [](fb::game::context* context, fb::lua::context* thread, character* ch) -> async::task<void> {
-            co_await context->update_thread(*ch);
-            thread->pushobject(ch);
-            thread->resume(1);
-        };
-
-        async::awaitable_then(static_func(context, thread, ch), [thread](auto result) {
-            try
-            {
-                result();
-            }
-            catch (std::exception& e)
-            {
-                thread->pushnil();
-                thread->resume(1);
-            }
-        });
-        thread->yield(1);
-    }
-    return 1;
+        co_return;
+    });
 }
 
 int fb::game::context::builtin_name2item(lua_State* lua)

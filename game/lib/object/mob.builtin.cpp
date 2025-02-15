@@ -22,47 +22,26 @@ int mob::builtin_target(lua_State* lua)
     if (mob == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (mob->thread() == ctx->threads.current())
+    auto target = (fb::game::life*)nullptr;
+    if (argc > 1 && lua_type(lua, 2) != LUA_TNIL)
+        target = thread->touserdata<fb::game::life>(2);
+
+    auto n = (argc == 1 ? 1 : 0);
+    return ctx->builtin(*mob, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
         {
             if (mob->_target == nullptr)
                 thread->pushnil();
             else
                 thread->pushobject(mob->_target);
-            return 1;
         }
         else
-        {
-            ctx->threads.enqueue(*mob, [=](auto&) -> async::task<void> {
-                if (mob->_target == nullptr)
-                    thread->pushnil();
-                else
-                    thread->pushobject(mob->_target);
-                thread->resume(1);
-                co_return;
-            });
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto target = lua_type(lua, 2) != LUA_TNIL ? thread->touserdata<fb::game::life>(2) : nullptr;
-        if (mob->thread() == ctx->threads.current())
         {
             mob->target(target);
-            return 0;
         }
-        else
-        {
-            ctx->threads.enqueue(*mob, [=](auto&) -> async::task<void> {
-                mob->target(target);
-                thread->resume(0);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+
+        co_return;
+    });
 }
 
 int mob::builtin_oblivion(lua_State* lua)
@@ -77,45 +56,23 @@ int mob::builtin_oblivion(lua_State* lua)
     if (mob == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (mob->thread() == ctx->threads.current())
+    auto oblivion = (fb::game::life*)nullptr;
+    if (argc > 1 && lua_type(lua, 2) != LUA_TNIL)
+        oblivion = thread->touserdata<fb::game::life>(2);
+
+    auto n = (argc == 1 ? 1 : 0);
+    return ctx->builtin(*mob, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
         {
             if (mob->_oblivion == nullptr)
                 thread->pushnil();
             else
                 thread->pushobject(mob->_oblivion);
-            return 1;
         }
         else
-        {
-            ctx->threads.enqueue(*mob, [=](auto&) -> async::task<void> {
-                if (mob->_oblivion == nullptr)
-                    thread->pushnil();
-                else
-                    thread->pushobject(mob->_oblivion);
-                thread->resume(1);
-                co_return;
-            });
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto oblivion = lua_type(lua, 2) != LUA_TNIL ? thread->touserdata<fb::game::life>(2) : nullptr;
-        if (mob->thread() == ctx->threads.current())
         {
             mob->oblivion(oblivion);
-            return 0;
         }
-        else
-        {
-            ctx->threads.enqueue(*mob, [=](auto&) -> async::task<void> {
-                mob->oblivion(oblivion);
-                thread->resume(0);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }

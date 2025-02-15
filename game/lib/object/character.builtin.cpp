@@ -373,39 +373,20 @@ int character::builtin_disguise(lua_State* lua)
         value = static_cast<uint16_t>(thread->tointeger(2));
 
     static auto static_func = [](fb::lua::context* thread, character* ch, int argc, std::optional<uint16_t> value) {
-        if (argc == 1)
-        {
-            thread->pushinteger(ch->disguise().value());
-            return 1;
-        }
-        else if (value.has_value())
-        {
-            ch->disguise(value.value());
-            return 0;
-        }
-        else
-        {
-            ch->undisguise();
-            return 0;
-        }
+
     };
 
-    if (ch->matched_thread())
-    {
-        return static_func(thread, ch, argc, value);
-    }
-    else
-    {
-        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            auto n = static_func(thread, ch, argc, value);
-            if (n == 0)
-                thread->pushnil();
+    auto n = (argc == 1 ? 1 : 0);
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(ch->disguise().value());
+        else if (value.has_value())
+            ch->disguise(value.value());
+        else
+            ch->undisguise();
 
-            thread->resume(1);
-            co_return;
-        });
-        return thread->yield(1);
-    }
+        co_return;
+    });
 }
 
 int character::builtin_class(lua_State* lua)
@@ -448,8 +429,8 @@ int character::builtin_class(lua_State* lua)
         {
             auto context = thread->env<fb::game::context>("context");
 
-            ch->send(fb::protocol::game::response::id(*ch));
-            ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
+            ch->update_id();
+            ch->update(STATE_LEVEL::LEVEL_MAX);
             thread->pushboolean(true);
         }
     }
@@ -1178,50 +1159,16 @@ int character::builtin_nation(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (ch->matched_thread())
-        {
+    auto value = static_cast<NATION>(thread->tointeger(2));
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushinteger(static_cast<uint8_t>(ch->nation()));
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch) {
-                thread->pushinteger(static_cast<uint8_t>(ch->nation()));
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = static_cast<NATION>(thread->tointeger(2));
-        if (ch->matched_thread())
-        {
             ch->nation(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch, NATION value) {
-                ch->nation(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int character::builtin_weapon(lua_State* lua)
@@ -1236,56 +1183,23 @@ int character::builtin_weapon(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        auto weapon = ch->items.weapon();
-        if (ch->matched_thread())
+    auto weapon = thread->touserdata<fb::game::weapon>(2);
+    auto n      = (argc == 1 ? 1 : 0);
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
         {
             if (weapon == nullptr)
                 thread->pushnil();
             else
                 thread->pushobject(weapon);
-            return 1;
         }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, fb::game::weapon* weapon) {
-                if (weapon == nullptr)
-                    thread->pushnil();
-                else
-                    thread->pushobject(weapon);
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, weapon);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto weapon = thread->touserdata<fb::game::weapon>(2);
-        if (ch->matched_thread())
         {
             ch->items.weapon(weapon);
-            return 0;
         }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch, fb::game::weapon* weapon) {
-                ch->items.weapon(weapon);
-                thread->resume(0);
-            };
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch, weapon);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+
+        co_return;
+    });
 }
 
 int character::builtin_title(lua_State* lua)
@@ -1300,50 +1214,16 @@ int character::builtin_title(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (ch->matched_thread())
-        {
+    auto n     = (argc == 1 ? 1 : 0);
+    auto value = thread->tostring(2);
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushstring(ch->title());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch) {
-                thread->pushstring(ch->title());
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->tostring(2);
-        if (ch->matched_thread())
-        {
             ch->title(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch, const std::string& value) {
-                ch->title(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int character::builtin_gain(lua_State* lua)
@@ -1365,8 +1245,10 @@ int character::builtin_gain(lua_State* lua)
         items.push_back(item);
     }
 
-    ch->items.add(items, true);
-    return 0;
+    return context->builtin(*ch, thread, 0, [=]() -> async::task<void> {
+        ch->items.add(items, true);
+        co_return;
+    });
 }
 
 int character::builtin_weapon_damage(lua_State* lua)
@@ -1381,50 +1263,17 @@ int character::builtin_weapon_damage(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (ch->matched_thread())
-        {
+    auto n     = (argc == 1 ? 1 : 0);
+    auto value = thread->tointeger(2);
+
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushinteger(ch->weapon_damage());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch) {
-                thread->pushinteger(ch->weapon_damage());
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->tointeger(2);
-        if (ch->matched_thread())
-        {
             ch->weapon_damage(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch, uint8_t value) {
-                ch->weapon_damage(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int character::builtin_detect(lua_State* lua)
@@ -1439,50 +1288,16 @@ int character::builtin_detect(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (ch->matched_thread())
-        {
+    auto value = thread->toboolean(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushboolean(ch->detect());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch) {
-                thread->pushboolean(ch->detect());
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->toboolean(2);
-        if (ch->matched_thread())
-        {
             ch->detect(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, character* ch, bool value) {
-                ch->detect(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-                static_func(thread, ch, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int character::builtin_spawn_mob(lua_State* lua)

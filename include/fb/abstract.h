@@ -77,6 +77,18 @@ public:
     async::task<void> update_thread(const fb::thread_switchable& obj);
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  obj   The object
+     * @param[in]  fn    The function
+     * @param[in]  n     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn);
+
+public:
     operator boost::asio::io_context& () const;
 };
 

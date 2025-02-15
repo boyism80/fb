@@ -136,6 +136,9 @@ std::string context::get_type(int offset)
 
 std::string context::tostring(int offset)
 {
+    if (this->argc() < offset)
+        return "";
+
     auto x = lua_tostring(*this, offset);
     if (x == nullptr)
         return std::string();

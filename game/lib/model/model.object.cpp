@@ -95,17 +95,8 @@ int fb::model::object::builtin_dialog(lua_State* lua)
     auto button_prev = argc < 4 ? false : thread->toboolean(4);
     auto button_next = argc < 5 ? false : thread->toboolean(5);
 
-    if (ch->matched_thread())
-    {
+    return context->builtin(*ch, thread, 0, [=]() -> async::task<void> {
         ch->dialog.show(*object, message, button_prev, button_next);
-        return thread->yield(0);
-    }
-    else
-    {
-        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            ch->dialog.show(*object, message, button_prev, button_next);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }

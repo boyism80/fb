@@ -128,9 +128,12 @@ function spell_cast(me, you, spell, mp, sound, effect, no_assert)
     if sound ~= nil then
         you:sound(sound)
     end
-    me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
-    if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
-        you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:model():name())))
+
+    if spell ~= nil then
+        me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
+        if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
+            you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:model():name())))
+        end
     end
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
     return true

@@ -318,7 +318,7 @@ void mob::AI(const fb::model::datetime& now)
     auto direction = DIRECTION::BOTTOM;
     if (this->repair_target() == nullptr)
     {
-        if (this->owner == nullptr)
+        if (this->owner == nullptr || (this->owner->thread() == this->thread() && this->owner->map() == this->map()))
             this->move(DIRECTION(std::rand() % 4));
         else if (this->near_target(*this->owner, direction))
             this->direction(direction);

@@ -178,20 +178,10 @@ int fb::game::map::builtin_movable(lua_State* lua)
         return 1;
     }
 
-    if (map->thread() == ctx->threads.current())
-    {
+    return ctx->builtin(*map, thread, 1, [=]() ->async::task<void> {
         thread->pushboolean(map->movable(position));
-        return 1;
-    }
-    else
-    {
-        std::ignore = map->thread()->dispatch([=](auto&) -> async::task<void> {
-            thread->pushboolean(map->movable(position));
-            thread->resume(1);
-            co_return;
-        });
-        return thread->yield(1);
-    }
+        co_return;
+    });
 }
 
 int fb::game::map::builtin_door(lua_State* lua)

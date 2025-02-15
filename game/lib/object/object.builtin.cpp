@@ -133,21 +133,10 @@ int object::builtin_sound(lua_State* lua)
         return 0;
 
     auto sound = static_cast<SOUND>(thread->tointeger(2));
-    if (obj->thread() == ctx->threads.current())
-    {
+    return ctx->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         obj->sound(sound);
-        return 0;
-    }
-    else
-    {
-        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            obj->sound(sound);
-            thread->resume(0);
-            co_return;
-        });
-
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int object::builtin_position(lua_State* lua)
@@ -162,63 +151,36 @@ int object::builtin_position(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    if (argc == 1)
-    {
-        if (obj->thread() == ctx->threads.current())
+    auto n = (argc == 1 ? 2 : 0);
+    return ctx->builtin(*obj, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
         {
             thread->pushinteger(obj->_position.x);
             thread->pushinteger(obj->_position.y);
-            return 2;
         }
         else
         {
-            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                thread->pushinteger(obj->_position.x);
-                thread->pushinteger(obj->_position.y);
-                thread->resume(2);
-                co_return;
-            });
-            return thread->yield(2);
+            uint16_t x, y;
+            if (thread->is_table(2))
+            {
+                thread->rawgeti(2, 1);
+                x = (uint16_t)thread->tointeger(-1);
+                thread->remove(-1);
+
+                thread->rawgeti(2, 2);
+                y = (uint16_t)thread->tointeger(-1);
+                thread->remove(-1);
+            }
+            else
+            {
+                x = (uint16_t)thread->tointeger(2);
+                y = (uint16_t)thread->tointeger(3);
+            }
+
+            obj->position(x, y, true);
         }
-    }
-
-    static auto static_func = [](fb::lua::context* thread, object* obj) {
-        uint16_t x, y;
-        if (thread->is_table(2))
-        {
-            thread->rawgeti(2, 1);
-            x = (uint16_t)thread->tointeger(-1);
-            thread->remove(-1);
-
-            thread->rawgeti(2, 2);
-            y = (uint16_t)thread->tointeger(-1);
-            thread->remove(-1);
-        }
-        else
-        {
-            x = (uint16_t)thread->tointeger(2);
-            y = (uint16_t)thread->tointeger(3);
-        }
-
-        obj->position(x, y, true);
-    };
-    if (obj->thread() == ctx->threads.current())
-    {
-        static_func(thread, obj);
-        return 0;
-    }
-    else
-    {
-        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            static_func(thread, obj);
-            thread->resume(0);
-            co_return;
-        });
-
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int object::builtin_front_position(lua_State* lua)
@@ -236,24 +198,12 @@ int object::builtin_front_position(lua_State* lua)
     auto step = argc < 2 ? 1 : thread->tointeger(2);
     obj->assert_thread();
 
-    if (obj->thread() == ctx->threads.current())
-    {
+    return ctx->builtin(*obj, thread, 2, [=]() -> async::task<void> {
         auto position = obj->front_position(step);
         thread->pushinteger(position.x);
         thread->pushinteger(position.y);
-        return 2;
-    }
-    else
-    {
-        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            auto position = obj->front_position(step);
-            thread->pushinteger(position.x);
-            thread->pushinteger(position.y);
-            thread->resume(2);
-            co_return;
-        });
-        return thread->yield(2);
-    }
+        co_return;
+    });
 }
 
 int object::builtin_direction(lua_State* lua)
@@ -268,41 +218,16 @@ int object::builtin_direction(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (obj->thread() == ctx->threads.current())
-        {
+    auto direction = static_cast<DIRECTION>(thread->tointeger(2));
+    auto n         = (argc == 1 ? 1 : 0);
+    return ctx->builtin(*obj, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushinteger(obj->_direction);
-            return 1;
-        }
         else
-        {
-            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                thread->pushinteger(obj->_direction);
-                thread->resume(1);
-                co_return;
-            });
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto direction = static_cast<DIRECTION>(thread->tointeger(2));
-        if (obj->thread() == ctx->threads.current())
-        {
             obj->direction(direction);
-            return 0;
-        }
-        else
-        {
-            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                obj->direction(direction);
-                thread->resume(0);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+
+        co_return;
+    });
 }
 
 int object::builtin_chat(lua_State* lua)
@@ -321,7 +246,7 @@ int object::builtin_chat(lua_State* lua)
     auto type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(thread->tointeger(3));
     auto decorate = argc < 4 ? true : thread->toboolean(4);
 
-    static auto static_func = [](const std::string& message, CHAT_TYPE type, bool decorate, object* obj) {
+    return ctx->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         auto sstream = std::stringstream{};
         if (decorate)
         {
@@ -337,22 +262,9 @@ int object::builtin_chat(lua_State* lua)
 
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(sstream.str(), type);
-    };
 
-    if (obj->thread() == ctx->threads.current())
-    {
-        static_func(message, type, decorate, obj);
-        return 0;
-    }
-    else
-    {
-        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            static_func(message, type, decorate, obj);
-            thread->resume(0);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int object::builtin_buff(lua_State* lua)
@@ -499,20 +411,10 @@ int object::builtin_effect(lua_State* lua)
         return 0;
 
     auto effect = static_cast<uint8_t>(thread->tointeger(2));
-    if (obj->thread() == ctx->threads.current())
-    {
+    return ctx->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         obj->effect(effect);
-        return 0;
-    }
-    else
-    {
-        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            obj->effect(effect);
-            thread->resume(0);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int object::builtin_map(lua_State* lua)
@@ -527,124 +429,99 @@ int object::builtin_map(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    if (argc == 1)
+    auto map      = (fb::game::map*)nullptr;
+    auto position = std::optional<fb::model::point16_t>{};
+    if (argc > 1)
     {
-        if (obj->thread() == ctx->threads.current())
+        try
+        {
+            if (thread->is_obj(2))
+            {
+                map = thread->touserdata<fb::game::map>(2);
+                if (map == nullptr)
+                    throw std::runtime_error("올바르지 않은 맵입니다.");
+            }
+            else if (thread->is_num(2))
+            {
+                auto id = thread->tointeger(2);
+                if (ctx->maps.contains(id) == false)
+                    throw std::runtime_error("올바르지 않은 맵입니다.");
+                map = &ctx->maps[id];
+            }
+            else if (thread->is_str(2))
+            {
+                map = ctx->maps.name2map(thread->tostring(2));
+                if (map == nullptr)
+                    throw std::runtime_error("올바르지 않은 맵입니다.");
+            }
+            else
+            {
+                throw std::runtime_error("올바르지 않은 맵입니다.");
+            }
+
+            if (thread->is_table(3))
+            {
+                thread->rawgeti(3, 1);
+                auto x = (uint16_t)thread->tointeger(-1);
+                thread->remove(-1);
+
+                thread->rawgeti(3, 2);
+                auto y = (uint16_t)thread->tointeger(-1);
+                thread->remove(-1);
+
+                position = fb::model::point16_t{x, y};
+            }
+            else if (thread->is_num(3) && thread->is_num(4))
+            {
+                auto x   = (uint16_t)thread->tointeger(3);
+                auto y   = (uint16_t)thread->tointeger(4);
+                position = fb::model::point16_t{x, y};
+            }
+            else
+            {
+            }
+        }
+        catch (std::exception& e)
+        {
+            thread->pushstring(e.what());
+            return 1;
+        }
+    }
+
+    static auto static_func = [](object*                                    obj,
+                                 fb::game::map*                             map,
+                                 const std::optional<fb::model::point16_t>& position,
+                                 fb::lua::context*                          thread) -> async::task<void> {
+        if (position.has_value())
+        {
+            if (co_await obj->map(map, position.value()) == false)
+                thread->pushstring(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            else
+                thread->pushnil();
+        }
+        else
+        {
+            if (co_await obj->map(map) == false)
+                thread->pushstring(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+            else
+                thread->pushnil();
+        }
+    };
+
+    return ctx->builtin(*obj, thread, 1, [=]() -> async::task<void> {
+        if (argc == 1)
         {
             auto map = obj->map();
             if (map == nullptr)
                 thread->pushnil();
             else
                 thread->pushobject(map);
-            return 1;
         }
         else
         {
-            static auto static_func = [](fb::game::context* context, fb::lua::context* thread, object* obj) {
-                auto map = obj->map();
-                if (map == nullptr)
-                    thread->pushnil();
-                else
-                    thread->pushobject(map);
-                thread->resume(1);
-            };
-
-            ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(ctx, thread, obj);
-                co_return;
-            });
-            return thread->yield(1);
+            co_await static_func(obj, map, position, thread);
         }
-    }
-
-    try
-    {
-        static auto static_func = [](fb::game::context*                  context,
-                                     fb::lua::context*                   thread,
-                                     fb::game::object*                   obj,
-                                     fb::game::map*                      map,
-                                     std::optional<fb::model::point16_t> position) -> async::task<void> {
-            try
-            {
-                if (position.has_value())
-                {
-                    if (co_await obj->map(map, position.value()) == false)
-                        throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-                }
-                else
-                {
-                    if (co_await obj->map(map) == false)
-                        throw std::runtime_error(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
-                }
-
-                thread->pushnil();
-            }
-            catch (std::exception& e)
-            {
-                thread->pushstring(e.what());
-            }
-
-            thread->resume(1);
-        };
-
-        fb::game::map* map = nullptr;
-        if (thread->is_obj(2))
-        {
-            map = thread->touserdata<fb::game::map>(2);
-            if (map == nullptr)
-                throw std::runtime_error("올바르지 않은 맵입니다.");
-        }
-        else if (thread->is_num(2))
-        {
-            auto id = thread->tointeger(2);
-            if (ctx->maps.contains(id) == false)
-                throw std::runtime_error("올바르지 않은 맵입니다.");
-            map = &ctx->maps[id];
-        }
-        else if (thread->is_str(2))
-        {
-            map = ctx->maps.name2map(thread->tostring(2));
-            if (map == nullptr)
-                throw std::runtime_error("올바르지 않은 맵입니다.");
-        }
-        else
-        {
-            throw std::runtime_error("올바르지 않은 맵입니다.");
-        }
-
-        auto position = std::optional<fb::model::point16_t>{};
-        if (thread->is_table(3))
-        {
-            thread->rawgeti(3, 1);
-            auto x = (uint16_t)thread->tointeger(-1);
-            thread->remove(-1);
-
-            thread->rawgeti(3, 2);
-            auto y = (uint16_t)thread->tointeger(-1);
-            thread->remove(-1);
-
-            position = fb::model::point16_t{x, y};
-        }
-        else if (thread->is_num(3) && thread->is_num(4))
-        {
-            auto x   = (uint16_t)thread->tointeger(3);
-            auto y   = (uint16_t)thread->tointeger(4);
-            position = fb::model::point16_t{x, y};
-        }
-        else
-        {
-        }
-
-        ctx->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            co_await static_func(ctx, thread, obj, map, position);
-        });
-        return thread->yield(1);
-    }
-    catch (std::exception& e)
-    {
-        thread->pushstring(e.what());
-        return 1;
-    }
+    });
 }
 
 int object::builtin_mkitem(lua_State* lua)
@@ -782,11 +659,11 @@ int object::builtin_is(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    obj->assert_thread();
-
-    auto type = thread->tointeger(2);
-    thread->pushboolean(obj->is(OBJECT_TYPE(type)));
-    return 1;
+    return ctx->builtin(*obj, thread, 1, [=]() -> async::task<void> {
+        auto type = thread->tointeger(2);
+        thread->pushboolean(obj->is(OBJECT_TYPE(type)));
+        co_return;
+    });
 }
 
 int object::builtin_thread(lua_State* lua)

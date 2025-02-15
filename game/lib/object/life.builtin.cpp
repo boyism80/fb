@@ -73,21 +73,10 @@ int fb::game::life::builtin_message(lua_State* lua)
     auto message = thread->tostring(2);
     auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
 
-    if (ch->thread() == ctx->threads.current())
-    {
+    return ctx->builtin(*ch, thread, 0, [=]() -> async::task<void> {
         ch->message(message, type);
-        return 0;
-    }
-    else
-    {
-        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-            ch->message(message, type);
-            thread->resume(0);
-            co_return;
-        });
-
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_hp(lua_State* lua)
@@ -153,19 +142,10 @@ int fb::game::life::builtin_heal(lua_State* lua)
         return 0;
 
     auto value = (uint32_t)thread->tointeger(2);
-    if (obj->matched_thread())
-    {
+    return context->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         obj->heal(value);
-        return 0;
-    }
-    else
-    {
-        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            obj->heal(value);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_damage(lua_State* lua)
@@ -186,19 +166,10 @@ int fb::game::life::builtin_damage(lua_State* lua)
         from = thread->touserdata<fb::game::object>(3);
 
     auto critical = argc >= 4 ? thread->toboolean(4) : false;
-    if (obj->matched_thread())
-    {
+    return context->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         obj->damage(value, from, critical);
-        return 0;
-    }
-    else
-    {
-        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            obj->damage(value, from, critical);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_mp_up(lua_State* lua)
@@ -214,19 +185,10 @@ int fb::game::life::builtin_mp_up(lua_State* lua)
         return 0;
 
     auto value = (uint32_t)thread->tointeger(2);
-    if (obj->matched_thread())
-    {
+    return context->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         obj->mp_up(value);
-        return 0;
-    }
-    else
-    {
-        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            obj->mp_up(value);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_mp_down(lua_State* lua)
@@ -242,19 +204,10 @@ int fb::game::life::builtin_mp_down(lua_State* lua)
         return 0;
 
     auto value = (uint32_t)thread->tointeger(2);
-    if (obj->matched_thread())
-    {
+    return context->builtin(*obj, thread, 0, [=]() -> async::task<void> {
         obj->mp_down(value);
-        return 0;
-    }
-    else
-    {
-        context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-            obj->mp_down(value);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_action(lua_State* lua)
@@ -272,8 +225,10 @@ int fb::game::life::builtin_action(lua_State* lua)
     auto action   = thread->tointeger(2);
     auto duration = argc < 3 ? static_cast<int>(DURATION::SPELL) : thread->tointeger(3);
     auto sound    = argc < 4 ? (uint8_t)0x00 : (uint8_t)thread->tointeger(4);
-    obj->action(ACTION(action), DURATION(duration), sound);
-    return 0;
+    return context->builtin(*obj, thread, 0, [=]() -> async::task<void> {
+        obj->action(ACTION(action), DURATION(duration), sound);
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_spell(lua_State* lua)
@@ -289,9 +244,10 @@ int fb::game::life::builtin_spell(lua_State* lua)
         return 0;
 
     auto index = (int)thread->tointeger(2);
-
-    thread->pushobject(life->spells[index]);
-    return 1;
+    return context->builtin(*life, thread, 1, [=]() -> async::task<void> {
+        thread->pushobject(life->spells[index]);
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_cast(lua_State* lua)
@@ -361,19 +317,16 @@ int fb::game::life::builtin_cc(lua_State* lua)
     if (me == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(static_cast<uint32_t>(me->crowd_control()));
-        return 1;
-    }
-    else
-    {
-        auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
-        me->crowd_control(cc);
-        return 0;
-    }
+    auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
+    auto n  = (argc == 1 ? 1 : 0);
+    return context->builtin(*me, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(static_cast<uint32_t>(me->crowd_control()));
+        else
+            me->crowd_control(cc);
 
-    return 0;
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_add_cc(lua_State* lua)
@@ -389,8 +342,10 @@ int fb::game::life::builtin_add_cc(lua_State* lua)
         return 0;
 
     auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
-    me->add_cc(cc);
-    return 0;
+    return context->builtin(*me, thread, 0, [=]() -> async::task<void> {
+        me->add_cc(cc);
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_remove_cc(lua_State* lua)
@@ -406,8 +361,10 @@ int fb::game::life::builtin_remove_cc(lua_State* lua)
         return 0;
 
     auto cc = static_cast<CROWD_CONTROL>(thread->tointeger(2));
-    me->remove_cc(cc);
-    return 0;
+    return context->builtin(*me, thread, 0, [=]() -> async::task<void> {
+        me->remove_cc(cc);
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_attack(lua_State* lua)
@@ -423,23 +380,10 @@ int fb::game::life::builtin_attack(lua_State* lua)
         return 0;
 
     auto duration = argc >= 2 ? static_cast<DURATION>(thread->tointeger(2)) : DURATION::ATTACK;
-    if (me->matched_thread())
-    {
+    return context->builtin(*me, thread, 0, [=]() -> async::task<void> {
         me->attack(duration);
-        return 0;
-    }
-    else
-    {
-        static auto static_func = [](fb::lua::context* thread, life* me, DURATION duration) {
-            me->attack(duration);
-            thread->resume(0);
-        };
-        context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-            static_func(thread, me, duration);
-            co_return;
-        });
-        return thread->yield(0);
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_damage_rate(lua_State* lua)
@@ -454,47 +398,16 @@ int fb::game::life::builtin_damage_rate(lua_State* lua)
     if (me == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (me->matched_thread())
-        {
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*me, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushinteger(me->damage_rate());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* me) {
-                thread->pushinteger(me->damage_rate());
-                thread->resume(1);
-            };
-            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-                static_func(thread, me);
-                co_return;
-            });
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->tointeger(2);
-        if (me->matched_thread())
-        {
             me->damage_rate(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* me, uint16_t value) {
-                me->damage_rate(value);
-                thread->resume(0);
-            };
-            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-                static_func(thread, me, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_damage_derate(lua_State* lua)
@@ -509,47 +422,16 @@ int fb::game::life::builtin_damage_derate(lua_State* lua)
     if (me == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (me->matched_thread())
-        {
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*me, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushinteger(me->damage_derate());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* me) {
-                thread->pushinteger(me->damage_derate());
-                thread->resume(1);
-            };
-            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-                static_func(thread, me);
-                co_return;
-            });
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->tointeger(2);
-        if (me->matched_thread())
-        {
             me->damage_derate(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* me, uint16_t value) {
-                me->damage_derate(value);
-                thread->resume(0);
-            };
-            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-                static_func(thread, me, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_skill_damage_rate(lua_State* lua)
@@ -564,47 +446,16 @@ int fb::game::life::builtin_skill_damage_rate(lua_State* lua)
     if (me == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (me->matched_thread())
-        {
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*me, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushinteger(me->skill_damage_rate());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* me) {
-                thread->pushinteger(me->skill_damage_rate());
-                thread->resume(1);
-            };
-            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-                static_func(thread, me);
-                co_return;
-            });
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->tointeger(2);
-        if (me->matched_thread())
-        {
             me->skill_damage_rate(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* me, uint16_t value) {
-                me->skill_damage_rate(value);
-                thread->resume(0);
-            };
-            context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-                static_func(thread, me, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_paralysis(lua_State* lua)
@@ -619,50 +470,16 @@ int fb::game::life::builtin_paralysis(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (obj->matched_thread())
-        {
+    auto value = thread->toboolean(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*obj, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushboolean(obj->paralysis());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* obj) {
-                thread->pushboolean(obj->paralysis());
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(thread, obj);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->toboolean(2);
-        if (obj->matched_thread())
-        {
             obj->paralysis(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* obj, uint8_t value) {
-                obj->paralysis(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(thread, obj, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_invincible(lua_State* lua)
@@ -677,50 +494,16 @@ int fb::game::life::builtin_invincible(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (obj->matched_thread())
-        {
+    auto value = thread->toboolean(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*obj, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushboolean(obj->invincible());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* obj) {
-                thread->pushboolean(obj->invincible());
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(thread, obj);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->toboolean(2);
-        if (obj->matched_thread())
-        {
             obj->invincible(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* obj, uint8_t value) {
-                obj->invincible(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(thread, obj, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_cover(lua_State* lua)
@@ -735,50 +518,16 @@ int fb::game::life::builtin_cover(lua_State* lua)
     if (obj == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        if (obj->matched_thread())
-        {
+    auto value = thread->toboolean(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*obj, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
             thread->pushboolean(obj->cover());
-            return 1;
-        }
         else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* obj) {
-                thread->pushboolean(obj->cover());
-                thread->resume(1);
-            };
-
-            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(thread, obj);
-                co_return;
-            });
-
-            return thread->yield(1);
-        }
-    }
-    else
-    {
-        auto value = thread->toboolean(2);
-        if (obj->matched_thread())
-        {
             obj->cover(value);
-            return 0;
-        }
-        else
-        {
-            static auto static_func = [](fb::lua::context* thread, life* obj, uint8_t value) {
-                obj->cover(value);
-                thread->resume(0);
-            };
 
-            context->threads.enqueue(*obj, [=](auto&) -> async::task<void> {
-                static_func(thread, obj, value);
-                co_return;
-            });
-            return thread->yield(0);
-        }
-    }
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_hp(lua_State* lua)
@@ -792,7 +541,11 @@ int fb::game::life::builtin_base_hp(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_hp());
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_hp());
+        co_return;
+    });
+
     return 1;
 }
 
@@ -808,16 +561,16 @@ int fb::game::life::builtin_buff_hp(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_hp());
-        return 1;
-    }
-    else
-    {
-        object->buff_hp(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_hp());
+        else
+            object->buff_hp(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_maxhp(lua_State* lua)
@@ -831,8 +584,10 @@ int fb::game::life::builtin_maxhp(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->maxhp());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->maxhp());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_mp(lua_State* lua)
@@ -846,8 +601,10 @@ int fb::game::life::builtin_base_mp(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_mp());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_mp());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_mp(lua_State* lua)
@@ -862,16 +619,16 @@ int fb::game::life::builtin_buff_mp(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_mp());
-        return 1;
-    }
-    else
-    {
-        object->buff_mp(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_mp());
+        else
+            object->buff_mp(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_maxmp(lua_State* lua)
@@ -885,8 +642,10 @@ int fb::game::life::builtin_maxmp(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->maxmp());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->maxmp());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_str(lua_State* lua)
@@ -900,8 +659,10 @@ int fb::game::life::builtin_base_str(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_str());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_str());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_str(lua_State* lua)
@@ -916,16 +677,16 @@ int fb::game::life::builtin_buff_str(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_str());
-        return 1;
-    }
-    else
-    {
-        object->buff_str(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_str());
+        else
+            object->buff_str(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_str(lua_State* lua)
@@ -939,8 +700,10 @@ int fb::game::life::builtin_str(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->str());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->str());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_dex(lua_State* lua)
@@ -954,8 +717,10 @@ int fb::game::life::builtin_base_dex(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_dex());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_dex());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_dex(lua_State* lua)
@@ -970,16 +735,16 @@ int fb::game::life::builtin_buff_dex(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_dex());
-        return 1;
-    }
-    else
-    {
-        object->buff_dex(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_dex());
+        else
+            object->buff_dex(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_dex(lua_State* lua)
@@ -993,8 +758,10 @@ int fb::game::life::builtin_dex(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->dex());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->dex());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_int(lua_State* lua)
@@ -1008,8 +775,10 @@ int fb::game::life::builtin_base_int(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_int());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_int());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_int(lua_State* lua)
@@ -1024,16 +793,16 @@ int fb::game::life::builtin_buff_int(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_int());
-        return 1;
-    }
-    else
-    {
-        object->buff_int(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_int());
+        else
+            object->buff_int(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_intelligence(lua_State* lua)
@@ -1047,8 +816,10 @@ int fb::game::life::builtin_intelligence(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->intelligence());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->intelligence());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_phydef(lua_State* lua)
@@ -1062,8 +833,10 @@ int fb::game::life::builtin_base_phydef(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_phydef());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_phydef());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_phydef(lua_State* lua)
@@ -1078,16 +851,16 @@ int fb::game::life::builtin_buff_phydef(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_phydef());
-        return 1;
-    }
-    else
-    {
-        object->buff_phydef(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_phydef());
+        else
+            object->buff_phydef(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_phydef(lua_State* lua)
@@ -1101,8 +874,10 @@ int fb::game::life::builtin_phydef(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->phydef());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->phydef());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_magdef(lua_State* lua)
@@ -1116,8 +891,10 @@ int fb::game::life::builtin_base_magdef(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_magdef());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_magdef());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_magdef(lua_State* lua)
@@ -1132,16 +909,16 @@ int fb::game::life::builtin_buff_magdef(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_magdef());
-        return 1;
-    }
-    else
-    {
-        object->buff_magdef(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_magdef());
+        else
+            object->buff_magdef(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_magdef(lua_State* lua)
@@ -1155,8 +932,10 @@ int fb::game::life::builtin_magdef(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->magdef());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->magdef());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_dam(lua_State* lua)
@@ -1170,8 +949,10 @@ int fb::game::life::builtin_base_dam(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_dam());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_dam());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_dam(lua_State* lua)
@@ -1186,16 +967,16 @@ int fb::game::life::builtin_buff_dam(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_dam());
-        return 1;
-    }
-    else
-    {
-        object->buff_dam(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_dam());
+        else
+            object->buff_dam(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_dam(lua_State* lua)
@@ -1209,8 +990,10 @@ int fb::game::life::builtin_dam(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->dam());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->dam());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_base_hit(lua_State* lua)
@@ -1224,8 +1007,10 @@ int fb::game::life::builtin_base_hit(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->base_hit());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->base_hit());
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_buff_hit(lua_State* lua)
@@ -1240,16 +1025,16 @@ int fb::game::life::builtin_buff_hit(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    if (argc == 1)
-    {
-        thread->pushinteger(object->buff_hit());
-        return 1;
-    }
-    else
-    {
-        object->buff_hit(thread->tointeger(2));
-        return 0;
-    }
+    auto value = thread->tointeger(2);
+    auto n     = (argc == 1 ? 1 : 0);
+    return context->builtin(*object, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(object->buff_hit());
+        else
+            object->buff_hit(value);
+
+        co_return;
+    });
 }
 
 int fb::game::life::builtin_hit(lua_State* lua)
@@ -1263,6 +1048,8 @@ int fb::game::life::builtin_hit(lua_State* lua)
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->hit());
-    return 1;
+    return context->builtin(*object, thread, 1, [=]() -> async::task<void> {
+        thread->pushinteger(object->hit());
+        co_return;
+    });
 }
