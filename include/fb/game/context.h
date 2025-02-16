@@ -2595,24 +2595,6 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_sell_price(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_buy_price(lua_State* lua);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
     static int builtin_timer(lua_State* lua);
 
     /**

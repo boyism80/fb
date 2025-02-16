@@ -281,7 +281,9 @@ public:                                                \
     static int builtin_item(lua_State* lua);           \
     static int builtin_slot(lua_State* lua);           \
     static int builtin_sell(lua_State* lua);           \
+    static int builtin_sell_price(lua_State* lua);     \
     static int builtin_buy(lua_State* lua);            \
+    static int builtin_buy_price(lua_State* lua);      \
     static int builtin_repair(lua_State* lua);         \
     static int builtin_repair_all(lua_State* lua);     \
     static int builtin_hold_money(lua_State* lua);     \

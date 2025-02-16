@@ -51,49 +51,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     npc* make(fb::game::context& context);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch      The ch
-     * @param[in]  item    The item
-     * @param[in]  count   The count
-     * @param[in]  bought  The bought
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool buy(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count, bool bought);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch     The ch
-     * @param[in]  item   The item
-     * @param[in]  count  The count
-     * @param[in]  sold   The sold
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool sell(fb::game::character& ch, const fb::model::item* item, uint16_t count, bool sold);
-
-    /**
-     * @brief      { function_description }
-     */
-    void sell_list();
-    /**
-     * @brief      { function_description }
-     */
-    void buy_list();
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  item  The item
-     */
-    void sell_price(const fb::model::item* item);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  item  The item
-     */
-    void buy_price(const fb::model::item* item);
 
     /**
      * @brief      { function_description }
@@ -141,6 +98,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_sell(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_sell_price(lua_State* lua);
     /**
      * @brief      { function_description }
      *
@@ -149,6 +115,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_buy(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_buy_price(lua_State* lua);
     /**
      * @brief      { function_description }
      *

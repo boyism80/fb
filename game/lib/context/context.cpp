@@ -61,8 +61,6 @@ async::task<void> context::handle_start()
     lua::build("assert_alive", builtin_assert_alive);
     lua::build("pursuit_sell", builtin_pursuit_sell);
     lua::build("pursuit_buy", builtin_pursuit_buy);
-    lua::build("sell_price", builtin_sell_price);
-    lua::build("buy_price", builtin_buy_price);
     lua::build("timer", builtin_timer);
     lua::build("weather", builtin_weather);
     lua::build("name_with", builtin_name_with);

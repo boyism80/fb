@@ -11,15 +11,36 @@ bool context::npc_interaction_sell(character& ch, const std::string& message, co
     if (fb::model::const_value::regex::match_sell_message(message, name, count) == false)
         return false;
 
-    auto model  = this->model.item.name2item(name);
-    auto bought = false;
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->buy(ch, model, count, bought))
-            bought = true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.buy.has_value() == false)
+            continue;
 
-    return bought;
+        lua->func("npc_buy_item");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (count.has_value())
+            lua->pushinteger(count.value());
+        else
+            lua->pushnil();
+        if (lua->resume(4, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
+    return true;
 }
 
 bool context::npc_interaction_buy(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -31,15 +52,33 @@ bool context::npc_interaction_buy(character& ch, const std::string& message, con
     if (fb::model::const_value::regex::match_buy_message(message, name, count) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
-    auto sold  = false;
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->sell(ch, model, count, sold))
-            sold = true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.sell.size() == 0)
+            continue;
 
-    return sold;
+        lua->func("npc_sell_item");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        lua->pushinteger(count);
+        if (lua->resume(4, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
+    return true;
 }
 
 bool context::npc_interaction_repair(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -58,7 +97,7 @@ bool context::npc_interaction_repair(character& ch, const std::string& message, 
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_money == false)
+        if (model.repair)
             continue;
 
         lua->func("npc_repair");
@@ -75,7 +114,7 @@ bool context::npc_interaction_repair(character& ch, const std::string& message, 
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_deposit_money(character&                         ch,
@@ -116,7 +155,7 @@ bool context::npc_interaction_deposit_money(character&                         c
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_withdraw_money(character&                         ch,
@@ -157,7 +196,7 @@ bool context::npc_interaction_withdraw_money(character&                         
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_deposit_item(character&                         ch,
@@ -200,7 +239,7 @@ bool context::npc_interaction_deposit_item(character&                         ch
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_withdraw_item(character&                         ch,
@@ -243,7 +282,7 @@ bool context::npc_interaction_withdraw_item(character&                         c
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_sell_list(character&                         ch,
@@ -255,11 +294,30 @@ bool context::npc_interaction_sell_list(character&                         ch,
     if (fb::model::const_value::regex::match_sell_list(message) == false)
         return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        npc->sell_list();
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.sell.size() == 0)
+            continue;
 
+        lua->func("npc_sell_item_list");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (lua->resume(2, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return true;
 }
 
@@ -272,11 +330,30 @@ bool context::npc_interaction_buy_list(character&                         ch,
     if (fb::model::const_value::regex::match_buy_list(message) == false)
         return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        npc->buy_list();
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.buy.has_value() == false)
+            continue;
 
+        lua->func("npc_buy_item_list");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (lua->resume(2, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return true;
 }
 
@@ -290,12 +367,31 @@ bool context::npc_interaction_sell_price(character&                         ch,
     if (fb::model::const_value::regex::match_sell_price(message, name) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        npc->sell_price(model);
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.sell.size() == 0)
+            continue;
 
+        lua->func("npc_sell_item_price");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return true;
 }
 
@@ -309,12 +405,31 @@ bool context::npc_interaction_buy_price(character&                         ch,
     if (fb::model::const_value::regex::match_buy_price(message, name) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        npc->buy_price(model);
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.buy.has_value() == false)
+            continue;
 
+        lua->func("npc_buy_item_price");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return true;
 }
 
@@ -351,7 +466,7 @@ bool context::npc_interaction_show_deposited_money(character&                   
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_rename_weapon(character&                         ch,
@@ -390,7 +505,7 @@ bool context::npc_interaction_rename_weapon(character&                         c
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_hold_item_list(character&                         ch,
@@ -426,7 +541,7 @@ bool context::npc_interaction_hold_item_list(character&                         
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_hold_item_count(character&                         ch,
@@ -464,7 +579,7 @@ bool context::npc_interaction_hold_item_count(character&                        
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_revive(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs)
@@ -503,7 +618,7 @@ bool context::npc_interaction_revive(character& ch, const std::string& message, 
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction_appreciate(character&                         ch,
@@ -539,7 +654,7 @@ bool context::npc_interaction_appreciate(character&                         ch,
         }
     }
     lua->release();
-    return false;
+    return true;
 }
 
 bool context::npc_interaction(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs)

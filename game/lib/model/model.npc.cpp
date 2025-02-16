@@ -173,45 +173,76 @@ int fb::model::npc::builtin_sell(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
+    thread->new_table();
+    for (int i = 0; i < npc->sell.size(); i++)
+    {
+        thread->pushinteger(i + 1);
+        thread->pushinteger(npc->sell[i]);
+        lua_settable(*thread, -3);
+    }
+    return 1;
+}
+
+int fb::model::npc::builtin_sell_price(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
         return 0;
 
-    auto& dialog = ch->dialog.from("scripts/common/npc.lua").func("sell").pushobject(ch).pushobject(npc);
+    auto context = thread->env<fb::game::context>("context");
+    auto npc     = thread->touserdata<fb::model::npc>(1);
+    if (npc == nullptr)
+        return 0;
 
-    if (npc->sell.size() == 1)
+    auto name = thread->tostring(2);
+    for (auto sell : npc->sell)
     {
-        auto pursuit = npc->sell[0];
-        dialog.pushinteger(pursuit);
-    }
-    else if (npc->sell.size() > 1)
-    {
-        dialog.new_table();
-        for (int i = 0; i < npc->sell.size(); i++)
+        if (context->model.sell.contains(sell) == false)
+            continue;
+
+        for (auto& [_, x] : context->model.sell[sell])
         {
-            auto  pursuit = npc->sell[i];
-            auto& name    = context->model.sell_attribute[pursuit].group;
-            dialog.pushinteger(i);
-            dialog.new_table();
-            {
-                dialog.pushinteger(1);
-                dialog.pushstring(name);
-                dialog.set_table();
+            auto& item = context->model.item[x.item];
+            if (item.name != name)
+                continue;
 
-                dialog.pushinteger(2);
-                dialog.pushinteger(pursuit);
-                dialog.set_table();
-            }
-            dialog.set_table();
+            thread->pushinteger(x.price.value_or(item.price));
+            return 1;
         }
     }
-    else
+
+    return 0;
+}
+
+int fb::model::npc::builtin_buy_price(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc     = thread->touserdata<fb::model::npc>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto name = thread->tostring(2);
+    if (npc->buy.has_value() == false)
+        return 0;
+
+    if (context->model.buy.contains(npc->buy.value()) == false)
+        return 0;
+
+    for (auto& [_, x] : context->model.buy[npc->buy.value()])
     {
-        dialog.pushnil();
+        auto& item = context->model.item[x.item];
+        if (item.name != name)
+            continue;
+
+        thread->pushinteger(x.price.value_or(item.price / 2));
+        return 1;
     }
 
-    dialog.resume(3);
-    return thread->yield(1);
+    return 0;
 }
 
 int fb::model::npc::builtin_buy(lua_State* lua)
@@ -225,23 +256,12 @@ int fb::model::npc::builtin_buy(lua_State* lua)
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    auto& dialog = ch->dialog.from("scripts/common/npc.lua").func("buy").pushobject(ch).pushobject(npc);
-
     if (npc->buy.has_value())
-    {
-        dialog.pushinteger(npc->buy.value());
-    }
+        thread->pushinteger(npc->buy.value());
     else
-    {
-        dialog.pushnil();
-    }
+        thread->pushnil();
 
-    dialog.resume(3);
-    return thread->yield(1);
+    return 1;
 }
 
 int fb::model::npc::builtin_repair(lua_State* lua)

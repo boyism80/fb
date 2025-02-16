@@ -39,3 +39,549 @@ function npc_appreciate(me, npc)
     me:hp(me:maxhp())
     return true
 end
+
+function npc_hold_item_count(me, npc, name)
+    local model = name2item(name)
+    if model == nil then
+        return true
+    end
+
+    local item = me:deposited_item(model)
+    if item == nil then
+        npc:chat('그런 물건은 맡고 있지 않습니다.') -- MESSAGE_NO_ITEM_DEPOSITED
+        return true
+    end
+
+    npc:chat(string.format('%s %d개 맡고 있습니다.', name_with(name), item:count()))
+    return true
+end
+
+function npc_hold_item_list(me, npc)
+    local items = me:deposited_item()
+    local count = #items
+    if count == 0 then
+        npc:chat('맡긴 물건이 없습니다.') -- MESSAGE_NO_ANY_DEPOSITED
+        return true
+    end
+
+    local overflow = count
+    local names = {}
+    for i = 1, math.min(3, count) do
+        table.insert(names, items[i]:model():name())
+        overflow = overflow - 1
+    end
+
+    local message = table.concat(names, ", ")
+    if overflow > 0 then
+        message = string.format('%s 외 %d개를 맡고 있습니다.', message, overflow)
+    else
+        message = string.format('%s 맡고 있습니다.', name_with(message))
+    end
+    npc:chat(message)
+    return true
+end
+
+function npc_rename_weapon(me, npc, from, to)
+    local model = name2item(from)
+    if model == nil then
+        return true
+    end
+
+    if model:attr(ITEM_ATTRIBUTE_WEAPON) == false then
+        npc:chat(string.format('%s 무기가 아닙니다.', name_with(model:name(), '은', '는')))
+        return true
+    end
+
+    local weapon = me:item(from)
+    if weapon == nil then
+        npc:chat(string.format('%s 가지고 있지 않습니다.', name_with(model:name(), '을', '를')))
+        return true
+    end
+
+    local rename_price = model:rename_price()
+    if rename_price == nil then
+        npc:chat(string.format('%s 별칭을 부여할 수 없습니다.', name_with(model:name(), '은', '는')))
+        return true
+    end
+
+    if rename_price > 0 then
+        local money = me:money()
+        if rename_price > money then
+            npc:chat('돈이 모자랍니다.')
+            return true
+        end
+    end
+
+    local unicode = CP949(to)
+    if #unicode < 4 then
+        npc:chat('이름이 너무 짧습니다.')
+        return true
+    end
+    
+    if #unicode > 32 then
+        npc:chat('이름이 너무 깁니다.')
+        return true
+    end
+    
+    if assert_korean(unicode) == false then
+        npc:chat('그렇게 바꿀 수 없습니다.')
+        return true
+    end
+
+    if rename_price > 0 then
+        me:money(me:money() - rename_price)
+    end
+    weapon:rename(to)
+    npc:chat(string.format('%s의 이름을 %s 변경했습니다.', from, name_with(to, '으로', '로')))
+    return true
+end
+
+function npc_deposited_money(me, npc)
+
+    local deposited = me:deposited_money()
+    if deposited == 0 then
+        npc:chat('맡긴 돈이 없습니다.')
+    else
+        npc:chat(string.format('금전 %d전을 맡아두고 있습니다.', deposited))
+    end
+    return true
+end
+
+function npc_hold_money(me, npc, money)
+
+    local my_money = me:money()
+    if money == nil then
+        money = my_money
+    end
+
+    if money == 0 then
+        return true
+    end
+
+    if money > my_money then
+        npc:chat('돈이 모자랍니다.')
+        return true
+    end
+
+    local deposited = me:deposited_money()
+    local capacity = 0xFFFFFFFF - deposited
+    if money > capacity then
+        npc:chat('더 이상 맡길 수 없습니다.')
+        return true
+    end
+
+    me:money(my_money - money)
+    me:deposited_money(deposited + money)
+    npc:chat(string.format('금전 %d전을 맡았습니다.', money))
+end
+
+function npc_return_money(me, npc, money)
+
+    local deposited = me:deposited_money()
+    if money == nil then
+        money = deposited
+    end
+
+    if money == 0 then
+        return true
+    end
+
+    if deposited == 0 then
+        npc:chat('맡아둔 돈이 없습니다.')
+        return true
+    end
+
+    if money > deposited then
+        npc:chat('그만큼 맡기지 않았습니다.')
+        return true
+    end
+
+    local capacity = 0xFFFFFFFF - me:money()
+    if money > capacity then
+        npc:chat('소지금이 너무 많습니다.')
+        return false
+    end
+
+    me:deposited_money(deposited - money)
+    me:money(me:money() + money)
+    npc:chat(string.format('금전 %d전을 돌려드렸습니다.', money))
+end
+
+function npc_repair(me, npc, name)
+    local all = (name == '')
+    local items = {}
+    if not all then
+        local model = name2item(name)
+        if model == nil then
+            npc:chat('뭘 고쳐줘?')
+            return true
+        end
+
+        if not model:attr(ITEM_ATTRIBUTE_EQUIPMENT) then
+            npc:chat('뭘 고쳐줘?')
+            return true
+        end
+
+        local item = me:item(name)
+        if item == nil then
+            npc:chat('가지고 있지 않은데요')
+            return true
+        end
+
+        if model:repair_price() == nil then
+            npc:chat(string.format('%s 고칠 수 없습니다.', name_with(name)))
+            return true
+        end
+
+        if model:durability() == item:durability() then
+            npc:chat('이미 고쳐져 있습니다.')
+            return true
+        end
+
+        table.insert(items, item)
+    else
+        for slot, item in pairs(me:items()) do
+            local model = item:model()
+            if model:attr(ITEM_ATTRIBUTE_EQUIPMENT) and model:repair_price() ~= nil and model:durability() > item:durability() then
+                table.insert(items, item)
+            end
+        end
+
+        for parts, item in pairs(me:equipments()) do
+            local model = item:model()
+            if model:repair_price() ~= nil and model:durability() > item:durability() then
+                table.insert(items, item)
+            end
+        end
+    end
+
+    if #items == 0 then
+        npc:chat('고칠 물건이 없습니다.')
+        return true
+    end
+
+    local price = 0
+    for _, item in pairs(items) do
+        local model = item:model()
+        price = price + (model:repair_price() * (model:durability() - item:durability()))
+    end
+    
+    price = math.floor(price)
+    local money = me:money()
+    if price > money then
+        npc:chat('돈이 모자랍니다.')
+        return true
+    end
+
+    for _, item in pairs(items) do
+        local model = item:model()
+        item:durability(model:durability())
+    end
+
+    if price == 0 then
+        npc:chat('거의 새거라 그냥 고쳐드렸습니다. 잘 쓰세요.')
+    else
+        npc:chat(string.format('고치는데 %s전이 들었습니다.', price))
+        me:money(money - price)
+    end
+end
+
+function npc_hold_item(me, npc, name, count)
+    local model = name2item(name)
+    if model == nil then
+        npc:chat('뭘 맡아줘?')
+        return true
+    end
+
+    local item = me:item(name)
+    if item == nil then
+        npc:chat('가지고 있지 않은데요')
+        return true
+    end
+
+    if model:deposit_price() == nil then
+        npc:chat(string.format('%s 맡을 수 없습니다.', name_with(name, '은', '는')))
+        return true
+    end
+
+    if count == nil then
+        count = item:count()
+    end
+
+    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+        if count > item:count() then
+            npc:chat('갯수가 모자라는데요?')
+            return true
+        end
+    else
+        count = 1
+    end
+
+    if model:deposit_price() > me:money() then
+        npc:chat('돈이 모자랍니다.')
+        return true
+    end
+
+    me:deposit_item(item, count)
+    me:money(me:money() - model:deposit_price())
+    if count > 1 then
+        npc:chat(string.format('%s %d개 맡았습니다.', name_with(name, '을', '를'), count))
+    else
+        npc:chat(string.format('%s 맡았습니다.', name_with(name, '을', '를')))
+    end
+
+    return true
+end
+
+function npc_return_item(me, npc, name, count)
+    local model = name2item(name)
+    if model == nil then
+        npc:chat('뭘 돌려줘?')
+        return true
+    end
+
+    local item = me:deposited_item(name)
+    if item == nil then
+        npc:chat('그런 물품은 맡아두고 있지 않습니다.')
+        return true
+    end
+
+    if count == nil then
+        count = item:count()
+    end
+
+    if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
+        if count > item:count() then
+            npc:chat('그만큼 맡고 있지 않습니다.')
+            return true
+        end
+    else
+        count = 1
+    end
+
+    local exists = me:item(name)
+    if exists ~= nil and exists:count() + count > model:capacity() then
+        npc:chat('더 이상 가질 수 없습니다.')
+        return true
+    end
+
+    if me:withdraw_item(item, count) == nil then
+        npc:chat('공간이 부족합니다.')
+        return true
+    end
+
+    if count > 1 then
+        npc:chat(string.format('%s %d개 돌려드렸습니다.', name_with(name, '을', '를'), count))
+    else
+        npc:chat(string.format('%s 돌려드렸습니다.', name_with(name, '을', '를')))
+    end
+
+    return true
+end
+
+function npc_sell_item(me, npc, name, count)
+    local model = name2item(name)
+    if model == nil then
+        return true
+    end
+
+    local is_bundle = model:attr(ITEM_ATTRIBUTE_BUNDLE)
+    if not is_bundle then
+        count = 1
+    end
+
+    local price = npc:model():sell_price(name)
+    if price == nil then
+        npc:chat('그런 물건은 안 팝니다.')
+        return false
+    end
+
+    price = price * count
+    local money = me:money()
+    if price > money then
+        npc:chat('돈이 모자랍니다.')
+        return false
+    end
+
+    if is_bundle then
+        local exist_count = 0
+        local exist = me:item(name)
+        if exist ~= nil then
+            exist_count = exist:count()
+        end
+
+        if exist_count + count > model:capacity() then
+            npc:chat('더 이상 가질 수 없습니다.')
+            return false
+        end
+    end
+
+    if me:mkitem(name, count) == nil then
+        npc:chat('공간이 부족합니다.')
+        return false
+    end
+
+    me:money(money - price)
+    local message = nil
+    if count > 1 then
+        npc:chat(string.format('%s %d개를 %d전에 팔았습니다.', name, count, price))
+    else
+        npc:chat(string.format('%s %d전에 팔았습니다.', name_with(name), price))
+    end
+    return true
+end
+
+function npc_buy_item(me, npc, name, count)
+    if count == 0 then
+        return true
+    end
+
+    local model = name2item(name)
+    if model == nil then
+        return true
+    end
+    local is_bundle = model:attr(ITEM_ATTRIBUTE_BUNDLE)
+
+    local price = npc:model():buy_price(name)
+    if price == nil then
+        npc:chat('그런 물건은 안 삽니다.')
+        return false
+    end
+
+
+    local slots = {}
+    for slot, item in pairs(me:items()) do
+        if item:model():name() == name then
+            table.insert(slots, slot)
+            if is_bundle then
+                break
+            else
+                if count ~= nil and #slots > count then
+                    break
+                end
+            end
+        end
+    end
+
+    if #slots == 0 then
+        npc:chat('가지고 있지 않습니다.')
+        return false
+    end
+
+    if is_bundle then
+        local item = me:item(slots[1] - 1)
+        if count == nil then
+            count = item:count()
+        end
+
+        if count > item:count() then
+            npc:chat('그만큼 가지고 있지 않습니다.')
+            return false
+        end
+    else
+        if count == nil then
+            count = #slots
+        end
+
+        if count > #slots then
+            npc:chat('그만큼 가지고 있지 않습니다.')
+            return false
+        end
+    end
+
+    price = price * count
+    local capacity = 0xFFFFFFFF - me:money()
+    if price > capacity then
+        npc:chat('돈이 너무 많습니다.')
+        return false
+    end
+
+    if is_bundle then
+        me:rmitem(slots[1], count, ITEM_DELETE_TYPE_SELL)
+    else
+        for _, slot in pairs(slots) do
+            me:rmitem(slot, 1, ITEM_DELETE_TYPE_SELL)
+        end
+    end
+    me:money(me:money() + price)
+    if count > 1 then
+        npc:chat(string.format('%s %d개를 %d전에 샀습니다.', name, count, price))
+    else
+        npc:chat(string.format('%s %d전에 샀습니다.', name_with(name), price))
+    end
+    return true
+end
+
+function npc_sell_item_list(me, npc)
+    local limit = 3
+    local names = {}
+    local overflow = false
+    for _, sell in pairs(npc:model():sell()) do
+        for _, pair in pairs(pursuit_sell(sell)) do
+            local item, price = table.unpack(pair)
+            if #names < limit then
+                table.insert(names, item:name())
+            else
+                overflow = true
+                break
+            end
+        end
+    end
+
+    local message = table.concat(names, ", ")
+    if overflow then
+        message = message .. ' 등 여러가지를'
+    else
+        message = name_with(message)
+    end
+    message = message .. ' 판매하고 있습니다.'
+    npc:chat(message)
+    return false
+end
+
+function npc_buy_item_list(me, npc)
+    local limit = 3
+    local names = {}
+    local overflow = false
+    for _, pair in pairs(pursuit_buy(npc:model():buy())) do
+        local item, price = table.unpack(pair)
+        if #names < limit then
+            table.insert(names, item:name())
+        else
+            overflow = true
+            break
+        end
+    end
+
+    local message = table.concat(names, ", ")
+    if overflow then
+        message = message .. ' 등 여러가지를'
+    else
+        message = name_with(message)
+    end
+    message = message .. ' 구입하고 있습니다.'
+    npc:chat(message)
+    return false
+end
+
+function npc_sell_item_price(me, npc, name)
+    local price = npc:model():sell_price(name)
+    if price == nil then
+        npc:chat('그런 물건은 안 팝니다.')
+        return false
+    end
+
+    npc:chat(string.format('%s %d전에 팔고 있습니다.', name_with(name, '은', '는'), price))
+    return false
+end
+
+function npc_buy_item_price(me, npc, name)
+    local price = npc:model():buy_price(name)
+    if price == nil then
+        npc:chat('그런 물건은 안 삽니다.')
+        return false
+    end
+
+    npc:chat(string.format('%s %d전에 사고 있습니다.', name_with(name, '은', '는'), price))
+    return false
+end

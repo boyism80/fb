@@ -249,67 +249,6 @@ int fb::game::context::builtin_pursuit_buy(lua_State* lua)
     return 1;
 }
 
-int fb::game::context::builtin_sell_price(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto pursuit = thread->tointeger(1);
-    if (context->model.sell.contains(pursuit) == false)
-    {
-        thread->pushnil();
-        return 1;
-    }
-
-    auto name = thread->tostring(2);
-    for (auto& [_, x] : context->model.sell[pursuit])
-    {
-        auto& item = context->model.item[x.item];
-        if (item.name == name)
-        {
-            auto price = x.price.value_or(item.price);
-            thread->pushinteger(price);
-            return 1;
-        }
-    }
-
-    thread->pushnil();
-    return 1;
-}
-
-int fb::game::context::builtin_buy_price(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto pursuit = thread->tointeger(1);
-    if (context->model.buy.contains(pursuit) == false)
-    {
-        thread->pushnil();
-        return 1;
-    }
-
-    auto& buy  = context->model.buy[pursuit];
-    auto  name = thread->tostring(2);
-    for (auto& [_, x] : buy)
-    {
-        auto& item = context->model.item[x.item];
-        if (item.name == name)
-        {
-            auto price = x.price.value_or(item.price);
-            thread->pushinteger(price);
-            return 1;
-        }
-    }
-
-    thread->pushnil();
-    return 1;
-}
-
 int fb::game::context::builtin_timer(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
