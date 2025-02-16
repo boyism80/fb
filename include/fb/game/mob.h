@@ -87,15 +87,15 @@ private:
     fb::game::life*     _target        = nullptr;
     fb::game::life*     _oblivion      = nullptr;
     lua::context*       _attack_thread = nullptr;
-    uint32_t            _buff_hp;
-    uint32_t            _buff_mp;
-    uint8_t             _buff_str;
-    uint8_t             _buff_dex;
-    uint8_t             _buff_int;
-    int8_t              _buff_phydef;
-    int8_t              _buff_magdef;
-    uint8_t             _buff_dam;
-    uint8_t             _buff_hit;
+    uint32_t            _buff_hp       = 0;
+    uint32_t            _buff_mp       = 0;
+    uint8_t             _buff_str      = 0;
+    uint8_t             _buff_dex      = 0;
+    uint8_t             _buff_int      = 0;
+    int8_t              _buff_phydef   = 0;
+    int8_t              _buff_magdef   = 0;
+    uint8_t             _buff_dam      = 0;
+    uint8_t             _buff_hit      = 0;
 
 public:
     fb::game::character* owner = nullptr;
@@ -459,6 +459,7 @@ public:
     bool move(DIRECTION direction) override final;
 
 #pragma region builtin
+
 public:
     /**
      * @brief      { function_description }

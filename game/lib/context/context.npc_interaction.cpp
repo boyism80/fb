@@ -289,6 +289,81 @@ bool context::npc_interaction_hold_item_count(character&                        
     return false;
 }
 
+bool context::npc_interaction_revive(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs)
+{
+    ch.assert_thread();
+
+    auto discourteous = false;
+    if (fb::model::const_value::regex::match_revive(message, discourteous) == false)
+        return false;
+
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
+    for (auto npc : npcs)
+    {
+        auto& model = npc->based<fb::model::npc>();
+        if (model.revive == false)
+            continue;
+
+        lua->func("npc_revive");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushboolean(discourteous);
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->pending())
+            return true;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
+    return false;
+}
+
+bool context::npc_interaction_appreciate(character&                         ch,
+                                         const std::string&                 message,
+                                         const std::vector<fb::game::npc*>& npcs)
+{
+    ch.assert_thread();
+
+    if (fb::model::const_value::regex::match_appreciate(message) == false)
+        return false;
+
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
+    for (auto npc : npcs)
+    {
+        auto& model = npc->based<fb::model::npc>();
+        if (model.revive == false)
+            continue;
+
+        lua->func("npc_appreciate");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (lua->resume(2, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
+    return false;
+}
+
 bool context::npc_interaction(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs)
 {
     ch.assert_thread();

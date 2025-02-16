@@ -846,6 +846,8 @@ namespace Fb.Model.ConstValue
         public const string RenameWeapon = "(?P<weapon>\\S+?)?(?:의|$)?\\s+이름을\\s+(?P<name>\\S+?)?(?:으|$)?로\\s+명명";
         public const string HoldItemList = "(?:뭐|뭘|무엇을|무얼)\\s*맡고\\s*(?:있니|있냐)";
         public const string HoldItemCount = "(?P<name>\\S+)\\s+(?:몇\\s*개|얼마나)\\s*맡고\\s*있(?:니|냐)";
+        public const string Revive = "살려(?:(?P<ok>(?:주세요|주십시오))|(?P<no>(?:줘|내|라|주소)))";
+        public const string Appreciate = "(감사합니다|고맙습니다)";
     }
 
     public static class String
@@ -1347,6 +1349,8 @@ namespace Fb.Model
         public bool HoldItem { get; set; }
         [JsonProperty("rename")]
         public bool Rename { get; set; }
+        [JsonProperty("revive")]
+        public bool Revive { get; set; }
     }
 
     public class Cash : Fb.Model.Item

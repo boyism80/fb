@@ -2463,6 +2463,28 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    bool npc_interaction_revive(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool npc_interaction_appreciate(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
     bool npc_interaction(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
 
 public:

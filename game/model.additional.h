@@ -396,7 +396,9 @@ public:                                                                         
     static bool match_deposited_money(const std::string& message);                                                 \
     static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);           \
     static bool match_hold_item_list(const std::string& message);                                                  \
-    static bool match_hold_item_count(const std::string& message, std::string& item);
+    static bool match_hold_item_count(const std::string& message, std::string& item);                              \
+    static bool match_revive(const std::string& message, bool& discourteous);                                      \
+    static bool match_appreciate(const std::string& message);
 
 #define DECLARE_SELL_CONTAINER_EXTENSION                                              \
                                                                                       \

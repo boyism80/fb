@@ -89,6 +89,7 @@ async::task<void> context::handle_start()
         auto& ist = fb::lua::context_pool::ist();
         fb::model::lua::map_enum(ist);
         fb::lua::load("scripts/spell.lua");
+        fb::lua::load("scripts/npc.lua");
         fb::lua::load("scripts/interaction.lua");
         fb::lua::dump("scripts/script.lua");
         fb::lua::dump("scripts/common/npc.lua");
@@ -215,6 +216,8 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_rename_weapon);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_list);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_count);
+    this->bind_npc_interaction(&context::npc_interaction_revive);
+    this->bind_npc_interaction(&context::npc_interaction_appreciate);
 
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Pong);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
