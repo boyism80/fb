@@ -73,54 +73,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool sell(fb::game::character& ch, const fb::model::item* item, uint16_t count, bool sold);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch    The ch
-     * @param[in]  item  The item
-     * @param[in]  done  The done
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool repair(fb::game::character& ch, const fb::model::item* item, bool done);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch     The ch
-     * @param[in]  money  The money
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool hold_money(fb::game::character& ch, std::optional<uint32_t> money);
-    /**
-     * @brief      Returns a money.
-     *
-     * @param      ch     The ch
-     * @param[in]  money  The money
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool return_money(fb::game::character& ch, std::optional<uint32_t> money);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch     The ch
-     * @param[in]  item   The item
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool hold_item(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count);
-    /**
-     * @brief      Returns an item.
-     *
-     * @param      ch     The ch
-     * @param[in]  item   The item
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool return_item(fb::game::character& ch, const fb::model::item* item, std::optional<uint16_t> count);
+
     /**
      * @brief      { function_description }
      */
@@ -141,41 +94,6 @@ public:
      * @param[in]  item  The item
      */
     void buy_price(const fb::model::item* item);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  ch    The ch
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool deposited_money(const fb::game::character& ch);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch    The ch
-     * @param[in]  item  The item
-     * @param[in]  name  The name
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool rename_weapon(fb::game::character& ch, const fb::model::item* item, const std::string& name);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  ch    The ch
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool hold_item_list(const fb::game::character& ch);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  ch    The ch
-     * @param[in]  item  The item
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool hold_item_count(const fb::game::character& ch, const fb::model::item* item);
 
     /**
      * @brief      { function_description }

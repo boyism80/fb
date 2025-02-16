@@ -635,7 +635,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         }
     }
 
-    this->npc_interaction(*ch, message, npcs);
+    this->npc_interaction(*ch, request.message, npcs);
 
     co_return true;
 }

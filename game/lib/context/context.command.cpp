@@ -493,7 +493,7 @@ async::task<bool> context::handle_command_durability(character& ch, Json::Value&
     for (auto equipment : equipments)
     {
         auto& model = equipment->based<fb::model::equipment>();
-        equipment->durability(uint16_t(model.durability * (percent / 100.0f)));
+        equipment->durability(uint32_t(model.durability * (percent / 100.0f)));
     }
 
     co_return true;
@@ -660,5 +660,18 @@ async::task<bool> context::handle_command_reset_delay(character& ch, Json::Value
         if (x != nullptr)
             x->delay(0);
     }
+    co_return true;
+}
+
+async::task<bool> context::handle_command_money(character& ch, Json::Value& parameters)
+{
+    if (parameters.size() < 1)
+        co_return false;
+
+    if (parameters[0].isNumeric() == false)
+        co_return false;
+
+    auto money = parameters[0].asUInt();
+    ch.money(money);
     co_return true;
 }

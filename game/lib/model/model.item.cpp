@@ -100,7 +100,7 @@ int fb::model::item::builtin_durability(lua_State* lua)
         return 0;
 
     auto model      = thread->touserdata<fb::model::item>(1);
-    auto durability = uint16_t(0);
+    auto durability = uint32_t(0);
     if (model->attr(ITEM_ATTRIBUTE::PACK))
     {
         durability = static_cast<fb::model::pack*>(model)->durability;

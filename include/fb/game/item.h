@@ -651,6 +651,12 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    const std::string& name() const override final;
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     std::string inven_name() const override;
     /**
      * @brief      { function_description }

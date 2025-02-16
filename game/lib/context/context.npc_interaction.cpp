@@ -50,15 +50,32 @@ bool context::npc_interaction_repair(character& ch, const std::string& message, 
     if (fb::model::const_value::regex::match_repair_message(message, name) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
-    auto done  = false;
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->repair(ch, model, done))
-            done = true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_money == false)
+            continue;
 
-    return done;
+        lua->func("npc_repair");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
+    return false;
 }
 
 bool context::npc_interaction_deposit_money(character&                         ch,
@@ -71,12 +88,34 @@ bool context::npc_interaction_deposit_money(character&                         c
     if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
         return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->hold_money(ch, money))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_money == false)
+            continue;
 
+        lua->func("npc_hold_money");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (money.has_value())
+            lua->pushinteger(money.value());
+        else
+            lua->pushnil();
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -90,12 +129,34 @@ bool context::npc_interaction_withdraw_money(character&                         
     if (fb::model::const_value::regex::match_withdraw_money_message(message, money) == false)
         return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->return_money(ch, money))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_money == false)
+            continue;
 
+        lua->func("npc_return_money");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (money.has_value())
+            lua->pushinteger(money.value());
+        else
+            lua->pushnil();
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -110,13 +171,35 @@ bool context::npc_interaction_deposit_item(character&                         ch
     if (fb::model::const_value::regex::match_deposit_item_message(message, name, count) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->hold_item(ch, model, count))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_item == false)
+            continue;
 
+        lua->func("npc_hold_item");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (count.has_value())
+            lua->pushinteger(count.value());
+        else
+            lua->pushnil();
+        if (lua->resume(4, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -131,13 +214,35 @@ bool context::npc_interaction_withdraw_item(character&                         c
     if (fb::model::const_value::regex::match_withdraw_item_message(message, name, count) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->return_item(ch, model, count))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_item == false)
+            continue;
 
+        lua->func("npc_return_item");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (count.has_value())
+            lua->pushinteger(count.value());
+        else
+            lua->pushnil();
+        if (lua->resume(4, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -222,12 +327,30 @@ bool context::npc_interaction_show_deposited_money(character&                   
     if (fb::model::const_value::regex::match_deposited_money(message) == false)
         return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->deposited_money(ch))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_money == false)
+            continue;
 
+        lua->func("npc_deposited_money");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (lua->resume(2, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -241,13 +364,32 @@ bool context::npc_interaction_rename_weapon(character&                         c
     if (fb::model::const_value::regex::match_rename_weapon(message, model_name, custom_name) == false)
         return false;
 
-    auto model = this->model.item.name2item(model_name);
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->rename_weapon(ch, model, custom_name))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.rename == false)
+            continue;
 
+        lua->func("npc_rename_weapon");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(model_name);
+        lua->pushstring(custom_name);
+        if (lua->resume(4, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -260,12 +402,30 @@ bool context::npc_interaction_hold_item_list(character&                         
     if (fb::model::const_value::regex::match_hold_item_list(message) == false)
         return false;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->hold_item_list(ch))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_item == false)
+            continue;
 
+        lua->func("npc_hold_item_list");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        if (lua->resume(2, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 
@@ -279,13 +439,31 @@ bool context::npc_interaction_hold_item_count(character&                        
     if (fb::model::const_value::regex::match_hold_item_count(message, name) == false)
         return false;
 
-    auto model = this->model.item.name2item(name);
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
     for (auto npc : npcs)
     {
-        if (npc->hold_item_count(ch, model))
-            return true;
-    }
+        auto& model = npc->based<fb::model::npc>();
+        if (model.hold_item == false)
+            continue;
 
+        lua->func("npc_hold_item_count");
+        lua->pushobject(ch);
+        lua->pushobject(npc);
+        lua->pushstring(name);
+        if (lua->resume(3, false) == false)
+            return false;
+
+        if (lua->toboolean(1))
+        {
+            lua->release();
+            return true;
+        }
+    }
+    lua->release();
     return false;
 }
 

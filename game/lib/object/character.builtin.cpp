@@ -15,6 +15,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"int",                 character::builtin_intelligence},
 {"item",                character::builtin_item},
 {"items",               character::builtin_items},
+{"equipments",          character::builtin_equipments},
 {"dropitem",            character::builtin_item_drop},
 {"mkitem",              character::builtin_mkitem},
 {"rmitem",              character::builtin_rmitem},
@@ -206,6 +207,31 @@ int character::builtin_items(lua_State* lua)
 
         thread->pushinteger(i + 1);
         thread->pushobject(ch->items[i]);
+        lua_settable(lua, -3);
+    }
+
+    return 1;
+}
+
+int character::builtin_equipments(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    thread->new_table();
+    for (auto& [parts, equipment] : ch->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        thread->pushinteger(parts);
+        thread->pushobject(equipment);
         lua_settable(lua, -3);
     }
 
