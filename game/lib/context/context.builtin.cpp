@@ -213,6 +213,48 @@ int fb::game::context::builtin_pursuit_sell(lua_State* lua)
     return 1;
 }
 
+int fb::game::context::builtin_pursuit_sell_price(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto pursuit = thread->tointeger(1);
+    auto name    = thread->tostring(2);
+
+    if (context->model.sell.contains(pursuit) == false)
+        return 0;
+
+    for (auto& [_, x] : context->model.sell[pursuit])
+    {
+        auto& model = context->model.item[x.item];
+        if (model.name != name)
+            continue;
+
+        thread->pushinteger(x.price.value_or(model.price));
+        return 1;
+    }
+
+    return 0;
+}
+
+int fb::game::context::builtin_pursuit_sell_name(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto pursuit = thread->tointeger(1);
+
+    if (context->model.sell_attribute.contains(pursuit) == false)
+        return 0;
+
+    thread->pushstring(context->model.sell_attribute[pursuit].group);
+    return 1;
+}
+
 int fb::game::context::builtin_pursuit_buy(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

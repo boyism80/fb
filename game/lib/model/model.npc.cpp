@@ -279,7 +279,7 @@ int fb::model::npc::builtin_repair(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("repair").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("repair").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -298,7 +298,7 @@ int fb::model::npc::builtin_repair_all(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("repair_all").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("repair_all").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -317,7 +317,7 @@ int fb::model::npc::builtin_hold_money(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("hold_money").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("hold_money").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -336,7 +336,7 @@ int fb::model::npc::builtin_hold_item(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("hold_item").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("hold_item").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -355,7 +355,7 @@ int fb::model::npc::builtin_return_money(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("return_money").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("return_money").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -374,7 +374,7 @@ int fb::model::npc::builtin_return_item(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("return_item").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("return_item").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 
@@ -393,7 +393,7 @@ int fb::model::npc::builtin_rename_weapon(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/common/npc.lua").func("rename_weapon").pushobject(ch).pushobject(npc).resume(2);
+    ch->dialog.func("rename_weapon").pushobject(ch).pushobject(npc).resume(2);
     return thread->yield(1);
 }
 

@@ -60,6 +60,8 @@ async::task<void> context::handle_start()
     lua::build("broadcast", builtin_broadcast);
     lua::build("assert_alive", builtin_assert_alive);
     lua::build("pursuit_sell", builtin_pursuit_sell);
+    lua::build("pursuit_sell_price", builtin_pursuit_sell_price);
+    lua::build("pursuit_sell_name", builtin_pursuit_sell_name);
     lua::build("pursuit_buy", builtin_pursuit_buy);
     lua::build("timer", builtin_timer);
     lua::build("weather", builtin_weather);
@@ -90,7 +92,6 @@ async::task<void> context::handle_start()
         fb::lua::load("scripts/npc.lua");
         fb::lua::load("scripts/interaction.lua");
         fb::lua::dump("scripts/script.lua");
-        fb::lua::dump("scripts/common/npc.lua");
 
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();
@@ -765,6 +766,10 @@ void context::handle_click_npc(character& ch, npc& npc)
     auto& model = npc.based<fb::model::npc>();
     if (model.script.empty())
         return;
+
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
 
     ch.dialog.release();
     ch.dialog.from(model.script.c_str())
