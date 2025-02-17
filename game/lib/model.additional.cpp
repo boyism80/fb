@@ -1,14 +1,14 @@
 #include <fb/model/model.h>
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::spell, "fb.model.spell")
+IMPLEMENT_LUA_EXTENSION(fb::model::spell, "fb_model_spell")
 {"type",                fb::model::spell::builtin_type},
 {"name",                fb::model::spell::builtin_name},
 {"message",             fb::model::spell::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
+IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb_model_map")
 {"id",                  fb::model::map::builtin_id},
 {"name",                fb::model::map::builtin_name},
 {"root",                fb::model::map::builtin_root},
@@ -18,7 +18,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
+IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb_model_object")
 {"name",                fb::model::object::builtin_name},
 {"look",                fb::model::object::builtin_look},
 {"color",               fb::model::object::builtin_color},
@@ -26,7 +26,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
+IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb_model_mob")
 {"speed",               fb::model::mob::builtin_speed},
 {"size",                fb::model::mob::builtin_size},
 {"damage",              fb::model::mob::builtin_damage},
@@ -34,7 +34,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::mob, "fb.model.mob")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
+IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb_model_npc")
 {"input",               fb::model::npc::builtin_input},
 {"menu",                fb::model::npc::builtin_menu},
 {"list",                fb::model::npc::builtin_list},
@@ -54,13 +54,13 @@ IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::life, "fb.model.life")
+IMPLEMENT_LUA_EXTENSION(fb::model::life, "fb_model_life")
 {"hp",                  fb::model::life::builtin_hp},
 {"mp",                  fb::model::life::builtin_mp},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
+IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb_model_item")
 {"make",                fb::model::item::builtin_make},
 {"attr",                fb::model::item::builtin_attr},
 {"capacity",            fb::model::item::builtin_capacity},
@@ -72,14 +72,14 @@ IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
+IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb_model_weapon")
 {"damage_small",        fb::model::weapon::builtin_damage_small},
 {"damage_large",        fb::model::weapon::builtin_damage_large},
 {"sound",               fb::model::weapon::builtin_sound},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::trace, "fb.model.trace")
+IMPLEMENT_LUA_EXTENSION(fb::model::trace, "fb_model_trace")
 {"id",                  fb::model::trace::builtin_id},
 {"look",                fb::model::trace::builtin_look},
 {"color",               fb::model::trace::builtin_color},

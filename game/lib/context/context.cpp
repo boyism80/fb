@@ -91,6 +91,7 @@ async::task<void> context::handle_start()
         fb::lua::load("scripts/spell.lua");
         fb::lua::load("scripts/npc.lua");
         fb::lua::load("scripts/interaction.lua");
+        fb::lua::load("scripts/command.lua");
         fb::lua::dump("scripts/script.lua");
 
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {

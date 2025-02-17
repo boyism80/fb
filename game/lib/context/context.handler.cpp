@@ -600,6 +600,24 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() == false && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/interaction.lua");
+    fb::lua::load("scripts/command.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
+    lua->func("on_chat");
+    lua->pushobject(ch);
+    lua->pushstring(request.message);
+    lua->pushboolean(request.shout);
+    if (lua->resume(3, false))
+    {
+        auto stop = lua->toboolean(1);
+        lua->release();
+        if (stop)
+            co_return true;
+    }
+
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
     if (co_await handle_command(*ch, message))
