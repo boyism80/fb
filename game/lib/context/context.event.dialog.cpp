@@ -37,11 +37,10 @@ void context::on_dialog(character&                      me,
                         const std::string&              message,
                         const std::vector<std::string>& menus,
                         bool                            button_prev,
-                        const fb::game::character&      ch,
-                        uint16_t                        face,
+                        const dialog::preset&           preset,
                         dialog::interaction             interaction)
 {
-    me.send(fb_resp::dialog_ch_list(npc, ch, face, menus, message, button_prev, interaction));
+    me.send(fb_resp::dialog_ch_list(npc, preset, menus, message, button_prev, interaction));
 }
 
 void context::on_dialog(character&                  me,

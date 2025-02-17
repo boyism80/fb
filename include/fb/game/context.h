@@ -2241,8 +2241,7 @@ public:
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  button_prev  The button previous
-     * @param[in]  ch           { parameter_description }
-     * @param[in]  face         The face
+     * @param[in]  preset       The preset
      * @param[in]  interaction  The interaction
      */
     void on_dialog(character&                      me,
@@ -2250,8 +2249,7 @@ public:
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
-                   const character&                ch,
-                   uint16_t                        face,
+                   const dialog::preset&           preset,
                    fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
 
     /**

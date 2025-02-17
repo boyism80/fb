@@ -69,12 +69,12 @@ int fb::model::npc::builtin_menu(lua_State* lua)
 
 int fb::model::npc::builtin_list(lua_State* lua)
 {
-    // Ex) npc::list(ch, "hello", {"hello 1", "hello 2", "hello 3"}, true)
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
         return 0;
 
     auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
     auto npc     = thread->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
@@ -83,13 +83,53 @@ int fb::model::npc::builtin_list(lua_State* lua)
     if (ch == nullptr)
         return 0;
 
-    auto message = thread->tostring(3);
+    auto message       = thread->tostring(3);
+    auto size          = thread->rawlen(4);
+    auto button_prev   = thread->toboolean(5);
+    auto custom_preset = (argc >= 6 && lua_type(lua, 6) == LUA_TTABLE);
+    auto preset        = fb::game::dialog::preset(*ch);
+    if (custom_preset)
+    {
+        thread->pushstring("sex");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.sex = static_cast<SEX>(thread->tointeger(-1));
 
-    // Read list list
-    auto size        = thread->rawlen(4);
-    auto button_prev = thread->toboolean(5);
-    auto preset      = thread->touserdata<fb::game::character>(6);
-    auto face        = thread->argc() >= 7 ? thread->tointeger(7) : (ch != nullptr ? ch->look() : 0);
+        thread->pushstring("state");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.state = static_cast<STATE>(thread->tointeger(-1));
+
+        thread->pushstring("face");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.face = thread->tointeger(-1);
+
+        thread->pushstring("hair_color");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.hair_color = thread->tointeger(-1);
+
+        thread->pushstring("weapon");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.weapon = thread->tointeger(-1);
+
+        thread->pushstring("weapon_color");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.weapon_color = thread->tointeger(-1);
+
+        thread->pushstring("armor");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.armor = thread->tointeger(-1);
+
+        thread->pushstring("armor_color");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.armor_color = thread->tointeger(-1);
+
+        thread->pushstring("shield");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.shield = thread->tointeger(-1);
+
+        thread->pushstring("shield_color");
+        if (lua_rawget(lua, 6) == LUA_TNUMBER)
+            preset.shield_color = thread->tointeger(-1);
+    }
 
     auto menus = std::vector<std::string>();
     for (int i = 0; i < size; i++)
@@ -98,10 +138,11 @@ int fb::model::npc::builtin_list(lua_State* lua)
         menus.push_back(thread->tostring(-1));
     }
 
-    if (preset == nullptr)
-        ch->dialog.show(*npc, message, menus, button_prev);
+    if (custom_preset)
+        ch->dialog.show(*npc, message, menus, button_prev, preset);
     else
-        ch->dialog.show(*npc, message, menus, button_prev, *preset, face);
+        ch->dialog.show(*npc, message, menus, button_prev);
+
     return thread->yield(1);
 }
 

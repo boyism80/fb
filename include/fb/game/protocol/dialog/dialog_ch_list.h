@@ -20,8 +20,7 @@ public:
 public:
 #ifndef BOT
     const fb::model::npc&               npc;
-    const fb::game::character&          ch;
-    const uint16_t                      face;
+    const fb::game::dialog::preset&     preset;
     const std::vector<std::string>      list;
     const std::string                   message;
     const bool                          button_prev;
@@ -33,8 +32,7 @@ public:
 public:
 #ifndef BOT
     dialog_ch_list(const fb::model::npc&           npc,
-                   const fb::game::character&      ch,
-                   uint16_t                        face,
+                   const fb::game::dialog::preset& preset,
                    const std::vector<std::string>& list,
                    const std::string&              message,
                    bool                            button_prev,
