@@ -2222,6 +2222,44 @@ public:
      * @param      me           { parameter_description }
      * @param[in]  npc          The npc
      * @param[in]  message      The message
+     * @param[in]  menus        The menus
+     * @param[in]  button_prev  The button previous
+     * @param[in]  interaction  The interaction
+     */
+    void on_dialog(character&                      me,
+                   const fb::model::npc&           npc,
+                   const std::string&              message,
+                   const std::vector<std::string>& menus,
+                   bool                            button_prev,
+                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+
+    /**
+     * @brief      Called on dialog.
+     *
+     * @param      me           { parameter_description }
+     * @param[in]  npc          The npc
+     * @param[in]  message      The message
+     * @param[in]  menus        The menus
+     * @param[in]  button_prev  The button previous
+     * @param[in]  ch           { parameter_description }
+     * @param[in]  face         The face
+     * @param[in]  interaction  The interaction
+     */
+    void on_dialog(character&                      me,
+                   const fb::model::npc&           npc,
+                   const std::string&              message,
+                   const std::vector<std::string>& menus,
+                   bool                            button_prev,
+                   const character&                ch,
+                   uint16_t                        face,
+                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+
+    /**
+     * @brief      Called on dialog.
+     *
+     * @param      me           { parameter_description }
+     * @param[in]  npc          The npc
+     * @param[in]  message      The message
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */

@@ -278,6 +278,7 @@ public:                                                \
 public:                                                \
     static int builtin_input(lua_State* lua);          \
     static int builtin_menu(lua_State* lua);           \
+    static int builtin_list(lua_State* lua);           \
     static int builtin_item(lua_State* lua);           \
     static int builtin_slot(lua_State* lua);           \
     static int builtin_sell(lua_State* lua);           \

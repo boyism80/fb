@@ -207,6 +207,30 @@ void fb::game::dialog::show(const fb::model::npc&           npc,
         listener->on_dialog(this->_owner, npc, message, menus, interaction);
 }
 
+void fb::game::dialog::show(const fb::model::npc&           npc,
+                            const std::string&              message,
+                            const std::vector<std::string>& menus,
+                            bool                            button_prev,
+                            fb::game::dialog::interaction   interaction)
+{
+    auto listener = this->_owner.get_listener<fb::game::character>();
+    if (listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, menus, button_prev, interaction);
+}
+
+void fb::game::dialog::show(const fb::model::npc&           npc,
+                            const std::string&              message,
+                            const std::vector<std::string>& menus,
+                            bool                            button_prev,
+                            const fb::game::character&      ch,
+                            uint16_t                        face,
+                            fb::game::dialog::interaction   interaction)
+{
+    auto listener = this->_owner.get_listener<fb::game::character>();
+    if (listener != nullptr)
+        listener->on_dialog(this->_owner, npc, message, menus, button_prev, ch, face, interaction);
+}
+
 void fb::game::dialog::show(const fb::model::npc&         npc,
                             const std::string&            message,
                             const std::vector<uint8_t>&   item_slots,

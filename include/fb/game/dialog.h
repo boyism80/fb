@@ -36,6 +36,7 @@ public:
         INPUT,
         INPUT_EX,
         MENU,
+        LIST,
         SLOT,
         ITEM,
     };
@@ -75,6 +76,44 @@ public:
                                const fb::model::npc&           npc,
                                const std::string&              message,
                                const std::vector<std::string>& menus,
+                               interaction                     interaction = interaction::NORMAL) = 0;
+
+        /**
+         * @brief      Called on dialog.
+         *
+         * @param      me           { parameter_description }
+         * @param[in]  npc          The npc
+         * @param[in]  message      The message
+         * @param[in]  menus        The menus
+         * @param[in]  button_prev  The button previous
+         * @param[in]  interaction  The interaction
+         */
+        virtual void on_dialog(character&                      me,
+                               const fb::model::npc&           npc,
+                               const std::string&              message,
+                               const std::vector<std::string>& menus,
+                               bool                            button_prev,
+                               interaction                     interaction = interaction::NORMAL) = 0;
+
+        /**
+         * @brief      Called on dialog.
+         *
+         * @param      me           { parameter_description }
+         * @param[in]  npc          The npc
+         * @param[in]  message      The message
+         * @param[in]  menus        The menus
+         * @param[in]  button_prev  The button previous
+         * @param      ch           { parameter_description }
+         * @param[in]  face         The face
+         * @param[in]  interaction  The interaction
+         */
+        virtual void on_dialog(character&                      me,
+                               const fb::model::npc&           npc,
+                               const std::string&              message,
+                               const std::vector<std::string>& menus,
+                               bool                            button_prev,
+                               const character&                ch,
+                               uint16_t                        face,
                                interaction                     interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
@@ -315,6 +354,40 @@ public:
               const std::string&              message,
               const std::vector<std::string>& menus,
               interaction                     interaction = interaction::MENU);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  npc          The npc
+     * @param[in]  message      The message
+     * @param[in]  menus        The menus
+     * @param[in]  interaction  The interaction
+     */
+    void show(const fb::model::npc&           npc,
+              const std::string&              message,
+              const std::vector<std::string>& menus,
+              bool                            button_prev,
+              interaction                     interaction = interaction::LIST);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  npc          The npc
+     * @param[in]  message      The message
+     * @param[in]  menus        The menus
+     * @param[in]  button_prev  The button previous
+     * @param[in]  ch           { parameter_description }
+     * @param[in]  face         The face
+     * @param[in]  interaction  The interaction
+     */
+    void show(const fb::model::npc&           npc,
+              const std::string&              message,
+              const std::vector<std::string>& menus,
+              bool                            button_prev,
+              const fb::game::character&      ch,
+              uint16_t                        face,
+              interaction                     interaction = interaction::LIST);
+
     /**
      * @brief      { function_description }
      *

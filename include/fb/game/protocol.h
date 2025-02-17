@@ -59,6 +59,8 @@
 #include <fb/game/protocol/character/option.h>
 #include <fb/game/protocol/dialog/dialog.h>
 #include <fb/game/protocol/dialog/dialog_menu.h>
+#include <fb/game/protocol/dialog/dialog_list.h>
+#include <fb/game/protocol/dialog/dialog_ch_list.h>
 #include <fb/game/protocol/dialog/dialog_slot.h>
 #include <fb/game/protocol/dialog/dialog_item.h>
 #include <fb/game/protocol/dialog/dialog_input.h>

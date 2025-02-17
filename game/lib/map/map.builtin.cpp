@@ -178,7 +178,7 @@ int fb::game::map::builtin_movable(lua_State* lua)
         return 1;
     }
 
-    return ctx->builtin(*map, thread, 1, [=]() ->async::task<void> {
+    return ctx->builtin(*map, thread, 1, [=]() -> async::task<void> {
         thread->pushboolean(map->movable(position));
         co_return;
     });

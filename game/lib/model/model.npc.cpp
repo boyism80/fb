@@ -67,6 +67,44 @@ int fb::model::npc::builtin_menu(lua_State* lua)
     return thread->yield(1);
 }
 
+int fb::model::npc::builtin_list(lua_State* lua)
+{
+    // Ex) npc::list(ch, "hello", {"hello 1", "hello 2", "hello 3"}, true)
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto npc     = thread->touserdata<fb::model::npc>(1);
+    if (npc == nullptr)
+        return 0;
+
+    auto ch = thread->touserdata<fb::game::character>(2);
+    if (ch == nullptr)
+        return 0;
+
+    auto message = thread->tostring(3);
+
+    // Read list list
+    auto size        = thread->rawlen(4);
+    auto button_prev = thread->toboolean(5);
+    auto preset      = thread->touserdata<fb::game::character>(6);
+    auto face        = thread->argc() >= 7 ? thread->tointeger(7) : (ch != nullptr ? ch->look() : 0);
+
+    auto menus = std::vector<std::string>();
+    for (int i = 0; i < size; i++)
+    {
+        thread->rawgeti(4, i + 1);
+        menus.push_back(thread->tostring(-1));
+    }
+
+    if (preset == nullptr)
+        ch->dialog.show(*npc, message, menus, button_prev);
+    else
+        ch->dialog.show(*npc, message, menus, button_prev, *preset, face);
+    return thread->yield(1);
+}
+
 int fb::model::npc::builtin_item(lua_State* lua)
 {
     // Ex) npc::menu(ch, "hello", {item1, item2, item3})

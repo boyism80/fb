@@ -51,6 +51,7 @@ protected:
     virtual ~life();
 
 #pragma region stat
+
 public:
     /**
      * @brief      { function_description }
@@ -632,6 +633,7 @@ public:
     bool cover() const;
 
 #pragma region builtin
+
 public:
     /**
      * @brief      { function_description }

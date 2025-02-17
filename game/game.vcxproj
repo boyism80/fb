@@ -136,9 +136,11 @@
     <ClInclude Include="..\include\fb\game\protocol\click.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog.h" />
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_ch_list.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_input.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_input_ext.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_item.h" />
+    <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_list.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_menu.h" />
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_slot.h" />
     <ClInclude Include="..\include\fb\game\protocol\door.h" />
@@ -321,11 +323,13 @@
     <ClCompile Include="lib\protocol\protocol.character.update.external.cpp" />
     <ClCompile Include="lib\protocol\protocol.character.update.internal.cpp" />
     <ClCompile Include="lib\protocol\protocol.click.cpp" />
+    <ClCompile Include="lib\protocol\protocol.dialog.ch.list.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.common.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.input.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.input.ext.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.item.cpp" />
+    <ClCompile Include="lib\protocol\protocol.dialog.list.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.menu.cpp" />
     <ClCompile Include="lib\protocol\protocol.dialog.slot.cpp" />
     <ClCompile Include="lib\protocol\protocol.door.cpp" />

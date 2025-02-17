@@ -1123,6 +1123,7 @@ public:
     fb::protocol::internal::Character to_protocol() const;
 
 #pragma region stat
+
 public:
     /**
      * @brief      { function_description }
@@ -1441,6 +1442,7 @@ public:
 #pragma endregion
 
 #pragma region builtin
+
 public:
     /**
      * @brief      { function_description }

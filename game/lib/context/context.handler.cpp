@@ -873,6 +873,18 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
         break;
     }
 
+    case dialog::interaction::LIST:
+    {
+        if (request.button == DIALOG_RESULT::NEXT)
+            ch->dialog.pushinteger(request.index);
+        else
+            ch->dialog.pushnil();
+
+        ch->dialog.pushinteger(static_cast<uint32_t>(request.button));
+        ch->dialog.resume(2);
+        break;
+    }
+
     case dialog::interaction::SLOT:
     {
         ch->dialog.pushinteger(request.index).resume(1);

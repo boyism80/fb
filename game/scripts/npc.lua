@@ -652,10 +652,13 @@ function npc_sell_dialog(me, npc)
         for _, sell in pairs(pursuit) do
             table.insert(menu, pursuit_sell_name(sell))
         end
-::ROUTINE0001::
-        local selected = npc:menu(me, '무엇을 사시겠어요?', menu)
+        local selected, button = npc:list(me, '무엇을 사시겠어요?', menu, true)
         if selected == nil then
-            goto ROUTINE0001
+            if button == DIALOG_RESULT_QUIT then
+                return DIALOG_RESULT_QUIT
+            else
+                return DIALOG_RESULT_NEXT
+            end
         end
         pursuit = pursuit[selected+1]
     else

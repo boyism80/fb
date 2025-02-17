@@ -37,6 +37,7 @@ END_LUA_EXTENSION; // clang-format on
 IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
 {"input",               fb::model::npc::builtin_input},
 {"menu",                fb::model::npc::builtin_menu},
+{"list",                fb::model::npc::builtin_list},
 {"item",                fb::model::npc::builtin_item},
 {"slot",                fb::model::npc::builtin_slot},
 {"sell",                fb::model::npc::builtin_sell},
