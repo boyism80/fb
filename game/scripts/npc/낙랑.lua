@@ -1,6 +1,6 @@
 function on_interact(me, npc)
 ::ROUTINE_1::
-    local selected = npc:list(me, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기', '물건 고치기', '모두 고치기', '금전 맡기기', '물건 맡기기', '금전 찾기', '물건 찾기', '무기 이름 명명'})
+    local selected = npc:menu(me, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기', '물건 고치기', '모두 고치기', '금전 맡기기', '물건 맡기기', '금전 찾기', '물건 찾기', '무기 이름 명명'})
     if selected == nil then
         return
     end

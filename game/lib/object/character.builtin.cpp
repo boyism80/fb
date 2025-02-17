@@ -56,6 +56,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"base_int",            character::builtin_base_int},
 {"base_dam",            character::builtin_base_dam},
 {"base_hit",            character::builtin_base_hit},
+{"armor_color",         character::builtin_armor_color},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1572,6 +1573,42 @@ int character::builtin_base_hit(lua_State* lua)
     else
     {
         ch->base_hit(thread->tointeger(2));
+        return 0;
+    }
+}
+
+int character::builtin_armor_color(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        if (ch->_armor_color.has_value())
+            thread->pushinteger(ch->_armor_color.value());
+        else
+            thread->pushnil();
+        return 1;
+    }
+    else
+    {
+        switch (lua_type(lua, 2))
+        {
+        case LUA_TNIL:
+            ch->armor_color(std::nullopt);
+            break;
+
+        default:
+            ch->armor_color(thread->tointeger(2));
+            break;
+        }
         return 0;
     }
 }

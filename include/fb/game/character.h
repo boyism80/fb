@@ -1875,6 +1875,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_base_hit(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_armor_color(lua_State* lua);
 #pragma endregion
 };
 
