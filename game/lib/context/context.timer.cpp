@@ -14,6 +14,12 @@ async::task<void> context::handle_heart_beat()
                             fb::config<uint16_t>("port")});
 }
 
+async::task<void> fb::game::context::handle_announce()
+{
+    auto i = random<uint16_t>(0, this->model.announce.size());
+    co_await this->broadcast(this->model.announce[i].message, MESSAGE_TYPE::WORLD, BROADCAST_TYPE::WORLD);
+}
+
 async::task<void> context::handle_time()
 {
     auto updated = fb::model::datetime();

@@ -1005,6 +1005,11 @@ namespace Fb.Model.ConstValue
         public const string MessageNoItemDeposited = "그런 물건은 맡고 있지 않습니다.";
     }
 
+    public static class Time
+    {
+        public static readonly TimeSpan Announce = TimeSpan.Parse("00:01:00");
+    }
+
 }
 
 namespace Fb.Model
@@ -1035,6 +1040,12 @@ namespace Fb.Model
     {
         [JsonProperty("id")]
         public Fb.Model.EnumValue.Class Id { get; set; }
+    }
+
+    public class Announce
+    {
+        [JsonProperty("message")]
+        public string Message { get; set; }
     }
 
     public class Board
@@ -1926,6 +1937,10 @@ namespace Fb.Model
         public partial class AbilityAttributeTable : KeyValueContainer<Fb.Model.EnumValue.Class, AbilityAttribute>
         { }
         public AbilityAttributeTable AbilityAttribute { get; private set; } = new AbilityAttributeTable();
+        [Table("json/announce.json")]
+        public partial class AnnounceTable : ArrayContainer<Announce>
+        { }
+        public AnnounceTable Announce { get; private set; } = new AnnounceTable();
         [Table("json/board.json")]
         public partial class BoardTable : KeyValueContainer<uint, Board>
         { }
@@ -2051,6 +2066,7 @@ namespace Fb.Model
             {
                 Ability, 
                 AbilityAttribute, 
+                Announce, 
                 Board, 
                 Buy, 
                 BuyAttribute, 

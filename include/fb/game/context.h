@@ -1119,6 +1119,14 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> handle_heart_beat();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_announce();
+
 public:
     /**
      * @brief      { function_description }

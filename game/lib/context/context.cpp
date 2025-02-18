@@ -161,6 +161,8 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_object_miss);
 
     this->bind_timer(&context::handle_heart_beat, 1s);
+    this->bind_timer(&context::handle_announce,
+                     std::chrono::seconds(fb::model::const_value::time::ANNOUNCE.total_milliseconds() / 1000));
     this->bind_thread_timer(&context::handle_mob_action, 100ms); // 몹 행동 타이머
     this->bind_thread_timer(&context::handle_mob_respawn, 1s);   // 몹 리젠 타이머
     this->bind_thread_timer(&context::handle_buff_timer, 1s);    // 버프 타이머

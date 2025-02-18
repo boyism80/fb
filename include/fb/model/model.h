@@ -2684,6 +2684,18 @@ private:
 DECLARE_CONST_STRING_EXTENSION
 #endif
 }; // end of const 'string'
+class time
+{
+public:
+    inline static const timespan& ANNOUNCE = timespan("00.00:01:00");
+
+private:
+    time() = default;
+    ~time() = default;
+#ifdef DECLARE_CONST_TIME_EXTENSION
+DECLARE_CONST_TIME_EXTENSION
+#endif
+}; // end of const 'time'
 
 } // end of namespace const_value
 #pragma endregion
@@ -3816,6 +3828,38 @@ DECLARE_ABILITY_ATTRIBUTE_INITIALIZER
 DECLARE_ABILITY_ATTRIBUTE_EXTENSION
 #endif
 }; // end of class 'ability_attribute'
+class announce
+#ifdef DECLARE_ANNOUNCE_INHERIT
+DECLARE_ANNOUNCE_INHERIT
+#endif
+{
+#ifdef DECLARE_ANNOUNCE_FIELDS
+DECLARE_ANNOUNCE_FIELDS
+#else
+public:
+    const std::string message;
+#endif
+
+#ifdef DECLARE_ANNOUNCE_CUSTOM_CONSTRUCTOR
+DECLARE_ANNOUNCE_CUSTOM_CONSTRUCTOR
+#else
+public:
+    announce(const Json::Value& json) : 
+#ifdef DECLARE_ANNOUNCE_CONSTRUCTOR
+DECLARE_ANNOUNCE_CONSTRUCTOR
+#endif
+        message(fb::model::build<std::string>(json["message"]))
+#ifdef DECLARE_ANNOUNCE_INITIALIZER
+DECLARE_ANNOUNCE_INITIALIZER
+#endif
+    { }
+    announce(const announce&) = delete;
+    virtual ~announce() = default;
+#endif
+#ifdef DECLARE_ANNOUNCE_EXTENSION
+DECLARE_ANNOUNCE_EXTENSION
+#endif
+}; // end of class 'announce'
 class board
 #ifdef DECLARE_BOARD_INHERIT
 DECLARE_BOARD_INHERIT
@@ -5462,6 +5506,22 @@ DECLARE_ABILITY_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
+class __announce : public fb::model::array_container<fb::model::announce>
+{
+public:
+#ifdef DECLARE_ANNOUNCE_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_ANNOUNCE_CONTAINER_CUSTOM_CONSTRUCTOR
+#else
+    __announce() : fb::model::array_container<fb::model::announce>(std::string("json/announce.json"))
+    { }
+    __announce(const __announce&) = delete;
+    ~__announce() = default;
+#endif
+#ifdef DECLARE_ANNOUNCE_CONTAINER_EXTENSION
+DECLARE_ANNOUNCE_CONTAINER_EXTENSION
+#endif
+};
+
 class __board : public fb::model::kv_container<uint32_t, fb::model::board>
 {
 public:
@@ -5932,6 +5992,7 @@ class model
 public:
     fb::model::__ability ability;
     fb::model::__ability_attribute ability_attribute;
+    fb::model::__announce announce;
     fb::model::__board board;
     fb::model::__buy buy;
     fb::model::__buy_attribute buy_attribute;
@@ -5967,6 +6028,7 @@ private:
     {
         &ability,
         &ability_attribute,
+        &announce,
         &board,
         &buy,
         &buy_attribute,
