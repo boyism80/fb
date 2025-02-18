@@ -610,8 +610,10 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     lua->pushobject(ch);
     lua->pushstring(request.message);
     lua->pushboolean(request.shout);
-    if (lua->resume(3, false))
+    lua->resume(3, false);
+    switch (lua->state())
     {
+    case LUA_OK:
         auto stop = lua->toboolean(1);
         lua->release();
         if (stop)
@@ -620,9 +622,6 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
 
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
-    if (co_await handle_command(*ch, message))
-        co_return true;
-
     switch (type)
     {
     case CHAT_TYPE::NORMAL:
@@ -957,7 +956,7 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (spell == nullptr)
         co_return false;
 
-    if (spell->update_lock() == false)
+    if (ch->admin() == false && spell->update_lock() == false)
         co_return true;
 
     auto delay = spell->delay();

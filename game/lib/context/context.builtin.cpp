@@ -325,6 +325,22 @@ int fb::game::context::builtin_weather(lua_State* lua)
     return 0;
 }
 
+int fb::game::context::builtin_bright(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto value   = (uint32_t)thread->tointeger(1);
+
+    context->foreach_ch([value](auto& ch) -> async::task<void> {
+        ch.bright(value);
+        co_return;
+    });
+    return 0;
+}
+
 int fb::game::context::builtin_name_with(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
@@ -382,6 +398,132 @@ int fb::game::context::builtin_debug(lua_State* lua)
 #else
     thread->pushboolean(false);
 #endif
+    return 1;
+}
+
+int fb::game::context::builtin_name2class(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto name    = thread->tostring(1);
+
+    auto cls       = CLASS::NONE;
+    auto promotion = uint8_t{0};
+    if (context->model.promotion.name2class(name, cls, promotion) == false)
+        return 0;
+
+    thread->pushinteger(cls);
+    thread->pushinteger(promotion);
+    return 2;
+}
+
+int fb::game::context::builtin_save(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    for (int i = 0; i < context->threads.size(); i++)
+    {
+        std::ignore = context->threads[i]->dispatch([context](auto& thread) -> async::task<void> {
+            auto params = thread.template data<thread_params>();
+            for (auto& [id, character] : params->characters)
+            {
+                std::ignore = context->save(*character);
+            }
+            co_return;
+        });
+    }
+    return 0;
+}
+
+int fb::game::context::builtin_mknpc(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto name    = thread->tostring(1);
+    auto model   = context->model.npc.name2npc(name);
+    if (model == nullptr)
+        return 0;
+
+    auto map = static_cast<fb::game::map*>(nullptr);
+    if (thread->is_str(2))
+    {
+        auto name      = thread->tostring(2);
+        auto map_model = context->model.map.name2map(name);
+        if (map_model == nullptr)
+            return 0;
+
+        map = &context->maps[map_model->id];
+    }
+    else if (thread->is_obj(2))
+    {
+        map = thread->touserdata<fb::game::map>(2);
+        if (map == nullptr)
+            return 0;
+    }
+    else
+    {
+        return 0;
+    }
+
+    uint16_t x = 0, y = 0;
+    auto     direction = DIRECTION::BOTTOM;
+    if (argc < 3)
+    {
+        x = y = 0;
+    }
+    else if (thread->is_table(3))
+    {
+        if (argc >= 4)
+            direction = static_cast<DIRECTION>(thread->tointeger(4));
+
+        thread->rawgeti(3, 1);
+        x = (uint16_t)thread->tointeger(-1);
+        thread->remove(-1);
+
+        thread->rawgeti(3, 2);
+        y = (uint16_t)thread->tointeger(-1);
+        thread->remove(-1);
+    }
+    else
+    {
+        if (argc >= 5)
+            direction = static_cast<DIRECTION>(thread->tointeger(5));
+
+        x = (uint16_t)thread->tointeger(3);
+        y = (uint16_t)thread->tointeger(4);
+    }
+
+    return context->builtin(*map, thread, 1, [=]() -> async::task<void> {
+        auto npc = model->make<fb::game::npc>(*context);
+        thread->pushobject(npc);
+        npc->direction(direction);
+        co_await npc->map(map, fb::model::point16_t{x, y});
+    });
+}
+
+int fb::game::context::builtin_maps(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    thread->new_table();
+    for (auto& [id, map] : context->maps)
+    {
+        thread->pushobject(map);
+        lua_rawseti(lua, -2, id);
+    }
     return 1;
 }
 

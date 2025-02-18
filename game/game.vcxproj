@@ -233,7 +233,6 @@
     <ClCompile Include="lib\context\context.board.cpp" />
     <ClCompile Include="lib\context\context.builtin.cpp" />
     <ClCompile Include="lib\context\context.clan.cpp" />
-    <ClCompile Include="lib\context\context.command.cpp" />
     <ClCompile Include="lib\context\context.cpp" />
     <ClCompile Include="lib\context\context.equipment.cpp" />
     <ClCompile Include="lib\context\context.event.character.cpp" />

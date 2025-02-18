@@ -43,26 +43,13 @@ public:
     };
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct command_config
-    {
-        using func_type = std::function<async::task<bool>(fb::game::character&, Json::Value&)>;
-        func_type fn;
-        bool      admin;
-    };
-
-public:
     using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param     = fb_reqs::login::transfer_param;
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
-    using command_container  = std::unordered_map<std::string, command_config>;
     using npc_interaction_func =
         std::function<bool(character&, const std::string&, const std::vector<fb::game::npc*>&)>;
 
 private:
-    command_container                 _commands;
     fb::model::datetime               _time;
     std::unique_ptr<fb::amqp::socket> _amqp;
     std::unique_ptr<std::thread>      _amqp_thread;
@@ -194,24 +181,6 @@ private:
     void init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch);
 
 private:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  cmd    The command
-     * @param      func   The function
-     * @param[in]  admin  The admin
-     *
-     * @tparam     Func   { description }
-     */
-    template <typename Func>
-    void command(const std::string& cmd, Func&& func, bool admin)
-    {
-        this->_commands.insert({
-            cmd,
-            command_config{.fn = std::bind(func, this, std::placeholders::_1, std::placeholders::_2), .admin = admin}
-        });
-    }
-
     /**
      * @brief      { function_description }
      *
@@ -1150,408 +1119,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     [[nodiscard]] async::task<void> handle_heart_beat();
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command(fb::game::character& ch, const std::string& message);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_map(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_sound(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_action(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_weather(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_bright(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_timer(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_effect(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_disguise(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_undisguise(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_mob(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_class(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_level(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_hp(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_mp(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_spell(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_remove_spell(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_item(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_world(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_script(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_hair(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_hair_color(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_armor_color(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_exit(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_tile(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_save(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_mapobj(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_randmap(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_npc(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_durability(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_concurrency(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_sleep(fb::game::character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_map_tile(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_ad(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_web(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_write_mail(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_read_mail(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_delete_mail(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_reset_delay(character& ch, Json::Value& parameters);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch          { parameter_description }
-     * @param      parameters  The parameters
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_command_money(character& ch, Json::Value& parameters);
-
 public:
     /**
      * @brief      { function_description }
@@ -2667,6 +2234,15 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_bright(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_name_with(lua_State* lua);
 
     /**
@@ -2713,6 +2289,42 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_debug(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_name2class(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_save(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_mknpc(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_maps(lua_State* lua);
 };
 
 } // namespace fb::game

@@ -14,6 +14,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::life, "fb.game.life")
 {"mp_down",             fb::game::life::builtin_mp_down},
 {"action",              fb::game::life::builtin_action},
 {"spell",               fb::game::life::builtin_spell},
+{"spells",              fb::game::life::builtin_spells},
 {"cast",                fb::game::life::builtin_cast},
 {"cc",                  fb::game::life::builtin_cc},
 {"add_cc",              fb::game::life::builtin_add_cc},
@@ -245,7 +246,38 @@ int fb::game::life::builtin_spell(lua_State* lua)
 
     auto index = (int)thread->tointeger(2);
     return context->builtin(*life, thread, 1, [=]() -> async::task<void> {
-        thread->pushobject(life->spells[index]);
+        auto spell = life->spells[index];
+        if (spell == nullptr)
+            thread->pushnil();
+        else
+            thread->pushobject(spell);
+        co_return;
+    });
+}
+
+int fb::game::life::builtin_spells(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto life    = thread->touserdata<fb::game::life>(1);
+    if (life == nullptr)
+        return 0;
+
+    return context->builtin(*life, thread, 1, [=]() -> async::task<void> {
+        thread->new_table();
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto spell = life->spells[i];
+            if (spell == nullptr)
+                continue;
+
+            thread->pushobject(spell);
+            lua_rawseti(lua, -2, i);
+        }
         co_return;
     });
 }

@@ -1097,7 +1097,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position);
+    mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true);
 
     /**
      * @brief      { function_description }
@@ -1568,6 +1568,15 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_promotion(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_level(lua_State* lua);
 
     /**
@@ -1884,6 +1893,60 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_armor_color(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_mkspell(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_rmspell(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_world(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_script(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_ad(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_web(lua_State* lua);
 #pragma endregion
 };
 

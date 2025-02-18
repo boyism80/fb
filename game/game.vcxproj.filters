@@ -168,9 +168,6 @@
     <ClCompile Include="lib\group.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="lib\context\context.command.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="lib\context\context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

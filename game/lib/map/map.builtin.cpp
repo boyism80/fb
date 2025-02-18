@@ -16,6 +16,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"doors",               fb::game::map::builtin_doors},
 {"contains",            fb::game::map::builtin_contains},
 {"belows",              fb::game::map::builtin_belows},
+{"tile",                fb::game::map::builtin_tile},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::map::builtin_model(lua_State* lua)
@@ -283,4 +284,42 @@ int fb::game::map::builtin_belows(lua_State* lua)
         i++;
     }
     return 1;
+}
+
+int fb::game::map::builtin_tile(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto argc = thread->argc();
+    auto map  = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto x    = (uint16_t)thread->tointeger(2);
+    auto y    = (uint16_t)thread->tointeger(3);
+    auto tile = (*map)(x, y);
+    if (tile == nullptr)
+        return 0;
+
+    if (argc >= 4)
+    {
+        auto value   = thread->tointeger(4);
+        tile->object = value;
+
+        auto position = fb::model::point16_t{x, y};
+        for (auto obj : map->nears(position, OBJECT_TYPE::CHARACTER))
+        {
+            auto ch = static_cast<character*>(obj);
+            ch->update_map(*map, position, fb::model::size8_t{1, 1});
+        }
+    }
+    else
+    {
+        thread->pushinteger(tile->id);
+        thread->pushinteger(tile->object);
+        thread->pushboolean(tile->blocked);
+        return 3;
+    }
 }

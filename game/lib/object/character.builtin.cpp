@@ -22,6 +22,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"state",               character::builtin_state},
 {"disguise",            character::builtin_disguise},
 {"class",               character::builtin_class},
+{"promotion",           character::builtin_promotion},
 {"level",               character::builtin_level},
 {"assert",              character::builtin_assert},
 {"deposited_money",     character::builtin_deposited_money},
@@ -57,6 +58,12 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"base_dam",            character::builtin_base_dam},
 {"base_hit",            character::builtin_base_hit},
 {"armor_color",         character::builtin_armor_color},
+{"mkspell",             character::builtin_mkspell},
+{"rmspell",             character::builtin_rmspell},
+{"world",               character::builtin_world},
+{"script",              character::builtin_script},
+{"ad",                  character::builtin_ad},
+{"web",                 character::builtin_web},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -430,39 +437,40 @@ int character::builtin_class(lua_State* lua)
 
     if (argc == 1)
     {
-        auto cls       = ch->_class;
-        auto promotion = ch->_promotion;
-
-        auto promo_model = context->model.promotion(cls, promotion);
-        if (promo_model == nullptr)
-        {
-            thread->pushnil();
-        }
-        else
-        {
-            thread->pushstring(promo_model->name);
-        }
+        thread->pushinteger(ch->_class);
+        return 1;
     }
     else
     {
-        auto cls_name  = thread->tostring(2);
-        auto cls       = CLASS::NONE;
-        auto promotion = uint8_t(0);
-        if (context->model.promotion.name2class(cls_name, cls, promotion) == false)
-        {
-            thread->pushboolean(false);
-        }
-        else
-        {
-            auto context = thread->env<fb::game::context>("context");
-
-            ch->update_id();
-            ch->update(STATE_LEVEL::LEVEL_MAX);
-            thread->pushboolean(true);
-        }
+        auto value = thread->tointeger(2);
+        ch->cls(static_cast<CLASS>(value));
+        return 0;
     }
+}
 
-    return 1;
+int character::builtin_promotion(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        thread->pushinteger(ch->_promotion);
+        return 1;
+    }
+    else
+    {
+        auto value = thread->tointeger(2);
+        ch->promotion(value);
+        return 0;
+    }
 }
 
 int character::builtin_level(lua_State* lua)
@@ -1103,47 +1111,6 @@ int character::builtin_whisper(lua_State* lua)
     return thread->yield(1);
 }
 
-int character::builtin_send_mail(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto me      = thread->touserdata<character>(1);
-    if (me == nullptr)
-        return 0;
-
-    auto to       = thread->tostring(2);
-    auto title    = thread->tostring(3);
-    auto contents = thread->tostring(4);
-
-    static auto fn = [](fb::game::context*   context,
-                        fb::lua::context*    thread,
-                        fb::game::character* ch,
-                        const std::string&   to,
-                        const std::string&   title,
-                        const std::string&   contents) -> async::task<void> {
-        try
-        {
-            co_await context->send_mail(*ch, to, title, contents);
-            thread->pushnil();
-        }
-        catch (std::exception& e)
-        {
-            thread->pushstring(e.what());
-        }
-
-        thread->resume(1);
-    };
-
-    context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-        co_await fn(context, thread, me, to, title, contents);
-    });
-
-    return thread->yield(1);
-}
-
 int character::builtin_assert_state(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
@@ -1347,6 +1314,7 @@ int character::builtin_spawn_mob(lua_State* lua)
     }
 
     auto name  = thread->tostring(2);
+    auto owned = true;
     auto model = context->model.mob.name2mob(name);
     if (model == nullptr)
     {
@@ -1362,6 +1330,9 @@ int character::builtin_spawn_mob(lua_State* lua)
     }
     else if (thread->is_table(3))
     {
+        if (argc >= 4)
+            owned = thread->toboolean(4);
+
         thread->rawgeti(3, 1);
         x = (uint16_t)thread->tointeger(-1);
         thread->remove(-1);
@@ -1372,11 +1343,14 @@ int character::builtin_spawn_mob(lua_State* lua)
     }
     else
     {
+        if (argc >= 5)
+            owned = thread->toboolean(5);
+
         x = (uint16_t)thread->tointeger(3);
         y = (uint16_t)thread->tointeger(4);
     }
 
-    auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y));
+    auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y), owned);
     if (mob == nullptr)
         thread->pushnil();
     else
@@ -1611,4 +1585,196 @@ int character::builtin_armor_color(lua_State* lua)
         }
         return 0;
     }
+}
+
+int character::builtin_mkspell(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto name  = thread->tostring(2);
+    auto model = context->model.spell.name2spell(name);
+    if (model == nullptr)
+        return 0;
+
+    auto slot = ch->spells.add(*model);
+    if (slot == 0xFF)
+        return 0;
+
+    thread->pushinteger(slot);
+    return 1;
+}
+
+int character::builtin_rmspell(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    if (argc == 1)
+    {
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto spell = ch->spells[i];
+            if (spell == nullptr)
+                continue;
+
+            ch->spells.remove(i);
+        }
+    }
+    else
+    {
+        auto slot = thread->tointeger(2);
+        ch->spells.remove(slot);
+    }
+
+    return 0;
+}
+
+int character::builtin_world(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto name = thread->tostring(2);
+    for (auto& [id, world] : context->model.world)
+    {
+        for (auto& [index, point] : world)
+        {
+            if (point.name == name)
+            {
+                ch->show_world_map(id, index);
+                thread->pushboolean(true);
+                return 1;
+            }
+        }
+    }
+
+    thread->pushboolean(false);
+    return 1;
+}
+
+int character::builtin_script(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    ch->dialog.from("scripts/script.lua");
+    ch->dialog.func("func");
+    ch->dialog.pushobject(ch);
+    ch->dialog.resume(1);
+    return 0;
+}
+
+int character::builtin_ad(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto width = 300;
+    if (argc >= 2 && thread->is_nil(2) == false)
+        width = thread->tointeger(2);
+
+    auto height = 120;
+    if (argc >= 3 && thread->is_nil(3) == false)
+        height = thread->tointeger(3);
+
+    auto url = std::string{"http://www.google.com"};
+    if (argc >= 4 && thread->is_nil(4) == false)
+        url = thread->tostring(4);
+
+    auto time = 60;
+    if (argc >= 5 && thread->is_nil(5) == false)
+        time = thread->tointeger(5);
+
+    ch->send(fb::protocol::game::response::ad(width, height, url, time));
+    return 0;
+}
+
+int character::builtin_web(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto type = 0;
+    if (argc >= 2 && thread->is_nil(2) == false)
+        type = thread->tointeger(2);
+
+    auto url = std::string{"http://www.google.com"};
+    if (argc >= 3 && thread->is_nil(3) == false)
+        url = thread->tostring(3);
+
+    auto message = std::string{"default message"};
+    if (argc >= 4 && thread->is_nil(4) == false)
+        message = thread->tostring(4);
+
+    ch->send(fb::protocol::game::response::web(type, url, message));
+    return 0;
+}
+
+int character::builtin_send_mail(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto to    = thread->tostring(2);
+    auto title = std::string{"mail title"};
+    if (argc >= 3 && thread->is_nil(3) == false)
+        title = thread->tostring(3);
+
+    auto contents = std::string{"mail contents"};
+    if (argc >= 4 && thread->is_nil(4) == false)
+        contents = thread->tostring(4);
+
+    return context->builtin(*ch, thread, 0, [=]() -> async::task<void> {
+        co_await context->send_mail(*ch, to, title, contents);
+    });
 }
