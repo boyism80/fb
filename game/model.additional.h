@@ -376,7 +376,7 @@ public:                                      \
 public:                                                                                                     \
     const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const;                           \
     bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const; \
-    bool             class2name(enum_value::CLASS& cls, uint8_t& promotion, std::string& name) const;
+    bool             class2name(enum_value::CLASS cls, uint8_t promotion, std::string& name) const;
 
 #define DECLARE_CONST_REGEX_EXTENSION                                                                              \
                                                                                                                    \

@@ -95,6 +95,7 @@ namespace fb.protocol._internal
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
                 builder.Build(value.Buffs),
+                builder.Build(value.Title),
                 builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol._internal.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol._internal.Item value)
@@ -1030,6 +1031,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
                 builder.Build(value.Buffs),
+                builder.Build(value.Title),
                 builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol._internal.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol._internal.Item value)
@@ -1980,6 +1982,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.AuxTopColor),
                 builder.Build(value.AuxBotColor),
                 builder.Build(value.Buffs),
+                builder.Build(value.Title),
                 builder.Build(value.UpdatedDate));
         }
         public static Offset<fb.protocol._internal.raw.Item> Build(this FlatBufferBuilder builder, fb.protocol._internal.Item value)
@@ -2938,6 +2941,7 @@ namespace fb.protocol._internal
         public byte? AuxTopColor { get; set; } = null;
         public byte? AuxBotColor { get; set; } = null;
         public List<fb.protocol._internal.Buff> Buffs { get; set; } = new List<fb.protocol._internal.Buff>();
+        public string Title { get; set; } = string.Empty;
         public string UpdatedDate { get; set; } = string.Empty;
 
         public Character()
@@ -2980,6 +2984,7 @@ namespace fb.protocol._internal
             AuxTopColor = raw.AuxTopColor != null ? (byte?)raw.AuxTopColor.Value.Value : null;
             AuxBotColor = raw.AuxBotColor != null ? (byte?)raw.AuxBotColor.Value.Value : null;
             Buffs = Enumerable.Range(0, raw.BuffsLength).Select(i => raw.Buffs(i)).Select(x => new Buff(x.Value)).ToList();
+            Title = raw.Title;
             UpdatedDate = raw.UpdatedDate;
         }
 

@@ -2306,6 +2306,15 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_class2name(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_save(lua_State* lua);
 
     /**

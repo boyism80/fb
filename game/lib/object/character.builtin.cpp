@@ -8,6 +8,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"__eq",                fb::game::object::builtin_eq},
 {"look",                character::builtin_look},
 {"color",               character::builtin_color},
+{"sex",                 character::builtin_sex},
 {"money",               character::builtin_money},
 {"exp",                 character::builtin_exp},
 {"str",                 character::builtin_str},
@@ -114,6 +115,30 @@ int character::builtin_color(lua_State* lua)
         ch->color(value);
         return 0;
     }
+}
+
+int character::builtin_sex(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto sex = static_cast<SEX>(thread->tointeger(2));
+    auto n   = (argc == 1 ? 1 : 0);
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+            thread->pushinteger(ch->sex());
+        else
+            ch->sex(sex);
+
+        co_return;
+    });
 }
 
 int character::builtin_money(lua_State* lua)

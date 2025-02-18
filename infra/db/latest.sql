@@ -311,6 +311,7 @@ CREATE TABLE `user` (
   `aux_top_color` int DEFAULT NULL,
   `aux_bot_color` int unsigned DEFAULT NULL,
   `buffs` varchar(512) NOT NULL DEFAULT '[]',
+  `title` varchar(32) NOT NULL DEFAULT '',
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
@@ -648,4 +649,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-02-09  9:00:48
+-- Dump completed on 2025-02-18 16:24:50

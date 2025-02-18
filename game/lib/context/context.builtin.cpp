@@ -420,6 +420,24 @@ int fb::game::context::builtin_name2class(lua_State* lua)
     return 2;
 }
 
+int fb::game::context::builtin_class2name(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context   = thread->env<fb::game::context>("context");
+    auto cls       = (uint8_t)thread->tointeger(1);
+    auto promotion = (uint8_t)thread->tointeger(2);
+    auto name      = std::string{};
+    if (context->model.promotion.class2name(static_cast<CLASS>(cls), promotion, name) == false)
+        thread->pushnil();
+    else
+        thread->pushstring(name);
+
+    return 1;
+}
+
 int fb::game::context::builtin_save(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

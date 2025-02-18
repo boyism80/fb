@@ -74,6 +74,7 @@ namespace Http.Reepository
                     `aux_top_color`,
                     `aux_bot_color`,
                     `buffs`,
+                    `title`,
                     `deleted`,
                     `created_date`,
                     `updated_date`)
@@ -115,6 +116,7 @@ namespace Http.Reepository
                     {value.AuxTopColor.Escape()},
                     {value.AuxBotColor.Escape()},
                     {JsonConvert.SerializeObject(value.Buffs).Escape()},
+                    {value.Title.Escape()},
                     {value.Deleted.Escape()},
                     {value.CreatedDate.Escape()},
                     {value.UpdatedDate.Escape()})
@@ -154,6 +156,7 @@ namespace Http.Reepository
                     `aux_top_color`=VALUES(`aux_top_color`),
                     `aux_bot_color`=VALUES(`aux_bot_color`),
                     `buffs`=VALUES(`buffs`),
+                    `title`=VALUES(`title`),
                     `deleted`=VALUES(`deleted`),
                     `updated_date`=VALUES(`updated_date`);
                 """;

@@ -1,7 +1,33 @@
 function on_interact(me, npc)
 
+::ROUTINE_INIT_1::
+    local index = nil
+    local button = npc:dialog(me, '나에게 또 무슨 도움을 받겠다고 찾아왔느냐...', false, true)
+    if button == DIALOG_RESULT_QUIT then
+        return
+    end
+
+::ROUTINE_INIT_2::
+    button = npc:dialog(me, '여기 저기서 사고나 치고 돌아다니면서, 툭하면 나를 찾아오는 속셈이 도대체 무엇이냐?', true, true)
+    if button == DIALOG_RESULT_QUIT then
+        return
+    end
+
+    if button == DIALOG_RESULT_PREV then
+        goto ROUTINE_INIT_1
+    end
+
+    button = npc:dialog(me, '그리고 나를 찾아올 생각을 했다면 뭔가를 들고 왔어야지... 만약 뭔가를 공짜로 얻으려고 생각했다면 큰 오산이니 바로 돌아가거라.', true, true)
+    if button == DIALOG_RESULT_QUIT then
+        return
+    end
+
+    if button == DIALOG_RESULT_PREV then
+        goto ROUTINE_INIT_2
+    end
+
 ::ROOT::
-    local index, button = npc:list(me, '그래도 버티고 서서 도대체 원하는 것이 뭐냐?', {'힘올리기', '지력올리기', '민첩올리기', '체력사기', '마력사기', '성형', '성전환'}, false)
+    index, button = npc:list(me, '그래도 버티고 서서 도대체 원하는 것이 뭐냐?', {'힘올리기', '지력올리기', '민첩올리기', '체력사기', '마력사기', '성형', '성전환'}, false)
     if index == 3 then
 ::ROUTINE_BUY_HP_1::
         button = npc:dialog(me, '체력을 사기 전에 명심하게.. 지금 착용하고 있는 모든 아이템을 벗은 후, 체력을 사기 바라네.', false, true)
@@ -151,5 +177,107 @@ function on_interact(me, npc)
                 return
             end
         end
+    elseif index == 6 then
+::ROUTINE_CHANGE_SEX_1::
+        button = npc:dialog(me, '이건 아직 해 줄 수가 없네...', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        button = npc:dialog(me, '나도 조금 더 공부를 해야 하고... 그리고 하여간 여러가지 복잡한 사정이 있으니... 이번ㅂ에는 그냥 돌아가도록 하게.', true, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        if button == DIALOG_RESULT_PREV then
+            goto ROUTINE_CHANGE_SEX_1
+        end
+
+        index, button = npc:list(me, '아니 돌아가라고 하는데, 왜 이렇게 나를 귀찮게 하지? 이것을 꼭 해야 할 사정이 있나? 비용도 만만치 않게 들고, 그리고 실패할 확률도 많은데, 그래도 꼭 해야 되겠나?', {'예', '아니오. 그럼 나중에...'})
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        if index ~= 0 then
+            return
+        end
+
+        button = npc:dialog(me, '정 그렇다면... 먼저 아이템을 장비하고 있는지 보겠네. 아이템을 장비한 채로 성전환을 하면 부작용이 있을 수도 있지.', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        local equipments = me:equipments()
+        local naked = true
+        for parts, equipment in pairs(equipments) do
+            naked = false
+            break
+        end
+        if not naked then
+            npc:dialog(me, '장비를 착용중이라서 불가능')
+            return
+        end
+
+        button = npc:dialog(me, '아이템은 장비하지 않았고... 필요한 수술비를 가지고 왔는지 좀 보겠네.', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+        local money = me:money()
+        local price = 100000
+        if price > money then
+            npc:dialog(me, '돈이 모자람')
+            return
+        end
+
+        button = npc:dialog(me, '성을 전환하려면 십만전이 필요하다네... 금전을 지불하면 돌려주지 않을 것이니 지금 신중하게 생각하시게. 왜냐하면... 하여간 그렇다네. 그 정도는 준비해 왔겠지?', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        button = npc:dialog(me, '먼저 수술비를 받았으니... 이제 자네를 조금 검사해 보아야 되겠네.', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        button = npc:dialog(me, '음... 아직 결혼한 상태가 아니니... 수술을 시작해 봐야지.', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        local sex = me:sex()
+        local sex_from = nil
+        local sex_to = nil
+        if sex == SEX_MAN then
+            sex_from = '남자'
+            sex_to = '여자'
+        else
+            sex_from = '여자'
+            sex_to = '남자'
+        end
+        index, button = npc:list(me, string.format('자네 %s가 되고 싶다는 것이지?', sex_to), {'예', '아니오'})
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        if index ~= 0 then
+            return
+        end
+
+        button = npc:dialog(me, '그래. 내 수술비도 받고, 자네가 결혼한 몸도 아니라는 것을 확인했으니, 성별을 바꾸어는 주겠네. 하지만 이런 일을 다시는 내게 와서 부탁하지 말게. 알겠나?', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        me:money(money - price)
+        if sex == SEX_MAN then
+            me:sex(SEX_WOMAN)
+        else
+            me:sex(SEX_MAN)
+        end
+        button = npc:dialog(me, string.format('자네 지금부터는 %s 되었네. %s용 의복을 갖추고 있는지는 몰라도, 하여간 자네는 이제 %s의 몸을 갖게 되었으니 그렇게 알고 돌아고도록 하게.', sex_to, sex_from, sex_to), false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+        goto ROOT
     end
 end

@@ -1469,6 +1469,15 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_sex(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_money(lua_State* lua);
 
     /**

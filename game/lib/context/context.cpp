@@ -71,6 +71,7 @@ async::task<void> context::handle_start()
     lua::build("CP949", builtin_cp949);
     lua::build("debug", builtin_debug);
     lua::build("name2class", builtin_name2class);
+    lua::build("class2name", builtin_class2name);
     lua::build("save", builtin_save);
     lua::build("mknpc", builtin_mknpc);
     lua::build("maps", builtin_maps);
@@ -392,6 +393,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.level(response.level);
     ch.exp(response.exp);
     ch.state(STATE(response.state));
+    ch.title(response.title);
 
     if (response.armor_color.has_value())
         ch.armor_color(response.armor_color.value());

@@ -48,5 +48,6 @@ namespace Http.Model
         public byte? AuxTopColor { get; set; }
         public byte? AuxBotColor { get; set; }
         public List<Buff> Buffs { get; set; } = new List<Buff>();
+        public string Title { get; set; } = string.Empty;
     }
 }

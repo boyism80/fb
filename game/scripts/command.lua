@@ -70,6 +70,13 @@ command_funcs = {
         return true
     end,
 
+    ['타이틀'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:title(value)
+        return true
+    end,
+
     ['이펙트'] =
     function (me, args)
         local value = table.unpack(args)

@@ -418,6 +418,7 @@ void character::sex(SEX value)
     this->assert_thread();
 
     this->_sex = value;
+    this->update_external(false);
 }
 
 STATE character::state() const
@@ -454,8 +455,7 @@ void character::cls(CLASS value)
 uint8_t character::promotion() const
 {
     this->assert_thread();
-
-    return uint8_t();
+    return this->_promotion;
 }
 
 void character::promotion(uint8_t value)
@@ -1378,6 +1378,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
+    dto.title            = this->_title;
 
     for (auto& [_, buff] : this->buffs)
     {

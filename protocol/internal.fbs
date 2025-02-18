@@ -45,6 +45,7 @@ table Character {
     aux_top_color: ubyte?;
     aux_bot_color: ubyte?;
     buffs: [Buff];
+    title: string;
     updated_date: string;
 }
 
