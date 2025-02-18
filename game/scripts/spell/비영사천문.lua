@@ -23,16 +23,20 @@ function on_cast(me, spell, message)
         return
     end
 
-    local root = map:model():root()
-    local cardinal = root:cardinal(input)
-    if cardinal == nil then
-        return
-    end
+    local mp = 30
+    local effect = nil
+    local sound = 1
+    if spell_cast(me, me, spell, mp, sound, effect) then
+        local root = map:model():root()
+        local cardinal = root:cardinal(input)
+        if cardinal == nil then
+            return
+        end
 
-    local dest, left, top, right, bottom = table.unpack(cardinal)
-    math.randomseed(seed())
-    local x = math.random(left, right)
-    local y = math.random(top, bottom)
-    me:map(dest:name(), x, y)
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+        local dest, left, top, right, bottom = table.unpack(cardinal)
+        math.randomseed(seed())
+        local x = math.random(left, right)
+        local y = math.random(top, bottom)
+        me:map(dest:name(), x, y)
+    end
 end

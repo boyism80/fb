@@ -10,8 +10,8 @@ function on_cast(me, spell, message)
     end
 
     local root = map:model():root()
-    local resr = root:resurrection();
-    if resr == nil then
+    local revive = root:revive();
+    if revive == nil then
         return
     end
 
@@ -24,9 +24,9 @@ function on_cast(me, spell, message)
         return
     end
 
-    if resr[input] == nil then
+    if revive[input] == nil then
         return
     end
 
-    me:map(resr[input]:name())
+    me:map(revive[input]:name())
 end

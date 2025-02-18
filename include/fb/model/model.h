@@ -4041,7 +4041,7 @@ public:
     const uint8_t host;
     const fb::model::enum_value::MAP_OPTION option;
     const std::map<fb::model::enum_value::CARDINAL_DIRECTION, fb::model::dsl> cardinal;
-    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t> resurrection;
+    const std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t> revive;
     const std::vector<fb::model::dsl> teleport;
 #endif
 
@@ -4061,7 +4061,7 @@ DECLARE_MAP_CONSTRUCTOR
         host(fb::model::build<uint8_t>(json["host"])),
         option(fb::model::build<fb::model::enum_value::MAP_OPTION>(json["option"])),
         cardinal(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, fb::model::dsl>>(json["cardinal"])),
-        resurrection(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t>>(json["resurrection"])),
+        revive(fb::model::build<std::map<fb::model::enum_value::CARDINAL_DIRECTION, uint32_t>>(json["revive"])),
         teleport(fb::model::build<std::vector<fb::model::dsl>>(json["teleport"]))
 #ifdef DECLARE_MAP_INITIALIZER
 DECLARE_MAP_INITIALIZER

@@ -115,7 +115,7 @@ int fb::model::map::builtin_cardinal(lua_State* lua)
     return 1;
 }
 
-int fb::model::map::builtin_resurrection(lua_State* lua)
+int fb::model::map::builtin_revive(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);
     if (thread == nullptr)
@@ -126,14 +126,14 @@ int fb::model::map::builtin_resurrection(lua_State* lua)
     if (map == nullptr)
         return 0;
 
-    if (map->resurrection.size() == 0)
+    if (map->revive.size() == 0)
     {
         thread->pushnil();
         return 1;
     }
 
     thread->new_table();
-    for (auto& [direction, x] : map->resurrection)
+    for (auto& [direction, x] : map->revive)
     {
         thread->pushinteger(direction);
         thread->pushobject(ctx->model.map[x]);

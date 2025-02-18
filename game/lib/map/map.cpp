@@ -268,6 +268,10 @@ std::vector<fb::game::object*> map::belows(const fb::model::point16_t& pivot, OB
         std::copy_if(sector->begin(), sector->end(), std::back_inserter(objects), [type, &pivot](auto x) {
             return (type == OBJECT_TYPE::UNKNOWN || x->is(type)) && x->position() == pivot;
         });
+
+        std::sort(objects.begin(), objects.end(), [](auto* obj1, auto* obj2) {
+            return obj1->sequence() > obj2->sequence();
+        });
     }
     catch (std::exception&)
     { }

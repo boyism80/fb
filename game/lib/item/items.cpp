@@ -25,79 +25,71 @@ fb::game::items::~items()
 uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-    auto error    = std::string();
-    try
+    if (this->free() == false)
+        return 0xFF;
+
+    fb::game::item* item = nullptr;
+    switch (parts)
     {
-        if (this->free() == false)
-            throw std::runtime_error(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+    case EQUIPMENT_PARTS::WEAPON:
+        item = this->_weapon;
+        if (this->_weapon != nullptr)
+            this->_weapon = nullptr;
+        break;
 
-        fb::game::item* item = nullptr;
-        switch (parts)
-        {
-        case EQUIPMENT_PARTS::WEAPON:
-            item = this->_weapon;
-            if (this->_weapon != nullptr)
-                this->_weapon = nullptr;
+    case EQUIPMENT_PARTS::ARMOR:
+        item = this->_armor;
+        if (this->_armor != nullptr)
+            this->_armor = nullptr;
+        break;
 
-            break;
+    case EQUIPMENT_PARTS::SHIELD:
+        item = this->_shield;
+        if (this->_shield != nullptr)
+            this->_shield = nullptr;
+        break;
 
-        case EQUIPMENT_PARTS::ARMOR:
-            item = this->_armor;
-            if (this->_armor != nullptr)
-                this->_armor = nullptr;
-            break;
+    case EQUIPMENT_PARTS::HELMET:
+        item = this->_helmet;
+        if (this->_helmet != nullptr)
+            this->_helmet = nullptr;
+        break;
 
-        case EQUIPMENT_PARTS::SHIELD:
-            item = this->_shield;
-            if (this->_shield != nullptr)
-                this->_shield = nullptr;
-            break;
+    case EQUIPMENT_PARTS::LEFT_HAND:
+        item = this->_rings[0];
+        if (this->_rings[0] != nullptr)
+            this->_rings[0] = nullptr;
+        break;
 
-        case EQUIPMENT_PARTS::HELMET:
-            item = this->_helmet;
-            if (this->_helmet != nullptr)
-                this->_helmet = nullptr;
-            break;
+    case EQUIPMENT_PARTS::RIGHT_HAND:
+        item = this->_rings[1];
+        if (this->_rings[1] != nullptr)
+            this->_rings[1] = nullptr;
+        break;
 
-        case EQUIPMENT_PARTS::LEFT_HAND:
-            item = this->_rings[0];
-            if (this->_rings[0] != nullptr)
-                this->_rings[0] = nullptr;
-            break;
+    case EQUIPMENT_PARTS::LEFT_AUX:
+        item = this->_auxiliaries[0];
+        if (this->_auxiliaries[0] != nullptr)
+            this->_auxiliaries[0] = nullptr;
+        break;
 
-        case EQUIPMENT_PARTS::RIGHT_HAND:
-            item = this->_rings[1];
-            if (this->_rings[1] != nullptr)
-                this->_rings[1] = nullptr;
-            break;
-
-        case EQUIPMENT_PARTS::LEFT_AUX:
-            item = this->_auxiliaries[0];
-            if (this->_auxiliaries[0] != nullptr)
-                this->_auxiliaries[0] = nullptr;
-            break;
-
-        case EQUIPMENT_PARTS::RIGHT_AUX:
-            item = this->_auxiliaries[1];
-            if (this->_auxiliaries[1] != nullptr)
-                this->_auxiliaries[1] = nullptr;
-            break;
-        }
-
-        auto index = this->add(item);
-        this->_owner.update(STATE_LEVEL::LEVEL_MAX);
-        if (listener != nullptr)
-            listener->on_equipment_off(this->_owner, parts, index);
-
-        this->_owner.update_external(false);
-        return index;
-    }
-    catch (std::exception& e)
-    {
-        this->_owner.message(e.what());
+    case EQUIPMENT_PARTS::RIGHT_AUX:
+        item = this->_auxiliaries[1];
+        if (this->_auxiliaries[1] != nullptr)
+            this->_auxiliaries[1] = nullptr;
+        break;
     }
 
-    return 0xFF;
+    if (item == nullptr)
+        return 0xFF;
+
+    auto index = this->add(item);
+    this->_owner.update(STATE_LEVEL::LEVEL_MAX);
+    if (listener != nullptr)
+        listener->on_equipment_off(this->_owner, parts, index);
+
+    this->_owner.update_external(false);
+    return index;
 }
 
 uint8_t fb::game::items::add(fb::game::item& item)
@@ -124,6 +116,21 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
     {
         if (item == nullptr)
             continue;
+
+        auto owner = item->owner();
+        if (owner != nullptr && owner != &this->_owner)
+        {
+            auto& drop_time = item->dropped_time();
+            if (drop_time.has_value())
+            {
+                auto diff = fb::model::datetime() - drop_time.value();
+                if (diff < fb::model::timespan(0, 0, 30, 0, 0))
+                {
+                    this->_owner.message("죽은 자의 온기가 남아있습니다.");
+                    break;
+                }
+            }
+        }
 
         auto& model = item->based<fb::model::item>();
         if (model.attr(ITEM_ATTRIBUTE::CASH))
@@ -350,7 +357,8 @@ fb::game::armor* fb::game::items::armor(fb::game::armor* armor)
     auto before = this->_armor;
 
     this->_armor = armor;
-    armor->owner(&this->_owner);
+    if (armor != nullptr)
+        armor->owner(&this->_owner);
     this->_owner.update_external(true);
 
     return before;
@@ -366,7 +374,8 @@ fb::game::shield* fb::game::items::shield(fb::game::shield* shield)
     fb::game::shield* before = this->_shield;
 
     this->_shield = shield;
-    shield->owner(&this->_owner);
+    if (shield != nullptr)
+        shield->owner(&this->_owner);
     this->_owner.update_external(true);
 
     return before;
@@ -382,7 +391,8 @@ fb::game::helmet* fb::game::items::helmet(fb::game::helmet* helmet)
     fb::game::helmet* before = this->_helmet;
 
     this->_helmet = helmet;
-    helmet->owner(&this->_owner);
+    if (helmet != nullptr)
+        helmet->owner(&this->_owner);
     this->_owner.update_external(true);
 
     return before;
@@ -405,9 +415,6 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring)
     {
         before = this->ring(ring, EQUIPMENT_POSITION::RIGHT);
     }
-    ring->owner(&this->_owner);
-    this->_owner.update_external(true);
-
     return before;
 }
 
@@ -415,6 +422,8 @@ fb::game::ring* fb::game::items::ring(fb::game::ring* ring, EQUIPMENT_POSITION p
 {
     auto before                              = this->_rings[static_cast<int>(position)];
     this->_rings[static_cast<int>(position)] = ring;
+    if (ring != nullptr)
+        ring->owner(&this->_owner);
     this->_owner.update_external(true);
 
     return before;
@@ -437,8 +446,6 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary)
     {
         before = this->auxiliary(auxiliary, EQUIPMENT_POSITION::RIGHT);
     }
-    auxiliary->owner(&this->_owner);
-    this->_owner.update_external(true);
 
     return before;
 }
@@ -447,6 +454,8 @@ fb::game::auxiliary* fb::game::items::auxiliary(fb::game::auxiliary* auxiliary, 
 {
     auto before                                    = this->_auxiliaries[static_cast<int>(position)];
     this->_auxiliaries[static_cast<int>(position)] = auxiliary;
+    if (auxiliary != nullptr)
+        auxiliary->owner(&this->_owner);
     this->_owner.update_external(true);
 
     return before;
@@ -519,6 +528,7 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
         auto dropped = this->remove(*item, count, ITEM_DELETE_TYPE::DROP);
         if (dropped != nullptr)
         {
+            dropped->owner(nullptr);
             std::ignore = dropped->map(this->_owner.map(), this->_owner.position());
             this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
         }
@@ -548,15 +558,7 @@ void fb::game::items::pickup(bool boost)
         // Pick up items in reverse order
         auto belows = std::vector<fb::game::item*>();
         for (auto below : map->belows(this->_owner.position(), OBJECT_TYPE::ITEM))
-        {
             belows.push_back(static_cast<fb::game::item*>(below));
-        }
-
-        std::sort(belows.begin(), belows.end(), [](auto* obj1, auto* obj2) {
-            auto item1 = static_cast<fb::game::item*>(obj1);
-            auto item2 = static_cast<fb::game::item*>(obj2);
-            return item1->dropped_time() > item2->dropped_time();
-        });
 
         if (belows.size() == 0)
         {

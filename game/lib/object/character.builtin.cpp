@@ -1204,9 +1204,10 @@ int character::builtin_weapon(lua_State* lua)
 
     auto weapon = thread->touserdata<fb::game::weapon>(2);
     auto n      = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, thread, n, [=]() mutable -> async::task<void> {
         if (argc == 1)
         {
+            weapon = ch->items.weapon();
             if (weapon == nullptr)
                 thread->pushnil();
             else

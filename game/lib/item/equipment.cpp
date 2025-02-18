@@ -30,6 +30,68 @@ bool fb::game::equipment::active()
     fb::game::item* before = nullptr;
     auto            parts  = EQUIPMENT_PARTS::UNKNOWN;
     auto&           model  = this->based<fb::model::equipment>();
+
+    for (auto& dsl : model.condition)
+    {
+        switch (dsl.header)
+        {
+        case DSL::level:
+        {
+            auto params = fb::model::dsl::level(dsl.params);
+            if (this->_owner->level() < params.min)
+                throw std::runtime_error("레벨이 부족합니다.");
+        }
+        break;
+
+        case DSL::strength:
+        {
+            auto params = fb::model::dsl::strength(dsl.params);
+            if (this->_owner->str() < params.value)
+                throw std::runtime_error("너무 무겁습니다.");
+        }
+        break;
+
+        case DSL::dexterity:
+        {
+            auto params = fb::model::dsl::dexterity(dsl.params);
+            if (this->_owner->dex() < params.value)
+                throw std::runtime_error("민첩함이 부족합니다.");
+        }
+        break;
+
+        case DSL::intelligence:
+        {
+            auto params = fb::model::dsl::intelligence(dsl.params);
+            if (this->_owner->intelligence() < params.value)
+                throw std::runtime_error("지능이 부족합니다.");
+        }
+        break;
+
+        case DSL::class_t:
+        {
+            auto params = fb::model::dsl::class_t(dsl.params);
+            if (this->_owner->cls() != params.value)
+                throw std::runtime_error("착용할 수 없습니다.");
+        }
+        break;
+
+        case DSL::promotion:
+        {
+            auto params = fb::model::dsl::promotion(dsl.params);
+            if (this->_owner->promotion() < params.value)
+                throw std::runtime_error("착용할 수 없습니다.");
+        }
+        break;
+
+        case DSL::sex:
+        {
+            auto params = fb::model::dsl::sex(dsl.params);
+            if (this->_owner->sex() != params.value)
+                throw std::runtime_error("착용할 수 없습니다.");
+        }
+        break;
+        }
+    }
     switch (model.attr())
     {
     case ITEM_ATTRIBUTE::WEAPON:

@@ -1107,8 +1107,8 @@ namespace Fb.Model
         public Fb.Model.EnumValue.MapOption Option { get; set; }
         [JsonProperty("cardinal")]
         public Dictionary<Fb.Model.EnumValue.CardinalDirection, Dsl> Cardinal { get; set; }
-        [JsonProperty("resurrection")]
-        public Dictionary<Fb.Model.EnumValue.CardinalDirection, uint> Resurrection { get; set; }
+        [JsonProperty("revive")]
+        public Dictionary<Fb.Model.EnumValue.CardinalDirection, uint> Revive { get; set; }
         [JsonProperty("teleport")]
         public List<Dsl> Teleport { get; set; }
     }
