@@ -625,18 +625,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
 
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
-    switch (type)
-    {
-    case CHAT_TYPE::NORMAL:
-        message = std::format("{}: {}", ch->name(), message);
-        break;
-
-    case CHAT_TYPE::SHOUT:
-        message = std::format("{}! {}", ch->name(), message);
-        break;
-    }
-
-    ch->chat(message, type);
+    ch->chat(message, type, true);
 
     auto npcs = std::vector<npc*>();
     if (type == CHAT_TYPE::SHOUT)
