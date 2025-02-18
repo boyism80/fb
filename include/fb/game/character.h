@@ -570,10 +570,8 @@ public:
      * @brief      { function_description }
      *
      * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
      */
-    uint32_t money_reduce(uint32_t value);
+    void money_reduce(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -582,7 +580,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t money_drop(uint32_t value);
+    fb::game::cash* money_drop(uint32_t value);
 
     /**
      * @brief      { function_description }

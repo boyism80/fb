@@ -642,44 +642,34 @@ uint32_t character::money_add(uint32_t value) // 먹고 남은 값 리턴
     return lack;
 }
 
-uint32_t character::money_reduce(uint32_t value)
+void character::money_reduce(uint32_t value)
 {
     this->assert_thread();
-
-    uint32_t lack = 0;
-    if (this->_money < value)
-    {
-        lack = value - this->_money;
-        this->money(0);
-    }
-    else
-    {
-        this->money(this->_money - value);
-    }
-
-    return lack;
+    value = std::min(this->_money, value);
+    this->money(this->_money - value);
 }
 
-uint32_t character::money_drop(uint32_t value)
+fb::game::cash* character::money_drop(uint32_t value)
 {
     this->assert_thread();
 
     try
     {
+        this->assert_state({STATE::RIDING, STATE::GHOST});
+
         if (value == 0)
             return 0;
 
-        this->assert_state({STATE::RIDING, STATE::GHOST});
-
-        auto lack = this->money_reduce(value);
+        value = std::min(this->_money, value);
+        this->money_reduce(value);
 
         auto cash = this->context.make<fb::game::cash>(value);
         cash->map(this->_map, this->_position);
+        return cash;
 
         this->action(ACTION::PICKUP, DURATION::PICKUP);
         this->message(_TEXT(MESSAGE_MONEY_DROP));
-
-        return lack;
+        return cash;
     }
     catch (std::exception& e)
     {

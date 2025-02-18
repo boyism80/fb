@@ -80,7 +80,156 @@ void context::on_dead(life& me, object* you)
     {
         auto& ch = static_cast<character&>(me);
         ch.state(STATE::GHOST);
-        // 템 떨구기
+
+        auto money = ch.money();
+        if (money > 0)
+        {
+            ch.money_reduce(money);
+            auto cash = this->make<fb::game::cash>(money);
+            cash->owner(&ch);
+            cash->map(ch.map(), ch.position());
+        }
+
+        for (auto item : ch.items)
+        {
+            if (item == nullptr)
+                continue;
+
+            auto& model = item->based<fb::model::item>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                auto dropped = ch.items.remove(*item, item->count(), ITEM_DELETE_TYPE::NONE);
+                dropped->map(ch.map(), ch.position());
+            }
+        }
+
+        auto weapon = ch.items.weapon();
+        if (weapon != nullptr)
+        {
+            auto& model = weapon->based<fb::model::weapon>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.weapon(nullptr);
+                weapon->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto armor = ch.items.armor();
+        if (armor != nullptr)
+        {
+            auto& model = armor->based<fb::model::armor>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.armor(nullptr);
+                armor->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto helmet = ch.items.helmet();
+        if (helmet != nullptr)
+        {
+            auto& model = helmet->based<fb::model::helmet>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.helmet(nullptr);
+                helmet->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto shield = ch.items.shield();
+        if (shield != nullptr)
+        {
+            auto& model = shield->based<fb::model::shield>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.shield(nullptr);
+                shield->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto ring1 = ch.items.ring(EQUIPMENT_POSITION::LEFT);
+        if (ring1 != nullptr)
+        {
+            auto& model = ring1->based<fb::model::ring>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.ring(nullptr, EQUIPMENT_POSITION::LEFT);
+                ring1->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto ring2 = ch.items.ring(EQUIPMENT_POSITION::RIGHT);
+        if (ring2 != nullptr)
+        {
+            auto& model = ring2->based<fb::model::ring>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.ring(nullptr, EQUIPMENT_POSITION::RIGHT);
+                ring2->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto aux1 = ch.items.auxiliary(EQUIPMENT_POSITION::LEFT);
+        if (aux1 != nullptr)
+        {
+            auto& model = aux1->based<fb::model::auxiliary>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.auxiliary(nullptr, EQUIPMENT_POSITION::LEFT);
+                aux1->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
+
+        auto aux2 = ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT);
+        if (aux2 != nullptr)
+        {
+            auto& model = aux2->based<fb::model::auxiliary>();
+            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            {
+                ch.items.auxiliary(nullptr, EQUIPMENT_POSITION::RIGHT);
+                aux2->map(ch.map(), ch.position());
+            }
+            else
+            {
+                if (ch.items.free())
+                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+            }
+        }
     }
     break;
     }

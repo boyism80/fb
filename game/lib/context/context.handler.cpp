@@ -239,7 +239,10 @@ async::task<bool> context::handle_inactive_item(fb::socket<character>& socket, c
     if (ch->inited() == false)
         co_return true;
 
-    ch->items.inactive(request.parts);
+    auto slot = ch->items.inactive(request.parts);
+    if (slot == 0xFF)
+        ch->message(_TEXT(MESSAGE_EXCEPTION_INVENTORY_OVERFLOW));
+
     co_return true;
 }
 

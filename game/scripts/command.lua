@@ -141,6 +141,27 @@ command_funcs = {
         return true
     end,
 
+    ['힘바꾸기'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:base_str(value)
+        return true
+    end,
+
+    ['민첩바꾸기'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:base_dex(value)
+        return true
+    end,
+
+    ['지력바꾸기'] = 
+    function (me, args)
+        local value = table.unpack(args)
+        me:base_int(value)
+        return true
+    end,
+
     ['체력바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)

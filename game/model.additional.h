@@ -324,17 +324,17 @@ public:                                  \
 
 #define DECLARE_MAP_INHERIT : public fb::lua::luable
 
-#define DECLARE_MAP_EXTENSION                        \
-                                                     \
-public:                                              \
-    LUA_PROTOTYPE                                    \
-                                                     \
-public:                                              \
-    static int builtin_id(lua_State* lua);           \
-    static int builtin_name(lua_State* lua);         \
-    static int builtin_root(lua_State* lua);         \
-    static int builtin_cardinal(lua_State* lua);     \
-    static int builtin_resurrection(lua_State* lua); \
+#define DECLARE_MAP_EXTENSION                    \
+                                                 \
+public:                                          \
+    LUA_PROTOTYPE                                \
+                                                 \
+public:                                          \
+    static int builtin_id(lua_State* lua);       \
+    static int builtin_name(lua_State* lua);     \
+    static int builtin_root(lua_State* lua);     \
+    static int builtin_cardinal(lua_State* lua); \
+    static int builtin_revive(lua_State* lua);   \
     static int builtin_option(lua_State* lua);
 
 #define DECLARE_MAP_CONTAINER_EXTENSION \
