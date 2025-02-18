@@ -229,8 +229,9 @@ public:
      *
      * @param[in]  message    The message
      * @param[in]  chat_type  The chat type
+     * @param[in]  decorate   The decorate
      */
-    void chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL);
+    void chat(const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL, bool decorate = true);
 
     /**
      * @brief      { function_description }

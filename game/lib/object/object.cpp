@@ -133,12 +133,34 @@ void object::sequence(uint32_t value)
     this->_sequence = value;
 }
 
-void object::chat(const std::string& message, CHAT_TYPE chat_type)
+void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate)
 {
     this->assert_thread();
 
     if (this->_listener != nullptr)
-        this->_listener->on_chat(*this, message, chat_type);
+    {
+
+        if (decorate)
+        {
+            auto decorated = std::string{message};
+            switch (chat_type)
+            {
+            case CHAT_TYPE::NORMAL:
+                decorated = std::format("{}: {}", this->name(), message);
+                break;
+
+            case CHAT_TYPE::SHOUT:
+                decorated = std::format("{}! {}", this->name(), message);
+                break;
+            }
+
+            this->_listener->on_chat(*this, decorated, chat_type);
+        }
+        else
+        {
+            this->_listener->on_chat(*this, message, chat_type);
+        }
+    }
 }
 
 const fb::model::point16_t& object::position() const

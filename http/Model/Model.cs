@@ -1228,6 +1228,20 @@ namespace Fb.Model
         public string Group { get; set; }
     }
 
+    public class Soliloquy
+    {
+        [JsonProperty("parent")]
+        public uint Parent { get; set; }
+        [JsonProperty("message")]
+        public string Message { get; set; }
+    }
+
+    public class SoliloquyAttribute
+    {
+        [JsonProperty("npc")]
+        public uint Npc { get; set; }
+    }
+
     public class Spell
     {
         [JsonProperty("id")]
@@ -2033,6 +2047,14 @@ namespace Fb.Model
         public partial class SellAttributeTable : KeyValueContainer<uint, SellAttribute>
         { }
         public SellAttributeTable SellAttribute { get; private set; } = new SellAttributeTable();
+        [Table("json/soliloquy.json")]
+        public partial class SoliloquyTable : KeyValueContainer<uint, ArrayContainer<Soliloquy>>
+        { }
+        public SoliloquyTable Soliloquy { get; private set; } = new SoliloquyTable();
+        [Table("json/soliloquy_attribute.json")]
+        public partial class SoliloquyAttributeTable : KeyValueContainer<uint, SoliloquyAttribute>
+        { }
+        public SoliloquyAttributeTable SoliloquyAttribute { get; private set; } = new SoliloquyAttributeTable();
         [Table("json/spell.json")]
         public partial class SpellTable : KeyValueContainer<uint, Spell>
         { }
@@ -2090,6 +2112,8 @@ namespace Fb.Model
                 Reward, 
                 Sell, 
                 SellAttribute, 
+                Soliloquy, 
+                SoliloquyAttribute, 
                 Spell, 
                 Trace, 
                 Warp, 

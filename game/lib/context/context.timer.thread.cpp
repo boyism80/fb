@@ -164,6 +164,32 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
     co_return;
 }
 
+async::task<void> fb::game::context::handle_soliloquy_timer(const fb::model::datetime& now, std::thread::id id)
+{
+    auto thread = this->threads.at(id);
+    auto params = thread->template data<thread_params>();
+
+    for (auto& [_, map] : params->maps)
+    {
+        if (map->active == false)
+            continue;
+
+        if (map->is_active() == false)
+            continue;
+
+        for (auto& [_, obj] : map->objects)
+        {
+            if (obj.is(OBJECT_TYPE::NPC) == false)
+                continue;
+
+            auto& npc = static_cast<fb::game::npc&>(obj);
+            npc.soliloquy();
+        }
+    }
+
+    co_return;
+}
+
 async::task<void> context::handle_save_timer(const fb::model::datetime& now, std::thread::id id)
 {
     auto thread = this->threads.at(id);

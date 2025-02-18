@@ -247,21 +247,8 @@ int object::builtin_chat(lua_State* lua)
     auto decorate = argc < 4 ? true : thread->toboolean(4);
 
     return ctx->builtin(*obj, thread, 0, [=]() -> async::task<void> {
-        auto sstream = std::stringstream{};
-        if (decorate)
-        {
-            if (type == CHAT_TYPE::SHOUT)
-                sstream << obj->name() << "! " << message;
-            else
-                sstream << obj->name() << ": " << message;
-        }
-        else
-        {
-            sstream << message;
-        }
-
         if (obj->is(OBJECT_TYPE::ITEM) == false)
-            obj->chat(sstream.str(), type);
+            obj->chat(message, type, decorate);
 
         co_return;
     });

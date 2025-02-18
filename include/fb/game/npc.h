@@ -23,6 +23,9 @@ public:
 public:
     LUA_PROTOTYPE
 
+private:
+    fb::model::datetime _next_soliloquy;
+
 public:
     /**
      * @brief      Constructs a new instance.
@@ -51,6 +54,11 @@ public:
      * @return     { description_of_the_return_value }
      */
     npc* make(fb::game::context& context);
+
+    /**
+     * @brief      { function_description }
+     */
+    void soliloquy();
 
     /**
      * @brief      { function_description }

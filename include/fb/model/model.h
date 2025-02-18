@@ -4508,6 +4508,72 @@ DECLARE_SELL_ATTRIBUTE_INITIALIZER
 DECLARE_SELL_ATTRIBUTE_EXTENSION
 #endif
 }; // end of class 'sell_attribute'
+class soliloquy
+#ifdef DECLARE_SOLILOQUY_INHERIT
+DECLARE_SOLILOQUY_INHERIT
+#endif
+{
+#ifdef DECLARE_SOLILOQUY_FIELDS
+DECLARE_SOLILOQUY_FIELDS
+#else
+public:
+    const uint32_t parent;
+    const std::string message;
+#endif
+
+#ifdef DECLARE_SOLILOQUY_CUSTOM_CONSTRUCTOR
+DECLARE_SOLILOQUY_CUSTOM_CONSTRUCTOR
+#else
+public:
+    soliloquy(const Json::Value& json) : 
+#ifdef DECLARE_SOLILOQUY_CONSTRUCTOR
+DECLARE_SOLILOQUY_CONSTRUCTOR
+#endif
+        parent(fb::model::build<uint32_t>(json["parent"])),
+        message(fb::model::build<std::string>(json["message"]))
+#ifdef DECLARE_SOLILOQUY_INITIALIZER
+DECLARE_SOLILOQUY_INITIALIZER
+#endif
+    { }
+    soliloquy(const soliloquy&) = delete;
+    virtual ~soliloquy() = default;
+#endif
+#ifdef DECLARE_SOLILOQUY_EXTENSION
+DECLARE_SOLILOQUY_EXTENSION
+#endif
+}; // end of class 'soliloquy'
+class soliloquy_attribute
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_INHERIT
+DECLARE_SOLILOQUY_ATTRIBUTE_INHERIT
+#endif
+{
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_FIELDS
+DECLARE_SOLILOQUY_ATTRIBUTE_FIELDS
+#else
+public:
+    const uint32_t npc;
+#endif
+
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+DECLARE_SOLILOQUY_ATTRIBUTE_CUSTOM_CONSTRUCTOR
+#else
+public:
+    soliloquy_attribute(const Json::Value& json) : 
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_CONSTRUCTOR
+DECLARE_SOLILOQUY_ATTRIBUTE_CONSTRUCTOR
+#endif
+        npc(fb::model::build<uint32_t>(json["npc"]))
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_INITIALIZER
+DECLARE_SOLILOQUY_ATTRIBUTE_INITIALIZER
+#endif
+    { }
+    soliloquy_attribute(const soliloquy_attribute&) = delete;
+    virtual ~soliloquy_attribute() = default;
+#endif
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_EXTENSION
+DECLARE_SOLILOQUY_ATTRIBUTE_EXTENSION
+#endif
+}; // end of class 'soliloquy_attribute'
 class spell
 #ifdef DECLARE_SPELL_INHERIT
 DECLARE_SPELL_INHERIT
@@ -5890,6 +5956,38 @@ DECLARE_SELL_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
+class __soliloquy : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::soliloquy>>
+{
+public:
+#ifdef DECLARE_SOLILOQUY_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_SOLILOQUY_CONTAINER_CUSTOM_CONSTRUCTOR
+#else
+    __soliloquy() : fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::soliloquy>>(std::string("json/soliloquy.json"))
+    { }
+    __soliloquy(const __soliloquy&) = delete;
+    ~__soliloquy() = default;
+#endif
+#ifdef DECLARE_SOLILOQUY_CONTAINER_EXTENSION
+DECLARE_SOLILOQUY_CONTAINER_EXTENSION
+#endif
+};
+
+class __soliloquy_attribute : public fb::model::kv_container<uint32_t, fb::model::soliloquy_attribute>
+{
+public:
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_SOLILOQUY_ATTRIBUTE_CONTAINER_CUSTOM_CONSTRUCTOR
+#else
+    __soliloquy_attribute() : fb::model::kv_container<uint32_t, fb::model::soliloquy_attribute>(std::string("json/soliloquy_attribute.json"))
+    { }
+    __soliloquy_attribute(const __soliloquy_attribute&) = delete;
+    ~__soliloquy_attribute() = default;
+#endif
+#ifdef DECLARE_SOLILOQUY_ATTRIBUTE_CONTAINER_EXTENSION
+DECLARE_SOLILOQUY_ATTRIBUTE_CONTAINER_EXTENSION
+#endif
+};
+
 class __spell : public fb::model::kv_container<uint32_t, fb::model::spell>
 {
 public:
@@ -6016,6 +6114,8 @@ public:
     fb::model::__reward reward;
     fb::model::__sell sell;
     fb::model::__sell_attribute sell_attribute;
+    fb::model::__soliloquy soliloquy;
+    fb::model::__soliloquy_attribute soliloquy_attribute;
     fb::model::__spell spell;
     fb::model::__trace trace;
     fb::model::__warp warp;
@@ -6052,6 +6152,8 @@ private:
         &reward,
         &sell,
         &sell_attribute,
+        &soliloquy,
+        &soliloquy_attribute,
         &spell,
         &trace,
         &warp,
