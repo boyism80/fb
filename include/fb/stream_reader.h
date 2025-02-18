@@ -102,13 +102,11 @@ public:
      */
     void read(void* buffer, size_t size)
     {
-        if (buffer == nullptr)
-            return;
-
         if (this->readable_size() < size)
             throw std::runtime_error("stream_reader::read: out of range");
 
-        memcpy(buffer, this->_stream.data() + this->_seek, size);
+        if (buffer != nullptr)
+            memcpy(buffer, this->_stream.data() + this->_seek, size);
         this->_seek += size;
     }
 

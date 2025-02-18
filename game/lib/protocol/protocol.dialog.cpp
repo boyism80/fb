@@ -49,6 +49,24 @@ async::task<void> dialog::deserialize(fb::stream_reader<big_endian>& reader)
         break;
     }
 
+    case fb::game::dialog::interaction::LIST:
+    {
+        auto unknown1 = reader.read<uint32_t>();
+        this->button  = static_cast<DIALOG_RESULT>(reader.read<uint32_t>());
+        switch (this->button)
+        {
+        case DIALOG_RESULT::PREV:
+        case DIALOG_RESULT::QUIT:
+            break;
+
+        case DIALOG_RESULT::NEXT:
+            auto unknown2 = reader.read<uint8_t>();
+            this->index   = reader.read<uint8_t>() - 1;
+            break;
+        }
+        break;
+    }
+
     case fb::game::dialog::interaction::ITEM:
     {
         auto unknown  = reader.read<uint32_t>();

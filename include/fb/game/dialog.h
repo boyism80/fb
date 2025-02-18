@@ -4,11 +4,8 @@
 #include <stack>
 #include <fb/game/npc.h>
 
-namespace fb { namespace game {
+namespace fb::game {
 
-/**
- * @brief      This class describes a character.
- */
 class character;
 
 /**
@@ -36,8 +33,26 @@ public:
         INPUT,
         INPUT_EX,
         MENU,
+        LIST,
         SLOT,
         ITEM,
+    };
+
+    struct preset
+    {
+        SEX                     sex          = SEX::ALL;
+        STATE                   state        = STATE::NORMAL;
+        uint16_t                face         = 0;
+        uint8_t                 hair_color   = 0;
+        std::optional<uint16_t> weapon       = std::nullopt;
+        std::optional<uint8_t>  weapon_color = std::nullopt;
+        std::optional<uint8_t>  armor        = std::nullopt;
+        std::optional<uint8_t>  armor_color  = std::nullopt;
+        std::optional<uint16_t> shield       = std::nullopt;
+        std::optional<uint8_t>  shield_color = std::nullopt;
+
+        preset() = default;
+        preset(const character& ch);
     };
 
 public:
@@ -75,6 +90,42 @@ public:
                                const fb::model::npc&           npc,
                                const std::string&              message,
                                const std::vector<std::string>& menus,
+                               interaction                     interaction = interaction::NORMAL) = 0;
+
+        /**
+         * @brief      Called on dialog.
+         *
+         * @param      me           { parameter_description }
+         * @param[in]  npc          The npc
+         * @param[in]  message      The message
+         * @param[in]  menus        The menus
+         * @param[in]  button_prev  The button previous
+         * @param[in]  interaction  The interaction
+         */
+        virtual void on_dialog(character&                      me,
+                               const fb::model::npc&           npc,
+                               const std::string&              message,
+                               const std::vector<std::string>& menus,
+                               bool                            button_prev,
+                               interaction                     interaction = interaction::NORMAL) = 0;
+
+        /**
+         * @brief      Called on dialog.
+         *
+         * @param      me           { parameter_description }
+         * @param[in]  npc          The npc
+         * @param[in]  message      The message
+         * @param[in]  menus        The menus
+         * @param[in]  button_prev  The button previous
+         * @param[in]  preset       The preset
+         * @param[in]  interaction  The interaction
+         */
+        virtual void on_dialog(character&                      me,
+                               const fb::model::npc&           npc,
+                               const std::string&              message,
+                               const std::vector<std::string>& menus,
+                               bool                            button_prev,
+                               const dialog::preset&           preset,
                                interaction                     interaction = interaction::NORMAL) = 0;
         /**
          * @brief      Called on dialog.
@@ -315,6 +366,38 @@ public:
               const std::string&              message,
               const std::vector<std::string>& menus,
               interaction                     interaction = interaction::MENU);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  npc          The npc
+     * @param[in]  message      The message
+     * @param[in]  menus        The menus
+     * @param[in]  interaction  The interaction
+     */
+    void show(const fb::model::npc&           npc,
+              const std::string&              message,
+              const std::vector<std::string>& menus,
+              bool                            button_prev,
+              interaction                     interaction = interaction::LIST);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  npc          The npc
+     * @param[in]  message      The message
+     * @param[in]  menus        The menus
+     * @param[in]  button_prev  The button previous
+     * @param[in]  preset       The preset
+     * @param[in]  interaction  The interaction
+     */
+    void show(const fb::model::npc&           npc,
+              const std::string&              message,
+              const std::vector<std::string>& menus,
+              bool                            button_prev,
+              const fb::game::dialog::preset& preset,
+              interaction                     interaction = interaction::LIST);
+
     /**
      * @brief      { function_description }
      *
@@ -384,7 +467,7 @@ public:
     ~inactive_error() = default;
 };
 
-}} // namespace fb::game
+} // namespace fb::game
 
 /**
  * @brief      { function_description }

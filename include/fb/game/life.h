@@ -51,6 +51,7 @@ protected:
     virtual ~life();
 
 #pragma region stat
+
 public:
     /**
      * @brief      { function_description }
@@ -632,6 +633,7 @@ public:
     bool cover() const;
 
 #pragma region builtin
+
 public:
     /**
      * @brief      { function_description }
@@ -713,6 +715,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_spell(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_spells(lua_State* lua);
 
     /**
      * @brief      { function_description }

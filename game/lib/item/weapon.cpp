@@ -24,6 +24,14 @@ std::string fb::game::weapon::mid_message() const
     return sstream.str();
 }
 
+const std::string& fb::game::weapon::name() const
+{
+    if (this->_custom_name.has_value())
+        return this->_custom_name.value();
+    else
+        return this->_model.name;
+}
+
 std::string fb::game::weapon::inven_name() const
 {
     auto& model = this->based<fb::model::equipment>();

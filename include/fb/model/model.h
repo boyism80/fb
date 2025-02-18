@@ -2506,12 +2506,14 @@ public:
     inline static constexpr const char* WITHDRAW_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
     inline static constexpr const char* SELL_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))";
     inline static constexpr const char* BUY_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))";
-    inline static constexpr const char* SELL_PRICE = "(?P<name>\\S+)\\s+(?:(?:얼마(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
+    inline static constexpr const char* SELL_PRICE = "(?P<name>\\S+)\\s+얼마(?:(?:(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
     inline static constexpr const char* BUY_PRICE = "(?P<name>\\S+)\\s+(?:얼마에\\s?)?사(?:니|냐)";
     inline static constexpr const char* DEPOSITED_MONEY = "(?:돈|금전)\\s*얼마(?:나)?\\s*맡(?:아두)?고\\s*있(?:니|냐)";
     inline static constexpr const char* RENAME_WEAPON = "(?P<weapon>\\S+?)?(?:의|$)?\\s+이름을\\s+(?P<name>\\S+?)?(?:으|$)?로\\s+명명";
     inline static constexpr const char* HOLD_ITEM_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*맡고\\s*(?:있니|있냐)";
     inline static constexpr const char* HOLD_ITEM_COUNT = "(?P<name>\\S+)\\s+(?:몇\\s*개|얼마나)\\s*맡고\\s*있(?:니|냐)";
+    inline static constexpr const char* REVIVE = "살려(?:(?P<ok>(?:주세요|주십시오))|(?P<no>(?:줘|내|라|주소)))";
+    inline static constexpr const char* APPRECIATE = "(감사합니다|고맙습니다)";
 
 private:
     regex() = default;
@@ -4786,6 +4788,7 @@ public:
     const bool hold_money;
     const bool hold_item;
     const bool rename;
+    const bool revive;
 #endif
 
 #ifdef DECLARE_NPC_CUSTOM_CONSTRUCTOR
@@ -4800,7 +4803,8 @@ public:
         repair(fb::model::build<bool>(json["repair"])),
         hold_money(fb::model::build<bool>(json["hold_money"])),
         hold_item(fb::model::build<bool>(json["hold_item"])),
-        rename(fb::model::build<bool>(json["rename"]))
+        rename(fb::model::build<bool>(json["rename"])),
+        revive(fb::model::build<bool>(json["revive"]))
 #ifdef DECLARE_NPC_INITIALIZER
 DECLARE_NPC_INITIALIZER
 #endif

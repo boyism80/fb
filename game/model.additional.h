@@ -278,10 +278,13 @@ public:                                                \
 public:                                                \
     static int builtin_input(lua_State* lua);          \
     static int builtin_menu(lua_State* lua);           \
+    static int builtin_list(lua_State* lua);           \
     static int builtin_item(lua_State* lua);           \
     static int builtin_slot(lua_State* lua);           \
     static int builtin_sell(lua_State* lua);           \
+    static int builtin_sell_price(lua_State* lua);     \
     static int builtin_buy(lua_State* lua);            \
+    static int builtin_buy_price(lua_State* lua);      \
     static int builtin_repair(lua_State* lua);         \
     static int builtin_repair_all(lua_State* lua);     \
     static int builtin_hold_money(lua_State* lua);     \
@@ -373,7 +376,7 @@ public:                                      \
 public:                                                                                                     \
     const promotion* operator() (enum_value::CLASS cls, uint8_t promotion) const;                           \
     bool             name2class(const std::string& name, enum_value::CLASS& cls, uint8_t& promotion) const; \
-    bool             class2name(enum_value::CLASS& cls, uint8_t& promotion, std::string& name) const;
+    bool             class2name(enum_value::CLASS cls, uint8_t promotion, std::string& name) const;
 
 #define DECLARE_CONST_REGEX_EXTENSION                                                                              \
                                                                                                                    \
@@ -396,7 +399,9 @@ public:                                                                         
     static bool match_deposited_money(const std::string& message);                                                 \
     static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);           \
     static bool match_hold_item_list(const std::string& message);                                                  \
-    static bool match_hold_item_count(const std::string& message, std::string& item);
+    static bool match_hold_item_count(const std::string& message, std::string& item);                              \
+    static bool match_revive(const std::string& message, bool& discourteous);                                      \
+    static bool match_appreciate(const std::string& message);
 
 #define DECLARE_SELL_CONTAINER_EXTENSION                                              \
                                                                                       \

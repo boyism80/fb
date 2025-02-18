@@ -233,3 +233,20 @@ function any_action(me)
         me:unbuff('운기')
     end
 end
+
+function on_chat(me, message)
+    if string.sub(message, 1, 1) ~= '/' then
+        return false
+    end
+
+    message = string.sub(message, 2, string.len(message))
+    args = message:split(' ')
+
+    local cmd = args[1]
+    if command_funcs[cmd] == nil then
+        return false
+    end
+    
+    table.remove(args, 1)
+    return command_funcs[cmd](me, args)
+end

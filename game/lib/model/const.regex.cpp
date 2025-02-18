@@ -313,3 +313,24 @@ bool fb::model::const_value::regex::match_hold_item_count(const std::string& mes
 
     return true;
 }
+
+bool fb::model::const_value::regex::match_revive(const std::string& message, bool& discourteous)
+{
+    static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::REVIVE);
+    auto              what  = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    discourteous = what["no"].matched;
+    return true;
+}
+
+bool fb::model::const_value::regex::match_appreciate(const std::string& message)
+{
+    static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::APPRECIATE);
+    auto              what  = boost::xpressive::smatch();
+    if (boost::xpressive::regex_search(message, what, regex) == false)
+        return false;
+
+    return true;
+}

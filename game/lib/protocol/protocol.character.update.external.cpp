@@ -116,7 +116,20 @@ async::task<void> update_external::serialize(fb::stream_writer<big_endian>& writ
         }
         else
         {
-            writer.write<uint8_t>(static_cast<uint8_t>(this->ch.sex())); // sex
+            switch (this->ch.sex())
+            {
+            case SEX::MAN:
+                writer.write<uint8_t>(0xFF);
+                break;
+
+            case SEX::WOMAN:
+                writer.write<uint8_t>(1);
+                break;
+
+            default:
+                writer.write<uint8_t>(0xFF);
+                break;
+            }
             writer.write<uint8_t>(0x00);
         }
 

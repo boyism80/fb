@@ -418,6 +418,7 @@ void character::sex(SEX value)
     this->assert_thread();
 
     this->_sex = value;
+    this->update_external(false);
 }
 
 STATE character::state() const
@@ -454,8 +455,7 @@ void character::cls(CLASS value)
 uint8_t character::promotion() const
 {
     this->assert_thread();
-
-    return uint8_t();
+    return this->_promotion;
 }
 
 void character::promotion(uint8_t value)
@@ -1378,6 +1378,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.ring_right_color = std::nullopt;
     dto.aux_top_color    = std::nullopt;
     dto.aux_bot_color    = std::nullopt;
+    dto.title            = this->_title;
 
     for (auto& [_, buff] : this->buffs)
     {
@@ -1560,13 +1561,15 @@ bool character::detect() const
     return this->_detect;
 }
 
-fb::game::mob* character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position)
+fb::game::mob* character::spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned)
 {
     auto map = this->_map;
     if (map == nullptr)
         return nullptr;
 
-    auto mob = model.make<fb::game::mob>(this->context, fb::game::mob::initial_params{.alive = true, .owner = this});
+    auto owner  = owned ? this : nullptr;
+    auto params = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
+    auto mob    = model.make<fb::game::mob>(this->context, params);
     mob->map(map, position);
     this->_spawned_mobs.push_back(mob);
     return mob;

@@ -1,4 +1,5 @@
 #include <fb/game/map/container.h>
+#include <fb/game/context.h>
 
 using namespace fb::game;
 
@@ -61,6 +62,7 @@ void map_container::load(const fb::model::map& model)
     {
         auto _ = std::lock_guard(this->_mutex);
         this->push(model.id, map);
+        this->context.push_alive(*map);
     }
 }
 

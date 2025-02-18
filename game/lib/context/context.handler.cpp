@@ -600,11 +600,28 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() == false && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/interaction.lua");
+    fb::lua::load("scripts/command.lua");
+#endif
+
+    auto lua = fb::lua::new_context();
+    lua->func("on_chat");
+    lua->pushobject(ch);
+    lua->pushstring(request.message);
+    lua->pushboolean(request.shout);
+    lua->resume(3, false);
+    switch (lua->state())
+    {
+    case LUA_OK:
+        auto stop = lua->toboolean(1);
+        lua->release();
+        if (stop)
+            co_return true;
+    }
+
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
-    if (co_await handle_command(*ch, message))
-        co_return true;
-
     switch (type)
     {
     case CHAT_TYPE::NORMAL:
@@ -635,7 +652,7 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         }
     }
 
-    this->npc_interaction(*ch, message, npcs);
+    this->npc_interaction(*ch, request.message, npcs);
 
     co_return true;
 }
@@ -873,6 +890,18 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
         break;
     }
 
+    case dialog::interaction::LIST:
+    {
+        if (request.button == DIALOG_RESULT::NEXT)
+            ch->dialog.pushinteger(request.index);
+        else
+            ch->dialog.pushnil();
+
+        ch->dialog.pushinteger(static_cast<uint32_t>(request.button));
+        ch->dialog.resume(2);
+        break;
+    }
+
     case dialog::interaction::SLOT:
     {
         ch->dialog.pushinteger(request.index).resume(1);
@@ -927,7 +956,7 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (spell == nullptr)
         co_return false;
 
-    if (spell->update_lock() == false)
+    if (ch->admin() == false && spell->update_lock() == false)
         co_return true;
 
     auto delay = spell->delay();

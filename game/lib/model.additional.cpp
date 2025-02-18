@@ -14,7 +14,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::map, "fb.model.map")
 {"root",                fb::model::map::builtin_root},
 {"cardinal",            fb::model::map::builtin_cardinal},
 {"resurrection",        fb::model::map::builtin_resurrection},
-{"option",        		fb::model::map::builtin_option},
+{"option",              fb::model::map::builtin_option},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
@@ -37,10 +37,13 @@ END_LUA_EXTENSION; // clang-format on
 IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
 {"input",               fb::model::npc::builtin_input},
 {"menu",                fb::model::npc::builtin_menu},
+{"list",                fb::model::npc::builtin_list},
 {"item",                fb::model::npc::builtin_item},
 {"slot",                fb::model::npc::builtin_slot},
 {"sell",                fb::model::npc::builtin_sell},
+{"sell_price",          fb::model::npc::builtin_sell_price},
 {"buy",                 fb::model::npc::builtin_buy},
+{"buy_price",           fb::model::npc::builtin_buy_price},
 {"repair",              fb::model::npc::builtin_repair},
 {"repair_all",          fb::model::npc::builtin_repair_all},
 {"hold_money",          fb::model::npc::builtin_hold_money},
@@ -72,7 +75,7 @@ END_LUA_EXTENSION; // clang-format on
 IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
 {"damage_small",        fb::model::weapon::builtin_damage_small},
 {"damage_large",        fb::model::weapon::builtin_damage_large},
-{"sound",        		fb::model::weapon::builtin_sound},
+{"sound",               fb::model::weapon::builtin_sound},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off

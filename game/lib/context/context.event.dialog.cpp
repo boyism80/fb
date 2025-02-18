@@ -22,6 +22,27 @@ void context::on_dialog(character&                      me,
     me.send(fb_resp::dialog_menu(npc, menus, message, interaction));
 }
 
+void context::on_dialog(character&                      me,
+                        const fb::model::npc&           npc,
+                        const std::string&              message,
+                        const std::vector<std::string>& menus,
+                        bool                            button_prev,
+                        dialog::interaction             interaction)
+{
+    me.send(fb_resp::dialog_list(npc, menus, message, button_prev, interaction));
+}
+
+void context::on_dialog(character&                      me,
+                        const fb::model::npc&           npc,
+                        const std::string&              message,
+                        const std::vector<std::string>& menus,
+                        bool                            button_prev,
+                        const dialog::preset&           preset,
+                        dialog::interaction             interaction)
+{
+    me.send(fb_resp::dialog_ch_list(npc, preset, menus, message, button_prev, interaction));
+}
+
 void context::on_dialog(character&                  me,
                         const fb::model::npc&       npc,
                         const std::string&          message,

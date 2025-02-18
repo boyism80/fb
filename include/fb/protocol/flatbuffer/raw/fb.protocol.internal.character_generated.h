@@ -64,7 +64,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_AUX_TOP_COLOR = 68,
     VT_AUX_BOT_COLOR = 70,
     VT_BUFFS = 72,
-    VT_UPDATED_DATE = 74
+    VT_TITLE = 74,
+    VT_UPDATED_DATE = 76
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -171,6 +172,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>> *buffs() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>> *>(VT_BUFFS);
   }
+  const ::flatbuffers::String *title() const {
+    return GetPointer<const ::flatbuffers::String *>(VT_TITLE);
+  }
   const ::flatbuffers::String *updated_date() const {
     return GetPointer<const ::flatbuffers::String *>(VT_UPDATED_DATE);
   }
@@ -226,6 +230,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_BUFFS) &&
            verifier.VerifyVector(buffs()) &&
            verifier.VerifyVectorOfTables(buffs()) &&
+           VerifyOffset(verifier, VT_TITLE) &&
+           verifier.VerifyString(title()) &&
            VerifyOffset(verifier, VT_UPDATED_DATE) &&
            verifier.VerifyString(updated_date()) &&
            verifier.EndTable();
@@ -341,6 +347,9 @@ struct CharacterBuilder {
   void add_buffs(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>> buffs) {
     fbb_.AddOffset(Character::VT_BUFFS, buffs);
   }
+  void add_title(::flatbuffers::Offset<::flatbuffers::String> title) {
+    fbb_.AddOffset(Character::VT_TITLE, title);
+  }
   void add_updated_date(::flatbuffers::Offset<::flatbuffers::String> updated_date) {
     fbb_.AddOffset(Character::VT_UPDATED_DATE, updated_date);
   }
@@ -392,9 +401,11 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_top_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>> buffs = 0,
+    ::flatbuffers::Offset<::flatbuffers::String> title = 0,
     ::flatbuffers::Offset<::flatbuffers::String> updated_date = 0) {
   CharacterBuilder builder_(_fbb);
   builder_.add_updated_date(updated_date);
+  builder_.add_title(title);
   builder_.add_buffs(buffs);
   builder_.add_aux_bot_color(aux_bot_color);
   builder_.add_aux_top_color(aux_top_color);
@@ -470,10 +481,12 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_top_color = 0,
     ::flatbuffers::Offset<nullable::nullable_ubyte> aux_bot_color = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>> *buffs = nullptr,
+    const char *title = nullptr,
     const char *updated_date = nullptr) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   auto buffs__ = buffs ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Buff>>(*buffs) : 0;
+  auto title__ = title ? _fbb.CreateString(title) : 0;
   auto updated_date__ = updated_date ? _fbb.CreateString(updated_date) : 0;
   return fb::protocol::internal::raw::CreateCharacter(
       _fbb,
@@ -512,6 +525,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       aux_top_color,
       aux_bot_color,
       buffs__,
+      title__,
       updated_date__);
 }
 

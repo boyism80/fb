@@ -60,15 +60,21 @@ async::task<void> context::handle_start()
     lua::build("broadcast", builtin_broadcast);
     lua::build("assert_alive", builtin_assert_alive);
     lua::build("pursuit_sell", builtin_pursuit_sell);
+    lua::build("pursuit_sell_price", builtin_pursuit_sell_price);
+    lua::build("pursuit_sell_name", builtin_pursuit_sell_name);
     lua::build("pursuit_buy", builtin_pursuit_buy);
-    lua::build("sell_price", builtin_sell_price);
-    lua::build("buy_price", builtin_buy_price);
     lua::build("timer", builtin_timer);
     lua::build("weather", builtin_weather);
+    lua::build("bright", builtin_bright);
     lua::build("name_with", builtin_name_with);
     lua::build("assert_korean", builtin_assert_korean);
     lua::build("CP949", builtin_cp949);
     lua::build("debug", builtin_debug);
+    lua::build("name2class", builtin_name2class);
+    lua::build("class2name", builtin_class2name);
+    lua::build("save", builtin_save);
+    lua::build("mknpc", builtin_mknpc);
+    lua::build("maps", builtin_maps);
 
     auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
     for (int i = 0; i < this->threads.count(); i++)
@@ -89,9 +95,10 @@ async::task<void> context::handle_start()
         auto& ist = fb::lua::context_pool::ist();
         fb::model::lua::map_enum(ist);
         fb::lua::load("scripts/spell.lua");
+        fb::lua::load("scripts/npc.lua");
         fb::lua::load("scripts/interaction.lua");
+        fb::lua::load("scripts/command.lua");
         fb::lua::dump("scripts/script.lua");
-        fb::lua::dump("scripts/common/npc.lua");
 
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();
@@ -161,45 +168,6 @@ async::task<void> context::handle_start()
     this->bind_thread_timer(&context::handle_save_timer,
                             std::chrono::seconds(fb::config<uint32_t>("save"))); // DB 저장 타이머
 
-    this->command("맵이동", &context::handle_command_map, true);
-    this->command("사운드", &context::handle_command_sound, true);
-    this->command("액션", &context::handle_command_action, true);
-    this->command("날씨", &context::handle_command_weather, true);
-    this->command("밝기", &context::handle_command_bright, true);
-    this->command("타이머", &context::handle_command_timer, true);
-    this->command("이펙트", &context::handle_command_effect, true);
-    this->command("변신", &context::handle_command_disguise, true);
-    this->command("변신해제", &context::handle_command_undisguise, true);
-    this->command("마법배우기", &context::handle_command_spell, true);
-    this->command("마법지우기", &context::handle_command_remove_spell, true);
-    this->command("몬스터생성", &context::handle_command_mob, true);
-    this->command("직업바꾸기", &context::handle_command_class, true);
-    this->command("레벨바꾸기", &context::handle_command_level, true);
-    this->command("체력바꾸기", &context::handle_command_hp, true);
-    this->command("마력바꾸기", &context::handle_command_mp, true);
-    this->command("아이템생성", &context::handle_command_item, true);
-    this->command("월드맵", &context::handle_command_world, true);
-    this->command("스크립트", &context::handle_command_script, true);
-    this->command("머리바꾸기", &context::handle_command_hair, true);
-    this->command("머리염색", &context::handle_command_hair_color, true);
-    this->command("갑옷염색", &context::handle_command_armor_color, true);
-    this->command("서버종료", &context::handle_command_exit, true);
-    this->command("타일", &context::handle_command_tile, true);
-    this->command("서버저장", &context::handle_command_save, true);
-    this->command("맵오브젝트", &context::handle_command_mapobj, true);
-    this->command("랜덤이동", &context::handle_command_randmap, false);
-    this->command("엔피씨생성", &context::handle_command_npc, true);
-    this->command("내구도", &context::handle_command_durability, true);
-    this->command("동시성테스트", &context::handle_command_concurrency, true);
-    this->command("sleep", &context::handle_command_sleep, true);
-    this->command("맵타일", &context::handle_map_tile, true);
-    this->command("광고", &context::handle_command_ad, true);
-    this->command("웹", &context::handle_command_web, true);
-    this->command("메일쓰기", &context::handle_command_write_mail, true);
-    this->command("메일읽기", &context::handle_command_read_mail, true);
-    this->command("메일삭제", &context::handle_command_delete_mail, true);
-    this->command("쿨타임초기화", &context::handle_command_reset_delay, true);
-
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
     this->bind_npc_interaction(&context::npc_interaction_repair);
@@ -215,6 +183,8 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_rename_weapon);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_list);
     this->bind_npc_interaction(&context::npc_interaction_hold_item_count);
+    this->bind_npc_interaction(&context::npc_interaction_revive);
+    this->bind_npc_interaction(&context::npc_interaction_appreciate);
 
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Pong);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
@@ -423,6 +393,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.level(response.level);
     ch.exp(response.exp);
     ch.state(STATE(response.state));
+    ch.title(response.title);
 
     if (response.armor_color.has_value())
         ch.armor_color(response.armor_color.value());
@@ -764,50 +735,16 @@ void context::handle_click_npc(character& ch, npc& npc)
     if (model.script.empty())
         return;
 
+#if defined DEBUG | defined _DEBUG
+    fb::lua::load("scripts/npc.lua");
+#endif
+
     ch.dialog.release();
     ch.dialog.from(model.script.c_str())
         .func("on_interact")
         .pushobject(ch)
         .pushobject(npc.based<fb::model::npc>())
         .resume(2);
-}
-
-async::task<bool> context::handle_command(character& ch, const std::string& message)
-{
-    if (message.starts_with('/') == false)
-        co_return false;
-
-    std::vector<std::string> splitted;
-    std::istringstream       sstream(message.substr(1));
-    std::string              unit;
-    while (std::getline(sstream, unit, ' '))
-    {
-        splitted.push_back(unit);
-    }
-
-    if (splitted.empty())
-        co_return false;
-
-    auto found = this->_commands.find(splitted[0]);
-    if (found == this->_commands.end())
-        co_return false;
-
-    if (found->second.admin && ch.admin() == false)
-        co_return false;
-
-    Json::Value parameters;
-    for (auto i = splitted.begin() + 1; i != splitted.end(); i++)
-    {
-        auto digit = std::all_of((*i).begin(), (*i).end(), [](uint8_t c) {
-            return std::isdigit(c);
-        });
-        if (digit)
-            parameters.append(static_cast<uint64_t>(std::stoul(*i)));
-        else
-            parameters.append(*i);
-    }
-
-    co_return co_await found->second.fn(ch, parameters);
 }
 
 async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

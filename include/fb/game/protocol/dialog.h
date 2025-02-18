@@ -24,6 +24,7 @@ public:
     uint16_t                      index;   // MENU
     uint16_t                      pursuit; // SELL
     std::string                   name;    // SELL
+    DIALOG_RESULT                 button;  // LIST
 #else
 
 #endif
