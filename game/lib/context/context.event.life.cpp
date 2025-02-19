@@ -34,17 +34,10 @@ void context::on_attack(life& me, DURATION duration)
                 lua->resume(2, false);
             }
 
-            if (attack_count > 0)
+            if (attack_count > 0 && weapon->durability_down(attack_count))
             {
-                if (attack_count > weapon->durability())
-                {
-                    ch.message(std::format("{} 깨졌습니다.", weapon->name()));
-                    delete ch.items.equipment_off(EQUIPMENT_PARTS::WEAPON);
-                }
-                else
-                {
-                    weapon->durability(weapon->durability().value() - attack_count);
-                }
+                ch.message(std::format("{} 깨졌습니다.", weapon->name()));
+                delete ch.items.equipment_off(EQUIPMENT_PARTS::WEAPON);
             }
         }
     }
@@ -94,88 +87,7 @@ void context::on_dead(life& me, object* you)
     {
         auto& ch = static_cast<character&>(me);
         ch.state(STATE::GHOST);
-
-        auto money = ch.money();
-        if (money > 0)
-        {
-            ch.money_reduce(money);
-            auto cash = this->make<fb::game::cash>(money);
-            cash->owner(&ch);
-            cash->map(ch.map(), ch.position());
-        }
-
-        for (int i = 0; i < CONTAINER_CAPACITY; i++)
-        {
-            auto item = ch.items[i];
-            if (item == nullptr)
-                continue;
-
-            auto& model = item->based<fb::model::item>();
-            if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
-            {
-                auto  equipment       = static_cast<fb::game::equipment*>(item);
-                auto& equipment_model = equipment->based<fb::model::equipment>();
-                auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
-
-                if (equipment->durability().value() <= penalty)
-                {
-                    delete ch.items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
-                    continue;
-                }
-
-                equipment->durability(equipment->durability().value() - penalty);
-            }
-
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                auto dropped = ch.items.remove(*item, item->count(), ITEM_DELETE_TYPE::NONE);
-                dropped->map(ch.map(), ch.position());
-            }
-        }
-
-        for (auto& [parts, equipment] : ch.items.equipments())
-        {
-            if (equipment == nullptr)
-                continue;
-
-            auto& model   = equipment->based<fb::model::equipment>();
-            auto  penalty = model.durability * fb::model::const_value::death_penalty::durability;
-            if (equipment->durability().value() <= penalty)
-            {
-                ch.items.equipment_off(parts);
-                ch.message(std::format("{} 깨졌습니다.", equipment->name()));
-                delete equipment;
-                continue;
-            }
-
-            equipment->durability(equipment->durability().value() - penalty);
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.equipment_off(parts);
-                equipment->map(ch.map(), ch.position());
-            }
-            else if (ch.items.free())
-            {
-                ch.items.equipment_off(parts);
-                ch.items.add(equipment);
-            }
-        }
-
-        auto cls   = ch.cls();
-        auto level = ch.level();
-        if (this->model.ability.contains(cls) && this->model.ability[cls].contains(level) &&
-            this->model.ability[cls].contains(level - 1))
-        {
-            auto penalty = uint32_t(this->model.ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
-            auto gained  = ch.exp() - this->model.ability[cls][level - 1].stacked_exp;
-
-            penalty = std::min(gained, penalty);
-            if (penalty > 0)
-            {
-                ch.exp(ch.exp() - penalty);
-                ch.message(std::format("경험치를 {} 잃었습니다.", penalty));
-            }
-        }
+        ch.death_penalty();
     }
     break;
     }

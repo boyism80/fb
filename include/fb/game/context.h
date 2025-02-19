@@ -1671,14 +1671,14 @@ public:
     void on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment) override final;
 
     /**
-     * @brief      Called when durability changed.
+     * @brief      Called on durability down.
      *
      * @param      me         { parameter_description }
      * @param      equipment  The equipment
      * @param[in]  before     The before
      * @param[in]  after      The after
      */
-    void on_durability_changed(character& me, fb::game::equipment& equipment, uint8_t before, uint8_t after) override final;
+    void on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) override final;
 
     /**
      * @brief      Called on item active.

@@ -76,11 +76,20 @@ void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::e
     me.sound(SOUND::EQUIPMENT_OFF);
 }
 
-void context::on_durability_changed(character& me, fb::game::equipment& equipment, uint8_t before, uint8_t after)
+void context::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
 {
-    if (before < after)
+    auto& model          = equipment.based<fb::model::equipment>();
+    auto  percent_before = (before * 100) / model.durability;
+    auto  percent_after  = (after * 100) / model.durability;
+    if (percent_before < percent_after)
         return;
 
-    if (after % 5 == 0 || after < 5 || before - after >= 5)
-        me.message(std::format("{}의 내구도가 {}% 남았습니다.", equipment.name(), after));
+    if (after == 0)
+    {
+        me.message(std::format("{}의 내구도가 다 닳았습니다.", equipment.name()));
+    }
+    else if (percent_after % 5 == 0 || percent_after < 5 || percent_before - percent_after >= 5)
+    {
+        me.message(std::format("{}의 내구도가 {}% 남았습니다.", equipment.name(), percent_after));
+    }
 }

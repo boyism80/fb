@@ -1114,6 +1114,13 @@ public:
     bool detach_spawned_mob(fb::game::mob& mob);
 
     /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> death_penalty();
+
+    /**
      * @brief      Returns a protocol representation of the object.
      *
      * @return     Protocol representation of the object.

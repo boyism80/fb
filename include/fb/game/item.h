@@ -538,6 +538,15 @@ public:
      */
     void durability(uint32_t value);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     *
+     * @return     if crash, return true. otherwise return false
+     */
+    bool durability_down(uint32_t value);
+
 protected:
     /**
      * @brief      { function_description }
@@ -587,21 +596,22 @@ struct equipment::listener : public virtual fb::game::item::listener
     /**
      * @brief      Called on equipment off.
      *
-     * @param      me     { parameter_description }
-     * @param[in]  parts  The parts
+     * @param      me         { parameter_description }
+     * @param[in]  parts      The parts
+     * @param      equipment  The equipment
      * @param[in]  index  The index
      */
     virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment) = 0;
 
     /**
-     * @brief      Called when durability changed.
+     * @brief      Called on durability down.
      *
      * @param      me         { parameter_description }
      * @param      equipment  The equipment
      * @param[in]  before     The before
      * @param[in]  after      The after
      */
-    virtual void on_durability_changed(character& me, fb::game::equipment& equipment, uint8_t before, uint8_t after) = 0;
+    virtual void on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) = 0;
 };
 
 /**

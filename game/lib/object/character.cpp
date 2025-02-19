@@ -132,8 +132,7 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
             continue;
 
         auto& model = equipment->based<fb::model::equipment>();
-        auto  value = durability.value() == 0 ? 0 : durability.value() - 1;
-        if (value == 0)
+        if (equipment->durability_down(1))
         {
             auto equipment = this->items.equipment_off(parts);
             delete equipment;
@@ -441,6 +440,9 @@ SEX character::sex() const
 void character::sex(SEX value)
 {
     this->assert_thread();
+
+    if (value == SEX::MAN)
+        this->update_external(false);
 
     this->_sex = value;
     this->update_external(false);
@@ -2030,4 +2032,86 @@ void character::buff_hit(uint8_t value)
 {
     this->assert_thread();
     this->_hit.buff = value;
+}
+
+async::task<void> character::death_penalty()
+{
+    auto money = this->money();
+    if (money > 0)
+    {
+        this->money_reduce(money);
+        auto cash = this->context.make<fb::game::cash>(money);
+        cash->owner(this);
+        co_await cash->map(this->map(), this->position());
+    }
+
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto item = this->items[i];
+        if (item == nullptr)
+            continue;
+
+        auto& model = item->based<fb::model::item>();
+        if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
+        {
+            auto  equipment       = static_cast<fb::game::equipment*>(item);
+            auto& equipment_model = equipment->based<fb::model::equipment>();
+            auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
+            if (equipment->durability_down(penalty))
+            {
+                delete this->items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
+                continue;
+            }
+        }
+
+        if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+        {
+            auto dropped = this->items.remove(*item, item->count(), ITEM_DELETE_TYPE::NONE);
+            co_await dropped->map(this->map(), this->position());
+        }
+    }
+
+    for (auto& [parts, equipment] : this->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        auto& model   = equipment->based<fb::model::equipment>();
+        auto  penalty = model.durability * fb::model::const_value::death_penalty::durability;
+        if (equipment->durability_down(penalty))
+        {
+            this->items.equipment_off(parts);
+            this->message(std::format("{} 깨졌습니다.", equipment->name()));
+            delete equipment;
+            continue;
+        }
+
+        if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+        {
+            this->items.equipment_off(parts);
+            co_await equipment->map(this->map(), this->position());
+        }
+        else if (this->items.free())
+        {
+            this->items.equipment_off(parts);
+            this->items.add(equipment);
+        }
+    }
+
+    auto cls   = this->cls();
+    auto level = this->level();
+    if (this->context.model.ability.contains(cls) && this->context.model.ability[cls].contains(level) &&
+        this->context.model.ability[cls].contains(level - 1))
+    {
+        auto penalty =
+            uint32_t(this->context.model.ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
+        auto gained = this->exp() - this->context.model.ability[cls][level - 1].stacked_exp;
+
+        penalty = std::min(gained, penalty);
+        if (penalty > 0)
+        {
+            this->exp(this->exp() - penalty);
+            this->message(std::format("경험치를 {} 잃었습니다.", penalty));
+        }
+    }
 }
