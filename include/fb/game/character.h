@@ -80,7 +80,7 @@ private:
     uint8_t                 _regenerative    = 0; // 재생력
     NATION                  _nation          = NATION::GOGURYEO;
     CREATURE                _creature        = CREATURE::DRAGON;
-    SEX                     _sex             = SEX::ALL;
+    SEX                     _sex             = SEX::MAN;
     STATE                   _state           = STATE::NORMAL;
     uint8_t                 _level           = 1;
     CLASS                   _class           = CLASS::NONE;

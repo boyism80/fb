@@ -12,6 +12,15 @@ function string:split(delimiter)
 end
 
 command_funcs = {
+    ['관리자'] =
+    function (me, args)
+        me:mkspell('강제이동(좌)')
+        me:mkspell('강제이동(하)')
+        me:mkspell('강제이동(우)')
+        me:mkspell('강제이동(상)')
+        return true
+    end,
+
     ['경험치'] =
     function (me, args)
         local exp = table.unpack(args)
