@@ -19,10 +19,10 @@ function on_cast(me, you, spell)
 
     you:effect(effect)
     you:sound(sound)
-    me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
     if me ~= you and you:is(OBJECT_TYPE_CHARACTER) then
-        you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:model():name())))
+        you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
     end
     for _, buff in pairs(you:buffs()) do
         you:unbuff(buff)

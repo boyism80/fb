@@ -28,6 +28,6 @@ function on_cast(me, spell)
     end
 
     me:sound(sound)
-    me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
 end

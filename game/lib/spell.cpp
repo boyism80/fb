@@ -62,6 +62,36 @@ spells::~spells()
     }
 }
 
+fb::game::spell* fb::game::spells::find(const std::string& name) const
+{
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto spell = this->at(i);
+        if (spell == nullptr)
+            continue;
+
+        if (spell->model.name == name)
+            return spell;
+    }
+
+    return nullptr;
+}
+
+fb::game::spell* fb::game::spells::find(const fb::model::spell& model) const
+{
+    for (int i = 0; i < CONTAINER_CAPACITY; i++)
+    {
+        auto spell = this->at(i);
+        if (spell == nullptr)
+            continue;
+
+        if (spell->model.id == model.id)
+            return spell;
+    }
+
+    return nullptr;
+}
+
 uint8_t spells::add(spell& element)
 {
     auto index    = inventory<spell>::add(element);

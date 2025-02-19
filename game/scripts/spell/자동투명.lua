@@ -1,6 +1,6 @@
 function on_cast(me, spell)
     local buff_time = 180
-    if me:isbuff(table.unpack(relative_buff_name(spell:model():name()))) then
+    if me:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         return false
     end
 

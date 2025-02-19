@@ -20,7 +20,7 @@ function on_cast(me, you, spell)
                 delay = delay - 4
             end
         end
-        spell:delay(delay)
+        me:delay(spell, delay)
     end
 
     local damage = math.floor(me:mp() * 1.5)
