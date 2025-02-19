@@ -557,6 +557,7 @@ void fb::game::items::pickup(bool boost)
         if (map == nullptr)
             return;
 
+        this->_owner.assert_state({STATE::GHOST, STATE::RIDING});
         this->_owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
         // Pick up items in reverse order
