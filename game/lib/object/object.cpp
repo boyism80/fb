@@ -528,8 +528,10 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         // set map to null.
         auto before_map      = this->_map;
         auto before_position = fb::model::point16_t{position};
-        std::ignore          = co_await this->map(nullptr);
-        this->_map_lock      = true;
+
+        if (this->_map != nullptr)
+            co_await this->map(nullptr);
+        this->_map_lock = true;
 
         // update destination map and position
         {

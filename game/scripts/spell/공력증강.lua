@@ -23,7 +23,7 @@ function on_cast(me, spell)
     me:hp(math.max(100, me:hp() - math.floor(me:maxmp() * 0.4)))
     me:effect(effect)
     me:sound(sound)
-    me:message(string.format('%s 외웠습니다.', name_with(spell:model():name())))
+    me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
     return true
 end

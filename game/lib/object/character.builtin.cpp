@@ -1779,6 +1779,36 @@ int character::builtin_web(lua_State* lua)
     return 0;
 }
 
+int character::builtin_delay(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto model = (fb::model::spell*)nullptr;
+    if (thread->is_obj(2))
+        model = thread->touserdata<fb::model::spell>(2);
+    else if (thread->is_str(2))
+        model = context->model.spell.name2spell(thread->tostring(2));
+
+    if (model == nullptr)
+        return 0;
+
+    auto value = thread->tointeger(3);
+    auto spell = ch->spells.find(*model);
+    if (spell == nullptr)
+        return 0;
+
+    spell->delay(value);
+    return 0;
+}
+
 int character::builtin_send_mail(lua_State* lua)
 {
     auto thread = fb::lua::get(lua);

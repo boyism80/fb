@@ -1114,6 +1114,13 @@ public:
     bool detach_spawned_mob(fb::game::mob& mob);
 
     /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> death_penalty();
+
+    /**
      * @brief      Returns a protocol representation of the object.
      *
      * @return     Protocol representation of the object.
@@ -1954,6 +1961,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_web(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_delay(lua_State* lua);
 #pragma endregion
 };
 

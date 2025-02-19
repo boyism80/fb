@@ -273,7 +273,7 @@ int object::builtin_buff(lua_State* lua)
     switch (lua_type(lua, 2))
     {
     case LUA_TUSERDATA:
-        model = &thread->touserdata<fb::game::spell>(2)->model;
+        model = thread->touserdata<fb::model::spell>(2);
         break;
 
     case LUA_TSTRING:

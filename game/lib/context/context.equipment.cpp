@@ -61,11 +61,8 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 
-void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index)
+void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
-    if (index == 0xFF)
-        return;
-
     auto thread = lua::new_context();
 #if defined DEBUG | defined _DEBUG
     thread->from("scripts/interaction.lua");
@@ -73,8 +70,26 @@ void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t ind
     thread->func("on_equipment_inactive");
     thread->pushobject(me);
     thread->pushinteger(parts);
-    thread->pushobject(me.items[index]);
+    thread->pushobject(equipment);
     thread->resume(3);
 
     me.sound(SOUND::EQUIPMENT_OFF);
+}
+
+void context::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
+{
+    auto& model          = equipment.based<fb::model::equipment>();
+    auto  percent_before = (before * 100) / model.durability;
+    auto  percent_after  = (after * 100) / model.durability;
+    if (percent_before < percent_after)
+        return;
+
+    if (after == 0)
+    {
+        me.message(std::format("{}의 내구도가 다 닳았습니다.", equipment.name()));
+    }
+    else if (percent_after % 5 == 0 || percent_after < 5 || percent_before - percent_after >= 5)
+    {
+        me.message(std::format("{}의 내구도가 {}% 남았습니다.", equipment.name(), percent_after));
+    }
 }

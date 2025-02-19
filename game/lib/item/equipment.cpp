@@ -167,6 +167,27 @@ void fb::game::equipment::durability(uint32_t value)
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
 }
 
+bool fb::game::equipment::durability_down(uint32_t value)
+{
+    auto& model  = this->based<fb::model::equipment>();
+    auto  before = this->_durability;
+
+    if (value > this->_durability)
+    {
+        this->_durability = 0;
+    }
+    else
+    {
+        this->_durability -= value;
+    }
+
+    auto listener = this->_owner->get_listener<fb::game::equipment>();
+    if (listener != nullptr)
+        listener->on_durability_down(*this->_owner, *this, before, this->_durability);
+
+    return this->_durability == 0;
+}
+
 std::string fb::game::equipment::mid_message() const
 {
     return std::string();

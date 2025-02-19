@@ -25,6 +25,6 @@ function on_cast(me, you, spell)
             end
         end
     end
-    spell:delay(delay)
+    me:delay(spell, delay)
     spell_heal(me, you, spell, hp, mp, sound, effect)
 end

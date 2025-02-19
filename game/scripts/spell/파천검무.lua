@@ -1,6 +1,6 @@
 function on_cast(me, spell)
     local function failed(me)
-        me:message(string.format('%s 실패', spell:model():name()))
+        me:message(string.format('%s 실패', spell:name()))
     end
 
     local sound = 501

@@ -9,10 +9,6 @@ function on_attack(me, item)
         return
     end
 
-	if front:isbuff(table.unpack(relative_buff_name('마비'))) then
-    	return
-    end
-
     me:cast(front, '월아일격')
 end
 

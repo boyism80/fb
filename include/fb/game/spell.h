@@ -123,7 +123,23 @@ public:
      */
     ~spells();
 
-    // override
+    /**
+     * @brief      Searches for the first match.
+     *
+     * @param[in]  name  The name
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::game::spell* find(const std::string& name) const;
+
+    /**
+     * @brief      Searches for the first match.
+     *
+     * @param[in]  model  The model
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::game::spell* find(const fb::model::spell& model) const;
 
 public:
     /**

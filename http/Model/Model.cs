@@ -814,6 +814,13 @@ namespace Fb.Model.EnumValue
 
 namespace Fb.Model.ConstValue
 {
+    public static class DeathPenalty
+    {
+        public const double Exp = 0.05;
+        public const double Durability = 0.01;
+        public static readonly TimeSpan WarmthTime = TimeSpan.Parse("00:30:00");
+    }
+
     public static class Item
     {
         public const uint Bronze = 60000;

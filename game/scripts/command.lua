@@ -16,7 +16,7 @@ command_funcs = {
     function (me, args)
         local exp = table.unpack(args)
         exp = tonumber(exp)
-        me:exp(me:exp() + exp)
+        me:exp(exp)
         return true
     end,
 
@@ -335,7 +335,7 @@ command_funcs = {
     ['쿨타임초기화'] = 
     function (me, args)
         for slot, spell in pairs(me:spells()) do
-            spell:delay(0)
+            me:delay(spell, 0)
         end
         return true
     end,
@@ -344,6 +344,16 @@ command_funcs = {
     function (me, args)
         local money = table.unpack(args)
         me:money(me:money() + tonumber(money))
+        return true
+    end,
+
+    ['성전환'] = 
+    function (me, args)
+        if me:sex() == SEX_MAN then
+            me:sex(SEX_WOMAN)
+        else
+            me:sex(SEX_MAN)
+        end
         return true
     end
 }

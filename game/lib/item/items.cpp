@@ -22,74 +22,70 @@ fb::game::items::~items()
     }
 }
 
-uint8_t fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
+fb::game::equipment* fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    if (this->free() == false)
-        return 0xFF;
-
-    fb::game::item* item = nullptr;
+    auto listener  = this->_owner.get_listener<fb::game::equipment>();
+    auto equipment = (fb::game::equipment*)nullptr;
     switch (parts)
     {
     case EQUIPMENT_PARTS::WEAPON:
-        item = this->_weapon;
+        equipment = this->_weapon;
         if (this->_weapon != nullptr)
             this->_weapon = nullptr;
         break;
 
     case EQUIPMENT_PARTS::ARMOR:
-        item = this->_armor;
+        equipment = this->_armor;
         if (this->_armor != nullptr)
             this->_armor = nullptr;
         break;
 
     case EQUIPMENT_PARTS::SHIELD:
-        item = this->_shield;
+        equipment = this->_shield;
         if (this->_shield != nullptr)
             this->_shield = nullptr;
         break;
 
     case EQUIPMENT_PARTS::HELMET:
-        item = this->_helmet;
+        equipment = this->_helmet;
         if (this->_helmet != nullptr)
             this->_helmet = nullptr;
         break;
 
     case EQUIPMENT_PARTS::LEFT_HAND:
-        item = this->_rings[0];
+        equipment = this->_rings[0];
         if (this->_rings[0] != nullptr)
             this->_rings[0] = nullptr;
         break;
 
     case EQUIPMENT_PARTS::RIGHT_HAND:
-        item = this->_rings[1];
+        equipment = this->_rings[1];
         if (this->_rings[1] != nullptr)
             this->_rings[1] = nullptr;
         break;
 
     case EQUIPMENT_PARTS::LEFT_AUX:
-        item = this->_auxiliaries[0];
+        equipment = this->_auxiliaries[0];
         if (this->_auxiliaries[0] != nullptr)
             this->_auxiliaries[0] = nullptr;
         break;
 
     case EQUIPMENT_PARTS::RIGHT_AUX:
-        item = this->_auxiliaries[1];
+        equipment = this->_auxiliaries[1];
         if (this->_auxiliaries[1] != nullptr)
             this->_auxiliaries[1] = nullptr;
         break;
     }
 
-    if (item == nullptr)
-        return 0xFF;
+    if (equipment == nullptr)
+        return nullptr;
 
-    auto index = this->add(item);
     this->_owner.update(STATE_LEVEL::LEVEL_MAX);
     if (listener != nullptr)
-        listener->on_equipment_off(this->_owner, parts, index);
+        listener->on_equipment_off(this->_owner, parts, *equipment);
 
     this->_owner.update_external(false);
-    return index;
+    return equipment;
 }
 
 uint8_t fb::game::items::add(fb::game::item& item)
@@ -124,7 +120,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
             if (drop_time.has_value())
             {
                 auto diff = fb::model::datetime() - drop_time.value();
-                if (diff < fb::model::timespan(0, 0, 30, 0, 0))
+                if (diff < fb::model::const_value::death_penalty::warmth_time)
                 {
                     this->_owner.message("죽은 자의 온기가 남아있습니다.");
                     break;
@@ -232,7 +228,15 @@ fb::game::item* fb::game::items::active(uint8_t index)
 
 uint8_t fb::game::items::inactive(EQUIPMENT_PARTS parts)
 {
-    return this->equipment_off(parts);
+    if (this->free() == false)
+        return 0xFF;
+
+    auto item = this->equipment_off(parts);
+    if (item == nullptr)
+        return 0xFF;
+
+    auto slot = this->add(item);
+    return slot;
 }
 
 uint8_t fb::game::items::index(const fb::model::item& item) const
@@ -692,9 +696,9 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     return true;
 }
 
-std::map<EQUIPMENT_PARTS, fb::game::item*> fb::game::items::equipments() const
+std::map<EQUIPMENT_PARTS, fb::game::equipment*> fb::game::items::equipments() const
 {
-    return std::map<EQUIPMENT_PARTS, item*>{
+    return std::map<EQUIPMENT_PARTS, equipment*>{
         {EQUIPMENT_PARTS::WEAPON,     _weapon                                                  },
         {EQUIPMENT_PARTS::ARMOR,      _armor                                                   },
         {EQUIPMENT_PARTS::SHIELD,     _shield                                                  },

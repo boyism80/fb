@@ -192,7 +192,7 @@ bool life::active(fb::game::spell& spell, const std::string& message)
         return false;
 
     thread->pushobject(this);
-    thread->pushobject(spell);
+    thread->pushobject(spell.model);
     thread->pushstring(message);
     thread->resume(3);
     return true;
@@ -235,7 +235,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
 
     thread->pushobject(this);
     thread->pushobject(&to);
-    thread->pushobject(spell);
+    thread->pushobject(spell.model);
     thread->resume(3);
     return true;
 }
@@ -253,7 +253,7 @@ bool life::active(fb::game::spell& spell)
         return false;
 
     thread->pushobject(this);
-    thread->pushobject(spell);
+    thread->pushobject(spell.model);
     thread->resume(2);
     return true;
 }

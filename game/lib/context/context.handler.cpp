@@ -424,10 +424,10 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
 
     auto found = this->model.recipe.find(dsl);
     if (found == nullptr)
-        throw std::runtime_error("no match exception");
+        co_return true;
 
     if (found->success.size() - found->source.size() > ch->items.free_size())
-        throw std::runtime_error("full inven exception");
+        co_return true;
 
     for (auto& x : found->source)
     {
