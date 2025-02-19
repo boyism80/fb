@@ -184,6 +184,17 @@ void item::merge(item& item)
         this->_owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
+fb::thread* fb::game::item::thread() const
+{
+    if (this->_map != nullptr)
+        return this->context.threads.modular(this->_map->model.id);
+
+    if (this->_owner != nullptr)
+        return this->_owner->thread();
+
+    return this->context.threads.current();
+}
+
 void fb::game::item::assert_thread() const
 {
     if (this->_owner != nullptr)

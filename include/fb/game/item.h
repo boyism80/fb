@@ -233,6 +233,13 @@ public:
 
     /**
      * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread* thread() const override final;
+
+    /**
+     * @brief      { function_description }
      */
     void assert_thread() const override;
 
