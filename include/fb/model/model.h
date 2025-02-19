@@ -2043,9 +2043,8 @@ inline const char* enum_tostring<REGEX>(REGEX k)
 
 enum class SEX
 {
-    MAN = 1, 
-    WOMAN = 2, 
-    ALL = MAN | WOMAN
+    MAN = 0, 
+    WOMAN = 1
 }; // end of enum 'SEX'
 
 template <>
@@ -2054,8 +2053,7 @@ inline SEX enum_parse<SEX>(const std::string k)
     static const std::unordered_map<std::string, SEX> enums
     {
         { "MAN", SEX::MAN }, 
-        { "WOMAN", SEX::WOMAN }, 
-        { "ALL", SEX::ALL }
+        { "WOMAN", SEX::WOMAN }
     };
 
     auto i = enums.find(k);
@@ -2071,8 +2069,7 @@ inline const char* enum_tostring<SEX>(SEX k)
     static const std::unordered_map<SEX, const char*> enums
     {
         { SEX::MAN, "MAN" }, 
-        { SEX::WOMAN, "WOMAN" }, 
-        { SEX::ALL, "ALL" }
+        { SEX::WOMAN, "WOMAN" }
     };
 
     auto i = enums.find(k);
@@ -3197,8 +3194,6 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "SEX_MAN");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::WOMAN);
     lua_setglobal(lua, "SEX_WOMAN");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::ALL);
-    lua_setglobal(lua, "SEX_ALL");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SOUND::EAT);
     lua_setglobal(lua, "SOUND_EAT");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SOUND::DISGUISE);

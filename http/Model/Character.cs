@@ -17,10 +17,10 @@ namespace Http.Model
         public ushort? Birth { get; set; }
         public bool Admin { get; set; }
         public ushort Look { get; set; }
-        public ushort Color { get; set; }
-        public ushort Sex { get; set; }
-        public ushort Nation { get; set; }
-        public ushort? Creature { get; set; }
+        public byte Color { get; set; }
+        public byte Sex { get; set; }
+        public byte Nation { get; set; }
+        public byte? Creature { get; set; }
         public uint Map { get; set; }
         public ushort PositionX { get; set; }
         public ushort PositionY { get; set; }

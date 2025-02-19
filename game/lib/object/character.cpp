@@ -441,9 +441,6 @@ void character::sex(SEX value)
 {
     this->assert_thread();
 
-    if (value == SEX::MAN)
-        this->update_external(false);
-
     this->_sex = value;
     this->update_external(false);
 }

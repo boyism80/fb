@@ -40,7 +40,7 @@ public:
 
     struct preset
     {
-        SEX                     sex          = SEX::ALL;
+        SEX                     sex          = SEX::MAN;
         STATE                   state        = STATE::NORMAL;
         uint16_t                face         = 0;
         uint8_t                 hair_color   = 0;

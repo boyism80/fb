@@ -278,12 +278,12 @@ CREATE TABLE `user` (
   `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `birth` int unsigned DEFAULT NULL,
-  `admin` tinyint NOT NULL DEFAULT '0',
+  `admin` tinyint unsigned NOT NULL DEFAULT '0',
   `look` smallint unsigned NOT NULL DEFAULT '0',
   `color` tinyint unsigned NOT NULL DEFAULT '0',
-  `sex` tinyint(1) NOT NULL DEFAULT '0',
-  `nation` smallint NOT NULL DEFAULT '0',
-  `creature` smallint DEFAULT NULL,
+  `sex` tinyint unsigned NOT NULL DEFAULT '0',
+  `nation` smallint unsigned NOT NULL DEFAULT '0',
+  `creature` smallint unsigned DEFAULT NULL,
   `map` smallint unsigned NOT NULL DEFAULT '0',
   `position_x` smallint unsigned NOT NULL DEFAULT '0',
   `position_y` smallint unsigned NOT NULL DEFAULT '0',
@@ -308,11 +308,11 @@ CREATE TABLE `user` (
   `shield_color` tinyint unsigned DEFAULT NULL,
   `ring_left_color` tinyint unsigned DEFAULT NULL,
   `ring_right_color` tinyint unsigned DEFAULT NULL,
-  `aux_top_color` int DEFAULT NULL,
+  `aux_top_color` int unsigned DEFAULT NULL,
   `aux_bot_color` int unsigned DEFAULT NULL,
   `buffs` varchar(512) NOT NULL DEFAULT '[]',
   `title` varchar(32) NOT NULL DEFAULT '',
-  `deleted` tinyint NOT NULL DEFAULT '0',
+  `deleted` tinyint unsigned NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
@@ -649,4 +649,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-02-18 16:24:50
+-- Dump completed on 2025-02-20  6:26:14

@@ -685,11 +685,9 @@ namespace Fb.Model.EnumValue
     public enum Sex
     {
         [EnumMember(Value = "MAN")]
-        Man = 1, 
+        Man = 0, 
         [EnumMember(Value = "WOMAN")]
-        Woman = 2, 
-        [EnumMember(Value = "ALL")]
-        All = Man | Woman
+        Woman = 1
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
