@@ -2465,6 +2465,20 @@ DECLARE_AFTER_ENUM
 #pragma region const
 namespace const_value {
 
+class death_penalty
+{
+public:
+    inline static constexpr const double exp = 0.05;
+    inline static constexpr const double durability = 0.01;
+    inline static const timespan& warmth_time = timespan("00.00:30:00");
+
+private:
+    death_penalty() = default;
+    ~death_penalty() = default;
+#ifdef DECLARE_CONST_DEATH_PENALTY_EXTENSION
+DECLARE_CONST_DEATH_PENALTY_EXTENSION
+#endif
+}; // end of const 'death_penalty'
 class item
 {
 public:

@@ -129,13 +129,12 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
                 continue;
 
             auto& ch = static_cast<fb::game::character&>(obj);
-            for (auto& [part, item] : ch.items.equipments())
+            for (auto& [part, equipment] : ch.items.equipments())
             {
-                if (item == nullptr)
+                if (equipment == nullptr)
                     continue;
 
-                auto  equipment = static_cast<fb::game::equipment*>(item);
-                auto& model     = equipment->based<fb::model::equipment>();
+                auto& model = equipment->based<fb::model::equipment>();
                 if (model.script_concast == "")
                     continue;
 

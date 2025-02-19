@@ -1,5 +1,5 @@
 function on_cast(me, you, spell)
-	if me:is(OBJECT_TYPE_CHARACTER) then
+    if me:is(OBJECT_TYPE_CHARACTER) then
         local weapon = me:weapon()
         local delay = 7
         if weapon ~= nil then

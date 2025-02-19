@@ -164,7 +164,13 @@ std::optional<uint32_t> fb::game::equipment::durability() const
 void fb::game::equipment::durability(uint32_t value)
 {
     auto& model       = this->based<fb::model::equipment>();
+    auto  before      = (this->_durability * 100) / model.durability;
     this->_durability = std::max(uint32_t(0), std::min(model.durability, value));
+
+    auto after    = (this->_durability * 100) / model.durability;
+    auto listener = this->_owner->get_listener<fb::game::equipment>();
+    if (listener != nullptr)
+        listener->on_durability_changed(*this->_owner, *this, before, after);
 }
 
 std::string fb::game::equipment::mid_message() const

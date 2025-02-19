@@ -1668,7 +1668,17 @@ public:
      * @param[in]  parts  The parts
      * @param[in]  index  The index
      */
-    void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) override final;
+    void on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment) override final;
+
+    /**
+     * @brief      Called when durability changed.
+     *
+     * @param      me         { parameter_description }
+     * @param      equipment  The equipment
+     * @param[in]  before     The before
+     * @param[in]  after      The after
+     */
+    void on_durability_changed(character& me, fb::game::equipment& equipment, uint8_t before, uint8_t after) override final;
 
     /**
      * @brief      Called on item active.

@@ -117,8 +117,33 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
     }
 
     if (this->_hp == 0)
+    {
         this->kill(from, DESTROY_TYPE::DEAD);
+        return result;
+    }
 
+    for (auto& [parts, equipment] : this->items.equipments())
+    {
+        if (equipment == nullptr)
+            continue;
+
+        auto durability = equipment->durability();
+        if (durability.has_value() == false)
+            continue;
+
+        auto& model = equipment->based<fb::model::equipment>();
+        auto  value = durability.value() == 0 ? 0 : durability.value() - 1;
+        if (value == 0)
+        {
+            auto equipment = this->items.equipment_off(parts);
+            delete equipment;
+            this->message(std::format("{} 깨졌습니다.", equipment->name()));
+        }
+        else
+        {
+            equipment->durability(value);
+        }
+    }
     return result;
 }
 
@@ -1561,7 +1586,10 @@ fb::game::mob* character::spawn_mob(const fb::model::mob& model, const fb::model
     auto params = fb::game::mob::initial_params{.alive = true, .owner = owned ? this : nullptr};
     auto mob    = model.make<fb::game::mob>(this->context, params);
     mob->map(map, position);
-    this->_spawned_mobs.push_back(mob);
+
+    if (owned)
+        this->_spawned_mobs.push_back(mob);
+
     return mob;
 }
 

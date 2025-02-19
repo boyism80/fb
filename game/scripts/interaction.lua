@@ -133,6 +133,7 @@ function on_attack(me, additional_attack)
                 local point_x, point_y = table.unpack(point)
                 if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
                     damage(me, obj, 0.4)
+                    count = count + 1
                     break
                 end
             end
@@ -156,6 +157,7 @@ function on_attack(me, additional_attack)
             local point_x, point_y = table.unpack(point)
             if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
                 damage(me, obj, 0.5)
+                count = count + 1
                 break
             end
         end
@@ -166,10 +168,11 @@ function on_attack(me, additional_attack)
     end
 
     if me:isbuff('분신') and not additional_attack then
-        on_attack(me, true)
+        count = count + on_attack(me, true)
     end
 
     any_action(me)
+    return count
 end
 
 function on_equipment_active(me, parts, equipment)

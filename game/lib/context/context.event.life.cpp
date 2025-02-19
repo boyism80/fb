@@ -9,13 +9,14 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
 
 void context::on_attack(life& me, DURATION duration)
 {
-    auto thread = lua::new_context();
+    auto lua = lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->from("scripts/interaction.lua");
 #endif
-    thread->func("on_attack");
-    thread->pushobject(me);
-    thread->resume(1, false);
+    lua->func("on_attack");
+    lua->pushobject(me);
+    lua->resume(1, false);
+    auto attack_count = (uint32_t)lua->tointeger(1);
 
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
@@ -26,15 +27,28 @@ void context::on_attack(life& me, DURATION duration)
             auto& model = weapon->based<fb::model::weapon>();
             if (model.script_attack != "")
             {
-                thread->from(model.script_attack);
-                thread->func("on_attack");
-                thread->pushobject(ch);
-                thread->pushobject(weapon);
-                thread->resume(2, false);
+                lua->from(model.script_attack);
+                lua->func("on_attack");
+                lua->pushobject(ch);
+                lua->pushobject(weapon);
+                lua->resume(2, false);
+            }
+
+            if (attack_count > 0)
+            {
+                if (attack_count > weapon->durability())
+                {
+                    ch.message(std::format("{} 깨졌습니다.", weapon->name()));
+                    delete ch.items.equipment_off(EQUIPMENT_PARTS::WEAPON);
+                }
+                else
+                {
+                    weapon->durability(weapon->durability().value() - attack_count);
+                }
             }
         }
     }
-    thread->release();
+    lua->release();
 }
 
 void context::on_dead(life& me, object* you)
@@ -90,12 +104,28 @@ void context::on_dead(life& me, object* you)
             cash->map(ch.map(), ch.position());
         }
 
-        for (auto item : ch.items)
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
+            auto item = ch.items[i];
             if (item == nullptr)
                 continue;
 
             auto& model = item->based<fb::model::item>();
+            if (model.attr(ITEM_ATTRIBUTE::EQUIPMENT))
+            {
+                auto  equipment       = static_cast<fb::game::equipment*>(item);
+                auto& equipment_model = equipment->based<fb::model::equipment>();
+                auto  penalty         = equipment_model.durability * fb::model::const_value::death_penalty::durability;
+
+                if (equipment->durability().value() <= penalty)
+                {
+                    delete ch.items.remove(i, 1, ITEM_DELETE_TYPE::DESTROY);
+                    continue;
+                }
+
+                equipment->durability(equipment->durability().value() - penalty);
+            }
+
             if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
             {
                 auto dropped = ch.items.remove(*item, item->count(), ITEM_DELETE_TYPE::NONE);
@@ -103,131 +133,47 @@ void context::on_dead(life& me, object* you)
             }
         }
 
-        auto weapon = ch.items.weapon();
-        if (weapon != nullptr)
+        for (auto& [parts, equipment] : ch.items.equipments())
         {
-            auto& model = weapon->based<fb::model::weapon>();
+            if (equipment == nullptr)
+                continue;
+
+            auto& model   = equipment->based<fb::model::equipment>();
+            auto  penalty = model.durability * fb::model::const_value::death_penalty::durability;
+            if (equipment->durability().value() <= penalty)
+            {
+                ch.items.equipment_off(parts);
+                ch.message(std::format("{} 깨졌습니다.", equipment->name()));
+                delete equipment;
+                continue;
+            }
+
+            equipment->durability(equipment->durability().value() - penalty);
             if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
             {
-                ch.items.weapon(nullptr);
-                weapon->map(ch.map(), ch.position());
+                ch.items.equipment_off(parts);
+                equipment->map(ch.map(), ch.position());
             }
-            else
+            else if (ch.items.free())
             {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+                ch.items.equipment_off(parts);
+                ch.items.add(equipment);
             }
         }
 
-        auto armor = ch.items.armor();
-        if (armor != nullptr)
+        auto cls   = ch.cls();
+        auto level = ch.level();
+        if (this->model.ability.contains(cls) && this->model.ability[cls].contains(level) &&
+            this->model.ability[cls].contains(level - 1))
         {
-            auto& model = armor->based<fb::model::armor>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.armor(nullptr);
-                armor->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
+            auto penalty = uint32_t(this->model.ability[cls][level].exp * fb::model::const_value::death_penalty::exp);
+            auto gained  = ch.exp() - this->model.ability[cls][level - 1].stacked_exp;
 
-        auto helmet = ch.items.helmet();
-        if (helmet != nullptr)
-        {
-            auto& model = helmet->based<fb::model::helmet>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
+            penalty = std::min(gained, penalty);
+            if (penalty > 0)
             {
-                ch.items.helmet(nullptr);
-                helmet->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
-
-        auto shield = ch.items.shield();
-        if (shield != nullptr)
-        {
-            auto& model = shield->based<fb::model::shield>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.shield(nullptr);
-                shield->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
-
-        auto ring1 = ch.items.ring(EQUIPMENT_POSITION::LEFT);
-        if (ring1 != nullptr)
-        {
-            auto& model = ring1->based<fb::model::ring>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.ring(nullptr, EQUIPMENT_POSITION::LEFT);
-                ring1->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
-
-        auto ring2 = ch.items.ring(EQUIPMENT_POSITION::RIGHT);
-        if (ring2 != nullptr)
-        {
-            auto& model = ring2->based<fb::model::ring>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.ring(nullptr, EQUIPMENT_POSITION::RIGHT);
-                ring2->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
-
-        auto aux1 = ch.items.auxiliary(EQUIPMENT_POSITION::LEFT);
-        if (aux1 != nullptr)
-        {
-            auto& model = aux1->based<fb::model::auxiliary>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.auxiliary(nullptr, EQUIPMENT_POSITION::LEFT);
-                aux1->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
-            }
-        }
-
-        auto aux2 = ch.items.auxiliary(EQUIPMENT_POSITION::RIGHT);
-        if (aux2 != nullptr)
-        {
-            auto& model = aux2->based<fb::model::auxiliary>();
-            if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
-            {
-                ch.items.auxiliary(nullptr, EQUIPMENT_POSITION::RIGHT);
-                aux2->map(ch.map(), ch.position());
-            }
-            else
-            {
-                if (ch.items.free())
-                    ch.items.inactive(EQUIPMENT_PARTS::WEAPON);
+                ch.exp(ch.exp() - penalty);
+                ch.message(std::format("경험치를 {} 잃었습니다.", penalty));
             }
         }
     }

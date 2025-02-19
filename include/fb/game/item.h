@@ -591,7 +591,17 @@ struct equipment::listener : public virtual fb::game::item::listener
      * @param[in]  parts  The parts
      * @param[in]  index  The index
      */
-    virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, uint8_t index) = 0;
+    virtual void on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment) = 0;
+
+    /**
+     * @brief      Called when durability changed.
+     *
+     * @param      me         { parameter_description }
+     * @param      equipment  The equipment
+     * @param[in]  before     The before
+     * @param[in]  after      The after
+     */
+    virtual void on_durability_changed(character& me, fb::game::equipment& equipment, uint8_t before, uint8_t after) = 0;
 };
 
 /**
@@ -866,16 +876,6 @@ public:
      */
     ~items();
 
-private:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  parts  The parts
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint8_t equipment_off(EQUIPMENT_PARTS parts);
-
 public:
     /**
      * @brief      Adds the specified item.
@@ -927,6 +927,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     uint8_t inactive(EQUIPMENT_PARTS parts);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  parts  The parts
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::game::equipment* equipment_off(EQUIPMENT_PARTS parts);
+
     /**
      * @brief      { function_description }
      *
@@ -1129,7 +1138,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::map<EQUIPMENT_PARTS, item*> equipments() const;
+    std::map<EQUIPMENT_PARTS, equipment*> equipments() const;
     /**
      * @brief      { function_description }
      *
