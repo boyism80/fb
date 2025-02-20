@@ -177,6 +177,10 @@ bool map::movable(const fb::model::point16_t position) const
             return false;
     }
 
+    auto index = this->index(position);
+    if (this->doors.contains(index) && this->doors.at(index)->opened() == false)
+        return false;
+
     return true;
 }
 

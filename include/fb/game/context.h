@@ -862,7 +862,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_drop_cash(fb::socket<fb::game::character>&, const fb_reqs::item_drop_cash&);
+    [[nodiscard]] async::task<bool> handle_drop_money(fb::socket<fb::game::character>&,
+                                                      const fb_reqs::item_drop_money&);
 
     /**
      * @brief      { function_description }
@@ -1063,7 +1064,27 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_give(fb::socket<fb::game::character>&, const fb_reqs::give&);
+    [[nodiscard]] async::task<bool> handle_give_item(fb::socket<fb::game::character>&, const fb_reqs::give_item&);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      <unnamed>  { parameter_description }
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_give_money(fb::socket<fb::game::character>&, const fb_reqs::give_money&);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      <unnamed>  { parameter_description }
+     * @param[in]  <unnamed>  { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<bool> handle_post(fb::socket<fb::game::character>&, const fb_reqs::post&);
 
 public:
     /**
@@ -1688,7 +1709,8 @@ public:
      * @param[in]  before     The before
      * @param[in]  after      The after
      */
-    void on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) override final;
+    void
+    on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after) override final;
 
     /**
      * @brief      Called on item active.

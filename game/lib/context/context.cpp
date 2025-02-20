@@ -138,7 +138,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_active_item);    // 아이템 사용 핸들러
     this->bind(&context::handle_inactive_item);  // 아이템 장착 해제 핸들러
     this->bind(&context::handle_drop_item);      // 아이템 버리기 핸들러
-    this->bind(&context::handle_drop_cash);      // 금전 버리기 핸들러
+    this->bind(&context::handle_drop_money);     // 금전 버리기 핸들러
     this->bind(&context::handle_front_info);     // 앞방향 정보 핸들러
     this->bind(&context::handle_self_info);      // 나 자신의 정보 핸들러
     this->bind(&context::handle_option_changed); // 옵션 설정 핸들러
@@ -159,7 +159,9 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
     this->bind(&context::handle_object_miss);
-    this->bind(&context::handle_give);
+    this->bind(&context::handle_give_item);
+    this->bind(&context::handle_give_money);
+    this->bind(&context::handle_post);
 
     this->bind_timer(&context::handle_heart_beat, 1s);
     this->bind_timer(&context::handle_announce,

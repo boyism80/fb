@@ -199,7 +199,7 @@
     <ClCompile Include="..\game\lib\protocol\protocol.item.active.cpp">
       <Filter>Source Files\protocol\game</Filter>
     </ClCompile>
-    <ClCompile Include="..\game\lib\protocol\protocol.item.drop.cash.cpp">
+    <ClCompile Include="..\game\lib\protocol\protocol.item.drop.money.cpp">
       <Filter>Source Files\protocol\game</Filter>
     </ClCompile>
     <ClCompile Include="..\game\lib\protocol\protocol.item.drop.cpp">

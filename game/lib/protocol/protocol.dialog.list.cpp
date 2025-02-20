@@ -6,7 +6,7 @@ namespace fb::protocol::game::response {
 dialog_list::dialog_list(const fb::model::npc&           npc,
                          const std::vector<std::string>& lists,
                          const std::string&              message,
-                         bool button_prev,
+                         bool                            button_prev,
                          fb::game::dialog::interaction   interaction) :
     npc(npc),
     lists(lists),

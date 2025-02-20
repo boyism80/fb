@@ -381,7 +381,7 @@
     <ClCompile Include="lib\protocol\protocol.item.active.cpp">
       <Filter>Source Files\protocol</Filter>
     </ClCompile>
-    <ClCompile Include="lib\protocol\protocol.item.drop.cash.cpp">
+    <ClCompile Include="lib\protocol\protocol.item.drop.money.cpp">
       <Filter>Source Files\protocol</Filter>
     </ClCompile>
     <ClCompile Include="lib\protocol\protocol.item.drop.cpp">
@@ -556,6 +556,9 @@
       <Filter>Source Files\protocol</Filter>
     </ClCompile>
     <ClCompile Include="lib\protocol\protocol.give.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.post.cpp">
       <Filter>Source Files\protocol</Filter>
     </ClCompile>
   </ItemGroup>
@@ -752,7 +755,7 @@
     <ClInclude Include="..\include\fb\game\protocol\item\item_drop.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\fb\game\protocol\item\item_drop_cash.h">
+    <ClInclude Include="..\include\fb\game\protocol\item\item_drop_money.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\game\protocol\item\item_inactive.h">
@@ -924,6 +927,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\fb\game\protocol\give.h">
+      <Filter>Header Files\protocol</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\post.h">
       <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>
