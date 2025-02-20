@@ -159,6 +159,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_whisper);        // 귓속말 핸들러
     this->bind(&context::handle_world);          // 월드맵 핸들러
     this->bind(&context::handle_object_miss);
+    this->bind(&context::handle_give);
 
     this->bind_timer(&context::handle_heart_beat, 1s);
     this->bind_timer(&context::handle_announce,

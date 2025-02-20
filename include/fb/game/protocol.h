@@ -75,6 +75,7 @@
 #include <fb/game/protocol/save.h>
 #include <fb/game/protocol/ad.h>
 #include <fb/game/protocol/web.h>
+#include <fb/game/protocol/give.h>
 #include <fb/game/protocol/life/action.h>
 #include <fb/game/protocol/life/update_hp.h>
 #include <fb/game/protocol/life/die.h>

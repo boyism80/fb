@@ -318,7 +318,7 @@ void mob::AI(const fb::model::datetime& now)
     auto direction = DIRECTION::BOTTOM;
     if (this->repair_target() == nullptr)
     {
-        if (this->owner == nullptr || (this->owner->thread() == this->thread() && this->owner->map() == this->map()))
+        if (this->owner == nullptr || this->owner->map() != this->map())
             this->move(DIRECTION(std::rand() % 4));
         else if (this->near_target(*this->owner, direction))
             this->direction(direction);
@@ -414,27 +414,38 @@ void mob::drop_items()
 {
     this->assert_thread();
 
-    // 드롭 아이템 떨구기
     auto& model = this->based<fb::model::mob>();
     if (model.drop.empty())
         return;
 
-    auto& drop = this->context.model.drop[model.drop];
-    for (auto& dsl : drop.dsl)
+    auto  map      = this->map();
+    auto& position = this->position();
+    for (auto item : this->_items)
     {
-        switch (dsl.header)
-        {
-        case DSL::item:
-        {
-            auto params = fb::model::dsl::item(dsl.params);
-            auto random = std::rand() % 100;
-            if (random > (int)params.percent)
-                continue;
+        item->owner(nullptr);
+        item->map(map, position);
+    }
+    this->_items.clear();
 
-            auto item   = this->context.model.item[params.id].make(this->context);
-            std::ignore = item->map(this->map(), this->position());
-        }
-        break;
+    if (this->owner == nullptr)
+    {
+        auto& drop = this->context.model.drop[model.drop];
+        for (auto& dsl : drop.dsl)
+        {
+            switch (dsl.header)
+            {
+            case DSL::item:
+            {
+                auto params = fb::model::dsl::item(dsl.params);
+                auto random = std::rand() % 100;
+                if (random > (int)params.percent)
+                    continue;
+
+                auto item   = this->context.model.item[params.id].make(this->context);
+                std::ignore = item->map(map, position);
+            }
+            break;
+            }
         }
     }
 }
@@ -478,6 +489,21 @@ bool mob::move(DIRECTION direction)
     }
 
     return fb::game::object::move(direction);
+}
+
+const std::vector<item*>& fb::game::mob::items() const
+{
+    return this->_items;
+}
+
+bool fb::game::mob::push_item(item& i)
+{
+    if (this->_items.size() >= CONTAINER_CAPACITY)
+        return false;
+
+    i.owner(nullptr);
+    this->_items.push_back(&i);
+    return true;
 }
 
 uint32_t mob::base_hp() const
