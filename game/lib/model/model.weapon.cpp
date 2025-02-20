@@ -42,3 +42,16 @@ int fb::model::weapon::builtin_sound(lua_State* lua)
     thread->pushinteger(model->sound);
     return 1;
 }
+
+int fb::model::weapon::builtin_type(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto model   = thread->touserdata<fb::model::weapon>(1);
+
+    thread->pushinteger(model->weapon_type());
+    return 1;
+}

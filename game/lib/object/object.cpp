@@ -621,7 +621,7 @@ object* object::side(DIRECTION direction, OBJECT_TYPE type) const
         return nullptr;
 
     auto front = side_position(direction);
-    if (map->existable(front) == false)
+    if (map->in_ground(front) == false)
         return nullptr;
 
     auto nears = map->nears(this->_position, type);
@@ -663,7 +663,7 @@ std::vector<object*> object::sides(DIRECTION direction, OBJECT_TYPE type) const
             break;
         }
 
-        if (map->existable(front) == false)
+        if (map->in_ground(front) == false)
             throw std::exception();
 
         auto nears = map->nears(this->_position, type);

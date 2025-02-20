@@ -152,17 +152,21 @@ bool map::loaded() const
     return this->_size.width > 0 && this->_size.height > 0;
 }
 
-bool map::existable(const fb::model::point16_t position) const
+bool map::in_ground(const fb::model::point16_t position) const
 {
-    return position.x >= 0 && position.y >= 0 && position.x < this->_size.width && position.y < this->_size.height;
+    return position.x < this->_size.width && position.y < this->_size.height;
 }
 
 bool map::movable(const fb::model::point16_t position) const
 {
-    if (this->existable(position) == false)
+    if (this->in_ground(position) == false)
         return false;
 
     if ((*this)(position.x, position.y)->blocked)
+        return false;
+
+    auto index = this->index(position);
+    if (this->doors.contains(index) && this->doors.at(index)->opened() == false)
         return false;
 
     for (const auto& [key, value] : this->objects)
@@ -176,10 +180,6 @@ bool map::movable(const fb::model::point16_t position) const
         if (value.position() == position)
             return false;
     }
-
-    auto index = this->index(position);
-    if (this->doors.contains(index) && this->doors.at(index)->opened() == false)
-        return false;
 
     return true;
 }

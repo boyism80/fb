@@ -84,9 +84,22 @@ function damage(me, you, rate, additional_attack)
     damage_rate = damage_rate / (you:damage_derate() / 1000.0)
     local damage = math.floor(damage * damage_rate * rate)
     you:damage(damage, me, critical)
+    you:sound(SOUND_DAMAGE)
 end
 
 function on_attack(me, additional_attack)
+    local map = me:map()
+    if map == nil then
+        return 0
+    end
+
+    local option = map:model():option()
+    local pk = (option & MAP_OPTION_ENABLE_PK) == MAP_OPTION_ENABLE_PK
+    local enemy_type = OBJECT_TYPE_LIFE
+    if not pk then
+        enemy_type = OBJECT_TYPE_MOB
+    end
+
     if additional_attack == nil then
         additional_attack = false
     end
@@ -95,70 +108,115 @@ function on_attack(me, additional_attack)
         me:action(ACTION_ATTACK, DURATION_ATTACK)
     end
 
+    local is_bow = false
     if me:is(OBJECT_TYPE_CHARACTER) and not additional_attack then
         local weapon = me:weapon()
         if weapon ~= nil then
             local model = weapon:model()
+            is_bow = model:type() == WEAPON_TYPE_BOW
+
             local sound = model:sound()
             if sound == 0 then
-                sound = SOUND_SWING
+                if is_bow then
+                    
+                else
+                    sound = SOUND_SWING
+                end
             end
             me:sound(sound)
         end
     end
 
     local count = 0
-    local front = me:front(OBJECT_TYPE_LIFE)
-    if front ~= nil and not is_miss(me, front) then
-        damage(me, front)
-        count = count + 1
-    end
+    if is_bow then
+        local range = 7
+        local direction = me:direction()
+        local x, y = me:position()
+        local target = nil
+        local width = map:width()
+        local height = map:height()
+        for i = 1, 7 do
+            local obj_x = x
+            local obj_y = y
+            if direction == DIRECTION_LEFT then
+                obj_x = obj_x - i
+            elseif direction == DIRECTION_RIGHT then
+                obj_x = obj_x + i
+            elseif direction == DIRECTION_TOP then
+                obj_y = obj_y - i
+            else
+                obj_y = obj_y + i
+            end
 
-    local nears = me:nears(OBJECT_TYPE_LIFE, 1, 1)
-    local x, y = me:position()
-    local direction = me:direction()
-    if me:isbuff('측면공격') then
-        local points = {}
-        if direction == DIRECTION_LEFT or direction == DIRECTION_RIGHT then
-            table.insert(points, {x, y-1})
-            table.insert(points, {x, y+1})
-        else
-            table.insert(points, {x-1, y})
-            table.insert(points, {x+1, y+1})
+            if obj_x < 0 or obj_x > width or obj_y < 0 or obj_y > height then
+                break
+            end
+
+            target = map:at(obj_x, obj_y, enemy_type)
+            if target ~= nil then
+                break
+            end
         end
 
-        for _, obj in pairs(nears) do
-            local obj_x, obj_y = obj:position()
-            for _, point in pairs(points) do
-                local point_x, point_y = table.unpack(point)
-                if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
-                    damage(me, obj, 0.4)
-                    count = count + 1
-                    break
+        if target ~= nil then
+            damage(me, target)
+            count = count + 1
+        else
+            me:chat('no')
+        end
+    else
+        local front = me:front(enemy_type)
+        if front ~= nil and not is_miss(me, front) then
+            damage(me, front)
+            count = count + 1
+        end
+
+        local nears = me:nears(enemy_type, 1, 1)
+        local x, y = me:position()
+        local direction = me:direction()
+        if me:isbuff('측면공격') then
+            local points = {}
+            if direction == DIRECTION_LEFT or direction == DIRECTION_RIGHT then
+                table.insert(points, {x, y-1})
+                table.insert(points, {x, y+1})
+            else
+                table.insert(points, {x-1, y})
+                table.insert(points, {x+1, y+1})
+            end
+
+            for _, obj in pairs(nears) do
+                local obj_x, obj_y = obj:position()
+                for _, point in pairs(points) do
+                    local point_x, point_y = table.unpack(point)
+                    if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
+                        damage(me, obj, 0.4)
+                        count = count + 1
+                        break
+                    end
                 end
             end
         end
-    end
 
-    if me:isbuff('후면공격') then
-        local point = nil
-        if direction == DIRECTION_LEFT then
-            point = {x+1, y}
-        elseif direction == DIRECTION_TOP then
-            point = {x, y+1}
-        elseif direction == DIRECTION_RIGHT then
-            point = {x-1, y}
-        else
-            point = {x, y-1}
-        end
+        if me:isbuff('후면공격') then
+            local point = nil
+            if direction == DIRECTION_LEFT then
+                point = {x+1, y}
+            elseif direction == DIRECTION_TOP then
+                point = {x, y+1}
+            elseif direction == DIRECTION_RIGHT then
+                point = {x-1, y}
+            else
+                point = {x, y-1}
+            end
 
-        for _, obj in pairs(nears) do
-            local obj_x, obj_y = obj:position()
-            local point_x, point_y = table.unpack(point)
-            if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
-                damage(me, obj, 0.5)
-                count = count + 1
-                break
+            for _, obj in pairs(nears) do
+                local obj_x, obj_y = obj:position()
+                local point_x, point_y = table.unpack(point)
+                if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
+                    damage(me, obj, 0.5)
+                    count = count + 1
+                    break
+                end
             end
         end
     end

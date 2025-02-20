@@ -15,9 +15,10 @@ void context::on_attack(life& me, DURATION duration)
 #endif
     lua->func("on_attack");
     lua->pushobject(me);
-    lua->resume(1, false);
-    auto attack_count = (uint32_t)lua->tointeger(1);
+    if (lua->resume(1, false) == false)
+        return;
 
+    auto attack_count = (uint32_t)lua->tointeger(1);
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
         auto& ch     = static_cast<character&>(me);

@@ -148,7 +148,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool existable(const fb::model::point16_t position) const;
+    bool in_ground(const fb::model::point16_t position) const;
 
     /**
      * @brief      { function_description }
@@ -350,6 +350,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_tile(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_at(lua_State* lua);
 };
 
 /**
