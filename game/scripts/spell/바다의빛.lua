@@ -28,7 +28,13 @@ function on_cast(me, you, spell)
     elseif you:is(OBJECT_TYPE_MOB) then
         local message = you:name()
         local item_names = {}
-        for _, item in pairs(you:model():drop()) do
+        if you:owner() == nil then
+            for _, item in pairs(you:model():drop()) do
+                table.insert(item_names, item:name())
+            end
+        end
+
+        for _, item in pairs(you:items()) do
             table.insert(item_names, item:name())
         end
 

@@ -555,6 +555,9 @@
     <ClCompile Include="lib\protocol\protocol.dialog.ch.list.cpp">
       <Filter>Source Files\protocol</Filter>
     </ClCompile>
+    <ClCompile Include="lib\protocol\protocol.give.cpp">
+      <Filter>Source Files\protocol</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -919,6 +922,9 @@
     </ClInclude>
     <ClInclude Include="..\include\fb\game\protocol\dialog\dialog_ch_list.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\fb\game\protocol\give.h">
+      <Filter>Header Files\protocol</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

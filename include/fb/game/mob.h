@@ -96,6 +96,7 @@ private:
     int8_t              _buff_magdef   = 0;
     uint8_t             _buff_dam      = 0;
     uint8_t             _buff_hit      = 0;
+    std::vector<item*>  _items;
 
 public:
     fb::game::character* owner = nullptr;
@@ -458,6 +459,22 @@ public:
      */
     bool move(DIRECTION direction) override final;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::vector<item*>& items() const;
+
+    /**
+     * @brief      Pushes an item.
+     *
+     * @param      i     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool push_item(item& i);
+
 #pragma region builtin
 
 public:
@@ -478,6 +495,24 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_oblivion(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_owner(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_items(lua_State* lua);
 #pragma endregion
 };
 

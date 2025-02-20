@@ -147,6 +147,7 @@
     <ClInclude Include="..\include\fb\game\protocol\emotion.h" />
     <ClInclude Include="..\include\fb\game\protocol\exit.h" />
     <ClInclude Include="..\include\fb\game\protocol\front_info.h" />
+    <ClInclude Include="..\include\fb\game\protocol\give.h" />
     <ClInclude Include="..\include\fb\game\protocol\group.h" />
     <ClInclude Include="..\include\fb\game\protocol\init.h" />
     <ClInclude Include="..\include\fb\game\protocol\item\item_active.h" />
@@ -335,6 +336,7 @@
     <ClCompile Include="lib\protocol\protocol.emotion.cpp" />
     <ClCompile Include="lib\protocol\protocol.exit.cpp" />
     <ClCompile Include="lib\protocol\protocol.front.info.cpp" />
+    <ClCompile Include="lib\protocol\protocol.give.cpp" />
     <ClCompile Include="lib\protocol\protocol.group.cpp" />
     <ClCompile Include="lib\protocol\protocol.init.cpp" />
     <ClCompile Include="lib\protocol\protocol.item.active.cpp" />
