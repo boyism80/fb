@@ -610,9 +610,9 @@ enum class CLASS
 {
     NONE = 0, 
     WARRIOR = 1, 
-    THIEF = 2, 
-    MAGICION = 3, 
-    ASCETIC = 4
+    ROGUE = 2, 
+    MAGE = 3, 
+    POET = 4
 }; // end of enum 'CLASS'
 
 template <>
@@ -622,9 +622,9 @@ inline CLASS enum_parse<CLASS>(const std::string k)
     {
         { "NONE", CLASS::NONE }, 
         { "WARRIOR", CLASS::WARRIOR }, 
-        { "THIEF", CLASS::THIEF }, 
-        { "MAGICION", CLASS::MAGICION }, 
-        { "ASCETIC", CLASS::ASCETIC }
+        { "ROGUE", CLASS::ROGUE }, 
+        { "MAGE", CLASS::MAGE }, 
+        { "POET", CLASS::POET }
     };
 
     auto i = enums.find(k);
@@ -641,9 +641,9 @@ inline const char* enum_tostring<CLASS>(CLASS k)
     {
         { CLASS::NONE, "NONE" }, 
         { CLASS::WARRIOR, "WARRIOR" }, 
-        { CLASS::THIEF, "THIEF" }, 
-        { CLASS::MAGICION, "MAGICION" }, 
-        { CLASS::ASCETIC, "ASCETIC" }
+        { CLASS::ROGUE, "ROGUE" }, 
+        { CLASS::MAGE, "MAGE" }, 
+        { CLASS::POET, "POET" }
     };
 
     auto i = enums.find(k);
@@ -2792,12 +2792,12 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "CLASS_NONE");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::WARRIOR);
     lua_setglobal(lua, "CLASS_WARRIOR");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::THIEF);
-    lua_setglobal(lua, "CLASS_THIEF");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::MAGICION);
-    lua_setglobal(lua, "CLASS_MAGICION");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::ASCETIC);
-    lua_setglobal(lua, "CLASS_ASCETIC");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::ROGUE);
+    lua_setglobal(lua, "CLASS_ROGUE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::MAGE);
+    lua_setglobal(lua, "CLASS_MAGE");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CLASS::POET);
+    lua_setglobal(lua, "CLASS_POET");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::PHOENIX);
     lua_setglobal(lua, "CREATURE_PHOENIX");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::CREATURE::TIGER);

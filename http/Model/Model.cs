@@ -156,12 +156,12 @@ namespace Fb.Model.EnumValue
         None = 0, 
         [EnumMember(Value = "WARRIOR")]
         Warrior = 1, 
-        [EnumMember(Value = "THIEF")]
-        Thief = 2, 
-        [EnumMember(Value = "MAGICION")]
-        Magicion = 3, 
-        [EnumMember(Value = "ASCETIC")]
-        Ascetic = 4
+        [EnumMember(Value = "ROGUE")]
+        Rogue = 2, 
+        [EnumMember(Value = "MAGE")]
+        Mage = 3, 
+        [EnumMember(Value = "POET")]
+        Poet = 4
     }
 
     [JsonConverter(typeof(StringEnumConverter))]

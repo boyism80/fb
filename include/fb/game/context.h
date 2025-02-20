@@ -862,7 +862,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> handle_drop_money(fb::socket<fb::game::character>&, const fb_reqs::item_drop_money&);
+    [[nodiscard]] async::task<bool> handle_drop_money(fb::socket<fb::game::character>&,
+                                                      const fb_reqs::item_drop_money&);
 
     /**
      * @brief      { function_description }
