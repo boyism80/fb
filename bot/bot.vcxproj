@@ -122,7 +122,7 @@
     <ClCompile Include="..\game\lib\protocol\protocol.group.cpp" />
     <ClCompile Include="..\game\lib\protocol\protocol.init.cpp" />
     <ClCompile Include="..\game\lib\protocol\protocol.item.active.cpp" />
-    <ClCompile Include="..\game\lib\protocol\protocol.item.drop.cash.cpp" />
+    <ClCompile Include="..\game\lib\protocol\protocol.item.drop.money.cpp" />
     <ClCompile Include="..\game\lib\protocol\protocol.item.drop.cpp" />
     <ClCompile Include="..\game\lib\protocol\protocol.item.inactive.cpp" />
     <ClCompile Include="..\game\lib\protocol\protocol.item.info.cpp" />

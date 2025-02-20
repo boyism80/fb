@@ -35,6 +35,8 @@ public:
     using unordered_map<uint64_t, std::unique_ptr<door>>::cbegin;
     using unordered_map<uint64_t, std::unique_ptr<door>>::cend;
     using unordered_map<uint64_t, std::unique_ptr<door>>::size;
+    using unordered_map<uint64_t, std::unique_ptr<door>>::at;
+    using unordered_map<uint64_t, std::unique_ptr<door>>::contains;
 
 public:
     /**

@@ -30,7 +30,7 @@
 #include <fb/game/protocol/item/item_active.h>
 #include <fb/game/protocol/item/item_inactive.h>
 #include <fb/game/protocol/item/item_drop.h>
-#include <fb/game/protocol/item/item_drop_cash.h>
+#include <fb/game/protocol/item/item_drop_money.h>
 #include <fb/game/protocol/item/item_mix.h>
 #include <fb/game/protocol/item/item_throws.h>
 #include <fb/game/protocol/item/item_info.h>
@@ -76,6 +76,7 @@
 #include <fb/game/protocol/ad.h>
 #include <fb/game/protocol/web.h>
 #include <fb/game/protocol/give.h>
+#include <fb/game/protocol/post.h>
 #include <fb/game/protocol/life/action.h>
 #include <fb/game/protocol/life/update_hp.h>
 #include <fb/game/protocol/life/die.h>

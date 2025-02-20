@@ -256,7 +256,7 @@ async::task<bool> context::handle_drop_item(fb::socket<character>& socket, const
     co_return true;
 }
 
-async::task<bool> context::handle_drop_cash(fb::socket<character>& socket, const fb_reqs::item_drop_cash& request)
+async::task<bool> context::handle_drop_money(fb::socket<character>& socket, const fb_reqs::item_drop_money& request)
 {
     auto ch = socket.data();
     if (ch->inited() == false)
@@ -570,7 +570,7 @@ async::task<bool> context::handle_object_miss(fb::socket<character>& socket, con
     co_return true;
 }
 
-async::task<bool> context::handle_give(fb::socket<character>& socket, const fb_reqs::give& request)
+async::task<bool> context::handle_give_item(fb::socket<character>& socket, const fb_reqs::give_item& request)
 {
     auto me = socket.data();
     if (me->inited() == false)
@@ -595,7 +595,9 @@ async::task<bool> context::handle_give(fb::socket<character>& socket, const fb_r
         if (model.trade == false)
             throw std::runtime_error("줄 수 없습니다.");
 
-        if (forward->is(OBJECT_TYPE::CHARACTER))
+        switch (forward->what())
+        {
+        case OBJECT_TYPE::CHARACTER:
         {
             auto you = static_cast<character*>(forward);
             if (model.attr(ITEM_ATTRIBUTE::BUNDLE) && you->items.index(model) != 0xFF)
@@ -618,7 +620,9 @@ async::task<bool> context::handle_give(fb::socket<character>& socket, const fb_r
                 you->message(std::format("{}님이 {} {}개 주었습니다.", me->name(), name_with(item->name()), count));
             you->items.add(item);
         }
-        else if (forward->is(OBJECT_TYPE::MOB))
+        break;
+
+        case OBJECT_TYPE::MOB:
         {
             auto mob = static_cast<fb::game::mob*>(forward);
             if (mob->items().size() >= CONTAINER_CAPACITY)
@@ -627,12 +631,77 @@ async::task<bool> context::handle_give(fb::socket<character>& socket, const fb_r
             item = me->items.remove(*item, count, ITEM_DELETE_TYPE::GIVE);
             mob->push_item(*item);
         }
+        break;
+
+        default:
+            co_return true;
+        }
     }
     catch (std::exception& e)
     {
         me->message(e.what());
     }
 
+    co_return true;
+}
+
+async::task<bool> context::handle_give_money(fb::socket<character>& socket, const fb_reqs::give_money& request)
+{
+    auto me = socket.data();
+    if (me->inited() == false)
+        co_return true;
+
+    if (me->map() == nullptr)
+        co_return true;
+
+    auto forward = me->forward();
+    if (forward == nullptr)
+        co_return true;
+
+    try
+    {
+        auto money = std::min(request.money, me->money());
+        switch (forward->what())
+        {
+        case OBJECT_TYPE::CHARACTER:
+        {
+            auto you      = static_cast<character*>(forward);
+            auto capacity = 0xFFFFFFFF - you->money();
+            money         = std::min(capacity, money);
+            if (money == 0)
+                throw std::runtime_error("상대방이 돈을 받을 수 없습니다.");
+
+            you->money_add(money);
+            you->message(std::format("{}님이 {}전을 주었습니다.", me->name(), money));
+        }
+        break;
+
+        case OBJECT_TYPE::MOB:
+        {
+            auto mob = static_cast<fb::game::mob*>(forward);
+            if (mob->items().size() >= CONTAINER_CAPACITY)
+                throw std::runtime_error("더 이상 줄 수 없습니다.");
+
+            auto item = this->make<fb::game::cash>(money);
+            mob->push_item(*item);
+        }
+        break;
+
+        default:
+            co_return true;
+        }
+
+        me->money_reduce(money);
+    }
+    catch (std::exception& e)
+    {
+        me->message(e.what());
+    }
+    co_return true;
+}
+
+async::task<bool> context::handle_post(fb::socket<character>& socket, const fb_reqs::post& request)
+{
     co_return true;
 }
 

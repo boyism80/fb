@@ -152,7 +152,7 @@
     <ClInclude Include="..\include\fb\game\protocol\init.h" />
     <ClInclude Include="..\include\fb\game\protocol\item\item_active.h" />
     <ClInclude Include="..\include\fb\game\protocol\item\item_drop.h" />
-    <ClInclude Include="..\include\fb\game\protocol\item\item_drop_cash.h" />
+    <ClInclude Include="..\include\fb\game\protocol\item\item_drop_money.h" />
     <ClInclude Include="..\include\fb\game\protocol\item\item_inactive.h" />
     <ClInclude Include="..\include\fb\game\protocol\item\item_info.h" />
     <ClInclude Include="..\include\fb\game\protocol\item\item_mix.h" />
@@ -180,6 +180,7 @@
     <ClInclude Include="..\include\fb\game\protocol\object\sound.h" />
     <ClInclude Include="..\include\fb\game\protocol\object\update.h" />
     <ClInclude Include="..\include\fb\game\protocol\pick_up.h" />
+    <ClInclude Include="..\include\fb\game\protocol\post.h" />
     <ClInclude Include="..\include\fb\game\protocol\save.h" />
     <ClInclude Include="..\include\fb\game\protocol\self_info.h" />
     <ClInclude Include="..\include\fb\game\protocol\spell\spell_buff.h" />
@@ -340,7 +341,7 @@
     <ClCompile Include="lib\protocol\protocol.group.cpp" />
     <ClCompile Include="lib\protocol\protocol.init.cpp" />
     <ClCompile Include="lib\protocol\protocol.item.active.cpp" />
-    <ClCompile Include="lib\protocol\protocol.item.drop.cash.cpp" />
+    <ClCompile Include="lib\protocol\protocol.item.drop.money.cpp" />
     <ClCompile Include="lib\protocol\protocol.item.drop.cpp" />
     <ClCompile Include="lib\protocol\protocol.item.inactive.cpp" />
     <ClCompile Include="lib\protocol\protocol.item.info.cpp" />
@@ -370,6 +371,7 @@
     <ClCompile Include="lib\protocol\protocol.object.show.cpp" />
     <ClCompile Include="lib\protocol\protocol.object.sound.cpp" />
     <ClCompile Include="lib\protocol\protocol.pick.up.cpp" />
+    <ClCompile Include="lib\protocol\protocol.post.cpp" />
     <ClCompile Include="lib\protocol\protocol.spell.delay.cpp" />
     <ClCompile Include="lib\protocol\protocol.update.option.cpp" />
     <ClCompile Include="lib\protocol\protocol.update.screen.cpp" />

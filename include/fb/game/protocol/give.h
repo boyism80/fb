@@ -8,7 +8,7 @@ using namespace fb::model::enum_value;
 
 namespace fb::protocol::game::request {
 
-class give : public fb::protocol::header
+class give_item : public fb::protocol::header
 {
 public:
     inline static uint8_t header = 0x29;
@@ -18,7 +18,22 @@ public:
     bool    all  = false;
 
 public:
-    give() = default;
+    give_item() = default;
+
+public:
+    [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
+};
+
+class give_money : public fb::protocol::header
+{
+public:
+    inline static uint8_t header = 0x2A;
+
+public:
+    uint32_t money;
+
+public:
+    give_money() = default;
 
 public:
     [[nodiscard]] async::task<void> deserialize(fb::stream_reader<big_endian>& reader);
