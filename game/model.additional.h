@@ -191,7 +191,7 @@ public:                                                                         
     }                                                                                                    \
     enum_value::WEAPON_TYPE weapon_type() const                                                          \
     {                                                                                                    \
-        switch (this->look / 10000)                                                                      \
+        switch (this->dress / 10000)                                                                     \
         {                                                                                                \
         case 0:                                                                                          \
             return enum_value::WEAPON_TYPE::NORMAL;                                                      \
@@ -211,7 +211,8 @@ public:                                                                         
     }                                                                                                    \
     static int builtin_damage_small(lua_State* lua);                                                     \
     static int builtin_damage_large(lua_State* lua);                                                     \
-    static int builtin_sound(lua_State* lua);
+    static int builtin_sound(lua_State* lua);                                                            \
+    static int builtin_type(lua_State* lua);
 
 #define DECLARE_ARMOR_EXTENSION                                                                          \
                                                                                                          \

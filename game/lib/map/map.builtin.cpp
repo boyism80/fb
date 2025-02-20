@@ -17,6 +17,7 @@ IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
 {"contains",            fb::game::map::builtin_contains},
 {"belows",              fb::game::map::builtin_belows},
 {"tile",                fb::game::map::builtin_tile},
+{"at",                  fb::game::map::builtin_at},
 END_LUA_EXTENSION; // clang-format on
 
 int fb::game::map::builtin_model(lua_State* lua)
@@ -322,4 +323,37 @@ int fb::game::map::builtin_tile(lua_State* lua)
         thread->pushboolean(tile->blocked);
         return 3;
     }
+}
+
+int fb::game::map::builtin_at(lua_State* lua)
+{
+    auto thread = lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto ctx  = thread->env<fb::game::context>("context");
+    auto argc = thread->argc();
+    auto map  = thread->touserdata<fb::game::map>(1);
+    if (map == nullptr)
+        return 0;
+
+    auto x        = (uint16_t)thread->tointeger(2);
+    auto y        = (uint16_t)thread->tointeger(3);
+    auto position = fb::model::point16_t{x, y};
+    auto type     = argc < 4 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(4));
+
+    return ctx->builtin(*map, thread, 1, [=]() -> async::task<void> {
+        auto nears = map->nears(fb::model::point16_t{x, y}, type);
+        for (auto obj : nears)
+        {
+            if (obj->position() == position)
+            {
+                thread->pushobject(obj);
+                co_return;
+            }
+        }
+
+        thread->pushnil();
+        co_return;
+    });
 }

@@ -76,6 +76,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
 {"damage_small",        fb::model::weapon::builtin_damage_small},
 {"damage_large",        fb::model::weapon::builtin_damage_large},
 {"sound",               fb::model::weapon::builtin_sound},
+{"type",                fb::model::weapon::builtin_type},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
