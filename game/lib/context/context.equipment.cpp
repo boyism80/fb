@@ -81,6 +81,10 @@ void context::on_durability_down(character& me, fb::game::equipment& equipment, 
     auto& model          = equipment.based<fb::model::equipment>();
     auto  percent_before = (before * 100) / model.durability;
     auto  percent_after  = (after * 100) / model.durability;
+
+    if (percent_before == percent_after)
+        return;
+
     if (percent_before < percent_after)
         return;
 

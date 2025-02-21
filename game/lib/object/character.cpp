@@ -882,16 +882,10 @@ item* character::withdraw_item(uint8_t index, uint16_t count)
         if (this->items.free() == false)
             return nullptr;
 
-        deposited_item->count(deposited_count - count);
-        if (deposited_item->empty())
-        {
-            auto i = this->_deposited_items.begin() + index;
-            this->_deposited_items.erase(i);
-        }
-
-        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
-
-        return this->items.at(added_slot);
+        auto item = deposited_item->split();
+        this->_deposited_items.erase(this->_deposited_items.begin() + index);
+        this->items.add(item);
+        return item;
     }
 }
 

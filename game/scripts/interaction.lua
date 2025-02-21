@@ -35,13 +35,13 @@ function is_back_attack(me, you)
     end
 end
 
-function damage(me, you, rate, additional_attack)
+function damage(me, you, rate, sound)
     if rate == nil then
         rate = 1.0
     end
 
-    if additional_attack == nil then
-        additional_attack = false
+    if sound == nil then
+        sound = SOUND_DAMAGE
     end
 
     local size = MOB_SIZE_SMALL
@@ -84,7 +84,7 @@ function damage(me, you, rate, additional_attack)
     damage_rate = damage_rate / (you:damage_derate() / 1000.0)
     local damage = math.floor(damage * damage_rate * rate)
     you:damage(damage, me, critical)
-    you:sound(SOUND_DAMAGE)
+    you:sound(sound)
 end
 
 function on_attack(me, additional_attack)
@@ -117,9 +117,7 @@ function on_attack(me, additional_attack)
 
             local sound = model:sound()
             if sound == 0 then
-                if is_bow then
-                    
-                else
+                if not is_bow then
                     sound = SOUND_SWING
                 end
             end
@@ -129,13 +127,13 @@ function on_attack(me, additional_attack)
 
     local count = 0
     if is_bow then
-        local range = 7
+        local range = 14
         local direction = me:direction()
         local x, y = me:position()
         local target = nil
         local width = map:width()
         local height = map:height()
-        for i = 1, 7 do
+        for i = 1, range do
             local obj_x = x
             local obj_y = y
             if direction == DIRECTION_LEFT then
@@ -159,10 +157,8 @@ function on_attack(me, additional_attack)
         end
 
         if target ~= nil then
-            damage(me, target)
+            damage(me, target, nil, 701)
             count = count + 1
-        else
-            me:chat('no')
         end
     else
         local front = me:front(enemy_type)
