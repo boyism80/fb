@@ -93,7 +93,11 @@ void fb::game::trade::end()
     }
 
     this->_locked = false;
-    this->_money  = 0;
+    if (this->_money > 0)
+    {
+        this->_owner.money_add(this->_money);
+        this->_money = 0;
+    }
 
     for (auto& [index, order] : this->_items)
     {
@@ -236,15 +240,15 @@ bool fb::game::trade::cancel()
         if (listener != nullptr)
             listener->on_trade_cancel(this->_owner, *this->_you);
 
+        this->end();
         return true;
     }
     catch (std::exception& e)
     {
+        this->end();
         this->_owner.message(e.what(), MESSAGE_TYPE::POPUP);
+        return false;
     }
-
-    this->end();
-    return false;
 }
 
 uint8_t fb::game::trade::add(uint8_t index)
@@ -333,6 +337,9 @@ void fb::game::trade::exchange(trade& trade1, trade& trade2)
             item->trade_count(0);
 
             auto split = item->split(trade_count);
+            if (split == item)
+                trade._owner.items.remove(*item);
+
             buffer.push_back(split);
         }
 
