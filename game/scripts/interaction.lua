@@ -40,10 +40,6 @@ function damage(me, you, rate, sound)
         rate = 1.0
     end
 
-    if sound == nil then
-        sound = SOUND_DAMAGE
-    end
-
     local size = MOB_SIZE_SMALL
     if you:is(OBJECT_TYPE_MOB) then
         local model = you:model()
@@ -84,7 +80,9 @@ function damage(me, you, rate, sound)
     damage_rate = damage_rate / (you:damage_derate() / 1000.0)
     local damage = math.floor(damage * damage_rate * rate)
     you:damage(damage, me, critical)
-    you:sound(sound)
+    if sound ~= nil then
+        you:sound(sound)
+    end
 end
 
 function on_attack(me, additional_attack)
@@ -108,9 +106,9 @@ function on_attack(me, additional_attack)
         me:action(ACTION_ATTACK, DURATION_ATTACK)
     end
 
+    local weapon = me:weapon()
     local is_bow = false
     if me:is(OBJECT_TYPE_CHARACTER) and not additional_attack then
-        local weapon = me:weapon()
         if weapon ~= nil then
             local model = weapon:model()
             is_bow = model:type() == WEAPON_TYPE_BOW
@@ -162,8 +160,12 @@ function on_attack(me, additional_attack)
         end
     else
         local front = me:front(enemy_type)
+        local damaged_sound = nil
+        if weapon ~= nil then
+            damaged_sound = SOUND_DAMAGE
+        end
         if front ~= nil and not is_miss(me, front) then
-            damage(me, front)
+            damage(me, front, nil, damaged_sound)
             count = count + 1
         end
 
@@ -185,7 +187,7 @@ function on_attack(me, additional_attack)
                 for _, point in pairs(points) do
                     local point_x, point_y = table.unpack(point)
                     if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
-                        damage(me, obj, 0.4)
+                        damage(me, obj, 0.4, damaged_sound)
                         count = count + 1
                         break
                     end
@@ -209,7 +211,7 @@ function on_attack(me, additional_attack)
                 local obj_x, obj_y = obj:position()
                 local point_x, point_y = table.unpack(point)
                 if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
-                    damage(me, obj, 0.5)
+                    damage(me, obj, 0.5, damaged_sound)
                     count = count + 1
                     break
                 end
