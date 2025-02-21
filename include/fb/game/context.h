@@ -343,12 +343,14 @@ public:
      * @param[in]  scope         The scope
      * @param[in]  exclude_self  Indicates if the self is excluded
      * @param[in]  encrypt       The encrypt
+     *
+     * @return     { description_of_the_return_value }
      */
-    void send(fb::game::object&           object,
-              const fb::protocol::header& header,
-              context::scope              scope,
-              bool                        exclude_self = false,
-              bool                        encrypt      = true);
+    async::task<void> send(fb::game::object&           object,
+                           const fb::protocol::header& header,
+                           context::scope              scope,
+                           bool                        exclude_self = false,
+                           bool                        encrypt      = true);
 
     /**
      * @brief      { function_description }

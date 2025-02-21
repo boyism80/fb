@@ -522,25 +522,26 @@ character* context::handle_accepted(fb::socket<character>& socket)
     return this->make<character>(socket);
 }
 
-void context::send(object&                     object,
-                   const fb::protocol::header& header,
-                   context::scope              scope,
-                   bool                        exclude_self,
-                   bool                        encrypt)
+async::task<void>
+context::send(object& object, const fb::protocol::header& header, context::scope scope, bool exclude_self, bool encrypt)
 {
+    auto stream = fb::stream();
+    auto writer = fb::stream_writer<big_endian>(stream);
+    co_await header.serialize(writer);
+
     switch (scope)
     {
     case context::scope::PIVOT:
     {
         if (!exclude_self)
-            object.send(header, encrypt);
+            object.send(stream, encrypt);
 
         for (auto& x : object.nears(OBJECT_TYPE::CHARACTER))
         {
             if (x->sight(object) == false)
                 continue;
 
-            x->send(header, encrypt);
+            x->send(stream, encrypt);
         }
     }
     break;
@@ -548,17 +549,17 @@ void context::send(object&                     object,
     case context::scope::GROUP:
     {
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
-            return;
+            co_return;
 
         auto& ch                = static_cast<const character&>(object);
         auto& shared_group_lock = ch.group();
         if (shared_group_lock == nullptr)
-            return;
+            co_return;
 
-        shared_group_lock->lock([&header, encrypt](auto& group) {
+        shared_group_lock->lock([&stream, encrypt](auto& group) {
             for (auto ch : group.characters())
             {
-                ch->send(header, encrypt);
+                ch->send(stream, encrypt);
             }
         });
     }
@@ -568,22 +569,22 @@ void context::send(object&                     object,
     {
         auto map = object.map();
         if (map == nullptr)
-            return;
+            co_return;
 
         for (const auto& [seq, obj] : object.map()->objects)
         {
             if (exclude_self && obj == object)
                 continue;
 
-            obj.send(header, encrypt);
+            obj.send(stream, encrypt);
         }
     }
     break;
 
     case context::scope::WORLD:
     {
-        this->foreach_ch([header, encrypt](auto& ch) -> async::task<void> {
-            ch.send(header, encrypt);
+        this->foreach_ch([stream, encrypt](auto& ch) -> async::task<void> {
+            ch.send(stream, encrypt);
             co_return;
         });
     }
