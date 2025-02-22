@@ -24,7 +24,7 @@ public:
     LUA_PROTOTYPE
 
 private:
-    fb::model::datetime _next_soliloquy;
+    uint16_t _soliloquy_time;
 
 public:
     /**
