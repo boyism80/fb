@@ -106,6 +106,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
     auto& socket = static_cast<fb::socket<character>&>(me);
     auto  fd     = static_cast<uint32_t>(socket.native_handle());
     auto  error  = std::string();
+    auto  p      = fb::model::point16_t{position};
     try
     {
         auto&& response =
@@ -139,8 +140,8 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
         writer.write<std::string>(ch->name());
         writer.write<uint8_t>(1);
         writer.write<uint16_t>(map.model.id);
-        writer.write<uint16_t>(position.x);
-        writer.write<uint16_t>(position.y);
+        writer.write<uint16_t>(p.x);
+        writer.write<uint16_t>(p.y);
         std::ignore = this->transfer(socket, response.ip, response.port, fb::protocol::internal::Service::Game, stream);
         co_return true;
     }
