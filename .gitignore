@@ -26,4 +26,4 @@ login/json
 build
 tools/modules
 tools/map-split/*.txt
-config
+*/config

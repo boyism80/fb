@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace runner;
+namespace Runner;
 
 /// <summary>
 /// Interaction logic for App.xaml

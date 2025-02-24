@@ -4,7 +4,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace runner.Control
+namespace Runner.Control
 {
     /// <summary>
     /// Interaction logic for SystemButton.xaml

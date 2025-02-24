@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows;
 
-namespace runner.Converter
+namespace Runner.Converter
 {
     public class MainWindowIconConverter : BaseValueConverter<MainWindowIconConverter>
     {

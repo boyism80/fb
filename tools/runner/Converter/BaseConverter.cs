@@ -2,7 +2,7 @@
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace runner.Converter
+namespace Runner.Converter
 {
     public abstract class BaseValueConverter<T> : MarkupExtension, IValueConverter
         where T : class, new()
