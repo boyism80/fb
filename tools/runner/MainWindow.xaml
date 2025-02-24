@@ -1,0 +1,481 @@
+﻿<Window x:Class="runner.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:runner"
+        mc:Ignorable="d"
+        xmlns:uc="clr-namespace:runner.Control"
+        xmlns:converter="clr-namespace:runner.Converter"
+        Title="Runner: The Kingdom of the Winds"
+        Width="1024"
+        Height="768">
+    <Window.Resources>
+        <Style TargetType="{x:Type local:MainWindow}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                        <Border Padding="0">
+                            <Grid>
+                                <!-- Window border and dropshadown -->
+                                <Border Background="{StaticResource MainTextBrush}">
+                                    <Border.Effect>
+                                        <DropShadowEffect ShadowDepth="0"
+                                                          Opacity="0.2" />
+                                    </Border.Effect>
+                                </Border>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Border Grid.Row="0"
+                                            Padding="5"
+                                            Background="{StaticResource SystemBrush}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Grid.Column="0"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="5">
+                                                <ContentControl>
+                                                    <Image Source="/Image/icon_caption.png"
+                                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                                           Width="16"
+                                                           Height="16" />
+                                                </ContentControl>
+                                            </Button>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{TemplateBinding Property=Title}"
+                                                       VerticalAlignment="Center"
+                                                       Foreground="{StaticResource MainTextBrush}" />
+                                            <StackPanel Grid.Column="2"
+                                                        Orientation="Horizontal">
+                                                <uc:SystemButton Grid.Column="0"
+                                                                 Icon="/Image/minimize.png"
+                                                                 Background="{StaticResource SystemBrush}"
+                                                                 HoverBackground="{StaticResource ControlLightBackgroundBrush}"
+                                                                 Command="{Binding SetMinimizeCommand}" />
+                                                <uc:SystemButton Grid.Column="1"
+                                                                 Icon="{Binding WindowState, Converter={converter:MainWindowIconConverter}, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=local:MainWindow}}"
+                                                                 Width="34"
+                                                                 Height="36"
+                                                                 Background="{StaticResource SystemBrush}"
+                                                                 HoverBackground="{StaticResource ControlLightBackgroundBrush}"
+                                                                 Command="{Binding SetMaximizeCommand}" />
+                                                <uc:SystemButton Grid.Column="2"
+                                                                 Icon="/Image/close.png"
+                                                                 Background="{StaticResource SystemBrush}"
+                                                                 HoverBackground="{StaticResource ControlLightBackgroundBrush}"
+                                                                 Command="{Binding CloseCommand}" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                    <Grid Grid.Row="1"
+                                          Background="{StaticResource SystemBrush}">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Menu Grid.Column="0"
+                                              Style="{StaticResource MetroMenuStyle}"
+                                              Background="{StaticResource SystemBrush}"
+                                              Foreground="{StaticResource MainTextBrush}"
+                                              Padding="10 10">
+                                            <MenuItem Header="파일" />
+                                            <MenuItem Header="채널" />
+                                        </Menu>
+                                        <StackPanel Grid.Column="1"
+                                                    Orientation="Horizontal"
+                                                    HorizontalAlignment="Right"
+                                                    Margin="0 0 20 0">
+                                            <TextBox Style="{StaticResource SearchTextBox}"
+                                                     Width="250"
+                                                     Margin="0 0 0 10"
+                                                     Text="{Binding ChannelFilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                     Tag="검색" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid Grid.Row="2">
+                                        <ContentPresenter Content="{TemplateBinding Content}" />
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="10"
+                      CaptionHeight="30"
+                      CornerRadius="0"
+                      GlassFrameThickness="0" />
+    </WindowChrome.WindowChrome>
+
+    <Grid Background="{StaticResource BackgroundBrush}">
+        <DockPanel Margin="20 0">
+            <Grid DockPanel.Dock="Top"
+                  Margin="0 20 0 10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Padding="10 0">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Image/icon_header.png"
+                               RenderOptions.BitmapScalingMode="HighQuality"
+                               Width="64"
+                               Margin="8" />
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock Text="Runner: The Kingdom of the Winds"
+                                       FontWeight="Bold"
+                                       Margin="10 0 0 0"
+                                       FontSize="{StaticResource FontSizeLarge}"
+                                       Foreground="{StaticResource MainTextBrush}" />
+                            <TextBlock Grid.Row="1"
+                                       Text="Run all servers on Windows."
+                                       VerticalAlignment="Center"
+                                       FontSize="{StaticResource FontSizeRegular}"
+                                       Margin="10 0 0 0"
+                                       Foreground="{StaticResource SemiTextBrush}" />
+                            <TextBlock Grid.Row="2"
+                                       Text="Software version 1.0"
+                                       VerticalAlignment="Center"
+                                       FontSize="{StaticResource FontSizeRegular}"
+                                       Margin="10 0 0 0"
+                                       Foreground="{StaticResource SemiTextBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0"
+                                    Orientation="Horizontal"
+                                    Margin="5 10 0 10"
+                                    HorizontalAlignment="Right">
+                            <Button Content="소프트웨어 정보"
+                                    BorderThickness="0"
+                                    Command="{Binding AboutCommand}" />
+                        </StackPanel>
+                        <TextBlock Text="Made by boyism80@gmail.com"
+                                   Grid.Row="1"
+                                   FontSize="{StaticResource FontSizeSmall}"
+                                   TextAlignment="Right"
+                                   Foreground="{StaticResource SemiTextBrush}" />
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <TabControl x:Name="MainTab"
+                        Background="{StaticResource BackgroundBrush}">
+                <TabItem Header="Home">
+                    <Grid Margin="0 15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="3*" />
+                            <ColumnDefinition Width="2*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Row="0"
+                                    Grid.Column="0"
+                                    Grid.ColumnSpan="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    DockPanel.Dock="Top"
+                                    Margin="0 0 0 10">
+                            <TextBlock Text="마지막 빌드 시간 : 2025-02-22"
+                                       VerticalAlignment="Center"
+                                       Foreground="{StaticResource MainTextBrush}"
+                                       Margin="0 0 10 0" />
+                            <Button Content="빌드"
+                                    Command="{Binding AddChannelCommand}" />
+                        </StackPanel>
+
+                        <Border Grid.Column="0"
+                                Grid.Row="1">
+                            <TextBox VerticalScrollBarVisibility="Auto"
+                                     VerticalAlignment="Top"
+                                     Background="Transparent"
+                                     TextWrapping="Wrap"
+                                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus condimentum sodales mauris, et dictum arcu porttitor ac. Suspendisse tempus ornare arcu, at interdum elit auctor ac. Morbi vitae turpis vestibulum, fermentum urna vitae, molestie lacus. Proin porta justo auctor, dignissim leo at, tristique quam. Aenean at lorem sit amet leo pulvinar laoreet non in augue. Nam tincidunt libero ut dolor fermentum suscipit in at diam. Integer quis pellentesque sem. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent eget purus nisl. Praesent porta justo at ante viverra, sed hendrerit enim ultrices. Nulla feugiat, tortor non posuere pretium, arcu urna sodales ipsum, nec dictum lectus orci sit amet nunc. Phasellus sollicitudin pellentesque massa, congue ultrices lacus dictum vitae. Cras congue lectus sem, tempus porta risus consectetur non. Nulla ac neque facilisis, ullamcorper turpis eu, facilisis nunc. Suspendisse vel egestas turpis, eget vulputate lectus. Proin ut congue urna, at congue ex." />
+                        </Border>
+                        <TreeView Grid.Row="1"
+                                  Grid.Column="1"
+                                  Background="Transparent">
+
+                        </TreeView>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="Detail">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  Padding="0 0 0 30">
+                        <StackPanel Orientation="Vertical"
+                                    Margin="20 0">
+                            <StackPanel Orientation="Vertical">
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 0 0 10">
+                                    <TextBlock Text="MySQL"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+
+                                <DataGrid ItemsSource="{Binding MySqlConnection}"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="NAME">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox IsReadOnly="True"
+                                                             Text="{Binding Name}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="IP">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding IP}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Port">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Port}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                </Grid>
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="Redis"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <DataGrid ItemsSource="{Binding RedisConnection}"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="IP">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding IP}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Port">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Port}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="RabbitMQ"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <DataGrid ItemsSource="{Binding RabbitMQConnection}"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="IP">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding IP}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Port">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Port}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="Gateway"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Port"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="0"
+                                               Grid.Column="0" />
+                                    <TextBox Text="3000"
+                                             Grid.Row="0"
+                                             Grid.Column="1" />
+                                </Grid>
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="Login"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <DataGrid ItemsSource="{Binding LoginConfs}"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Name"
+                                                                Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Name}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Port"
+                                                                Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Port}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Desc"
+                                                                Width="8*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Desc}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="Game"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <DataGrid ItemsSource="{Binding GameConfs}"
+                                          IsReadOnly="True">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="ID">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding ID}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="Port">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Port}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="Internal"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Port"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="0"
+                                               Grid.Column="0" />
+                                    <TextBox Text="3000"
+                                             Grid.Row="0"
+                                             Grid.Column="1" />
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+        </DockPanel>
+    </Grid>
+</Window>
