@@ -69,6 +69,10 @@ namespace Runner.Model
         {
             Port = 0
         };
+        public string GameFile { get; set; }
+        public string GatewayFile { get; set; }
+        public string LoginFile { get; set; }
+        public string InternalFile { get; set; }
 
         public MainWindow(Window window)
         {

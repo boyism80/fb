@@ -102,7 +102,6 @@
                                             <TextBox Style="{StaticResource SearchTextBox}"
                                                      Width="250"
                                                      Margin="0 0 0 10"
-                                                     Text="{Binding ChannelFilterText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                      Tag="검색" />
                                         </StackPanel>
                                     </Grid>
@@ -176,8 +175,7 @@
                                     Margin="5 10 0 10"
                                     HorizontalAlignment="Right">
                             <Button Content="소프트웨어 정보"
-                                    BorderThickness="0"
-                                    Command="{Binding AboutCommand}" />
+                                    BorderThickness="0" />
                         </StackPanel>
                         <TextBlock Text="Made by boyism80@gmail.com"
                                    Grid.Row="1"
@@ -213,9 +211,9 @@
                                        Foreground="{StaticResource MainTextBrush}"
                                        Margin="0 0 10 0" />
                             <Button Content="빌드"
-                                    Command="{Binding AddChannelCommand}" />
+                                    Command="{Binding BuildCommand}" />
                             <Button Content="시작"
-                                    Command="{Binding AddChannelCommand}" />
+                                    Command="{Binding RunCommand}" />
                         </StackPanel>
 
                         <Border Grid.Column="0"
@@ -248,12 +246,10 @@
                                                Foreground="{StaticResource MainTextBrush}"
                                                Margin="0 0 0 10" />
                                 </Border>
-                                <DataGrid ItemsSource="{Binding MySQL}"
-                                          IsReadOnly="True">
+                                <DataGrid ItemsSource="{Binding MySQL}">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      IsEnabled="False" />
+                                            <MenuItem Header="제거" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -268,7 +264,7 @@
                                         <DataGridTemplateColumn Header="IP">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding IP}"
+                                                    <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                              Width="128" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -276,7 +272,8 @@
                                         <DataGridTemplateColumn Header="PORT">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Port}" />
+                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Width="64" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -315,23 +312,22 @@
                                           IsReadOnly="True">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      IsEnabled="False" />
+                                            <MenuItem Header="제거" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn Header="IP">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding IP}"
-                                                             Width="128" />
+                                                    <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Width="64" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
                                         <DataGridTemplateColumn Header="PORT">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Port}" />
+                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -367,8 +363,7 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="0"
                                                Grid.Column="0" />
-                                    <TextBox Tag="127.0.0.1"
-                                             Text="{Binding RabbitMQ.IP}"
+                                    <TextBox Text="{Binding RabbitMqIP}"
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -377,8 +372,7 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="1"
                                                Grid.Column="0" />
-                                    <TextBox Tag="3000"
-                                             Text="{Binding RabbitMQ.Port}"
+                                    <TextBox Text="{Binding RabbitMqPort}"
                                              Grid.Row="1"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -425,8 +419,7 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="1"
                                                Grid.Column="0" />
-                                    <TextBox Tag="3000"
-                                             Text="{Binding Gateway.Port}"
+                                    <TextBox Text="{Binding Gateway.Port}"
                                              Grid.Row="1"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -473,8 +466,7 @@
                                           Margin="0 5 0 0">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      IsEnabled="False" />
+                                            <MenuItem Header="제거" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -482,7 +474,7 @@
                                                                 Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Name}"
+                                                    <TextBox Text="{Binding Name,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                              Margin="0 2 0 2" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -491,7 +483,7 @@
                                                                 Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Port}"
+                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                              Margin="0 2 0 2" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -500,7 +492,7 @@
                                                                 Width="8*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Desc}"
+                                                    <TextBox Text="{Binding Desc,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                              Margin="0 2 0 2" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -553,15 +545,14 @@
                                           Margin="0 5 0 0">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거"
-                                                      IsEnabled="False" />
+                                            <MenuItem Header="제거" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn Header="ID">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding ID}"
+                                                    <TextBox Text="{Binding ID,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                              Margin="0 2 0 2" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -569,7 +560,8 @@
                                         <DataGridTemplateColumn Header="PORT">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Port}"
+                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Width="64"
                                                              Margin="0 2 0 2" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -607,7 +599,7 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="0"
                                                Grid.Column="0" />
-                                    <TextBox Text="{Binding GameFile}"
+                                    <TextBox Text="{Binding InternalFile}"
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2"
@@ -622,9 +614,11 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="1"
                                                Grid.Column="0" />
-                                    <TextBox Tag="3000"
+                                    <TextBox Text="{Binding InternalPort,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                             Width="64"
                                              Grid.Row="1"
                                              Grid.Column="1"
+                                             HorizontalAlignment="Left"
                                              Margin="0 2 0 2" />
                                 </Grid>
                             </StackPanel>

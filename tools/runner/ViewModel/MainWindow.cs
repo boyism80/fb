@@ -1,11 +1,13 @@
-﻿using Runner.Command;
+﻿using Microsoft.Win32;
+using Runner.Command;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Windows.Input;
 
 namespace Runner.ViewModel
 {
-    public class MySqlConnection
+    public class MySqlConnection : INotifyPropertyChanged
     {
         public Model.MySqlConnection Model { get; private set; }
 
@@ -29,9 +31,11 @@ namespace Runner.ViewModel
         {
             Model = model;
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    public class RedisConnection
+    public class RedisConnection : INotifyPropertyChanged
     {
         public Model.RedisConnection Model { get; private set; }
         public string IP
@@ -49,26 +53,8 @@ namespace Runner.ViewModel
         {
             Model = model;
         }
-    }
 
-    public class RabbitMQConnection
-    {
-        public Model.RabbitMQConnection Model { get; private set; }
-        public string IP
-        {
-            get => Model.IP;
-            set => Model.IP = value;
-        }
-        public ushort Port
-        {
-            get => Model.Port;
-            set => Model.Port = value;
-        }
-
-        public RabbitMQConnection(Model.RabbitMQConnection model)
-        {
-            Model = model;
-        }
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
     public class GatewayConfig
@@ -131,32 +117,51 @@ namespace Runner.ViewModel
         }
     }
 
-    public class InternalConfig
-    {
-        public Model.InternalConfig Model { get; private set; }
-        public ushort Port
-        {
-            get => Model.Port;
-            set => Model.Port = value;
-        }
-
-        public InternalConfig(Model.InternalConfig model)
-        {
-            Model = model;
-        }
-    }
-
-    public class MainWindow
+    public class MainWindow : INotifyPropertyChanged
     {
         public Model.MainWindow Model { get; private set; }
 
         public ObservableCollection<MySqlConnection> MySQL { get; set; } = new ObservableCollection<MySqlConnection>();
         public ObservableCollection<RedisConnection> Redis { get; set; } = new ObservableCollection<RedisConnection>();
-        public RabbitMQConnection RabbitMq { get; set; }
+        public string RabbitMqIP
+        {
+            get => Model.RabbitMq.IP;
+            set => Model.RabbitMq.IP = value;
+        }
+        public ushort RabbitMqPort
+        {
+            get => Model.RabbitMq.Port;
+            set => Model.RabbitMq.Port = value;
+        }
+        public ushort InternalPort
+        {
+            get => Model.Internal.Port;
+            set => Model.Internal.Port = value;
+        }
         public GatewayConfig Gateway { get; set; }
         public ObservableCollection<LoginConfig> Login { get; set; } = new ObservableCollection<LoginConfig>();
         public ObservableCollection<GameConfig> Game { get; set; } = new ObservableCollection<GameConfig>();
-        public InternalConfig Internal { get; set; }
+        public string GatewayFile
+        {
+            get => Model.GatewayFile;
+            set => Model.GatewayFile = value;
+        }
+        public string LoginFile
+        {
+            get => Model.LoginFile;
+            set => Model.LoginFile = value;
+        }
+        public string GameFile
+        {
+            get => Model.GameFile;
+            set => Model.GameFile = value;
+        }
+        public string InternalFile
+        {
+            get => Model.InternalFile;
+            set => Model.InternalFile = value;
+        }
+        public bool IsEnabled { get; set; } = true;
 
         public ICommand SetMinimizeCommand { get; private set; }
         public ICommand SetMaximizeCommand { get; private set; }
@@ -169,6 +174,8 @@ namespace Runner.ViewModel
         public ICommand FindLoginFile { get; private set; }
         public ICommand FindGameFile { get; private set; }
         public ICommand FindInternalFile { get; private set; }
+        public ICommand BuildCommand { get; private set; }
+        public ICommand RunCommand { get; private set; }
 
         public MainWindow(Model.MainWindow model)
         {
@@ -199,8 +206,6 @@ namespace Runner.ViewModel
             Game.CollectionChanged += Game_CollectionChanged;
 
             Gateway = new GatewayConfig(Model.Gateway);
-            RabbitMq = new RabbitMQConnection(Model.RabbitMq);
-
             SetMinimizeCommand = new RelayCommand(OnSetMinimize);
             SetMaximizeCommand = new RelayCommand(OnSetMaximize);
             CloseCommand = new RelayCommand(OnClose);
@@ -212,26 +217,75 @@ namespace Runner.ViewModel
             FindLoginFile = new RelayCommand(OnFindLoginFile);
             FindGameFile = new RelayCommand(OnFindGameFile);
             FindInternalFile = new RelayCommand(OnFindInternalFile);
+            BuildCommand = new RelayCommand(OnBuild);
+            RunCommand = new RelayCommand(OnRun);
         }
+
+        private void OnRun(object obj)
+        {
+
+        }
+
+        private void OnBuild(object obj)
+        {
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         private void OnFindGatewayFile(object obj)
         {
+            var dialog = new OpenFileDialog
+            {
+                DefaultExt = ".exe",
+                Filter = "Executable Files (*.exe)|*.exe",
+                Multiselect = false
+            };
+            if (dialog.ShowDialog() == false)
+                return;
 
+            GatewayFile = dialog.FileName;
         }
 
         private void OnFindLoginFile(object obj)
         {
+            var dialog = new OpenFileDialog
+            {
+                DefaultExt = ".exe",
+                Filter = "Executable Files (*.exe)|*.exe",
+                Multiselect = false
+            };
+            if (dialog.ShowDialog() == false)
+                return;
 
+            LoginFile = dialog.FileName;
         }
 
         private void OnFindGameFile(object obj)
         {
+            var dialog = new OpenFileDialog
+            {
+                DefaultExt = ".exe",
+                Filter = "Executable Files (*.exe)|*.exe",
+                Multiselect = false
+            };
+            if (dialog.ShowDialog() == false)
+                return;
 
+            GameFile = dialog.FileName;
         }
 
         private void OnFindInternalFile(object obj)
         {
+            var dialog = new OpenFileDialog
+            {
+                DefaultExt = ".exe",
+                Filter = "Executable Files (*.exe)|*.exe",
+                Multiselect = false
+            };
+            if (dialog.ShowDialog() == false)
+                return;
 
+            InternalFile = dialog.FileName;
         }
 
         private void OnNewGame(object obj)
