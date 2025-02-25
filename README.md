@@ -10,21 +10,35 @@ Create ```config.json``` file into ```each-server-dir/config```. This file requi
 
 And you have to unzip ```resources/maps.zip``` file into directory that contains binary game server. Then convert excel files in ```resources/table``` to json files using [data-converter](https://github.com/boyism80/data-converter). If you update protocol that used for communicate with internal server, modify fbs file in ```protocol``` path and run [flatbuffer-ex](https://github.com/boyism80/flatbuffer-ex). 
 
-### Use Docker
+### On Windows
+Install git, cmake, visual studio 2022 and run 'tools/update-modules.bat'. then run this:
 ```
-# create config file into $PWD/{each-server}/config
-sudo docker run -v $PWD/gateway/config:/app/config ghcr.io/boyism80/fb/gateway:latest
-sudo docker run -v $PWD/login/config:/app/config ghcr.io/boyism80/fb/login:latest
-sudo docker run -v $PWD/game/config:/app/config ghcr.io/boyism80/fb/game:latest
-sudo docker run -v $PWD/internal/config:/app/config ghcr.io/boyism80/fb/internal:latest
+mkdir build
+cd build
+cmake ..
 ```
+Build 'fb.sln' and execute all servers.
 
 
-### Use Kubernetes
+### On Linux
+Install docker.io and run this:
+```
+docker build --tag fb/build:latest -f Dockerfile .
+docker build --tag fb/gateway:latest -f gateway/Dockerfile .
+docker build --tag fb/login:latest -f login/Dockerfile .
+docker build --tag fb/game:latest -f game/Dockerfile .
+docker build --tag fb/bot:latest -f bot/Dockerfile .
+docker build --tag fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
+docker build --tag fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
+```
+
 You can run all servers simply using kubernetes and pulumi. First, change ```host``` field in ```infra/pulumi/develop.json``` file.
 ```json
 {
-    "host": "{enter your host}",
+    "host": {
+        "private": "{enter your private ip}",
+        "public": "{enter your external ip}"
+    },
     "mysql": {
         "section-1": {
             "-1": {
@@ -47,7 +61,25 @@ If you need to build, look ```Dockerfile``` and ```CMakeLists.txt``` and ```buil
 
 
 ## Architecture
-TODO
+![screenshot](image/architecture.png)
+The gateway server is responsible for routing to one of several login servers, which create accounts, change passwords, and route to game servers. The server-to-server communication is via the internal server.
+
+An internal server is an HTTP server. It reads and writes DBs, notifies all servers (using RabbitMQ), inquires about the status of multiple servers, synchronizes, and so on.
+
+'write-back' is a single process that will carry out a redis caching strategy. When the internal server writes data to the DB, it saves it to Redis first immediately and stores the query to be passed to the actual DB in the Redis buffer. The 'write-back' process continues to query this buffer and applies the query to the DB when it can be done.
+
+
+### Game server & map
+![screenshot](image/map_group.png)
+Each game server manages some of the map groups. Unmanaged maps do not perform any operations, and when a character moves to an unmanaged map, it transfers through the internal server to the game server that manages that map.
+
+### Thread
+![screenshot](image/thread.png)
+The I/O thread receives data from the client and then enqueues the task in the task queue of the thread that the socket will work on.
+
+The game server modulates the id of the map in which the character stands to determine the thread to be worked, and the gateway server or login server modulates the fd of the socket to determine.
+
+The number of I/O threads and logic threads can be determined by the config file.
 
 
 
