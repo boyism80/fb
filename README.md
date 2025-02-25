@@ -64,7 +64,7 @@ If you need to build, look ```Dockerfile``` and ```CMakeLists.txt``` and ```buil
 ![screenshot](image/architecture.png)
 The gateway server is responsible for routing to one of several login servers, which create accounts, change passwords, and route to game servers. The server-to-server communication is via the internal server.
 
-An internal server is an HTTP server. It reads and writes DBs, notifies all servers (using RabbitMQ), inquires about the status of multiple servers, synchronizes, and so on.
+internal server is based on HTTP 2.0. It reads and writes DBs, notifies all servers (using RabbitMQ), inquires about the status of multiple servers, synchronizes, and so on.
 
 'write-back' is a single process that will carry out a redis caching strategy. When the internal server writes data to the DB, it saves it to Redis first immediately and stores the query to be passed to the actual DB in the Redis buffer. The 'write-back' process continues to query this buffer and applies the query to the DB when it can be done.
 
@@ -73,15 +73,21 @@ An internal server is an HTTP server. It reads and writes DBs, notifies all serv
 ![screenshot](image/map_group.png)
 Each game server manages some of the map groups. Unmanaged maps do not perform any operations, and when a character moves to an unmanaged map, it transfers through the internal server to the game server that manages that map.
 
+As shown in the picture above, there are several maps that are managed by a single game server. According to the picture, game servers with id of 0 only manage maps with map id from 0 to 99. This is for ease of description, and in reality, each map has an id of the game server that you need to connect to.
+
+In addition, one map consists of several sectors. It is used to efficiently search for surrounding objects from one object. To the right of the picture above, there are sectors from 0 to 19. Assuming that the character is in sector 7, the game server will search for objects in sectors [1, 2, 3, 6, 7, 8, 11, 12, 13].
+
 ### Thread
 ![screenshot](image/thread.png)
-The I/O thread receives data from the client and then enqueues the task in the task queue of the thread that the socket will work on.
+After the I/O thread reads the data, it passes the data to one of several logic threads. The game server determines the thread as follows:
 
-The game server modulates the id of the map in which the character stands to determine the thread to be worked, and the gateway server or login server modulates the fd of the socket to determine.
+```C++
+thread_id = character.map.id % logic_thread.length+1
+```
 
-The number of I/O threads and logic threads can be determined by the config file.
+For example, if the character who received the data from the I/O thread is currently on the map 40, thread 0 would call the handler. If it was on the map 62, it would be called in thread 2. This makes it possible to avoid considering the concurrency between objects on the same map. However, it makes it difficult to interact between characters located on different maps.
 
-
+The gateway server or login server determines by modulating the fd in the socket. The number of I/O threads and logical threads can also be determined by the configuration file.
 
 ## Contact
  - [youtube](https://www.youtube.com/channel/UCPcH5qX7aLTFs3mgh32_FVQ?view_as=subscriber)
