@@ -82,7 +82,7 @@ In addition, one map consists of several sectors. It is used to efficiently sear
 After the I/O thread reads the data, it passes the data to one of several logic threads. The game server determines the thread as follows:
 
 ```C++
-thread_id = character.map.id % logic_thread.length+1
+thread_id = character.map.id % (logic_thread.length+1)
 ```
 
 For example, if the character who received the data from the I/O thread is currently on the map 40, thread 0 would call the handler. If it was on the map 62, it would be called in thread 2. This makes it possible to avoid considering the concurrency between objects on the same map. However, it makes it difficult to interact between characters located on different maps.
