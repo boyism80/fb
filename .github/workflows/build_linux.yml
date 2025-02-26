@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - secret-host
 
 env:
   REGISTRY: ghcr.io
@@ -340,3 +341,4 @@ jobs:
           command: up
           stack-name: dev
           refresh: true
+          config-map: "{host: {value:${{ secrets.REMOTE_IP }}, secret: true}}"
