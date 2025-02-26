@@ -17,7 +17,7 @@ cmake --build . --target jsoncpp_static --config Release --parallel
 POPD
 POPD
 XCOPY jsoncpp\build\lib\Debug\jsoncpp_static.lib %DEST%\lib\jsoncppd.* /K /D /H /Y
-XCOPY jsoncpp\build\lib\Release\jsoncpp_static.lib %DEST%\lib\ /K /D /H /Y
+XCOPY jsoncpp\build\lib\Release\jsoncpp_static.lib %DEST%\lib\jsoncpp.* /K /D /H /Y
 ROBOCOPY jsoncpp\include\json\ %DEST%\include\json\
 
 git clone https://github.com/alanxz/rabbitmq-c

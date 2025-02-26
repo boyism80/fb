@@ -206,11 +206,12 @@
                                     HorizontalAlignment="Right"
                                     DockPanel.Dock="Top"
                                     Margin="0 0 0 10">
-                            <TextBlock Text="마지막 빌드 시간 : 2025-02-22"
+                            <TextBlock Text="{Binding LastBuildDateText}"
                                        VerticalAlignment="Center"
                                        Foreground="{StaticResource MainTextBrush}"
                                        Margin="0 0 10 0" />
                             <Button Content="빌드"
+                                    IsEnabled="{Binding IsEnableBuild}"
                                     Command="{Binding BuildCommand}" />
                             <Button Content="시작"
                                     Command="{Binding RunCommand}" />
@@ -222,12 +223,11 @@
                                      VerticalAlignment="Top"
                                      Background="Transparent"
                                      TextWrapping="Wrap"
-                                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus condimentum sodales mauris, et dictum arcu porttitor ac. Suspendisse tempus ornare arcu, at interdum elit auctor ac. Morbi vitae turpis vestibulum, fermentum urna vitae, molestie lacus. Proin porta justo auctor, dignissim leo at, tristique quam. Aenean at lorem sit amet leo pulvinar laoreet non in augue. Nam tincidunt libero ut dolor fermentum suscipit in at diam. Integer quis pellentesque sem. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Praesent eget purus nisl. Praesent porta justo at ante viverra, sed hendrerit enim ultrices. Nulla feugiat, tortor non posuere pretium, arcu urna sodales ipsum, nec dictum lectus orci sit amet nunc. Phasellus sollicitudin pellentesque massa, congue ultrices lacus dictum vitae. Cras congue lectus sem, tempus porta risus consectetur non. Nulla ac neque facilisis, ullamcorper turpis eu, facilisis nunc. Suspendisse vel egestas turpis, eget vulputate lectus. Proin ut congue urna, at congue ex." />
+                                     Text="{Binding BuildLog}" />
                         </Border>
                         <TreeView Grid.Row="1"
                                   Grid.Column="1"
                                   Background="Transparent">
-
                         </TreeView>
                     </Grid>
                 </TabItem>
@@ -240,7 +240,47 @@
                                 <Border BorderBrush="#303947"
                                         BorderThickness="0 0 0 1"
                                         Padding="0 3"
-                                        Margin="0 0 0 10">
+                                        Margin="0 25 0 10">
+                                    <TextBlock Text="Directory"
+                                               FontSize="{StaticResource FontSizeLarge}"
+                                               Foreground="{StaticResource MainTextBrush}"
+                                               Margin="0 0 0 10" />
+                                </Border>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="6*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="위치"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="0"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding WorkingDirectory}"
+                                             Tag="Enter your 'fb' path"
+                                             Grid.Row="0"
+                                             Grid.Column="1"
+                                             Margin="0 2 0 2"
+                                             Grid.ColumnSpan="2" />
+                                    <Button Content="추가"
+                                            Grid.Row="0"
+                                            Grid.Column="3"
+                                            Margin="10 0 0 0"
+                                            VerticalAlignment="Center"
+                                            Command="{Binding FindWorkingDirectory}" />
+                                </Grid>
+
+
+
+                                <Border BorderBrush="#303947"
+                                        BorderThickness="0 0 0 1"
+                                        Padding="0 3"
+                                        Margin="0 25 0 10">
                                     <TextBlock Text="MySQL"
                                                FontSize="{StaticResource FontSizeLarge}"
                                                Foreground="{StaticResource MainTextBrush}"
@@ -249,7 +289,9 @@
                                 <DataGrid ItemsSource="{Binding MySQL}">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거" />
+                                            <MenuItem Header="제거"
+                                                      Command="{Binding DeleteMySQL}"
+                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -282,7 +324,8 @@
                                 <WrapPanel HorizontalAlignment="Right">
                                     <Button Content="추가"
                                             Margin="0 10 0 0"
-                                            Command="{Binding NewMySQL}" />
+                                            Command="{Binding NewMySQL}"
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
                                 </WrapPanel>
 
                                 <Grid>
@@ -312,7 +355,9 @@
                                           IsReadOnly="True">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거" />
+                                            <MenuItem Header="제거"
+                                                      Command="{Binding DeleteRedis}"
+                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -336,7 +381,8 @@
                                 <WrapPanel HorizontalAlignment="Right">
                                     <Button Content="추가"
                                             Margin="0 10 0 0"
-                                            Command="{Binding NewRedis}" />
+                                            Command="{Binding NewRedis}"
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
                                 </WrapPanel>
 
                                 <Border BorderBrush="#303947"
@@ -390,8 +436,6 @@
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -400,27 +444,12 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="경로"
+                                    <TextBlock Text="포트"
                                                VerticalAlignment="Center"
                                                Grid.Row="0"
                                                Grid.Column="0" />
-                                    <TextBox Text="{Binding GatewayFile}"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2"
-                                             Grid.ColumnSpan="2" />
-                                    <Button Content="찾기"
-                                            Grid.Row="0"
-                                            Grid.Column="3"
-                                            Margin="10 0 0 0"
-                                            Command="{Binding FindGatewayFile}" />
-
-                                    <TextBlock Text="포트"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="1"
-                                               Grid.Column="0" />
                                     <TextBox Text="{Binding Gateway.Port}"
-                                             Grid.Row="1"
+                                             Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
                                 </Grid>
@@ -434,39 +463,15 @@
                                                Foreground="{StaticResource MainTextBrush}"
                                                Margin="0 0 0 10" />
                                 </Border>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="경로"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding LoginFile}"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2"
-                                             Grid.ColumnSpan="2" />
-                                    <Button Content="찾기"
-                                            Grid.Row="0"
-                                            Grid.Column="3"
-                                            Margin="10 0 0 0"
-                                            Command="{Binding FindLoginFile}" />
-                                </Grid>
 
                                 <DataGrid ItemsSource="{Binding Login}"
                                           IsReadOnly="True"
                                           Margin="0 5 0 0">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거" />
+                                            <MenuItem Header="제거"
+                                                      Command="{Binding DeleteLogin}"
+                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -514,38 +519,14 @@
                                                Foreground="{StaticResource MainTextBrush}"
                                                Margin="0 0 0 10" />
                                 </Border>
-                                <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
-                                    </Grid.RowDefinitions>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="8*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="경로"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="0"
-                                               Grid.Column="0" />
-                                    <TextBox Text="{Binding GameFile}"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2"
-                                             Grid.ColumnSpan="2" />
-                                    <Button Content="찾기"
-                                            Grid.Row="0"
-                                            Grid.Column="3"
-                                            Margin="10 0 0 0"
-                                            Command="{Binding FindGameFile}" />
-                                </Grid>
                                 <DataGrid ItemsSource="{Binding Game}"
                                           IsReadOnly="True"
                                           Margin="0 5 0 0">
                                     <DataGrid.ContextMenu>
                                         <ContextMenu>
-                                            <MenuItem Header="제거" />
+                                            <MenuItem Header="제거"
+                                                      Command="{Binding DeleteGame}"
+                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
@@ -586,7 +567,6 @@
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
-                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -595,28 +575,13 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="경로"
+                                    <TextBlock Text="포트"
                                                VerticalAlignment="Center"
                                                Grid.Row="0"
                                                Grid.Column="0" />
-                                    <TextBox Text="{Binding InternalFile}"
-                                             Grid.Row="0"
-                                             Grid.Column="1"
-                                             Margin="0 2 0 2"
-                                             Grid.ColumnSpan="2" />
-                                    <Button Content="찾기"
-                                            Grid.Row="0"
-                                            Grid.Column="3"
-                                            Margin="10 0 0 0"
-                                            Command="{Binding FindInternalFile}" />
-
-                                    <TextBlock Text="포트"
-                                               VerticalAlignment="Center"
-                                               Grid.Row="1"
-                                               Grid.Column="0" />
                                     <TextBox Text="{Binding InternalPort,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                              Width="64"
-                                             Grid.Row="1"
+                                             Grid.Row="0"
                                              Grid.Column="1"
                                              HorizontalAlignment="Left"
                                              Margin="0 2 0 2" />

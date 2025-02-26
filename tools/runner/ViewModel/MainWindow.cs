@@ -3,6 +3,9 @@ using Runner.Command;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
+using System.Text;
 using System.Windows.Input;
 
 namespace Runner.ViewModel
@@ -117,7 +120,7 @@ namespace Runner.ViewModel
         }
     }
 
-    public class MainWindow : INotifyPropertyChanged
+    public class MainWindow : INotifyPropertyChanged, IDisposable
     {
         public Model.MainWindow Model { get; private set; }
 
@@ -141,27 +144,45 @@ namespace Runner.ViewModel
         public GatewayConfig Gateway { get; set; }
         public ObservableCollection<LoginConfig> Login { get; set; } = new ObservableCollection<LoginConfig>();
         public ObservableCollection<GameConfig> Game { get; set; } = new ObservableCollection<GameConfig>();
-        public string GatewayFile
-        {
-            get => Model.GatewayFile;
-            set => Model.GatewayFile = value;
-        }
-        public string LoginFile
-        {
-            get => Model.LoginFile;
-            set => Model.LoginFile = value;
-        }
-        public string GameFile
-        {
-            get => Model.GameFile;
-            set => Model.GameFile = value;
-        }
-        public string InternalFile
-        {
-            get => Model.InternalFile;
-            set => Model.InternalFile = value;
-        }
         public bool IsEnabled { get; set; } = true;
+        public string WorkingDirectory
+        {
+            get => Model.WorkingDirectory;
+            set => Model.WorkingDirectory = value;
+        }
+
+        private Process _buildProcess;
+        public Process BuildProcess
+        {
+            get => _buildProcess;
+            set
+            {
+                _buildProcess = value;
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableBuild)));
+            }
+        }
+        public string BuildLog { get; set; }
+        public bool IsEnableBuild => BuildProcess == null;
+        public DateTime LastBuildDate
+        {
+            get => Model.LastBuildDate;
+            set
+            {
+                Model.LastBuildDate = value;
+                PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(LastBuildDateText)));
+            }
+        }
+
+        public string LastBuildDateText
+        {
+            get
+            {
+                if (LastBuildDate == DateTime.MinValue)
+                    return string.Empty;
+                else
+                    return $"마지막 빌드 : {LastBuildDate:yyyy-MM-dd HH:mm:ss}";
+            }
+        }
 
         public ICommand SetMinimizeCommand { get; private set; }
         public ICommand SetMaximizeCommand { get; private set; }
@@ -170,12 +191,13 @@ namespace Runner.ViewModel
         public ICommand NewRedis { get; private set; }
         public ICommand NewLogin { get; private set; }
         public ICommand NewGame { get; private set; }
-        public ICommand FindGatewayFile { get; private set; }
-        public ICommand FindLoginFile { get; private set; }
-        public ICommand FindGameFile { get; private set; }
-        public ICommand FindInternalFile { get; private set; }
+        public ICommand FindWorkingDirectory { get; private set; }
         public ICommand BuildCommand { get; private set; }
         public ICommand RunCommand { get; private set; }
+        public ICommand DeleteMySQL { get; private set; }
+        public ICommand DeleteRedis { get; private set; }
+        public ICommand DeleteLogin { get; private set; }
+        public ICommand DeleteGame { get; private set; }
 
         public MainWindow(Model.MainWindow model)
         {
@@ -213,12 +235,33 @@ namespace Runner.ViewModel
             NewRedis = new RelayCommand(OnNewRedis);
             NewLogin = new RelayCommand(OnNewLogin);
             NewGame = new RelayCommand(OnNewGame);
-            FindGatewayFile = new RelayCommand(OnFindGatewayFile);
-            FindLoginFile = new RelayCommand(OnFindLoginFile);
-            FindGameFile = new RelayCommand(OnFindGameFile);
-            FindInternalFile = new RelayCommand(OnFindInternalFile);
+            FindWorkingDirectory = new RelayCommand(OnFindWorkingDirectory);
             BuildCommand = new RelayCommand(OnBuild);
             RunCommand = new RelayCommand(OnRun);
+            DeleteMySQL = new RelayCommand(OnDeleteMySQL);
+            DeleteRedis = new RelayCommand(OnDeleteRedis);
+            DeleteLogin = new RelayCommand(OnDeleteLogin);
+            DeleteGame = new RelayCommand(OnDeleteGame);
+        }
+
+        private void OnDeleteMySQL(object obj)
+        {
+            MySQL.Remove(obj as MySqlConnection);
+        }
+
+        private void OnDeleteRedis(object obj)
+        {
+            Redis.Remove(obj as RedisConnection);
+        }
+
+        private void OnDeleteLogin(object obj)
+        {
+            Login.Remove(obj as LoginConfig);
+        }
+
+        private void OnDeleteGame(object obj)
+        {
+            Game.Remove(obj as GameConfig);
         }
 
         private void OnRun(object obj)
@@ -228,64 +271,66 @@ namespace Runner.ViewModel
 
         private void OnBuild(object obj)
         {
+            if (BuildProcess != null)
+                return;
+
+            if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+                return;
+
+            BuildProcess = new Process
+            {
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    WorkingDirectory = WorkingDirectory,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    //StandardOutputEncoding = Encoding.UTF8,
+                    //StandardErrorEncoding = Encoding.UTF8,
+                    FileName = "cmd.exe",
+                    Arguments = @"/C mkdir build & pushd build & cmake .. & cmake --build . --config Debug & mkdir dist & XCOPY /s /y gateway\Debug\gateway.exe dist\gateway.* & XCOPY /s /y login\Debug\login.exe dist\login.* & XCOPY /s /y game\Debug\game.exe dist\game.* & popd & dotnet publish internal/internal.csproj -c Release -o build/dist/internal & dotnet publish write-back/write-back.csproj -c Release -o build/dist/write-back"
+                }
+            };
+
+            BuildLog = string.Empty;
+            BuildProcess.OutputDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                BuildLog += (e.Data + Environment.NewLine);
+            };
+            BuildProcess.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                BuildLog += (e.Data + Environment.NewLine);
+            };
+            BuildProcess.Start();
+            BuildProcess.BeginOutputReadLine();
+            BuildProcess.BeginErrorReadLine();
+            BuildProcess.Exited += (sender, e) =>
+            {
+                LastBuildDate = DateTime.Now;
+                BuildProcess = null;
+            };
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private void OnFindGatewayFile(object obj)
+        private void OnFindWorkingDirectory(object obj)
         {
-            var dialog = new OpenFileDialog
+            var dialog = new OpenFolderDialog
             {
-                DefaultExt = ".exe",
-                Filter = "Executable Files (*.exe)|*.exe",
                 Multiselect = false
             };
             if (dialog.ShowDialog() == false)
                 return;
 
-            GatewayFile = dialog.FileName;
-        }
-
-        private void OnFindLoginFile(object obj)
-        {
-            var dialog = new OpenFileDialog
-            {
-                DefaultExt = ".exe",
-                Filter = "Executable Files (*.exe)|*.exe",
-                Multiselect = false
-            };
-            if (dialog.ShowDialog() == false)
-                return;
-
-            LoginFile = dialog.FileName;
-        }
-
-        private void OnFindGameFile(object obj)
-        {
-            var dialog = new OpenFileDialog
-            {
-                DefaultExt = ".exe",
-                Filter = "Executable Files (*.exe)|*.exe",
-                Multiselect = false
-            };
-            if (dialog.ShowDialog() == false)
-                return;
-
-            GameFile = dialog.FileName;
-        }
-
-        private void OnFindInternalFile(object obj)
-        {
-            var dialog = new OpenFileDialog
-            {
-                DefaultExt = ".exe",
-                Filter = "Executable Files (*.exe)|*.exe",
-                Multiselect = false
-            };
-            if (dialog.ShowDialog() == false)
-                return;
-
-            InternalFile = dialog.FileName;
+            WorkingDirectory = dialog.FolderName;
         }
 
         private void OnNewGame(object obj)
@@ -417,6 +462,15 @@ namespace Runner.ViewModel
                 Name = MySQL.Count == 0 ? "GLOBAL" : "DATA",
                 Port = 0
             }));
+        }
+
+        public void Dispose()
+        {
+            if (BuildProcess != null)
+            {
+                BuildProcess.Kill();
+                BuildProcess = null;
+            }
         }
     }
 }

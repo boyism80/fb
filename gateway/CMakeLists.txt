@@ -48,6 +48,7 @@ IF(WIN32)
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
                                 tacopie$<$<CONFIG:Debug>:d>.lib
                                 cpp_redis$<$<CONFIG:Debug>:d>.lib
+                                lua$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
 ELSE()
   set(CMAKE_CXX_FLAGS_DEBUG "-g")

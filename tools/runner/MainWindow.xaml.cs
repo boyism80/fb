@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Text;
+using System.Windows;
 
 namespace Runner;
 
@@ -8,17 +9,19 @@ namespace Runner;
 public partial class MainWindow : Window
 {
     private Model.MainWindow _model;
+    private ViewModel.MainWindow _vm;
 
     public MainWindow()
     {
         InitializeComponent();
 
         _model = Model.MainWindow.Load(this, "settings.json") ?? new Model.MainWindow(this);
-        DataContext = new ViewModel.MainWindow(_model);
+        DataContext = _vm = new ViewModel.MainWindow(_model);
     }
 
     private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
     {
         _model.Save("settings.json");
+        _vm.Dispose();
     }
 }
