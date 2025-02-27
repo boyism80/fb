@@ -1,0 +1,28 @@
+name: build fb - Windows
+
+on:
+  push:
+    branches:
+      - develop
+      - win-runner
+
+jobs:
+  gateway:
+    runs-on: [self-hosted, windows]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create build directory
+        run: mkdir build
+
+      - name: Configure CMake
+        run: cmake ..
+        working-directory: build
+
+      - name: Build Gateway
+        run: cmake --build . --target gateway --config Debug
+        working-directory: build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4

@@ -1,4 +1,4 @@
-name: build fb
+name: build fb - Linux
 
 on:
   push:
