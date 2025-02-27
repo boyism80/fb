@@ -340,3 +340,4 @@ jobs:
           command: up
           stack-name: dev
           refresh: true
+          config-map: "{host: {value: '${{ secrets.REMOTE_IP }}', secret: true}}"
