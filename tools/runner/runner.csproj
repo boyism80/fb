@@ -7,6 +7,7 @@
     <UseWPF>true</UseWPF>
     <PackageId>Runner</PackageId>
     <RootNamespace>Runner</RootNamespace>
+    <ApplicationIcon>icon_caption.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,10 @@
 
   <ItemGroup>
     <Resource Include="Image\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="icon_caption.ico" />
   </ItemGroup>
 
 </Project>

@@ -164,6 +164,11 @@ namespace Runner.ViewModel
         public GatewaySetting Gateway { get; set; }
         public ObservableCollection<LoginSetting> Login { get; set; } = new ObservableCollection<LoginSetting>();
         public ObservableCollection<GameSetting> Game { get; set; } = new ObservableCollection<GameSetting>();
+        public string Agreement
+        {
+            get => Model.Agreement;
+            set => Model.Agreement = value;
+        }
         public bool IsEnabled { get; set; } = true;
         public string WorkingDirectory
         {
@@ -223,6 +228,7 @@ namespace Runner.ViewModel
         public bool IsEnableBuild => BuildProcess == null;
         public bool IsEnableRun => BuildProcess == null;
         public bool IsRunning => Servers.SelectMany(x => x.Processes).Any();
+        public bool IsEnableSettingTab => !IsRunning;
         public string RunButtonText
         {
             get
@@ -255,6 +261,13 @@ namespace Runner.ViewModel
             }
         }
 
+        public uint InitMap
+        {
+            get => Model.InitMap;
+            set => Model.InitMap = value;
+        }
+        public ObservableCollection<Point> InitPoints { get; set; } = new ObservableCollection<Point>();
+
         public ICommand SetMinimizeCommand { get; private set; }
         public ICommand SetMaximizeCommand { get; private set; }
         public ICommand CloseCommand { get; private set; }
@@ -269,6 +282,8 @@ namespace Runner.ViewModel
         public ICommand DeleteRedis { get; private set; }
         public ICommand DeleteLogin { get; private set; }
         public ICommand DeleteGame { get; private set; }
+        public ICommand NewInitPoint { get; set; }
+        public ICommand DeleteInitPoint { get; private set; }
 
         public MainWindow(Model.MainWindow model)
         {
@@ -298,6 +313,13 @@ namespace Runner.ViewModel
             }
             Game.CollectionChanged += Game_CollectionChanged;
 
+            foreach (var initPoint in Model.InitPoints)
+            {
+                InitPoints.Add(new Point(initPoint));
+            }
+            InitPoints.CollectionChanged += InitPoints_CollectionChanged;
+            Servers.CollectionChanged += Servers_CollectionChanged;
+
             Gateway = new GatewaySetting(Model.Gateway);
             SetMinimizeCommand = new RelayCommand(OnSetMinimize);
             SetMaximizeCommand = new RelayCommand(OnSetMaximize);
@@ -313,6 +335,47 @@ namespace Runner.ViewModel
             DeleteRedis = new RelayCommand(OnDeleteRedis);
             DeleteLogin = new RelayCommand(OnDeleteLogin);
             DeleteGame = new RelayCommand(OnDeleteGame);
+            NewInitPoint = new RelayCommand(OnNewInitPoint);
+            DeleteInitPoint = new RelayCommand(OnDeleteInitPoint);
+        }
+
+        private void Servers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRunning)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableSettingTab)));
+        }
+
+        private void InitPoints_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    foreach (Point item in e.NewItems)
+                    {
+                        Model.InitPoints.Add(item.Model);
+                    }
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (Point item in e.OldItems)
+                    {
+                        Model.InitPoints.Remove(item.Model);
+                    }
+                    break;
+            }
+        }
+
+        private void OnDeleteInitPoint(object obj)
+        {
+            InitPoints.Remove(obj as Point);
+        }
+
+        private void OnNewInitPoint(object obj)
+        {
+            InitPoints.Add(new Point(new Runner.Model.Point
+            {
+                X = 0,
+                Y = 0
+            }));
         }
 
         private void OnDeleteMySQL(object obj)
@@ -387,7 +450,7 @@ namespace Runner.ViewModel
                     conf["transfer delay"] = 0;
                     conf["allow other language"] = false;
                     conf["forbidden"] = new JArray();
-                    conf["agreement"] = "기본 인삿말";
+                    conf["agreement"] = Agreement;
                     conf["admin_mode"] = false;
                     conf["thread"] = JObject.FromObject(new
                     {
@@ -402,30 +465,16 @@ namespace Runner.ViewModel
                     });
                     conf["log"] = new JArray("debug", "info", "warn", "fatal");
                     conf["init"] = new JObject();
-                    conf["init"]["map"] = 1;
-                    conf["init"]["position"] = new JArray
+                    conf["init"]["map"] = InitMap;
+                    conf["init"]["position"] = new JArray();
+                    foreach (var point in InitPoints)
                     {
-                        JObject.FromObject(new
+                        (conf["init"]["position"] as JArray).Add(JObject.FromObject(new
                         {
-                            x = 6,
-                            y = 6
-                        }),
-                        JObject.FromObject(new
-                        {
-                            x = 14,
-                            y = 6
-                        }),
-                        JObject.FromObject(new
-                        {
-                            x = 6,
-                            y = 12
-                        }),
-                        JObject.FromObject(new
-                        {
-                            x = 14,
-                            y = 12
-                        })
-                    };
+                            x = point.X,
+                            y = point.Y
+                        }));
+                    }
                     conf["init"]["hp"] = new JObject();
                     conf["init"]["hp"]["base"] = 50;
                     conf["init"]["hp"]["range"] = 10;

@@ -247,11 +247,12 @@
                         </TreeView>
                     </Grid>
                 </TabItem>
-                <TabItem Header="Detail">
+                <TabItem Header="Setting">
                     <ScrollViewer VerticalScrollBarVisibility="Auto"
                                   Padding="0 0 0 30">
                         <StackPanel Orientation="Vertical"
-                                    Margin="20 0">
+                                    Margin="20 0"
+                                    IsEnabled="{Binding IsEnableSettingTab}">
                             <StackPanel Orientation="Vertical">
                                 <Border BorderBrush="#303947"
                                         BorderThickness="0 0 0 1"
@@ -491,6 +492,88 @@
                                                Foreground="{StaticResource MainTextBrush}"
                                                Margin="0 0 0 10" />
                                 </Border>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="2*" />
+                                        <ColumnDefinition Width="8*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="이용약관"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="0"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding Agreement}"
+                                             Grid.Row="0"
+                                             Grid.Column="1"
+                                             Grid.ColumnSpan="3"
+                                             Height="200"
+                                             TextWrapping="Wrap"
+                                             AcceptsReturn="True"
+                                             Margin="0 2 0 2" />
+
+                                    <TextBlock Text="시작맵"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="1"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding InitMap}"
+                                             Grid.Row="1"
+                                             Grid.Column="1"
+                                             Margin="0 2 0 2" />
+                                    <TextBlock Text="시작위치"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="2"
+                                               Grid.Column="0" />
+                                    <StackPanel Orientation="Vertical"
+                                                Grid.Row="2"
+                                                Grid.Column="1"
+                                                Grid.ColumnSpan="2">
+                                        <DataGrid ItemsSource="{Binding InitPoints}"
+                                                  IsReadOnly="True"
+                                                  Margin="0 5 0 0">
+                                            <DataGrid.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="제거"
+                                                              Command="{Binding DeleteInitPoint}"
+                                                              CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
+                                                </ContextMenu>
+                                            </DataGrid.ContextMenu>
+                                            <DataGrid.Columns>
+                                                <DataGridTemplateColumn Header="X"
+                                                                        Width="*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBox Text="{Binding X,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                                     Margin="0 2 0 2" />
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                                <DataGridTemplateColumn Header="Y"
+                                                                        Width="*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <TextBox Text="{Binding Y,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                                     Margin="0 2 0 2" />
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                        <WrapPanel HorizontalAlignment="Right">
+                                            <Button Content="추가"
+                                                    Margin="0 10 0 0"
+                                                    Command="{Binding NewInitPoint}" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Grid>
 
                                 <DataGrid ItemsSource="{Binding Login}"
                                           IsReadOnly="True"

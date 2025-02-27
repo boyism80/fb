@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows;
 
@@ -72,6 +71,9 @@ namespace Runner.Model
         public DateTime LastBuildDate { get; set; }
         public string WorkingDirectory { get; set; }
         public string ExternalIP { get; set; }
+        public string Agreement { get; set; }
+        public uint InitMap { get; set; }
+        public List<Point> InitPoints { get; set; } = new List<Point>();
 
         public MainWindow(Window window)
         {
