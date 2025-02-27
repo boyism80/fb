@@ -1,15 +1,35 @@
 ﻿using Microsoft.Win32;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Runner.Command;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Runner.ViewModel
 {
+    public enum ServerType
+    {
+        Gateway,
+        Game,
+        Login,
+        Internal,
+        WriteBack
+    }
+
+    public class ServerProcess
+    {
+        public Process Process { get; set; }
+        public string Name { get; set; }
+        public string Output { get; set; }
+
+        public override string ToString() => Name;
+    }
+
     public class MySqlConnection : INotifyPropertyChanged
     {
         public Model.MySqlConnection Model { get; private set; }
@@ -60,24 +80,24 @@ namespace Runner.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    public class GatewayConfig
+    public class GatewaySetting
     {
-        public Model.GatewayConfig Model { get; private set; }
+        public Model.GatewaySetting Model { get; private set; }
         public ushort Port
         {
             get => Model.Port;
             set => Model.Port = value;
         }
 
-        public GatewayConfig(Model.GatewayConfig model)
+        public GatewaySetting(Model.GatewaySetting model)
         {
             Model = model;
         }
     }
 
-    public class LoginConfig
+    public class LoginSetting
     {
-        public Model.LoginConfig Model { get; private set; }
+        public Model.LoginSetting Model { get; private set; }
         public string Name
         {
             get => Model.Name;
@@ -94,15 +114,15 @@ namespace Runner.ViewModel
             set => Model.Port = value;
         }
 
-        public LoginConfig(Model.LoginConfig model)
+        public LoginSetting(Model.LoginSetting model)
         {
             Model = model;
         }
     }
 
-    public class GameConfig
+    public class GameSetting
     {
-        public Model.GameConfig Model { get; private set; }
+        public Model.GameSetting Model { get; private set; }
         public int ID
         {
             get => Model.ID;
@@ -114,7 +134,7 @@ namespace Runner.ViewModel
             set => Model.Port = value;
         }
 
-        public GameConfig(Model.GameConfig model)
+        public GameSetting(Model.GameSetting model)
         {
             Model = model;
         }
@@ -141,14 +161,19 @@ namespace Runner.ViewModel
             get => Model.Internal.Port;
             set => Model.Internal.Port = value;
         }
-        public GatewayConfig Gateway { get; set; }
-        public ObservableCollection<LoginConfig> Login { get; set; } = new ObservableCollection<LoginConfig>();
-        public ObservableCollection<GameConfig> Game { get; set; } = new ObservableCollection<GameConfig>();
+        public GatewaySetting Gateway { get; set; }
+        public ObservableCollection<LoginSetting> Login { get; set; } = new ObservableCollection<LoginSetting>();
+        public ObservableCollection<GameSetting> Game { get; set; } = new ObservableCollection<GameSetting>();
         public bool IsEnabled { get; set; } = true;
         public string WorkingDirectory
         {
             get => Model.WorkingDirectory;
             set => Model.WorkingDirectory = value;
+        }
+        public string ExternalIP
+        {
+            get => Model.ExternalIP;
+            set => Model.ExternalIP = value;
         }
 
         private Process _buildProcess;
@@ -161,8 +186,54 @@ namespace Runner.ViewModel
                 PropertyChanged.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableBuild)));
             }
         }
+
+        public class ProcessGroup
+        {
+            public string Name => ToString();
+            public ServerType Type { get; set; }
+            public ObservableCollection<ServerProcess> Processes { get; set; } = new ObservableCollection<ServerProcess>();
+
+            public override string ToString() => Type.ToString();
+        }
+
+        public ObservableCollection<ProcessGroup> Servers { get; set; } = new ObservableCollection<ProcessGroup>();
+
+        private ServerProcess _serverProcess;
+        public ServerProcess SelectedProcess
+        {
+            get => _serverProcess;
+            set
+            {
+                _serverProcess = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
+            }
+        }
+
         public string BuildLog { get; set; }
+        public string MainText
+        {
+            get
+            {
+                if (SelectedProcess != null)
+                    return SelectedProcess.Output;
+                else
+                    return BuildLog;
+            }
+        }
         public bool IsEnableBuild => BuildProcess == null;
+        public bool IsEnableRun => BuildProcess == null;
+        public bool IsRunning => Servers.SelectMany(x => x.Processes).Any();
+        public string RunButtonText
+        {
+            get
+            {
+                if (IsRunning)
+                    return "종료";
+                else
+                    return "시작";
+            }
+        }
+
         public DateTime LastBuildDate
         {
             get => Model.LastBuildDate;
@@ -217,17 +288,17 @@ namespace Runner.ViewModel
 
             foreach (var login in Model.Login)
             {
-                Login.Add(new LoginConfig(login));
+                Login.Add(new LoginSetting(login));
             }
             Login.CollectionChanged += Login_CollectionChanged;
 
             foreach (var game in Model.Game)
             {
-                Game.Add(new GameConfig(game));
+                Game.Add(new GameSetting(game));
             }
             Game.CollectionChanged += Game_CollectionChanged;
 
-            Gateway = new GatewayConfig(Model.Gateway);
+            Gateway = new GatewaySetting(Model.Gateway);
             SetMinimizeCommand = new RelayCommand(OnSetMinimize);
             SetMaximizeCommand = new RelayCommand(OnSetMaximize);
             CloseCommand = new RelayCommand(OnClose);
@@ -256,17 +327,395 @@ namespace Runner.ViewModel
 
         private void OnDeleteLogin(object obj)
         {
-            Login.Remove(obj as LoginConfig);
+            Login.Remove(obj as LoginSetting);
         }
 
         private void OnDeleteGame(object obj)
         {
-            Game.Remove(obj as GameConfig);
+            Game.Remove(obj as GameSetting);
         }
 
         private void OnRun(object obj)
         {
+            try
+            {
+                if (IsRunning)
+                {
+                    KillProcesses();
+                    return;
+                }
 
+                if (Login.Count == 0)
+                    throw new InvalidOperationException("로그인 서버를 하나 이상 추가해야 합니다.");
+
+                if (Game.Count == 0)
+                    throw new InvalidOperationException("게임 서버를 하나 이상 추가해야 합니다.");
+
+                if (InternalPort == 0)
+                    throw new InvalidOperationException("Internal 서버 포트가 설정되지 않았습니다.");
+
+                if (string.IsNullOrEmpty(ExternalIP))
+                    throw new InvalidOperationException("IP가 설정되지 않았습니다.");
+
+                if (string.IsNullOrEmpty(RabbitMqIP))
+                    throw new InvalidOperationException("RabbitMQ IP가 설정되지 않았습니다.");
+
+                if (RabbitMqPort == 0)
+                    throw new InvalidOperationException("RabbitMQ Port가 설정되지 않았습니다.");
+
+                var confDir = Path.Combine([WorkingDirectory, "build", "dist", "config"]);
+                if (Directory.Exists(confDir) == false)
+                    Directory.CreateDirectory(confDir);
+
+                for (int i = 0; i < Login.Count; i++)
+                {
+                    var setting = Login[i];
+                    if (string.IsNullOrEmpty(setting.Name))
+                        throw new InvalidOperationException($"{i + 1}번째 로그인 서버의 이름이 설정되지 않았습니다.");
+
+                    if (string.IsNullOrEmpty(setting.Desc))
+                        throw new InvalidOperationException($"{i + 1}번째 로그인 서버의 설명이 설정되지 않았습니다.");
+
+                    if (setting.Port == 0)
+                        throw new InvalidOperationException($"{i + 1}번째 로그인 서버의 포트가 설정되지 않았습니다.");
+
+                    var conf = new JObject();
+                    conf["id"] = i;
+                    conf["name"] = $"login-{i}";
+                    conf["ip"] = ExternalIP;
+                    conf["port"] = setting.Port;
+                    conf["transfer delay"] = 0;
+                    conf["allow other language"] = false;
+                    conf["forbidden"] = new JArray();
+                    conf["agreement"] = "기본 인삿말";
+                    conf["admin_mode"] = false;
+                    conf["thread"] = JObject.FromObject(new
+                    {
+                        logic = 12,
+                        io = 12,
+                        background = 8
+                    });
+                    conf["internal"] = JObject.FromObject(new
+                    {
+                        ip = "127.0.0.1",
+                        port = InternalPort
+                    });
+                    conf["log"] = new JArray("debug", "info", "warn", "fatal");
+                    conf["init"] = new JObject();
+                    conf["init"]["map"] = 1;
+                    conf["init"]["position"] = new JArray
+                    {
+                        JObject.FromObject(new
+                        {
+                            x = 6,
+                            y = 6
+                        }),
+                        JObject.FromObject(new
+                        {
+                            x = 14,
+                            y = 6
+                        }),
+                        JObject.FromObject(new
+                        {
+                            x = 6,
+                            y = 12
+                        }),
+                        JObject.FromObject(new
+                        {
+                            x = 14,
+                            y = 12
+                        })
+                    };
+                    conf["init"]["hp"] = new JObject();
+                    conf["init"]["hp"]["base"] = 50;
+                    conf["init"]["hp"]["range"] = 10;
+                    conf["init"]["mp"] = new JObject();
+                    conf["init"]["mp"]["base"] = 50;
+                    conf["init"]["mp"]["range"] = 10;
+                    conf["name_size"] = JObject.FromObject(new
+                    {
+                        min = 2,
+                        max = 12
+                    });
+                    conf["pw_size"] = JObject.FromObject(new
+                    {
+                        min = 4,
+                        max = 16
+                    });
+                    File.WriteAllText(Path.Combine([confDir, $"config.login-{i}.json"]), conf.ToString(Formatting.Indented));
+                }
+
+                for (int i = 0; i < Game.Count; i++)
+                {
+                    var setting = Game[i];
+                    if (setting.Port == 0)
+                        throw new InvalidOperationException($"{i + 1}번째 게임 서버의 포트가 설정되지 않았습니다.");
+
+                    var conf = new JObject();
+                    conf["id"] = setting.ID;
+                    conf["ip"] = ExternalIP;
+                    conf["port"] = setting.Port;
+                    conf["name"] = $"game-{setting.ID}";
+                    conf["delay"] = 5;
+                    conf["thread"] = JObject.FromObject(new
+                    {
+                        logic = 12,
+                        io = 12,
+                        background = 8
+                    });
+                    conf["save"] = 600;
+                    conf["internal"] = JObject.FromObject(new
+                    {
+                        ip = "127.0.0.1",
+                        port = InternalPort
+                    });
+                    conf["login"] = JObject.FromObject(new
+                    {
+                        ip = ExternalIP,
+                        port = Login[0].Port
+                    });
+                    conf["amqp"] = JObject.FromObject(new
+                    {
+                        ip = RabbitMqIP,
+                        port = RabbitMqPort,
+                        uid = "fb",
+                        pwd = "admin"
+                    });
+                    conf["log"] = new JArray("debug", "info", "warn", "fatal");
+                    File.WriteAllText(Path.Combine([confDir, $"config.game-{setting.ID}.json"]), conf.ToString(Formatting.Indented));
+                }
+
+                if (Gateway.Port == 0)
+                    throw new InvalidOperationException("게이트웨이 서버의 포트가 설정되지 않았습니다.");
+
+                var gatewayConf = new JObject();
+                gatewayConf["id"] = 0;
+                gatewayConf["ip"] = ExternalIP;
+                gatewayConf["name"] = "gateway";
+                gatewayConf["port"] = Gateway.Port;
+                gatewayConf["thread"] = JObject.FromObject(new
+                {
+                    logic = 12,
+                    io = 12,
+                    background = 8
+                });
+                gatewayConf["log"] = new JArray("debug", "info", "warn", "fatal");
+                gatewayConf["entrypoints"] = new JArray();
+                for (int i = 0; i < Login.Count; i++)
+                {
+                    var setting = Login[i];
+                    (gatewayConf["entrypoints"] as JArray).Add(JObject.FromObject(new
+                    {
+                        name = setting.Name,
+                        desc = setting.Desc,
+                        ip = ExternalIP,
+                        port = setting.Port
+                    }));
+                }
+
+                File.WriteAllText(Path.Combine([confDir, $"config.gateway.json"]), gatewayConf.ToString(Formatting.Indented));
+
+                var internalConf = new JObject();
+                internalConf["Logging"] = new JObject();
+                internalConf["Logging"]["LogLevel"] = new JObject();
+                internalConf["Logging"]["LogLevel"]["Default"] = "Information";
+                internalConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
+
+                internalConf["ConnectionStrings"] = new JObject();
+                internalConf["ConnectionStrings"]["MySql"] = new JObject();
+                for (int i = 0; i < MySQL.Count; i++)
+                {
+                    var db = MySQL[i];
+                    internalConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID=fb; Password=admin; Database=fb";
+                }
+
+                internalConf["Redis"] = new JObject();
+                for (int i = 0; i < Redis.Count; i++)
+                {
+                    var db = Redis[i];
+                    var node = new JObject();
+                    node["Host"] = db.IP;
+                    node["Port"] = db.Port;
+                    internalConf["Redis"][(i - 1).ToString()] = node;
+                }
+
+                internalConf["RabbitMQ"] = new JObject();
+                internalConf["RabbitMQ"]["Host"] = RabbitMqIP;
+                internalConf["RabbitMQ"]["Port"] = RabbitMqPort;
+                internalConf["RabbitMQ"]["Uid"] = "fb";
+                internalConf["RabbitMQ"]["Pwd"] = "admin";
+                File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "internal", "appsettings.internal.json"]), internalConf.ToString(Formatting.Indented));
+
+                var wbConf = new JObject();
+                wbConf["Logging"] = new JObject();
+                wbConf["Logging"]["LogLevel"] = new JObject();
+                wbConf["Logging"]["LogLevel"]["Default"] = "Information";
+                wbConf["Logging"]["LogLevel"]["Microsoft.AspNetCore"] = "Warning";
+
+                wbConf["ConnectionStrings"] = new JObject();
+                wbConf["ConnectionStrings"]["MySql"] = new JObject();
+                for (int i = 0; i < MySQL.Count; i++)
+                {
+                    var db = MySQL[i];
+                    wbConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID=fb; Password=admin; Database=fb";
+                }
+
+                wbConf["Redis"] = new JObject();
+                for (int i = 0; i < Redis.Count; i++)
+                {
+                    var db = Redis[i];
+                    var node = new JObject();
+                    node["Host"] = db.IP;
+                    node["Port"] = db.Port;
+                    wbConf["Redis"][(i - 1).ToString()] = node;
+                }
+                File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "write-back", "appsettings.write-back.json"]), wbConf.ToString(Formatting.Indented));
+
+                var gateway = new ProcessGroup { Type = ServerType.Gateway };
+                gateway.Processes.Add(ExecCPP("gateway.exe", "gateway"));
+                Servers.Add(gateway);
+
+                var login = new ProcessGroup { Type = ServerType.Login };
+                for (int i = 0; i < Login.Count; i++)
+                {
+                    login.Processes.Add(ExecCPP("login.exe", $"login-{i}"));
+                }
+                Servers.Add(login);
+
+                var game = new ProcessGroup { Type = ServerType.Game };
+                for (int i = 0; i < Game.Count; i++)
+                {
+                    game.Processes.Add(ExecCPP("game.exe", $"game-{i}"));
+                }
+                Servers.Add(game);
+
+                var inter = new ProcessGroup { Type = ServerType.Internal };
+                inter.Processes.Add(ExecDotNet("internal", InternalPort));
+                Servers.Add(inter);
+
+                var wb = new ProcessGroup { Type = ServerType.WriteBack };
+                wb.Processes.Add(ExecDotNet("write-back"));
+                Servers.Add(wb);
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "오류", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RunButtonText)));
+            }
+        }
+
+        private ServerProcess ExecCPP(string file, string env)
+        {
+            var process = new Process
+            {
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    WorkingDirectory = Path.Combine([WorkingDirectory, "build", "dist"]),
+                    FileName = Path.Combine(WorkingDirectory, "build", "dist", file),
+                    EnvironmentVariables =
+                    {
+                        ["KINGDOM_OF_WIND_ENVIRONMENT"] = env,
+                    }
+                }
+            };
+
+            if (Path.Exists(process.StartInfo.FileName) == false)
+                throw new InvalidOperationException($"{Path.GetFileName(process.StartInfo.FileName)} 파일이 없습니다. 빌드가 되어있는지 확인하세요.");
+
+            var sp = new ServerProcess
+            {
+                Name = env,
+                Process = process
+            };
+
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                sp.Output += (e.Data + Environment.NewLine);
+            };
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                sp.Output += (e.Data + Environment.NewLine);
+            };
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.Exited += (sender, e) =>
+            {
+                sp.Process = null;
+            };
+
+            return sp;
+        }
+
+        private ServerProcess ExecDotNet(string name, ushort? port = null)
+        {
+            var process = new Process
+            {
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    RedirectStandardInput = true,
+                    UseShellExecute = false,
+                    WorkingDirectory = Path.Combine([WorkingDirectory, "build", "dist", name]),
+                    FileName = Path.Combine(WorkingDirectory, "build", "dist", name, $"{name}.exe"),
+                    EnvironmentVariables =
+                    {
+                        ["ASPNETCORE_ENVIRONMENT"] = name,
+                        ["ASPNETCORE_HTTP_PORTS"] = port?.ToString(),
+                    }
+                }
+            };
+
+            if (Path.Exists(process.StartInfo.FileName) == false)
+                throw new InvalidOperationException($"{Path.GetFileName(process.StartInfo.FileName)} 파일이 없습니다. 빌드가 되어있는지 확인하세요.");
+
+            var sp = new ServerProcess
+            {
+                Process = process,
+                Name = name
+            };
+
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                sp.Output += (e.Data + Environment.NewLine);
+            };
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                sp.Output += (e.Data + Environment.NewLine);
+            };
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.Exited += (sender, e) =>
+            {
+                sp.Process = null;
+            };
+
+            return sp;
         }
 
         private void OnBuild(object obj)
@@ -276,6 +725,8 @@ namespace Runner.ViewModel
 
             if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
                 return;
+
+            KillProcesses();
 
             BuildProcess = new Process
             {
@@ -290,7 +741,7 @@ namespace Runner.ViewModel
                     //StandardOutputEncoding = Encoding.UTF8,
                     //StandardErrorEncoding = Encoding.UTF8,
                     FileName = "cmd.exe",
-                    Arguments = @"/C mkdir build & pushd build & cmake .. & cmake --build . --config Debug & mkdir dist & XCOPY /s /y gateway\Debug\gateway.exe dist\gateway.* & XCOPY /s /y login\Debug\login.exe dist\login.* & XCOPY /s /y game\Debug\game.exe dist\game.* & popd & dotnet publish internal/internal.csproj -c Release -o build/dist/internal & dotnet publish write-back/write-back.csproj -c Release -o build/dist/write-back"
+                    Arguments = @"/C mkdir build & pushd build & cmake .. & cmake --build . --config Debug & mkdir dist & XCOPY /s /y gateway\Debug\gateway.exe dist\gateway.* & XCOPY /s /y login\Debug\login.exe dist\login.* & XCOPY /s /y game\Debug\game.exe dist\game.* & popd & dotnet publish internal/internal.csproj -c Release -o build/dist/internal & dotnet publish write-back/write-back.csproj -c Release -o build/dist/write-back & rmdir /s /q build\\dist\\json & ROBOCOPY /NP /NFL game\\json\\ build\\dist\\json\\ & ROBOCOPY /NP /NFL game\\maps\\ build\\dist\\maps\\"
                 }
             };
 
@@ -335,7 +786,7 @@ namespace Runner.ViewModel
 
         private void OnNewGame(object obj)
         {
-            Game.Add(new GameConfig(new Model.GameConfig
+            Game.Add(new GameSetting(new Model.GameSetting
             {
                 ID = Game.Count,
                 Port = 0
@@ -344,7 +795,7 @@ namespace Runner.ViewModel
 
         private void OnNewLogin(object obj)
         {
-            Login.Add(new LoginConfig(new Model.LoginConfig
+            Login.Add(new LoginSetting(new Model.LoginSetting
             {
                 Name = string.Empty,
                 Desc = string.Empty,
@@ -357,13 +808,13 @@ namespace Runner.ViewModel
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (GameConfig item in e.NewItems)
+                    foreach (GameSetting item in e.NewItems)
                     {
                         Model.Game.Add(item.Model);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (GameConfig item in e.OldItems)
+                    foreach (GameSetting item in e.OldItems)
                     {
                         Model.Game.Remove(item.Model);
                     }
@@ -376,13 +827,13 @@ namespace Runner.ViewModel
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    foreach (LoginConfig item in e.NewItems)
+                    foreach (LoginSetting item in e.NewItems)
                     {
                         Model.Login.Add(item.Model);
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    foreach (LoginConfig item in e.OldItems)
+                    foreach (LoginSetting item in e.OldItems)
                     {
                         Model.Login.Remove(item.Model);
                     }
@@ -464,13 +915,29 @@ namespace Runner.ViewModel
             }));
         }
 
-        public void Dispose()
+        private void KillProcesses()
         {
             if (BuildProcess != null)
             {
                 BuildProcess.Kill();
                 BuildProcess = null;
             }
+
+            foreach (var srv in Servers)
+            {
+                foreach (var process in srv.Processes)
+                {
+                    process.Process?.Kill();
+                }
+            }
+
+            Servers.Clear();
+            SelectedProcess = null;
+        }
+
+        public void Dispose()
+        {
+            KillProcesses();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Runner.ViewModel;
+using System.Text;
 using System.Windows;
 
 namespace Runner;
@@ -23,5 +24,10 @@ public partial class MainWindow : Window
     {
         _model.Save("settings.json");
         _vm.Dispose();
+    }
+
+    private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        _vm.SelectedProcess = e.NewValue as ServerProcess;
     }
 }

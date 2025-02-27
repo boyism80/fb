@@ -24,25 +24,25 @@ namespace Runner.Model
         public required ushort Port { get; set; }
     }
 
-    public class GatewayConfig
+    public class GatewaySetting
     {
         public required ushort Port { get; set; }
     }
 
-    public class LoginConfig
+    public class LoginSetting
     {
         public required string Name { get; set; }
         public required string Desc { get; set; }
         public required ushort Port { get; set; }
     }
 
-    public class GameConfig
+    public class GameSetting
     {
         public required int ID { get; set; }
         public required ushort Port { get; set; }
     }
 
-    public class InternalConfig
+    public class InternalSetting
     {
         public required ushort Port { get; set; }
     }
@@ -59,18 +59,19 @@ namespace Runner.Model
             IP = string.Empty,
             Port = 0
         };
-        public GatewayConfig Gateway { get; set; } = new GatewayConfig
+        public GatewaySetting Gateway { get; set; } = new GatewaySetting
         {
             Port = 0
         };
-        public List<LoginConfig> Login { get; set; } = new List<LoginConfig>();
-        public List<GameConfig> Game { get; set; } = new List<GameConfig>();
-        public InternalConfig Internal { get; set; } = new InternalConfig
+        public List<LoginSetting> Login { get; set; } = new List<LoginSetting>();
+        public List<GameSetting> Game { get; set; } = new List<GameSetting>();
+        public InternalSetting Internal { get; set; } = new InternalSetting
         {
             Port = 0
         };
         public DateTime LastBuildDate { get; set; }
         public string WorkingDirectory { get; set; }
+        public string ExternalIP { get; set; }
 
         public MainWindow(Window window)
         {

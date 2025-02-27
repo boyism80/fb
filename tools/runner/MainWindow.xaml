@@ -213,7 +213,8 @@
                             <Button Content="빌드"
                                     IsEnabled="{Binding IsEnableBuild}"
                                     Command="{Binding BuildCommand}" />
-                            <Button Content="시작"
+                            <Button Content="{Binding RunButtonText}"
+                                    IsEnabled="{Binding IsEnableRun}"
                                     Command="{Binding RunCommand}" />
                         </StackPanel>
 
@@ -223,11 +224,26 @@
                                      VerticalAlignment="Top"
                                      Background="Transparent"
                                      TextWrapping="Wrap"
-                                     Text="{Binding BuildLog}" />
+                                     IsReadOnly="True"
+                                     Text="{Binding MainText, Mode=OneWay}" />
                         </Border>
                         <TreeView Grid.Row="1"
                                   Grid.Column="1"
-                                  Background="Transparent">
+                                  Background="Transparent"
+                                  ItemsSource="{Binding Servers}"
+                                  SelectedItemChanged="TreeView_SelectedItemChanged">
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Processes}">
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="{StaticResource MainTextBrush}" />
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="{x:Type TreeViewItem}">
+                                    <Setter Property="Foreground"
+                                            Value="{StaticResource MainTextBrush}" />
+                                </Style>
+                            </TreeView.ItemContainerStyle>
                         </TreeView>
                     </Grid>
                 </TabItem>
@@ -249,6 +265,7 @@
                                 <Grid>
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -257,18 +274,29 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="위치"
+                                    <TextBlock Text="IP"
                                                VerticalAlignment="Center"
                                                Grid.Row="0"
                                                Grid.Column="0" />
-                                    <TextBox Text="{Binding WorkingDirectory}"
-                                             Tag="Enter your 'fb' path"
+                                    <TextBox Text="{Binding ExternalIP}"
+                                             Tag="Enter your external ip"
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2"
                                              Grid.ColumnSpan="2" />
+
+                                    <TextBlock Text="위치"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="1"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding WorkingDirectory}"
+                                             Tag="Enter your 'fb' path"
+                                             Grid.Row="1"
+                                             Grid.Column="1"
+                                             Margin="0 2 0 2"
+                                             Grid.ColumnSpan="2" />
                                     <Button Content="추가"
-                                            Grid.Row="0"
+                                            Grid.Row="1"
                                             Grid.Column="3"
                                             Margin="10 0 0 0"
                                             VerticalAlignment="Center"
@@ -471,7 +499,7 @@
                                         <ContextMenu>
                                             <MenuItem Header="제거"
                                                       Command="{Binding DeleteLogin}"
-                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}"/>
+                                                      CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=ContextMenu}, Path=PlacementTarget.SelectedItem}" />
                                         </ContextMenu>
                                     </DataGrid.ContextMenu>
                                     <DataGrid.Columns>
