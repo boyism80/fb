@@ -60,8 +60,8 @@ namespace Runner.ViewModel
 
         public string PW
         {
-            get => Model.ID;
-            set => Model.ID = value;
+            get => Model.PW;
+            set => Model.PW = value;
         }
 
         public MySqlConnection(Model.MySqlConnection model)
@@ -1203,8 +1203,8 @@ namespace Runner.ViewModel
         {
             Redis.Add(new RedisConnection(new Model.RedisConnection
             {
-                IP = string.Empty,
-                Port = 0
+                IP = "127.0.0.1",
+                Port = 6379
             }));
         }
 
@@ -1227,11 +1227,11 @@ namespace Runner.ViewModel
         {
             MySQL.Add(new MySqlConnection(new Model.MySqlConnection
             {
-                IP = string.Empty,
+                IP = "127.0.0.1",
                 Name = MySQL.Count == 0 ? "GLOBAL" : "DATA",
-                Port = 0,
-                ID = string.Empty,
-                PW = string.Empty
+                Port = 3306,
+                ID = "root",
+                PW = "admin"
             }));
         }
 

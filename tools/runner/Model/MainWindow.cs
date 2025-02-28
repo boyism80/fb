@@ -59,20 +59,20 @@ namespace Runner.Model
         public List<RedisConnection> Redis { get; set; } = new List<RedisConnection>();
         public RabbitMQConnection RabbitMq { get; set; } = new RabbitMQConnection
         {
-            IP = string.Empty,
-            Port = 0,
-            ID = string.Empty,
-            PW = string.Empty,
+            IP = "127.0.0.1",
+            Port = 5672,
+            ID = "guest",
+            PW = "guest",
         };
         public GatewaySetting Gateway { get; set; } = new GatewaySetting
         {
-            Port = 0
+            Port = 3001
         };
         public List<LoginSetting> Login { get; set; } = new List<LoginSetting>();
         public List<GameSetting> Game { get; set; } = new List<GameSetting>();
         public InternalSetting Internal { get; set; } = new InternalSetting
         {
-            Port = 0
+            Port = 3000
         };
         public DateTime LastBuildDate { get; set; }
         public string WorkingDirectory { get; set; }
@@ -80,17 +80,17 @@ namespace Runner.Model
         public string Agreement { get; set; }
         public uint InitMap { get; set; }
         public List<Point> InitPoints { get; set; } = new List<Point>();
-        public uint BaseHP { get; set; }
-        public uint AdditionalHP { get; set; }
-        public uint BaseMP { get; set; }
-        public uint AdditionalMP { get; set; }
-        public bool AllowOtherLanguage { get; set; }
-        public bool AdminMode { get; set; }
-        public byte MinIdLength { get; set; }
-        public byte MaxIdLength { get; set; }
-        public byte MinPwLength { get; set; }
-        public byte MaxPwLength { get; set; }
-        public uint SaveInterval { get; set; }
+        public uint BaseHP { get; set; } = 50;
+        public uint AdditionalHP { get; set; } = 10;
+        public uint BaseMP { get; set; } = 50;
+        public uint AdditionalMP { get; set; } = 10;
+        public bool AllowOtherLanguage { get; set; } = false;
+        public bool AdminMode { get; set; } = false;
+        public byte MinIdLength { get; set; } = 2;
+        public byte MaxIdLength { get; set; } = 12;
+        public byte MinPwLength { get; set; } = 4;
+        public byte MaxPwLength { get; set; } = 16;
+        public uint SaveInterval { get; set; } = 600;
 
         public MainWindow(Window window)
         {
