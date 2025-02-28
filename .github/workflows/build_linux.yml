@@ -1,9 +1,9 @@
-name: build fb
+name: build fb - Linux
 
 on:
   push:
     branches:
-      - develop
+      - releases/linux
 
 env:
   REGISTRY: ghcr.io

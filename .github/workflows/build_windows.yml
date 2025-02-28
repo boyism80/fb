@@ -1,0 +1,56 @@
+name: build fb - Windows
+
+on:
+  push:
+    branches:
+      - releases/windows
+
+jobs:
+  build:
+    runs-on: [self-hosted, windows, build]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          clean: false
+
+      - name: Update modules
+        run: .\update-modules.bat
+        working-directory: tools
+
+      - name: Create build directory
+        run: if (-Not (Test-Path build)) { mkdir build }
+
+      - name: Configure CMake
+        run: cmake ..
+        working-directory: build
+
+      - name: Build c++
+        run: |
+          cmake --build . --config Debug
+          mv -Force gateway\Debug\gateway.exe gateway.exe
+          mv -Force login\Debug\login.exe login.exe
+          mv -Force game\Debug\game.exe game.exe
+        working-directory: build
+
+      - name: Build internal
+        run: dotnet publish internal/internal.csproj -c Release -o build/internal
+
+      - name: Build write-back
+        run: dotnet publish write-back/write-back.csproj -c Release -o build/write-back
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            build/gateway.exe
+            build/login.exe
+            build/game.exe
+            build/internal
+            build/write-back
+          retention-days: 7

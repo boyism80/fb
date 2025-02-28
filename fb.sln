@@ -19,6 +19,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lib", "lib\lib.vcxproj", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "write-back", "write-back\write-back.csproj", "{98A88DA5-EC9C-4F7D-943A-A37B12B16F7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "runner", "tools\runner\runner.csproj", "{41386882-17C6-4A9F-8E03-C91477066B32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,14 @@ Global
 		{98A88DA5-EC9C-4F7D-943A-A37B12B16F7F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{98A88DA5-EC9C-4F7D-943A-A37B12B16F7F}.Release|x64.ActiveCfg = Release|Any CPU
 		{98A88DA5-EC9C-4F7D-943A-A37B12B16F7F}.Release|x64.Build.0 = Release|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Debug|x64.Build.0 = Debug|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Release|x64.ActiveCfg = Release|Any CPU
+		{41386882-17C6-4A9F-8E03-C91477066B32}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

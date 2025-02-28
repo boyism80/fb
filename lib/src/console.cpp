@@ -53,7 +53,8 @@ console::console()
     }
 
     // hide cursor
-    std::cout << "\x1B[?25l";
+    if (_tty)
+        std::cout << "\x1B[?25l";
 
     _width = max_width > _width ? max_width : _width;
 }
