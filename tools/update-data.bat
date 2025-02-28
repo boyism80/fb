@@ -1,9 +1,16 @@
 @ECHO OFF
 
 git submodule update --recursive --remote data-converter
-SET SOURCE=D:\Users\CSHYEON\Data\git\game\c++\fb
 PUSHD data-converter
-CALL dotnet publish -c Release -o "bin"
+
+SET DISABLE_TTY=%1
+
+IF "%1" == "true" (
+	dotnet publish -c Release /p:DefineConstants=DISABLED_TTY -o bin
+) ELSE (
+	dotnet publish -c Release -o bin
+)
+
 if ERRORLEVEL 1 GOTO END
 PUSHD bin
 CALL ExcelTableConverter.exe --dir=..\..\..\resources\table --lang="c++|c#"

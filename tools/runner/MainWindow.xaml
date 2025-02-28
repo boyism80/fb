@@ -92,8 +92,18 @@
                                               Background="{StaticResource SystemBrush}"
                                               Foreground="{StaticResource MainTextBrush}"
                                               Padding="10 10">
-                                            <MenuItem Header="파일" />
-                                            <MenuItem Header="채널" />
+                                            <MenuItem Header="파일">
+                                                <MenuItem Header="업데이트">
+                                                    <MenuItem Header="맵"
+                                                              IsEnabled="{Binding IsEnableEdit}"
+                                                              Command="{Binding UpdateMapFile}" />
+                                                    <MenuItem Header="데이터"
+                                                              IsEnabled="{Binding IsEnableEdit}"
+                                                              Command="{Binding UpdateResourceFile}" />
+                                                    <MenuItem Header="스크립트"
+                                                              Command="{Binding UpdateScript}" />
+                                                </MenuItem>
+                                            </MenuItem>
                                         </Menu>
                                         <StackPanel Grid.Column="1"
                                                     Orientation="Horizontal"
@@ -211,7 +221,7 @@
                                        Foreground="{StaticResource MainTextBrush}"
                                        Margin="0 0 10 0" />
                             <Button Content="빌드"
-                                    IsEnabled="{Binding IsEnableBuild}"
+                                    IsEnabled="{Binding IsEnableEdit}"
                                     Command="{Binding BuildCommand}" />
                             <Button Content="{Binding RunButtonText}"
                                     IsEnabled="{Binding IsEnableRun}"
@@ -280,7 +290,7 @@
                                                Grid.Row="0"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding ExternalIP}"
-                                             Tag="Enter your external ip"
+                                             Tag="127.0.0.1"
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2"
@@ -336,6 +346,7 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Tag="127.0.0.1"
                                                              Width="128" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -344,6 +355,7 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Tag="3306"
                                                              Width="64" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -394,6 +406,7 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Tag="127.0.0.1"
                                                              Width="64" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -401,7 +414,8 @@
                                         <DataGridTemplateColumn Header="PORT">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                    <TextBox Text="{Binding Port,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Tag="6379" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -439,6 +453,7 @@
                                                Grid.Row="0"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding RabbitMqIP}"
+                                             Tag="127.0.0.1"
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -448,6 +463,7 @@
                                                Grid.Row="1"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding RabbitMqPort}"
+                                             Tag="5672"
                                              Grid.Row="1"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -478,6 +494,7 @@
                                                Grid.Row="0"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding Gateway.Port}"
+                                             Tag="3001"
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -512,6 +529,7 @@
                                                Grid.Row="0"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding Agreement}"
+                                             Tag="Enter your agreement message."
                                              Grid.Row="0"
                                              Grid.Column="1"
                                              Grid.ColumnSpan="3"
@@ -525,6 +543,7 @@
                                                Grid.Row="1"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding InitMap}"
+                                             Tag="Enter initial map id"
                                              Grid.Row="1"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
@@ -691,6 +710,7 @@
                                                Grid.Row="0"
                                                Grid.Column="0" />
                                     <TextBox Text="{Binding InternalPort,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                             Tag="3000"
                                              Width="64"
                                              Grid.Row="0"
                                              Grid.Column="1"

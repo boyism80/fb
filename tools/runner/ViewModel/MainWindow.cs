@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
@@ -192,6 +193,30 @@ namespace Runner.ViewModel
             }
         }
 
+        private bool _isConverting = false;
+        public bool IsConverting
+        {
+            get => _isConverting;
+            set
+            {
+                _isConverting = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableEdit)));
+            }
+        }
+        public bool IsEnableEdit
+        {
+            get
+            {
+                if (IsRunning)
+                    return false;
+
+                if (IsConverting)
+                    return false;
+
+                return true;
+            }
+        }
+
         public class ProcessGroup
         {
             public string Name => ToString();
@@ -284,6 +309,9 @@ namespace Runner.ViewModel
         public ICommand DeleteGame { get; private set; }
         public ICommand NewInitPoint { get; set; }
         public ICommand DeleteInitPoint { get; private set; }
+        public ICommand UpdateMapFile { get; private set; }
+        public ICommand UpdateResourceFile { get; private set; }
+        public ICommand UpdateScript { get; private set; }
 
         public MainWindow(Model.MainWindow model)
         {
@@ -337,6 +365,9 @@ namespace Runner.ViewModel
             DeleteGame = new RelayCommand(OnDeleteGame);
             NewInitPoint = new RelayCommand(OnNewInitPoint);
             DeleteInitPoint = new RelayCommand(OnDeleteInitPoint);
+            UpdateMapFile = new RelayCommand(OnUpdateMapFile);
+            UpdateResourceFile = new RelayCommand(OnUpdateResourceFile);
+            UpdateScript = new RelayCommand(OnUpdateScript);
         }
 
         private void Servers_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -361,6 +392,132 @@ namespace Runner.ViewModel
                         Model.InitPoints.Remove(item.Model);
                     }
                     break;
+            }
+        }
+
+        private void OnUpdateMapFile(object obj)
+        {
+            try
+            {
+                var path = Path.Combine(WorkingDirectory, "resources", "maps", "maps.zip");
+                if (File.Exists(path) == false)
+                    throw new InvalidOperationException($"{path} 파일을 찾을 수 없습니다.");
+
+                var output = Path.Combine(WorkingDirectory, "build", "dist", "maps");
+                System.IO.Compression.ZipFile.ExtractToDirectory(path, output, true);
+                MessageBox.Show("맵 파일을 업데이트 했습니다.", "완료");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        private void OnUpdateResourceFile(object obj)
+        {
+            if (IsConverting)
+                return;
+
+            if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+                return;
+
+            var p = new Process
+            {
+                EnableRaisingEvents = true,
+                StartInfo = new ProcessStartInfo
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    WorkingDirectory = WorkingDirectory,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    StandardOutputEncoding = Encoding.UTF8,
+                    StandardErrorEncoding = Encoding.UTF8,
+                    FileName = "cmd.exe",
+                    Arguments = @"/C pushd tools & call update-data.bat true & popd & robocopy /NP /NFL game\\json\\ build\\dist\\json\\ & robocopy /NP /NFL internal\\json\\ build\\dist\\internal\\json\\"
+                }
+            };
+
+            SelectedProcess = null;
+            BuildLog = string.Empty;
+            p.OutputDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                BuildLog += (e.Data + Environment.NewLine);
+            };
+            p.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data == null)
+                    return;
+
+                BuildLog += (e.Data + Environment.NewLine);
+            };
+            p.Start();
+            p.BeginOutputReadLine();
+            p.BeginErrorReadLine();
+            p.Exited += (sender, e) =>
+            {
+                IsConverting = false;
+            };
+
+            IsConverting = true;
+        }
+
+        // https://www.codeproject.com/Tips/278248/Recursively-Copy-folder-contents-to-another-in-Csh
+        private bool CopyFolderContents(string SourcePath, string DestinationPath)
+        {
+            SourcePath = SourcePath.EndsWith(@"\") ? SourcePath : SourcePath + @"\";
+            DestinationPath = DestinationPath.EndsWith(@"\") ? DestinationPath : DestinationPath + @"\";
+
+            try
+            {
+                if (Directory.Exists(SourcePath))
+                {
+                    if (Directory.Exists(DestinationPath) == false)
+                    {
+                        Directory.CreateDirectory(DestinationPath);
+                    }
+
+                    foreach (string files in Directory.GetFiles(SourcePath))
+                    {
+                        FileInfo fileInfo = new FileInfo(files);
+                        fileInfo.CopyTo(string.Format(@"{0}\{1}", DestinationPath, fileInfo.Name), true);
+                    }
+
+                    foreach (string drs in Directory.GetDirectories(SourcePath))
+                    {
+                        DirectoryInfo directoryInfo = new DirectoryInfo(drs);
+                        if (CopyFolderContents(drs, DestinationPath + directoryInfo.Name) == false)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        private void OnUpdateScript(object obj)
+        {
+            try
+            {
+                var path = Path.Combine(WorkingDirectory, "game", "scripts");
+                if (Directory.Exists(path) == false)
+                    throw new InvalidOperationException($"{path} 경로를 찾을 수 없습니다.");
+
+                var output = Path.Combine(WorkingDirectory, "build", "dist", "scripts");
+                CopyFolderContents(path, output);
+                MessageBox.Show("스크립트 파일을 업데이트 했습니다.", "완료");
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
             }
         }
 
@@ -652,6 +809,7 @@ namespace Runner.ViewModel
             }
             finally
             {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsEnableEdit)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RunButtonText)));
             }
         }
@@ -770,6 +928,9 @@ namespace Runner.ViewModel
         private void OnBuild(object obj)
         {
             if (BuildProcess != null)
+                return;
+
+            if (IsConverting)
                 return;
 
             if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
