@@ -54,6 +54,19 @@ void context::on_dead(life& me, object* you)
         auto& mob = static_cast<fb::game::mob&>(me);
         mob.drop_items();
 
+        if (mob.owner != nullptr)
+            return;
+
+        if (you == nullptr)
+            return;
+
+        if (you->is(OBJECT_TYPE::MOB))
+        {
+            you = static_cast<fb::game::mob*>(you)->owner;
+            if (you == nullptr)
+                return;
+        }
+
         if (mob.owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
         {
             auto& ch    = static_cast<character&>(*you);

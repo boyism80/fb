@@ -106,9 +106,10 @@ function on_attack(me, additional_attack)
         me:action(ACTION_ATTACK, DURATION_ATTACK)
     end
 
-    local weapon = me:weapon()
+    local weapon = nil
     local is_bow = false
     if me:is(OBJECT_TYPE_CHARACTER) and not additional_attack then
+        weapon = me:weapon()
         if weapon ~= nil then
             local model = weapon:model()
             is_bow = model:type() == WEAPON_TYPE_BOW
