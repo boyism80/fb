@@ -360,6 +360,24 @@
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="ID">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding ID,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Tag="fb"
+                                                             Width="128" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Header="PWD">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding PW,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                             Tag="admin"
+                                                             Width="128" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
                                     </DataGrid.Columns>
                                 </DataGrid>
                                 <WrapPanel HorizontalAlignment="Right">
@@ -407,7 +425,7 @@
                                                 <DataTemplate>
                                                     <TextBox Text="{Binding IP,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                                              Tag="127.0.0.1"
-                                                             Width="64" />
+                                                             Width="128" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -441,6 +459,8 @@
                                     <Grid.RowDefinitions>
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -452,7 +472,7 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="0"
                                                Grid.Column="0" />
-                                    <TextBox Text="{Binding RabbitMqIP}"
+                                    <TextBox Text="{Binding RabbitMq.IP}"
                                              Tag="127.0.0.1"
                                              Grid.Row="0"
                                              Grid.Column="1"
@@ -462,9 +482,27 @@
                                                VerticalAlignment="Center"
                                                Grid.Row="1"
                                                Grid.Column="0" />
-                                    <TextBox Text="{Binding RabbitMqPort}"
+                                    <TextBox Text="{Binding RabbitMq.Port}"
                                              Tag="5672"
                                              Grid.Row="1"
+                                             Grid.Column="1"
+                                             Margin="0 2 0 2" />
+
+                                    <TextBlock Text="ID"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="2"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding RabbitMq.ID}"
+                                             Grid.Row="2"
+                                             Grid.Column="1"
+                                             Margin="0 2 0 2" />
+
+                                    <TextBlock Text="암호"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="3"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding RabbitMq.PW}"
+                                             Grid.Row="3"
                                              Grid.Column="1"
                                              Margin="0 2 0 2" />
                                 </Grid>
@@ -515,6 +553,12 @@
                                         <RowDefinition Height="Auto" />
                                         <RowDefinition Height="*" />
                                         <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="*" />
                                     </Grid.RowDefinitions>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -592,6 +636,88 @@
                                                     Command="{Binding NewInitPoint}" />
                                         </WrapPanel>
                                     </StackPanel>
+
+                                    <TextBlock Text="체력"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="3"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding BaseHP}"
+                                             Tag="기본 체력"
+                                             Grid.Row="3"
+                                             Grid.Column="1"
+                                             Margin="0 2 10 2" />
+                                    <TextBox Text="{Binding AdditionalHP}"
+                                             Tag="추가 체력 범위"
+                                             Grid.Row="3"
+                                             Grid.Column="2"
+                                             Margin="0 2 10 2" />
+
+                                    <TextBlock Text="마력"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="4"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding BaseMP}"
+                                             Tag="기본 마력"
+                                             Grid.Row="4"
+                                             Grid.Column="1"
+                                             Margin="0 2 10 2" />
+                                    <TextBox Text="{Binding AdditionalMP}"
+                                             Tag="추가 마력 범위"
+                                             Grid.Row="4"
+                                             Grid.Column="2"
+                                             Margin="0 2 10 2" />
+
+                                    <TextBlock Text="영문 아이디"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="5"
+                                               Grid.Column="0" />
+                                    <CheckBox Content="허용"
+                                              Grid.Row="5"
+                                              Grid.Column="1"
+                                              Foreground="{StaticResource MainTextBrush}"
+                                              Margin="0 5 0 5"
+                                              IsChecked="{Binding AllowOtherLanguage}" />
+
+                                    <TextBlock Text="관리자 권한"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="6"
+                                               Grid.Column="0" />
+                                    <CheckBox Content="활성화"
+                                              Grid.Row="6"
+                                              Grid.Column="1"
+                                              Foreground="{StaticResource MainTextBrush}"
+                                              Margin="0 5 0 5"
+                                              IsChecked="{Binding AdminMode}" />
+
+                                    <TextBlock Text="이름 길이"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="7"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding MinIdLength}"
+                                             Tag="최소길이"
+                                             Grid.Row="7"
+                                             Grid.Column="1"
+                                             Margin="0 2 10 2" />
+                                    <TextBox Text="{Binding MaxIdLength}"
+                                             Tag="최대길이"
+                                             Grid.Row="7"
+                                             Grid.Column="2"
+                                             Margin="0 2 10 2" />
+
+                                    <TextBlock Text="암호 길이"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="8"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding MinPwLength}"
+                                             Tag="최소길이"
+                                             Grid.Row="8"
+                                             Grid.Column="1"
+                                             Margin="0 2 10 2" />
+                                    <TextBox Text="{Binding MaxPwLength}"
+                                             Tag="최대길이"
+                                             Grid.Row="8"
+                                             Grid.Column="2"
+                                             Margin="0 2 10 2" />
                                 </Grid>
 
                                 <DataGrid ItemsSource="{Binding Login}"
@@ -649,6 +775,31 @@
                                                Foreground="{StaticResource MainTextBrush}"
                                                Margin="0 0 0 10" />
                                 </Border>
+
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="8*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="서버 저장 주기"
+                                               VerticalAlignment="Center"
+                                               Grid.Row="0"
+                                               Grid.Column="0" />
+                                    <TextBox Text="{Binding SaveInterval,UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                             Tag="600"
+                                             Width="64"
+                                             Grid.Row="0"
+                                             Grid.Column="1"
+                                             HorizontalAlignment="Left"
+                                             Margin="0 2 0 2" />
+                                </Grid>
+
                                 <DataGrid ItemsSource="{Binding Game}"
                                           IsReadOnly="True"
                                           Margin="0 5 0 0">

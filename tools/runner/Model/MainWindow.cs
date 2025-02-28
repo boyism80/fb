@@ -9,6 +9,8 @@ namespace Runner.Model
         public required string Name { get; set; }
         public required string IP { get; set; }
         public required ushort Port { get; set; }
+        public required string ID { get; set; }
+        public required string PW { get; set; }
     }
 
     public class RedisConnection
@@ -21,6 +23,8 @@ namespace Runner.Model
     {
         public required string IP { get; set; }
         public required ushort Port { get; set; }
+        public required string ID { get; set; }
+        public required string PW { get; set; }
     }
 
     public class GatewaySetting
@@ -56,7 +60,9 @@ namespace Runner.Model
         public RabbitMQConnection RabbitMq { get; set; } = new RabbitMQConnection
         {
             IP = string.Empty,
-            Port = 0
+            Port = 0,
+            ID = string.Empty,
+            PW = string.Empty,
         };
         public GatewaySetting Gateway { get; set; } = new GatewaySetting
         {
@@ -74,6 +80,17 @@ namespace Runner.Model
         public string Agreement { get; set; }
         public uint InitMap { get; set; }
         public List<Point> InitPoints { get; set; } = new List<Point>();
+        public uint BaseHP { get; set; }
+        public uint AdditionalHP { get; set; }
+        public uint BaseMP { get; set; }
+        public uint AdditionalMP { get; set; }
+        public bool AllowOtherLanguage { get; set; }
+        public bool AdminMode { get; set; }
+        public byte MinIdLength { get; set; }
+        public byte MaxIdLength { get; set; }
+        public byte MinPwLength { get; set; }
+        public byte MaxPwLength { get; set; }
+        public uint SaveInterval { get; set; }
 
         public MainWindow(Window window)
         {

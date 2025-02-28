@@ -7,6 +7,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Sockets;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
@@ -51,6 +52,18 @@ namespace Runner.ViewModel
             set => Model.Port = value;
         }
 
+        public string ID
+        {
+            get => Model.ID;
+            set => Model.ID = value;
+        }
+
+        public string PW
+        {
+            get => Model.ID;
+            set => Model.ID = value;
+        }
+
         public MySqlConnection(Model.MySqlConnection model)
         {
             Model = model;
@@ -79,6 +92,38 @@ namespace Runner.ViewModel
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    public class RabbitMqConnection
+    {
+        public Model.RabbitMQConnection Model { get; private set; }
+        public string IP
+        {
+            get => Model.IP;
+            set => Model.IP = value;
+        }
+        public ushort Port
+        {
+            get => Model.Port;
+            set => Model.Port = value;
+        }
+
+        public string ID
+        {
+            get => Model.ID;
+            set => Model.ID = value;
+        }
+
+        public string PW
+        {
+            get => Model.PW;
+            set => Model.PW = value;
+        }
+
+        public RabbitMqConnection(Model.RabbitMQConnection model)
+        {
+            Model = model;
+        }
     }
 
     public class GatewaySetting
@@ -147,16 +192,7 @@ namespace Runner.ViewModel
 
         public ObservableCollection<MySqlConnection> MySQL { get; set; } = new ObservableCollection<MySqlConnection>();
         public ObservableCollection<RedisConnection> Redis { get; set; } = new ObservableCollection<RedisConnection>();
-        public string RabbitMqIP
-        {
-            get => Model.RabbitMq.IP;
-            set => Model.RabbitMq.IP = value;
-        }
-        public ushort RabbitMqPort
-        {
-            get => Model.RabbitMq.Port;
-            set => Model.RabbitMq.Port = value;
-        }
+        public RabbitMqConnection RabbitMq { get; set; }
         public ushort InternalPort
         {
             get => Model.Internal.Port;
@@ -293,6 +329,72 @@ namespace Runner.ViewModel
         }
         public ObservableCollection<Point> InitPoints { get; set; } = new ObservableCollection<Point>();
 
+        public uint BaseHP
+        {
+            get => Model.BaseHP;
+            set => Model.BaseHP = value;
+        }
+
+        public uint AdditionalHP
+        {
+            get => Model.AdditionalHP;
+            set => Model.AdditionalHP = value;
+        }
+
+        public uint BaseMP
+        {
+            get => Model.BaseMP;
+            set => Model.BaseMP = value;
+        }
+
+        public uint AdditionalMP
+        {
+            get => Model.AdditionalMP;
+            set => Model.AdditionalMP = value;
+        }
+
+        public bool AllowOtherLanguage
+        {
+            get => Model.AllowOtherLanguage;
+            set => Model.AllowOtherLanguage = value;
+        }
+
+        public bool AdminMode
+        {
+            get => Model.AdminMode;
+            set => Model.AdminMode = value;
+        }
+
+        public byte MinIdLength
+        {
+            get => Model.MinIdLength;
+            set => Model.MinIdLength = value;
+        }
+
+        public byte MaxIdLength
+        {
+            get => Model.MaxIdLength;
+            set => Model.MaxIdLength = value;
+        }
+
+        public byte MinPwLength
+        {
+            get => Model.MinPwLength;
+            set => Model.MinPwLength = value;
+        }
+
+        public byte MaxPwLength
+        {
+            get => Model.MaxPwLength;
+            set => Model.MaxPwLength = value;
+        }
+
+        public uint SaveInterval
+        {
+            get => Model.SaveInterval;
+            set => Model.SaveInterval = value;
+        }
+
         public ICommand SetMinimizeCommand { get; private set; }
         public ICommand SetMaximizeCommand { get; private set; }
         public ICommand CloseCommand { get; private set; }
@@ -316,6 +418,8 @@ namespace Runner.ViewModel
         public MainWindow(Model.MainWindow model)
         {
             Model = model;
+
+            RabbitMq = new RabbitMqConnection(Model.RabbitMq);
 
             foreach (var mySqlConnection in Model.MySQL)
             {
@@ -465,44 +569,6 @@ namespace Runner.ViewModel
             IsConverting = true;
         }
 
-        // https://www.codeproject.com/Tips/278248/Recursively-Copy-folder-contents-to-another-in-Csh
-        private bool CopyFolderContents(string SourcePath, string DestinationPath)
-        {
-            SourcePath = SourcePath.EndsWith(@"\") ? SourcePath : SourcePath + @"\";
-            DestinationPath = DestinationPath.EndsWith(@"\") ? DestinationPath : DestinationPath + @"\";
-
-            try
-            {
-                if (Directory.Exists(SourcePath))
-                {
-                    if (Directory.Exists(DestinationPath) == false)
-                    {
-                        Directory.CreateDirectory(DestinationPath);
-                    }
-
-                    foreach (string files in Directory.GetFiles(SourcePath))
-                    {
-                        FileInfo fileInfo = new FileInfo(files);
-                        fileInfo.CopyTo(string.Format(@"{0}\{1}", DestinationPath, fileInfo.Name), true);
-                    }
-
-                    foreach (string drs in Directory.GetDirectories(SourcePath))
-                    {
-                        DirectoryInfo directoryInfo = new DirectoryInfo(drs);
-                        if (CopyFolderContents(drs, DestinationPath + directoryInfo.Name) == false)
-                        {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
-
         private void OnUpdateScript(object obj)
         {
             try
@@ -577,11 +643,53 @@ namespace Runner.ViewModel
                 if (string.IsNullOrEmpty(ExternalIP))
                     throw new InvalidOperationException("IP가 설정되지 않았습니다.");
 
-                if (string.IsNullOrEmpty(RabbitMqIP))
+                if (string.IsNullOrEmpty(RabbitMq.IP))
                     throw new InvalidOperationException("RabbitMQ IP가 설정되지 않았습니다.");
 
-                if (RabbitMqPort == 0)
+                if (RabbitMq.Port == 0)
                     throw new InvalidOperationException("RabbitMQ Port가 설정되지 않았습니다.");
+
+                if (string.IsNullOrEmpty(RabbitMq.ID))
+                    throw new InvalidOperationException("RabbitMQ 아이디가 설정되지 않았습니다.");
+
+                if (string.IsNullOrEmpty(RabbitMq.PW))
+                    throw new InvalidOperationException("RabbitMQ 암호가 설정되지 않았습니다.");
+
+                if (BaseHP == 0)
+                    throw new InvalidOperationException("기본 체력은 1 이상이어야 합니다.");
+
+                if (BaseMP == 0)
+                    throw new InvalidOperationException("기본 마력은 1 이상이어야 합니다.");
+
+                if (MinIdLength == 0)
+                    throw new InvalidOperationException("최소 아이디 길이는 1 이상이어야 합니다.");
+
+                if (MaxIdLength < MinIdLength)
+                    throw new InvalidOperationException("최대 아이디 길이는 최소 아이디 길이보다 길어야 합니다.");
+
+                if (MinPwLength == 0)
+                    throw new InvalidOperationException("최소 암호 길이는 1 이상이어야 합니다.");
+
+                if (MaxPwLength < MinPwLength)
+                    throw new InvalidOperationException("최대 암호 길이는 최소 암호 길이보다 길어야 합니다.");
+
+                if (SaveInterval == 0)
+                    throw new InvalidOperationException("서버 저장 주기는 1초 이상이어야 합니다.");
+
+                foreach (var mysql in MySQL)
+                {
+                    if (Ping(mysql.IP, mysql.Port) == false)
+                        throw new InvalidOperationException($"MySQL {mysql.IP}:{mysql.Port}가 열리지 않았습니다.");
+                }
+
+                foreach (var redis in Redis)
+                {
+                    if (Ping(redis.IP, redis.Port) == false)
+                        throw new InvalidOperationException($"Redis {redis.IP}:{redis.Port}가 열리지 않았습니다.");
+                }
+
+                if (Ping(RabbitMq.IP, RabbitMq.Port) == false)
+                    throw new InvalidOperationException($"RabbitMQ {RabbitMq.IP}:{RabbitMq.Port}가 열리지 않았습니다.");
 
                 var confDir = Path.Combine([WorkingDirectory, "build", "dist", "config"]);
                 if (Directory.Exists(confDir) == false)
@@ -605,10 +713,10 @@ namespace Runner.ViewModel
                     conf["ip"] = ExternalIP;
                     conf["port"] = setting.Port;
                     conf["transfer delay"] = 0;
-                    conf["allow other language"] = false;
+                    conf["allow other language"] = AllowOtherLanguage;
                     conf["forbidden"] = new JArray();
                     conf["agreement"] = Agreement;
-                    conf["admin_mode"] = false;
+                    conf["admin_mode"] = AdminMode;
                     conf["thread"] = JObject.FromObject(new
                     {
                         logic = 12,
@@ -633,20 +741,20 @@ namespace Runner.ViewModel
                         }));
                     }
                     conf["init"]["hp"] = new JObject();
-                    conf["init"]["hp"]["base"] = 50;
-                    conf["init"]["hp"]["range"] = 10;
+                    conf["init"]["hp"]["base"] = BaseHP;
+                    conf["init"]["hp"]["range"] = AdditionalHP;
                     conf["init"]["mp"] = new JObject();
-                    conf["init"]["mp"]["base"] = 50;
-                    conf["init"]["mp"]["range"] = 10;
+                    conf["init"]["mp"]["base"] = BaseMP;
+                    conf["init"]["mp"]["range"] = AdditionalMP;
                     conf["name_size"] = JObject.FromObject(new
                     {
-                        min = 2,
-                        max = 12
+                        min = MinIdLength,
+                        max = MaxIdLength
                     });
                     conf["pw_size"] = JObject.FromObject(new
                     {
-                        min = 4,
-                        max = 16
+                        min = MinPwLength,
+                        max = MaxPwLength
                     });
                     File.WriteAllText(Path.Combine([confDir, $"config.login-{i}.json"]), conf.ToString(Formatting.Indented));
                 }
@@ -669,7 +777,7 @@ namespace Runner.ViewModel
                         io = 12,
                         background = 8
                     });
-                    conf["save"] = 600;
+                    conf["save"] = SaveInterval;
                     conf["internal"] = JObject.FromObject(new
                     {
                         ip = "127.0.0.1",
@@ -682,10 +790,10 @@ namespace Runner.ViewModel
                     });
                     conf["amqp"] = JObject.FromObject(new
                     {
-                        ip = RabbitMqIP,
-                        port = RabbitMqPort,
-                        uid = "fb",
-                        pwd = "admin"
+                        ip = RabbitMq.IP,
+                        port = RabbitMq.Port,
+                        uid = RabbitMq.ID,
+                        pwd = RabbitMq.PW
                     });
                     conf["log"] = new JArray("debug", "info", "warn", "fatal");
                     File.WriteAllText(Path.Combine([confDir, $"config.game-{setting.ID}.json"]), conf.ToString(Formatting.Indented));
@@ -732,7 +840,7 @@ namespace Runner.ViewModel
                 for (int i = 0; i < MySQL.Count; i++)
                 {
                     var db = MySQL[i];
-                    internalConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID=fb; Password=admin; Database=fb";
+                    internalConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password={db.PW}; Database=fb";
                 }
 
                 internalConf["Redis"] = new JObject();
@@ -746,10 +854,10 @@ namespace Runner.ViewModel
                 }
 
                 internalConf["RabbitMQ"] = new JObject();
-                internalConf["RabbitMQ"]["Host"] = RabbitMqIP;
-                internalConf["RabbitMQ"]["Port"] = RabbitMqPort;
-                internalConf["RabbitMQ"]["Uid"] = "fb";
-                internalConf["RabbitMQ"]["Pwd"] = "admin";
+                internalConf["RabbitMQ"]["Host"] = RabbitMq.IP;
+                internalConf["RabbitMQ"]["Port"] = RabbitMq.Port;
+                internalConf["RabbitMQ"]["Uid"] = RabbitMq.ID;
+                internalConf["RabbitMQ"]["Pwd"] = RabbitMq.Port;
                 File.WriteAllText(Path.Combine([WorkingDirectory, "build", "dist", "internal", "appsettings.internal.json"]), internalConf.ToString(Formatting.Indented));
 
                 var wbConf = new JObject();
@@ -763,7 +871,7 @@ namespace Runner.ViewModel
                 for (int i = 0; i < MySQL.Count; i++)
                 {
                     var db = MySQL[i];
-                    wbConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID=fb; Password=admin; Database=fb";
+                    wbConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password= {db.PW} ; Database=fbfb";
                 }
 
                 wbConf["Redis"] = new JObject();
@@ -1121,7 +1229,9 @@ namespace Runner.ViewModel
             {
                 IP = string.Empty,
                 Name = MySQL.Count == 0 ? "GLOBAL" : "DATA",
-                Port = 0
+                Port = 0,
+                ID = string.Empty,
+                PW = string.Empty
             }));
         }
 
@@ -1148,6 +1258,60 @@ namespace Runner.ViewModel
         public void Dispose()
         {
             KillProcesses();
+        }
+
+        // https://www.codeproject.com/Tips/278248/Recursively-Copy-folder-contents-to-another-in-Csh
+        private bool CopyFolderContents(string SourcePath, string DestinationPath)
+        {
+            SourcePath = SourcePath.EndsWith(@"\") ? SourcePath : SourcePath + @"\";
+            DestinationPath = DestinationPath.EndsWith(@"\") ? DestinationPath : DestinationPath + @"\";
+
+            try
+            {
+                if (Directory.Exists(SourcePath))
+                {
+                    if (Directory.Exists(DestinationPath) == false)
+                    {
+                        Directory.CreateDirectory(DestinationPath);
+                    }
+
+                    foreach (string files in Directory.GetFiles(SourcePath))
+                    {
+                        FileInfo fileInfo = new FileInfo(files);
+                        fileInfo.CopyTo(string.Format(@"{0}\{1}", DestinationPath, fileInfo.Name), true);
+                    }
+
+                    foreach (string drs in Directory.GetDirectories(SourcePath))
+                    {
+                        DirectoryInfo directoryInfo = new DirectoryInfo(drs);
+                        if (CopyFolderContents(drs, DestinationPath + directoryInfo.Name) == false)
+                        {
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        private static bool Ping(string ip, ushort port)
+        {
+            using (TcpClient tcpClient = new TcpClient())
+            {
+                try
+                {
+                    tcpClient.Connect(ip, port);
+                    return true;
+                }
+                catch (Exception)
+                {
+                    return false;
+                }
+            }
         }
     }
 }
