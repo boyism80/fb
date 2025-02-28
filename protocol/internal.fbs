@@ -1,8 +1,18 @@
 namespace fb.protocol.internal;
 
-enum Service : byte { Gateway, Login, Game }
+enum Service : byte {
+    Gateway,
+    Login,
+    Game
+}
 
-enum GroupAction : byte { Create, Enter, Leave, Kick, BreakUp }
+enum GroupAction : byte { 
+    Create,
+    Enter,
+    Leave,
+    Kick,
+    BreakUp
+}
 
 table Position {
     x: ushort;
