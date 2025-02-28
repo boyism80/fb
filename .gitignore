@@ -24,6 +24,6 @@ db/json
 .vscode
 login/json
 build
-tools/modules
+tools/library
 tools/map-split/*.txt
 */config

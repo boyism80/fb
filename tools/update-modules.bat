@@ -1,5 +1,5 @@
-mkdir modules
-PUSHD modules
+mkdir library
+PUSHD library
 
 SET DEST=..\..\dependency
 SET BOOST=boost_1_84_0
@@ -55,9 +55,9 @@ PUSHD zlib
 git checkout v1.2.9
 if not exist build mkdir build
 PUSHD build
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
+cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
 cmake --build . --config Debug --parallel
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
 cmake --build . --config Release --parallel
 POPD
 POPD
@@ -97,9 +97,9 @@ PUSHD cpp_redis
 git checkout 4.3.1
 if not exist build mkdir build
 PUSHD build
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
+cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug
 cmake --build . --config Debug --parallel
-cmake .. -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
 cmake --build . --config Release --parallel
 POPD
 POPD
@@ -129,5 +129,3 @@ ROBOCOPY boost\build\stage\lib\Debug\ %DEST%\lib\boost\ /E *.lib
 ROBOCOPY boost\build\stage\lib\Release\ %DEST%\lib\boost\ /E *.lib
 
 POPD
-rmdir /s /q modules
-PAUSE

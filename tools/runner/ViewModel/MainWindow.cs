@@ -790,7 +790,7 @@ namespace Runner.ViewModel
                     //StandardOutputEncoding = Encoding.UTF8,
                     //StandardErrorEncoding = Encoding.UTF8,
                     FileName = "cmd.exe",
-                    Arguments = @"/C mkdir build & pushd build & cmake .. & cmake --build . --config Debug & mkdir dist & XCOPY /s /y gateway\Debug\gateway.exe dist\gateway.* & XCOPY /s /y login\Debug\login.exe dist\login.* & XCOPY /s /y game\Debug\game.exe dist\game.* & popd & dotnet publish internal/internal.csproj -c Release -o build/dist/internal & dotnet publish write-back/write-back.csproj -c Release -o build/dist/write-back & rmdir /s /q build\\dist\\json & ROBOCOPY /NP /NFL game\\json\\ build\\dist\\json\\ & ROBOCOPY /NP /NFL game\\maps\\ build\\dist\\maps\\"
+                    Arguments = @"/C mkdir build & pushd build & cmake .. & cmake --build . --config Debug & mkdir dist & XCOPY /s /y gateway\Debug\gateway.exe dist\gateway.* & XCOPY /s /y login\Debug\login.exe dist\login.* & XCOPY /s /y game\Debug\game.exe dist\game.* & popd & dotnet publish internal/internal.csproj -c Release -o build/dist/internal & dotnet publish write-back/write-back.csproj -c Release -o build/dist/write-back & rmdir /s /q build\\dist\\json & ROBOCOPY /NP /NFL game\\json\\ build\\dist\\json\\ & ROBOCOPY /NP /NFL game\\maps\\ build\\dist\\maps\\ & ROBOCOPY /NP /NFL game\\scripts\\ build\\dist\\scripts\\"
                 }
             };
 
