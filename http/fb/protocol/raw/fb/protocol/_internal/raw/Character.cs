@@ -35,58 +35,60 @@ public struct Character : IFlatbufferObject
   public ArraySegment<byte>? GetPwBytes() { return __p.__vector_as_arraysegment(8); }
 #endif
   public byte[] GetPwArray() { return __p.__vector_as_array<byte>(8); }
-  public bool Admin { get { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public ushort Look { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort Color { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort Sex { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public ushort Nation { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public nullable.nullable_ushort? Creature { get { int o = __p.__offset(20); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Map { get { int o = __p.__offset(22); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public fb.protocol._internal.raw.Position? Position { get { int o = __p.__offset(24); return o != 0 ? (fb.protocol._internal.raw.Position?)(new fb.protocol._internal.raw.Position()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public byte Direction { get { int o = __p.__offset(26); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte State { get { int o = __p.__offset(28); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte ClassType { get { int o = __p.__offset(30); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte Promotion { get { int o = __p.__offset(32); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public byte Level { get { int o = __p.__offset(34); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
-  public uint Exp { get { int o = __p.__offset(36); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Money { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint DepositedMoney { get { int o = __p.__offset(40); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public nullable.nullable_ushort? Disguise { get { int o = __p.__offset(42); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public uint Hp { get { int o = __p.__offset(44); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint BaseHp { get { int o = __p.__offset(46); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint AdditionalHp { get { int o = __p.__offset(48); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint Mp { get { int o = __p.__offset(50); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint BaseMp { get { int o = __p.__offset(52); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public uint AdditionalMp { get { int o = __p.__offset(54); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
-  public nullable.nullable_ubyte? WeaponColor { get { int o = __p.__offset(56); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? HelmetColor { get { int o = __p.__offset(58); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? ArmorColor { get { int o = __p.__offset(60); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? ShieldColor { get { int o = __p.__offset(62); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? RingLeftColor { get { int o = __p.__offset(64); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? RingRightColor { get { int o = __p.__offset(66); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? AuxTopColor { get { int o = __p.__offset(68); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public nullable.nullable_ubyte? AuxBotColor { get { int o = __p.__offset(70); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public fb.protocol._internal.raw.Buff? Buffs(int j) { int o = __p.__offset(72); return o != 0 ? (fb.protocol._internal.raw.Buff?)(new fb.protocol._internal.raw.Buff()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int BuffsLength { get { int o = __p.__offset(72); return o != 0 ? __p.__vector_len(o) : 0; } }
-  public string Title { get { int o = __p.__offset(74); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public nullable.nullable_uint? Birth { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public bool Admin { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public ushort Look { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public ushort Color { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public ushort Sex { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public ushort Nation { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public nullable.nullable_ushort? Creature { get { int o = __p.__offset(22); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint Map { get { int o = __p.__offset(24); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public fb.protocol._internal.raw.Position? Position { get { int o = __p.__offset(26); return o != 0 ? (fb.protocol._internal.raw.Position?)(new fb.protocol._internal.raw.Position()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public byte Direction { get { int o = __p.__offset(28); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte State { get { int o = __p.__offset(30); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte ClassType { get { int o = __p.__offset(32); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Promotion { get { int o = __p.__offset(34); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public byte Level { get { int o = __p.__offset(36); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
+  public uint Exp { get { int o = __p.__offset(38); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Money { get { int o = __p.__offset(40); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint DepositedMoney { get { int o = __p.__offset(42); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public nullable.nullable_ushort? Disguise { get { int o = __p.__offset(44); return o != 0 ? (nullable.nullable_ushort?)(new nullable.nullable_ushort()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public uint Hp { get { int o = __p.__offset(46); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint BaseHp { get { int o = __p.__offset(48); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint AdditionalHp { get { int o = __p.__offset(50); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint Mp { get { int o = __p.__offset(52); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint BaseMp { get { int o = __p.__offset(54); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public uint AdditionalMp { get { int o = __p.__offset(56); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
+  public nullable.nullable_ubyte? WeaponColor { get { int o = __p.__offset(58); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? HelmetColor { get { int o = __p.__offset(60); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? ArmorColor { get { int o = __p.__offset(62); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? ShieldColor { get { int o = __p.__offset(64); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? RingLeftColor { get { int o = __p.__offset(66); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? RingRightColor { get { int o = __p.__offset(68); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? AuxTopColor { get { int o = __p.__offset(70); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public nullable.nullable_ubyte? AuxBotColor { get { int o = __p.__offset(72); return o != 0 ? (nullable.nullable_ubyte?)(new nullable.nullable_ubyte()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public fb.protocol._internal.raw.Buff? Buffs(int j) { int o = __p.__offset(74); return o != 0 ? (fb.protocol._internal.raw.Buff?)(new fb.protocol._internal.raw.Buff()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int BuffsLength { get { int o = __p.__offset(74); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public string Title { get { int o = __p.__offset(76); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(74, 1); }
+  public Span<byte> GetTitleBytes() { return __p.__vector_as_span<byte>(76, 1); }
 #else
-  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(74); }
+  public ArraySegment<byte>? GetTitleBytes() { return __p.__vector_as_arraysegment(76); }
 #endif
-  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(74); }
-  public string UpdatedDate { get { int o = __p.__offset(76); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+  public byte[] GetTitleArray() { return __p.__vector_as_array<byte>(76); }
+  public string UpdatedDate { get { int o = __p.__offset(78); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
-  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(76, 1); }
+  public Span<byte> GetUpdatedDateBytes() { return __p.__vector_as_span<byte>(78, 1); }
 #else
-  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(76); }
+  public ArraySegment<byte>? GetUpdatedDateBytes() { return __p.__vector_as_arraysegment(78); }
 #endif
-  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(76); }
+  public byte[] GetUpdatedDateArray() { return __p.__vector_as_array<byte>(78); }
 
   public static Offset<fb.protocol._internal.raw.Character> CreateCharacter(FlatBufferBuilder builder,
       uint id = 0,
       StringOffset nameOffset = default(StringOffset),
       StringOffset pwOffset = default(StringOffset),
+      Offset<nullable.nullable_uint> birthOffset = default(Offset<nullable.nullable_uint>),
       bool admin = false,
       ushort look = 0,
       ushort color = 0,
@@ -121,7 +123,7 @@ public struct Character : IFlatbufferObject
       VectorOffset buffsOffset = default(VectorOffset),
       StringOffset titleOffset = default(StringOffset),
       StringOffset updated_dateOffset = default(StringOffset)) {
-    builder.StartTable(37);
+    builder.StartTable(38);
     Character.AddUpdatedDate(builder, updated_dateOffset);
     Character.AddTitle(builder, titleOffset);
     Character.AddBuffs(builder, buffsOffset);
@@ -146,6 +148,7 @@ public struct Character : IFlatbufferObject
     Character.AddPosition(builder, positionOffset);
     Character.AddMap(builder, map);
     Character.AddCreature(builder, creatureOffset);
+    Character.AddBirth(builder, birthOffset);
     Character.AddPw(builder, pwOffset);
     Character.AddName(builder, nameOffset);
     Character.AddId(builder, id);
@@ -162,49 +165,50 @@ public struct Character : IFlatbufferObject
     return Character.EndCharacter(builder);
   }
 
-  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(37); }
+  public static void StartCharacter(FlatBufferBuilder builder) { builder.StartTable(38); }
   public static void AddId(FlatBufferBuilder builder, uint id) { builder.AddUint(0, id, 0); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
-  public static void AddAdmin(FlatBufferBuilder builder, bool admin) { builder.AddBool(3, admin, false); }
-  public static void AddLook(FlatBufferBuilder builder, ushort look) { builder.AddUshort(4, look, 0); }
-  public static void AddColor(FlatBufferBuilder builder, ushort color) { builder.AddUshort(5, color, 0); }
-  public static void AddSex(FlatBufferBuilder builder, ushort sex) { builder.AddUshort(6, sex, 0); }
-  public static void AddNation(FlatBufferBuilder builder, ushort nation) { builder.AddUshort(7, nation, 0); }
-  public static void AddCreature(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> creatureOffset) { builder.AddOffset(8, creatureOffset.Value, 0); }
-  public static void AddMap(FlatBufferBuilder builder, uint map) { builder.AddUint(9, map, 0); }
-  public static void AddPosition(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Position> positionOffset) { builder.AddOffset(10, positionOffset.Value, 0); }
-  public static void AddDirection(FlatBufferBuilder builder, byte direction) { builder.AddByte(11, direction, 0); }
-  public static void AddState(FlatBufferBuilder builder, byte state) { builder.AddByte(12, state, 0); }
-  public static void AddClassType(FlatBufferBuilder builder, byte classType) { builder.AddByte(13, classType, 0); }
-  public static void AddPromotion(FlatBufferBuilder builder, byte promotion) { builder.AddByte(14, promotion, 0); }
-  public static void AddLevel(FlatBufferBuilder builder, byte level) { builder.AddByte(15, level, 0); }
-  public static void AddExp(FlatBufferBuilder builder, uint exp) { builder.AddUint(16, exp, 0); }
-  public static void AddMoney(FlatBufferBuilder builder, uint money) { builder.AddUint(17, money, 0); }
-  public static void AddDepositedMoney(FlatBufferBuilder builder, uint depositedMoney) { builder.AddUint(18, depositedMoney, 0); }
-  public static void AddDisguise(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> disguiseOffset) { builder.AddOffset(19, disguiseOffset.Value, 0); }
-  public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(20, hp, 0); }
-  public static void AddBaseHp(FlatBufferBuilder builder, uint baseHp) { builder.AddUint(21, baseHp, 0); }
-  public static void AddAdditionalHp(FlatBufferBuilder builder, uint additionalHp) { builder.AddUint(22, additionalHp, 0); }
-  public static void AddMp(FlatBufferBuilder builder, uint mp) { builder.AddUint(23, mp, 0); }
-  public static void AddBaseMp(FlatBufferBuilder builder, uint baseMp) { builder.AddUint(24, baseMp, 0); }
-  public static void AddAdditionalMp(FlatBufferBuilder builder, uint additionalMp) { builder.AddUint(25, additionalMp, 0); }
-  public static void AddWeaponColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> weaponColorOffset) { builder.AddOffset(26, weaponColorOffset.Value, 0); }
-  public static void AddHelmetColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> helmetColorOffset) { builder.AddOffset(27, helmetColorOffset.Value, 0); }
-  public static void AddArmorColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> armorColorOffset) { builder.AddOffset(28, armorColorOffset.Value, 0); }
-  public static void AddShieldColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> shieldColorOffset) { builder.AddOffset(29, shieldColorOffset.Value, 0); }
-  public static void AddRingLeftColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> ringLeftColorOffset) { builder.AddOffset(30, ringLeftColorOffset.Value, 0); }
-  public static void AddRingRightColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> ringRightColorOffset) { builder.AddOffset(31, ringRightColorOffset.Value, 0); }
-  public static void AddAuxTopColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> auxTopColorOffset) { builder.AddOffset(32, auxTopColorOffset.Value, 0); }
-  public static void AddAuxBotColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> auxBotColorOffset) { builder.AddOffset(33, auxBotColorOffset.Value, 0); }
-  public static void AddBuffs(FlatBufferBuilder builder, VectorOffset buffsOffset) { builder.AddOffset(34, buffsOffset.Value, 0); }
+  public static void AddBirth(FlatBufferBuilder builder, Offset<nullable.nullable_uint> birthOffset) { builder.AddOffset(3, birthOffset.Value, 0); }
+  public static void AddAdmin(FlatBufferBuilder builder, bool admin) { builder.AddBool(4, admin, false); }
+  public static void AddLook(FlatBufferBuilder builder, ushort look) { builder.AddUshort(5, look, 0); }
+  public static void AddColor(FlatBufferBuilder builder, ushort color) { builder.AddUshort(6, color, 0); }
+  public static void AddSex(FlatBufferBuilder builder, ushort sex) { builder.AddUshort(7, sex, 0); }
+  public static void AddNation(FlatBufferBuilder builder, ushort nation) { builder.AddUshort(8, nation, 0); }
+  public static void AddCreature(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> creatureOffset) { builder.AddOffset(9, creatureOffset.Value, 0); }
+  public static void AddMap(FlatBufferBuilder builder, uint map) { builder.AddUint(10, map, 0); }
+  public static void AddPosition(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Position> positionOffset) { builder.AddOffset(11, positionOffset.Value, 0); }
+  public static void AddDirection(FlatBufferBuilder builder, byte direction) { builder.AddByte(12, direction, 0); }
+  public static void AddState(FlatBufferBuilder builder, byte state) { builder.AddByte(13, state, 0); }
+  public static void AddClassType(FlatBufferBuilder builder, byte classType) { builder.AddByte(14, classType, 0); }
+  public static void AddPromotion(FlatBufferBuilder builder, byte promotion) { builder.AddByte(15, promotion, 0); }
+  public static void AddLevel(FlatBufferBuilder builder, byte level) { builder.AddByte(16, level, 0); }
+  public static void AddExp(FlatBufferBuilder builder, uint exp) { builder.AddUint(17, exp, 0); }
+  public static void AddMoney(FlatBufferBuilder builder, uint money) { builder.AddUint(18, money, 0); }
+  public static void AddDepositedMoney(FlatBufferBuilder builder, uint depositedMoney) { builder.AddUint(19, depositedMoney, 0); }
+  public static void AddDisguise(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> disguiseOffset) { builder.AddOffset(20, disguiseOffset.Value, 0); }
+  public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(21, hp, 0); }
+  public static void AddBaseHp(FlatBufferBuilder builder, uint baseHp) { builder.AddUint(22, baseHp, 0); }
+  public static void AddAdditionalHp(FlatBufferBuilder builder, uint additionalHp) { builder.AddUint(23, additionalHp, 0); }
+  public static void AddMp(FlatBufferBuilder builder, uint mp) { builder.AddUint(24, mp, 0); }
+  public static void AddBaseMp(FlatBufferBuilder builder, uint baseMp) { builder.AddUint(25, baseMp, 0); }
+  public static void AddAdditionalMp(FlatBufferBuilder builder, uint additionalMp) { builder.AddUint(26, additionalMp, 0); }
+  public static void AddWeaponColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> weaponColorOffset) { builder.AddOffset(27, weaponColorOffset.Value, 0); }
+  public static void AddHelmetColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> helmetColorOffset) { builder.AddOffset(28, helmetColorOffset.Value, 0); }
+  public static void AddArmorColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> armorColorOffset) { builder.AddOffset(29, armorColorOffset.Value, 0); }
+  public static void AddShieldColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> shieldColorOffset) { builder.AddOffset(30, shieldColorOffset.Value, 0); }
+  public static void AddRingLeftColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> ringLeftColorOffset) { builder.AddOffset(31, ringLeftColorOffset.Value, 0); }
+  public static void AddRingRightColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> ringRightColorOffset) { builder.AddOffset(32, ringRightColorOffset.Value, 0); }
+  public static void AddAuxTopColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> auxTopColorOffset) { builder.AddOffset(33, auxTopColorOffset.Value, 0); }
+  public static void AddAuxBotColor(FlatBufferBuilder builder, Offset<nullable.nullable_ubyte> auxBotColorOffset) { builder.AddOffset(34, auxBotColorOffset.Value, 0); }
+  public static void AddBuffs(FlatBufferBuilder builder, VectorOffset buffsOffset) { builder.AddOffset(35, buffsOffset.Value, 0); }
   public static VectorOffset CreateBuffsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Buff>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
   public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Buff>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Buff>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateBuffsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Buff>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartBuffsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(35, titleOffset.Value, 0); }
-  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(36, updatedDateOffset.Value, 0); }
+  public static void AddTitle(FlatBufferBuilder builder, StringOffset titleOffset) { builder.AddOffset(36, titleOffset.Value, 0); }
+  public static void AddUpdatedDate(FlatBufferBuilder builder, StringOffset updatedDateOffset) { builder.AddOffset(37, updatedDateOffset.Value, 0); }
   public static Offset<fb.protocol._internal.raw.Character> EndCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.raw.Character>(o);
@@ -222,40 +226,41 @@ static public class CharacterVerify
       && verifier.VerifyField(tablePos, 4 /*Id*/, 4 /*uint*/, 4, false)
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyString(tablePos, 8 /*Pw*/, false)
-      && verifier.VerifyField(tablePos, 10 /*Admin*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyField(tablePos, 12 /*Look*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 14 /*Color*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 16 /*Sex*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 18 /*Nation*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyTable(tablePos, 20 /*Creature*/, nullable.nullable_ushortVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 22 /*Map*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTable(tablePos, 24 /*Position*/, fb.protocol._internal.raw.PositionVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 26 /*Direction*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 28 /*State*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 30 /*ClassType*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 32 /*Promotion*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 34 /*Level*/, 1 /*byte*/, 1, false)
-      && verifier.VerifyField(tablePos, 36 /*Exp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 38 /*Money*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 40 /*DepositedMoney*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTable(tablePos, 42 /*Disguise*/, nullable.nullable_ushortVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 44 /*Hp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 46 /*BaseHp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 48 /*AdditionalHp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 50 /*Mp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 52 /*BaseMp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyField(tablePos, 54 /*AdditionalMp*/, 4 /*uint*/, 4, false)
-      && verifier.VerifyTable(tablePos, 56 /*WeaponColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 58 /*HelmetColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 60 /*ArmorColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 62 /*ShieldColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 64 /*RingLeftColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 66 /*RingRightColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 68 /*AuxTopColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyTable(tablePos, 70 /*AuxBotColor*/, nullable.nullable_ubyteVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 72 /*Buffs*/, fb.protocol._internal.raw.BuffVerify.Verify, false)
-      && verifier.VerifyString(tablePos, 74 /*Title*/, false)
-      && verifier.VerifyString(tablePos, 76 /*UpdatedDate*/, false)
+      && verifier.VerifyTable(tablePos, 10 /*Birth*/, nullable.nullable_uintVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 12 /*Admin*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 14 /*Look*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 16 /*Color*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 18 /*Sex*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyField(tablePos, 20 /*Nation*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyTable(tablePos, 22 /*Creature*/, nullable.nullable_ushortVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 24 /*Map*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 26 /*Position*/, fb.protocol._internal.raw.PositionVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 28 /*Direction*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 30 /*State*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 32 /*ClassType*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 34 /*Promotion*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 36 /*Level*/, 1 /*byte*/, 1, false)
+      && verifier.VerifyField(tablePos, 38 /*Exp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 40 /*Money*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 42 /*DepositedMoney*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 44 /*Disguise*/, nullable.nullable_ushortVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 46 /*Hp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 48 /*BaseHp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 50 /*AdditionalHp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 52 /*Mp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 54 /*BaseMp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyField(tablePos, 56 /*AdditionalMp*/, 4 /*uint*/, 4, false)
+      && verifier.VerifyTable(tablePos, 58 /*WeaponColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 60 /*HelmetColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 62 /*ArmorColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 64 /*ShieldColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 66 /*RingLeftColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 68 /*RingRightColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 70 /*AuxTopColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 72 /*AuxBotColor*/, nullable.nullable_ubyteVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 74 /*Buffs*/, fb.protocol._internal.raw.BuffVerify.Verify, false)
+      && verifier.VerifyString(tablePos, 76 /*Title*/, false)
+      && verifier.VerifyString(tablePos, 78 /*UpdatedDate*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

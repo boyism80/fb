@@ -383,6 +383,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.id(response.id);
     ch.name(response.name);
     ch.pw(response.pw);
+    ch.birthday(response.birth);
     ch.updated_date(fb::model::datetime(response.updated_date));
     ch.admin(response.admin);
     ch.cls(static_cast<CLASS>(response.class_type));

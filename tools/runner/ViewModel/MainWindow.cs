@@ -871,7 +871,7 @@ namespace Runner.ViewModel
                 for (int i = 0; i < MySQL.Count; i++)
                 {
                     var db = MySQL[i];
-                    wbConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password= {db.PW} ; Database=fbfb";
+                    wbConf["ConnectionStrings"]["MySql"][(i - 1).ToString()] = $"Server={db.IP};Port={db.Port};User ID={db.ID}; Password= {db.PW} ; Database=fb";
                 }
 
                 wbConf["Redis"] = new JObject();

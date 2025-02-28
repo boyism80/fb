@@ -16,6 +16,7 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 24 &&
 #include "fb.protocol.internal.buff_generated.h"
 #include "fb.protocol.internal.position_generated.h"
 #include "nullable_ubyte_generated.h"
+#include "nullable_uint_generated.h"
 #include "nullable_ushort_generated.h"
 
 namespace fb {
@@ -32,40 +33,41 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ID = 4,
     VT_NAME = 6,
     VT_PW = 8,
-    VT_ADMIN = 10,
-    VT_LOOK = 12,
-    VT_COLOR = 14,
-    VT_SEX = 16,
-    VT_NATION = 18,
-    VT_CREATURE = 20,
-    VT_MAP = 22,
-    VT_POSITION = 24,
-    VT_DIRECTION = 26,
-    VT_STATE = 28,
-    VT_CLASS_TYPE = 30,
-    VT_PROMOTION = 32,
-    VT_LEVEL = 34,
-    VT_EXP = 36,
-    VT_MONEY = 38,
-    VT_DEPOSITED_MONEY = 40,
-    VT_DISGUISE = 42,
-    VT_HP = 44,
-    VT_BASE_HP = 46,
-    VT_ADDITIONAL_HP = 48,
-    VT_MP = 50,
-    VT_BASE_MP = 52,
-    VT_ADDITIONAL_MP = 54,
-    VT_WEAPON_COLOR = 56,
-    VT_HELMET_COLOR = 58,
-    VT_ARMOR_COLOR = 60,
-    VT_SHIELD_COLOR = 62,
-    VT_RING_LEFT_COLOR = 64,
-    VT_RING_RIGHT_COLOR = 66,
-    VT_AUX_TOP_COLOR = 68,
-    VT_AUX_BOT_COLOR = 70,
-    VT_BUFFS = 72,
-    VT_TITLE = 74,
-    VT_UPDATED_DATE = 76
+    VT_BIRTH = 10,
+    VT_ADMIN = 12,
+    VT_LOOK = 14,
+    VT_COLOR = 16,
+    VT_SEX = 18,
+    VT_NATION = 20,
+    VT_CREATURE = 22,
+    VT_MAP = 24,
+    VT_POSITION = 26,
+    VT_DIRECTION = 28,
+    VT_STATE = 30,
+    VT_CLASS_TYPE = 32,
+    VT_PROMOTION = 34,
+    VT_LEVEL = 36,
+    VT_EXP = 38,
+    VT_MONEY = 40,
+    VT_DEPOSITED_MONEY = 42,
+    VT_DISGUISE = 44,
+    VT_HP = 46,
+    VT_BASE_HP = 48,
+    VT_ADDITIONAL_HP = 50,
+    VT_MP = 52,
+    VT_BASE_MP = 54,
+    VT_ADDITIONAL_MP = 56,
+    VT_WEAPON_COLOR = 58,
+    VT_HELMET_COLOR = 60,
+    VT_ARMOR_COLOR = 62,
+    VT_SHIELD_COLOR = 64,
+    VT_RING_LEFT_COLOR = 66,
+    VT_RING_RIGHT_COLOR = 68,
+    VT_AUX_TOP_COLOR = 70,
+    VT_AUX_BOT_COLOR = 72,
+    VT_BUFFS = 74,
+    VT_TITLE = 76,
+    VT_UPDATED_DATE = 78
   };
   uint32_t id() const {
     return GetField<uint32_t>(VT_ID, 0);
@@ -75,6 +77,9 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   }
   const ::flatbuffers::String *pw() const {
     return GetPointer<const ::flatbuffers::String *>(VT_PW);
+  }
+  const nullable::nullable_uint *birth() const {
+    return GetPointer<const nullable::nullable_uint *>(VT_BIRTH);
   }
   bool admin() const {
     return GetField<uint8_t>(VT_ADMIN, 0) != 0;
@@ -185,6 +190,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(name()) &&
            VerifyOffset(verifier, VT_PW) &&
            verifier.VerifyString(pw()) &&
+           VerifyOffset(verifier, VT_BIRTH) &&
+           verifier.VerifyTable(birth()) &&
            VerifyField<uint8_t>(verifier, VT_ADMIN, 1) &&
            VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
@@ -250,6 +257,9 @@ struct CharacterBuilder {
   }
   void add_pw(::flatbuffers::Offset<::flatbuffers::String> pw) {
     fbb_.AddOffset(Character::VT_PW, pw);
+  }
+  void add_birth(::flatbuffers::Offset<nullable::nullable_uint> birth) {
+    fbb_.AddOffset(Character::VT_BIRTH, birth);
   }
   void add_admin(bool admin) {
     fbb_.AddElement<uint8_t>(Character::VT_ADMIN, static_cast<uint8_t>(admin), 0);
@@ -369,6 +379,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     uint32_t id = 0,
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
+    ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
     bool admin = false,
     uint16_t look = 0,
     uint16_t color = 0,
@@ -428,6 +439,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_position(position);
   builder_.add_map(map);
   builder_.add_creature(creature);
+  builder_.add_birth(birth);
   builder_.add_pw(pw);
   builder_.add_name(name);
   builder_.add_id(id);
@@ -449,6 +461,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     uint32_t id = 0,
     const char *name = nullptr,
     const char *pw = nullptr,
+    ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
     bool admin = false,
     uint16_t look = 0,
     uint16_t color = 0,
@@ -493,6 +506,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       id,
       name__,
       pw__,
+      birth,
       admin,
       look,
       color,

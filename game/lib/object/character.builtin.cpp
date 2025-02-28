@@ -65,6 +65,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"script",              character::builtin_script},
 {"ad",                  character::builtin_ad},
 {"web",                 character::builtin_web},
+{"birthday",            character::builtin_birthday},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* lua)
@@ -1807,6 +1808,37 @@ int character::builtin_delay(lua_State* lua)
 
     spell->delay(value);
     return 0;
+}
+
+int character::builtin_birthday(lua_State* lua)
+{
+    auto thread = fb::lua::get(lua);
+    if (thread == nullptr)
+        return 0;
+
+    auto context = thread->env<fb::game::context>("context");
+    auto argc    = thread->argc();
+    auto ch      = thread->touserdata<fb::game::character>(1);
+    if (ch == nullptr)
+        return 0;
+
+    auto n     = (argc == 1 ? 1 : 0);
+    auto value = lua_type(lua, 2) == LUA_TNIL ? std::nullopt : std::optional<std::uint32_t>{thread->tointeger(2)};
+    return context->builtin(*ch, thread, n, [=]() -> async::task<void> {
+        if (argc == 1)
+        {
+            auto& birthday = ch->birthday();
+            if (birthday.has_value())
+                thread->pushinteger(birthday.value());
+            else
+                thread->pushnil();
+        }
+        else
+        {
+            ch->birthday(value);
+        }
+        co_return;
+    });
 }
 
 int character::builtin_send_mail(lua_State* lua)

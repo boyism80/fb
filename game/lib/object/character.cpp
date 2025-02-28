@@ -251,6 +251,16 @@ void character::pw(const std::string& value)
     this->_pw = value;
 }
 
+const std::optional<uint32_t>& fb::game::character::birthday() const
+{
+    return this->_birthday;
+}
+
+void fb::game::character::birthday(const std::optional<uint32_t>& value)
+{
+    this->_birthday = value;
+}
+
 const fb::model::datetime& character::updated_date() const
 {
     this->assert_thread();
@@ -1354,6 +1364,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.id               = this->_id;
     dto.name             = this->_name;
     dto.pw               = this->_pw;
+    dto.birth            = this->_birthday;
     dto.updated_date     = fb::model::datetime().to_string();
     dto.admin            = this->_admin;
     dto.look             = this->_look;

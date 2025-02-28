@@ -68,6 +68,7 @@ private:
     bool                    _admin = false;
     std::string             _name;
     std::string             _pw;
+    std::optional<uint32_t> _birthday;
     fb::model::datetime     _updated_date;
     uint16_t                _look        = 0;
     uint8_t                 _color       = 0;
@@ -296,6 +297,20 @@ public:
      * @param[in]  value  The value
      */
     void pw(const std::string& value);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::optional<uint32_t>& birthday() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void birthday(const std::optional<uint32_t>& value);
 
     /**
      * @brief      { function_description }
@@ -1970,6 +1985,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_delay(lua_State* lua);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_birthday(lua_State* lua);
 #pragma endregion
 };
 

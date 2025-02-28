@@ -360,15 +360,15 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
 
         co_await this->update_thread(socket);
 
-        switch (response2.error_code)
+        switch (static_cast<ERROR_CODE>(response2.error_code))
         {
-        case 1: // id wrong
+        case ERROR_CODE::NOT_FOUND_CHARACTER: // id wrong
             throw id_exception(_TEXT(MESSAGE_ACCOUNT_NOT_FOUND_NAME));
 
-        case 2: // pw wrong
+        case ERROR_CODE::PASSWORD_NOT_MATCHED: // pw wrong
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_PASSWORD));
 
-        case 3: // birthday wrong
+        case ERROR_CODE::BIRTHDAY_NOT_MATCHED: // birthday wrong
             throw pw_exception(_TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY));
         }
 

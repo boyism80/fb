@@ -13,6 +13,7 @@ table Character {
     id: uint;
     name: string;
     pw: string;
+    birth: uint?;
     admin: bool;
     look: ushort;
     color: ushort;

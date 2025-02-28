@@ -14,7 +14,7 @@ namespace Http.Model
     {
         public string Name { get; set; }
         public string Pw { get; set; }
-        public ushort? Birth { get; set; }
+        public uint? Birth { get; set; }
         public bool Admin { get; set; }
         public ushort Look { get; set; }
         public byte Color { get; set; }

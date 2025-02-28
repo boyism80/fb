@@ -24,6 +24,13 @@ namespace fb.protocol._internal
             return builder.CreateString(value);
         }
 
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
         public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
         {
             if (value.HasValue)
@@ -35,13 +42,6 @@ namespace fb.protocol._internal
         {
             if (value.HasValue)
                 return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
-            else
-                return default;
-        }
-        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
-        {
-            if (value.HasValue)
-                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
             else
                 return default;
         }
@@ -63,6 +63,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
+                builder.Build(value.Birth),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -960,6 +961,13 @@ namespace fb.protocol._internal.request
             return builder.CreateString(value);
         }
 
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
         public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
         {
             if (value.HasValue)
@@ -971,13 +979,6 @@ namespace fb.protocol._internal.request
         {
             if (value.HasValue)
                 return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
-            else
-                return default;
-        }
-        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
-        {
-            if (value.HasValue)
-                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
             else
                 return default;
         }
@@ -999,6 +1000,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
+                builder.Build(value.Birth),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -1911,6 +1913,13 @@ namespace fb.protocol._internal.response
             return builder.CreateString(value);
         }
 
+        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
+        {
+            if (value.HasValue)
+                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
+            else
+                return default;
+        }
         public static Offset<nullable_ushort> Build(this FlatBufferBuilder builder, ushort? value)
         {
             if (value.HasValue)
@@ -1922,13 +1931,6 @@ namespace fb.protocol._internal.response
         {
             if (value.HasValue)
                 return nullable.nullable_ubyte.Createnullable_ubyte(builder, value.Value);
-            else
-                return default;
-        }
-        public static Offset<nullable_uint> Build(this FlatBufferBuilder builder, uint? value)
-        {
-            if (value.HasValue)
-                return nullable.nullable_uint.Createnullable_uint(builder, value.Value);
             else
                 return default;
         }
@@ -1950,6 +1952,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Id),
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
+                builder.Build(value.Birth),
                 builder.Build(value.Admin),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
@@ -2909,6 +2912,7 @@ namespace fb.protocol._internal
         public uint Id { get; set; } = 0;
         public string Name { get; set; } = string.Empty;
         public string Pw { get; set; } = string.Empty;
+        public uint? Birth { get; set; } = null;
         public bool Admin { get; set; } = false;
         public ushort Look { get; set; } = 0;
         public ushort Color { get; set; } = 0;
@@ -2952,6 +2956,7 @@ namespace fb.protocol._internal
             Id = raw.Id;
             Name = raw.Name;
             Pw = raw.Pw;
+            Birth = raw.Birth != null ? (uint?)raw.Birth.Value.Value : null;
             Admin = raw.Admin;
             Look = raw.Look;
             Color = raw.Color;

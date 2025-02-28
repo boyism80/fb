@@ -179,7 +179,7 @@ namespace Internal.Controllers
             try
             {
                 var ch = await _dbContext.Character.Get(request.Uid) ??
-                    throw new Exception($"user {request.Uid} not found");
+                    throw new LogicException(ErrorCode.NotFoundCharacter);
 
                 if (ch.Pw != SHA256Hash(request.Before))
                     throw new LogicException(ErrorCode.PasswordNotMatched);

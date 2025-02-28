@@ -309,3 +309,65 @@ function on_chat(me, message)
     table.remove(args, 1)
     return command_funcs[cmd](me, args)
 end
+
+function on_login(me)
+    if me:birthday() ~= nil then
+        return
+    end
+
+    local npc = name2npc('낙랑')
+    local button = nil
+::BIRTHDAY_DIALOG_1::
+    button = npc:dialog(me, '대단히 중요하니 끝까지 읽어 주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
+    if button == DIALOG_RESULT_QUIT then
+        return
+    end
+
+::BIRTHDAY_DIALOG_2::
+    button = npc:dialog(me, '대충 2차 비밀번호 설정하라고 강경하게 말하는 내용', true, true)
+    if button == DIALOG_RESULT_QUIT then
+        return
+    end
+
+    if button == DIALOG_RESULT_PREV then
+        goto BIRTHDAY_DIALOG_1
+    end
+
+::BIRTHDAY_DIALOG_3::
+    local birthday = npc:input(me, '2차 비밀번호 설정 뭘로 할래요?', '내 생년월일은,', '입니다.', 6, true)
+    if birthday == DIALOG_RESULT_QUIT then
+        return
+    end
+
+    if birthday == DIALOG_RESULT_PREV then
+        goto BIRTHDAY_DIALOG_2
+    end
+
+    if birthday == '' then
+        button = npc:dialog(me, '제대로 입력하세요.', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+        goto BIRTHDAY_DIALOG_3
+    end
+
+    if #birthday ~= 6 then
+        button = npc:dialog(me, '생년월일이 너무 짧습니다.', false, true)
+        if button == DIALOG_RESULT_QUIT then
+            return
+        end
+
+        goto BIRTHDAY_DIALOG_3
+    end
+
+    local answer = npc:list(me, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'})
+    if answer == nil then
+        return
+    end
+
+    if answer == 1 then
+        goto BIRTHDAY_DIALOG_3
+    end
+
+    me:birthday(birthday)
+end
