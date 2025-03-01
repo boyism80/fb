@@ -3,13 +3,13 @@ name: build fb - Linux
 on:
   push:
     branches:
-      - releases/linux
+      - release/**
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
-  base:
+  build-linux:
     runs-on: [self-hosted, linux, build, epyc]
     permissions:
       contents: read
@@ -54,7 +54,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: base
+    needs: build-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -97,7 +97,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: base
+    needs: build-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -140,7 +140,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: base
+    needs: build-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -181,7 +181,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: base
+    needs: build-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -222,7 +222,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: base
+    needs: build-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -263,7 +263,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    needs: base
+    needs: build-linux
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -341,3 +341,52 @@ jobs:
           stack-name: dev
           refresh: true
           config-map: "{host: {value: '${{ secrets.REMOTE_IP }}', secret: true}}"
+
+  build-windows:
+    runs-on: [self-hosted, windows, build]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          clean: false
+
+      - name: Update modules
+        run: .\update-modules.bat
+        working-directory: tools
+
+      - name: Create build directory
+        run: if (-Not (Test-Path build)) { mkdir build }
+
+      - name: Configure CMake
+        run: cmake ..
+        working-directory: build
+
+      - name: Build c++
+        run: |
+          cmake --build . --config Debug
+          mv -Force gateway\Debug\gateway.exe gateway.exe
+          mv -Force login\Debug\login.exe login.exe
+          mv -Force game\Debug\game.exe game.exe
+        working-directory: build
+
+      - name: Build internal
+        run: dotnet publish internal/internal.csproj -c Release -o build/internal
+
+      - name: Build write-back
+        run: dotnet publish write-back/write-back.csproj -c Release -o build/write-back
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            build/gateway.exe
+            build/login.exe
+            build/game.exe
+            build/internal
+            build/write-back
+          retention-days: 7
