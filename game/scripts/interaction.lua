@@ -125,10 +125,10 @@ function on_attack(me, additional_attack)
     end
 
     local count = 0
+    local x, y = me:position()
+    local direction = me:direction()
     if is_bow then
         local range = 14
-        local direction = me:direction()
-        local x, y = me:position()
         local target = nil
         local width = map:width()
         local height = map:height()
@@ -160,7 +160,22 @@ function on_attack(me, additional_attack)
             count = count + 1
         end
     else
-        local front = me:front(enemy_type)
+        local front = nil
+        if me:is(OBJECT_TYPE_MOB) then
+            front = me:target()
+            if front ~= nil then
+                local x_front, y_front = front:position()
+                local x_diff = math.abs(x_front - x)
+                local y_diff = math.abs(y_front - y)
+                local is_near = (x_diff == 1 and y_diff == 0) or (y_diff == 1 and x_diff == 0)
+                if not is_near then
+                    front = nil
+                end
+            end
+        end
+        if front == nil then
+            front = me:front(enemy_type)
+        end
         local damaged_sound = nil
         if weapon ~= nil then
             damaged_sound = SOUND_DAMAGE
@@ -170,9 +185,6 @@ function on_attack(me, additional_attack)
             count = count + 1
         end
 
-        local nears = me:nears(enemy_type, 1, 1)
-        local x, y = me:position()
-        local direction = me:direction()
         if me:isbuff('측면공격') then
             local points = {}
             if direction == DIRECTION_LEFT or direction == DIRECTION_RIGHT then
@@ -180,42 +192,32 @@ function on_attack(me, additional_attack)
                 table.insert(points, {x, y+1})
             else
                 table.insert(points, {x-1, y})
-                table.insert(points, {x+1, y+1})
+                table.insert(points, {x+1, y})
             end
 
+            local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                local obj_x, obj_y = obj:position()
-                for _, point in pairs(points) do
-                    local point_x, point_y = table.unpack(point)
-                    if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
-                        damage(me, obj, 0.4, damaged_sound)
-                        count = count + 1
-                        break
-                    end
-                end
+                damage(me, obj, 0.4, damaged_sound)
+                count = count + 1
             end
         end
 
         if me:isbuff('후면공격') then
-            local point = nil
+            local points = {}
             if direction == DIRECTION_LEFT then
-                point = {x+1, y}
+                table.insert(points, {x+1, y})
             elseif direction == DIRECTION_TOP then
-                point = {x, y+1}
+                table.insert(points, {x, y+1})
             elseif direction == DIRECTION_RIGHT then
-                point = {x-1, y}
+                table.insert(points, {x-1, y})
             else
-                point = {x, y-1}
+                table.insert(points, {x, y-1})
             end
 
+            local nears = me:nears(enemy_type, points, false)
             for _, obj in pairs(nears) do
-                local obj_x, obj_y = obj:position()
-                local point_x, point_y = table.unpack(point)
-                if obj_x == point_x and obj_y == point_y and not is_miss(me, obj) then
-                    damage(me, obj, 0.5, damaged_sound)
-                    count = count + 1
-                    break
-                end
+                damage(me, obj, 0.5, damaged_sound)
+                count = count + 1
             end
         end
     end

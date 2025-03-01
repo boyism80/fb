@@ -583,28 +583,96 @@ int object::builtin_nears(lua_State* lua)
         return 0;
 
     obj->assert_thread();
+    auto map = obj->map();
+    if (map == nullptr)
+        return 0;
 
+    auto visit  = std::set<uint32_t>();
     auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(thread->tointeger(2));
-    auto width  = argc < 3 ? -1 : thread->tointeger(3);
-    auto height = argc < 4 ? -1 : thread->tointeger(4);
-
-    thread->new_table();
-    const auto& objects = obj->nears(filter);
-    for (int i = 0; i < objects.size(); i++)
+    if (argc >= 3 && lua_type(lua, 3) == LUA_TTABLE)
     {
-        if (width != -1 && height != -1)
+        auto size   = thread->rawlen(3);
+        auto points = std::vector<fb::model::point16_t>{};
+        for (int i = 0; i < size; i++)
         {
-            if (objects[i]->_position.x < obj->_position.x - width ||
-                objects[i]->_position.x > obj->_position.x + width)
-                continue;
+            thread->rawgeti(3, i + 1);
 
-            if (objects[i]->_position.y < obj->_position.y - height ||
-                objects[i]->_position.y > obj->_position.y + height)
-                continue;
+            thread->rawgeti(-1, 1);
+            auto x = thread->tointeger(-1);
+            thread->remove(-1);
+
+            thread->rawgeti(-1, 2);
+            auto y = thread->tointeger(-1);
+            thread->remove(-1);
+            points.push_back(fb::model::point16_t(x, y));
+
+            thread->remove(-1);
         }
 
-        thread->pushobject(objects[i]);
-        thread->rawseti(-2, uint64_t(i + 1));
+        auto all = argc < 4 ? true : thread->toboolean(4);
+        thread->new_table();
+        const auto& objects = obj->nears(filter);
+        for (int i = 0; i < objects.size(); i++)
+        {
+            auto matched = false;
+            for (auto& point : points)
+            {
+                if (objects[i]->_position == point)
+                {
+                    matched = true;
+                    break;
+                }
+            }
+
+            if (!matched)
+                continue;
+
+            if (all)
+            {
+                auto index = map->index(objects[i]->position());
+                if (visit.contains(index))
+                    continue;
+
+                visit.insert(index);
+            }
+
+            thread->pushobject(objects[i]);
+            thread->rawseti(-2, uint64_t(i + 1));
+        }
+    }
+    else
+    {
+        auto width  = argc < 3 ? -1 : thread->tointeger(3);
+        auto height = argc < 4 ? -1 : thread->tointeger(4);
+        auto all    = argc < 5 ? true : thread->toboolean(5);
+
+        thread->new_table();
+        const auto& objects = obj->nears(filter);
+        for (int i = 0; i < objects.size(); i++)
+        {
+            if (width != -1 && height != -1)
+            {
+                if (objects[i]->_position.x < obj->_position.x - width ||
+                    objects[i]->_position.x > obj->_position.x + width)
+                    continue;
+
+                if (objects[i]->_position.y < obj->_position.y - height ||
+                    objects[i]->_position.y > obj->_position.y + height)
+                    continue;
+            }
+
+            if (all)
+            {
+                auto index = map->index(objects[i]->position());
+                if (visit.contains(index))
+                    continue;
+
+                visit.insert(index);
+            }
+
+            thread->pushobject(objects[i]);
+            thread->rawseti(-2, uint64_t(i + 1));
+        }
     }
 
     return 1;

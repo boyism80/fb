@@ -40,13 +40,11 @@ void luable::to_lua(lua_State* ctx) const
     const auto allocated = static_cast<void**>(lua_newuserdata(ctx, sizeof(void**))); // [val]
     *allocated           = (void*)this;
 
-    {
-        auto& metaname = this->metaname();
-        luaL_getmetatable(ctx, metaname.c_str());   // [val, mt]
-        lua_pushcfunction(ctx, luable::builtin_gc); // [val, mt, gc]
-        lua_setfield(ctx, -2, "__gc");              // [val, mt]
-        lua_setmetatable(ctx, -2);                  // [val]
-    }
+    auto& metaname = this->metaname();
+    luaL_getmetatable(ctx, metaname.c_str());   // [val, mt]
+    lua_pushcfunction(ctx, luable::builtin_gc); // [val, mt, gc]
+    lua_setfield(ctx, -2, "__gc");              // [val, mt]
+    lua_setmetatable(ctx, -2);                  // [val]
 }
 
 luable::luable()
