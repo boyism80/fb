@@ -55,17 +55,17 @@ void context::on_dead(life& me, object* you)
         mob.drop_items();
 
         if (mob.owner != nullptr)
+        {
+            if (this->alive(*mob.owner))
+                mob.owner->detach_spawned_mob(mob);
             return;
+        }
+
+        if (you != nullptr && you->is(OBJECT_TYPE::MOB))
+            you = static_cast<fb::game::mob*>(you)->owner;
 
         if (you == nullptr)
             return;
-
-        if (you->is(OBJECT_TYPE::MOB))
-        {
-            you = static_cast<fb::game::mob*>(you)->owner;
-            if (you == nullptr)
-                return;
-        }
 
         if (mob.owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
         {

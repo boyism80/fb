@@ -106,9 +106,6 @@ mob::~mob()
 {
     if (this->_rezen != nullptr)
         this->_rezen->decrease();
-
-    if (this->owner != nullptr && this->context.alive(*this->owner))
-        this->owner->detach_spawned_mob(*this);
 }
 
 bool mob::action()
