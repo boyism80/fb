@@ -334,7 +334,7 @@ void mob::AI(const fb::model::datetime& now)
         for (int i = 0; i < 4; i++)
         {
             if (this->move(DIRECTION((random_direction + i) % 4)))
-                throw nullptr;
+                break;
         }
     }
 
