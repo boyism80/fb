@@ -537,10 +537,11 @@ int fb::game::context::builtin_maps(lua_State* lua)
 
     auto context = thread->env<fb::game::context>("context");
     thread->new_table();
+    auto i = 1;
     for (auto& [id, map] : context->maps)
     {
         thread->pushobject(map);
-        lua_rawseti(lua, -2, id);
+        lua_rawseti(lua, -2, i++);
     }
     return 1;
 }
