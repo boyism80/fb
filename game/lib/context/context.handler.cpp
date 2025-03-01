@@ -57,18 +57,18 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         auto msg = this->elapsed_message(response.character.updated_date);
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
+
+        // TODO: from 굳이 호출하지 않아도 동작하도록 변경
+        // dialog.func에서 새로운 컨텍스트 추가
+        ch->dialog.from("scripts/interaction.lua");
+        ch->dialog.func("on_login");
+        ch->dialog.pushobject(ch);
+        ch->dialog.resume(1);
     }
 
     ch->update(STATE_LEVEL::LEVEL_MAX);
     ch->update_option();
     ch->init(true);
-
-    // TODO: from 굳이 호출하지 않아도 동작하도록 변경
-    // dialog.func에서 새로운 컨텍스트 추가
-    ch->dialog.from("interaction.lua");
-    ch->dialog.func("on_login");
-    ch->dialog.pushobject(ch);
-    ch->dialog.resume(1);
     co_return true;
 }
 
