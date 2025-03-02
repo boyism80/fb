@@ -1713,8 +1713,12 @@ int character::builtin_script(lua_State* L)
     if (ch == nullptr)
         return 0;
 
+    auto name = std::string{"func"};
+    if (argc >= 2 && lua_type(L, 2) == LUA_TSTRING)
+        name = lua->tostring(2);
+
     ch->dialog.load("scripts/script.lua");
-    ch->dialog.func("func");
+    ch->dialog.func(name);
     ch->dialog.pushobject(ch);
     ch->dialog.resume(1);
     return 0;
