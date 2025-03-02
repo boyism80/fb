@@ -86,7 +86,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_model(lua_State* lua);
+    static int builtin_model(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -95,9 +95,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_delay(lua_State* lua);
+    static int builtin_delay(lua_State* L);
 
-    static int builtin_delay2(lua_State* lua);
+    static int builtin_delay2(lua_State* L);
 };
 
 /**
@@ -294,7 +294,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_model(lua_State* lua);
+    static int builtin_model(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -303,7 +303,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_time(lua_State* lua);
+    static int builtin_time(lua_State* L);
 };
 
 /**

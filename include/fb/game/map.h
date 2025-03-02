@@ -250,7 +250,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_model(lua_State* lua);
+    static int builtin_model(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -259,7 +259,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_width(lua_State* lua);
+    static int builtin_width(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -268,7 +268,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_height(lua_State* lua);
+    static int builtin_height(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -277,7 +277,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_area(lua_State* lua);
+    static int builtin_area(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -286,7 +286,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_objects(lua_State* lua);
+    static int builtin_objects(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -295,7 +295,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_nears(lua_State* lua);
+    static int builtin_nears(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -304,7 +304,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_movable(lua_State* lua);
+    static int builtin_movable(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -313,7 +313,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_door(lua_State* lua);
+    static int builtin_door(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -322,7 +322,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_doors(lua_State* lua);
+    static int builtin_doors(lua_State* L);
 
     /**
      * @brief      Determines if builtin contains.
@@ -331,7 +331,7 @@ public:
      *
      * @return     True if builtin contains, False otherwise.
      */
-    static int builtin_contains(lua_State* lua);
+    static int builtin_contains(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -340,7 +340,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_belows(lua_State* lua);
+    static int builtin_belows(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -349,7 +349,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_tile(lua_State* lua);
+    static int builtin_tile(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -358,7 +358,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_at(lua_State* lua);
+    static int builtin_at(lua_State* L);
 };
 
 /**

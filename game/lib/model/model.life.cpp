@@ -1,29 +1,29 @@
 #include <fb/model/model.h>
 
-int fb::model::life::builtin_hp(lua_State* lua)
+int fb::model::life::builtin_hp(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto object = thread->touserdata<fb::model::life>(1);
+    auto object = lua->touserdata<fb::model::life>(1);
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->hp);
+    lua->pushinteger(object->hp);
     return 1;
 }
 
-int fb::model::life::builtin_mp(lua_State* lua)
+int fb::model::life::builtin_mp(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto object = thread->touserdata<fb::model::life>(1);
+    auto object = lua->touserdata<fb::model::life>(1);
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->mp);
+    lua->pushinteger(object->mp);
     return 1;
 }

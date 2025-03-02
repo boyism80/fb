@@ -485,7 +485,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_target(lua_State* lua);
+    static int builtin_target(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -494,7 +494,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_oblivion(lua_State* lua);
+    static int builtin_oblivion(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -503,7 +503,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_owner(lua_State* lua);
+    static int builtin_owner(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -512,7 +512,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_items(lua_State* lua);
+    static int builtin_items(lua_State* L);
 #pragma endregion
 };
 

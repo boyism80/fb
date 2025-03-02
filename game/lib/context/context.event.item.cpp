@@ -19,11 +19,11 @@ void context::on_item_swap(character& me, uint8_t src, uint8_t dst)
 
 void context::on_item_active(character& me, item& item)
 {
-    auto thread = lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return;
 
-    thread->from(item.based<fb::model::item>().script_active.c_str())
+    lua->from(item.based<fb::model::item>().script_active.c_str())
         .func("on_active")
         .pushobject(me)
         .pushobject(item)

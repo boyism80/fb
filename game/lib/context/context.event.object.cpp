@@ -33,13 +33,13 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
 
 void context::on_direction(object& me)
 {
-    auto thread = lua::new_context();
+    auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->from("scripts/interaction.lua");
 #endif
-    thread->func("on_direction");
-    thread->pushobject(me);
-    thread->resume(1);
+    lua->func("on_direction");
+    lua->pushobject(me);
+    lua->resume(1);
 
     this->send(me, fb_resp::direction(me), scope::PIVOT);
 }
@@ -108,13 +108,13 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 
 void context::on_move(object& me, const fb::model::point16_t& before)
 {
-    auto thread = lua::new_context();
+    auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->from("scripts/interaction.lua");
 #endif
-    thread->func("on_move");
-    thread->pushobject(me);
-    thread->resume(1);
+    lua->func("on_move");
+    lua->pushobject(me);
+    lua->resume(1);
 
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
@@ -124,14 +124,14 @@ void context::on_buff(object& me, buff& buff)
     if (buff.model.buff == "")
         return;
 
-    auto thread = lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return;
-    thread->from(buff.model.buff.c_str());
-    thread->func("on_buff");
-    thread->pushobject(me);
-    thread->pushobject(buff.model);
-    thread->resume(2);
+    lua->from(buff.model.buff.c_str());
+    lua->func("on_buff");
+    lua->pushobject(me);
+    lua->pushobject(buff.model);
+    lua->resume(2);
 
     me.send(fb::protocol::game::response::spell_buff(buff));
 }
@@ -141,14 +141,14 @@ void context::on_unbuff(object& me, buff& buff)
     if (buff.model.unbuff == "")
         return;
 
-    auto thread = lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return;
-    thread->from(buff.model.unbuff.c_str());
-    thread->func("on_unbuff");
-    thread->pushobject(me);
-    thread->pushobject(buff.model);
-    thread->resume(2);
+    lua->from(buff.model.unbuff.c_str());
+    lua->func("on_unbuff");
+    lua->pushobject(me);
+    lua->pushobject(buff.model);
+    lua->resume(2);
     me.send(fb_resp::spell_unbuff(buff));
 
     if (me.is(OBJECT_TYPE::CHARACTER))

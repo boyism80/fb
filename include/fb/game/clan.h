@@ -145,7 +145,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name(lua_State* lua);
+    static int builtin_name(lua_State* L);
     /**
      * @brief      { function_description }
      *
@@ -153,7 +153,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_members(lua_State* lua);
+    static int builtin_members(lua_State* L);
     /**
      * @brief      { function_description }
      *
@@ -161,7 +161,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_nears(lua_State* lua);
+    static int builtin_nears(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -170,7 +170,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_title(lua_State* lua);
+    static int builtin_title(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -179,7 +179,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_join(lua_State* lua);
+    static int builtin_join(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -188,7 +188,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_leave(lua_State* lua);
+    static int builtin_leave(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -197,7 +197,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_message(lua_State* lua);
+    static int builtin_message(lua_State* L);
 };
 
 } // namespace fb::game

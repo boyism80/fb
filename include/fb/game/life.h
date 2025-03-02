@@ -642,7 +642,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_message(lua_State* lua);
+    static int builtin_message(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -651,7 +651,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hp(lua_State* lua);
+    static int builtin_hp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -660,7 +660,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp(lua_State* lua);
+    static int builtin_mp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -669,7 +669,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_heal(lua_State* lua);
+    static int builtin_heal(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -678,7 +678,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_damage(lua_State* lua);
+    static int builtin_damage(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -687,7 +687,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp_up(lua_State* lua);
+    static int builtin_mp_up(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -696,7 +696,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mp_down(lua_State* lua);
+    static int builtin_mp_down(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -705,7 +705,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_action(lua_State* lua);
+    static int builtin_action(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -714,7 +714,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_spell(lua_State* lua);
+    static int builtin_spell(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -723,7 +723,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_spells(lua_State* lua);
+    static int builtin_spells(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -732,7 +732,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cast(lua_State* lua);
+    static int builtin_cast(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -741,7 +741,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cc(lua_State* lua);
+    static int builtin_cc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -750,7 +750,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_add_cc(lua_State* lua);
+    static int builtin_add_cc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -759,7 +759,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_remove_cc(lua_State* lua);
+    static int builtin_remove_cc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -768,7 +768,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_attack(lua_State* lua);
+    static int builtin_attack(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -777,7 +777,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_damage_rate(lua_State* lua);
+    static int builtin_damage_rate(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -786,7 +786,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_skill_damage_rate(lua_State* lua);
+    static int builtin_skill_damage_rate(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -795,7 +795,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_damage_derate(lua_State* lua);
+    static int builtin_damage_derate(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -804,7 +804,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_paralysis(lua_State* lua);
+    static int builtin_paralysis(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -813,7 +813,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_invincible(lua_State* lua);
+    static int builtin_invincible(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -822,7 +822,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cover(lua_State* lua);
+    static int builtin_cover(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -831,7 +831,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_hp(lua_State* lua);
+    static int builtin_base_hp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -840,7 +840,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_hp(lua_State* lua);
+    static int builtin_buff_hp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -849,7 +849,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_maxhp(lua_State* lua);
+    static int builtin_maxhp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -858,7 +858,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_mp(lua_State* lua);
+    static int builtin_base_mp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -867,7 +867,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_mp(lua_State* lua);
+    static int builtin_buff_mp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -876,7 +876,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_maxmp(lua_State* lua);
+    static int builtin_maxmp(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -885,7 +885,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_str(lua_State* lua);
+    static int builtin_base_str(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -894,7 +894,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_str(lua_State* lua);
+    static int builtin_buff_str(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -903,7 +903,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_str(lua_State* lua);
+    static int builtin_str(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -912,7 +912,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_dex(lua_State* lua);
+    static int builtin_base_dex(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -921,7 +921,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_dex(lua_State* lua);
+    static int builtin_buff_dex(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -930,7 +930,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_dex(lua_State* lua);
+    static int builtin_dex(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -939,7 +939,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_int(lua_State* lua);
+    static int builtin_base_int(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -948,7 +948,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_int(lua_State* lua);
+    static int builtin_buff_int(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -957,7 +957,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_intelligence(lua_State* lua);
+    static int builtin_intelligence(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -966,7 +966,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_phydef(lua_State* lua);
+    static int builtin_base_phydef(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -975,7 +975,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_phydef(lua_State* lua);
+    static int builtin_buff_phydef(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -984,7 +984,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_phydef(lua_State* lua);
+    static int builtin_phydef(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -993,7 +993,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_magdef(lua_State* lua);
+    static int builtin_base_magdef(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1002,7 +1002,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_magdef(lua_State* lua);
+    static int builtin_buff_magdef(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1011,7 +1011,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_magdef(lua_State* lua);
+    static int builtin_magdef(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1020,7 +1020,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_dam(lua_State* lua);
+    static int builtin_base_dam(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1029,7 +1029,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_dam(lua_State* lua);
+    static int builtin_buff_dam(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1038,7 +1038,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_dam(lua_State* lua);
+    static int builtin_dam(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1047,7 +1047,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_base_hit(lua_State* lua);
+    static int builtin_base_hit(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1056,7 +1056,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_buff_hit(lua_State* lua);
+    static int builtin_buff_hit(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1065,7 +1065,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_hit(lua_State* lua);
+    static int builtin_hit(lua_State* L);
 #pragma endregion
 };
 

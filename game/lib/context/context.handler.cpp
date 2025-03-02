@@ -1129,17 +1129,17 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    auto thread = lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         co_return true;
 
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->from("scripts/interaction.lua");
 #endif
 
-    thread->func("on_door");
-    thread->pushobject(ch);
-    thread->resume(1);
+    lua->func("on_door");
+    lua->pushobject(ch);
+    lua->resume(1);
     co_return true;
 }
 

@@ -2170,7 +2170,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_seed(lua_State* lua);
+    static int builtin_seed(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2179,7 +2179,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_sleep(lua_State* lua);
+    static int builtin_sleep(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2188,7 +2188,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2mob(lua_State* lua);
+    static int builtin_name2mob(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2197,7 +2197,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2spell(lua_State* lua);
+    static int builtin_name2spell(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2206,7 +2206,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2npc(lua_State* lua);
+    static int builtin_name2npc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2215,7 +2215,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2map(lua_State* lua);
+    static int builtin_name2map(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2224,7 +2224,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2ch(lua_State* lua);
+    static int builtin_name2ch(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2233,7 +2233,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2item(lua_State* lua);
+    static int builtin_name2item(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2242,7 +2242,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_sell(lua_State* lua);
+    static int builtin_pursuit_sell(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2251,7 +2251,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_sell_price(lua_State* lua);
+    static int builtin_pursuit_sell_price(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2260,7 +2260,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_sell_name(lua_State* lua);
+    static int builtin_pursuit_sell_name(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2269,7 +2269,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_buy(lua_State* lua);
+    static int builtin_pursuit_buy(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2278,7 +2278,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_timer(lua_State* lua);
+    static int builtin_timer(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2287,7 +2287,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_weather(lua_State* lua);
+    static int builtin_weather(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2296,7 +2296,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_bright(lua_State* lua);
+    static int builtin_bright(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2305,7 +2305,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name_with(lua_State* lua);
+    static int builtin_name_with(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2314,7 +2314,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_assert_korean(lua_State* lua);
+    static int builtin_assert_korean(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2323,7 +2323,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cp949(lua_State* lua);
+    static int builtin_cp949(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2332,7 +2332,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_broadcast(lua_State* lua);
+    static int builtin_broadcast(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2341,7 +2341,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_assert_alive(lua_State* lua);
+    static int builtin_assert_alive(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2350,7 +2350,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_debug(lua_State* lua);
+    static int builtin_debug(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2359,7 +2359,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2class(lua_State* lua);
+    static int builtin_name2class(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2368,7 +2368,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_class2name(lua_State* lua);
+    static int builtin_class2name(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2377,7 +2377,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_save(lua_State* lua);
+    static int builtin_save(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2386,7 +2386,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mknpc(lua_State* lua);
+    static int builtin_mknpc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2395,7 +2395,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_maps(lua_State* lua);
+    static int builtin_maps(lua_State* L);
 };
 
 } // namespace fb::game

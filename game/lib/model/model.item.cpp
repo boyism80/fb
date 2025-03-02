@@ -26,80 +26,80 @@ fb::model::item* fb::model::__item::name2item(const std::string& name) const
     return nullptr;
 }
 
-int fb::model::item::builtin_make(lua_State* lua)
+int fb::model::item::builtin_make(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto model   = thread->touserdata<fb::model::item>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto model   = lua->touserdata<fb::model::item>(1);
     auto object  = model->make(*context);
 
-    auto map = thread->touserdata<fb::game::map>(2);
+    auto map = lua->touserdata<fb::game::map>(2);
     async::awaitable_get(object->map(map));
 
-    if (lua_istable(lua, 3))
+    if (lua->is_table(3))
     {
-        lua_rawgeti(lua, 3, 1);
-        object->x((uint16_t)thread->tointeger(-1));
-        lua_remove(lua, -1);
+        lua->rawgeti(3, 1);
+        object->x((uint16_t)lua->tointeger(-1));
+        lua->remove(-1);
 
-        lua_rawgeti(lua, 3, 2);
-        object->y((uint16_t)thread->tointeger(-1));
-        lua_remove(lua, -1);
+        lua->rawgeti(3, 2);
+        object->y((uint16_t)lua->tointeger(-1));
+        lua->remove(-1);
     }
     else
     {
-        object->position((uint16_t)thread->tointeger(3), (uint16_t)thread->tointeger(4));
+        object->position((uint16_t)lua->tointeger(3), (uint16_t)lua->tointeger(4));
     }
 
-    thread->pushobject(object);
+    lua->pushobject(object);
     return 1;
 }
 
-int fb::model::item::builtin_attr(lua_State* lua)
+int fb::model::item::builtin_attr(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model = thread->touserdata<fb::model::item>(1);
-    auto flag  = (ITEM_ATTRIBUTE)thread->tointeger(2);
+    auto model = lua->touserdata<fb::model::item>(1);
+    auto flag  = (ITEM_ATTRIBUTE)lua->tointeger(2);
 
-    thread->pushboolean(model->attr(flag));
+    lua->pushboolean(model->attr(flag));
     return 1;
 }
 
-int fb::model::item::builtin_capacity(lua_State* lua)
+int fb::model::item::builtin_capacity(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model = thread->touserdata<fb::model::item>(1);
-    thread->pushinteger(model->capacity);
+    auto model = lua->touserdata<fb::model::item>(1);
+    lua->pushinteger(model->capacity);
     return 1;
 }
 
-int fb::model::item::builtin_price(lua_State* lua)
+int fb::model::item::builtin_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model = thread->touserdata<fb::model::item>(1);
-    thread->pushinteger(model->price);
+    auto model = lua->touserdata<fb::model::item>(1);
+    lua->pushinteger(model->price);
     return 1;
 }
 
-int fb::model::item::builtin_durability(lua_State* lua)
+int fb::model::item::builtin_durability(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model      = thread->touserdata<fb::model::item>(1);
+    auto model      = lua->touserdata<fb::model::item>(1);
     auto durability = uint32_t(0);
     if (model->attr(ITEM_ATTRIBUTE::PACK))
     {
@@ -114,70 +114,70 @@ int fb::model::item::builtin_durability(lua_State* lua)
         durability = 0;
     }
 
-    thread->pushinteger(durability);
+    lua->pushinteger(durability);
     return 1;
 }
 
-int fb::model::item::builtin_repair_price(lua_State* lua)
+int fb::model::item::builtin_repair_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model = thread->touserdata<fb::model::item>(1);
+    auto model = lua->touserdata<fb::model::item>(1);
     if (model->attr(ITEM_ATTRIBUTE::EQUIPMENT))
     {
         auto repair_price = static_cast<fb::model::equipment*>(model)->repair;
         if (repair_price.has_value())
-            thread->pushnumber(repair_price.value());
+            lua->pushnumber(repair_price.value());
         else
-            thread->pushnil();
+            lua->pushnil();
     }
     else
     {
-        thread->pushnil();
+        lua->pushnil();
     }
 
     return 1;
 }
 
-int fb::model::item::builtin_rename_price(lua_State* lua)
+int fb::model::item::builtin_rename_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model = thread->touserdata<fb::model::item>(1);
+    auto model = lua->touserdata<fb::model::item>(1);
     if (model->attr(ITEM_ATTRIBUTE::WEAPON))
     {
         auto rename_price = static_cast<fb::model::weapon*>(model)->rename;
         if (rename_price.has_value())
-            thread->pushinteger(rename_price.value());
+            lua->pushinteger(rename_price.value());
         else
-            thread->pushnil();
+            lua->pushnil();
     }
     else
     {
-        thread->pushnil();
+        lua->pushnil();
     }
 
     return 1;
 }
 
-int fb::model::item::builtin_deposit_price(lua_State* lua)
+int fb::model::item::builtin_deposit_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto model = thread->touserdata<fb::model::item>(1);
+    auto model = lua->touserdata<fb::model::item>(1);
     if (model->deposit_price.has_value())
     {
-        thread->pushinteger(model->deposit_price.value());
+        lua->pushinteger(model->deposit_price.value());
     }
     else
     {
-        thread->pushnil();
+        lua->pushnil();
     }
     return 1;
 }

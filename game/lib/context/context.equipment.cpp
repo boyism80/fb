@@ -4,15 +4,15 @@ using namespace fb::game;
 
 void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
-    auto thread = lua::new_context();
+    auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->from("scripts/interaction.lua");
 #endif
-    thread->func("on_equipment_active");
-    thread->pushobject(me);
-    thread->pushinteger(parts);
-    thread->pushobject(item);
-    thread->resume(3);
+    lua->func("on_equipment_active");
+    lua->pushobject(me);
+    lua->pushinteger(parts);
+    lua->pushobject(item);
+    lua->resume(3);
 
     me.send(fb_resp::item_update_slot(me, parts));
     me.sound(SOUND::EQUIPMENT_ON);
@@ -63,15 +63,15 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 
 void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
-    auto thread = lua::new_context();
+    auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->from("scripts/interaction.lua");
 #endif
-    thread->func("on_equipment_inactive");
-    thread->pushobject(me);
-    thread->pushinteger(parts);
-    thread->pushobject(equipment);
-    thread->resume(3);
+    lua->func("on_equipment_inactive");
+    lua->pushobject(me);
+    lua->pushinteger(parts);
+    lua->pushobject(equipment);
+    lua->resume(3);
 
     me.sound(SOUND::EQUIPMENT_OFF);
 }

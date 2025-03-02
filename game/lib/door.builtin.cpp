@@ -9,19 +9,19 @@ IMPLEMENT_LUA_EXTENSION(fb::game::door, "fb.game.door")
 {"opened",              fb::game::door::builtin_opened},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::door::builtin_toggle(lua_State* lua)
+int fb::game::door::builtin_toggle(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
+    auto argc = lua->argc();
+    auto door = lua->touserdata<fb::game::door>(1);
 
     door->toggle();
-    lua_pushboolean(lua, door->opened());
+    lua->pushboolean(door->opened());
 
-    auto context = thread->env<fb::game::context>("context");
+    auto context = lua->env<fb::game::context>("context");
     auto size    = fb::model::size8_t((uint8_t)door->model.pairs.size(), 1);
     for (auto& obj : door->map.nears(door->pivot, OBJECT_TYPE::CHARACTER))
     {
@@ -31,43 +31,43 @@ int fb::game::door::builtin_toggle(lua_State* lua)
     return 1;
 }
 
-int fb::game::door::builtin_locked(lua_State* lua)
+int fb::game::door::builtin_locked(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
+    auto argc = lua->argc();
+    auto door = lua->touserdata<fb::game::door>(1);
 
-    lua_pushboolean(lua, door->locked());
+    lua->pushboolean(door->locked());
     return 1;
 }
 
-int fb::game::door::builtin_lock(lua_State* lua)
+int fb::game::door::builtin_lock(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc  = thread->argc();
-    auto door  = thread->touserdata<fb::game::door>(1);
-    auto value = thread->toboolean(2);
+    auto argc  = lua->argc();
+    auto door  = lua->touserdata<fb::game::door>(1);
+    auto value = lua->toboolean(2);
 
     door->lock(value);
-    lua_pushboolean(lua, door->locked());
+    lua->pushboolean(door->locked());
     return 1;
 }
 
-int fb::game::door::builtin_opened(lua_State* lua)
+int fb::game::door::builtin_opened(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto door = thread->touserdata<fb::game::door>(1);
+    auto argc = lua->argc();
+    auto door = lua->touserdata<fb::game::door>(1);
 
-    lua_pushboolean(lua, door->opened());
+    lua->pushboolean(door->opened());
     return 1;
 }

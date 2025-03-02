@@ -182,19 +182,19 @@ bool life::alive() const
 bool life::active(fb::game::spell& spell, const std::string& message)
 {
     this->assert_thread();
-    auto thread = fb::lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return false;
 
-    thread->from(spell.model.cast.c_str());
-    thread->func("on_cast");
+    lua->from(spell.model.cast.c_str());
+    lua->func("on_cast");
     if (spell.model.type != SPELL_TYPE::INPUT)
         return false;
 
-    thread->pushobject(this);
-    thread->pushobject(spell.model);
-    thread->pushstring(message);
-    thread->resume(3);
+    lua->pushobject(this);
+    lua->pushobject(spell.model);
+    lua->pushstring(message);
+    lua->resume(3);
     return true;
 }
 
@@ -214,12 +214,12 @@ bool life::active(fb::game::spell& spell, uint32_t fd)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-    auto thread = fb::lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return false;
 
-    thread->from(spell.model.cast.c_str());
-    thread->func("on_cast");
+    lua->from(spell.model.cast.c_str());
+    lua->func("on_cast");
     if (spell.model.type != SPELL_TYPE::TARGET)
         return false;
 
@@ -233,28 +233,28 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (this->sight(to) == false)
         return true;
 
-    thread->pushobject(this);
-    thread->pushobject(&to);
-    thread->pushobject(spell.model);
-    thread->resume(3);
+    lua->pushobject(this);
+    lua->pushobject(&to);
+    lua->pushobject(spell.model);
+    lua->resume(3);
     return true;
 }
 
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-    auto thread = fb::lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return false;
 
-    thread->from(spell.model.cast.c_str());
-    thread->func("on_cast");
+    lua->from(spell.model.cast.c_str());
+    lua->func("on_cast");
     if (spell.model.type != SPELL_TYPE::NORMAL)
         return false;
 
-    thread->pushobject(this);
-    thread->pushobject(spell.model);
-    thread->resume(2);
+    lua->pushobject(this);
+    lua->pushobject(spell.model);
+    lua->resume(2);
     return true;
 }
 

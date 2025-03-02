@@ -4,61 +4,61 @@
 #include <fb/model/model.h>
 #include <fb/game/context.h>
 
-int fb::model::mob::builtin_speed(lua_State* lua)
+int fb::model::mob::builtin_speed(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto mob = thread->touserdata<fb::model::mob>(1);
+    auto mob = lua->touserdata<fb::model::mob>(1);
     if (mob == nullptr)
         return 0;
 
-    thread->pushinteger(mob->speed.total_milliseconds());
+    lua->pushinteger(mob->speed.total_milliseconds());
     return 1;
 }
 
-int fb::model::mob::builtin_size(lua_State* lua)
+int fb::model::mob::builtin_size(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto mob = thread->touserdata<fb::model::mob>(1);
+    auto mob = lua->touserdata<fb::model::mob>(1);
     if (mob == nullptr)
         return 0;
 
-    thread->pushinteger(static_cast<uint8_t>(mob->size));
+    lua->pushinteger(static_cast<uint8_t>(mob->size));
     return 1;
 }
 
-int fb::model::mob::builtin_damage(lua_State* lua)
+int fb::model::mob::builtin_damage(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto mob = thread->touserdata<fb::model::mob>(1);
+    auto mob = lua->touserdata<fb::model::mob>(1);
     if (mob == nullptr)
         return 0;
 
-    thread->pushinteger(mob->damage.min);
-    thread->pushinteger(mob->damage.max);
+    lua->pushinteger(mob->damage.min);
+    lua->pushinteger(mob->damage.max);
     return 2;
 }
 
-int fb::model::mob::builtin_drop(lua_State* lua)
+int fb::model::mob::builtin_drop(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto model   = thread->touserdata<fb::model::mob>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto model   = lua->touserdata<fb::model::mob>(1);
     if (model == nullptr)
         return 0;
 
-    thread->new_table();
+    lua->new_table();
     if (context->model.drop.contains(model->drop))
     {
         auto  i     = 0;
@@ -74,9 +74,9 @@ int fb::model::mob::builtin_drop(lua_State* lua)
                     continue;
 
                 visit.insert(params.id);
-                thread->pushinteger(i + 1);
-                thread->pushobject(context->model.item[params.id]);
-                lua_settable(lua, -3);
+                lua->pushinteger(i + 1);
+                lua->pushobject(context->model.item[params.id]);
+                lua_settable(L, -3);
                 i++;
                 break;
             }

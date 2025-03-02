@@ -32,7 +32,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name(lua_State* lua);
+    static int builtin_name(lua_State* L);
     /**
      * @brief      { function_description }
      *
@@ -40,7 +40,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_position(lua_State* lua);
+    static int builtin_position(lua_State* L);
 };
 
 } // namespace fb::game
