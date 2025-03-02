@@ -1,4 +1,5 @@
-function on_cast(me, spell, name)
+-- 금수 캐스팅
+function ON_CAST_2002(me, spell, name)
     local mobs = {
         ['고양이'] = 32950,
         ['새끼돼지'] = name2mob('꼬마돼지'):look(),
@@ -14,10 +15,12 @@ function on_cast(me, spell, name)
     spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
 end
 
-function on_buff(me, spell)
+-- 금수 버프 효과
+function ON_BUFF_2002(me, spell)
     
 end
 
-function on_unbuff(me, spell)
+-- 금수 버프 해제 효과
+function ON_UNBUFF_2002(me, spell)
     me:disguise(nil)
 end

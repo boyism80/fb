@@ -99,13 +99,13 @@ context* get(lua_State* ctx);
  * @param[in]  name  The name
  * @param[in]  fn    The function
  */
-void build(const std::string& name, lua_CFunction fn);
+async::task<void> build(const std::string& name, lua_CFunction fn);
 /**
  * @brief      { function_description }
  *
  * @param[in]  path  The path
  */
-void dump(const std::string& path);
+async::task<void> dump(const std::string& path);
 
 /**
  * @brief      This class describes a luable.
@@ -699,6 +699,9 @@ private:
     std::mutex   _mutex;
 
 public:
+    fb::thread& thread;
+
+public:
     friend class context;
 
 private:
@@ -710,7 +713,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      */
-    root();
+    root(fb::thread& thread);
     /**
      * @brief      Constructs a new instance.
      *
@@ -748,7 +751,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool dump_file(const std::string& path);
+    bool dump(const std::string& path);
     /**
      * @brief      Pops the object.
      *
@@ -844,17 +847,17 @@ private:
     std::vector<setup_func>                         _setup_funcs;
     std::unordered_map<lua_State*, std::thread::id> _mapping;
     std::shared_mutex                               _mapping_lock;
+    fb::thread_container*                           _threads;
 
 public:
     ~context_pool();
 
 public:
-    context*          pop();
-    context*          get(lua_State* ctx);
-    void              setup(const setup_func& fn);
-    async::task<void> setup(fb::thread_container& threads);
-    void              record(lua_State* L);
-    void              unrecord(lua_State* L);
+    context* pop();
+    context* get(lua_State* ctx);
+    void     setup(fb::thread_container& threads);
+    void     record(lua_State* L);
+    void     unrecord(lua_State* L);
 
     base_type::iterator begin();
     base_type::iterator end();
@@ -902,12 +905,14 @@ public:
  * @tparam     T     { description }
  */
 template <typename T>
-void build()
+async::task<void> build()
 {
     auto& ist = context_pool::ist();
-    ist.setup([=](auto& root) {
-        root.build<T>();
-    });
+    for (auto& [_, root] : ist)
+    {
+        co_await root->thread.switching();
+        root->template build<T>();
+    }
 }
 
 /**
@@ -917,12 +922,14 @@ void build()
  * @tparam     B     { description }
  */
 template <typename T, typename B>
-void build()
+async::task<void> build()
 {
     auto& ist = context_pool::ist();
-    ist.setup([=](auto& root) {
-        root.build<T, B>();
-    });
+    for (auto& [_, root] : ist)
+    {
+        co_await root->thread.switching();
+        root->template build<T, B>();
+    }
 }
 
 /**
@@ -934,12 +941,14 @@ void build()
  * @tparam     T     { description }
  */
 template <typename T>
-void env(const char* key, T* data)
+async::task<void> env(const char* key, T* data)
 {
     auto& ist = context_pool::ist();
-    ist.setup([=](auto& root) {
-        root.env(key, data);
-    });
+    for (auto& [_, root] : ist)
+    {
+        co_await root->thread.switching();
+        root->env(key, data);
+    }
 }
 
 } // namespace fb::lua
@@ -996,7 +1005,7 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
     luaL_dofile(*this, fname.c_str());
 #else
     auto root = static_cast<fb::lua::root*>(this->owner);
-    root->dump_file(fname);
+    root->dump(fname);
     if (root->_bytecodes.contains(fname) == false)
     {
         fb::logger::fatal("cannot find script {}", fname);
@@ -1010,7 +1019,6 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
     if (lua_pcall(*this, 0, LUA_MULTRET, 0))
         return *this;
 #endif
-
     return *this;
 }
 

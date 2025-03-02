@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 무형검 캐스팅
+function ON_CAST_2020(me, spell)
     local function preprocess(me, you)
         you:buff('무형술', 2, me)
     end

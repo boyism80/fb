@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 귀환 캐스팅
+function ON_CAST_5(me, spell)
     local sound = 33
     local mp = 30
     local error = me:assert_state(STATE_GHOST, STATE_RIDING)

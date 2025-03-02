@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 지진 캐스팅
+function ON_CAST_4042(me, you, spell)
     local damage = 1500
     local mp = 580
     local sound = 82

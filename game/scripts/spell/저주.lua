@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 저주 캐스팅
+function ON_CAST_3051(me, you, spell)
     local mp = 30
     local sound = 69
     local effect = 13
@@ -8,11 +9,13 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 저주 버프 효과
+function ON_BUFF_3051(me, spell)
     me:buff_phydef(me:buff_phydef() + 30)
 end
 
-function on_unbuff(me, spell)
+-- 저주 버프 해제 효과
+function ON_UNBUFF_3051(me, spell)
     me:buff_phydef(me:buff_phydef() - 30)
 
 end

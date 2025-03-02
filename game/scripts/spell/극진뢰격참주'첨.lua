@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 극진뢰격참주'첨 캐스팅
+function ON_CAST_3041(me, spell)
     local damage = 3560
     local mp = 470
     local sound = 59

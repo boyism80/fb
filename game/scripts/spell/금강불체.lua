@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 금강불체 캐스팅
+function ON_CAST_4011(me, spell)
     local mp = 600
     local effect = 50
     local sound = 84
@@ -25,11 +26,13 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 금강불체 버프 효과
+function ON_BUFF_4011(me, spell)
     me:invincible(true)
 end
 
-function on_unbuff(me, spell)
+-- 금강불체 버프 해제 효과
+function ON_UNBUFF_4011(me, spell)
     me:invincible(false)
 
 end

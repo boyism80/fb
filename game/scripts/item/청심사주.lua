@@ -1,3 +1,4 @@
-function on_active(me, item)
+-- 청심사주 사용 스크립트
+function ON_ACTIVE_2210(me, item)
 
 end

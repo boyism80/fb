@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 절망 캐스팅
+function ON_CAST_3053(me, you, spell)
     local mp = 80
     local sound = 71
     local effect = 14
@@ -8,16 +9,19 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 절망 버프 효과
+function ON_BUFF_3053(me, spell)
     me:add_cc(CROWD_CONTROL_SIGHT)
 end
 
-function on_unbuff(me, spell)
+-- 절망 버프 해제 효과
+function ON_UNBUFF_3053(me, spell)
 
     me:remove_cc(CROWD_CONTROL_SIGHT)
 end
 
-function on_concast(me, caster, buff)
+-- 절망 지속 효과
+function ON_CONCAST_3053(me, caster, buff)
 
 end
 

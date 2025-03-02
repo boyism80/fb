@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 삼매진화 캐스팅
+function ON_CAST_3044(me, you, spell)
     local damage = math.floor(me:mp() * 1.5)
     local mp = me:mp()
     local sound = 73

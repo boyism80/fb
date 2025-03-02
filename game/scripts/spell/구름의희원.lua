@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 구름의희원 캐스팅
+function ON_CAST_4033(me, you, spell)
     local hp = 500
     local mp = 480
     local sound = 66

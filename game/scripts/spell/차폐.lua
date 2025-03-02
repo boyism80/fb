@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 차폐 캐스팅
+function ON_CAST_4005(me, spell)
     local mp = 100
     local sound = 8
     local effect = 2
@@ -8,11 +9,13 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 차폐 버프 효과
+function ON_BUFF_4005(me, spell)
     me:cover(true)
 end
 
-function on_unbuff(me, spell)
+-- 차폐 버프 해제 효과
+function ON_UNBUFF_4005(me, spell)
     me:cover(false)
 
 end

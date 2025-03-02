@@ -127,8 +127,8 @@ void context::on_buff(object& me, buff& buff)
     auto lua = fb::lua::new_context();
     if (lua == nullptr)
         return;
-    lua->load(buff.model.buff.c_str());
-    lua->func("on_buff");
+
+    lua->func(buff.model.buff);
     lua->pushobject(me);
     lua->pushobject(buff.model);
     lua->resume(2);
@@ -144,8 +144,8 @@ void context::on_unbuff(object& me, buff& buff)
     auto lua = fb::lua::new_context();
     if (lua == nullptr)
         return;
-    lua->load(buff.model.unbuff.c_str());
-    lua->func("on_unbuff");
+
+    lua->func(buff.model.unbuff);
     lua->pushobject(me);
     lua->pushobject(buff.model);
     lua->resume(2);

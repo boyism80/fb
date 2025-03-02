@@ -89,7 +89,8 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
                 if (buff->model.concast.empty() == false)
                 {
                     auto lua = lua::new_context();
-                    lua->load(buff->model.concast.c_str()).func("on_concast").pushobject(obj);
+                    lua->func(buff->model.concast);
+                    lua->pushobject(obj);
                     if (buff->caster == nullptr)
                         lua->pushnil();
                     else
@@ -113,6 +114,8 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
     auto thread = this->threads.at(id);
     auto params = thread->template data<thread_params>();
     auto lua    = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return;
 
     for (auto& [_, map] : params->maps)
     {
@@ -135,7 +138,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
                     continue;
 
                 auto& model = equipment->based<fb::model::equipment>();
-                if (model.script_concast == "")
+                if (model.on_concast == "")
                     continue;
 
                 if (concast.contains(&ch) == false)
@@ -150,8 +153,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
             for (auto equipment : equipments)
             {
                 auto& model = equipment->based<fb::model::equipment>();
-                lua->load(model.script_concast);
-                lua->func("on_concast");
+                lua->func(model.on_concast);
                 lua->pushobject(ch);
                 lua->pushobject(equipment);
                 lua->resume(2, false);

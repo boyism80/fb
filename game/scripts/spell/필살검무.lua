@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 필살검무 캐스팅
+function ON_CAST_2016(me, spell)
     local effect = 7
     local sound = 35
     local hp = me:hp()//2

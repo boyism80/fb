@@ -26,10 +26,9 @@ void context::on_attack(life& me, DURATION duration)
         if (weapon != nullptr)
         {
             auto& model = weapon->based<fb::model::weapon>();
-            if (model.script_attack != "")
+            if (model.on_attack != "")
             {
-                lua->load(model.script_attack);
-                lua->func("on_attack");
+                lua->func(model.on_attack);
                 lua->pushobject(ch);
                 lua->pushobject(weapon);
                 lua->resume(2, false);

@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 마비 캐스팅
+function ON_CAST_3052(me, you, spell)
     local mp = 80
     local sound = 70
     local effect = 1
@@ -8,11 +9,13 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 마비 버프 효과
+function ON_BUFF_3052(me, spell)
     me:paralysis(true)
 end
 
-function on_unbuff(me, spell)
+-- 마비 버프 해제 효과
+function ON_UNBUFF_3052(me, spell)
 
     me:paralysis(false)
 end

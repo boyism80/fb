@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 백호의희원 캐스팅
+function ON_CAST_4037(me, you, spell)
     local hp = me:mp()*2
     local mp = me:mp()//2
     local sound = 95

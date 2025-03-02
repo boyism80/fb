@@ -1,3 +1,4 @@
-function on_active(me, item)
+-- 산돼지고기 사용 스크립트
+function ON_ACTIVE_3038(me, item)
 
 end

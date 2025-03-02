@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 진백호령 캐스팅
+function ON_CAST_1013(me, spell)
     local mp = 30
     local sound = 89
     local effect = 57
@@ -10,11 +11,13 @@ function on_cast(me, spell)
     me:buff(spell, buff_time)
 end
 
-function on_buff(me, spell)
+-- 진백호령 버프 효과
+function ON_BUFF_1013(me, spell)
     me:skill_damage_rate(me:skill_damage_rate() + 500)
 end
 
-function on_unbuff(me, spell)
+-- 진백호령 버프 해제 효과
+function ON_UNBUFF_1013(me, spell)
     me:skill_damage_rate(me:skill_damage_rate() - 500)
 
 end

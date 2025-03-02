@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 투명 캐스팅
+function ON_CAST_2012(me, spell)
     local mp = 0
     local sound = 28
     local effect = 20
@@ -9,10 +10,12 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 투명 버프 효과
+function ON_BUFF_2012(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 투명 버프 해제 효과
+function ON_UNBUFF_2012(me, spell)
     me:state(STATE_NORMAL)
 end

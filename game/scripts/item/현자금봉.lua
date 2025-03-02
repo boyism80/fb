@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 현자금봉 사용 스크립트
+function ON_ACTIVE_175(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 현자금봉 해제 스크립트
+function ON_INACTIVE_175(me, item)
 
 end

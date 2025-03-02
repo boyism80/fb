@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 파천검무 캐스팅
+function ON_CAST_2022(me, spell)
     local function failed(me)
         me:message(string.format('%s 실패', spell:name()))
     end

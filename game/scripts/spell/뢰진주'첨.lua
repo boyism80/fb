@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 뢰진주'첨 캐스팅
+function ON_CAST_3025(me, spell)
     local damage = 300
     local mp = 180
     local sound = 55

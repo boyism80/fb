@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 청룡마령참 캐스팅
+function ON_CAST_7013(me, you, spell)
     you:effect(0x89)
     you:sound(0x08)
     if you:is(OBJECT_TYPE_CHARACTER) then

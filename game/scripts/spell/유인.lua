@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 유인 캐스팅
+function ON_CAST_1004(me, you, spell)
     if not you:is(OBJECT_TYPE_MOB) then
         return me:message('걸리지 않습니다.')
     end

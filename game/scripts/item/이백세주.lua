@@ -1,3 +1,4 @@
-function on_active(me, item)
+-- 이백세주 사용 스크립트
+function ON_ACTIVE_2206(me, item)
 
 end

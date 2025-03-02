@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 부활 캐스팅
+function ON_CAST_4014(me, you, spell)
     if not you:is(OBJECT_TYPE_LIFE) then
         me:message('걸리지 않습니다.')
         return false

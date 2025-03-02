@@ -60,6 +60,7 @@ int main(int argc, const char** argv)
         };
         fb::model::loader(context->model).run();
         fb::game::map_loader(*context).run();
+        fb::game::script_loader(*context).run();
         fb::game::npc_spawner(*context).run();
 
         context->run();

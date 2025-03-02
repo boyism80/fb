@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 지폭지술 캐스팅
+function ON_CAST_3045(me, spell)
     local damage = (me:mp()*3)//2
     local hp = nil
     local mp = math.max(me:mp(), 30)

@@ -122,6 +122,56 @@ protected:
     void on_finish();
 };
 
+class script_loader : public fb::parallel_worker<std::string>
+{
+private:
+    fb::game::context& _context;
+
+public:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      context  The context
+     */
+    script_loader(fb::game::context& context);
+    /**
+     * @brief      Destroys the object.
+     */
+    ~script_loader() = default;
+
+protected:
+    /**
+     * @brief      Called on ready.
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::generator<std::string> on_ready();
+    /**
+     * @brief      Called on work.
+     *
+     * @param[in]  value  The value
+     */
+    void on_work(const std::string& value);
+    /**
+     * @brief      Called when worked.
+     *
+     * @param[in]  input    The input
+     * @param[in]  percent  The percent
+     */
+    void on_worked(const std::string& input, double percent);
+    /**
+     * @brief      Called on error.
+     *
+     * @param[in]  input  The input
+     * @param      e      { parameter_description }
+     */
+    void on_error(const std::string& input, std::exception& e);
+    /**
+     * @brief      Called on finish.
+     */
+    void on_finish();
+};
+
 }} // namespace fb::game
 
 #endif

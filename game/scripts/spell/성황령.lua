@@ -1,4 +1,5 @@
-function on_cast(me, spell, message)
+-- 성황령 캐스팅
+function ON_CAST_2(me, spell, message)
     local map = me:map()
     if map == nil then
         return

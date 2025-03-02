@@ -1,7 +1,9 @@
-function on_unbuff(me, spell)
+-- 청심초 버프 해제 효과
+function ON_UNBUFF_6023(me, spell)
 
 end
 
-function on_concast(me, caster, buff)
+-- 청심초 지속 효과
+function ON_CONCAST_6023(me, caster, buff)
 
 end

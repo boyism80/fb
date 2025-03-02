@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 누리의기원 캐스팅
+function ON_CAST_4025(me, spell)
     local hp = 50
     local mp = 30
     local sound = 3

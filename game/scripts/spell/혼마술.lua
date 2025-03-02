@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 혼마술 캐스팅
+function ON_CAST_4009(me, you, spell)
     local mp = 40
     local sound = 79
     local effect = 39
@@ -8,11 +9,13 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 혼마술 버프 효과
+function ON_BUFF_4009(me, spell)
     me:buff_phydef(me:buff_phydef() + 50)
 end
 
-function on_unbuff(me, spell)
+-- 혼마술 버프 해제 효과
+function ON_UNBUFF_4009(me, spell)
     me:buff_phydef(me:buff_phydef() - 50)
 
 end

@@ -1,11 +1,14 @@
-function on_active(me, item)
+-- 횃불 사용 스크립트
+function ON_ACTIVE_84(me, item)
 
 end
 
-function on_active(me, item)
+-- 횃불 사용 스크립트
+function ON_ACTIVE_84(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 횃불 해제 스크립트
+function ON_INACTIVE_84(me, item)
 
 end

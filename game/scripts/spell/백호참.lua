@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 백호참 캐스팅
+function ON_CAST_1016(me, spell)
     local effect = 67
     local sound = 87
     local hp = me:hp() // 2

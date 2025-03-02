@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 이기어검 캐스팅
+function ON_CAST_2018(me, spell)
     local function preprocess(me, you)
         you:buff('이기어검술', 2, me)
     end

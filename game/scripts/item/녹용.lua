@@ -1,3 +1,4 @@
-function on_active(me, item)
+-- 녹용 사용 스크립트
+function ON_ACTIVE_3031(me, item)
 
 end

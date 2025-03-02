@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 운공체식 캐스팅
+function ON_CAST_1023(me, spell)
     local hp = 10000
     local mp = 10000
     local sound = 61

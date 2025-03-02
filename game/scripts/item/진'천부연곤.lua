@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 진'천부연곤 사용 스크립트
+function ON_ACTIVE_328(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 진'천부연곤 해제 스크립트
+function ON_INACTIVE_328(me, item)
 
 end

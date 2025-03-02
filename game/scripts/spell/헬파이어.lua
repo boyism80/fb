@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 헬파이어 캐스팅
+function ON_CAST_3043(me, you, spell)
     if me:is(OBJECT_TYPE_CHARACTER) then
         local weapon = me:weapon()
         local delay = 7

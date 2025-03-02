@@ -147,22 +147,22 @@ public:
         auto fn    = [&, this]() {
             while (true)
             {
-                T* input = nullptr;
+                auto input = std::optional<T>{};
                 {
                     auto _ = std::lock_guard(mutex_queue);
                     if (queue.empty())
                         break;
 
-                    input = &queue.front();
+                    input = std::move(queue.front());
                     queue.pop();
                 }
 
                 try
                 {
-                    this->on_work(*input);
+                    this->on_work(input.value());
                     {
                         auto _ = std::lock_guard(mutex_percent);
-                        this->on_worked(*input, (++processed * 100) / count);
+                        this->on_worked(input.value(), (++processed * 100) / count);
                     }
                 }
                 catch (std::exception& e)
@@ -171,7 +171,7 @@ public:
                         auto _ = std::lock_guard(mutex_percent);
                         processed++;
                     }
-                    this->on_error(*input, e);
+                    this->on_error(input.value(), e);
                 }
             }
         };

@@ -1255,6 +1255,8 @@ namespace Fb.Model
         public string Name { get; set; }
         [JsonProperty("type")]
         public Fb.Model.EnumValue.SpellType Type { get; set; }
+        [JsonProperty("script")]
+        public string Script { get; set; }
         [JsonProperty("cast")]
         public string Cast { get; set; }
         [JsonProperty("buff")]
@@ -1341,8 +1343,10 @@ namespace Fb.Model
         public Fb.Model.EnumValue.DeathPenalty DeathPenalty { get; set; }
         [JsonProperty("capacity")]
         public ushort Capacity { get; set; }
-        [JsonProperty("script_active")]
-        public string ScriptActive { get; set; }
+        [JsonProperty("script")]
+        public string Script { get; set; }
+        [JsonProperty("on_active")]
+        public string OnActive { get; set; }
         [JsonProperty("condition")]
         public List<Dsl> Condition { get; set; }
     }
@@ -1393,10 +1397,10 @@ namespace Fb.Model
 
     public class Equipment : Fb.Model.Item
     {
-        [JsonProperty("script_inactive")]
-        public string ScriptInactive { get; set; }
-        [JsonProperty("script_concast")]
-        public string ScriptConcast { get; set; }
+        [JsonProperty("on_inactive")]
+        public string OnInactive { get; set; }
+        [JsonProperty("on_concast")]
+        public string OnConcast { get; set; }
         [JsonProperty("dress")]
         public ushort Dress { get; set; }
         [JsonProperty("durability")]
@@ -1485,8 +1489,8 @@ namespace Fb.Model
 
     public class Weapon : Fb.Model.Equipment
     {
-        [JsonProperty("script_attack")]
-        public string ScriptAttack { get; set; }
+        [JsonProperty("on_attack")]
+        public string OnAttack { get; set; }
         [JsonProperty("damage_small")]
         public Range<uint> DamageSmall { get; set; }
         [JsonProperty("damage_large")]

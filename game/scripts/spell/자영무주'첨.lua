@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 자영무주'첨 캐스팅
+function ON_CAST_3027(me, spell)
     local damage = 510
     local mp = 250
     local sound = 46

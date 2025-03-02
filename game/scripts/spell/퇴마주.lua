@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 퇴마주 캐스팅
+function ON_CAST_4022(me, you, spell)
     local mp = 30
     local sound = 67
     local effect = 22

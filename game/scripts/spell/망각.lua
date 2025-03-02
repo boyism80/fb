@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 망각 캐스팅
+function ON_CAST_2009(me, you, spell)
     if not you:is(OBJECT_TYPE_MOB) then
         return me:message('걸리지 않습니다.')
     end
@@ -13,10 +14,12 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 망각 버프 효과
+function ON_BUFF_2009(me, spell)
     me:target(nil)
 end
 
-function on_unbuff(me, spell)
+-- 망각 버프 해제 효과
+function ON_UNBUFF_2009(me, spell)
     me:oblivion(nil)
 end

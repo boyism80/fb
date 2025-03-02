@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 자동보호 캐스팅
+function ON_CAST_7(me, spell)
     if me:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         return false
     end
@@ -8,11 +9,13 @@ function on_cast(me, spell)
     me:buff(spell, 180, me)
 end
 
-function on_buff(me, spell)
+-- 자동보호 버프 효과
+function ON_BUFF_7(me, spell)
     me:damage_derate(me:damage_derate() + 1000)
 end
 
-function on_unbuff(me, spell)
+-- 자동보호 버프 해제 효과
+function ON_UNBUFF_7(me, spell)
     me:damage_derate(me:damage_derate() - 1000)
 
 end

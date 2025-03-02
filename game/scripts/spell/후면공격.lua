@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 후면공격 캐스팅
+function ON_CAST_1006(me, spell)
     local mp = 90
     local sound = 7
     local effect = 2
@@ -8,10 +9,12 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 후면공격 버프 효과
+function ON_BUFF_1006(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 후면공격 버프 해제 효과
+function ON_UNBUFF_1006(me, spell)
 
 end

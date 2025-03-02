@@ -15,20 +15,26 @@ context* fb::lua::get(lua_State* ctx)
     return ist.get(ctx);
 }
 
-void fb::lua::build(const std::string& name, lua_CFunction fn)
+async::task<void> fb::lua::build(const std::string& name, lua_CFunction fn)
 {
     static auto& ist = context_pool::ist();
-    ist.setup([=](auto& root) {
-        root.build(name, fn);
-    });
+    auto         n   = std::string{name};
+    for (auto& [_, root] : ist)
+    {
+        co_await root->thread.switching();
+        root->build(n, fn);
+    }
 }
 
-void fb::lua::dump(const std::string& path)
+async::task<void> fb::lua::dump(const std::string& path)
 {
     static auto& ist = context_pool::ist();
-    ist.setup([=](auto& root) {
-        root.dump_file(path);
-    });
+    auto         p   = std::string{path};
+    for (auto& [_, root] : ist)
+    {
+        co_await root->thread.switching();
+        root->dump(p);
+    }
 }
 
 void luable::to_lua(lua_State* ctx) const
@@ -217,8 +223,9 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
-root::root() :
-    context(::luaL_newstate())
+root::root(fb::thread& thread) :
+    context(::luaL_newstate()),
+    thread(thread)
 {
     luaL_openlibs(*this);
 }
@@ -243,7 +250,7 @@ context* root::get(lua_State* ctx)
     return found->second.get();
 }
 
-bool root::dump_file(const std::string& path)
+bool root::dump(const std::string& path)
 {
     if (path.empty())
         return true;
@@ -280,15 +287,19 @@ context* root::pop()
         auto  key = (lua_State*)*ctx;
         this->busy.insert({key, std::move(ctx)});
         this->idle.erase(key);
+
         return this->busy[key].get();
     }
     else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = std::make_unique<thread>(*this);
+        auto ptr = std::make_unique<fb::lua::thread>(*this);
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
             return nullptr;
+
+        for (auto& [name, _] : this->_bytecodes)
+            ptr->load(name);
 
         context_pool::ist().record(*ptr);
         this->busy.insert({key, std::move(ptr)});
@@ -363,29 +374,28 @@ context* fb::lua::context_pool::get(lua_State* ctx)
     return this->_roots[id]->get(ctx);
 }
 
-void fb::lua::context_pool::setup(const setup_func& fn)
+void fb::lua::context_pool::setup(fb::thread_container& threads)
 {
-    this->_setup_funcs.push_back(fn);
-}
+    if (this->_threads != nullptr)
+        return;
 
-async::task<void> fb::lua::context_pool::setup(fb::thread_container& threads)
-{
+    this->_threads = &threads;
     for (int i = 0; i < threads.size(); i++)
     {
         auto thread = threads.at(i);
-        this->_roots.insert({thread->id(), new root()});
+        this->_roots.insert({thread->id(), new root(*thread)});
     }
 
-    for (auto& [tid, root] : this->_roots)
-    {
-        auto thread = threads.at(tid);
-        co_await thread->switching();
+    // for (auto& [tid, root] : this->_roots)
+    //{
+    //     auto thread = threads.at(tid);
+    //     co_await thread->switching();
 
-        for (auto& fn : this->_setup_funcs)
-        {
-            fn(*root);
-        }
-    }
+    //    for (auto& fn : this->_setup_funcs)
+    //    {
+    //        fn(*root);
+    //    }
+    //}
 }
 
 context_pool::base_type::iterator fb::lua::context_pool::begin()

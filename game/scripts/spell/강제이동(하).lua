@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 강제이동(하) 캐스팅
+function ON_CAST_10001(me, spell)
     local map = me:map()
     if map == nil then
         return

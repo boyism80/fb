@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 중독 캐스팅
+function ON_CAST_3059(me, you, spell)
     local mp = 30
     local sound = 68
     local effect = 14
@@ -8,15 +9,18 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 중독 버프 효과
+function ON_BUFF_3059(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 중독 버프 해제 효과
+function ON_UNBUFF_3059(me, spell)
 
 end
 
-function on_concast(me, caster, buff)
+-- 중독 지속 효과
+function ON_CONCAST_3059(me, caster, buff)
     local damage = math.min((me:maxhp() * 5) // 100, 14994)
     if damage > me:hp() - 100 then
         damage = math.max(0, me:hp() - 100)

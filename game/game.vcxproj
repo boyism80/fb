@@ -405,6 +405,7 @@
     <ClCompile Include="lib\trade.cpp" />
     <ClCompile Include="lib\worker\worker.map.cpp" />
     <ClCompile Include="lib\worker\worker.npc.spawn.cpp" />
+    <ClCompile Include="lib\worker\worker.script.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

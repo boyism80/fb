@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 누리의빛 캐스팅
+function ON_CAST_2001(me, spell)
     local you = me:front()
     if you == nil then
         return

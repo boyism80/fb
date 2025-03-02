@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 풍의제이검 사용 스크립트
+function ON_ACTIVE_61(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 풍의제이검 해제 스크립트
+function ON_INACTIVE_61(me, item)
 
 end

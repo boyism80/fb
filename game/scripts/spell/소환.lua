@@ -27,7 +27,8 @@ function lookup(map, x, y, direction)
 end
 
 
-function on_cast(me, spell, name)
+-- 소환 캐스팅
+function ON_CAST_4(me, spell, name)
 
     if me:name() == name then
         me:message('나 자신을 소환할 수 없습니다.')

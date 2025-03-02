@@ -1,3 +1,4 @@
-function on_cast(me, spell)
+-- 혼돈 캐스팅
+function ON_CAST_3054(me, spell)
 
 end

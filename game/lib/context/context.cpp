@@ -6,6 +6,9 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<character>(context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id"))
 {
+    auto& ist = fb::lua::context_pool::ist();
+    ist.setup(this->threads);
+
     lua::env<fb::game::context>("context", this);
     lua::build<door, lua::luable>();
     lua::build<clan, lua::luable>();
@@ -60,17 +63,13 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     lua::build("mknpc", builtin_mknpc);
     lua::build("maps", builtin_maps);
 
-    auto& ist = fb::lua::context_pool::ist();
-    ist.setup([](auto& root) {
-        fb::model::lua::map_enum(root);
-    });
-    fb::lua::dump("scripts/spell.lua");
-    fb::lua::dump("scripts/npc.lua");
-    fb::lua::dump("scripts/interaction.lua");
-    fb::lua::dump("scripts/command.lua");
-    fb::lua::dump("scripts/script.lua");
-
-    async::awaitable_get(ist.setup(this->threads));
+    for (auto& [_, root] : ist)
+    {
+        root->thread.dispatch([root](auto&) -> async::task<void> {
+            fb::model::lua::map_enum(*root);
+            co_return;
+        });
+    }
 }
 
 context::~context()

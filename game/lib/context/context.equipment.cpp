@@ -63,15 +63,19 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 
 void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
-    auto lua = fb::lua::new_context();
+    auto& model = equipment.based<fb::model::equipment>();
+    if (model.on_inactive != "")
+    {
+        auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->load("scripts/interaction.lua");
+        lua->load(model.script);
 #endif
-    lua->func("on_equipment_inactive");
-    lua->pushobject(me);
-    lua->pushinteger(parts);
-    lua->pushobject(equipment);
-    lua->resume(3);
+        lua->func(model.on_inactive);
+        lua->pushobject(me);
+        lua->pushinteger(parts);
+        lua->pushobject(equipment);
+        lua->resume(3);
+    }
 
     me.sound(SOUND::EQUIPMENT_OFF);
 }
