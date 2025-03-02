@@ -627,7 +627,7 @@ int object::builtin_nears(lua_State* L)
             if (!matched)
                 continue;
 
-            if (all)
+            if (!all)
             {
                 auto index = map->index(objects[i]->position());
                 if (visit.contains(index))
@@ -661,7 +661,7 @@ int object::builtin_nears(lua_State* L)
                     continue;
             }
 
-            if (all)
+            if (!all)
             {
                 auto index = map->index(objects[i]->position());
                 if (visit.contains(index))

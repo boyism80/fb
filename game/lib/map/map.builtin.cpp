@@ -315,6 +315,7 @@ int fb::game::map::builtin_tile(lua_State* L)
             auto ch = static_cast<character*>(obj);
             ch->update_map(*map, position, fb::model::size8_t{1, 1});
         }
+        return 0;
     }
     else
     {
