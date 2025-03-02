@@ -89,7 +89,7 @@ async::task<void> context::handle_buff_timer(const fb::model::datetime& now, std
                 if (buff->model.concast.empty() == false)
                 {
                     auto lua = lua::new_context();
-                    lua->from(buff->model.concast.c_str()).func("on_concast").pushobject(obj);
+                    lua->load(buff->model.concast.c_str()).func("on_concast").pushobject(obj);
                     if (buff->caster == nullptr)
                         lua->pushnil();
                     else
@@ -150,7 +150,7 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
             for (auto equipment : equipments)
             {
                 auto& model = equipment->based<fb::model::equipment>();
-                lua->from(model.script_concast);
+                lua->load(model.script_concast);
                 lua->func("on_concast");
                 lua->pushobject(ch);
                 lua->pushobject(equipment);

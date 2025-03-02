@@ -1713,7 +1713,7 @@ int character::builtin_script(lua_State* L)
     if (ch == nullptr)
         return 0;
 
-    ch->dialog.from("scripts/script.lua");
+    ch->dialog.load("scripts/script.lua");
     ch->dialog.func("func");
     ch->dialog.pushobject(ch);
     ch->dialog.resume(1);

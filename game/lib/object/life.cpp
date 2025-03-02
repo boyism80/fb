@@ -186,7 +186,10 @@ bool life::active(fb::game::spell& spell, const std::string& message)
     if (lua == nullptr)
         return false;
 
-    lua->from(spell.model.cast.c_str());
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/spell.lua");
+#endif
+    lua->load(spell.model.cast.c_str());
     lua->func("on_cast");
     if (spell.model.type != SPELL_TYPE::INPUT)
         return false;
@@ -218,7 +221,10 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (lua == nullptr)
         return false;
 
-    lua->from(spell.model.cast.c_str());
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/spell.lua");
+#endif
+    lua->load(spell.model.cast.c_str());
     lua->func("on_cast");
     if (spell.model.type != SPELL_TYPE::TARGET)
         return false;
@@ -247,7 +253,10 @@ bool life::active(fb::game::spell& spell)
     if (lua == nullptr)
         return false;
 
-    lua->from(spell.model.cast.c_str());
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/spell.lua");
+#endif
+    lua->load(spell.model.cast.c_str());
     lua->func("on_cast");
     if (spell.model.type != SPELL_TYPE::NORMAL)
         return false;

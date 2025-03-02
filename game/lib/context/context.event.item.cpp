@@ -23,7 +23,7 @@ void context::on_item_active(character& me, item& item)
     if (lua == nullptr)
         return;
 
-    lua->from(item.based<fb::model::item>().script_active.c_str())
+    lua->load(item.based<fb::model::item>().script_active.c_str())
         .func("on_active")
         .pushobject(me)
         .pushobject(item)

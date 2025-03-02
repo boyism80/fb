@@ -11,7 +11,7 @@ void context::on_attack(life& me, DURATION duration)
 {
     auto lua = lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
     lua->func("on_attack");
     lua->pushobject(me);
@@ -28,7 +28,7 @@ void context::on_attack(life& me, DURATION duration)
             auto& model = weapon->based<fb::model::weapon>();
             if (model.script_attack != "")
             {
-                lua->from(model.script_attack);
+                lua->load(model.script_attack);
                 lua->func("on_attack");
                 lua->pushobject(ch);
                 lua->pushobject(weapon);

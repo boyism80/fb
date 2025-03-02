@@ -6,7 +6,7 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
     auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
     lua->func("on_equipment_active");
     lua->pushobject(me);
@@ -65,7 +65,7 @@ void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::e
 {
     auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
     lua->func("on_equipment_inactive");
     lua->pushobject(me);

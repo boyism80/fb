@@ -582,7 +582,7 @@ void fb::game::items::pickup(bool boost)
             return;
 
 #if defined DEBUG | defined _DEBUG
-        lua->from("scripts/interaction.lua");
+        lua->load("scripts/interaction.lua");
 #endif
         lua->func("on_pickup");
         lua->pushobject(this->_owner);

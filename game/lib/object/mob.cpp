@@ -124,7 +124,9 @@ bool mob::action()
         if (this->_attack_thread == nullptr)
             return false;
 
-        this->_attack_thread->from(model.attack_script.c_str()).func("on_attack").pushobject(this);
+        this->_attack_thread->load(model.attack_script.c_str());
+        this->_attack_thread->func("on_attack");
+        this->_attack_thread->pushobject(this);
 
         if (this->_target != nullptr)
             this->_attack_thread->pushobject(this->_target);

@@ -35,7 +35,7 @@ void context::on_direction(object& me)
 {
     auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
     lua->func("on_direction");
     lua->pushobject(me);
@@ -110,7 +110,7 @@ void context::on_move(object& me, const fb::model::point16_t& before)
 {
     auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
     lua->func("on_move");
     lua->pushobject(me);
@@ -127,7 +127,7 @@ void context::on_buff(object& me, buff& buff)
     auto lua = fb::lua::new_context();
     if (lua == nullptr)
         return;
-    lua->from(buff.model.buff.c_str());
+    lua->load(buff.model.buff.c_str());
     lua->func("on_buff");
     lua->pushobject(me);
     lua->pushobject(buff.model);
@@ -144,7 +144,7 @@ void context::on_unbuff(object& me, buff& buff)
     auto lua = fb::lua::new_context();
     if (lua == nullptr)
         return;
-    lua->from(buff.model.unbuff.c_str());
+    lua->load(buff.model.unbuff.c_str());
     lua->func("on_unbuff");
     lua->pushobject(me);
     lua->pushobject(buff.model);

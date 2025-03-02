@@ -20,6 +20,8 @@ extern "C"
 #include <macro.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
+#include <async/task.h>
+#include <shared_mutex>
 
 #define LUA_PROTOTYPE                                \
     static const struct luaL_Reg LUA_METHODS[];      \
@@ -49,6 +51,13 @@ extern "C"
 
 #define LUA_PENDING (LUA_ERRERR + 1)
 
+namespace fb {
+
+class thread;
+class thread_container;
+
+} // namespace fb
+
 namespace fb::lua {
 
 constexpr auto DEFAULT_POOL_SIZE = 1000;
@@ -62,9 +71,9 @@ class luable;
  */
 class context;
 /**
- * @brief      This class describes a context_pool.
+ * @brief      This class describes a root.
  */
-class context_pool;
+class root;
 /**
  * @brief      This class describes a thread.
  */
@@ -97,13 +106,6 @@ void build(const std::string& name, lua_CFunction fn);
  * @param[in]  path  The path
  */
 void dump(const std::string& path);
-
-/**
- * @brief      { function_description }
- *
- * @param[in]  path  The path
- */
-void load(const std::string& path);
 
 /**
  * @brief      This class describes a luable.
@@ -230,7 +232,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <class... Args>
-    context& from(const std::string& fmt, Args&&... args);
+    context& load(const std::string& fmt, Args&&... args);
     /**
      * @brief      { function_description }
      *
@@ -684,9 +686,9 @@ public:
 };
 
 /**
- * @brief      This class describes a context_pool.
+ * @brief      This class describes a root.
  */
-class context_pool : public context
+class root : public context
 {
 public:
     using unique_lua_map = std::unordered_map<lua_State*, std::unique_ptr<thread>>;
@@ -708,17 +710,17 @@ public:
     /**
      * @brief      Constructs a new instance.
      */
-    context_pool();
+    root();
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  <unnamed>  { parameter_description }
      */
-    context_pool(const context_pool&&) = delete;
+    root(const root&&) = delete;
     /**
      * @brief      Destroys the object.
      */
-    ~context_pool();
+    ~root();
 
 public:
     /**
@@ -728,7 +730,7 @@ public:
      *
      * @return     The result of the assignment
      */
-    context_pool& operator= (context_pool&) = delete;
+    root& operator= (root&) = delete;
     /**
      * @brief      Assignment operator.
      *
@@ -736,7 +738,7 @@ public:
      *
      * @return     The result of the assignment
      */
-    context_pool& operator= (context_pool&&) = delete;
+    root& operator= (root&&) = delete;
 
 public:
     /**
@@ -760,7 +762,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    context* get(lua_State& ctx);
+    context* get(lua_State* ctx);
     /**
      * @brief      { function_description }
      *
@@ -768,7 +770,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    context& release(context& ctx);
+    void release(context& ctx);
     /**
      * @brief      { function_description }
      *
@@ -829,7 +831,35 @@ public:
     {
         lua_register(*this, name.c_str(), fn);
     }
+};
 
+class context_pool
+{
+public:
+    using base_type  = std::unordered_map<std::thread::id, root*>;
+    using setup_func = std::function<void(root& lua)>;
+
+private:
+    base_type                                       _roots;
+    std::vector<setup_func>                         _setup_funcs;
+    std::unordered_map<lua_State*, std::thread::id> _mapping;
+    std::shared_mutex                               _mapping_lock;
+
+public:
+    ~context_pool();
+
+public:
+    context*          pop();
+    context*          get(lua_State* ctx);
+    void              setup(const setup_func& fn);
+    async::task<void> setup(fb::thread_container& threads);
+    void              record(lua_State* L);
+    void              unrecord(lua_State* L);
+
+    base_type::iterator begin();
+    base_type::iterator end();
+
+public:
     static context_pool& ist();
 };
 
@@ -875,7 +905,9 @@ template <typename T>
 void build()
 {
     auto& ist = context_pool::ist();
-    ist.build<T>();
+    ist.setup([=](auto& root) {
+        root.build<T>();
+    });
 }
 
 /**
@@ -888,7 +920,9 @@ template <typename T, typename B>
 void build()
 {
     auto& ist = context_pool::ist();
-    ist.build<T, B>();
+    ist.setup([=](auto& root) {
+        root.build<T, B>();
+    });
 }
 
 /**
@@ -903,7 +937,9 @@ template <typename T>
 void env(const char* key, T* data)
 {
     auto& ist = context_pool::ist();
-    ist.env(key, data);
+    ist.setup([=](auto& root) {
+        root.env(key, data);
+    });
 }
 
 } // namespace fb::lua
@@ -953,21 +989,21 @@ inline void to_lua(lua_State* ctx, const T* self)
  * @return     { description_of_the_return_value }
  */
 template <class... Args>
-fb::lua::context& fb::lua::context::from(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
 #if defined DEBUG || defined _DEBUG
     luaL_dofile(*this, fname.c_str());
 #else
-    auto context_pool = static_cast<fb::lua::context_pool*>(this->owner);
-    context_pool->dump_file(fname);
-    if (context_pool->_bytecodes.contains(fname) == false)
+    auto root = static_cast<fb::lua::root*>(this->owner);
+    root->dump_file(fname);
+    if (root->_bytecodes.contains(fname) == false)
     {
         fb::logger::fatal("cannot find script {}", fname);
         return *this;
     }
 
-    auto& bytes = context_pool->_bytecodes[fname];
+    auto& bytes = root->_bytecodes[fname];
     if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 

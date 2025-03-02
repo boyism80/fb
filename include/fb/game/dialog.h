@@ -236,7 +236,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <class... Args>
-    dialog& from(const std::string& fmt, Args&&... args);
+    dialog& load(const std::string& fmt, Args&&... args);
     /**
      * @brief      { function_description }
      *
@@ -480,11 +480,11 @@ public:
  * @return     { description_of_the_return_value }
  */
 template <class... Args>
-fb::game::dialog& fb::game::dialog::from(const std::string& fmt, Args&&... args)
+fb::game::dialog& fb::game::dialog::load(const std::string& fmt, Args&&... args)
 {
     auto buffer = std::vformat(fmt, std::make_format_args(args...));
     auto ctx    = fb::lua::new_context();
-    ctx->from(buffer.c_str());
+    ctx->load(buffer.c_str());
     this->_scripts.push(ctx);
     return *this;
 }

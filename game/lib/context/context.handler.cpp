@@ -60,7 +60,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
         // TODO: from 굳이 호출하지 않아도 동작하도록 변경
         // dialog.func에서 새로운 컨텍스트 추가
-        ch->dialog.from("scripts/interaction.lua");
+        ch->dialog.load("scripts/interaction.lua");
         ch->dialog.func("on_login");
         ch->dialog.pushobject(ch);
         ch->dialog.resume(1);
@@ -572,6 +572,7 @@ async::task<bool> context::handle_object_miss(fb::socket<character>& socket, con
     if (obj == nullptr)
         co_return true;
 
+    obj->update_external(*ch, false);
     fb::logger::info("{} 오브젝트 미스", obj->sequence());
 
     co_return true;
@@ -745,12 +746,11 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() == false && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
-#if defined DEBUG | defined _DEBUG
-    fb::lua::load("scripts/interaction.lua");
-    fb::lua::load("scripts/command.lua");
-#endif
-
     auto lua = fb::lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/interaction.lua");
+    lua->load("scripts/command.lua");
+#endif
     lua->func("on_chat");
     lua->pushobject(ch);
     lua->pushstring(request.message);
@@ -1100,10 +1100,6 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
         co_return true;
     }
 
-#if defined DEBUG | defined _DEBUG
-    fb::lua::load("scripts/spell.lua");
-#endif
-
     const_cast<fb_reqs::spell_cast&>(request).parse(spell->model.type);
     switch (spell->model.type)
     {
@@ -1134,7 +1130,7 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
         co_return true;
 
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
 
     lua->func("on_door");

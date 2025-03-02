@@ -312,15 +312,14 @@ int fb::game::life::builtin_cast(lua_State* L)
     if (spell == nullptr)
         return 0;
 
-#if defined DEBUG | defined _DEBUG
-    fb::lua::load("scripts/spell.lua");
-#endif
-
     auto x = lua::new_context();
     if (x == nullptr)
         return 0;
 
-    x->from(spell->cast.c_str());
+#if defined DEBUG | defined _DEBUG
+    x->load("scripts/spell.lua");
+#endif
+    x->load(spell->cast.c_str());
     x->func("on_cast");
     x->pushobject(me);
 
