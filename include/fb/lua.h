@@ -697,9 +697,7 @@ public:
 private:
     bytecode_set _bytecodes;
     std::mutex   _mutex;
-
-public:
-    fb::thread& thread;
+    fb::thread& _thread;
 
 public:
     friend class context;
@@ -780,6 +778,20 @@ public:
      * @param      ctx   The context
      */
     void revoke(context& ctx);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> switching();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread& initial_thread();
 
 public:
     /**
@@ -910,7 +922,7 @@ async::task<void> build()
     auto& ist = context_pool::ist();
     for (auto& [_, root] : ist)
     {
-        co_await root->thread.switching();
+        co_await root->switching();
         root->template build<T>();
     }
 }
@@ -927,7 +939,7 @@ async::task<void> build()
     auto& ist = context_pool::ist();
     for (auto& [_, root] : ist)
     {
-        co_await root->thread.switching();
+        co_await root->switching();
         root->template build<T, B>();
     }
 }
@@ -946,7 +958,7 @@ async::task<void> env(const char* key, T* data)
     auto& ist = context_pool::ist();
     for (auto& [_, root] : ist)
     {
-        co_await root->thread.switching();
+        co_await root->switching();
         root->env(key, data);
     }
 }

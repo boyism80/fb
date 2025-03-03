@@ -65,7 +65,8 @@ context::context(boost::asio::io_context& context, uint16_t port) :
 
     for (auto& [_, root] : ist)
     {
-        root->thread.dispatch([root](auto&) -> async::task<void> {
+        auto& thread = root->initial_thread();
+        std::ignore = thread.dispatch([root](auto&) -> async::task<void> {
             fb::model::lua::map_enum(*root);
             co_return;
         });

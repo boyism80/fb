@@ -21,7 +21,7 @@ async::task<void> fb::lua::build(const std::string& name, lua_CFunction fn)
     auto         n   = std::string{name};
     for (auto& [_, root] : ist)
     {
-        co_await root->thread.switching();
+        co_await root->switching();
         root->build(n, fn);
     }
 }
@@ -32,7 +32,7 @@ async::task<void> fb::lua::dump(const std::string& path)
     auto         p   = std::string{path};
     for (auto& [_, root] : ist)
     {
-        co_await root->thread.switching();
+        co_await root->switching();
         root->dump(p);
     }
 }
@@ -225,7 +225,7 @@ void context::pending(bool value)
 
 root::root(fb::thread& thread) :
     context(::luaL_newstate()),
-    thread(thread)
+    _thread(thread)
 {
     luaL_openlibs(*this);
 }
@@ -341,6 +341,16 @@ void root::revoke(context& ctx)
 
     this->busy.erase(i);
     context_pool::ist().unrecord(ctx);
+}
+
+async::task<void> fb::lua::root::switching()
+{
+    co_await this->_thread.switching();
+}
+
+fb::thread& fb::lua::root::initial_thread()
+{
+    return this->_thread;
 }
 
 fb::lua::context_pool::~context_pool()
