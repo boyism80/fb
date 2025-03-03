@@ -318,9 +318,9 @@ int fb::game::life::builtin_cast(lua_State* L)
 
 #if defined DEBUG | defined _DEBUG
     x->load("scripts/spell.lua");
+    x->load(spell->script);
 #endif
-    x->load(spell->cast.c_str());
-    x->func("on_cast");
+    x->func(spell->cast);
     x->pushobject(me);
 
     if (argc > 2)
