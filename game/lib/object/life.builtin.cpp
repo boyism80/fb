@@ -324,7 +324,7 @@ int fb::game::life::builtin_cast(lua_State* L)
     }
 
     x->pushobject(spell);
-    x->call(argc);
+    std::ignore = x->call(argc);
     return 0;
 }
 

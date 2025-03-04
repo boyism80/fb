@@ -133,7 +133,7 @@ bool mob::action()
         else
             this->_attack_thread->pushnil();
 
-        this->_attack_thread->call(2);
+        std::ignore = this->_attack_thread->call(2);
     }
 
     auto stop = false;
