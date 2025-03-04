@@ -764,7 +764,7 @@ void context::handle_click_npc(character& ch, npc& npc)
     lua->func(model.click);
     lua->pushobject(ch);
     lua->pushobject(npc.based<fb::model::npc>());
-    lua->call(2);
+    std::ignore = lua->call(2);
 }
 
 async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

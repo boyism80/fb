@@ -33,7 +33,7 @@ void context::on_item_active(character& me, item& item)
     lua->func(model.on_active);
     lua->pushobject(me);
     lua->pushobject(item);
-    lua->call(2);
+    std::ignore = lua->call(2);
 }
 
 void context::on_item_throws(character& me, item& item, const fb::model::point16_t& to)

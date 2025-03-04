@@ -1137,7 +1137,7 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
 
     lua->func("on_door");
     lua->pushobject(ch);
-    lua->call(1);
+    co_await lua->call(1);
     co_return true;
 }
 
