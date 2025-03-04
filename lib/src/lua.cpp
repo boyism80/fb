@@ -159,14 +159,28 @@ int context::argc()
     return lua_gettop(this->_ctx);
 }
 
-bool context::resume(int argc, bool auto_release)
+async::task<bool> context::call(int argc, bool auto_release)
 {
+    this->_promise      = std::make_shared<async::task_completion_source<bool>>();
+    this->_auto_release = auto_release;
+    this->resume(argc);
+    return this->_promise->task();
+}
+
+void fb::lua::context::resume(int argc)
+{
+    if (this->_promise == nullptr)
+        return;
+
     if (this->owner == nullptr)
-        throw std::runtime_error("this context is not lua thread");
+    {
+        this->_promise->set_exception(std::make_exception_ptr(std::runtime_error("this context is not lua thread")));
+        return;
+    }
 
     auto root = static_cast<fb::lua::root*>(this->owner);
     if (this->_state == LUA_PENDING)
-        return *this;
+        return;
 
     auto state = lua_resume(*this, nullptr, argc);
 
@@ -177,19 +191,23 @@ bool context::resume(int argc, bool auto_release)
     {
     case LUA_PENDING:
     case LUA_YIELD:
-        return true;
+        break;
 
     case LUA_ERRRUN:
     case LUA_ERRERR:
-        fb::logger::fatal("lua error message : {}", this->tostring(-1).c_str());
+    {
         lua_pop(*this, 1);
         root->revoke(*this);
-        return false;
+        auto message = std::format("lua error message : {}", this->tostring(-1).c_str());
+        this->_promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
+    }
+    break;
 
     default:
-        if (auto_release)
+        if (this->_auto_release)
             root->release(*this);
-        return true;
+        this->_promise->set_value(true);
+        break;
     }
 }
 
@@ -317,22 +335,36 @@ context* root::pop()
 
 void root::release(context& ctx)
 {
-    auto _ = std::lock_guard(this->_mutex);
+    auto internal_func = [this](context& ctx) {
+        auto _ = std::lock_guard(this->_mutex);
 
-    if (this->busy.contains(ctx) == false)
-        return;
+        if (this->busy.contains(ctx) == false)
+            return;
 
-    if (this->idle.contains(ctx))
-        return;
+        if (this->idle.contains(ctx))
+            return;
 
-    if (ctx.state() != LUA_OK)
-        throw std::runtime_error("lua ctx's current state is not LUA_OK");
+        if (ctx.state() != LUA_OK)
+            throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
-    lua_pop(ctx, -1);
+        lua_settop(ctx, 0);
 
-    auto key = (lua_State*)ctx;
-    this->idle.insert({key, std::move(this->busy[key])});
-    this->busy.erase(key);
+        auto key = (lua_State*)ctx;
+        this->idle.insert({key, std::move(this->busy[key])});
+        this->busy.erase(key);
+    };
+
+    if (this->_thread.id() != std::this_thread::get_id())
+    {
+        std::ignore = this->_thread.dispatch([=, &ctx](auto&) -> async::task<void> {
+            internal_func(ctx);
+            co_return;
+        });
+    }
+    else
+    {
+        internal_func(ctx);
+    }
 }
 
 void root::revoke(context& ctx)

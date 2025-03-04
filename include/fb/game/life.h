@@ -1090,7 +1090,7 @@ struct life::listener : public virtual fb::game::object::listener, public virtua
      * @param      me        { parameter_description }
      * @param[in]  duration  The duration
      */
-    virtual void on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
+    virtual async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
 
     /**
      * @brief      Called on dead.

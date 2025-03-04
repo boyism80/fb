@@ -21,6 +21,7 @@ extern "C"
 #include <fb/encoding.h>
 #include <fb/logger.h>
 #include <async/task.h>
+#include <async/task_completion_source.h>
 #include <shared_mutex>
 
 #define LUA_PROTOTYPE                                \
@@ -161,12 +162,14 @@ public:
 class context
 {
 private:
-    int _state = 0;
+    int                                                  _state = 0;
+    std::shared_ptr<async::task_completion_source<bool>> _promise;
+    bool                                                 _auto_release = false;
 
 protected:
     lua_State* _ctx = nullptr;
 
-protected:
+public:
     context* owner = nullptr;
 
 protected:
@@ -611,7 +614,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool resume(int argc, bool auto_release = true);
+    [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  argc  The count of arguments
+     */
+    void resume(int argc);
     /**
      * @brief      { function_description }
      *
@@ -697,7 +707,7 @@ public:
 private:
     bytecode_set _bytecodes;
     std::mutex   _mutex;
-    fb::thread& _thread;
+    fb::thread&  _thread;
 
 public:
     friend class context;

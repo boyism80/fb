@@ -36,10 +36,15 @@ command_funcs = {
             return false
         end
 
+        local error = false
         if x ~= nil and y ~= nil then
-            me:map(map, x, y)
+            error = me:map(map, x, y)
         else
-            me:map(map)
+            error = me:map(map)
+        end
+
+        if error ~= nil then
+            me:message(error)
         end
         return true
     end,

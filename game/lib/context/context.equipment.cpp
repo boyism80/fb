@@ -12,7 +12,7 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
     lua->pushobject(me);
     lua->pushinteger(parts);
     lua->pushobject(item);
-    lua->resume(3);
+    lua->call(3);
 
     me.send(fb_resp::item_update_slot(me, parts));
     me.sound(SOUND::EQUIPMENT_ON);
@@ -74,7 +74,7 @@ void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::e
         lua->pushobject(me);
         lua->pushinteger(parts);
         lua->pushobject(equipment);
-        lua->resume(3);
+        lua->call(3);
     }
 
     me.sound(SOUND::EQUIPMENT_OFF);

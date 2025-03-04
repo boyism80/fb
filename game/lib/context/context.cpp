@@ -66,7 +66,7 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     for (auto& [_, root] : ist)
     {
         auto& thread = root->initial_thread();
-        std::ignore = thread.dispatch([root](auto&) -> async::task<void> {
+        std::ignore  = thread.dispatch([root](auto&) -> async::task<void> {
             fb::model::lua::map_enum(*root);
             co_return;
         });
@@ -248,9 +248,17 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
     co_await this->save(*ch);
-    std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
-                                                                                    "/in-game/logout",
-                                                                                    internal_reqs::Logout{ch->name()});
+    try
+    {
+        std::ignore =
+            co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
+                                                                              "/in-game/logout",
+                                                                              internal_reqs::Logout{ch->name()});
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal(e.what());
+    }
 
     co_await this->update_thread(*ch);
 
@@ -754,7 +762,7 @@ void context::handle_click_npc(character& ch, npc& npc)
     ch.dialog.func("on_interact");
     ch.dialog.pushobject(ch);
     ch.dialog.pushobject(npc.based<fb::model::npc>());
-    ch.dialog.resume(2);
+    ch.dialog.call(2);
 }
 
 async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

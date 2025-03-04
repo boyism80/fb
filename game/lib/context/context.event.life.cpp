@@ -7,7 +7,7 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
     this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
 }
 
-void context::on_attack(life& me, DURATION duration)
+async::task<void> context::on_attack(life& me, DURATION duration)
 {
     auto lua = lua::new_context();
 #if defined DEBUG | defined _DEBUG
@@ -15,8 +15,8 @@ void context::on_attack(life& me, DURATION duration)
 #endif
     lua->func("on_attack");
     lua->pushobject(me);
-    if (lua->resume(1, false) == false)
-        return;
+    if (co_await lua->call(1, false) == false)
+        co_return;
 
     auto attack_count = (uint32_t)lua->tointeger(1);
     if (me.is(OBJECT_TYPE::CHARACTER))
@@ -31,7 +31,7 @@ void context::on_attack(life& me, DURATION duration)
                 lua->func(model.on_attack);
                 lua->pushobject(ch);
                 lua->pushobject(weapon);
-                lua->resume(2, false);
+                co_await lua->call(2, false);
             }
 
             if (attack_count > 0 && weapon->durability_down(attack_count))

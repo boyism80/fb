@@ -201,7 +201,7 @@ bool life::active(fb::game::spell& spell, const std::string& message)
     lua->pushobject(this);
     lua->pushobject(spell.model);
     lua->pushstring(message);
-    lua->resume(3);
+    lua->call(3);
     return true;
 }
 
@@ -246,7 +246,7 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     lua->pushobject(this);
     lua->pushobject(&to);
     lua->pushobject(spell.model);
-    lua->resume(3);
+    lua->call(3);
     return true;
 }
 
@@ -267,7 +267,7 @@ bool life::active(fb::game::spell& spell)
 
     lua->pushobject(this);
     lua->pushobject(spell.model);
-    lua->resume(2);
+    lua->call(2);
     return true;
 }
 

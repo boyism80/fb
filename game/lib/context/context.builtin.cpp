@@ -149,9 +149,8 @@ int fb::game::context::builtin_name2ch(lua_State* L)
         return 1;
     }
 
-    return context->builtin(*ch, lua, 1, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, 1, [=]() {
         lua->pushobject(ch);
-        co_return;
     });
 }
 
@@ -521,7 +520,7 @@ int fb::game::context::builtin_mknpc(lua_State* L)
         y = (uint16_t)lua->tointeger(4);
     }
 
-    return context->builtin(*map, lua, 1, [=]() -> async::task<void> {
+    return context->builtin_async(*map, lua, 1, [=]() -> async::task<void> {
         auto npc = model->make<fb::game::npc>(*context);
         lua->pushobject(npc);
         npc->direction(direction);
@@ -566,7 +565,7 @@ int fb::game::context::builtin_broadcast(lua_State* L)
     else
     {
         async::awaitable_then(context->broadcast(text, type, broad_type), [lua](auto result) {
-            lua->resume(0);
+            lua->call(0);
         });
         return lua->yield(0);
     }

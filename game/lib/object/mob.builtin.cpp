@@ -29,7 +29,7 @@ int mob::builtin_target(lua_State* L)
         target = lua->touserdata<fb::game::life>(2);
 
     auto n = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*mob, lua, n, [=]() -> async::task<void> {
+    return ctx->builtin(*mob, lua, n, [=]() {
         if (argc == 1)
         {
             if (mob->_target == nullptr)
@@ -42,7 +42,6 @@ int mob::builtin_target(lua_State* L)
             mob->target(target);
         }
 
-        co_return;
     });
 }
 
@@ -63,7 +62,7 @@ int mob::builtin_oblivion(lua_State* L)
         oblivion = lua->touserdata<fb::game::life>(2);
 
     auto n = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*mob, lua, n, [=]() -> async::task<void> {
+    return ctx->builtin(*mob, lua, n, [=]() {
         if (argc == 1)
         {
             if (mob->_oblivion == nullptr)
@@ -75,7 +74,6 @@ int mob::builtin_oblivion(lua_State* L)
         {
             mob->oblivion(oblivion);
         }
-        co_return;
     });
 }
 
@@ -91,12 +89,11 @@ int mob::builtin_owner(lua_State* L)
     if (mob == nullptr)
         return 0;
 
-    return ctx->builtin(*mob, lua, 1, [=]() -> async::task<void> {
+    return ctx->builtin(*mob, lua, 1, [=]() {
         if (ctx->alive(*mob->owner))
             lua->pushobject(mob->owner);
         else
             lua->pushnil();
-        co_return;
     });
 }
 
@@ -112,7 +109,7 @@ int mob::builtin_items(lua_State* L)
     if (mob == nullptr)
         return 0;
 
-    return ctx->builtin(*mob, lua, 1, [=]() -> async::task<void> {
+    return ctx->builtin(*mob, lua, 1, [=]() {
         lua->new_table();
         auto i = 0;
         for (auto item : mob->items())
@@ -121,6 +118,5 @@ int mob::builtin_items(lua_State* L)
             lua_rawseti(L, -2, i + 1);
             i++;
         }
-        co_return;
     });
 }

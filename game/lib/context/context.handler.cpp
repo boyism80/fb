@@ -755,15 +755,11 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     lua->pushobject(ch);
     lua->pushstring(request.message);
     lua->pushboolean(request.shout);
-    lua->resume(3, false);
-    switch (lua->state())
-    {
-    case LUA_OK:
-        auto stop = lua->toboolean(1);
-        lua->release();
-        if (stop)
-            co_return true;
-    }
+    co_await lua->call(3, false);
+    auto stop = lua->toboolean(1);
+    lua->release();
+    if (stop)
+        co_return true;
 
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
@@ -997,13 +993,15 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        ch->dialog.pushinteger(request.action).resume(1);
+        ch->dialog.pushinteger(request.action);
+        ch->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        ch->dialog.pushstring(request.message).resume(1);
+        ch->dialog.pushstring(request.message);
+        ch->dialog.resume(1);
         break;
     }
 
@@ -1020,7 +1018,8 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
 
     case dialog::interaction::MENU:
     {
-        ch->dialog.pushinteger(request.index).resume(1);
+        ch->dialog.pushinteger(request.index);
+        ch->dialog.resume(1);
         break;
     }
 
@@ -1038,13 +1037,15 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
 
     case dialog::interaction::SLOT:
     {
-        ch->dialog.pushinteger(request.index).resume(1);
+        ch->dialog.pushinteger(request.index);
+        ch->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::ITEM:
     {
-        ch->dialog.pushstring(request.name).resume(1);
+        ch->dialog.pushstring(request.name);
+        ch->dialog.resume(1);
         break;
     }
 
@@ -1135,7 +1136,7 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
 
     lua->func("on_door");
     lua->pushobject(ch);
-    lua->resume(1);
+    lua->call(1);
     co_return true;
 }
 

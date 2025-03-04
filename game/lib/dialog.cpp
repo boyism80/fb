@@ -24,7 +24,7 @@ fb::game::dialog& fb::game::dialog::resume(int argc)
     if (ctx == nullptr)
         return *this;
 
-    ctx->resume(argc, false);
+    ctx->resume(argc);
     switch (ctx->state())
     {
     case LUA_YIELD:
@@ -71,6 +71,16 @@ fb::game::dialog& fb::game::dialog::resume(int argc)
 
     prev->release();
     return this->resume(return_size);
+}
+
+fb::game::dialog& fb::game::dialog::call(int argc)
+{
+    auto ctx = this->current();
+    if (ctx == nullptr)
+        return *this;
+
+    ctx->call(argc);
+    return *this;
 }
 
 fb::game::dialog& fb::game::dialog::release()

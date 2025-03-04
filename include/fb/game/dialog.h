@@ -257,6 +257,8 @@ public:
      * @return     { description_of_the_return_value }
      */
     dialog& resume(int argc);
+
+    dialog& call(int argc);
     /**
      * @brief      { function_description }
      *

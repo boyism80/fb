@@ -39,7 +39,7 @@ void context::on_direction(object& me)
 #endif
     lua->func("on_direction");
     lua->pushobject(me);
-    lua->resume(1);
+    lua->call(1);
 
     this->send(me, fb_resp::direction(me), scope::PIVOT);
 }
@@ -114,7 +114,7 @@ void context::on_move(object& me, const fb::model::point16_t& before)
 #endif
     lua->func("on_move");
     lua->pushobject(me);
-    lua->resume(1);
+    lua->call(1);
 
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
@@ -131,7 +131,7 @@ void context::on_buff(object& me, buff& buff)
     lua->func(buff.model.buff);
     lua->pushobject(me);
     lua->pushobject(buff.model);
-    lua->resume(2);
+    lua->call(2);
 
     me.send(fb::protocol::game::response::spell_buff(buff));
 }
@@ -148,7 +148,7 @@ void context::on_unbuff(object& me, buff& buff)
     lua->func(buff.model.unbuff);
     lua->pushobject(me);
     lua->pushobject(buff.model);
-    lua->resume(2);
+    lua->call(2);
     me.send(fb_resp::spell_unbuff(buff));
 
     if (me.is(OBJECT_TYPE::CHARACTER))

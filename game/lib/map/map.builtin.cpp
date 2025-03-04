@@ -180,9 +180,8 @@ int fb::game::map::builtin_movable(lua_State* L)
         return 1;
     }
 
-    return ctx->builtin(*map, lua, 1, [=]() -> async::task<void> {
+    return ctx->builtin(*map, lua, 1, [=]() {
         lua->pushboolean(map->movable(position));
-        co_return;
     });
 }
 
@@ -343,18 +342,16 @@ int fb::game::map::builtin_at(lua_State* L)
     auto position = fb::model::point16_t{x, y};
     auto type     = argc < 4 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(4));
 
-    return ctx->builtin(*map, lua, 1, [=]() -> async::task<void> {
+    return ctx->builtin(*map, lua, 1, [=]() {
         auto nears = map->nears(fb::model::point16_t{x, y}, type);
         for (auto obj : nears)
         {
             if (obj->position() == position)
             {
                 lua->pushobject(obj);
-                co_return;
             }
         }
 
         lua->pushnil();
-        co_return;
     });
 }

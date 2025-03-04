@@ -132,13 +132,11 @@ int character::builtin_sex(lua_State* L)
 
     auto sex = static_cast<SEX>(lua->tointeger(2));
     auto n   = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->sex());
         else
             ch->sex(sex);
-
-        co_return;
     });
 }
 
@@ -437,15 +435,13 @@ int character::builtin_disguise(lua_State* L)
     };
 
     auto n = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->disguise().value());
         else if (value.has_value())
             ch->disguise(value.value());
         else
             ch->undisguise();
-
-        co_return;
     });
 }
 
@@ -1181,13 +1177,11 @@ int character::builtin_nation(lua_State* L)
 
     auto value = static_cast<NATION>(lua->tointeger(2));
     auto n     = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(static_cast<uint8_t>(ch->nation()));
         else
             ch->nation(value);
-
-        co_return;
     });
 }
 
@@ -1205,7 +1199,7 @@ int character::builtin_weapon(lua_State* L)
 
     auto weapon = lua->touserdata<fb::game::weapon>(2);
     auto n      = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() mutable -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() mutable {
         if (argc == 1)
         {
             weapon = ch->items.weapon();
@@ -1218,8 +1212,6 @@ int character::builtin_weapon(lua_State* L)
         {
             ch->items.weapon(weapon);
         }
-
-        co_return;
     });
 }
 
@@ -1237,13 +1229,11 @@ int character::builtin_title(lua_State* L)
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua->tostring(2);
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushstring(ch->title());
         else
             ch->title(value);
-
-        co_return;
     });
 }
 
@@ -1266,9 +1256,8 @@ int character::builtin_gain(lua_State* L)
         items.push_back(item);
     }
 
-    return context->builtin(*ch, lua, 0, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, 0, [=]() {
         ch->items.add(items, true);
-        co_return;
     });
 }
 
@@ -1287,13 +1276,11 @@ int character::builtin_weapon_damage(lua_State* L)
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua->tointeger(2);
 
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->weapon_damage());
         else
             ch->weapon_damage(value);
-
-        co_return;
     });
 }
 
@@ -1311,13 +1298,11 @@ int character::builtin_detect(lua_State* L)
 
     auto value = lua->toboolean(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushboolean(ch->detect());
         else
             ch->detect(value);
-
-        co_return;
     });
 }
 
@@ -1828,7 +1813,7 @@ int character::builtin_birthday(lua_State* L)
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua_type(L, 2) == LUA_TNIL ? std::nullopt : std::optional<std::uint32_t>{lua->tointeger(2)};
-    return context->builtin(*ch, lua, n, [=]() -> async::task<void> {
+    return context->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
         {
             auto& birthday = ch->birthday();
@@ -1841,7 +1826,6 @@ int character::builtin_birthday(lua_State* L)
         {
             ch->birthday(value);
         }
-        co_return;
     });
 }
 
@@ -1866,7 +1850,7 @@ int character::builtin_send_mail(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false)
         contents = lua->tostring(4);
 
-    return context->builtin(*ch, lua, 0, [=]() -> async::task<void> {
+    return context->builtin_async(*ch, lua, 0, [=]() -> async::task<void> {
         co_await context->send_mail(*ch, to, title, contents);
     });
 }

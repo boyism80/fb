@@ -586,7 +586,7 @@ void fb::game::items::pickup(bool boost)
 #endif
         lua->func("on_pickup");
         lua->pushobject(this->_owner);
-        lua->resume(1);
+        lua->call(1);
     }
     catch (std::exception& e)
     {
