@@ -487,20 +487,22 @@ int object::builtin_map(lua_State* L)
         }
     };
 
-    return ctx->builtin_async(*obj, lua, 1, [=]() -> async::task<void> {
-        if (argc == 1)
-        {
+    if (argc == 1)
+    {
+        return ctx->builtin(*obj, lua, 1, [=]() {
             auto map = obj->map();
             if (map == nullptr)
                 lua->pushnil();
             else
                 lua->pushobject(map);
-        }
-        else
-        {
+        });
+    }
+    else
+    {
+        return ctx->builtin_async(*obj, lua, 1, [=]() -> async::task<void> {
             co_await static_func(obj, map, position, lua);
-        }
-    });
+        });
+    }
 }
 
 int object::builtin_mkitem(lua_State* L)

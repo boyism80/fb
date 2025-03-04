@@ -24,6 +24,12 @@ fb::generator<std::string> fb::game::script_loader::on_ready()
         if (v.script != "")
             co_yield v.script;
     }
+
+    for (auto& [k, v] : this->_context.model.npc)
+    {
+        if (v.script != "")
+            co_yield v.script;
+    }
 }
 
 void fb::game::script_loader::on_work(const std::string& value)

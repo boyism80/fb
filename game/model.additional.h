@@ -285,14 +285,7 @@ public:                                                \
     static int builtin_sell(lua_State* L);             \
     static int builtin_sell_price(lua_State* L);       \
     static int builtin_buy(lua_State* L);              \
-    static int builtin_buy_price(lua_State* L);        \
-    static int builtin_repair(lua_State* L);           \
-    static int builtin_repair_all(lua_State* L);       \
-    static int builtin_hold_money(lua_State* L);       \
-    static int builtin_hold_item(lua_State* L);        \
-    static int builtin_return_money(lua_State* L);     \
-    static int builtin_return_item(lua_State* L);      \
-    static int builtin_rename_weapon(lua_State* L);
+    static int builtin_buy_price(lua_State* L);
 
 #define DECLARE_MOB_EXTENSION                          \
                                                        \

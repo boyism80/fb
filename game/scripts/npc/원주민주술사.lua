@@ -1,3 +1,3 @@
-function on_interact(me, npc)
+function NPC_177(me, npc)
 
 end

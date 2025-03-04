@@ -1,4 +1,4 @@
-function on_interact(me, npc)
+function NPC_28(me, npc)
 
 ::ROUTINE_INIT_1::
     local index = nil

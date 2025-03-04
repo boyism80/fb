@@ -58,12 +58,13 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        // TODO: from 굳이 호출하지 않아도 동작하도록 변경
-        // dialog.func에서 새로운 컨텍스트 추가
-        ch->dialog.load("scripts/interaction.lua");
-        ch->dialog.func("on_login");
-        ch->dialog.pushobject(ch);
-        ch->dialog.resume(1);
+        auto lua = ch->dialog.new_context();
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/interaction.lua");
+#endif
+        lua->func("on_login");
+        lua->pushobject(ch);
+        lua->resume(1);
     }
 
     ch->update(STATE_LEVEL::LEVEL_MAX);

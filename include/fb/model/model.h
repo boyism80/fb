@@ -4905,6 +4905,7 @@ DECLARE_NPC_FIELDS
 public:
     const uint32_t id;
     const std::string script;
+    const std::string click;
     const std::vector<uint32_t> sell;
     const std::optional<uint32_t> buy;
     const bool repair;
@@ -4921,6 +4922,7 @@ public:
     npc(const Json::Value& json) : fb::model::object(json),
         id(fb::model::build<uint32_t>(json["id"])),
         script(fb::model::build<std::string>(json["script"])),
+        click(fb::model::build<std::string>(json["click"])),
         sell(fb::model::build<std::vector<uint32_t>>(json["sell"])),
         buy(fb::model::build<std::optional<uint32_t>>(json["buy"])),
         repair(fb::model::build<bool>(json["repair"])),

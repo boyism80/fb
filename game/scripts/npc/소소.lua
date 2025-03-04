@@ -1,4 +1,4 @@
-function on_interact(me, npc)
+function NPC_63(me, npc)
 ::ROOT::
     local index, button = npc:list(me, '안녕하세요. 무엇을 도와드릴까요?', {'머리염색'}, false)
     if index == nil then

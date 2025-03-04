@@ -1371,6 +1371,8 @@ namespace Fb.Model
         public uint Id { get; set; }
         [JsonProperty("script")]
         public string Script { get; set; }
+        [JsonProperty("click")]
+        public string Click { get; set; }
         [JsonProperty("sell")]
         public List<uint> Sell { get; set; }
         [JsonProperty("buy")]

@@ -19,7 +19,8 @@ int fb::model::npc::builtin_input(lua_State* L)
 
     auto message = lua->tostring(3);
 
-    auto argc = lua->argc();
+    auto argc     = lua->argc();
+    auto listener = ch->get_listener<fb::game::dialog>();
     if (argc > 3)
     {
         auto message_top = lua->tostring(4);
@@ -27,11 +28,13 @@ int fb::model::npc::builtin_input(lua_State* L)
         auto maxlen      = argc < 6 ? 0xFF : (int)lua->tointeger(6);
         auto prev        = argc < 7 ? false : lua->toboolean(7);
 
-        ch->dialog.input(*npc, message, message_top, message_bot, maxlen, prev);
+        if (listener != nullptr)
+            listener->on_dialog(*ch, *npc, message, message_top, message_bot, maxlen, prev);
     }
     else
     {
-        ch->dialog.input(*npc, message);
+        if (listener != nullptr)
+            listener->on_dialog(*ch, *npc, message);
     }
     return lua->yield(1);
 }
@@ -63,7 +66,9 @@ int fb::model::npc::builtin_menu(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    ch->dialog.show(*npc, message, menus);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *npc, message, menus);
     return lua->yield(1);
 }
 
@@ -138,10 +143,14 @@ int fb::model::npc::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    if (custom_preset)
-        ch->dialog.show(*npc, message, menus, button_prev, preset);
-    else
-        ch->dialog.show(*npc, message, menus, button_prev);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+    {
+        if (custom_preset)
+            listener->on_dialog(*ch, *npc, message, menus, button_prev, preset);
+        else
+            listener->on_dialog(*ch, *npc, message, menus, button_prev);
+    }
 
     return lua->yield(1);
 }
@@ -207,7 +216,9 @@ int fb::model::npc::builtin_item(lua_State* L)
         lua->pop(1);
     }
 
-    ch->dialog.show(*npc, message, items);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *npc, message, items);
     return lua->yield(1);
 }
 
@@ -237,7 +248,9 @@ int fb::model::npc::builtin_slot(lua_State* L)
         lua->pop(1);
     }
 
-    ch->dialog.show(*npc, message, slots);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *npc, message, slots);
     return lua->yield(1);
 }
 
@@ -341,139 +354,6 @@ int fb::model::npc::builtin_buy(lua_State* L)
         lua->pushnil();
 
     return 1;
-}
-
-int fb::model::npc::builtin_repair(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("repair").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
-}
-
-int fb::model::npc::builtin_repair_all(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("repair_all").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
-}
-
-int fb::model::npc::builtin_hold_money(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("hold_money").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
-}
-
-int fb::model::npc::builtin_hold_item(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("hold_item").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
-}
-
-int fb::model::npc::builtin_return_money(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("return_money").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
-}
-
-int fb::model::npc::builtin_return_item(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("return_item").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
-}
-
-int fb::model::npc::builtin_rename_weapon(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto npc     = lua->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = lua->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("rename_weapon").pushobject(ch).pushobject(npc).resume(2);
-    return lua->yield(1);
 }
 
 fb::model::npc* fb::model::__npc::name2npc(const std::string& name) const

@@ -1823,12 +1823,11 @@ public:
      * @param[in]  button_next  The button next
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::object&      object,
-                   const std::string&            message,
-                   bool                          button_prev,
-                   bool                          button_next,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character&               me,
+                   const fb::model::object& object,
+                   const std::string&       message,
+                   bool                     button_prev,
+                   bool                     button_next) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1842,8 +1841,7 @@ public:
     void on_dialog(character&                      me,
                    const fb::model::npc&           npc,
                    const std::string&              message,
-                   const std::vector<std::string>& menus,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+                   const std::vector<std::string>& menus) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1859,8 +1857,7 @@ public:
                    const fb::model::npc&           npc,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
-                   bool                            button_prev,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+                   bool                            button_prev) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1878,8 +1875,7 @@ public:
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
-                   const dialog::preset&           preset,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+                   const dialog::preset&           preset) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1890,11 +1886,10 @@ public:
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::npc&         npc,
-                   const std::string&            message,
-                   const std::vector<uint8_t>&   item_slots,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character&                  me,
+                   const fb::model::npc&       npc,
+                   const std::string&          message,
+                   const std::vector<uint8_t>& item_slots) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1910,8 +1905,7 @@ public:
                    const fb::model::npc&               npc,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
-                   uint16_t                            pursuit = 0xFFFF,
-                   fb::game::dialog::interaction interaction   = fb::game::dialog::interaction::NORMAL) override final;
+                   uint16_t                            pursuit = 0xFFFF) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1921,10 +1915,7 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::npc&         npc,
-                   const std::string&            message,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1938,14 +1929,13 @@ public:
      * @param[in]  prev         The previous
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::npc&         npc,
-                   const std::string&            message,
-                   const std::string&            top,
-                   const std::string&            bottom,
-                   int                           maxlen      = 0xFF,
-                   bool                          prev        = false,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character&            me,
+                   const fb::model::npc& npc,
+                   const std::string&    message,
+                   const std::string&    top,
+                   const std::string&    bottom,
+                   int                   maxlen = 0xFF,
+                   bool                  prev   = false) override final;
 
 public:
     /**

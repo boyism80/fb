@@ -161,10 +161,11 @@ int context::argc()
 
 async::task<bool> context::call(int argc, bool auto_release)
 {
-    this->_promise      = std::make_shared<async::task_completion_source<bool>>();
+    auto promise        = std::make_shared<async::task_completion_source<bool>>();
+    this->_promise      = promise;
     this->_auto_release = auto_release;
     this->resume(argc);
-    return this->_promise->task();
+    return promise->task();
 }
 
 void fb::lua::context::resume(int argc)
@@ -197,9 +198,10 @@ void fb::lua::context::resume(int argc)
     case LUA_ERRERR:
     {
         lua_pop(*this, 1);
-        root->revoke(*this);
         auto message = std::format("lua error message : {}", this->tostring(-1).c_str());
-        this->_promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
+        auto promise = std::shared_ptr<async::task_completion_source<bool>>{this->_promise};
+        root->revoke(*this);
+        promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
     }
     break;
 

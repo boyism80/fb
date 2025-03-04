@@ -44,13 +44,6 @@ IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
 {"sell_price",          fb::model::npc::builtin_sell_price},
 {"buy",                 fb::model::npc::builtin_buy},
 {"buy_price",           fb::model::npc::builtin_buy_price},
-{"repair",              fb::model::npc::builtin_repair},
-{"repair_all",          fb::model::npc::builtin_repair_all},
-{"hold_money",          fb::model::npc::builtin_hold_money},
-{"hold_item",           fb::model::npc::builtin_hold_item},
-{"return_money",        fb::model::npc::builtin_return_money},
-{"return_item",         fb::model::npc::builtin_return_item},
-{"rename_weapon",       fb::model::npc::builtin_rename_weapon},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off

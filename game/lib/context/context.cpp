@@ -755,14 +755,16 @@ void context::handle_click_npc(character& ch, npc& npc)
         return;
 
     ch.dialog.release();
+
+    auto lua = ch.dialog.new_context();
 #if defined DEBUG | defined _DEBUG
-    ch.dialog.load("scripts/npc.lua");
+    lua->load("scripts/npc.lua");
+    lua->load(model.script);
 #endif
-    ch.dialog.load(model.script.c_str());
-    ch.dialog.func("on_interact");
-    ch.dialog.pushobject(ch);
-    ch.dialog.pushobject(npc.based<fb::model::npc>());
-    ch.dialog.call(2);
+    lua->func(model.click);
+    lua->pushobject(ch);
+    lua->pushobject(npc.based<fb::model::npc>());
+    lua->call(2);
 }
 
 async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

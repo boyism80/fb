@@ -75,8 +75,7 @@ public:
                                const fb::model::object& object,
                                const std::string&       message,
                                bool                     button_prev,
-                               bool                     button_next,
-                               interaction              interaction = interaction::NORMAL) = 0;
+                               bool                     button_next) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -89,8 +88,7 @@ public:
         virtual void on_dialog(character&                      me,
                                const fb::model::npc&           npc,
                                const std::string&              message,
-                               const std::vector<std::string>& menus,
-                               interaction                     interaction = interaction::NORMAL) = 0;
+                               const std::vector<std::string>& menus) = 0;
 
         /**
          * @brief      Called on dialog.
@@ -106,8 +104,7 @@ public:
                                const fb::model::npc&           npc,
                                const std::string&              message,
                                const std::vector<std::string>& menus,
-                               bool                            button_prev,
-                               interaction                     interaction = interaction::NORMAL) = 0;
+                               bool                            button_prev) = 0;
 
         /**
          * @brief      Called on dialog.
@@ -125,8 +122,7 @@ public:
                                const std::string&              message,
                                const std::vector<std::string>& menus,
                                bool                            button_prev,
-                               const dialog::preset&           preset,
-                               interaction                     interaction = interaction::NORMAL) = 0;
+                               const dialog::preset&           preset) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -139,8 +135,7 @@ public:
         virtual void on_dialog(character&                  me,
                                const fb::model::npc&       npc,
                                const std::string&          message,
-                               const std::vector<uint8_t>& item_slots,
-                               interaction                 interaction = interaction::NORMAL) = 0;
+                               const std::vector<uint8_t>& item_slots) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -155,8 +150,7 @@ public:
                                const fb::model::npc& npc,
                                const std::string&    message,
                                const item_pairs&     pairs,
-                               uint16_t              pursuit     = 0xFFFF,
-                               interaction           interaction = interaction::NORMAL) = 0;
+                               uint16_t              pursuit = 0xFFFF) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -165,10 +159,7 @@ public:
          * @param[in]  message      The message
          * @param[in]  interaction  The interaction
          */
-        virtual void on_dialog(character&            me,
-                               const fb::model::npc& npc,
-                               const std::string&    message,
-                               interaction           interaction = interaction::NORMAL) = 0;
+        virtual void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) = 0;
         /**
          * @brief      Called on dialog.
          *
@@ -186,9 +177,8 @@ public:
                                const std::string&    message,
                                const std::string&    top,
                                const std::string&    bottom,
-                               int                   maxlen      = 0xFF,
-                               bool                  prev        = false,
-                               interaction           interaction = interaction::NORMAL) = 0;
+                               int                   maxlen = 0xFF,
+                               bool                  prev   = false) = 0;
     };
 
 public:
@@ -228,6 +218,13 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @return     { description_of_the_return_value }
+     */
+    fb::lua::context* new_context();
+
+    /**
+     * @brief      { function_description }
+     *
      * @param[in]  fmt   The format
      * @param      args  The arguments
      *
@@ -257,8 +254,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     dialog& resume(int argc);
-
-    dialog& call(int argc);
     /**
      * @brief      { function_description }
      *
@@ -354,8 +349,7 @@ public:
     void show(const fb::model::object& object,
               const std::string&       message,
               bool                     button_prev = false,
-              bool                     button_next = true,
-              interaction              interaction = interaction::NORMAL);
+              bool                     button_next = true);
     /**
      * @brief      { function_description }
      *
@@ -364,10 +358,7 @@ public:
      * @param[in]  menus        The menus
      * @param[in]  interaction  The interaction
      */
-    void show(const fb::model::npc&           npc,
-              const std::string&              message,
-              const std::vector<std::string>& menus,
-              interaction                     interaction = interaction::MENU);
+    void show(const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus);
 
     /**
      * @brief      { function_description }
@@ -380,8 +371,7 @@ public:
     void show(const fb::model::npc&           npc,
               const std::string&              message,
               const std::vector<std::string>& menus,
-              bool                            button_prev,
-              interaction                     interaction = interaction::LIST);
+              bool                            button_prev);
 
     /**
      * @brief      { function_description }
@@ -397,8 +387,7 @@ public:
               const std::string&              message,
               const std::vector<std::string>& menus,
               bool                            button_prev,
-              const fb::game::dialog::preset& preset,
-              interaction                     interaction = interaction::LIST);
+              const fb::game::dialog::preset& preset);
 
     /**
      * @brief      { function_description }
@@ -408,10 +397,7 @@ public:
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */
-    void show(const fb::model::npc&       npc,
-              const std::string&          message,
-              const std::vector<uint8_t>& item_slots,
-              interaction                 interaction = interaction::SLOT);
+    void show(const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots);
     /**
      * @brief      { function_description }
      *
@@ -421,11 +407,8 @@ public:
      * @param[in]  pursuit      The pursuit
      * @param[in]  interaction  The interaction
      */
-    void show(const fb::model::npc& npc,
-              const std::string&    message,
-              const item_pairs&     pairs,
-              uint16_t              pursuit     = 0xFFFF,
-              interaction           interaction = interaction::ITEM);
+    void
+    show(const fb::model::npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF);
     /**
      * @brief      { function_description }
      *
@@ -433,7 +416,7 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    void input(const fb::model::npc& npc, const std::string& message, interaction interaction = interaction::INPUT);
+    void input(const fb::model::npc& npc, const std::string& message);
     /**
      * @brief      { function_description }
      *
@@ -449,9 +432,8 @@ public:
                const std::string&    message,
                const std::string&    top,
                const std::string&    bottom,
-               int                   maxlen      = 0xFF,
-               bool                  prev        = false,
-               interaction           interaction = interaction::INPUT_EX);
+               int                   maxlen = 0xFF,
+               bool                  prev   = false);
 };
 
 /**

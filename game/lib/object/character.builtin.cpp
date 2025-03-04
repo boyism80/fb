@@ -1702,10 +1702,20 @@ int character::builtin_script(lua_State* L)
     if (argc >= 2 && lua_type(L, 2) == LUA_TSTRING)
         name = lua->tostring(2);
 
-    ch->dialog.load("scripts/script.lua");
-    ch->dialog.func(name);
-    ch->dialog.pushobject(ch);
-    ch->dialog.resume(1);
+    auto new_lua = ch->dialog.new_context();
+    new_lua->load("scripts/script.lua");
+    new_lua->func(name);
+    new_lua->pushobject(ch);
+    async::awaitable_then(new_lua->call(1), [](auto result) {
+        try
+        {
+            result();
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
+    });
     return 0;
 }
 

@@ -1,4 +1,4 @@
-function on_interact(me, npc)
+function NPC_158(me, npc)
 ::ROUTINE_CHANGE_ARMOR_COLOR_0::
     local index, button = npc:list(me, '안녕하세요. 어떻게 오셨나요?', {'무한 복장', '일반 복장'})
     if index == nil then
