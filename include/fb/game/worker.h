@@ -39,31 +39,31 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::generator<input_type> on_ready();
+    fb::generator<input_type> on_ready() override final;
     /**
      * @brief      Called on work.
      *
      * @param[in]  value  The value
      */
-    void on_work(const input_type& value);
+    void on_work(const input_type& value) override final;
     /**
      * @brief      Called when worked.
      *
      * @param[in]  input    The input
      * @param[in]  percent  The percent
      */
-    void on_worked(const input_type& input, double percent);
+    void on_worked(const input_type& input, double percent) override final;
     /**
      * @brief      Called on error.
      *
      * @param[in]  input  The input
      * @param      e      { parameter_description }
      */
-    void on_error(const input_type& input, std::exception& e);
+    void on_error(const input_type& input, std::exception& e) override final;
     /**
      * @brief      Called on finish.
      */
-    void on_finish();
+    void on_finish() override final;
 };
 
 /**
@@ -95,34 +95,34 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::generator<input_type> on_ready();
+    fb::generator<input_type> on_ready() override final;
     /**
      * @brief      Called on work.
      *
      * @param[in]  value  The value
      */
-    void on_work(const input_type& value);
+    void on_work(const input_type& value) override final;
     /**
      * @brief      Called when worked.
      *
      * @param[in]  input    The input
      * @param[in]  percent  The percent
      */
-    void on_worked(const input_type& input, double percent);
+    void on_worked(const input_type& input, double percent) override final;
     /**
      * @brief      Called on error.
      *
      * @param[in]  input  The input
      * @param      e      { parameter_description }
      */
-    void on_error(const input_type& input, std::exception& e);
+    void on_error(const input_type& input, std::exception& e) override final;
     /**
      * @brief      Called on finish.
      */
-    void on_finish();
+    void on_finish() override final;
 };
 
-class script_loader : public fb::parallel_worker<std::string>
+class script_loader : public fb::parallel_worker<std::function<async::task<void>()>>
 {
 private:
     fb::game::context& _context;
@@ -145,31 +145,31 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::generator<std::string> on_ready();
+    fb::generator<std::function<async::task<void>()>> on_ready() override final;
     /**
      * @brief      Called on work.
      *
      * @param[in]  value  The value
      */
-    void on_work(const std::string& value);
+    void on_work(const std::function<async::task<void>()>& value) override final;
     /**
      * @brief      Called when worked.
      *
      * @param[in]  input    The input
      * @param[in]  percent  The percent
      */
-    void on_worked(const std::string& input, double percent);
+    void on_worked(const std::function<async::task<void>()>& input, double percent) override final;
     /**
      * @brief      Called on error.
      *
      * @param[in]  input  The input
      * @param      e      { parameter_description }
      */
-    void on_error(const std::string& input, std::exception& e);
+    void on_error(const std::function<async::task<void>()>& input, std::exception& e) override final;
     /**
      * @brief      Called on finish.
      */
-    void on_finish();
+    void on_finish() override final;
 };
 
 }} // namespace fb::game

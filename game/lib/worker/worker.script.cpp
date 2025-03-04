@@ -5,44 +5,60 @@ fb::game::script_loader::script_loader(fb::game::context& context) :
     _context(context)
 { }
 
-fb::generator<std::string> fb::game::script_loader::on_ready()
+fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_ready()
 {
-    co_yield "scripts/spell.lua";
-    co_yield "scripts/npc.lua";
-    co_yield "scripts/interaction.lua";
-    co_yield "scripts/command.lua";
-    co_yield "scripts/script.lua";
+    auto scripts = std::set<std::string>{};
+    scripts.insert("scripts/spell.lua");
+    scripts.insert("scripts/npc.lua");
+    scripts.insert("scripts/interaction.lua");
+    scripts.insert("scripts/command.lua");
+    scripts.insert("scripts/script.lua");
 
     for (auto& [k, v] : this->_context.model.spell)
     {
         if (v.script != "")
-            co_yield v.script;
+            scripts.insert(v.script);
     }
 
     for (auto& [k, v] : this->_context.model.item)
     {
         if (v.script != "")
-            co_yield v.script;
+            scripts.insert(v.script);
     }
 
     for (auto& [k, v] : this->_context.model.npc)
     {
         if (v.script != "")
-            co_yield v.script;
+            scripts.insert(v.script);
+    }
+
+    static auto& ist = fb::lua::context_pool::ist();
+    for (auto& [_, root] : ist)
+    {
+        auto& thread = root->initial_thread();
+        for (auto& script : scripts)
+        {
+            co_yield [&thread, root, script]() -> async::task<void> {
+                co_await thread.dispatch([root, script](auto&) -> async::task<void> {
+                    root->dump(script);
+                    co_return;
+                });
+            };
+        }
     }
 }
 
-void fb::game::script_loader::on_work(const std::string& value)
+void fb::game::script_loader::on_work(const std::function<async::task<void>()>& value)
 {
-    async::awaitable_get(fb::lua::dump(value));
+    async::awaitable_get(value());
 }
 
-void fb::game::script_loader::on_worked(const std::string& input, double percent)
+void fb::game::script_loader::on_worked(const std::function<async::task<void>()>& input, double percent)
 {
     fb::console::put("* [{:0.2f}%] 스크립트 파일을 읽었습니다.", percent);
 }
 
-void fb::game::script_loader::on_error(const std::string& input, std::exception& e)
+void fb::game::script_loader::on_error(const std::function<async::task<void>()>& input, std::exception& e)
 {
     fb::console::comment("    - {}", e.what());
 }

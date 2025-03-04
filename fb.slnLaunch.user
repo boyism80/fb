@@ -11,6 +11,21 @@
         "Path": "internal\\internal.csproj",
         "Action": "Start",
         "DebugTarget": "internal"
+      },
+      {
+        "Path": "login\\login.vcxproj",
+        "Action": "Start",
+        "DebugTarget": "Local Windows Debugger"
+      },
+      {
+        "Path": "gateway\\gateway.vcxproj",
+        "Action": "Start",
+        "DebugTarget": "Local Windows Debugger"
+      },
+      {
+        "Path": "write-back\\write-back.csproj",
+        "Action": "Start",
+        "DebugTarget": "write-back"
       }
     ]
   }

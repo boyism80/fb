@@ -412,58 +412,50 @@ int object::builtin_map(lua_State* L)
     auto position = std::optional<fb::model::point16_t>{};
     if (argc > 1)
     {
-        try
+        if (lua->is_obj(2))
         {
-            if (lua->is_obj(2))
-            {
-                map = lua->touserdata<fb::game::map>(2);
-                if (map == nullptr)
-                    throw std::runtime_error("올바르지 않은 맵입니다.");
-            }
-            else if (lua->is_num(2))
-            {
-                auto id = lua->tointeger(2);
-                if (ctx->maps.contains(id) == false)
-                    throw std::runtime_error("올바르지 않은 맵입니다.");
-                map = &ctx->maps[id];
-            }
-            else if (lua->is_str(2))
-            {
-                map = ctx->maps.name2map(lua->tostring(2));
-                if (map == nullptr)
-                    throw std::runtime_error("올바르지 않은 맵입니다.");
-            }
-            else
-            {
-                throw std::runtime_error("올바르지 않은 맵입니다.");
-            }
-
-            if (lua->is_table(3))
-            {
-                lua->rawgeti(3, 1);
-                auto x = (uint16_t)lua->tointeger(-1);
-                lua->remove(-1);
-
-                lua->rawgeti(3, 2);
-                auto y = (uint16_t)lua->tointeger(-1);
-                lua->remove(-1);
-
-                position = fb::model::point16_t{x, y};
-            }
-            else if (lua->is_num(3) && lua->is_num(4))
-            {
-                auto x   = (uint16_t)lua->tointeger(3);
-                auto y   = (uint16_t)lua->tointeger(4);
-                position = fb::model::point16_t{x, y};
-            }
-            else
-            {
-            }
+            map = lua->touserdata<fb::game::map>(2);
         }
-        catch (std::exception& e)
+        else if (lua->is_num(2))
         {
-            lua->pushstring(e.what());
+            auto id = lua->tointeger(2);
+            if (ctx->maps.contains(id))
+                map = &ctx->maps[id];
+        }
+        else if (lua->is_str(2))
+        {
+            map = ctx->maps.name2map(lua->tostring(2));
+        }
+        else
+        {
+        }
+
+        if (map == nullptr)
+        {
+            lua->pushstring("올바르지 않은 맵입니다.");
             return 1;
+        }
+
+        if (lua->is_table(3))
+        {
+            lua->rawgeti(3, 1);
+            auto x = (uint16_t)lua->tointeger(-1);
+            lua->remove(-1);
+
+            lua->rawgeti(3, 2);
+            auto y = (uint16_t)lua->tointeger(-1);
+            lua->remove(-1);
+
+            position = fb::model::point16_t{x, y};
+        }
+        else if (lua->is_num(3) && lua->is_num(4))
+        {
+            auto x   = (uint16_t)lua->tointeger(3);
+            auto y   = (uint16_t)lua->tointeger(4);
+            position = fb::model::point16_t{x, y};
+        }
+        else
+        {
         }
     }
 
