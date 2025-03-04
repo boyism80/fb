@@ -499,9 +499,30 @@ int object::builtin_map(lua_State* L)
     }
     else
     {
-        return ctx->builtin_async(*obj, lua, 1, [=]() -> async::task<void> {
-            co_await static_func(obj, map, position, lua);
-        });
+        auto no_async = false;
+        if (obj->_map == nullptr)
+            no_async = false;
+        else if (obj->_map->model.host != map->model.host)
+            no_async = false;
+        else if (obj->_map->thread() != map->thread())
+            no_async = false;
+        else
+            no_async = true;
+
+        if (no_async)
+        {
+            auto task = static_func(obj, map, position, lua);
+
+            return ctx->builtin(*obj, lua, 1, [=]() {
+                async::awaitable_get(static_func(obj, map, position, lua));
+            });
+        }
+        else
+        {
+            return ctx->builtin_async(*obj, lua, 1, [=]() -> async::task<void> {
+                co_await static_func(obj, map, position, lua);
+            });
+        }
     }
 }
 
