@@ -279,6 +279,10 @@ bool root::dump(const std::string& path)
 
 context* root::pop()
 {
+    // 데드락 요소
+    // root::pop 메소드에서 락 순서는
+    // 1. _mutex
+    // 2. context_pool::ist().record에서 _mapping_lock
     auto _ = std::lock_guard(this->_mutex);
 
     if (this->idle.empty() == false)
@@ -333,6 +337,10 @@ void root::release(context& ctx)
 
 void root::revoke(context& ctx)
 {
+    // 데드락 요소
+    // root::revoke 메소드에서 락 순서는
+    // 1. _mutex
+    // 2. context_pool::ist().unrecord에서 _mapping_lock
     auto _ = std::lock_guard(this->_mutex);
 
     auto i = this->busy.find(ctx);
@@ -372,14 +380,22 @@ context* fb::lua::context_pool::pop()
 
 context* fb::lua::context_pool::get(lua_State* ctx)
 {
-    auto _ = std::shared_lock<std::shared_mutex>(this->_mapping_lock);
+    // 데드락 요소
+    // context_pool::get 메소드에서 락 순서는
+    // 1. _mapping_lock
+    // 2. root::get 메소드에서 root::_mutex
+    // root::pop과 root::revoke 메소드에서 락이 걸리는 순서와 역전되어 데드락 발생
+    // 해결 : 임계영역 수정
+    std::thread::id id;
+    {
+        auto _ = std::shared_lock<std::shared_mutex>(this->_mapping_lock);
+        if (this->_mapping.contains(ctx) == false)
+            return nullptr;
 
-    if (this->_mapping.contains(ctx) == false)
-        return nullptr;
-
-    auto& id = this->_mapping[ctx];
-    if (this->_roots.contains(id) == false)
-        return nullptr;
+        id = this->_mapping[ctx];
+        if (this->_roots.contains(id) == false)
+            return nullptr;
+    }
 
     return this->_roots[id]->get(ctx);
 }
@@ -395,17 +411,6 @@ void fb::lua::context_pool::setup(fb::thread_container& threads)
         auto thread = threads.at(i);
         this->_roots.insert({thread->id(), new root(*thread)});
     }
-
-    // for (auto& [tid, root] : this->_roots)
-    //{
-    //     auto thread = threads.at(tid);
-    //     co_await thread->switching();
-
-    //    for (auto& fn : this->_setup_funcs)
-    //    {
-    //        fn(*root);
-    //    }
-    //}
 }
 
 context_pool::base_type::iterator fb::lua::context_pool::begin()
