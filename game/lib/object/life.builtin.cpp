@@ -347,7 +347,6 @@ int fb::game::life::builtin_cc(lua_State* L)
             lua->pushinteger(static_cast<uint32_t>(me->crowd_control()));
         else
             me->crowd_control(cc);
-
     });
 }
 
@@ -424,7 +423,6 @@ int fb::game::life::builtin_damage_rate(lua_State* L)
             lua->pushinteger(me->damage_rate());
         else
             me->damage_rate(value);
-
     });
 }
 
@@ -447,7 +445,6 @@ int fb::game::life::builtin_damage_derate(lua_State* L)
             lua->pushinteger(me->damage_derate());
         else
             me->damage_derate(value);
-
     });
 }
 
@@ -470,7 +467,6 @@ int fb::game::life::builtin_skill_damage_rate(lua_State* L)
             lua->pushinteger(me->skill_damage_rate());
         else
             me->skill_damage_rate(value);
-
     });
 }
 
@@ -493,7 +489,6 @@ int fb::game::life::builtin_paralysis(lua_State* L)
             lua->pushboolean(obj->paralysis());
         else
             obj->paralysis(value);
-
     });
 }
 
@@ -516,7 +511,6 @@ int fb::game::life::builtin_invincible(lua_State* L)
             lua->pushboolean(obj->invincible());
         else
             obj->invincible(value);
-
     });
 }
 
@@ -539,7 +533,6 @@ int fb::game::life::builtin_cover(lua_State* L)
             lua->pushboolean(obj->cover());
         else
             obj->cover(value);
-
     });
 }
 
@@ -580,7 +573,6 @@ int fb::game::life::builtin_buff_hp(lua_State* L)
             lua->pushinteger(object->buff_hp());
         else
             object->buff_hp(value);
-
     });
 }
 
@@ -635,7 +627,6 @@ int fb::game::life::builtin_buff_mp(lua_State* L)
             lua->pushinteger(object->buff_mp());
         else
             object->buff_mp(value);
-
     });
 }
 
@@ -690,7 +681,6 @@ int fb::game::life::builtin_buff_str(lua_State* L)
             lua->pushinteger(object->buff_str());
         else
             object->buff_str(value);
-
     });
 }
 
@@ -745,7 +735,6 @@ int fb::game::life::builtin_buff_dex(lua_State* L)
             lua->pushinteger(object->buff_dex());
         else
             object->buff_dex(value);
-
     });
 }
 
@@ -800,7 +789,6 @@ int fb::game::life::builtin_buff_int(lua_State* L)
             lua->pushinteger(object->buff_int());
         else
             object->buff_int(value);
-
     });
 }
 
@@ -855,7 +843,6 @@ int fb::game::life::builtin_buff_phydef(lua_State* L)
             lua->pushinteger(object->buff_phydef());
         else
             object->buff_phydef(value);
-
     });
 }
 
@@ -910,7 +897,6 @@ int fb::game::life::builtin_buff_magdef(lua_State* L)
             lua->pushinteger(object->buff_magdef());
         else
             object->buff_magdef(value);
-
     });
 }
 
@@ -965,7 +951,6 @@ int fb::game::life::builtin_buff_dam(lua_State* L)
             lua->pushinteger(object->buff_dam());
         else
             object->buff_dam(value);
-
     });
 }
 
@@ -1020,7 +1005,6 @@ int fb::game::life::builtin_buff_hit(lua_State* L)
             lua->pushinteger(object->buff_hit());
         else
             object->buff_hit(value);
-
     });
 }
 

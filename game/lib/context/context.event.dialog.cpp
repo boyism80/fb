@@ -56,9 +56,7 @@ void context::on_dialog(character&                me,
     me.send(fb_resp::dialog_item(npc, pairs, message, pursuit));
 }
 
-void context::on_dialog(character&            me,
-                        const fb::model::npc& npc,
-                        const std::string&    message)
+void context::on_dialog(character& me, const fb::model::npc& npc, const std::string& message)
 {
     me.send(fb_resp::dialog_input(npc, message));
 }

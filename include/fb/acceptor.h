@@ -367,7 +367,7 @@ private:
         {
             std::ignore = co_await this->handle_disconnected(socket);
         }
-        catch(std::exception& e)
+        catch (std::exception& e)
         {
             fb::logger::fatal(e.what());
         }

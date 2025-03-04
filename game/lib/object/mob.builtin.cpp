@@ -41,7 +41,6 @@ int mob::builtin_target(lua_State* L)
         {
             mob->target(target);
         }
-
     });
 }
 
