@@ -1,4 +1,4 @@
-function on_interact(me, npc)
+function NPC_2(me, npc)
     local class = me:class()
     if class == 0 then
         npc:dialog(me, '평민은 승급할 수 없습니다.')

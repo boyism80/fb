@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 청일기창 사용 스크립트
+function ON_ACTIVE_87(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 청일기창 해제 스크립트
+function ON_INACTIVE_87(me, item)
 
 end

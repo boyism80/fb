@@ -182,19 +182,26 @@ bool life::alive() const
 bool life::active(fb::game::spell& spell, const std::string& message)
 {
     this->assert_thread();
-    auto thread = fb::lua::new_context();
-    if (thread == nullptr)
+
+    if (spell.model.cast == "")
         return false;
 
-    thread->from(spell.model.cast.c_str());
-    thread->func("on_cast");
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        return false;
+
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/spell.lua");
+    lua->load(spell.model.script);
+#endif
+    lua->func(spell.model.cast);
     if (spell.model.type != SPELL_TYPE::INPUT)
         return false;
 
-    thread->pushobject(this);
-    thread->pushobject(spell.model);
-    thread->pushstring(message);
-    thread->resume(3);
+    lua->pushobject(this);
+    lua->pushobject(spell.model);
+    lua->pushstring(message);
+    std::ignore = lua->call(3);
     return true;
 }
 
@@ -214,12 +221,15 @@ bool life::active(fb::game::spell& spell, uint32_t fd)
 bool life::active(fb::game::spell& spell, fb::game::object& to)
 {
     this->assert_thread();
-    auto thread = fb::lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return false;
 
-    thread->from(spell.model.cast.c_str());
-    thread->func("on_cast");
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/spell.lua");
+    lua->load(spell.model.script);
+#endif
+    lua->func(spell.model.cast);
     if (spell.model.type != SPELL_TYPE::TARGET)
         return false;
 
@@ -233,28 +243,31 @@ bool life::active(fb::game::spell& spell, fb::game::object& to)
     if (this->sight(to) == false)
         return true;
 
-    thread->pushobject(this);
-    thread->pushobject(&to);
-    thread->pushobject(spell.model);
-    thread->resume(3);
+    lua->pushobject(this);
+    lua->pushobject(&to);
+    lua->pushobject(spell.model);
+    std::ignore = lua->call(3);
     return true;
 }
 
 bool life::active(fb::game::spell& spell)
 {
     this->assert_thread();
-    auto thread = fb::lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return false;
 
-    thread->from(spell.model.cast.c_str());
-    thread->func("on_cast");
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/spell.lua");
+    lua->load(spell.model.script);
+#endif
+    lua->func(spell.model.cast);
     if (spell.model.type != SPELL_TYPE::NORMAL)
         return false;
 
-    thread->pushobject(this);
-    thread->pushobject(spell.model);
-    thread->resume(2);
+    lua->pushobject(this);
+    lua->pushobject(spell.model);
+    std::ignore = lua->call(2);
     return true;
 }
 

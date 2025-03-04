@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 귀염추혼소 캐스팅
+function ON_CAST_4021(me, spell)
     local mp = 600
     local sound = 79
     local effect = 39
@@ -16,10 +17,12 @@ function on_cast(me, spell)
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
 end
 
-function on_buff(me, spell)
+-- 귀염추혼소 버프 효과
+function ON_BUFF_4021(me, spell)
     me:buff_phydef(me:buff_phydef() + 50)
 end
 
-function on_unbuff(me, spell)
+-- 귀염추혼소 버프 해제 효과
+function ON_UNBUFF_4021(me, spell)
     me:buff_phydef(me:buff_phydef() - 50)
 end

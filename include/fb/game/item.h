@@ -259,7 +259,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_model(lua_State* lua);
+    static int builtin_model(lua_State* L);
     /**
      * @brief      { function_description }
      *
@@ -267,7 +267,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_count(lua_State* lua);
+    static int builtin_count(lua_State* L);
     /**
      * @brief      { function_description }
      *
@@ -275,7 +275,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_durability(lua_State* lua);
+    static int builtin_durability(lua_State* L);
     /**
      * @brief      { function_description }
      *
@@ -283,7 +283,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_rename(lua_State* lua);
+    static int builtin_rename(lua_State* L);
 };
 
 /**

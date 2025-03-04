@@ -1,3 +1,4 @@
-function on_active(me, item)
+-- 닭고기 사용 스크립트
+function ON_ACTIVE_3027(me, item)
 
 end

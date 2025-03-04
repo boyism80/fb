@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 건곤대나이 캐스팅
+function ON_CAST_1014(me, spell)
     local effect = 6
     local sound = 14
     local hp = me:hp()*2 // 3

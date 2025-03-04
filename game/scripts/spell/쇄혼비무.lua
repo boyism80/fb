@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 쇄혼비무 캐스팅
+function ON_CAST_1019(me, spell)
     local mp = 140
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
@@ -45,7 +46,8 @@ function on_cast(me, spell)
     end
 end
 
-function on_cast(me, spell)
+-- 쇄혼비무 캐스팅
+function ON_CAST_1019(me, spell)
     local map = me:map()
     if map == nil then
         return

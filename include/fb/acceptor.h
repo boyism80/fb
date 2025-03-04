@@ -363,7 +363,14 @@ private:
 private:
     async::task<void> erase(fb::socket<T>& socket)
     {
-        std::ignore = co_await this->handle_disconnected(socket);
+        try
+        {
+            std::ignore = co_await this->handle_disconnected(socket);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
         this->pop_alive(socket);
 
         this->_sockets.lock([fd = socket.fd()](auto& container) {

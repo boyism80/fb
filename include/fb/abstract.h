@@ -86,7 +86,20 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    int builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn);
+    int builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<void()>& fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      obj   The object
+     * @param      lua   The lua
+     * @param[in]  n     { parameter_description }
+     * @param[in]  fn    The function
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int
+    builtin_async(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn);
 
 public:
     operator boost::asio::io_context& () const;

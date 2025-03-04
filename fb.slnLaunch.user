@@ -3,17 +3,7 @@
     "Name": "New Profile",
     "Projects": [
       {
-        "Path": "login\\login.vcxproj",
-        "Action": "Start",
-        "DebugTarget": "Local Windows Debugger"
-      },
-      {
         "Path": "game\\game.vcxproj",
-        "Action": "Start",
-        "DebugTarget": "Local Windows Debugger"
-      },
-      {
-        "Path": "gateway\\gateway.vcxproj",
         "Action": "Start",
         "DebugTarget": "Local Windows Debugger"
       },
@@ -21,11 +11,6 @@
         "Path": "internal\\internal.csproj",
         "Action": "Start",
         "DebugTarget": "internal"
-      },
-      {
-        "Path": "write-back\\write-back.csproj",
-        "Action": "Start",
-        "DebugTarget": "write-back"
       }
     ]
   }

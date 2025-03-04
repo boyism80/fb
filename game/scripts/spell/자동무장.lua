@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 자동무장 캐스팅
+function ON_CAST_8(me, spell)
     if me:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         return false
     end
@@ -8,10 +9,12 @@ function on_cast(me, spell)
     me:buff(spell, 180, me)
 end
 
-function on_buff(me, spell)
+-- 자동무장 버프 효과
+function ON_BUFF_8(me, spell)
     me:buff_phydef(me:buff_phydef() -10)
 end
 
-function on_unbuff(me, spell)
+-- 자동무장 버프 해제 효과
+function ON_UNBUFF_8(me, spell)
     me:buff_phydef(me:buff_phydef() + 10)
 end

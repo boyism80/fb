@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 심안투영 캐스팅
+function ON_CAST_4008(me, spell)
     local mp = 30
     local sound = 78
     local effect = 11
@@ -8,11 +9,13 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 심안투영 버프 효과
+function ON_BUFF_4008(me, spell)
     me:detect(true)
 end
 
-function on_unbuff(me, spell)
+-- 심안투영 버프 해제 효과
+function ON_UNBUFF_4008(me, spell)
     me:detect(false)
 
 end

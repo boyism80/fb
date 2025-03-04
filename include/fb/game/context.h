@@ -47,7 +47,7 @@ public:
     using transfer_param     = fb_reqs::login::transfer_param;
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
     using npc_interaction_func =
-        std::function<bool(character&, const std::string&, const std::vector<fb::game::npc*>&)>;
+        std::function<async::task<bool>(character&, const std::string&, const std::vector<fb::game::npc*>&)>;
 
 private:
     fb::model::datetime               _time;
@@ -1401,7 +1401,7 @@ public:
      *
      * @param      me    { parameter_description }
      */
-    void on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
+    async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) override final;
 
     /**
      * @brief      Called on dead.
@@ -1823,12 +1823,11 @@ public:
      * @param[in]  button_next  The button next
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::object&      object,
-                   const std::string&            message,
-                   bool                          button_prev,
-                   bool                          button_next,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character&               me,
+                   const fb::model::object& object,
+                   const std::string&       message,
+                   bool                     button_prev,
+                   bool                     button_next) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1842,8 +1841,7 @@ public:
     void on_dialog(character&                      me,
                    const fb::model::npc&           npc,
                    const std::string&              message,
-                   const std::vector<std::string>& menus,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+                   const std::vector<std::string>& menus) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1859,8 +1857,7 @@ public:
                    const fb::model::npc&           npc,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
-                   bool                            button_prev,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+                   bool                            button_prev) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1878,8 +1875,7 @@ public:
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
-                   const dialog::preset&           preset,
-                   fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::NORMAL) override final;
+                   const dialog::preset&           preset) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1890,11 +1886,10 @@ public:
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::npc&         npc,
-                   const std::string&            message,
-                   const std::vector<uint8_t>&   item_slots,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character&                  me,
+                   const fb::model::npc&       npc,
+                   const std::string&          message,
+                   const std::vector<uint8_t>& item_slots) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1910,8 +1905,7 @@ public:
                    const fb::model::npc&               npc,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
-                   uint16_t                            pursuit = 0xFFFF,
-                   fb::game::dialog::interaction interaction   = fb::game::dialog::interaction::NORMAL) override final;
+                   uint16_t                            pursuit = 0xFFFF) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1921,10 +1915,7 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::npc&         npc,
-                   const std::string&            message,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1938,14 +1929,13 @@ public:
      * @param[in]  prev         The previous
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&                    me,
-                   const fb::model::npc&         npc,
-                   const std::string&            message,
-                   const std::string&            top,
-                   const std::string&            bottom,
-                   int                           maxlen      = 0xFF,
-                   bool                          prev        = false,
-                   fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL) override final;
+    void on_dialog(character&            me,
+                   const fb::model::npc& npc,
+                   const std::string&    message,
+                   const std::string&    top,
+                   const std::string&    bottom,
+                   int                   maxlen = 0xFF,
+                   bool                  prev   = false) override final;
 
 public:
     /**
@@ -1957,7 +1947,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool npc_interaction_sell(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_sell(character&                         ch,
+                                           const std::string&                 message,
+                                           const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1968,7 +1960,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool npc_interaction_buy(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_buy(character&                         ch,
+                                          const std::string&                 message,
+                                          const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1979,7 +1973,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool npc_interaction_repair(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_repair(character&                         ch,
+                                             const std::string&                 message,
+                                             const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -1990,9 +1986,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool npc_interaction_deposit_money(character&                         ch,
-                                       const std::string&                 message,
-                                       const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_deposit_money(character&                         ch,
+                                                    const std::string&                 message,
+                                                    const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -2003,9 +1999,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool npc_interaction_withdraw_money(character&                         ch,
-                                        const std::string&                 message,
-                                        const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_withdraw_money(character&                         ch,
+                                                     const std::string&                 message,
+                                                     const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -2016,152 +2012,166 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool npc_interaction_deposit_item(character&                         ch,
+    async::task<bool> npc_interaction_deposit_item(character&                         ch,
+                                                   const std::string&                 message,
+                                                   const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_withdraw_item(character&                         ch,
+                                                    const std::string&                 message,
+                                                    const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_sell_list(character&                         ch,
+                                                const std::string&                 message,
+                                                const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_buy_list(character&                         ch,
+                                               const std::string&                 message,
+                                               const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_sell_price(character&                         ch,
+                                                 const std::string&                 message,
+                                                 const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_buy_price(character&                         ch,
+                                                const std::string&                 message,
+                                                const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_show_deposited_money(character&                         ch,
+                                                           const std::string&                 message,
+                                                           const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_rename_weapon(character&                         ch,
+                                                    const std::string&                 message,
+                                                    const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_hold_item_list(character&                         ch,
+                                                     const std::string&                 message,
+                                                     const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_hold_item_count(character&                         ch,
+                                                      const std::string&                 message,
+                                                      const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_revive(character&                         ch,
+                                             const std::string&                 message,
+                                             const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction_appreciate(character&                         ch,
+                                                 const std::string&                 message,
+                                                 const std::vector<fb::game::npc*>& npcs);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ch       { parameter_description }
+     * @param[in]  message  The message
+     * @param[in]  npcs     The npcs
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<bool> npc_interaction(character&                         ch,
                                       const std::string&                 message,
                                       const std::vector<fb::game::npc*>& npcs);
 
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_withdraw_item(character&                         ch,
-                                       const std::string&                 message,
-                                       const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_sell_list(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_buy_list(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_sell_price(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_buy_price(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_show_deposited_money(character&                         ch,
-                                              const std::string&                 message,
-                                              const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_rename_weapon(character&                         ch,
-                                       const std::string&                 message,
-                                       const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_hold_item_list(character&                         ch,
-                                        const std::string&                 message,
-                                        const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_hold_item_count(character&                         ch,
-                                         const std::string&                 message,
-                                         const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_revive(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction_appreciate(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  npcs     The npcs
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool npc_interaction(character& ch, const std::string& message, const std::vector<fb::game::npc*>& npcs);
-
 public:
     /**
      * @brief      { function_description }
@@ -2170,7 +2180,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_seed(lua_State* lua);
+    static int builtin_seed(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2179,7 +2189,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_sleep(lua_State* lua);
+    static int builtin_sleep(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2188,7 +2198,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2mob(lua_State* lua);
+    static int builtin_name2mob(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2197,7 +2207,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2spell(lua_State* lua);
+    static int builtin_name2spell(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2206,7 +2216,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2npc(lua_State* lua);
+    static int builtin_name2npc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2215,7 +2225,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2map(lua_State* lua);
+    static int builtin_name2map(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2224,7 +2234,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2ch(lua_State* lua);
+    static int builtin_name2ch(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2233,7 +2243,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2item(lua_State* lua);
+    static int builtin_name2item(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2242,7 +2252,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_sell(lua_State* lua);
+    static int builtin_pursuit_sell(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2251,7 +2261,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_sell_price(lua_State* lua);
+    static int builtin_pursuit_sell_price(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2260,7 +2270,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_sell_name(lua_State* lua);
+    static int builtin_pursuit_sell_name(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2269,7 +2279,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_pursuit_buy(lua_State* lua);
+    static int builtin_pursuit_buy(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2278,7 +2288,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_timer(lua_State* lua);
+    static int builtin_timer(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2287,7 +2297,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_weather(lua_State* lua);
+    static int builtin_weather(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2296,7 +2306,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_bright(lua_State* lua);
+    static int builtin_bright(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2305,7 +2315,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name_with(lua_State* lua);
+    static int builtin_name_with(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2314,7 +2324,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_assert_korean(lua_State* lua);
+    static int builtin_assert_korean(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2323,7 +2333,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_cp949(lua_State* lua);
+    static int builtin_cp949(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2332,7 +2342,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_broadcast(lua_State* lua);
+    static int builtin_broadcast(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2341,7 +2351,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_assert_alive(lua_State* lua);
+    static int builtin_assert_alive(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2350,7 +2360,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_debug(lua_State* lua);
+    static int builtin_debug(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2359,7 +2369,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_name2class(lua_State* lua);
+    static int builtin_name2class(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2368,7 +2378,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_class2name(lua_State* lua);
+    static int builtin_class2name(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2377,7 +2387,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_save(lua_State* lua);
+    static int builtin_save(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2386,7 +2396,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_mknpc(lua_State* lua);
+    static int builtin_mknpc(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -2395,7 +2405,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_maps(lua_State* lua);
+    static int builtin_maps(lua_State* L);
 };
 
 } // namespace fb::game

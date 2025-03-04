@@ -61,12 +61,35 @@ async::task<void> context::update_thread(const fb::thread_switchable& obj)
     }
 }
 
-int context::builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn)
+int context::builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<void()>& fn)
 {
     if (obj.matched_thread())
     {
         fn();
         return n;
+    }
+    else
+    {
+        this->threads.enqueue(obj, [=](auto&) -> async::task<void> {
+            fn();
+            lua->resume(n);
+            co_return;
+        });
+        return lua->yield(n);
+    }
+}
+
+int fb::context::builtin_async(thread_switchable&                        obj,
+                               fb::lua::context*                         lua,
+                               int                                       n,
+                               const std::function<async::task<void>()>& fn)
+{
+    if (obj.matched_thread())
+    {
+        async::awaitable_then(fn(), [lua, n](auto result) {
+            lua->resume(n);
+        });
+        return lua->yield(n);
     }
     else
     {

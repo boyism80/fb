@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 생명의기원 캐스팅
+function ON_CAST_4036(me, you, spell)
     local hp = 5000
     local mp = 300
     local sound = 98

@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 파혼술 캐스팅
+function ON_CAST_4007(me, you, spell)
     local mp = 30
     local sound = 77
     local effect = 49

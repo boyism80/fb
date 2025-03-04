@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 대지의기원 캐스팅
+function ON_CAST_4027(me, you, spell)
     local hp = 50
     local mp = 50
     local sound = 3

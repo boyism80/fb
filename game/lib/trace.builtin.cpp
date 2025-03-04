@@ -8,32 +8,32 @@ IMPLEMENT_LUA_EXTENSION(fb::game::trace, "fb.game.trace")
 {"text",               	fb::game::trace::builtin_text},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::trace::builtin_model(lua_State* lua)
+int fb::game::trace::builtin_model(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto ctx   = thread->env<fb::game::context>("context");
-    auto trace = thread->touserdata<fb::game::trace>(1);
+    auto ctx   = lua->env<fb::game::context>("context");
+    auto trace = lua->touserdata<fb::game::trace>(1);
     if (trace == nullptr)
         return 0;
 
-    thread->pushobject(trace->model);
+    lua->pushobject(trace->model);
     return 1;
 }
 
-int fb::game::trace::builtin_text(lua_State* lua)
+int fb::game::trace::builtin_text(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto ctx   = thread->env<fb::game::context>("context");
-    auto trace = thread->touserdata<fb::game::trace>(1);
+    auto ctx   = lua->env<fb::game::context>("context");
+    auto trace = lua->touserdata<fb::game::trace>(1);
     if (trace == nullptr)
         return 0;
 
-    thread->pushstring(trace->text.value_or(trace->model.text));
+    lua->pushstring(trace->text.value_or(trace->model.text));
     return 1;
 }

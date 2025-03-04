@@ -1,3 +1,4 @@
-function on_concast(me, caster, buff)
+-- 주작의검 지속 효과
+function ON_CONCAST_6017(me, caster, buff)
 
 end

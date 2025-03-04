@@ -106,9 +106,6 @@ mob::~mob()
 {
     if (this->_rezen != nullptr)
         this->_rezen->decrease();
-
-    if (this->owner != nullptr && this->context.alive(*this->owner))
-        this->owner->detach_spawned_mob(*this);
 }
 
 bool mob::action()
@@ -127,14 +124,16 @@ bool mob::action()
         if (this->_attack_thread == nullptr)
             return false;
 
-        this->_attack_thread->from(model.attack_script.c_str()).func("on_attack").pushobject(this);
+        this->_attack_thread->load(model.attack_script.c_str());
+        this->_attack_thread->func("on_attack");
+        this->_attack_thread->pushobject(this);
 
         if (this->_target != nullptr)
             this->_attack_thread->pushobject(this->_target);
         else
             this->_attack_thread->pushnil();
 
-        this->_attack_thread->resume(2);
+        std::ignore = this->_attack_thread->call(2);
     }
 
     auto stop = false;
@@ -337,7 +336,7 @@ void mob::AI(const fb::model::datetime& now)
         for (int i = 0; i < 4; i++)
         {
             if (this->move(DIRECTION((random_direction + i) % 4)))
-                throw nullptr;
+                break;
         }
     }
 

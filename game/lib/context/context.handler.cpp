@@ -57,18 +57,19 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         auto msg = this->elapsed_message(response.character.updated_date);
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
+
+        auto lua = ch->dialog.new_context();
+#if defined DEBUG | defined _DEBUG
+        lua->load("scripts/interaction.lua");
+#endif
+        lua->func("on_login");
+        lua->pushobject(ch);
+        lua->resume(1);
     }
 
     ch->update(STATE_LEVEL::LEVEL_MAX);
     ch->update_option();
     ch->init(true);
-
-    // TODO: from 굳이 호출하지 않아도 동작하도록 변경
-    // dialog.func에서 새로운 컨텍스트 추가
-    ch->dialog.from("interaction.lua");
-    ch->dialog.func("on_login");
-    ch->dialog.pushobject(ch);
-    ch->dialog.resume(1);
     co_return true;
 }
 
@@ -572,6 +573,7 @@ async::task<bool> context::handle_object_miss(fb::socket<character>& socket, con
     if (obj == nullptr)
         co_return true;
 
+    obj->update_external(*ch, false);
     fb::logger::info("{} 오브젝트 미스", obj->sequence());
 
     co_return true;
@@ -745,25 +747,20 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() == false && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
-#if defined DEBUG | defined _DEBUG
-    fb::lua::load("scripts/interaction.lua");
-    fb::lua::load("scripts/command.lua");
-#endif
-
     auto lua = fb::lua::new_context();
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/interaction.lua");
+    lua->load("scripts/command.lua");
+#endif
     lua->func("on_chat");
     lua->pushobject(ch);
     lua->pushstring(request.message);
     lua->pushboolean(request.shout);
-    lua->resume(3, false);
-    switch (lua->state())
-    {
-    case LUA_OK:
-        auto stop = lua->toboolean(1);
-        lua->release();
-        if (stop)
-            co_return true;
-    }
+    co_await lua->call(3, false);
+    auto stop = lua->toboolean(1);
+    lua->release();
+    if (stop)
+        co_return true;
 
     auto message = std::string{request.message};
     auto type    = request.shout ? CHAT_TYPE::SHOUT : CHAT_TYPE::NORMAL;
@@ -997,13 +994,15 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        ch->dialog.pushinteger(request.action).resume(1);
+        ch->dialog.pushinteger(request.action);
+        ch->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        ch->dialog.pushstring(request.message).resume(1);
+        ch->dialog.pushstring(request.message);
+        ch->dialog.resume(1);
         break;
     }
 
@@ -1020,7 +1019,8 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
 
     case dialog::interaction::MENU:
     {
-        ch->dialog.pushinteger(request.index).resume(1);
+        ch->dialog.pushinteger(request.index);
+        ch->dialog.resume(1);
         break;
     }
 
@@ -1038,13 +1038,15 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
 
     case dialog::interaction::SLOT:
     {
-        ch->dialog.pushinteger(request.index).resume(1);
+        ch->dialog.pushinteger(request.index);
+        ch->dialog.resume(1);
         break;
     }
 
     case dialog::interaction::ITEM:
     {
-        ch->dialog.pushstring(request.name).resume(1);
+        ch->dialog.pushstring(request.name);
+        ch->dialog.resume(1);
         break;
     }
 
@@ -1100,10 +1102,6 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
         co_return true;
     }
 
-#if defined DEBUG | defined _DEBUG
-    fb::lua::load("scripts/spell.lua");
-#endif
-
     const_cast<fb_reqs::spell_cast&>(request).parse(spell->model.type);
     switch (spell->model.type)
     {
@@ -1129,17 +1127,17 @@ async::task<bool> context::handle_door(fb::socket<character>& socket, const fb_r
     if (ch->inited() == false)
         co_return true;
 
-    auto thread = lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         co_return true;
 
 #if defined DEBUG | defined _DEBUG
-    thread->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
 
-    thread->func("on_door");
-    thread->pushobject(ch);
-    thread->resume(1);
+    lua->func("on_door");
+    lua->pushobject(ch);
+    co_await lua->call(1);
     co_return true;
 }
 

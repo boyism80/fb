@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 분혼경천 캐스팅
+function ON_CAST_2023(me, spell)
     local damage = (me:hp()*3)//4
     local hp = me:hp()//2
     local mp = 200

@@ -19,15 +19,21 @@ void context::on_item_swap(character& me, uint8_t src, uint8_t dst)
 
 void context::on_item_active(character& me, item& item)
 {
-    auto thread = lua::new_context();
-    if (thread == nullptr)
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return;
 
-    thread->from(item.based<fb::model::item>().script_active.c_str())
-        .func("on_active")
-        .pushobject(me)
-        .pushobject(item)
-        .resume(2);
+    auto& model = item.based<fb::model::item>();
+    if (model.on_active == "")
+        return;
+
+#if defined DEBUG | defined _DEBUG
+    lua->load(model.script);
+#endif
+    lua->func(model.on_active);
+    lua->pushobject(me);
+    lua->pushobject(item);
+    std::ignore = lua->call(2);
 }
 
 void context::on_item_throws(character& me, item& item, const fb::model::point16_t& to)

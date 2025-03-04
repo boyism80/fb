@@ -1,7 +1,7 @@
-function on_interact(me, npc)
+function NPC_44(me, npc)
 
 end
 
-function on_interact(me, npc)
+function NPC_44(me, npc)
 
 end

@@ -1,11 +1,14 @@
-function on_attack(me, item)
+-- [손상]용천제칠검 공격 스크립트
+function ON_ATTACK_287(me, item)
 
 end
 
-function on_active(me, item)
+-- [손상]용천제칠검 사용 스크립트
+function ON_ACTIVE_287(me, item)
 
 end
 
-function on_inactive(me, item)
+-- [손상]용천제칠검 해제 스크립트
+function ON_INACTIVE_287(me, item)
 
 end

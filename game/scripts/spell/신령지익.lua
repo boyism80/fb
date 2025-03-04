@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 신령지익 캐스팅
+function ON_CAST_4016(me, spell)
     local mp = 0
     local sound = 109
     local effect = 116
@@ -8,15 +9,18 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 신령지익 버프 효과
+function ON_BUFF_4016(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 신령지익 버프 해제 효과
+function ON_UNBUFF_4016(me, spell)
 
 end
 
-function on_concast(me, caster, buff)
+-- 신령지익 지속 효과
+function ON_CONCAST_4016(me, caster, buff)
     local x, y = me:position()
     local begin_x = x-3
     local begin_y = y-3

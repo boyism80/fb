@@ -1,4 +1,4 @@
-function on_interact(me, npc)
+function NPC_18(me, npc)
     if me:state() ~= STATE_GHOST then
         return npc:dialog(me, '사망 상태가 아닐 때 나오는 메시지')
     end

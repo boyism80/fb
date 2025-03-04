@@ -1,3 +1,4 @@
-function on_cast(me, spell)
+-- 해마장군잡기 캐스팅
+function ON_CAST_7006(me, spell)
 
 end

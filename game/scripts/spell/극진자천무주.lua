@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 극진자천무주 캐스팅
+function ON_CAST_3019(me, you, spell)
     local damage = 3580 -- + me:int()*5
     local mp = 360
     local sound = 49

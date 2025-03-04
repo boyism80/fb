@@ -1,12 +1,15 @@
-function on_active(me, item)
+-- 해독의귀걸이 사용 스크립트
+function ON_ACTIVE_2129(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 해독의귀걸이 해제 스크립트
+function ON_INACTIVE_2129(me, item)
 
 end
 
-function on_concast(me, item)
+-- 해독의귀걸이 지속 스크립트
+function ON_CONCAST_2129(me, item)
     if me:isbuff('중독') then
         me:unbuff('중독')
     end

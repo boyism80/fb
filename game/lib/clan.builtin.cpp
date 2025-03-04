@@ -14,89 +14,89 @@ IMPLEMENT_LUA_EXTENSION(fb::game::clan, "fb.game.clan")
 {"message",             fb::game::clan::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
-int clan::builtin_name(lua_State* lua)
+int clan::builtin_name(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto clan = thread->touserdata<fb::game::clan>(1);
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    thread->pushstring(clan->name());
+    lua->pushstring(clan->name());
     return 1;
 }
 
-int clan::builtin_members(lua_State* lua)
+int clan::builtin_members(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto clan = thread->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    thread->new_table();
+    lua->new_table();
     auto i = 0;
     for (auto& [name, member] : clan->_members)
     {
-        thread->pushobject(member);
-        lua_rawseti(lua, -2, i + 1);
+        lua->pushobject(member);
+        lua_rawseti(L, -2, i + 1);
         i++;
     }
 
     return 1;
 }
 
-int clan::builtin_nears(lua_State* lua)
+int clan::builtin_nears(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto clan = thread->touserdata<fb::game::clan>(1);
+    auto argc = lua->argc();
+    auto clan = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    auto map = thread->touserdata<fb::game::map>(2);
+    auto map = lua->touserdata<fb::game::map>(2);
     if (map == nullptr)
         return 0;
 
     uint16_t x, y;
-    if (!thread->is_table(3))
+    if (!lua->is_table(3))
         return 0;
 
-    thread->rawgeti(3, 1);
-    x = (uint16_t)thread->tointeger(-1);
-    thread->remove(-1);
-    thread->rawgeti(3, 2);
-    y = (uint16_t)thread->tointeger(-1);
-    thread->remove(-1);
+    lua->rawgeti(3, 1);
+    x = (uint16_t)lua->tointeger(-1);
+    lua->remove(-1);
+    lua->rawgeti(3, 2);
+    y = (uint16_t)lua->tointeger(-1);
+    lua->remove(-1);
 
     auto nears = clan->nears(*map, fb::model::point16_t{x, y});
-    thread->new_table();
+    lua->new_table();
     for (int i = 0; i < nears.size(); i++)
     {
-        thread->pushobject(nears[i]);
-        lua_rawseti(lua, -2, i + 1);
+        lua->pushobject(nears[i]);
+        lua_rawseti(L, -2, i + 1);
     }
 
     return 1;
 }
 
-int clan::builtin_title(lua_State* lua)
+int clan::builtin_title(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto clan    = thread->touserdata<fb::game::clan>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto clan    = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
@@ -104,37 +104,37 @@ int clan::builtin_title(lua_State* lua)
     {
         auto& title = clan->title();
         if (title.has_value())
-            thread->pushstring(title.value());
+            lua->pushstring(title.value());
         else
-            thread->pushnil();
+            lua->pushnil();
 
         return 1;
     }
     else if (argc == 2)
     {
         static auto fn = [](fb::game::context* context,
-                            fb::lua::context*  thread,
+                            fb::lua::context*  lua,
                             fb::game::clan*    clan,
                             std::string        name) -> async::task<void> {
             try
             {
                 co_await context->set_clan_title(*clan, name);
-                thread->pushnil();
+                lua->pushnil();
             }
             catch (std::exception& e)
             {
-                thread->pushstring(e.what());
+                lua->pushstring(e.what());
             }
 
-            thread->resume(1);
+            lua->resume(1);
         };
 
-        auto name   = thread->tostring(2);
+        auto name   = lua->tostring(2);
         std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-            co_await fn(context, thread, clan, name);
+            co_await fn(context, lua, clan, name);
         });
 
-        return thread->yield(1);
+        return lua->yield(1);
     }
     else
     {
@@ -142,122 +142,122 @@ int clan::builtin_title(lua_State* lua)
     }
 }
 
-int clan::builtin_join(lua_State* lua)
+int clan::builtin_join(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto clan    = thread->touserdata<fb::game::clan>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto clan    = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
     static auto fn = [](fb::game::context*   context,
-                        fb::lua::context*    thread,
+                        fb::lua::context*    lua,
                         fb::game::clan*      clan,
                         fb::game::character* ch) -> async::task<void> {
         try
         {
             co_await context->join_clan_member(*clan, *ch);
-            thread->pushnil();
+            lua->pushnil();
         }
         catch (std::exception& e)
         {
-            thread->pushstring(e.what());
+            lua->pushstring(e.what());
         }
 
-        thread->resume(1);
+        lua->resume(1);
     };
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, thread, clan, ch);
+        co_await fn(context, lua, clan, ch);
     });
 
-    return thread->yield(1);
+    return lua->yield(1);
 }
 
-int clan::builtin_leave(lua_State* lua)
+int clan::builtin_leave(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto clan    = thread->touserdata<fb::game::clan>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto clan    = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    auto name = thread->tostring(2);
-    auto kick = argc >= 3 ? thread->toboolean(3) : false;
+    auto name = lua->tostring(2);
+    auto kick = argc >= 3 ? lua->toboolean(3) : false;
 
     static auto fn = [](fb::game::context* context,
-                        fb::lua::context*  thread,
+                        fb::lua::context*  lua,
                         fb::game::clan*    clan,
                         const std::string& name,
                         bool               kick) -> async::task<void> {
         try
         {
             co_await context->leave_clan_member(*clan, name, kick);
-            thread->pushnil();
+            lua->pushnil();
         }
         catch (std::exception& e)
         {
-            thread->pushstring(e.what());
+            lua->pushstring(e.what());
         }
 
-        thread->resume(1);
+        lua->resume(1);
     };
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, thread, clan, name, kick);
+        co_await fn(context, lua, clan, name, kick);
     });
 
-    return thread->yield(1);
+    return lua->yield(1);
 }
 
-int clan::builtin_message(lua_State* lua)
+int clan::builtin_message(lua_State* L)
 {
-    auto thread = lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto clan    = thread->touserdata<fb::game::clan>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto clan    = lua->touserdata<fb::game::clan>(1);
     if (clan == nullptr)
         return 0;
 
-    auto message = thread->tostring(2);
-    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(3));
+    auto message = lua->tostring(2);
+    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(lua->tointeger(3));
 
     static auto fn = [](fb::game::context* context,
-                        fb::lua::context*  thread,
+                        fb::lua::context*  lua,
                         fb::game::clan*    clan,
                         const std::string& message,
                         MESSAGE_TYPE       type) -> async::task<void> {
         try
         {
             co_await context->broadcast(*clan, message, type);
-            thread->pushnil();
+            lua->pushnil();
         }
         catch (std::exception& e)
         {
-            thread->pushstring(e.what());
+            lua->pushstring(e.what());
         }
 
-        thread->resume(1);
+        lua->resume(1);
     };
 
     std::ignore = context->threads.current()->dispatch([=](auto&) -> async::task<void> {
-        co_await fn(context, thread, clan, message, type);
+        co_await fn(context, lua, clan, message, type);
     });
 
-    return thread->yield(1);
+    return lua->yield(1);
 }

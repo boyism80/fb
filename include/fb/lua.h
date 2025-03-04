@@ -20,6 +20,9 @@ extern "C"
 #include <macro.h>
 #include <fb/encoding.h>
 #include <fb/logger.h>
+#include <async/task.h>
+#include <async/task_completion_source.h>
+#include <shared_mutex>
 
 #define LUA_PROTOTYPE                                \
     static const struct luaL_Reg LUA_METHODS[];      \
@@ -49,6 +52,13 @@ extern "C"
 
 #define LUA_PENDING (LUA_ERRERR + 1)
 
+namespace fb {
+
+class thread;
+class thread_container;
+
+} // namespace fb
+
 namespace fb::lua {
 
 constexpr auto DEFAULT_POOL_SIZE = 1000;
@@ -62,9 +72,9 @@ class luable;
  */
 class context;
 /**
- * @brief      This class describes a context_pool.
+ * @brief      This class describes a root.
  */
-class context_pool;
+class root;
 /**
  * @brief      This class describes a thread.
  */
@@ -90,20 +100,13 @@ context* get(lua_State* ctx);
  * @param[in]  name  The name
  * @param[in]  fn    The function
  */
-void build(const std::string& name, lua_CFunction fn);
+async::task<void> build(const std::string& name, lua_CFunction fn);
 /**
  * @brief      { function_description }
  *
  * @param[in]  path  The path
  */
-void dump(const std::string& path);
-
-/**
- * @brief      { function_description }
- *
- * @param[in]  path  The path
- */
-void load(const std::string& path);
+async::task<void> dump(const std::string& path);
 
 /**
  * @brief      This class describes a luable.
@@ -159,12 +162,14 @@ public:
 class context
 {
 private:
-    int _state = 0;
+    int                                                  _state = 0;
+    std::shared_ptr<async::task_completion_source<bool>> _promise;
+    bool                                                 _auto_release = false;
 
 protected:
     lua_State* _ctx = nullptr;
 
-protected:
+public:
     context* owner = nullptr;
 
 protected:
@@ -230,7 +235,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     template <class... Args>
-    context& from(const std::string& fmt, Args&&... args);
+    context& load(const std::string& fmt, Args&&... args);
     /**
      * @brief      { function_description }
      *
@@ -609,7 +614,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool resume(int argc, bool auto_release = true);
+    [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  argc  The count of arguments
+     */
+    void resume(int argc);
     /**
      * @brief      { function_description }
      *
@@ -684,9 +696,9 @@ public:
 };
 
 /**
- * @brief      This class describes a context_pool.
+ * @brief      This class describes a root.
  */
-class context_pool : public context
+class root : public context
 {
 public:
     using unique_lua_map = std::unordered_map<lua_State*, std::unique_ptr<thread>>;
@@ -695,6 +707,7 @@ public:
 private:
     bytecode_set _bytecodes;
     std::mutex   _mutex;
+    fb::thread&  _thread;
 
 public:
     friend class context;
@@ -708,17 +721,17 @@ public:
     /**
      * @brief      Constructs a new instance.
      */
-    context_pool();
+    root(fb::thread& thread);
     /**
      * @brief      Constructs a new instance.
      *
      * @param[in]  <unnamed>  { parameter_description }
      */
-    context_pool(const context_pool&&) = delete;
+    root(const root&&) = delete;
     /**
      * @brief      Destroys the object.
      */
-    ~context_pool();
+    ~root();
 
 public:
     /**
@@ -728,7 +741,7 @@ public:
      *
      * @return     The result of the assignment
      */
-    context_pool& operator= (context_pool&) = delete;
+    root& operator= (root&) = delete;
     /**
      * @brief      Assignment operator.
      *
@@ -736,7 +749,7 @@ public:
      *
      * @return     The result of the assignment
      */
-    context_pool& operator= (context_pool&&) = delete;
+    root& operator= (root&&) = delete;
 
 public:
     /**
@@ -746,7 +759,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool dump_file(const std::string& path);
+    bool dump(const std::string& path);
     /**
      * @brief      Pops the object.
      *
@@ -760,7 +773,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    context* get(lua_State& ctx);
+    context* get(lua_State* ctx);
     /**
      * @brief      { function_description }
      *
@@ -768,13 +781,27 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    context& release(context& ctx);
+    void release(context& ctx);
     /**
      * @brief      { function_description }
      *
      * @param      ctx   The context
      */
     void revoke(context& ctx);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> switching();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    fb::thread& initial_thread();
 
 public:
     /**
@@ -829,7 +856,35 @@ public:
     {
         lua_register(*this, name.c_str(), fn);
     }
+};
 
+class context_pool
+{
+public:
+    using base_type  = std::unordered_map<std::thread::id, root*>;
+    using setup_func = std::function<void(root& lua)>;
+
+private:
+    base_type                                       _roots;
+    std::vector<setup_func>                         _setup_funcs;
+    std::unordered_map<lua_State*, std::thread::id> _mapping;
+    std::shared_mutex                               _mapping_lock;
+    fb::thread_container*                           _threads;
+
+public:
+    ~context_pool();
+
+public:
+    context* pop();
+    context* get(lua_State* ctx);
+    void     setup(fb::thread_container& threads);
+    void     record(lua_State* L);
+    void     unrecord(lua_State* L);
+
+    base_type::iterator begin();
+    base_type::iterator end();
+
+public:
     static context_pool& ist();
 };
 
@@ -872,10 +927,14 @@ public:
  * @tparam     T     { description }
  */
 template <typename T>
-void build()
+async::task<void> build()
 {
     auto& ist = context_pool::ist();
-    ist.build<T>();
+    for (auto& [_, root] : ist)
+    {
+        co_await root->switching();
+        root->template build<T>();
+    }
 }
 
 /**
@@ -885,10 +944,14 @@ void build()
  * @tparam     B     { description }
  */
 template <typename T, typename B>
-void build()
+async::task<void> build()
 {
     auto& ist = context_pool::ist();
-    ist.build<T, B>();
+    for (auto& [_, root] : ist)
+    {
+        co_await root->switching();
+        root->template build<T, B>();
+    }
 }
 
 /**
@@ -900,10 +963,14 @@ void build()
  * @tparam     T     { description }
  */
 template <typename T>
-void env(const char* key, T* data)
+async::task<void> env(const char* key, T* data)
 {
     auto& ist = context_pool::ist();
-    ist.env(key, data);
+    for (auto& [_, root] : ist)
+    {
+        co_await root->switching();
+        root->env(key, data);
+    }
 }
 
 } // namespace fb::lua
@@ -953,28 +1020,27 @@ inline void to_lua(lua_State* ctx, const T* self)
  * @return     { description_of_the_return_value }
  */
 template <class... Args>
-fb::lua::context& fb::lua::context::from(const std::string& fmt, Args&&... args)
+fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
 #if defined DEBUG || defined _DEBUG
     luaL_dofile(*this, fname.c_str());
 #else
-    auto context_pool = static_cast<fb::lua::context_pool*>(this->owner);
-    context_pool->dump_file(fname);
-    if (context_pool->_bytecodes.contains(fname) == false)
+    auto root = static_cast<fb::lua::root*>(this->owner);
+    root->dump(fname);
+    if (root->_bytecodes.contains(fname) == false)
     {
         fb::logger::fatal("cannot find script {}", fname);
         return *this;
     }
 
-    auto& bytes = context_pool->_bytecodes[fname];
+    auto& bytes = root->_bytecodes[fname];
     if (luaL_loadbuffer(*this, bytes.data(), bytes.size(), 0))
         return *this;
 
     if (lua_pcall(*this, 0, LUA_MULTRET, 0))
         return *this;
 #endif
-
     return *this;
 }
 

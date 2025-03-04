@@ -33,13 +33,13 @@ public:
            const std::string&            message,
            bool                          button_prev,
            bool                          button_next,
-           fb::game::dialog::interaction interaction);
+           fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
 
     dialog(const fb::game::object&       object,
            const std::string&            message,
            bool                          button_prev,
            bool                          button_next,
-           fb::game::dialog::interaction interaction);
+           fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
 #else
     dialog() = default;
 #endif

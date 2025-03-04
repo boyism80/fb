@@ -27,7 +27,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_model(lua_State* lua);
+    static int builtin_model(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -36,7 +36,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_text(lua_State* lua);
+    static int builtin_text(lua_State* L);
 };
 
 } // namespace fb::game

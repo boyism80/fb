@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 폭류유성 캐스팅
+function ON_CAST_3046(me, spell)
     local damage = math.floor(me:hp()*0.75 + me:mp()*1.5)
     local hp = nil
     local mp = math.max(30, me:mp() // 2)

@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 신령의기원 캐스팅
+function ON_CAST_4038(me, you, spell)
     if not assert_map(me) then
         return
     end

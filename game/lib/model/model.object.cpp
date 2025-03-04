@@ -25,76 +25,79 @@ bool fb::model::object::operator!= (const fb::model::object& r) const
     return this != &r;
 }
 
-int fb::model::object::builtin_name(lua_State* lua)
+int fb::model::object::builtin_name(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::model::object>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto object  = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
 
-    thread->pushstring(object->name);
+    lua->pushstring(object->name);
     return 1;
 }
 
-int fb::model::object::builtin_look(lua_State* lua)
+int fb::model::object::builtin_look(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::model::object>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto object  = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->look);
+    lua->pushinteger(object->look);
     return 1;
 }
 
-int fb::model::object::builtin_color(lua_State* lua)
+int fb::model::object::builtin_color(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::model::object>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto object  = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
 
-    thread->pushinteger(object->color);
+    lua->pushinteger(object->color);
     return 1;
 }
 
-int fb::model::object::builtin_dialog(lua_State* lua)
+int fb::model::object::builtin_dialog(lua_State* L)
 {
     // Ex) npc:dialog(ch, "hello", true, true);
 
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto object  = thread->touserdata<fb::model::object>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto object  = lua->touserdata<fb::model::object>(1);
     if (object == nullptr)
         return 0;
 
-    auto argc = thread->argc();
+    auto argc = lua->argc();
     if (argc < 3)
         throw std::runtime_error("not enough parameters");
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
-    auto message     = thread->tostring(3);
-    auto button_prev = argc < 4 ? false : thread->toboolean(4);
-    auto button_next = argc < 5 ? false : thread->toboolean(5);
+    auto message     = lua->tostring(3);
+    auto button_prev = argc < 4 ? false : lua->toboolean(4);
+    auto button_next = argc < 5 ? false : lua->toboolean(5);
 
-    ch->dialog.show(*object, message, button_prev, button_next);
-    return thread->yield(1);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *object, message, button_prev, button_next);
+
+    return lua->yield(1);
 }

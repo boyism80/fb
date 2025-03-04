@@ -1,5 +1,6 @@
 -- callfunc "TARGETHEALMAGIC", 1000, 5000, 168, 503, "현자의기원"
-function on_cast(me, you, spell)
+-- 현자의기원 캐스팅
+function ON_CAST_3047(me, you, spell)
     local hp = 5000
     local mp = 1000
     local sound = 503

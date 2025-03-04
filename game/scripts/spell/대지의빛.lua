@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 대지의빛 캐스팅
+function ON_CAST_2003(me, you, spell)
     local mp = 30
     local effect = nil
     local sound = 19

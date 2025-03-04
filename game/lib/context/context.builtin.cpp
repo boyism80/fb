@@ -6,135 +6,135 @@ using namespace fb::game;
 IMPLEMENT_LUA_EXTENSION(fb::game::context, "")
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::context::builtin_seed(lua_State* lua)
+int fb::game::context::builtin_seed(lua_State* L)
 {
     static std::random_device random;
     static std::mt19937       gen(random());
     static auto               distribution = std::uniform_int_distribution<uint32_t>(0, 0xFFFFFFFF);
 
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
     auto seed = distribution(gen);
-    thread->pushinteger(seed);
+    lua->pushinteger(seed);
     return 1;
 }
 
-int fb::game::context::builtin_sleep(lua_State* lua)
+int fb::game::context::builtin_sleep(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto ms = (uint32_t)thread->tointeger(1);
-    thread->pending(true);
+    auto ms = (uint32_t)lua->tointeger(1);
+    lua->pending(true);
 
-    auto context = thread->env<fb::game::context>("context");
-    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [lua](auto result) {
-        auto thread = fb::lua::get(lua);
-        if (thread == nullptr)
+    auto context = lua->env<fb::game::context>("context");
+    async::awaitable_then(context->sleep(std::chrono::milliseconds(ms)), [L](auto result) {
+        auto lua = fb::lua::get(L);
+        if (lua == nullptr)
             return;
 
-        thread->pending(false);
-        thread->resume(0);
+        lua->pending(false);
+        lua->resume(0);
     });
-    return thread->yield(0);
+    return lua->yield(0);
 }
 
-int fb::game::context::builtin_name2mob(lua_State* lua)
+int fb::game::context::builtin_name2mob(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto name    = lua->tostring(1);
     auto mob     = context->model.mob.name2mob(name);
 
     if (mob == nullptr)
     {
-        thread->pushnil();
+        lua->pushnil();
     }
     else
     {
-        thread->pushobject(mob);
+        lua->pushobject(mob);
     }
     return 1;
 }
 
-int fb::game::context::builtin_name2spell(lua_State* lua)
+int fb::game::context::builtin_name2spell(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto name    = lua->tostring(1);
     auto spell   = context->model.spell.name2spell(name);
 
     if (spell == nullptr)
     {
-        thread->pushnil();
+        lua->pushnil();
     }
     else
     {
-        thread->pushobject(spell);
+        lua->pushobject(spell);
     }
     return 1;
 }
 
-int fb::game::context::builtin_name2npc(lua_State* lua)
+int fb::game::context::builtin_name2npc(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto name    = lua->tostring(1);
     auto npc     = context->model.npc.name2npc(name);
 
     if (npc == nullptr)
     {
-        thread->pushnil();
+        lua->pushnil();
     }
     else
     {
-        thread->pushobject(npc);
+        lua->pushobject(npc);
     }
     return 1;
 }
 
-int fb::game::context::builtin_name2map(lua_State* lua)
+int fb::game::context::builtin_name2map(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto name    = lua->tostring(1);
     auto map     = context->model.map.name2map(name);
 
     if (map == nullptr)
     {
-        thread->pushnil();
+        lua->pushnil();
     }
     else
     {
-        thread->pushobject(map);
+        lua->pushobject(map);
     }
     return 1;
 }
 
-int fb::game::context::builtin_name2ch(lua_State* lua)
+int fb::game::context::builtin_name2ch(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto name    = lua->tostring(1);
 
     auto ch = context->_shard[name]->names.template lock<character*>([&name](auto& names) -> character* {
         if (names.contains(name) == false)
@@ -145,47 +145,46 @@ int fb::game::context::builtin_name2ch(lua_State* lua)
 
     if (ch == nullptr)
     {
-        thread->pushnil();
+        lua->pushnil();
         return 1;
     }
 
-    return context->builtin(*ch, thread, 1, [=]() -> async::task<void> {
-        thread->pushobject(ch);
-        co_return;
+    return context->builtin(*ch, lua, 1, [=]() {
+        lua->pushobject(ch);
     });
 }
 
-int fb::game::context::builtin_name2item(lua_State* lua)
+int fb::game::context::builtin_name2item(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto name    = lua->tostring(1);
     auto item    = context->model.item.name2item(name);
 
     if (item == nullptr)
     {
-        thread->pushnil();
+        lua->pushnil();
     }
     else
     {
-        thread->pushobject(item);
+        lua->pushobject(item);
     }
     return 1;
 }
 
-int fb::game::context::builtin_pursuit_sell(lua_State* lua)
+int fb::game::context::builtin_pursuit_sell(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto pursuit = thread->tointeger(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto pursuit = lua->tointeger(1);
 
-    thread->new_table();
+    lua->new_table();
     if (context->model.sell.contains(pursuit))
     {
         auto& sell = context->model.sell[pursuit];
@@ -195,33 +194,33 @@ int fb::game::context::builtin_pursuit_sell(lua_State* lua)
             auto& item  = context->model.item[k];
             auto  price = v.price.value_or(item.price);
 
-            thread->pushinteger(++i);
-            thread->new_table();
+            lua->pushinteger(++i);
+            lua->new_table();
             {
-                thread->pushinteger(1);
-                thread->pushobject(item);
-                lua_settable(*thread, -3);
+                lua->pushinteger(1);
+                lua->pushobject(item);
+                lua_settable(L, -3);
 
-                thread->pushinteger(2);
-                thread->pushinteger(price);
-                lua_settable(*thread, -3);
+                lua->pushinteger(2);
+                lua->pushinteger(price);
+                lua_settable(L, -3);
             }
-            lua_settable(*thread, -3);
+            lua_settable(L, -3);
         }
     }
 
     return 1;
 }
 
-int fb::game::context::builtin_pursuit_sell_price(lua_State* lua)
+int fb::game::context::builtin_pursuit_sell_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto pursuit = thread->tointeger(1);
-    auto name    = thread->tostring(2);
+    auto context = lua->env<fb::game::context>("context");
+    auto pursuit = lua->tointeger(1);
+    auto name    = lua->tostring(2);
 
     if (context->model.sell.contains(pursuit) == false)
         return 0;
@@ -232,38 +231,38 @@ int fb::game::context::builtin_pursuit_sell_price(lua_State* lua)
         if (model.name != name)
             continue;
 
-        thread->pushinteger(x.price.value_or(model.price));
+        lua->pushinteger(x.price.value_or(model.price));
         return 1;
     }
 
     return 0;
 }
 
-int fb::game::context::builtin_pursuit_sell_name(lua_State* lua)
+int fb::game::context::builtin_pursuit_sell_name(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto pursuit = thread->tointeger(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto pursuit = lua->tointeger(1);
 
     if (context->model.sell_attribute.contains(pursuit) == false)
         return 0;
 
-    thread->pushstring(context->model.sell_attribute[pursuit].group);
+    lua->pushstring(context->model.sell_attribute[pursuit].group);
     return 1;
 }
 
-int fb::game::context::builtin_pursuit_buy(lua_State* lua)
+int fb::game::context::builtin_pursuit_buy(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto pursuit = thread->tointeger(1);
-    thread->new_table();
+    auto context = lua->env<fb::game::context>("context");
+    auto pursuit = lua->tointeger(1);
+    lua->new_table();
     if (context->model.buy.contains(pursuit))
     {
         auto& buy = context->model.buy[pursuit];
@@ -273,33 +272,33 @@ int fb::game::context::builtin_pursuit_buy(lua_State* lua)
             auto& item  = context->model.item[k];
             auto  price = v.price.value_or(item.price / 2);
 
-            thread->pushinteger(++i);
-            thread->new_table();
+            lua->pushinteger(++i);
+            lua->new_table();
             {
-                thread->pushinteger(1);
-                thread->pushobject(item);
-                lua_settable(*thread, -3);
+                lua->pushinteger(1);
+                lua->pushobject(item);
+                lua_settable(L, -3);
 
-                thread->pushinteger(2);
-                thread->pushinteger(price);
-                lua_settable(*thread, -3);
+                lua->pushinteger(2);
+                lua->pushinteger(price);
+                lua_settable(L, -3);
             }
-            lua_settable(*thread, -3);
+            lua_settable(L, -3);
         }
     }
 
     return 1;
 }
 
-int fb::game::context::builtin_timer(lua_State* lua)
+int fb::game::context::builtin_timer(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context  = thread->env<fb::game::context>("context");
-    auto value    = (uint32_t)thread->tointeger(1);
-    auto decrease = thread->toboolean(2);
+    auto context  = lua->env<fb::game::context>("context");
+    auto value    = (uint32_t)lua->tointeger(1);
+    auto decrease = lua->toboolean(2);
 
     auto type = decrease ? TIMER_TYPE::DECREASE : TIMER_TYPE::INCREASE;
     context->foreach_ch([value, type](auto& ch) -> async::task<void> {
@@ -309,14 +308,14 @@ int fb::game::context::builtin_timer(lua_State* lua)
     return 0;
 }
 
-int fb::game::context::builtin_weather(lua_State* lua)
+int fb::game::context::builtin_weather(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto value   = (uint32_t)thread->tointeger(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto value   = (uint32_t)lua->tointeger(1);
 
     context->foreach_ch([weather = WEATHER_TYPE(value)](auto& ch) -> async::task<void> {
         ch.weather(weather);
@@ -325,14 +324,14 @@ int fb::game::context::builtin_weather(lua_State* lua)
     return 0;
 }
 
-int fb::game::context::builtin_bright(lua_State* lua)
+int fb::game::context::builtin_bright(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto value   = (uint32_t)thread->tointeger(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto value   = (uint32_t)lua->tointeger(1);
 
     context->foreach_ch([value](auto& ch) -> async::task<void> {
         ch.bright(value);
@@ -341,110 +340,110 @@ int fb::game::context::builtin_bright(lua_State* lua)
     return 0;
 }
 
-int fb::game::context::builtin_name_with(lua_State* lua)
+int fb::game::context::builtin_name_with(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto name = thread->tostring(1);
+    auto argc = lua->argc();
+    auto name = lua->tostring(1);
 
     if (argc < 3)
     {
-        thread->pushstring(name_with(name));
+        lua->pushstring(name_with(name));
     }
     else
     {
-        auto first  = thread->tostring(2);
-        auto second = thread->tostring(3);
-        thread->pushstring(name_with(name, {first, second}));
+        auto first  = lua->tostring(2);
+        auto second = lua->tostring(3);
+        lua->pushstring(name_with(name, {first, second}));
     }
     return 1;
 }
 
-int fb::game::context::builtin_assert_korean(lua_State* lua)
+int fb::game::context::builtin_assert_korean(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto text = thread->tostring(1);
-    thread->pushboolean(assert_korean(text));
+    auto argc = lua->argc();
+    auto text = lua->tostring(1);
+    lua->pushboolean(assert_korean(text));
     return 1;
 }
 
-int fb::game::context::builtin_cp949(lua_State* lua)
+int fb::game::context::builtin_cp949(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto text = thread->tostring(1);
-    thread->pushstring(CP949(text));
+    auto argc = lua->argc();
+    auto text = lua->tostring(1);
+    lua->pushstring(CP949(text));
     return 1;
 }
 
-int fb::game::context::builtin_debug(lua_State* lua)
+int fb::game::context::builtin_debug(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
 #if defined DEBUG | defined _DEBUG
-    thread->pushboolean(true);
+    lua->pushboolean(true);
 #else
-    thread->pushboolean(false);
+    lua->pushboolean(false);
 #endif
     return 1;
 }
 
-int fb::game::context::builtin_name2class(lua_State* lua)
+int fb::game::context::builtin_name2class(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto name    = lua->tostring(1);
 
     auto cls       = CLASS::NONE;
     auto promotion = uint8_t{0};
     if (context->model.promotion.name2class(name, cls, promotion) == false)
         return 0;
 
-    thread->pushinteger(cls);
-    thread->pushinteger(promotion);
+    lua->pushinteger(cls);
+    lua->pushinteger(promotion);
     return 2;
 }
 
-int fb::game::context::builtin_class2name(lua_State* lua)
+int fb::game::context::builtin_class2name(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context   = thread->env<fb::game::context>("context");
-    auto cls       = (uint8_t)thread->tointeger(1);
-    auto promotion = (uint8_t)thread->tointeger(2);
+    auto context   = lua->env<fb::game::context>("context");
+    auto cls       = (uint8_t)lua->tointeger(1);
+    auto promotion = (uint8_t)lua->tointeger(2);
     auto name      = std::string{};
     if (context->model.promotion.class2name(static_cast<CLASS>(cls), promotion, name) == false)
-        thread->pushnil();
+        lua->pushnil();
     else
-        thread->pushstring(name);
+        lua->pushstring(name);
 
     return 1;
 }
 
-int fb::game::context::builtin_save(lua_State* lua)
+int fb::game::context::builtin_save(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
+    auto context = lua->env<fb::game::context>("context");
     for (int i = 0; i < context->threads.size(); i++)
     {
         std::ignore = context->threads[i]->dispatch([context](auto& thread) -> async::task<void> {
@@ -459,32 +458,32 @@ int fb::game::context::builtin_save(lua_State* lua)
     return 0;
 }
 
-int fb::game::context::builtin_mknpc(lua_State* lua)
+int fb::game::context::builtin_mknpc(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto name    = thread->tostring(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto name    = lua->tostring(1);
     auto model   = context->model.npc.name2npc(name);
     if (model == nullptr)
         return 0;
 
     auto map = static_cast<fb::game::map*>(nullptr);
-    if (thread->is_str(2))
+    if (lua->is_str(2))
     {
-        auto name      = thread->tostring(2);
+        auto name      = lua->tostring(2);
         auto map_model = context->model.map.name2map(name);
         if (map_model == nullptr)
             return 0;
 
         map = &context->maps[map_model->id];
     }
-    else if (thread->is_obj(2))
+    else if (lua->is_obj(2))
     {
-        map = thread->touserdata<fb::game::map>(2);
+        map = lua->touserdata<fb::game::map>(2);
         if (map == nullptr)
             return 0;
     }
@@ -499,64 +498,64 @@ int fb::game::context::builtin_mknpc(lua_State* lua)
     {
         x = y = 0;
     }
-    else if (thread->is_table(3))
+    else if (lua->is_table(3))
     {
         if (argc >= 4)
-            direction = static_cast<DIRECTION>(thread->tointeger(4));
+            direction = static_cast<DIRECTION>(lua->tointeger(4));
 
-        thread->rawgeti(3, 1);
-        x = (uint16_t)thread->tointeger(-1);
-        thread->remove(-1);
+        lua->rawgeti(3, 1);
+        x = (uint16_t)lua->tointeger(-1);
+        lua->remove(-1);
 
-        thread->rawgeti(3, 2);
-        y = (uint16_t)thread->tointeger(-1);
-        thread->remove(-1);
+        lua->rawgeti(3, 2);
+        y = (uint16_t)lua->tointeger(-1);
+        lua->remove(-1);
     }
     else
     {
         if (argc >= 5)
-            direction = static_cast<DIRECTION>(thread->tointeger(5));
+            direction = static_cast<DIRECTION>(lua->tointeger(5));
 
-        x = (uint16_t)thread->tointeger(3);
-        y = (uint16_t)thread->tointeger(4);
+        x = (uint16_t)lua->tointeger(3);
+        y = (uint16_t)lua->tointeger(4);
     }
 
-    return context->builtin(*map, thread, 1, [=]() -> async::task<void> {
+    return context->builtin_async(*map, lua, 1, [=]() -> async::task<void> {
         auto npc = model->make<fb::game::npc>(*context);
-        thread->pushobject(npc);
+        lua->pushobject(npc);
         npc->direction(direction);
         co_await npc->map(map, fb::model::point16_t{x, y});
     });
 }
 
-int fb::game::context::builtin_maps(lua_State* lua)
+int fb::game::context::builtin_maps(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    thread->new_table();
+    auto context = lua->env<fb::game::context>("context");
+    lua->new_table();
     auto i = 1;
     for (auto& [id, map] : context->maps)
     {
-        thread->pushobject(map);
-        lua_rawseti(lua, -2, i++);
+        lua->pushobject(map);
+        lua_rawseti(L, -2, i++);
     }
     return 1;
 }
 
-int fb::game::context::builtin_broadcast(lua_State* lua)
+int fb::game::context::builtin_broadcast(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context    = thread->env<fb::game::context>("context");
-    auto argc       = thread->argc();
-    auto text       = thread->tostring(1);
-    auto type       = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(thread->tointeger(2));
-    auto broad_type = argc < 3 ? BROADCAST_TYPE::GLOBAL : static_cast<BROADCAST_TYPE>(thread->tointeger(3));
+    auto context    = lua->env<fb::game::context>("context");
+    auto argc       = lua->argc();
+    auto text       = lua->tostring(1);
+    auto type       = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(lua->tointeger(2));
+    auto broad_type = argc < 3 ? BROADCAST_TYPE::GLOBAL : static_cast<BROADCAST_TYPE>(lua->tointeger(3));
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {
@@ -565,23 +564,23 @@ int fb::game::context::builtin_broadcast(lua_State* lua)
     }
     else
     {
-        async::awaitable_then(context->broadcast(text, type, broad_type), [thread](auto result) {
-            thread->resume(0);
+        async::awaitable_then(context->broadcast(text, type, broad_type), [lua](auto result) {
+            std::ignore = lua->call(0);
         });
-        return thread->yield(0);
+        return lua->yield(0);
     }
 }
 
-int fb::game::context::builtin_assert_alive(lua_State* lua)
+int fb::game::context::builtin_assert_alive(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto obj     = thread->touserdata<fb::game::object>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto obj     = lua->touserdata<fb::game::object>(1);
 
-    thread->pushboolean(context->alive(*obj));
+    lua->pushboolean(context->alive(*obj));
     return 1;
 }

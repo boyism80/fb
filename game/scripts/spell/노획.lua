@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 노획 캐스팅
+function ON_CAST_2008(me, spell)
     local map = me:map()
     if map == nil then
         return

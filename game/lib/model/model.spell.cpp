@@ -10,44 +10,44 @@ fb::model::spell* fb::model::__spell::name2spell(const std::string& name) const
     return nullptr;
 }
 
-int fb::model::spell::builtin_type(lua_State* lua)
+int fb::model::spell::builtin_type(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto spell = thread->touserdata<fb::model::spell>(1);
+    auto spell = lua->touserdata<fb::model::spell>(1);
     if (spell == nullptr)
         return 0;
 
-    thread->pushinteger(spell->type);
+    lua->pushinteger(spell->type);
     return 1;
 }
 
-int fb::model::spell::builtin_name(lua_State* lua)
+int fb::model::spell::builtin_name(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto spell = thread->touserdata<fb::model::spell>(1);
+    auto spell = lua->touserdata<fb::model::spell>(1);
     if (spell == nullptr)
         return 0;
 
-    thread->pushstring(spell->name);
+    lua->pushstring(spell->name);
     return 1;
 }
 
-int fb::model::spell::builtin_message(lua_State* lua)
+int fb::model::spell::builtin_message(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto spell = thread->touserdata<fb::model::spell>(1);
+    auto spell = lua->touserdata<fb::model::spell>(1);
     if (spell == nullptr)
         return 0;
 
-    thread->pushstring(spell->message);
+    lua->pushstring(spell->message);
     return 1;
 }

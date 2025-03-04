@@ -7,16 +7,16 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
     this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
 }
 
-void context::on_attack(life& me, DURATION duration)
+async::task<void> context::on_attack(life& me, DURATION duration)
 {
     auto lua = lua::new_context();
 #if defined DEBUG | defined _DEBUG
-    lua->from("scripts/interaction.lua");
+    lua->load("scripts/interaction.lua");
 #endif
     lua->func("on_attack");
     lua->pushobject(me);
-    if (lua->resume(1, false) == false)
-        return;
+    if (co_await lua->call(1, false) == false)
+        co_return;
 
     auto attack_count = (uint32_t)lua->tointeger(1);
     if (me.is(OBJECT_TYPE::CHARACTER))
@@ -26,13 +26,12 @@ void context::on_attack(life& me, DURATION duration)
         if (weapon != nullptr)
         {
             auto& model = weapon->based<fb::model::weapon>();
-            if (model.script_attack != "")
+            if (model.on_attack != "")
             {
-                lua->from(model.script_attack);
-                lua->func("on_attack");
+                lua->func(model.on_attack);
                 lua->pushobject(ch);
                 lua->pushobject(weapon);
-                lua->resume(2, false);
+                co_await lua->call(2, false);
             }
 
             if (attack_count > 0 && weapon->durability_down(attack_count))
@@ -55,17 +54,17 @@ void context::on_dead(life& me, object* you)
         mob.drop_items();
 
         if (mob.owner != nullptr)
+        {
+            if (this->alive(*mob.owner))
+                mob.owner->detach_spawned_mob(mob);
             return;
+        }
+
+        if (you != nullptr && you->is(OBJECT_TYPE::MOB))
+            you = static_cast<fb::game::mob*>(you)->owner;
 
         if (you == nullptr)
             return;
-
-        if (you->is(OBJECT_TYPE::MOB))
-        {
-            you = static_cast<fb::game::mob*>(you)->owner;
-            if (you == nullptr)
-                return;
-        }
 
         if (mob.owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
         {

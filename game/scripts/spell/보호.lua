@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 보호 캐스팅
+function ON_CAST_4004(me, you, spell)
     local mp = 30
     local sound = 8
     local effect = 110
@@ -8,11 +9,13 @@ function on_cast(me, you, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 보호 버프 효과
+function ON_BUFF_4004(me, spell)
     me:damage_derate(me:damage_derate() + 1000)
 end
 
-function on_unbuff(me, spell)
+-- 보호 버프 해제 효과
+function ON_UNBUFF_4004(me, spell)
     me:damage_derate(me:damage_derate() - 1000)
 
 end

@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 월아일격 캐스팅
+function ON_CAST_10004(me, you, spell)
     you:sound(8)
     you:effect(120)
     if you ~= nil then

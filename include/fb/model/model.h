@@ -4595,6 +4595,7 @@ public:
     const uint32_t id;
     const std::string name;
     const fb::model::enum_value::SPELL_TYPE type;
+    const std::string script;
     const std::string cast;
     const std::string buff;
     const std::string unbuff;
@@ -4613,6 +4614,7 @@ DECLARE_SPELL_CONSTRUCTOR
         id(fb::model::build<uint32_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"])),
         type(fb::model::build<fb::model::enum_value::SPELL_TYPE>(json["type"])),
+        script(fb::model::build<std::string>(json["script"])),
         cast(fb::model::build<std::string>(json["cast"])),
         buff(fb::model::build<std::string>(json["buff"])),
         unbuff(fb::model::build<std::string>(json["unbuff"])),
@@ -4829,7 +4831,8 @@ public:
     const std::string desc;
     const fb::model::enum_value::DEATH_PENALTY death_penalty;
     const uint16_t capacity;
-    const std::string script_active;
+    const std::string script;
+    const std::string on_active;
     const std::vector<fb::model::dsl> condition;
 #endif
 
@@ -4846,7 +4849,8 @@ public:
         desc(fb::model::build<std::string>(json["desc"])),
         death_penalty(fb::model::build<fb::model::enum_value::DEATH_PENALTY>(json["death_penalty"])),
         capacity(fb::model::build<uint16_t>(json["capacity"])),
-        script_active(fb::model::build<std::string>(json["script_active"])),
+        script(fb::model::build<std::string>(json["script"])),
+        on_active(fb::model::build<std::string>(json["on_active"])),
         condition(fb::model::build<std::vector<fb::model::dsl>>(json["condition"]))
 #ifdef DECLARE_ITEM_INITIALIZER
 DECLARE_ITEM_INITIALIZER
@@ -4901,6 +4905,7 @@ DECLARE_NPC_FIELDS
 public:
     const uint32_t id;
     const std::string script;
+    const std::string click;
     const std::vector<uint32_t> sell;
     const std::optional<uint32_t> buy;
     const bool repair;
@@ -4917,6 +4922,7 @@ public:
     npc(const Json::Value& json) : fb::model::object(json),
         id(fb::model::build<uint32_t>(json["id"])),
         script(fb::model::build<std::string>(json["script"])),
+        click(fb::model::build<std::string>(json["click"])),
         sell(fb::model::build<std::vector<uint32_t>>(json["sell"])),
         buy(fb::model::build<std::optional<uint32_t>>(json["buy"])),
         repair(fb::model::build<bool>(json["repair"])),
@@ -4977,8 +4983,8 @@ class equipment : public fb::model::item
 DECLARE_EQUIPMENT_FIELDS
 #else
 public:
-    const std::string script_inactive;
-    const std::string script_concast;
+    const std::string on_inactive;
+    const std::string on_concast;
     const uint16_t dress;
     const uint32_t durability;
     const std::optional<double> repair;
@@ -5003,8 +5009,8 @@ DECLARE_EQUIPMENT_CUSTOM_CONSTRUCTOR
 #else
 public:
     equipment(const Json::Value& json) : fb::model::item(json),
-        script_inactive(fb::model::build<std::string>(json["script_inactive"])),
-        script_concast(fb::model::build<std::string>(json["script_concast"])),
+        on_inactive(fb::model::build<std::string>(json["on_inactive"])),
+        on_concast(fb::model::build<std::string>(json["on_concast"])),
         dress(fb::model::build<uint16_t>(json["dress"])),
         durability(fb::model::build<uint32_t>(json["durability"])),
         repair(fb::model::build<std::optional<double>>(json["repair"])),
@@ -5213,7 +5219,7 @@ class weapon : public fb::model::equipment
 DECLARE_WEAPON_FIELDS
 #else
 public:
-    const std::string script_attack;
+    const std::string on_attack;
     const range<uint32_t> damage_small;
     const range<uint32_t> damage_large;
     const uint16_t sound;
@@ -5226,7 +5232,7 @@ DECLARE_WEAPON_CUSTOM_CONSTRUCTOR
 #else
 public:
     weapon(const Json::Value& json) : fb::model::equipment(json),
-        script_attack(fb::model::build<std::string>(json["script_attack"])),
+        on_attack(fb::model::build<std::string>(json["on_attack"])),
         damage_small(fb::model::build<range<uint32_t>>(json["damage_small"])),
         damage_large(fb::model::build<range<uint32_t>>(json["damage_large"])),
         sound(fb::model::build<uint16_t>(json["sound"])),

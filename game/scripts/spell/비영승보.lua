@@ -26,7 +26,8 @@ function lookup(me, you, direction)
     me:direction(newdir)
     return true
 end
-function on_cast(me, spell)
+-- 비영승보 캐스팅
+function ON_CAST_2015(me, spell)
     local err = me:assert({STATE_GHOST, STATE_RIDING})
     if err then
         me:message(err)

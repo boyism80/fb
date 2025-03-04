@@ -1,3 +1,4 @@
-function on_active(me, item)
+-- 노란시약 사용 스크립트
+function ON_ACTIVE_3091(me, item)
 
 end

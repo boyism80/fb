@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 공력증강 캐스팅
+function ON_CAST_4002(me, spell)
     local mp = 30
     local effect = 11
     local sound = 65

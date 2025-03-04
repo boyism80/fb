@@ -9,42 +9,42 @@ IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
 {"rename",              fb::game::item::builtin_rename},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::item::builtin_model(lua_State* lua)
+int fb::game::item::builtin_model(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto  item  = thread->touserdata<fb::game::item>(1);
+    auto  item  = lua->touserdata<fb::game::item>(1);
     auto& model = item->based<fb::model::item>();
 
-    thread->pushobject(model);
+    lua->pushobject(model);
     return 1;
 }
 
-int fb::game::item::builtin_count(lua_State* lua)
+int fb::game::item::builtin_count(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto item = thread->touserdata<fb::game::item>(1);
-    thread->pushinteger(item->count());
+    auto item = lua->touserdata<fb::game::item>(1);
+    lua->pushinteger(item->count());
     return 1;
 }
 
-int fb::game::item::builtin_durability(lua_State* lua)
+int fb::game::item::builtin_durability(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto argc = thread->argc();
-    auto item = thread->touserdata<fb::game::item>(1);
+    auto argc = lua->argc();
+    auto item = lua->touserdata<fb::game::item>(1);
 
     if (argc > 1)
     {
-        auto value = thread->tointeger(2);
+        auto value = lua->tointeger(2);
         item->durability(value);
         return 0;
     }
@@ -52,46 +52,46 @@ int fb::game::item::builtin_durability(lua_State* lua)
     {
         auto durability = item->durability();
         if (durability.has_value())
-            thread->pushinteger(durability.value());
+            lua->pushinteger(durability.value());
         else
-            thread->pushnil();
+            lua->pushnil();
         return 1;
     }
 }
 
-int fb::game::item::builtin_rename(lua_State* lua)
+int fb::game::item::builtin_rename(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto  argc   = thread->argc();
-    auto  item   = thread->touserdata<fb::game::item>(1);
+    auto  argc   = lua->argc();
+    auto  item   = lua->touserdata<fb::game::item>(1);
     auto& model  = item->based<fb::model::item>();
     auto  weapon = model.attr(ITEM_ATTRIBUTE::WEAPON) ? static_cast<fb::game::weapon*>(item) : nullptr;
 
     if (weapon == nullptr)
     {
-        thread->pushboolean(false);
+        lua->pushboolean(false);
         return 1;
     }
 
     if (argc > 1)
     {
-        if (thread->is_str(2))
+        if (lua->is_str(2))
         {
-            auto name = thread->tostring(2);
+            auto name = lua->tostring(2);
             weapon->custom_name(name);
             return 0;
         }
-        else if (thread->is_nil(2))
+        else if (lua->is_nil(2))
         {
             weapon->reset_custom_name();
             return 0;
         }
         else
         {
-            thread->pushboolean(false);
+            lua->pushboolean(false);
             return 1;
         }
     }
@@ -99,9 +99,9 @@ int fb::game::item::builtin_rename(lua_State* lua)
     {
         auto& custom_name = weapon->custom_name();
         if (custom_name.has_value())
-            thread->pushstring(custom_name.value());
+            lua->pushstring(custom_name.value());
         else
-            thread->pushnil();
+            lua->pushnil();
         return 1;
     }
 }

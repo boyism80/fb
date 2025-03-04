@@ -1,4 +1,5 @@
-function on_attack(me, item)
+-- 얼음칼 공격 스크립트
+function ON_ATTACK_29(me, item)
     math.randomseed(seed())
     if math.random() > 0.3 then
         return false
@@ -9,8 +10,8 @@ function on_attack(me, item)
         return
     end
 
-	if front:isbuff(table.unpack(relative_buff_name('마비'))) then
-    	return
+    if front:isbuff(table.unpack(relative_buff_name('마비'))) then
+        return
     end
 
     front:sound(70)
@@ -18,10 +19,12 @@ function on_attack(me, item)
     front:buff('마비', 20, me)
 end
 
-function on_active(me, item)
+-- 얼음칼 사용 스크립트
+function ON_ACTIVE_29(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 얼음칼 해제 스크립트
+function ON_INACTIVE_29(me, item)
 
 end

@@ -1,4 +1,5 @@
-function on_cast(me, spell, name)
+-- 야수 캐스팅
+function ON_CAST_2006(me, spell, name)
     local mobs = {
         ['여우'] = name2mob('여우'):look(),
         ['늑대'] = name2mob('늑대'):look(),
@@ -11,10 +12,12 @@ function on_cast(me, spell, name)
     spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
 end
 
-function on_buff(me, spell)
+-- 야수 버프 효과
+function ON_BUFF_2006(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 야수 버프 해제 효과
+function ON_UNBUFF_2006(me, spell)
     me:disguise(nil)
 end

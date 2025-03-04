@@ -99,19 +99,19 @@ public:                                                               \
     bool                            operator!= (const object&) const; \
                                                                       \
 public:                                                               \
-    static int builtin_name(lua_State* lua);                          \
-    static int builtin_look(lua_State* lua);                          \
-    static int builtin_color(lua_State* lua);                         \
-    static int builtin_dialog(lua_State* lua);
+    static int builtin_name(lua_State* L);                            \
+    static int builtin_look(lua_State* L);                            \
+    static int builtin_color(lua_State* L);                           \
+    static int builtin_dialog(lua_State* L);
 
-#define DECLARE_LIFE_EXTENSION             \
-                                           \
-public:                                    \
-    LUA_PROTOTYPE                          \
-                                           \
-public:                                    \
-    static int builtin_hp(lua_State* lua); \
-    static int builtin_mp(lua_State* lua);
+#define DECLARE_LIFE_EXTENSION           \
+                                         \
+public:                                  \
+    LUA_PROTOTYPE                        \
+                                         \
+public:                                  \
+    static int builtin_hp(lua_State* L); \
+    static int builtin_mp(lua_State* L);
 
 #define DECLARE_ITEM_EXTENSION                                                          \
                                                                                         \
@@ -129,14 +129,14 @@ public:                                                                         
     virtual fb::game::item* make(fb::game::context& context, uint16_t count = 1) const; \
                                                                                         \
 public:                                                                                 \
-    static int builtin_make(lua_State* lua);                                            \
-    static int builtin_attr(lua_State* lua);                                            \
-    static int builtin_capacity(lua_State* lua);                                        \
-    static int builtin_durability(lua_State* lua);                                      \
-    static int builtin_price(lua_State* lua);                                           \
-    static int builtin_repair_price(lua_State* lua);                                    \
-    static int builtin_rename_price(lua_State* lua);                                    \
-    static int builtin_deposit_price(lua_State* lua);
+    static int builtin_make(lua_State* L);                                              \
+    static int builtin_attr(lua_State* L);                                              \
+    static int builtin_capacity(lua_State* L);                                          \
+    static int builtin_durability(lua_State* L);                                        \
+    static int builtin_price(lua_State* L);                                             \
+    static int builtin_repair_price(lua_State* L);                                      \
+    static int builtin_rename_price(lua_State* L);                                      \
+    static int builtin_deposit_price(lua_State* L);
 
 #define DECLARE_CASH_EXTENSION                                                        \
                                                                                       \
@@ -209,10 +209,10 @@ public:                                                                         
             return enum_value::WEAPON_TYPE::UNKNOWN;                                                     \
         }                                                                                                \
     }                                                                                                    \
-    static int builtin_damage_small(lua_State* lua);                                                     \
-    static int builtin_damage_large(lua_State* lua);                                                     \
-    static int builtin_sound(lua_State* lua);                                                            \
-    static int builtin_type(lua_State* lua);
+    static int builtin_damage_small(lua_State* L);                                                       \
+    static int builtin_damage_large(lua_State* L);                                                       \
+    static int builtin_sound(lua_State* L);                                                              \
+    static int builtin_type(lua_State* L);
 
 #define DECLARE_ARMOR_EXTENSION                                                                          \
                                                                                                          \
@@ -277,22 +277,15 @@ public:                                                \
     OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::NPC) \
                                                        \
 public:                                                \
-    static int builtin_input(lua_State* lua);          \
-    static int builtin_menu(lua_State* lua);           \
-    static int builtin_list(lua_State* lua);           \
-    static int builtin_item(lua_State* lua);           \
-    static int builtin_slot(lua_State* lua);           \
-    static int builtin_sell(lua_State* lua);           \
-    static int builtin_sell_price(lua_State* lua);     \
-    static int builtin_buy(lua_State* lua);            \
-    static int builtin_buy_price(lua_State* lua);      \
-    static int builtin_repair(lua_State* lua);         \
-    static int builtin_repair_all(lua_State* lua);     \
-    static int builtin_hold_money(lua_State* lua);     \
-    static int builtin_hold_item(lua_State* lua);      \
-    static int builtin_return_money(lua_State* lua);   \
-    static int builtin_return_item(lua_State* lua);    \
-    static int builtin_rename_weapon(lua_State* lua);
+    static int builtin_input(lua_State* L);            \
+    static int builtin_menu(lua_State* L);             \
+    static int builtin_list(lua_State* L);             \
+    static int builtin_item(lua_State* L);             \
+    static int builtin_slot(lua_State* L);             \
+    static int builtin_sell(lua_State* L);             \
+    static int builtin_sell_price(lua_State* L);       \
+    static int builtin_buy(lua_State* L);              \
+    static int builtin_buy_price(lua_State* L);
 
 #define DECLARE_MOB_EXTENSION                          \
                                                        \
@@ -303,10 +296,10 @@ public:                                                \
     OVERRIDE_OBJECT_TYPE(enum_value::OBJECT_TYPE::MOB) \
                                                        \
 public:                                                \
-    static int builtin_speed(lua_State* lua);          \
-    static int builtin_size(lua_State* lua);           \
-    static int builtin_damage(lua_State* lua);         \
-    static int builtin_drop(lua_State* lua);
+    static int builtin_speed(lua_State* L);            \
+    static int builtin_size(lua_State* L);             \
+    static int builtin_damage(lua_State* L);           \
+    static int builtin_drop(lua_State* L);
 
 #define DECLARE_MOB_CONTAINER_EXTENSION \
                                         \
@@ -325,18 +318,18 @@ public:                                  \
 
 #define DECLARE_MAP_INHERIT : public fb::lua::luable
 
-#define DECLARE_MAP_EXTENSION                    \
-                                                 \
-public:                                          \
-    LUA_PROTOTYPE                                \
-                                                 \
-public:                                          \
-    static int builtin_id(lua_State* lua);       \
-    static int builtin_name(lua_State* lua);     \
-    static int builtin_root(lua_State* lua);     \
-    static int builtin_cardinal(lua_State* lua); \
-    static int builtin_revive(lua_State* lua);   \
-    static int builtin_option(lua_State* lua);
+#define DECLARE_MAP_EXTENSION                  \
+                                               \
+public:                                        \
+    LUA_PROTOTYPE                              \
+                                               \
+public:                                        \
+    static int builtin_id(lua_State* L);       \
+    static int builtin_name(lua_State* L);     \
+    static int builtin_root(lua_State* L);     \
+    static int builtin_cardinal(lua_State* L); \
+    static int builtin_revive(lua_State* L);   \
+    static int builtin_option(lua_State* L);
 
 #define DECLARE_MAP_CONTAINER_EXTENSION \
                                         \
@@ -359,18 +352,18 @@ public:                                                                         
 public:                                   \
     fb::model::spell* name2spell(const std::string& name) const;
 
-#define DECLARE_SPELL_EXTENSION              \
-                                             \
-public:                                      \
-    struct listener;                         \
-                                             \
-public:                                      \
-    LUA_PROTOTYPE                            \
-                                             \
-public:                                      \
-    static int builtin_type(lua_State* lua); \
-    static int builtin_name(lua_State* lua); \
-    static int builtin_message(lua_State* lua);
+#define DECLARE_SPELL_EXTENSION            \
+                                           \
+public:                                    \
+    struct listener;                       \
+                                           \
+public:                                    \
+    LUA_PROTOTYPE                          \
+                                           \
+public:                                    \
+    static int builtin_type(lua_State* L); \
+    static int builtin_name(lua_State* L); \
+    static int builtin_message(lua_State* L);
 
 #define DECLARE_PROMOTION_CONTAINER_EXTENSION                                                               \
                                                                                                             \
@@ -554,15 +547,15 @@ public:                                    \
 
 #define DECLARE_OBJECT_INHERIT  : public fb::lua::luable
 
-#define DECLARE_TRACE_EXTENSION               \
-                                              \
-public:                                       \
-    LUA_PROTOTYPE                             \
-                                              \
-public:                                       \
-    static int builtin_id(lua_State* lua);    \
-    static int builtin_look(lua_State* lua);  \
-    static int builtin_color(lua_State* lua); \
-    static int builtin_text(lua_State* lua);
+#define DECLARE_TRACE_EXTENSION             \
+                                            \
+public:                                     \
+    LUA_PROTOTYPE                           \
+                                            \
+public:                                     \
+    static int builtin_id(lua_State* L);    \
+    static int builtin_look(lua_State* L);  \
+    static int builtin_color(lua_State* L); \
+    static int builtin_text(lua_State* L);
 
 #endif

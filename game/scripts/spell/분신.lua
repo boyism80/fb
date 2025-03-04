@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 분신 캐스팅
+function ON_CAST_2013(me, spell)
     local mp = 0
     local sound = 39
     local effect = 11
@@ -8,10 +9,12 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 분신 버프 효과
+function ON_BUFF_2013(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 분신 버프 해제 효과
+function ON_UNBUFF_2013(me, spell)
 
 end

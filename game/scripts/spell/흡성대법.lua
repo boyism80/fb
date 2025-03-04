@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 흡성대법 캐스팅
+function ON_CAST_2017(me, you, spell)
     local damage = 3000
     local mp = 60
     local sound = 38

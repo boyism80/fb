@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 자동투명 캐스팅
+function ON_CAST_13(me, spell)
     local buff_time = 180
     if me:isbuff(table.unpack(relative_buff_name(spell:name()))) then
         return false
@@ -7,11 +8,13 @@ function on_cast(me, spell)
     me:buff(spell, buff_time)
 end
 
-function on_buff(me, spell)
+-- 자동투명 버프 효과
+function ON_BUFF_13(me, spell)
     me:state(STATE_HALF_CLOACK)
 end
 
-function on_unbuff(me, spell)
+-- 자동투명 버프 해제 효과
+function ON_UNBUFF_13(me, spell)
     me:state(STATE_NORMAL)
 
 end

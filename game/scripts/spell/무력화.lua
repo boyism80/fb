@@ -1,4 +1,5 @@
-function on_cast(me, you, spell)
+-- 무력화 캐스팅
+function ON_CAST_4012(me, you, spell)
     local mp = 500
     local sound = 85
     local effect = 10

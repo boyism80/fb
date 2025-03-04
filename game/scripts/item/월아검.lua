@@ -1,4 +1,5 @@
-function on_attack(me, item)
+-- 월아검 공격 스크립트
+function ON_ATTACK_69(me, item)
     math.randomseed(seed())
     if math.random() > 0.3 then
         return false
@@ -12,10 +13,12 @@ function on_attack(me, item)
     me:cast(front, '월아일격')
 end
 
-function on_active(me, item)
+-- 월아검 사용 스크립트
+function ON_ACTIVE_69(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 월아검 해제 스크립트
+function ON_INACTIVE_69(me, item)
 
 end

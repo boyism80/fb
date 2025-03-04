@@ -5,24 +5,11 @@ using namespace std::chrono_literals;
 context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<character>(context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id"))
-{ }
-
-context::~context()
 {
-    for (int i = 0; i < threads.count(); i++)
-    {
-        auto thread = this->threads.at(i);
-        auto params = thread->template data<thread_params>();
-        delete params;
-    }
-}
+    auto& ist = fb::lua::context_pool::ist();
+    ist.setup(this->threads);
 
-async::task<void> context::handle_start()
-{
-    co_await fb::acceptor<character>::handle_start();
-
-    lua::env<context>("context", this);
-
+    lua::env<fb::game::context>("context", this);
     lua::build<door, lua::luable>();
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
@@ -76,6 +63,30 @@ async::task<void> context::handle_start()
     lua::build("mknpc", builtin_mknpc);
     lua::build("maps", builtin_maps);
 
+    for (auto& [_, root] : ist)
+    {
+        auto& thread = root->initial_thread();
+        std::ignore  = thread.dispatch([root](auto&) -> async::task<void> {
+            fb::model::lua::map_enum(*root);
+            co_return;
+        });
+    }
+}
+
+context::~context()
+{
+    for (int i = 0; i < threads.count(); i++)
+    {
+        auto thread = this->threads.at(i);
+        auto params = thread->template data<thread_params>();
+        delete params;
+    }
+}
+
+async::task<void> context::handle_start()
+{
+    co_await fb::acceptor<character>::handle_start();
+
     auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};
     for (int i = 0; i < this->threads.count(); i++)
     {
@@ -92,14 +103,6 @@ async::task<void> context::handle_start()
     auto async_tasks = std::vector<async::task<void>>();
     for (auto& [thread, maps] : maps_division)
     {
-        auto& ist = fb::lua::context_pool::ist();
-        fb::model::lua::map_enum(ist);
-        fb::lua::load("scripts/spell.lua");
-        fb::lua::load("scripts/npc.lua");
-        fb::lua::load("scripts/interaction.lua");
-        fb::lua::load("scripts/command.lua");
-        fb::lua::dump("scripts/script.lua");
-
         async_tasks.push_back(thread->dispatch([this, maps = std::move(maps)](auto& thread) -> async::task<void> {
             auto params = new thread_params();
             for (auto map : maps)
@@ -245,9 +248,17 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
     co_await this->save(*ch);
-    std::ignore = co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
-                                                                                    "/in-game/logout",
-                                                                                    internal_reqs::Logout{ch->name()});
+    try
+    {
+        std::ignore =
+            co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
+                                                                              "/in-game/logout",
+                                                                              internal_reqs::Logout{ch->name()});
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal(e.what());
+    }
 
     co_await this->update_thread(*ch);
 
@@ -743,16 +754,17 @@ void context::handle_click_npc(character& ch, npc& npc)
     if (model.script.empty())
         return;
 
-#if defined DEBUG | defined _DEBUG
-    fb::lua::load("scripts/npc.lua");
-#endif
-
     ch.dialog.release();
-    ch.dialog.from(model.script.c_str())
-        .func("on_interact")
-        .pushobject(ch)
-        .pushobject(npc.based<fb::model::npc>())
-        .resume(2);
+
+    auto lua = ch.dialog.new_context();
+#if defined DEBUG | defined _DEBUG
+    lua->load("scripts/npc.lua");
+    lua->load(model.script);
+#endif
+    lua->func(model.click);
+    lua->pushobject(ch);
+    lua->pushobject(npc.based<fb::model::npc>());
+    std::ignore = lua->call(2);
 }
 
 async::task<void> context::broadcast(const std::string& message, MESSAGE_TYPE type, BROADCAST_TYPE broadcast_type)

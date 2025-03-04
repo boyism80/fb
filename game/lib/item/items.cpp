@@ -577,16 +577,16 @@ void fb::game::items::pickup(bool boost)
             std::ignore = this->_owner.items.add(belows[0]);
         }
 
-        auto thread = lua::new_context();
-        if (thread == nullptr)
+        auto lua = fb::lua::new_context();
+        if (lua == nullptr)
             return;
 
 #if defined DEBUG | defined _DEBUG
-        thread->from("scripts/interaction.lua");
+        lua->load("scripts/interaction.lua");
 #endif
-        thread->func("on_pickup");
-        thread->pushobject(this->_owner);
-        thread->resume(1);
+        lua->func("on_pickup");
+        lua->pushobject(this->_owner);
+        std::ignore = lua->call(1);
     }
     catch (std::exception& e)
     {

@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 신의축복 캐스팅
+function ON_CAST_1005(me, spell)
     local mp = 30
     local sound = 6
     local effect = 58
@@ -8,11 +9,13 @@ function on_cast(me, spell)
     end
 end
 
-function on_buff(me, spell)
+-- 신의축복 버프 효과
+function ON_BUFF_1005(me, spell)
     me:hit(me:hit()+3)
 end
 
-function on_unbuff(me, spell)
+-- 신의축복 버프 해제 효과
+function ON_UNBUFF_1005(me, spell)
     me:hit(me:hit()-3)
 
 end

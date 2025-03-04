@@ -1,279 +1,292 @@
 #include <fb/model/model.h>
 #include <fb/game/context.h>
 
-int fb::model::npc::builtin_input(lua_State* lua)
+int fb::model::npc::builtin_input(lua_State* L)
 {
     // Ex) npc::input(ch, "message")
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
-    auto message = thread->tostring(3);
+    auto message = lua->tostring(3);
 
-    auto argc = thread->argc();
+    auto argc     = lua->argc();
+    auto listener = ch->get_listener<fb::game::dialog>();
     if (argc > 3)
     {
-        auto message_top = thread->tostring(4);
-        auto message_bot = thread->tostring(5);
-        auto maxlen      = argc < 6 ? 0xFF : (int)thread->tointeger(6);
-        auto prev        = argc < 7 ? false : thread->toboolean(7);
+        auto message_top = lua->tostring(4);
+        auto message_bot = lua->tostring(5);
+        auto maxlen      = argc < 6 ? 0xFF : (int)lua->tointeger(6);
+        auto prev        = argc < 7 ? false : lua->toboolean(7);
 
-        ch->dialog.input(*npc, message, message_top, message_bot, maxlen, prev);
+        if (listener != nullptr)
+            listener->on_dialog(*ch, *npc, message, message_top, message_bot, maxlen, prev);
     }
     else
     {
-        ch->dialog.input(*npc, message);
+        if (listener != nullptr)
+            listener->on_dialog(*ch, *npc, message);
     }
-    return thread->yield(1);
+    return lua->yield(1);
 }
 
-int fb::model::npc::builtin_menu(lua_State* lua)
+int fb::model::npc::builtin_menu(lua_State* L)
 {
     // Ex) npc::menu(ch, "hello", {"hello 1", "hello 2", "hello 3"})
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
-    auto message = thread->tostring(3);
+    auto message = lua->tostring(3);
 
     // Read menu list
-    auto size  = thread->rawlen(4);
+    auto size  = lua->rawlen(4);
     auto menus = std::vector<std::string>();
     for (int i = 0; i < size; i++)
     {
-        thread->rawgeti(4, i + 1);
-        menus.push_back(thread->tostring(-1));
+        lua->rawgeti(4, i + 1);
+        menus.push_back(lua->tostring(-1));
     }
 
-    ch->dialog.show(*npc, message, menus);
-    return thread->yield(1);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *npc, message, menus);
+    return lua->yield(1);
 }
 
-int fb::model::npc::builtin_list(lua_State* lua)
+int fb::model::npc::builtin_list(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto argc    = thread->argc();
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto argc    = lua->argc();
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
-    auto message       = thread->tostring(3);
-    auto size          = thread->rawlen(4);
-    auto button_prev   = thread->toboolean(5);
-    auto custom_preset = (argc >= 6 && lua_type(lua, 6) == LUA_TTABLE);
+    auto message       = lua->tostring(3);
+    auto size          = lua->rawlen(4);
+    auto button_prev   = lua->toboolean(5);
+    auto custom_preset = (argc >= 6 && lua_type(L, 6) == LUA_TTABLE);
     auto preset        = fb::game::dialog::preset(*ch);
     if (custom_preset)
     {
-        thread->pushstring("sex");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.sex = static_cast<SEX>(thread->tointeger(-1));
+        lua->pushstring("sex");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.sex = static_cast<SEX>(lua->tointeger(-1));
 
-        thread->pushstring("state");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.state = static_cast<STATE>(thread->tointeger(-1));
+        lua->pushstring("state");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.state = static_cast<STATE>(lua->tointeger(-1));
 
-        thread->pushstring("face");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.face = thread->tointeger(-1);
+        lua->pushstring("face");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.face = lua->tointeger(-1);
 
-        thread->pushstring("hair_color");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.hair_color = thread->tointeger(-1);
+        lua->pushstring("hair_color");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.hair_color = lua->tointeger(-1);
 
-        thread->pushstring("weapon");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.weapon = thread->tointeger(-1);
+        lua->pushstring("weapon");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.weapon = lua->tointeger(-1);
 
-        thread->pushstring("weapon_color");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.weapon_color = thread->tointeger(-1);
+        lua->pushstring("weapon_color");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.weapon_color = lua->tointeger(-1);
 
-        thread->pushstring("armor");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.armor = thread->tointeger(-1);
+        lua->pushstring("armor");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.armor = lua->tointeger(-1);
 
-        thread->pushstring("armor_color");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.armor_color = thread->tointeger(-1);
+        lua->pushstring("armor_color");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.armor_color = lua->tointeger(-1);
 
-        thread->pushstring("shield");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.shield = thread->tointeger(-1);
+        lua->pushstring("shield");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.shield = lua->tointeger(-1);
 
-        thread->pushstring("shield_color");
-        if (lua_rawget(lua, 6) == LUA_TNUMBER)
-            preset.shield_color = thread->tointeger(-1);
+        lua->pushstring("shield_color");
+        if (lua_rawget(L, 6) == LUA_TNUMBER)
+            preset.shield_color = lua->tointeger(-1);
     }
 
     auto menus = std::vector<std::string>();
     for (int i = 0; i < size; i++)
     {
-        thread->rawgeti(4, i + 1);
-        menus.push_back(thread->tostring(-1));
+        lua->rawgeti(4, i + 1);
+        menus.push_back(lua->tostring(-1));
     }
 
-    if (custom_preset)
-        ch->dialog.show(*npc, message, menus, button_prev, preset);
-    else
-        ch->dialog.show(*npc, message, menus, button_prev);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+    {
+        if (custom_preset)
+            listener->on_dialog(*ch, *npc, message, menus, button_prev, preset);
+        else
+            listener->on_dialog(*ch, *npc, message, menus, button_prev);
+    }
 
-    return thread->yield(1);
+    return lua->yield(1);
 }
 
-int fb::model::npc::builtin_item(lua_State* lua)
+int fb::model::npc::builtin_item(lua_State* L)
 {
     // Ex) npc::menu(ch, "hello", {item1, item2, item3})
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
-    auto message = thread->tostring(3);
+    auto message = lua->tostring(3);
 
     auto items = fb::game::dialog::item_pairs();
-    thread->pushnil();
-    while (thread->next(4))
+    lua->pushnil();
+    while (lua->next(4))
     {
-        // auto i = thread->tointeger(-2);
+        // auto i = lua->tointeger(-2);
         auto item  = static_cast<fb::model::item*>(nullptr);
         auto price = uint32_t(0);
 
         { // get 1st field
-            thread->pushinteger(1);
-            lua_gettable(*thread, -2);
-            switch (lua_type(*thread, -1))
+            lua->pushinteger(1);
+            lua_gettable(L, -2);
+            switch (lua_type(L, -1))
             {
             case LUA_TSTRING:
-                item = context->model.item.name2item(thread->tostring(-1));
+                item = context->model.item.name2item(lua->tostring(-1));
                 break;
 
             case LUA_TUSERDATA:
-                item = thread->touserdata<fb::model::item>(-1);
+                item = lua->touserdata<fb::model::item>(-1);
                 break;
             }
-            thread->pop(1);
+            lua->pop(1);
         }
 
         { // get 2nd field
-            thread->pushinteger(2);
-            lua_gettable(*thread, -2);
-            switch (lua_type(*thread, -1))
+            lua->pushinteger(2);
+            lua_gettable(L, -2);
+            switch (lua_type(L, -1))
             {
             case LUA_TNUMBER:
-                price = thread->tointeger(-1);
+                price = lua->tointeger(-1);
                 break;
             }
         }
-        thread->pop(1);
+        lua->pop(1);
 
         if (item == nullptr)
             continue;
 
         items.push_back({*item, price});
-        thread->pop(1);
+        lua->pop(1);
     }
 
-    ch->dialog.show(*npc, message, items);
-    return thread->yield(1);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *npc, message, items);
+    return lua->yield(1);
 }
 
-int fb::model::npc::builtin_slot(lua_State* lua)
+int fb::model::npc::builtin_slot(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto ch = thread->touserdata<fb::game::character>(2);
+    auto ch = lua->touserdata<fb::game::character>(2);
     if (ch == nullptr)
         return 0;
 
-    auto message = thread->tostring(3);
+    auto message = lua->tostring(3);
     auto slots   = std::vector<uint8_t>();
-    auto size    = lua_rawlen(*thread, 4);
+    auto size    = lua_rawlen(L, 4);
     for (int i = 0; i < size; i++)
     {
-        thread->pushinteger(i + 1);
-        lua_gettable(*thread, 4);
-        slots.push_back(thread->tointeger(-1));
-        thread->pop(1);
+        lua->pushinteger(i + 1);
+        lua_gettable(L, 4);
+        slots.push_back(lua->tointeger(-1));
+        lua->pop(1);
     }
 
-    ch->dialog.show(*npc, message, slots);
-    return thread->yield(1);
+    auto listener = ch->get_listener<fb::game::dialog>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *npc, message, slots);
+    return lua->yield(1);
 }
 
-int fb::model::npc::builtin_sell(lua_State* lua)
+int fb::model::npc::builtin_sell(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    thread->new_table();
+    lua->new_table();
     for (int i = 0; i < npc->sell.size(); i++)
     {
-        thread->pushinteger(i + 1);
-        thread->pushinteger(npc->sell[i]);
-        lua_settable(*thread, -3);
+        lua->pushinteger(i + 1);
+        lua->pushinteger(npc->sell[i]);
+        lua_settable(L, -3);
     }
     return 1;
 }
 
-int fb::model::npc::builtin_sell_price(lua_State* lua)
+int fb::model::npc::builtin_sell_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto name = thread->tostring(2);
+    auto name = lua->tostring(2);
     for (auto sell : npc->sell)
     {
         if (context->model.sell.contains(sell) == false)
@@ -285,7 +298,7 @@ int fb::model::npc::builtin_sell_price(lua_State* lua)
             if (item.name != name)
                 continue;
 
-            thread->pushinteger(x.price.value_or(item.price));
+            lua->pushinteger(x.price.value_or(item.price));
             return 1;
         }
     }
@@ -293,18 +306,18 @@ int fb::model::npc::builtin_sell_price(lua_State* lua)
     return 0;
 }
 
-int fb::model::npc::builtin_buy_price(lua_State* lua)
+int fb::model::npc::builtin_buy_price(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
-    auto name = thread->tostring(2);
+    auto name = lua->tostring(2);
     if (npc->buy.has_value() == false)
         return 0;
 
@@ -317,163 +330,30 @@ int fb::model::npc::builtin_buy_price(lua_State* lua)
         if (item.name != name)
             continue;
 
-        thread->pushinteger(x.price.value_or(item.price / 2));
+        lua->pushinteger(x.price.value_or(item.price / 2));
         return 1;
     }
 
     return 0;
 }
 
-int fb::model::npc::builtin_buy(lua_State* lua)
+int fb::model::npc::builtin_buy(lua_State* L)
 {
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
         return 0;
 
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
+    auto context = lua->env<fb::game::context>("context");
+    auto npc     = lua->touserdata<fb::model::npc>(1);
     if (npc == nullptr)
         return 0;
 
     if (npc->buy.has_value())
-        thread->pushinteger(npc->buy.value());
+        lua->pushinteger(npc->buy.value());
     else
-        thread->pushnil();
+        lua->pushnil();
 
     return 1;
-}
-
-int fb::model::npc::builtin_repair(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("repair").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
-}
-
-int fb::model::npc::builtin_repair_all(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("repair_all").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
-}
-
-int fb::model::npc::builtin_hold_money(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("hold_money").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
-}
-
-int fb::model::npc::builtin_hold_item(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("hold_item").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
-}
-
-int fb::model::npc::builtin_return_money(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("return_money").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
-}
-
-int fb::model::npc::builtin_return_item(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("return_item").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
-}
-
-int fb::model::npc::builtin_rename_weapon(lua_State* lua)
-{
-    auto thread = fb::lua::get(lua);
-    if (thread == nullptr)
-        return 0;
-
-    auto context = thread->env<fb::game::context>("context");
-    auto npc     = thread->touserdata<fb::model::npc>(1);
-    if (npc == nullptr)
-        return 0;
-
-    auto ch = thread->touserdata<fb::game::character>(2);
-    if (ch == nullptr)
-        return 0;
-
-    ch->dialog.func("rename_weapon").pushobject(ch).pushobject(npc).resume(2);
-    return thread->yield(1);
 }
 
 fb::model::npc* fb::model::__npc::name2npc(const std::string& name) const

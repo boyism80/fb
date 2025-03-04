@@ -1,4 +1,5 @@
-function on_cast(me, spell, name)
+-- 맹수 캐스팅
+function ON_CAST_2007(me, spell, name)
     local mobs = {
         ['곰'] = name2mob('곰'):look(),
         ['호랑이'] = name2mob('호랑이'):look(),
@@ -11,10 +12,12 @@ function on_cast(me, spell, name)
     spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
 end
 
-function on_buff(me, spell)
+-- 맹수 버프 효과
+function ON_BUFF_2007(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 맹수 버프 해제 효과
+function ON_UNBUFF_2007(me, spell)
     me:disguise(nil)
 end

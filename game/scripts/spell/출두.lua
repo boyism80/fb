@@ -32,7 +32,8 @@ function lookup(map, x, y)
     return x, y, DIRECTION_BOTTOM
 end
 
-function on_cast(me, spell, name)
+-- 출두 캐스팅
+function ON_CAST_3(me, spell, name)
 
     if me:name() == name then
         return me:message('나 자신을 출두할 수 없습니다.')

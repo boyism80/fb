@@ -1,11 +1,14 @@
-function on_active(me, item)
+-- 투명구두 사용 스크립트
+function ON_ACTIVE_2123(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 투명구두 해제 스크립트
+function ON_INACTIVE_2123(me, item)
 
 end
 
-function on_concast(me, item)
+-- 투명구두 지속 스크립트
+function ON_CONCAST_2123(me, item)
     me:cast('자동투명')
 end

@@ -1,4 +1,5 @@
-function on_cast(me, spell, name)
+-- 경수 캐스팅
+function ON_CAST_2004(me, spell, name)
     local mobs = {
         ['토끼'] = name2mob('토끼'):look(),
         ['다람쥐'] = name2mob('다람쥐'):look(),
@@ -11,10 +12,12 @@ function on_cast(me, spell, name)
     spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
 end
 
-function on_buff(me, spell)
+-- 경수 버프 효과
+function ON_BUFF_2004(me, spell)
 
 end
 
-function on_unbuff(me, spell)
+-- 경수 버프 해제 효과
+function ON_UNBUFF_2004(me, spell)
     me:disguise(nil)
 end

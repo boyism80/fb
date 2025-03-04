@@ -1,4 +1,5 @@
-function on_cast(me, spell)
+-- 포효검황 캐스팅
+function ON_CAST_1020(me, spell)
     local damage = (me:hp()*11)//10
     local hp = me:hp()//2
     local mp = 600
