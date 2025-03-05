@@ -520,12 +520,24 @@ int fb::game::context::builtin_mknpc(lua_State* L)
         y = (uint16_t)lua->tointeger(4);
     }
 
-    return context->builtin_async(*map, lua, 1, [=]() -> async::task<void> {
-        auto npc = model->make<fb::game::npc>(*context);
-        lua->pushobject(npc);
-        npc->direction(direction);
-        co_await npc->map(map, fb::model::point16_t{x, y});
-    });
+    if (map->thread()->id() == std::this_thread::get_id())
+    {
+        return context->builtin(*map, lua, 1, [=]() {
+            auto npc = model->make<fb::game::npc>(*context);
+            lua->pushobject(npc);
+            npc->direction(direction);
+            npc->map(map, fb::model::point16_t{x, y});
+        });
+    }
+    else
+    {
+        return context->builtin_async(*map, lua, 1, [=]() -> async::task<void> {
+            auto npc = model->make<fb::game::npc>(*context);
+            lua->pushobject(npc);
+            npc->direction(direction);
+            co_await npc->map(map, fb::model::point16_t{x, y});
+        });
+    }
 }
 
 int fb::game::context::builtin_maps(lua_State* L)
