@@ -235,6 +235,7 @@
                                      Background="Transparent"
                                      TextWrapping="Wrap"
                                      IsReadOnly="True"
+                                     TextChanged="TextBox_TextChanged"
                                      Text="{Binding MainText, Mode=OneWay}" />
                         </Border>
                         <TreeView Grid.Row="1"

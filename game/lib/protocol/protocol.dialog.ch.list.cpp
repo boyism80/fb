@@ -32,7 +32,7 @@ async::task<void> dialog_ch_list::serialize(fb::stream_writer<big_endian>& write
     writer.write<uint8_t>(static_cast<uint8_t>(this->preset.state));
     writer.write<uint16_t>(this->preset.face);
     writer.write<uint8_t>(this->preset.hair_color);
-    writer.write<uint8_t>(this->preset.armor.value_or(0xFF));
+    writer.write<uint8_t>(this->preset.armor.value_or(static_cast<uint8_t>(this->preset.sex)));
     writer.write<uint8_t>(this->preset.armor_color.value_or(0x00));
     writer.write<uint16_t>(this->preset.weapon.value_or(0xFFFF));
     writer.write<uint8_t>(this->preset.weapon_color.value_or(0x00));

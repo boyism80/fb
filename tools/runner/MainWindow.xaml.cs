@@ -1,6 +1,7 @@
 ﻿using Runner.ViewModel;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Runner;
 
@@ -29,5 +30,11 @@ public partial class MainWindow : Window
     private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
         _vm.SelectedProcess = e.NewValue as ServerProcess;
+    }
+
+    private void TextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        var textBox = sender as TextBox;
+        textBox.ScrollToEnd();
     }
 }

@@ -42,10 +42,6 @@ command_funcs = {
         else
             error = me:map(map)
         end
-
-        if error ~= nil then
-            me:message(error)
-        end
         return true
     end,
 

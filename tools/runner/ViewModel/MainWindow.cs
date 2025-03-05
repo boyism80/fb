@@ -958,6 +958,8 @@ namespace Runner.ViewModel
                     return;
 
                 sp.Output += (e.Data + Environment.NewLine);
+                if (SelectedProcess == sp)
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
             };
             process.ErrorDataReceived += (sender, e) =>
             {
@@ -965,6 +967,8 @@ namespace Runner.ViewModel
                     return;
 
                 sp.Output += (e.Data + Environment.NewLine);
+                if (SelectedProcess == sp)
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
             };
             process.Start();
             process.BeginOutputReadLine();
@@ -1014,6 +1018,8 @@ namespace Runner.ViewModel
                     return;
 
                 sp.Output += (e.Data + Environment.NewLine);
+                if (SelectedProcess == sp)
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
             };
             process.ErrorDataReceived += (sender, e) =>
             {
@@ -1021,6 +1027,8 @@ namespace Runner.ViewModel
                     return;
 
                 sp.Output += (e.Data + Environment.NewLine);
+                if (SelectedProcess == sp)
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MainText)));
             };
             process.Start();
             process.BeginOutputReadLine();
