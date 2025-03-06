@@ -261,11 +261,9 @@ end
 
 function func(me)
 
-    me:title('')
-
-    -- local success, size = me:group(group_lock)
-    -- local npc = name2npc('낙랑')
-    -- npc:dialog(me, string.format('%s, %s', success, size))
+    local success, size = me:group(group_lock)
+    local npc = name2npc('낙랑')
+    npc:dialog(me, string.format('%s, %s', success, size))
     
     -- local items = me:items()
 

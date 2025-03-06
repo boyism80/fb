@@ -1,0 +1,172 @@
+{
+    "item": [
+        {
+            "name": "id",
+            "type": "$item",
+            "desc": "item id"
+        },
+        {
+            "name": "count",
+            "type": "uint",
+            "desc": "item count",
+            "default": 1
+        },
+        {
+            "name": "percent",
+            "type": "double",
+            "desc": "percentage",
+            "default": 100.0
+        }
+    ],
+    "level": [
+        {
+            "name": "min",
+            "type": "uint8_t?",
+            "desc": "minimum level"
+        },
+        {
+            "name": "max",
+            "type": "uint8_t?",
+            "desc": "maximum level",
+            "default": null
+        }
+    ],
+    "sex": [
+        {
+            "name": "value",
+            "type": "SEX",
+            "desc": "sex type"
+        }
+    ],
+    "strength": [
+        {
+            "name": "value",
+            "type": "uint8_t",
+            "desc": "strength"
+        }
+    ],
+    "intelligence": [
+        {
+            "name": "value",
+            "type": "uint8_t",
+            "desc": "intelligence"
+        }
+    ],
+    "dexterity": [
+        {
+            "name": "value",
+            "type": "uint8_t",
+            "desc": "dexterity"
+        }
+    ],
+    "promotion": [
+        {
+            "name": "value",
+            "type": "uint8_t",
+            "desc": "promotion"
+        }
+    ],
+    "class_t": [
+        {
+            "name": "value",
+            "type": "CLASS",
+            "desc": "class"
+        }
+    ],
+    "admin": [
+        {
+            "name": "value",
+            "type": "bool",
+            "desc": "is admin"
+        }
+    ],
+    "world": [
+        {
+            "name": "id",
+            "type": "$world",
+            "desc": "world id"
+        },
+        {
+            "name": "index",
+            "type": "uint16_t",
+            "desc": "world point index"
+        }
+    ],
+    "map": [
+        {
+            "name": "id",
+            "type": "$map",
+            "desc": "map id"
+        },
+        {
+            "name": "x",
+            "type": "uint16_t",
+            "desc": "x",
+            "default": 0
+        },
+        {
+            "name": "y",
+            "type": "uint16_t",
+            "desc": "y",
+            "default": 0
+        },
+        {
+            "name": "right",
+            "type": "uint16_t",
+            "desc": "right",
+            "default": 0
+        },
+        {
+            "name": "bottom",
+            "type": "uint16_t",
+            "desc": "bottom",
+            "default": 0
+        }
+    ],
+    "area": [
+        {
+            "name": "left",
+            "type": "uint16_t",
+            "desc": "left"
+        },
+        {
+            "name": "top",
+            "type": "uint16_t",
+            "desc": "top"
+        },
+        {
+            "name": "right",
+            "type": "uint16_t",
+            "desc": "right"
+        },
+        {
+            "name": "bottom",
+            "type": "uint16_t",
+            "desc": "bottom"
+        }
+    ],
+    "point": [
+        {
+            "name": "x",
+            "type": "uint16_t",
+            "desc": "x"
+        },
+        {
+            "name": "y",
+            "type": "uint16_t",
+            "desc": "y"
+        }
+    ],
+    "script": [
+        {
+            "name": "path",
+            "type": "string",
+            "desc": "path of script"
+        },
+        {
+            "name" :"function",
+            "type": "string",
+            "desc": "function name"
+        }
+    ]
+}

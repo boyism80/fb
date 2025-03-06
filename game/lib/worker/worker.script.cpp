@@ -32,6 +32,23 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
             scripts.insert(v.script);
     }
 
+    auto host = fb::config<uint8_t>("id");
+    for (auto& [k, v] : this->_context.model.warp)
+    {
+        auto& map = this->_context.model.map[k];
+        if (map.host != host)
+            continue;
+
+        for (auto& warp : v)
+        {
+            if (warp.dest.header != DSL::script)
+                continue;
+
+            auto params = fb::model::dsl::script(warp.dest.params);
+            scripts.insert(params.path);
+        }
+    }
+
     static auto& ist = fb::lua::context_pool::ist();
     for (auto& [_, root] : ist)
     {

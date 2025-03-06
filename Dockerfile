@@ -5,7 +5,7 @@ COPY tools/data-converter /app/tools/data-converter
 WORKDIR /app/tools/data-converter
 RUN dotnet publish -c Release /p:DefineConstants=DISABLED_TTY -o bin
 WORKDIR /app/tools/data-converter/bin
-RUN ./ExcelTableConverter --dir=/app/resources/table --lang="c++|c#"
+RUN ./ExcelTableConverter --dir=/app/resources/table --lang="c++|c#" --dsl=/app/resources/table/dsl.json
 RUN mv output /output
 
 

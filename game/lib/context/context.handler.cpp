@@ -150,6 +150,22 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         }
         break;
 
+        case DSL::script:
+        {
+            ch->move(request.direction, request.position);
+            ch->dialog.release();
+
+            auto params = fb::model::dsl::script(warp->dest.params);
+            auto lua    = ch->dialog.new_context();
+#if defined DEBUG | defined _DEBUG
+            lua->load(params.path);
+#endif
+            lua->func(params.function);
+            lua->pushobject(ch);
+            std::ignore = lua->call(1, false);
+        }
+        break;
+
         default:
             throw std::runtime_error("invalid dsl header");
         }
