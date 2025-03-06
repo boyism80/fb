@@ -266,7 +266,9 @@ namespace Fb.Model.EnumValue
         [EnumMember(Value = "area")]
         Area = 11, 
         [EnumMember(Value = "point")]
-        Point = 12
+        Point = 12, 
+        [EnumMember(Value = "script")]
+        Script = 13
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1761,6 +1763,31 @@ namespace Fb.Model
                 {
                     Header = Fb.Model.EnumValue.Dsl.Promotion,
                     Params = new object[] {Value}
+                };
+            }
+        }
+        public class Script
+        {
+            [JsonProperty("path")]
+            public string Path { get; set; }
+            [JsonProperty("function")]
+            public string Function { get; set; }
+
+            public static Script Parse(object[] parameters)
+            {
+                return new Script
+                {
+                    Path = parameters[0]?.ToString(),
+                    Function = parameters[1]?.ToString()
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Script,
+                    Params = new object[] {Path, Function}
                 };
             }
         }

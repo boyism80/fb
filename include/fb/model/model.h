@@ -925,7 +925,8 @@ enum class DSL
     world = 9, 
     map = 10, 
     area = 11, 
-    point = 12
+    point = 12, 
+    script = 13
 }; // end of enum 'DSL'
 
 template <>
@@ -945,7 +946,8 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "world", DSL::world }, 
         { "map", DSL::map }, 
         { "area", DSL::area }, 
-        { "point", DSL::point }
+        { "point", DSL::point }, 
+        { "script", DSL::script }
     };
 
     auto i = enums.find(k);
@@ -972,7 +974,8 @@ inline const char* enum_tostring<DSL>(DSL k)
         { DSL::world, "world" }, 
         { DSL::map, "map" }, 
         { DSL::area, "area" }, 
-        { DSL::point, "point" }
+        { DSL::point, "point" }, 
+        { DSL::script, "script" }
     };
 
     auto i = enums.find(k);
@@ -2868,6 +2871,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DSL_area");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::point);
     lua_setglobal(lua, "DSL_point");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::script);
+    lua_setglobal(lua, "DSL_script");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DURATION::FAST);
     lua_setglobal(lua, "DURATION_FAST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DURATION::ATTACK);
@@ -3348,6 +3353,7 @@ public:
     class map;
     class point;
     class promotion;
+    class script;
     class sex;
     class strength;
     class world;
@@ -3652,6 +3658,34 @@ public:
 };
 
 
+class fb::model::dsl::script
+{
+public:
+    const std::string path;
+    const std::string function;
+
+public:
+    script(const std::string& path, const std::string& function) : 
+        path(path),
+        function(function)
+    { }
+    script(const Json::Value& json) : 
+        path(fb::model::build<std::string>(json[0])),
+        function(fb::model::build<std::string>(json[1]))
+    { }
+    script(const std::vector<std::any>& parameters) : 
+        path(any_cast<const std::string&>(parameters[0])),
+        function(any_cast<const std::string&>(parameters[1]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::script, {path, function});
+    }
+};
+
+
 class fb::model::dsl::sex
 {
 public:
@@ -3742,6 +3776,7 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
         { fb::model::enum_value::DSL::map, [](const Json::Value& json) { return fb::model::dsl::map(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::point, [](const Json::Value& json) { return fb::model::dsl::point(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::script, [](const Json::Value& json) { return fb::model::dsl::script(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::sex, [](const Json::Value& json) { return fb::model::dsl::sex(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::world, [](const Json::Value& json) { return fb::model::dsl::world(json).to_dsl().params; }}

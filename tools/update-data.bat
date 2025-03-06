@@ -13,7 +13,7 @@ IF "%1" == "true" (
 
 if ERRORLEVEL 1 GOTO END
 PUSHD bin
-CALL ExcelTableConverter.exe --dir=..\..\..\resources\table --lang="c++|c#"
+CALL ExcelTableConverter.exe --dir=..\..\..\resources\table --lang="c++|c#" --dsl=..\..\..\resources\table\dsl.json
 POPD
 POPD
 
