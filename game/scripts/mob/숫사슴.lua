@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 숫사슴 사망
+function ON_MOB_DIE_300(me, you)
 
 end

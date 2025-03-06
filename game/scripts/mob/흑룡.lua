@@ -1,7 +1,9 @@
-function on_attack(me, you)
+-- 흑룡 공격
+function ON_MOB_ATTACK_1107(me, you)
     return false
 end
 
-function on_die(me, you)
+-- 흑룡 사망
+function ON_MOB_DIE_1107(me, you)
 
 end

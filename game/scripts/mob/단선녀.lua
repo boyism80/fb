@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 단선녀 사망
+function ON_MOB_DIE_487(me, you)
 
 end

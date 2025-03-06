@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 방어의돼지 사망
+function ON_MOB_DIE_101(me, you)
 
 end

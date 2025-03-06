@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 숲돼지 사망
+function ON_MOB_DIE_317(me, you)
 
 end

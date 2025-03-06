@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 꼬마돼지 사망
+function ON_MOB_DIE_74(me, you)
 
 end

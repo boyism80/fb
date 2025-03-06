@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 흡혈강시 사망
+function ON_MOB_DIE_538(me, you)
 
 end

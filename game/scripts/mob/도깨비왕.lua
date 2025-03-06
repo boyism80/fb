@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 도깨비왕 사망
+function ON_MOB_DIE_378(me, you)
 
 end

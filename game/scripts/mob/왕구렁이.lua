@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 왕구렁이 사망
+function ON_MOB_DIE_311(me, you)
 
 end

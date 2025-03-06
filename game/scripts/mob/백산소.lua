@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 백산소 사망
+function ON_MOB_DIE_570(me, you)
 
 end

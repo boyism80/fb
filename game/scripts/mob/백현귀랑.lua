@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 백현귀랑 사망
+function ON_MOB_DIE_1119(me, you)
 
 end

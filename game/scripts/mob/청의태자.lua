@@ -1,4 +1,5 @@
-function on_attack(me, you)
+-- 청의태자 공격
+function ON_MOB_ATTACK_1095(me, you)
     math.randomseed(seed())
     if math.random() > 0.01 then
         return false

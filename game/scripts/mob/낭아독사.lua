@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 낭아독사 사망
+function ON_MOB_DIE_415(me, you)
 
 end

@@ -50,7 +50,23 @@ void context::on_dead(life& me, object* you)
     {
     case OBJECT_TYPE::MOB:
     {
-        auto& mob = static_cast<fb::game::mob&>(me);
+        auto& mob   = static_cast<fb::game::mob&>(me);
+        auto& model = mob.based<fb::model::mob>();
+        if (model.script.empty() == false && model.on_die.empty() == false)
+        {
+            auto lua = fb::lua::new_context();
+#if defined DEBUG | defined _DEBUG
+            lua->load(model.script);
+#endif
+            lua->func(model.on_die);
+            lua->pushobject(mob);
+            if (you != nullptr)
+                lua->pushobject(you);
+            else
+                lua->pushnil();
+            std::ignore = lua->call(2);
+        }
+
         mob.drop_items();
 
         if (mob.owner != nullptr)

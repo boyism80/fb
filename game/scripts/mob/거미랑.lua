@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 거미랑 사망
+function ON_MOB_DIE_1117(me, you)
 
 end
