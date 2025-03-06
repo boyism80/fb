@@ -162,7 +162,7 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
 #endif
             lua->func(params.function);
             lua->pushobject(ch);
-            lua->call(1, false);
+            std::ignore = lua->call(1, false);
         }
         break;
 
