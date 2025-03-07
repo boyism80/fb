@@ -216,7 +216,7 @@ void fb::lua::context::resume(int argc)
         auto parent  = this->_parent;
         root->revoke(*this);
 
-        if (parent != nullptr)
+        if (parent != nullptr && parent->_state == LUA_YIELD)
         {
             parent->pushboolean(false);
             parent->resume(1);
@@ -231,7 +231,7 @@ void fb::lua::context::resume(int argc)
         if (this->_auto_release)
             root->release(*this);
 
-        if (parent != nullptr)
+        if (parent != nullptr && parent->_state == LUA_YIELD)
         {
             parent->pushboolean(true);
             parent->resume(1);

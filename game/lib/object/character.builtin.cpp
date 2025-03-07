@@ -1690,8 +1690,12 @@ int character::builtin_script(lua_State* L)
     case LUA_YIELD:
         return lua->yield(1);
 
+    case LUA_OK:
+        lua->pushboolean(true);
+        return 1;
+
     default:
-        lua->pushboolean(new_lua->toboolean(1));
+        lua->pushboolean(false);
         return 1;
     }
 }
