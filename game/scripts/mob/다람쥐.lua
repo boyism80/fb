@@ -1,8 +1,8 @@
 -- 다람쥐 사망
 function ON_MOB_DIE_1(me, you)
-    local success, size = you:group(group_lock)
-    local npc = name2npc('낙랑')
-    npc:dialog(you, string.format('%s, %s', success, size))
+    me:chat('다람쥐 사망')
 
-    npc:dialog(you, string.format('%s, %s', success, size))
+    local model = me:model()
+    model:dialog(you, '나를 쓰러트리다니 대단하구나')
+    model:dialog(you, '구라야')
 end

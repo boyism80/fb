@@ -95,9 +95,13 @@ int fb::model::object::builtin_dialog(lua_State* L)
     auto button_prev = argc < 4 ? false : lua->toboolean(4);
     auto button_next = argc < 5 ? false : lua->toboolean(5);
 
-    auto listener = ch->get_listener<fb::game::dialog>();
+    auto listener = ch->get_listener<fb::game::character>();
     if (listener != nullptr)
         listener->on_dialog(*ch, *object, message, button_prev, button_next);
 
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
     return lua->yield(1);
 }

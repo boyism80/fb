@@ -85,7 +85,7 @@ class thread;
  *
  * @return     { description_of_the_return_value }
  */
-context* new_context();
+context* new_context(context* parent = nullptr);
 /**
  * @brief      Gets the specified context.
  *
@@ -161,10 +161,14 @@ public:
  */
 class context
 {
+public:
+    using promise_type = std::shared_ptr<async::task_completion_source<bool>>;
+
 private:
-    int                                                  _state = 0;
-    std::shared_ptr<async::task_completion_source<bool>> _promise;
-    bool                                                 _auto_release = false;
+    context*     _parent = nullptr;
+    int          _state  = 0;
+    promise_type _promise;
+    bool         _auto_release = false;
 
 protected:
     lua_State* _ctx = nullptr;
@@ -178,14 +182,14 @@ protected:
      *
      * @param      ctx   The context
      */
-    context(lua_State* ctx);
+    context(lua_State* ctx, context* parent = nullptr);
     /**
      * @brief      Constructs a new instance.
      *
      * @param      ctx    The context
      * @param      owner  The owner
      */
-    context(lua_State* ctx, context& owner);
+    context(lua_State* ctx, context& owner, context* parent = nullptr);
     /**
      * @brief      Constructs a new instance.
      *
@@ -656,6 +660,20 @@ public:
      */
     void pending(bool value);
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      parent  The parent
+     */
+    void parent(context* parent);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    context* parent() const;
+
 public:
     operator lua_State* () const;
 
@@ -765,7 +783,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    context* pop();
+    context* pop(context* parent);
     /**
      * @brief      Gets the specified context.
      *
@@ -875,7 +893,7 @@ public:
     ~context_pool();
 
 public:
-    context* pop();
+    context* pop(context* parent);
     context* get(lua_State* ctx);
     void     setup(fb::thread_container& threads);
     void     record(lua_State* L);
@@ -900,9 +918,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      owner  The owner
+     * @param      owner   The owner
+     * @param      parent  The parent
      */
-    thread(context& owner);
+    thread(context& owner, context* parent);
     /**
      * @brief      Constructs a new instance.
      *

@@ -39,7 +39,6 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"trace",               character::builtin_trace},
 {"push_trace",          character::builtin_push_trace},
 {"erase_trace",         character::builtin_erase_trace},
-{"switch_context",      character::builtin_switch_context},
 {"whisper",             character::builtin_whisper},
 {"send_mail",           character::builtin_send_mail},
 {"assert_state",        character::builtin_assert_state},
@@ -1072,28 +1071,6 @@ int character::builtin_erase_trace(lua_State* L)
     return 1;
 }
 
-int character::builtin_switch_context(lua_State* L)
-{
-    auto lua = fb::lua::get(L);
-    if (lua == nullptr)
-        return 0;
-
-    auto context = lua->env<fb::game::context>("context");
-    auto me      = lua->touserdata<character>(1);
-    if (me == nullptr)
-        return 0;
-
-    auto you = lua->touserdata<character>(2);
-    if (you == nullptr)
-    {
-        lua->pushboolean(false);
-        return 1;
-    }
-
-    lua->pushboolean(me->dialog.switch_context(you->dialog));
-    return 1;
-}
-
 int character::builtin_whisper(lua_State* L)
 {
     auto lua = fb::lua::get(L);
@@ -1702,21 +1679,21 @@ int character::builtin_script(lua_State* L)
     if (argc >= 2 && lua_type(L, 2) == LUA_TSTRING)
         name = lua->tostring(2);
 
-    auto new_lua = ch->dialog.new_context();
+    auto new_lua = fb::lua::new_context(lua);
     new_lua->load("scripts/script.lua");
     new_lua->func(name);
     new_lua->pushobject(ch);
-    async::awaitable_then(new_lua->call(1), [](auto result) {
-        try
-        {
-            result();
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-        }
-    });
-    return 0;
+    std::ignore = new_lua->call(1);
+    switch (new_lua->state())
+    {
+    case LUA_PENDING:
+    case LUA_YIELD:
+        return lua->yield(1);
+
+    default:
+        lua->pushboolean(new_lua->toboolean(1));
+        return 1;
+    }
 }
 
 int character::builtin_ad(lua_State* L)

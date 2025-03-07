@@ -3,10 +3,10 @@
 
 using namespace fb::lua;
 
-context* fb::lua::new_context()
+context* fb::lua::new_context(context* parent)
 {
     auto& ist = context_pool::ist();
-    return ist.pop();
+    return ist.pop(parent);
 }
 
 context* fb::lua::get(lua_State* ctx)
@@ -68,13 +68,15 @@ int luable::builtin_gc(lua_State* ctx)
     return 0;
 }
 
-context::context(lua_State* ctx) :
+context::context(lua_State* ctx, context* parent) :
     _ctx(ctx),
+    _parent(parent),
     owner(nullptr)
 { }
 
-context::context(lua_State* ctx, context& owner) :
+context::context(lua_State* ctx, context& owner, context* parent) :
     _ctx(ctx),
+    _parent(parent),
     owner(&owner)
 { }
 
@@ -149,6 +151,16 @@ std::string context::tostring(int offset)
     return CP949(x, PLATFORM::Windows);
 }
 
+void fb::lua::context::parent(context* parent)
+{
+    this->_parent = parent;
+}
+
+context* fb::lua::context::parent() const
+{
+    return this->_parent;
+}
+
 context::operator lua_State* () const
 {
     return this->_ctx;
@@ -199,17 +211,34 @@ void fb::lua::context::resume(int argc)
     {
         lua_pop(*this, 1);
         auto message = std::format("lua error message : {}", this->tostring(-1).c_str());
-        auto promise = std::shared_ptr<async::task_completion_source<bool>>{this->_promise};
+        fb::logger::fatal(message);
+        auto promise = promise_type{this->_promise};
+        auto parent  = this->_parent;
         root->revoke(*this);
+
+        if (parent != nullptr)
+        {
+            parent->pushboolean(false);
+            parent->resume(1);
+        }
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
     }
     break;
 
     default:
+    {
+        auto parent = this->_parent;
         if (this->_auto_release)
             root->release(*this);
+
+        if (parent != nullptr)
+        {
+            parent->pushboolean(true);
+            parent->resume(1);
+        }
         this->_promise->set_value(true);
-        break;
+    }
+    break;
     }
 }
 
@@ -297,7 +326,7 @@ bool root::dump(const std::string& path)
     return true;
 }
 
-context* root::pop()
+context* root::pop(context* parent)
 {
     // 데드락 요소
     // root::pop 메소드에서 락 순서는
@@ -311,12 +340,12 @@ context* root::pop()
         auto  key = (lua_State*)*ctx;
         this->busy.insert({key, std::move(ctx)});
         this->idle.erase(key);
-
+        this->busy[key]->parent(parent);
         return this->busy[key].get();
     }
     else if (this->idle.size() + this->busy.size() < DEFAULT_POOL_SIZE)
     {
-        auto ptr = std::make_unique<fb::lua::thread>(*this);
+        auto ptr = std::make_unique<fb::lua::thread>(*this, parent);
         auto key = (lua_State*)*ptr.get();
 
         if (this->idle.contains(key) || this->busy.contains(key))
@@ -350,6 +379,7 @@ void root::release(context& ctx)
             throw std::runtime_error("lua ctx's current state is not LUA_OK");
 
         lua_settop(ctx, 0);
+        ctx.parent(nullptr);
 
         auto key = (lua_State*)ctx;
         this->idle.insert({key, std::move(this->busy[key])});
@@ -403,13 +433,13 @@ fb::lua::context_pool::~context_pool()
     }
 }
 
-context* fb::lua::context_pool::pop()
+context* fb::lua::context_pool::pop(context* parent)
 {
     auto id = std::this_thread::get_id();
     if (this->_roots.contains(id) == false)
         return nullptr;
 
-    return this->_roots[id]->pop();
+    return this->_roots[id]->pop(parent);
 }
 
 context* fb::lua::context_pool::get(lua_State* ctx)
@@ -480,13 +510,13 @@ void fb::lua::context_pool::unrecord(lua_State* L)
     this->_mapping.erase(L);
 }
 
-thread::thread(context& owner) :
-    context(::lua_newthread(owner), owner),
+thread::thread(context& owner, context* parent) :
+    context(::lua_newthread(owner), owner, parent),
     ref(luaL_ref(owner, LUA_REGISTRYINDEX))
 { }
 
 thread::thread(thread&& ctx) :
-    context(ctx._ctx),
+    context(ctx._ctx, ctx.parent()),
     ref(ctx.ref)
 { }
 
