@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 까만소 사망
+function ON_MOB_DIE_432(me, you)
 
 end

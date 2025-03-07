@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 코뿔소 사망
+function ON_MOB_DIE_430(me, you)
 
 end

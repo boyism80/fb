@@ -58,7 +58,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         if (msg.empty() == false)
             ch->message(msg, MESSAGE_TYPE::STATE);
 
-        auto lua = ch->dialog.new_context();
+        auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/interaction.lua");
 #endif
@@ -153,10 +153,10 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         case DSL::script:
         {
             ch->move(request.direction, request.position);
-            ch->dialog.release();
+            // ch->dialog.release();
 
             auto params = fb::model::dsl::script(warp->dest.params);
-            auto lua    = ch->dialog.new_context();
+            auto lua    = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
             lua->load(params.path);
 #endif
@@ -1003,66 +1003,68 @@ async::task<bool> context::handle_dialog(fb::socket<character>& socket, const fb
     if (ch->inited() == false)
         co_return true;
 
-    if (ch->dialog.active() == false)
+    if (ch->dialog == nullptr)
         co_return true;
 
+    auto lua   = ch->dialog;
+    ch->dialog = nullptr;
     switch (request.interaction)
     {
     case dialog::interaction::NORMAL: // 일반 다이얼로그
     {
-        ch->dialog.pushinteger(request.action);
-        ch->dialog.resume(1);
+        lua->pushinteger(request.action);
+        lua->resume(1);
         break;
     }
 
     case dialog::interaction::INPUT:
     {
-        ch->dialog.pushstring(request.message);
-        ch->dialog.resume(1);
+        lua->pushstring(request.message);
+        lua->resume(1);
         break;
     }
 
     case dialog::interaction::INPUT_EX:
     {
         if (request.action == 0x02) // OK button
-            ch->dialog.pushstring(request.message);
+            lua->pushstring(request.message);
         else
-            ch->dialog.pushinteger(request.action);
+            lua->pushinteger(request.action);
 
-        ch->dialog.resume(1);
+        lua->resume(1);
         break;
     }
 
     case dialog::interaction::MENU:
     {
-        ch->dialog.pushinteger(request.index);
-        ch->dialog.resume(1);
+        lua->pushinteger(request.index);
+        lua->resume(1);
         break;
     }
 
     case dialog::interaction::LIST:
     {
         if (request.button == DIALOG_RESULT::NEXT)
-            ch->dialog.pushinteger(request.index);
+            lua->pushinteger(request.index);
         else
-            ch->dialog.pushnil();
+            lua->pushnil();
 
-        ch->dialog.pushinteger(static_cast<uint32_t>(request.button));
-        ch->dialog.resume(2);
+        lua->pushinteger(static_cast<uint32_t>(request.button));
+        lua->resume(2);
         break;
     }
 
     case dialog::interaction::SLOT:
     {
-        ch->dialog.pushinteger(request.index);
-        ch->dialog.resume(1);
+        lua->pushinteger(request.index);
+        lua->resume(1);
         break;
     }
 
     case dialog::interaction::ITEM:
     {
-        ch->dialog.pushstring(request.name);
-        ch->dialog.resume(1);
+        lua->pushstring(request.name);
+        lua->resume(1);
         break;
     }
 

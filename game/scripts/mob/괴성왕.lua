@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 괴성왕 사망
+function ON_MOB_DIE_564(me, you)
 
 end

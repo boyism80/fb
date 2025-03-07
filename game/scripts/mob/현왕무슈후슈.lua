@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 현왕무슈후슈 사망
+function ON_MOB_DIE_554(me, you)
 
 end

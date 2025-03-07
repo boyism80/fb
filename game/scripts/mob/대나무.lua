@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 대나무 사망
+function ON_MOB_DIE_1059(me, you)
 
 end

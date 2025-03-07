@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 킹콩 사망
+function ON_MOB_DIE_426(me, you)
 
 end

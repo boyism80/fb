@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 마력의뱀 사망
+function ON_MOB_DIE_114(me, you)
 
 end

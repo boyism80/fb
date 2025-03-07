@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 월지 사망
+function ON_MOB_DIE_1136(me, you)
 
 end

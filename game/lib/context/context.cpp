@@ -754,9 +754,10 @@ void context::handle_click_npc(character& ch, npc& npc)
     if (model.script.empty())
         return;
 
-    ch.dialog.release();
+    // ch.dialog.release();
 
-    auto lua = ch.dialog.new_context();
+    // auto lua = ch.dialog.new_context();
+    auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/npc.lua");
     lua->load(model.script);

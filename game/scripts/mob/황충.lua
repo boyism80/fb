@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 황충 사망
+function ON_MOB_DIE_399(me, you)
 
 end

@@ -1,19 +1,24 @@
-function on_attack(me, you)
+-- 수로설괴주 공격
+function ON_MOB_ATTACK_1217(me, you)
     return false
 end
 
-function on_attack(me, you)
+-- 수로설괴주 공격
+function ON_MOB_ATTACK_1217(me, you)
     return false
 end
 
-function on_die(me, you)
+-- 수로설괴주 사망
+function ON_MOB_DIE_1217(me, you)
 
 end
 
-function on_die(me, you)
+-- 수로설괴주 사망
+function ON_MOB_DIE_1217(me, you)
 
 end
 
-function on_die(me, you)
+-- 수로설괴주 사망
+function ON_MOB_DIE_1217(me, you)
 
 end

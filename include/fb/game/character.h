@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <fb/game/dialog.h>
+#include <fb/game/character.h>
 #include <fb/locker.h>
 #include <fb/socket.h>
 #include <iostream>
@@ -106,7 +107,7 @@ private:
 public:
     fb::game::trade                            trade  = fb::game::trade(*this);
     fb::game::items                            items  = fb::game::items(*this);
-    fb::game::dialog                           dialog = fb::game::dialog(*this);
+    fb::lua::context*                          dialog = nullptr;
     std::map<uint32_t, std::unique_ptr<trace>> traces; // order required
 
 private:
@@ -1742,15 +1743,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_erase_trace(lua_State* L);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_switch_context(lua_State* L);
 
     /**
      * @brief      { function_description }
