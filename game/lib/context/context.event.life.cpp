@@ -111,8 +111,8 @@ void context::on_dead(life& me, object* you)
     case OBJECT_TYPE::CHARACTER:
     {
         auto& ch = static_cast<character&>(me);
-        ch.state(STATE::GHOST);
         ch.death_penalty();
+        ch.state(STATE::GHOST);
     }
     break;
     }

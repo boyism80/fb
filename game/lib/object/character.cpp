@@ -2037,6 +2037,16 @@ void character::buff_hit(uint8_t value)
 
 async::task<void> character::death_penalty()
 {
+    auto buff_keys = std::vector<uint32_t>{};
+    for (auto& [k, v] : this->buffs)
+    {
+        buff_keys.push_back(k);
+    }
+    for (auto k : buff_keys)
+    {
+        this->buffs.remove(k);
+    }
+
     auto money = this->money();
     if (money > 0)
     {

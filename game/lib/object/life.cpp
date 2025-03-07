@@ -183,7 +183,7 @@ bool life::active(fb::game::spell& spell, const std::string& message)
 {
     this->assert_thread();
 
-    if (spell.model.cast == "")
+    if (spell.model.cast.empty())
         return false;
 
     auto lua = fb::lua::new_context();

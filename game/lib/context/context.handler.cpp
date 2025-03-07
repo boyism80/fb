@@ -153,7 +153,6 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         case DSL::script:
         {
             ch->move(request.direction, request.position);
-            // ch->dialog.release();
 
             auto params = fb::model::dsl::script(warp->dest.params);
             auto lua    = fb::lua::new_context();
