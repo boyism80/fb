@@ -138,12 +138,8 @@ uint32_t character::damage(uint32_t value, object* from, bool critical)
         if (equipment->durability_down(1))
         {
             auto equipment = this->items.equipment_off(parts);
-            delete equipment;
             this->message(std::format("{} 깨졌습니다.", equipment->name()));
-        }
-        else
-        {
-            equipment->durability(value);
+            delete equipment;
         }
     }
     return result;
