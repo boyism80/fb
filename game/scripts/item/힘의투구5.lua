@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 힘의투구5 사용 스크립트
+function ON_ACTIVE_1373(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 힘의투구5 해제 스크립트
+function ON_INACTIVE_1373(me, item)
 
 end

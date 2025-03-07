@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 활 사용 스크립트
+function ON_ACTIVE_341(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 활 해제 스크립트
+function ON_INACTIVE_341(me, item)
 
 end

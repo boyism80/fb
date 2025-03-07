@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 민첩의투구2 사용 스크립트
+function ON_ACTIVE_1367(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 민첩의투구2 해제 스크립트
+function ON_INACTIVE_1367(me, item)
 
 end

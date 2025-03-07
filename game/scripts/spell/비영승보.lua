@@ -1,4 +1,4 @@
-function lookup(me, you, direction)
+function ON_CAST_2015_LOOKUP(me, you, direction)
     local map = me:map()
     
     local mine_x, mine_y = me:position()
@@ -26,6 +26,7 @@ function lookup(me, you, direction)
     me:direction(newdir)
     return true
 end
+
 -- 비영승보 캐스팅
 function ON_CAST_2015(me, spell)
     local err = me:assert({STATE_GHOST, STATE_RIDING})
@@ -40,10 +41,13 @@ function ON_CAST_2015(me, spell)
     end
 
     local direction = me:direction()
-    if lookup(me, front, (direction + 0) % 4) or lookup(me, front, (direction + 3) % 4) or lookup(me, front, (direction + 1) % 4) then
-        me:attack(14)
-        me:action(ACTION_CAST_SPELL, 20)
-        me:message('비영승보를 외웠습니다.')
-        front:sound(30)
+    for _, dir in pairs({direction + 0, direction + 3, direction + 1}) do
+        if ON_CAST_2015_LOOKUP(me, front, dir % 4) then
+            me:attack(14)
+            me:action(ACTION_CAST_SPELL, 20)
+            me:message('비영승보를 외웠습니다.')
+            front:sound(30)
+            break
+        end
     end
 end

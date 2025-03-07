@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 황선창 사용 스크립트
+function ON_ACTIVE_215(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 황선창 해제 스크립트
+function ON_INACTIVE_215(me, item)
 
 end

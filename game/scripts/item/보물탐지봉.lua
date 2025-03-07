@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 보물탐지봉 사용 스크립트
+function ON_ACTIVE_238(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 보물탐지봉 해제 스크립트
+function ON_INACTIVE_238(me, item)
 
 end

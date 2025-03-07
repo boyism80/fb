@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 도절의장삼 사용 스크립트
+function ON_ACTIVE_684(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 도절의장삼 해제 스크립트
+function ON_INACTIVE_684(me, item)
 
 end

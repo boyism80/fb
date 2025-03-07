@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 파란색남자갑주 사용 스크립트
+function ON_ACTIVE_798(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 파란색남자갑주 해제 스크립트
+function ON_INACTIVE_798(me, item)
 
 end

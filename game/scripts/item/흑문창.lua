@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 흑문창 사용 스크립트
+function ON_ACTIVE_212(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 흑문창 해제 스크립트
+function ON_INACTIVE_212(me, item)
 
 end

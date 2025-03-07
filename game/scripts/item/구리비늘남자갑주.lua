@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 구리비늘남자갑주 사용 스크립트
+function ON_ACTIVE_809(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 구리비늘남자갑주 해제 스크립트
+function ON_INACTIVE_809(me, item)
 
 end

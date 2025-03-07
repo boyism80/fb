@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 회호박별곤 사용 스크립트
+function ON_ACTIVE_143(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 회호박별곤 해제 스크립트
+function ON_INACTIVE_143(me, item)
 
 end

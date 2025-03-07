@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 남자기모노 사용 스크립트
+function ON_ACTIVE_698(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 남자기모노 해제 스크립트
+function ON_INACTIVE_698(me, item)
 
 end

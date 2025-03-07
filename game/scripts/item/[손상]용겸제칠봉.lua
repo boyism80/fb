@@ -1,11 +1,14 @@
-function on_attack(me, item)
+-- [손상]용겸제칠봉 공격 스크립트
+function ON_ATTACK_291(me, item)
 
 end
 
-function on_active(me, item)
+-- [손상]용겸제칠봉 사용 스크립트
+function ON_ACTIVE_291(me, item)
 
 end
 
-function on_inactive(me, item)
+-- [손상]용겸제칠봉 해제 스크립트
+function ON_INACTIVE_291(me, item)
 
 end

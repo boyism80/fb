@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 용사의칼 사용 스크립트
+function ON_ACTIVE_182(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 용사의칼 해제 스크립트
+function ON_INACTIVE_182(me, item)
 
 end

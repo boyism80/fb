@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 쇄자황금장갑 사용 스크립트
+function ON_ACTIVE_1711(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 쇄자황금장갑 해제 스크립트
+function ON_INACTIVE_1711(me, item)
 
 end

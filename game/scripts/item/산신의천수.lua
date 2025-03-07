@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 산신의천수 사용 스크립트
+function ON_ACTIVE_741(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 산신의천수 해제 스크립트
+function ON_INACTIVE_741(me, item)
 
 end

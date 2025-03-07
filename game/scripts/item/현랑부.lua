@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 현랑부 사용 스크립트
+function ON_ACTIVE_31(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 현랑부 해제 스크립트
+function ON_INACTIVE_31(me, item)
 
 end

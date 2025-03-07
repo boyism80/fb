@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 철태도 사용 스크립트
+function ON_ACTIVE_340(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 철태도 해제 스크립트
+function ON_INACTIVE_340(me, item)
 
 end

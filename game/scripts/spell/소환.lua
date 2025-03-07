@@ -1,32 +1,3 @@
-function lookup(map, x, y, direction)
-    math.randomseed(seed())
-    local rand_x = nil
-    local rand_y = nil
-    for i = 0, 3 do
-        local case = (direction + i) % 4
-        if case == DIRECTION_LEFT then
-            rand_x = -1
-            rand_y = 0
-        elseif case == DIRECTION_TOP then
-            rand_x = 0
-            rand_y = -1
-        elseif case == DIRECTION_RIGHT then
-            rand_x = 1
-            rand_y = 0
-        else
-            rand_x = 0
-            rand_y = 1
-        end
-
-        if map:movable(x+rand_x, y+rand_y) then
-            return x+rand_x, y+rand_y
-        end
-    end
-
-    return x, y
-end
-
-
 -- 소환 캐스팅
 function ON_CAST_4(me, spell, name)
 
@@ -58,7 +29,7 @@ function ON_CAST_4(me, spell, name)
     local effect = 3
     local mp = 30
     if spell_cast(me, nil, nil, mp) then
-        local new_x, new_y = lookup(map, x, y, direction)
+        local new_x, new_y = TELEPORT_LOOKUP(map, x, y, direction)
         ch:map(map, new_x, new_y)
         me:action(ACTION_CAST_SPELL, DURATION_SPELL)
         me:sound(sound)

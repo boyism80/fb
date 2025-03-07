@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 가죽남자갑옷 사용 스크립트
+function ON_ACTIVE_844(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 가죽남자갑옷 해제 스크립트
+function ON_INACTIVE_844(me, item)
 
 end

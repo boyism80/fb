@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 태존도 사용 스크립트
+function ON_ACTIVE_82(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 태존도 해제 스크립트
+function ON_INACTIVE_82(me, item)
 
 end

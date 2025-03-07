@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 국본검 사용 스크립트
+function ON_ACTIVE_188(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 국본검 해제 스크립트
+function ON_INACTIVE_188(me, item)
 
 end

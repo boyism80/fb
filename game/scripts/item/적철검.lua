@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 적철검 사용 스크립트
+function ON_ACTIVE_338(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 적철검 해제 스크립트
+function ON_INACTIVE_338(me, item)
 
 end

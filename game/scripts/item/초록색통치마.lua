@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 초록색통치마 사용 스크립트
+function ON_ACTIVE_896(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 초록색통치마 해제 스크립트
+function ON_INACTIVE_896(me, item)
 
 end

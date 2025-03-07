@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 그림자의막대 사용 스크립트
+function ON_ACTIVE_106(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 그림자의막대 해제 스크립트
+function ON_INACTIVE_106(me, item)
 
 end

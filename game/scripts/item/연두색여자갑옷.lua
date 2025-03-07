@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 연두색여자갑옷 사용 스크립트
+function ON_ACTIVE_606(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 연두색여자갑옷 해제 스크립트
+function ON_INACTIVE_606(me, item)
 
 end

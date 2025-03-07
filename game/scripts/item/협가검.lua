@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 협가검 사용 스크립트
+function ON_ACTIVE_94(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 협가검 해제 스크립트
+function ON_INACTIVE_94(me, item)
 
 end

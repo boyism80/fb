@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 백호의검 사용 스크립트
+function ON_ACTIVE_231(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 백호의검 해제 스크립트
+function ON_INACTIVE_231(me, item)
 
 end

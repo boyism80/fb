@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 홍옥지팡이 사용 스크립트
+function ON_ACTIVE_227(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 홍옥지팡이 해제 스크립트
+function ON_INACTIVE_227(me, item)
 
 end

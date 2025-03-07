@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 황염곤봉 사용 스크립트
+function ON_ACTIVE_88(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 황염곤봉 해제 스크립트
+function ON_INACTIVE_88(me, item)
 
 end

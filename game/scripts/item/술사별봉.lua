@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 술사별봉 사용 스크립트
+function ON_ACTIVE_49(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 술사별봉 해제 스크립트
+function ON_INACTIVE_49(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 진월신검 사용 스크립트
+function ON_ACTIVE_173(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 진월신검 해제 스크립트
+function ON_INACTIVE_173(me, item)
 
 end

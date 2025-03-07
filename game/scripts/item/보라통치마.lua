@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 보라통치마 사용 스크립트
+function ON_ACTIVE_897(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 보라통치마 해제 스크립트
+function ON_INACTIVE_897(me, item)
 
 end

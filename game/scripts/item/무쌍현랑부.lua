@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 무쌍현랑부 사용 스크립트
+function ON_ACTIVE_343(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 무쌍현랑부 해제 스크립트
+function ON_INACTIVE_343(me, item)
 
 end

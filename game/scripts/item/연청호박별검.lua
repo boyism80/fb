@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 연청호박별검 사용 스크립트
+function ON_ACTIVE_127(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 연청호박별검 해제 스크립트
+function ON_INACTIVE_127(me, item)
 
 end

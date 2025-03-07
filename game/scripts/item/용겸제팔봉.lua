@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 용겸제팔봉 사용 스크립트
+function ON_ACTIVE_283(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 용겸제팔봉 해제 스크립트
+function ON_INACTIVE_283(me, item)
 
 end

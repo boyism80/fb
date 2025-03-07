@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 여명의연갑 사용 스크립트
+function ON_ACTIVE_756(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 여명의연갑 해제 스크립트
+function ON_INACTIVE_756(me, item)
 
 end

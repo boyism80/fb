@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 비늘단도 사용 스크립트
+function ON_ACTIVE_339(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 비늘단도 해제 스크립트
+function ON_INACTIVE_339(me, item)
 
 end
