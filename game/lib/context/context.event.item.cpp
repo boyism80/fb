@@ -24,7 +24,7 @@ void context::on_item_active(character& me, item& item)
         return;
 
     auto& model = item.based<fb::model::item>();
-    if (model.on_active == "")
+    if (model.on_active.empty())
         return;
 
 #if defined DEBUG | defined _DEBUG
