@@ -83,8 +83,8 @@ void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::e
 void context::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
 {
     auto& model          = equipment.based<fb::model::equipment>();
-    auto  percent_before = (before * 100) / model.durability;
-    auto  percent_after  = (after * 100) / model.durability;
+    auto  percent_before = (uint8_t)std::ceil((before * 100) / (double)model.durability);
+    auto  percent_after  = (uint8_t)std::ceil((after * 100) / (double)model.durability);
 
     if (percent_before == percent_after)
         return;
