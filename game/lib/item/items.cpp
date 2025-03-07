@@ -113,8 +113,7 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         if (item == nullptr)
             continue;
 
-        auto owner = item->owner();
-        if (owner != nullptr && owner != &this->_owner)
+        if (item->owner() != nullptr && item->owner() != &this->_owner)
         {
             auto& drop_time = item->dropped_time();
             if (drop_time.has_value())
@@ -132,13 +131,17 @@ std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& it
         if (model.attr(ITEM_ATTRIBUTE::CASH))
         {
             auto cash   = static_cast<fb::game::cash*>(item);
+            auto before = cash->value;
             auto remain = this->_owner.money_add(cash->value);
-            if (remain > 0)
-                cash = cash->replace(remain); // 먹고 남은 돈으로 설정
-            else
-                std::ignore = cash->destroy();
+            if (remain != before)
+            {
+                if (remain > 0)
+                    cash->replace(remain)->map(this->_owner.map(), this->owner().position()); // 먹고 남은 돈으로 설정
+                else
+                    std::ignore = cash->destroy();
+            }
 
-            this->_owner.update(STATE_LEVEL::LEVEL_MIN);
+            this->_owner.update(STATE_LEVEL::EXP_MONEY);
             if (remain != 0)
             {
                 this->_owner.message(_TEXT(MESSAGE_MONEY_FULL));
