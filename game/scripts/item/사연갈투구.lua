@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 사연갈투구 사용 스크립트
+function ON_ACTIVE_1343(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 사연갈투구 해제 스크립트
+function ON_INACTIVE_1343(me, item)
 
 end

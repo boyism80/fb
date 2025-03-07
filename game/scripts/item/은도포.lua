@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 은도포 사용 스크립트
+function ON_ACTIVE_885(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 은도포 해제 스크립트
+function ON_INACTIVE_885(me, item)
 
 end

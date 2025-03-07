@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 체력의반지3 사용 스크립트
+function ON_ACTIVE_1783(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 체력의반지3 해제 스크립트
+function ON_INACTIVE_1783(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 구리치마 사용 스크립트
+function ON_ACTIVE_891(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 구리치마 해제 스크립트
+function ON_INACTIVE_891(me, item)
 
 end

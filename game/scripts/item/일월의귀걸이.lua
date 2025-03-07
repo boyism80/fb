@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 일월의귀걸이 사용 스크립트
+function ON_ACTIVE_2127(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 일월의귀걸이 해제 스크립트
+function ON_INACTIVE_2127(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 방어의반지1 사용 스크립트
+function ON_ACTIVE_1764(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 방어의반지1 해제 스크립트
+function ON_INACTIVE_1764(me, item)
 
 end

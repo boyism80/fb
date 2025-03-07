@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 검신투구 사용 스크립트
+function ON_ACTIVE_1320(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 검신투구 해제 스크립트
+function ON_INACTIVE_1320(me, item)
 
 end

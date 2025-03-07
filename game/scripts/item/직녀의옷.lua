@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 직녀의옷 사용 스크립트
+function ON_ACTIVE_706(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 직녀의옷 해제 스크립트
+function ON_INACTIVE_706(me, item)
 
 end

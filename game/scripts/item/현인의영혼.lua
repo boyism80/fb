@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 현인의영혼 사용 스크립트
+function ON_ACTIVE_696(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 현인의영혼 해제 스크립트
+function ON_INACTIVE_696(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 지력의투구7 사용 스크립트
+function ON_ACTIVE_1353(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 지력의투구7 해제 스크립트
+function ON_INACTIVE_1353(me, item)
 
 end

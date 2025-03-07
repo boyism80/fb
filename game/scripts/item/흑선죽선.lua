@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 흑선죽선 사용 스크립트
+function ON_ACTIVE_219(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 흑선죽선 해제 스크립트
+function ON_INACTIVE_219(me, item)
 
 end

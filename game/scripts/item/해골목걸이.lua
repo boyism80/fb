@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 해골목걸이 사용 스크립트
+function ON_ACTIVE_2118(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 해골목걸이 해제 스크립트
+function ON_INACTIVE_2118(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 전투용창 사용 스크립트
+function ON_ACTIVE_184(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 전투용창 해제 스크립트
+function ON_INACTIVE_184(me, item)
 
 end

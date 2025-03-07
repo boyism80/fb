@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 청사모 사용 스크립트
+function ON_ACTIVE_220(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 청사모 해제 스크립트
+function ON_INACTIVE_220(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 초심자의반지 사용 스크립트
+function ON_ACTIVE_13(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 초심자의반지 해제 스크립트
+function ON_INACTIVE_13(me, item)
 
 end

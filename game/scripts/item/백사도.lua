@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 백사도 사용 스크립트
+function ON_ACTIVE_92(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 백사도 해제 스크립트
+function ON_INACTIVE_92(me, item)
 
 end

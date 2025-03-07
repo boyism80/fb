@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 청명백현모 사용 스크립트
+function ON_ACTIVE_344(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 청명백현모 해제 스크립트
+function ON_INACTIVE_344(me, item)
 
 end

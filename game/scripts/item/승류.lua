@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 승류 사용 스크립트
+function ON_ACTIVE_1685(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 승류 해제 스크립트
+function ON_INACTIVE_1685(me, item)
 
 end

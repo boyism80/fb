@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 망월봉 사용 스크립트
+function ON_ACTIVE_186(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 망월봉 해제 스크립트
+function ON_INACTIVE_186(me, item)
 
 end

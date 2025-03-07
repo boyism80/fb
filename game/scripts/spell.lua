@@ -1,3 +1,31 @@
+function TELEPORT_LOOKUP(map, x, y, direction)
+    math.randomseed(seed())
+    local rand_x = nil
+    local rand_y = nil
+    for i = 0, 3 do
+        local case = (direction + i) % 4
+        if case == DIRECTION_LEFT then
+            rand_x = -1
+            rand_y = 0
+        elseif case == DIRECTION_TOP then
+            rand_x = 0
+            rand_y = -1
+        elseif case == DIRECTION_RIGHT then
+            rand_x = 1
+            rand_y = 0
+        else
+            rand_x = 0
+            rand_y = 1
+        end
+
+        if map:movable(x+rand_x, y+rand_y) then
+            return x+rand_x, y+rand_y
+        end
+    end
+
+    return x, y
+end
+
 function relative_buff_name(buff_name)
     local values = {
         {'혼마술', '저주', '귀염추혼소'},

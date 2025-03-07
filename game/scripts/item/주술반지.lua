@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 주술반지 사용 스크립트
+function ON_ACTIVE_1628(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 주술반지 해제 스크립트
+function ON_INACTIVE_1628(me, item)
 
 end

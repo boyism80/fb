@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 황호박별곤 사용 스크립트
+function ON_ACTIVE_142(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 황호박별곤 해제 스크립트
+function ON_INACTIVE_142(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 세시투구 사용 스크립트
+function ON_ACTIVE_1378(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 세시투구 해제 스크립트
+function ON_INACTIVE_1378(me, item)
 
 end

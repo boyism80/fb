@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 흑철중검 사용 스크립트
+function ON_ACTIVE_241(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 흑철중검 해제 스크립트
+function ON_INACTIVE_241(me, item)
 
 end

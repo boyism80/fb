@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 이식천부연도 사용 스크립트
+function ON_ACTIVE_303(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 이식천부연도 해제 스크립트
+function ON_INACTIVE_303(me, item)
 
 end

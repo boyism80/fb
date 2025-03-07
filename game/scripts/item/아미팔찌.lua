@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 아미팔찌 사용 스크립트
+function ON_ACTIVE_1704(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 아미팔찌 해제 스크립트
+function ON_INACTIVE_1704(me, item)
 
 end

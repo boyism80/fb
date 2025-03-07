@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 철여자통옷 사용 스크립트
+function ON_ACTIVE_921(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 철여자통옷 해제 스크립트
+function ON_INACTIVE_921(me, item)
 
 end

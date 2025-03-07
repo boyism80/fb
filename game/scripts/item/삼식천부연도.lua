@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 삼식천부연도 사용 스크립트
+function ON_ACTIVE_304(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 삼식천부연도 해제 스크립트
+function ON_INACTIVE_304(me, item)
 
 end

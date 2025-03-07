@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 심판의낫 사용 스크립트
+function ON_ACTIVE_58(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 심판의낫 해제 스크립트
+function ON_INACTIVE_58(me, item)
 
 end

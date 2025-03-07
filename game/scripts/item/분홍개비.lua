@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 분홍개비 사용 스크립트
+function ON_ACTIVE_333(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 분홍개비 해제 스크립트
+function ON_INACTIVE_333(me, item)
 
 end

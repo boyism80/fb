@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 한족여자평복 사용 스크립트
+function ON_ACTIVE_717(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 한족여자평복 해제 스크립트
+function ON_INACTIVE_717(me, item)
 
 end

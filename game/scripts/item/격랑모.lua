@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 격랑모 사용 스크립트
+function ON_ACTIVE_1321(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 격랑모 해제 스크립트
+function ON_INACTIVE_1321(me, item)
 
 end

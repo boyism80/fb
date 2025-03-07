@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 파랑개비 사용 스크립트
+function ON_ACTIVE_332(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 파랑개비 해제 스크립트
+function ON_INACTIVE_332(me, item)
 
 end

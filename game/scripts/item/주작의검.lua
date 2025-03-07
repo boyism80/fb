@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 주작의검 사용 스크립트
+function ON_ACTIVE_230(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 주작의검 해제 스크립트
+function ON_INACTIVE_230(me, item)
 
 end

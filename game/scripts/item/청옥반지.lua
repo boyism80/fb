@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 청옥반지 사용 스크립트
+function ON_ACTIVE_10233(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 청옥반지 해제 스크립트
+function ON_INACTIVE_10233(me, item)
 
 end

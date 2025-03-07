@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 흑장단검 사용 스크립트
+function ON_ACTIVE_103(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 흑장단검 해제 스크립트
+function ON_INACTIVE_103(me, item)
 
 end

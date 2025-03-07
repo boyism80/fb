@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 은십자막대 사용 스크립트
+function ON_ACTIVE_226(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 은십자막대 해제 스크립트
+function ON_INACTIVE_226(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 철장삼 사용 스크립트
+function ON_ACTIVE_912(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 철장삼 해제 스크립트
+function ON_INACTIVE_912(me, item)
 
 end

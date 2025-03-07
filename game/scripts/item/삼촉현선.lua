@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 삼촉현선 사용 스크립트
+function ON_ACTIVE_79(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 삼촉현선 해제 스크립트
+function ON_INACTIVE_79(me, item)
 
 end

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 칠식천부연도 사용 스크립트
+function ON_ACTIVE_308(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 칠식천부연도 해제 스크립트
+function ON_INACTIVE_308(me, item)
 
 end

@@ -1,40 +1,5 @@
-function lookup(map, x, y)
-    math.randomseed(seed())
-    local offset = math.random(0, 3)
-    local rand_x = nil
-    local rand_y = nil
-    local direction = nil
-    for i = 0, 3 do
-        local case = (offset + i) % 4
-        if case == 0 then
-            rand_x = 0
-            rand_y = -1
-            direction = DIRECTION_BOTTOM
-        elseif case == 1 then
-            rand_x = 0
-            rand_y = 1
-            direction = DIRECTION_TOP
-        elseif case == 2 then
-            rand_x = -1
-            rand_y = 0
-            direction = DIRECTION_RIGHT
-        else
-            rand_x = 1
-            rand_y = 0
-            direction = DIRECTION_LEFT
-        end
-
-        if map:movable(x+rand_x, y+rand_y) then
-            return x+rand_x, y+rand_y, direction
-        end
-    end
-
-    return x, y, DIRECTION_BOTTOM
-end
-
 -- 출두 캐스팅
 function ON_CAST_3(me, spell, name)
-
     if me:name() == name then
         return me:message('나 자신을 출두할 수 없습니다.')
     end
@@ -57,7 +22,7 @@ function ON_CAST_3(me, spell, name)
     local mp = 30
     if spell_cast(me, nil, nil, mp) then
         local x, y = ch:position()
-        local new_x, new_y, direction = lookup(map, x, y)
+        local new_x, new_y, direction = TELEPORT_LOOKUP(map, x, y)
         me:map(map, new_x, new_y)
         me:direction(direction)
         me:sound(sound)

@@ -1,7 +1,9 @@
-function on_active(me, item)
+-- 여명의도복 사용 스크립트
+function ON_ACTIVE_758(me, item)
 
 end
 
-function on_inactive(me, item)
+-- 여명의도복 해제 스크립트
+function ON_INACTIVE_758(me, item)
 
 end
