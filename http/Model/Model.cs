@@ -1455,10 +1455,12 @@ namespace Fb.Model
         public TimeSpan Speed { get; set; }
         [JsonProperty("drop")]
         public string Drop { get; set; }
-        [JsonProperty("attack_script")]
-        public string AttackScript { get; set; }
-        [JsonProperty("die_script")]
-        public string DieScript { get; set; }
+        [JsonProperty("script")]
+        public string Script { get; set; }
+        [JsonProperty("on_attack")]
+        public string OnAttack { get; set; }
+        [JsonProperty("on_die")]
+        public string OnDie { get; set; }
     }
 
     public class Pack : Fb.Model.Item

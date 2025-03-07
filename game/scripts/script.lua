@@ -145,7 +145,6 @@ function sample_clan(me)
                 return
             end
 
-            me:switch_context(found)
             local yes_or_no = npc:menu(found, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
             if yes_or_no == 0 then
                 clan = me:clan()
@@ -159,8 +158,6 @@ function sample_clan(me)
                     npc:dialog(found, error)
                 else
                     npc:dialog(found, string.format('%s 문파에 가입됨', clan_name))
-
-                    found:switch_context(me)
                     npc:dialog(me, string.format('%s가 승락함', found:name()))
                 end
             else
@@ -261,10 +258,6 @@ end
 
 function func(me)
 
-    local success, size = me:group(group_lock)
-    local npc = name2npc('낙랑')
-    npc:dialog(me, string.format('%s, %s', success, size))
-    
     -- local items = me:items()
 
     -- for slot, item in pairs(items) do

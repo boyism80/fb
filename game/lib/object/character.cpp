@@ -10,7 +10,10 @@ character::character(fb::game::context& context, fb::socket<character>& socket) 
 { }
 
 character::~character()
-{ }
+{
+    if (this->dialog != nullptr)
+        this->dialog->release();
+}
 
 async::task<size_t> character::send(const fb::stream& stream, bool encrypt, bool wrap)
 {

@@ -1,7 +1,9 @@
-function on_attack(me, you)
+-- 산소괴왕 공격
+function ON_MOB_ATTACK_575(me, you)
     return false
 end
 
-function on_die(me, you)
+-- 산소괴왕 사망
+function ON_MOB_DIE_575(me, you)
 
 end

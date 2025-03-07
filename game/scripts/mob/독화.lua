@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 독화 사망
+function ON_MOB_DIE_1069(me, you)
 
 end

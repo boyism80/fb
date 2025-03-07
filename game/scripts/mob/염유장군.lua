@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 염유장군 사망
+function ON_MOB_DIE_545(me, you)
 
 end

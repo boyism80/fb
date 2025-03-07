@@ -115,7 +115,10 @@ bool mob::action()
     this->repair_target();
 
     auto& model = this->based<fb::model::mob>();
-    if (model.attack_script.empty())
+    if (model.script.empty())
+        return false;
+
+    if (model.on_attack.empty())
         return false;
 
     if (this->_attack_thread == nullptr)
@@ -124,8 +127,10 @@ bool mob::action()
         if (this->_attack_thread == nullptr)
             return false;
 
-        this->_attack_thread->load(model.attack_script.c_str());
-        this->_attack_thread->func("on_attack");
+#if defined DEBUG | defined _DEBUG
+        this->_attack_thread->load(model.script);
+#endif
+        this->_attack_thread->func(model.on_attack);
         this->_attack_thread->pushobject(this);
 
         if (this->_target != nullptr)

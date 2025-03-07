@@ -5,494 +5,170 @@
 #include <fb/game/npc.h>
 
 namespace fb::game {
-
 class character;
+}
+
+namespace fb::game::dialog {
+using item_pair  = std::pair<fb::model::item&, uint32_t>;
+using item_pairs = std::vector<item_pair>;
 
 /**
- * @brief      This class describes a dialog.
+ * @brief      This class describes an interaction.
  */
-class dialog
+enum class interaction : uint8_t
 {
-public:
+    NORMAL,
+    INPUT,
+    INPUT_EX,
+    MENU,
+    LIST,
+    SLOT,
+    ITEM,
+};
+
+/**
+ * @brief      { struct_description }
+ */
+struct preset
+{
+    SEX                     sex          = SEX::MAN;
+    STATE                   state        = STATE::NORMAL;
+    uint16_t                face         = 0;
+    uint8_t                 hair_color   = 0;
+    std::optional<uint16_t> weapon       = std::nullopt;
+    std::optional<uint8_t>  weapon_color = std::nullopt;
+    std::optional<uint8_t>  armor        = std::nullopt;
+    std::optional<uint8_t>  armor_color  = std::nullopt;
+    std::optional<uint16_t> shield       = std::nullopt;
+    std::optional<uint8_t>  shield_color = std::nullopt;
+
     /**
-     * @brief      This class describes an inactive error.
+     * @brief      Constructs a new instance.
      */
-    class inactive_error;
-
-public:
-    using item_pair  = std::pair<fb::model::item&, uint32_t>;
-    using item_pairs = std::vector<item_pair>;
-
-public:
-    /**
-     * @brief      This class describes an interaction.
-     */
-    enum class interaction : uint8_t
-    {
-        NORMAL,
-        INPUT,
-        INPUT_EX,
-        MENU,
-        LIST,
-        SLOT,
-        ITEM,
-    };
-
-    struct preset
-    {
-        SEX                     sex          = SEX::MAN;
-        STATE                   state        = STATE::NORMAL;
-        uint16_t                face         = 0;
-        uint8_t                 hair_color   = 0;
-        std::optional<uint16_t> weapon       = std::nullopt;
-        std::optional<uint8_t>  weapon_color = std::nullopt;
-        std::optional<uint8_t>  armor        = std::nullopt;
-        std::optional<uint8_t>  armor_color  = std::nullopt;
-        std::optional<uint16_t> shield       = std::nullopt;
-        std::optional<uint8_t>  shield_color = std::nullopt;
-
-        preset() = default;
-        preset(const character& ch);
-    };
-
-public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct listener
-    {
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  object       The object
-         * @param[in]  message      The message
-         * @param[in]  button_prev  The button previous
-         * @param[in]  button_next  The button next
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&               me,
-                               const fb::model::object& object,
-                               const std::string&       message,
-                               bool                     button_prev,
-                               bool                     button_next) = 0;
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  menus        The menus
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&                      me,
-                               const fb::model::npc&           npc,
-                               const std::string&              message,
-                               const std::vector<std::string>& menus) = 0;
-
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  menus        The menus
-         * @param[in]  button_prev  The button previous
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&                      me,
-                               const fb::model::npc&           npc,
-                               const std::string&              message,
-                               const std::vector<std::string>& menus,
-                               bool                            button_prev) = 0;
-
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  menus        The menus
-         * @param[in]  button_prev  The button previous
-         * @param[in]  preset       The preset
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&                      me,
-                               const fb::model::npc&           npc,
-                               const std::string&              message,
-                               const std::vector<std::string>& menus,
-                               bool                            button_prev,
-                               const dialog::preset&           preset) = 0;
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  item_slots   The item slots
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&                  me,
-                               const fb::model::npc&       npc,
-                               const std::string&          message,
-                               const std::vector<uint8_t>& item_slots) = 0;
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  pairs        The pairs
-         * @param[in]  pursuit      The pursuit
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&            me,
-                               const fb::model::npc& npc,
-                               const std::string&    message,
-                               const item_pairs&     pairs,
-                               uint16_t              pursuit = 0xFFFF) = 0;
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) = 0;
-        /**
-         * @brief      Called on dialog.
-         *
-         * @param      me           { parameter_description }
-         * @param[in]  npc          The npc
-         * @param[in]  message      The message
-         * @param[in]  top          The top
-         * @param[in]  bottom       The bottom
-         * @param[in]  maxlen       The maxlen
-         * @param[in]  prev         The previous
-         * @param[in]  interaction  The interaction
-         */
-        virtual void on_dialog(character&            me,
-                               const fb::model::npc& npc,
-                               const std::string&    message,
-                               const std::string&    top,
-                               const std::string&    bottom,
-                               int                   maxlen = 0xFF,
-                               bool                  prev   = false) = 0;
-    };
-
-public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct listener;
-
-public:
-    using lua_stack = std::stack<lua::context*>;
-
-private:
-    character& _owner;
-    lua_stack  _scripts;
-
-public:
+    preset() = default;
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      owner  The owner
+     * @param[in]  ch    { parameter_description }
      */
-    dialog(character& owner);
-    /**
-     * @brief      Destroys the object.
-     */
-    ~dialog();
+    preset(const character& ch);
+};
 
-private:
+/**
+ * @brief      { struct_description }
+ */
+struct listener
+{
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
-     * @return     { description_of_the_return_value }
-     */
-    lua::context* current() const;
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    fb::lua::context* new_context();
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
-     *
-     * @tparam     Args  { description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <class... Args>
-    dialog& load(const std::string& fmt, Args&&... args);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
-     *
-     * @tparam     Args  { description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <class... Args>
-    dialog& func(const std::string& fmt, Args&&... args);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  argc  The count of arguments
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& resume(int argc);
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& release();
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool active() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      to    { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool switch_context(dialog& to);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& new_table();
-    /**
-     * @brief      Sets the table.
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& set_table();
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& pushstring(const std::string& value);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& pushinteger(lua_Integer value);
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& pushnil();
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& pushboolean(bool value);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  object  The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& pushobject(const lua::luable* object);
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  object  The object
-     *
-     * @return     { description_of_the_return_value }
-     */
-    dialog& pushobject(const lua::luable& object);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
+     * @param      me           { parameter_description }
      * @param[in]  object       The object
      * @param[in]  message      The message
      * @param[in]  button_prev  The button previous
      * @param[in]  button_next  The button next
-     * @param[in]  interaction  The interaction
      */
-    void show(const fb::model::object& object,
-              const std::string&       message,
-              bool                     button_prev = false,
-              bool                     button_next = true);
+    virtual void on_dialog(character&               me,
+                           const fb::model::object& object,
+                           const std::string&       message,
+                           bool                     button_prev,
+                           bool                     button_next) = 0;
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
+     * @param      me       { parameter_description }
+     * @param[in]  npc      The npc
+     * @param[in]  message  The message
+     * @param[in]  menus    The menus
+     */
+    virtual void on_dialog(character&                      me,
+                           const fb::model::npc&           npc,
+                           const std::string&              message,
+                           const std::vector<std::string>& menus) = 0;
+
+    /**
+     * @brief      Called on dialog.
+     *
+     * @param      me           { parameter_description }
      * @param[in]  npc          The npc
      * @param[in]  message      The message
      * @param[in]  menus        The menus
-     * @param[in]  interaction  The interaction
+     * @param[in]  button_prev  The button previous
      */
-    void show(const fb::model::npc& npc, const std::string& message, const std::vector<std::string>& menus);
+    virtual void on_dialog(character&                      me,
+                           const fb::model::npc&           npc,
+                           const std::string&              message,
+                           const std::vector<std::string>& menus,
+                           bool                            button_prev) = 0;
 
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
-     * @param[in]  npc          The npc
-     * @param[in]  message      The message
-     * @param[in]  menus        The menus
-     * @param[in]  interaction  The interaction
-     */
-    void show(const fb::model::npc&           npc,
-              const std::string&              message,
-              const std::vector<std::string>& menus,
-              bool                            button_prev);
-
-    /**
-     * @brief      { function_description }
-     *
+     * @param      me           { parameter_description }
      * @param[in]  npc          The npc
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  button_prev  The button previous
      * @param[in]  preset       The preset
-     * @param[in]  interaction  The interaction
      */
-    void show(const fb::model::npc&           npc,
-              const std::string&              message,
-              const std::vector<std::string>& menus,
-              bool                            button_prev,
-              const fb::game::dialog::preset& preset);
-
+    virtual void on_dialog(character&                      me,
+                           const fb::model::npc&           npc,
+                           const std::string&              message,
+                           const std::vector<std::string>& menus,
+                           bool                            button_prev,
+                           const dialog::preset&           preset) = 0;
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
-     * @param[in]  npc          The npc
-     * @param[in]  message      The message
-     * @param[in]  item_slots   The item slots
-     * @param[in]  interaction  The interaction
+     * @param      me          { parameter_description }
+     * @param[in]  npc         The npc
+     * @param[in]  message     The message
+     * @param[in]  item_slots  The item slots
      */
-    void show(const fb::model::npc& npc, const std::string& message, const std::vector<uint8_t>& item_slots);
+    virtual void on_dialog(character&                  me,
+                           const fb::model::npc&       npc,
+                           const std::string&          message,
+                           const std::vector<uint8_t>& item_slots) = 0;
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
-     * @param[in]  npc          The npc
-     * @param[in]  message      The message
-     * @param[in]  pairs        The pairs
-     * @param[in]  pursuit      The pursuit
-     * @param[in]  interaction  The interaction
+     * @param      me       { parameter_description }
+     * @param[in]  npc      The npc
+     * @param[in]  message  The message
+     * @param[in]  pairs    The pairs
+     * @param[in]  pursuit  The pursuit
      */
-    void
-    show(const fb::model::npc& npc, const std::string& message, const item_pairs& pairs, uint16_t pursuit = 0xFFFF);
+    virtual void on_dialog(character&            me,
+                           const fb::model::npc& npc,
+                           const std::string&    message,
+                           const item_pairs&     pairs,
+                           uint16_t              pursuit = 0xFFFF) = 0;
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
-     * @param[in]  npc          The npc
-     * @param[in]  message      The message
-     * @param[in]  interaction  The interaction
+     * @param      me       { parameter_description }
+     * @param[in]  npc      The npc
+     * @param[in]  message  The message
      */
-    void input(const fb::model::npc& npc, const std::string& message);
+    virtual void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) = 0;
     /**
-     * @brief      { function_description }
+     * @brief      Called on dialog.
      *
-     * @param[in]  npc          The npc
-     * @param[in]  message      The message
-     * @param[in]  top          The top
-     * @param[in]  bottom       The bottom
-     * @param[in]  maxlen       The maxlen
-     * @param[in]  prev         The previous
-     * @param[in]  interaction  The interaction
+     * @param      me       { parameter_description }
+     * @param[in]  npc      The npc
+     * @param[in]  message  The message
+     * @param[in]  top      The top
+     * @param[in]  bottom   The bottom
+     * @param[in]  maxlen   The maxlen
+     * @param[in]  prev     The previous
      */
-    void input(const fb::model::npc& npc,
-               const std::string&    message,
-               const std::string&    top,
-               const std::string&    bottom,
-               int                   maxlen = 0xFF,
-               bool                  prev   = false);
+    virtual void on_dialog(character&            me,
+                           const fb::model::npc& npc,
+                           const std::string&    message,
+                           const std::string&    top,
+                           const std::string&    bottom,
+                           int                   maxlen = 0xFF,
+                           bool                  prev   = false) = 0;
 };
-
-/**
- * @brief      This class describes an inactive error.
- */
-class dialog::inactive_error : public std::runtime_error
-{
-public:
-    /**
-     * @brief      Constructs a new instance.
-     */
-    inactive_error() :
-        runtime_error("current lua context is empty")
-    { }
-    ~inactive_error() = default;
-};
-
-} // namespace fb::game
-
-/**
- * @brief      { function_description }
- *
- * @param[in]  fmt   The format
- * @param      args  The arguments
- *
- * @tparam     Args  { description }
- *
- * @return     { description_of_the_return_value }
- */
-template <class... Args>
-fb::game::dialog& fb::game::dialog::load(const std::string& fmt, Args&&... args)
-{
-    auto buffer = std::vformat(fmt, std::make_format_args(args...));
-    auto ctx    = fb::lua::new_context();
-    ctx->load(buffer.c_str());
-    this->_scripts.push(ctx);
-    return *this;
-}
-
-/**
- * @brief      { function_description }
- *
- * @param[in]  fmt   The format
- * @param      args  The arguments
- *
- * @tparam     Args  { description }
- *
- * @return     { description_of_the_return_value }
- */
-template <class... Args>
-fb::game::dialog& fb::game::dialog::func(const std::string& fmt, Args&&... args)
-{
-    auto ctx = this->current();
-    if (ctx == nullptr)
-        throw inactive_error();
-
-    auto buffer = std::vformat(fmt, std::make_format_args(args...));
-    ctx->func(buffer.c_str());
-    return *this;
-}
-
+} // namespace fb::game::dialog
 #endif

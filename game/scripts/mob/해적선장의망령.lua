@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 해적선장의망령 사망
+function ON_MOB_DIE_419(me, you)
 
 end

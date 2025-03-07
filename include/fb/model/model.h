@@ -5086,8 +5086,9 @@ public:
     const range<uint32_t> damage;
     const timespan speed;
     const std::string drop;
-    const std::string attack_script;
-    const std::string die_script;
+    const std::string script;
+    const std::string on_attack;
+    const std::string on_die;
 #endif
 
 #ifdef DECLARE_MOB_CUSTOM_CONSTRUCTOR
@@ -5101,8 +5102,9 @@ public:
         damage(fb::model::build<range<uint32_t>>(json["damage"])),
         speed(fb::model::build<timespan>(json["speed"])),
         drop(fb::model::build<std::string>(json["drop"])),
-        attack_script(fb::model::build<std::string>(json["attack_script"])),
-        die_script(fb::model::build<std::string>(json["die_script"]))
+        script(fb::model::build<std::string>(json["script"])),
+        on_attack(fb::model::build<std::string>(json["on_attack"])),
+        on_die(fb::model::build<std::string>(json["on_die"]))
 #ifdef DECLARE_MOB_INITIALIZER
 DECLARE_MOB_INITIALIZER
 #endif

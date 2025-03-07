@@ -1,7 +1,9 @@
-function on_attack(me, you)
+-- 범목 공격
+function ON_MOB_ATTACK_1097(me, you)
     return false
 end
 
-function on_die(me, you)
+-- 범목 사망
+function ON_MOB_DIE_1097(me, you)
 
 end

@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 흑여우 사망
+function ON_MOB_DIE_14(me, you)
 
 end

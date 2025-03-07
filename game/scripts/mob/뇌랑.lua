@@ -1,7 +1,9 @@
-function on_attack(me, you)
+-- 뇌랑 공격
+function ON_MOB_ATTACK_1052(me, you)
     return false
 end
 
-function on_die(me, you)
+-- 뇌랑 사망
+function ON_MOB_DIE_1052(me, you)
 
 end

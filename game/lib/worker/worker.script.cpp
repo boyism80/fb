@@ -16,20 +16,26 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
 
     for (auto& [k, v] : this->_context.model.spell)
     {
-        if (v.script != "")
-            scripts.insert(v.script);
+        if (v.script.empty())
+            continue;
+
+        scripts.insert(v.script);
     }
 
     for (auto& [k, v] : this->_context.model.item)
     {
-        if (v.script != "")
-            scripts.insert(v.script);
+        if (v.script.empty())
+            continue;
+
+        scripts.insert(v.script);
     }
 
     for (auto& [k, v] : this->_context.model.npc)
     {
-        if (v.script != "")
-            scripts.insert(v.script);
+        if (v.script.empty())
+            continue;
+
+        scripts.insert(v.script);
     }
 
     auto host = fb::config<uint8_t>("id");
@@ -47,6 +53,14 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
             auto params = fb::model::dsl::script(warp.dest.params);
             scripts.insert(params.path);
         }
+    }
+
+    for (auto& [k, v] : this->_context.model.mob)
+    {
+        if (v.script.empty())
+            continue;
+
+        scripts.insert(v.script);
     }
 
     static auto& ist = fb::lua::context_pool::ist();

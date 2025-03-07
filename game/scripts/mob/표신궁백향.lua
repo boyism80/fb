@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 표신궁백향 사망
+function ON_MOB_DIE_1192(me, you)
 
 end

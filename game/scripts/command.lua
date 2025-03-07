@@ -207,7 +207,12 @@ command_funcs = {
 
     ['스크립트'] = 
     function (me, args)
-        me:script()
+        local success = me:script()
+        if success then
+            me:chat('success')
+        else
+            me:chat('failed')
+        end
         return true
     end,
 

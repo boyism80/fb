@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 전갈 사망
+function ON_MOB_DIE_339(me, you)
 
 end

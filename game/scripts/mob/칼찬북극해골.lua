@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 칼찬북극해골 사망
+function ON_MOB_DIE_504(me, you)
 
 end

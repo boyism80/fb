@@ -20,7 +20,7 @@ int fb::model::npc::builtin_input(lua_State* L)
     auto message = lua->tostring(3);
 
     auto argc     = lua->argc();
-    auto listener = ch->get_listener<fb::game::dialog>();
+    auto listener = ch->get_listener<fb::game::character>();
     if (argc > 3)
     {
         auto message_top = lua->tostring(4);
@@ -36,6 +36,11 @@ int fb::model::npc::builtin_input(lua_State* L)
         if (listener != nullptr)
             listener->on_dialog(*ch, *npc, message);
     }
+
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
     return lua->yield(1);
 }
 
@@ -66,9 +71,14 @@ int fb::model::npc::builtin_menu(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    auto listener = ch->get_listener<fb::game::dialog>();
+    auto listener = ch->get_listener<fb::game::character>();
     if (listener != nullptr)
         listener->on_dialog(*ch, *npc, message, menus);
+
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
     return lua->yield(1);
 }
 
@@ -143,7 +153,7 @@ int fb::model::npc::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    auto listener = ch->get_listener<fb::game::dialog>();
+    auto listener = ch->get_listener<fb::game::character>();
     if (listener != nullptr)
     {
         if (custom_preset)
@@ -152,6 +162,10 @@ int fb::model::npc::builtin_list(lua_State* L)
             listener->on_dialog(*ch, *npc, message, menus, button_prev);
     }
 
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
     return lua->yield(1);
 }
 
@@ -216,9 +230,14 @@ int fb::model::npc::builtin_item(lua_State* L)
         lua->pop(1);
     }
 
-    auto listener = ch->get_listener<fb::game::dialog>();
+    auto listener = ch->get_listener<fb::game::character>();
     if (listener != nullptr)
         listener->on_dialog(*ch, *npc, message, items);
+
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
     return lua->yield(1);
 }
 
@@ -248,9 +267,14 @@ int fb::model::npc::builtin_slot(lua_State* L)
         lua->pop(1);
     }
 
-    auto listener = ch->get_listener<fb::game::dialog>();
+    auto listener = ch->get_listener<fb::game::character>();
     if (listener != nullptr)
         listener->on_dialog(*ch, *npc, message, slots);
+
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
     return lua->yield(1);
 }
 

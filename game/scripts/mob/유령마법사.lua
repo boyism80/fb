@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 유령마법사 사망
+function ON_MOB_DIE_357(me, you)
 
 end

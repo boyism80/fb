@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 귀응 사망
+function ON_MOB_DIE_1067(me, you)
 
 end

@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 청웅 사망
+function ON_MOB_DIE_1065(me, you)
 
 end

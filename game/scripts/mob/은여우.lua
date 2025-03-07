@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 은여우 사망
+function ON_MOB_DIE_1011(me, you)
 
 end

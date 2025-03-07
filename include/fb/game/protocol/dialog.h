@@ -4,7 +4,7 @@
 #include <fb/protocol/header.h>
 #include <fb/model/model.h>
 #ifndef BOT
-#include <fb/game/dialog.h>
+#include <fb/game/character.h>
 #endif
 
 using namespace fb::model::enum_value;

@@ -1,3 +1,4 @@
-function on_die(me, you)
+-- 겁살파수꾼 사망
+function ON_MOB_DIE_520(me, you)
 
 end
