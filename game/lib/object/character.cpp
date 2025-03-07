@@ -698,8 +698,6 @@ fb::game::cash* character::money_drop(uint32_t value)
 
         auto cash = this->context.make<fb::game::cash>(value);
         cash->map(this->_map, this->_position);
-        return cash;
-
         this->action(ACTION::PICKUP, DURATION::PICKUP);
         this->message(_TEXT(MESSAGE_MONEY_DROP));
         return cash;
