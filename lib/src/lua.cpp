@@ -139,10 +139,13 @@ std::string context::get_type(int offset)
     return lua_typename(*this, lua_type(*this, offset));
 }
 
-std::string context::tostring(int offset)
+std::string context::tostring(int offset, const std::string& default_value)
 {
     if (this->argc() < offset)
-        return "";
+        return default_value;
+
+    if (lua_type(*this, offset) != LUA_TSTRING)
+        return default_value;
 
     auto x = lua_tostring(*this, offset);
     if (x == nullptr)

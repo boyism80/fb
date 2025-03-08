@@ -25,8 +25,8 @@ int fb::model::npc::builtin_input(lua_State* L)
     {
         auto message_top = lua->tostring(4);
         auto message_bot = lua->tostring(5);
-        auto maxlen      = argc < 6 ? 0xFF : (int)lua->tointeger(6);
-        auto prev        = argc < 7 ? false : lua->toboolean(7);
+        auto maxlen      = (uint8_t)lua->tointeger(6, 0xFF);
+        auto prev        = lua->toboolean(7, false);
 
         if (listener != nullptr)
             listener->on_dialog(*ch, *npc, message, message_top, message_bot, maxlen, prev);

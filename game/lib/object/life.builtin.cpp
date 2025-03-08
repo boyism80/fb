@@ -72,7 +72,7 @@ int fb::game::life::builtin_message(lua_State* L)
 
     auto ch      = static_cast<fb::game::character*>(obj);
     auto message = lua->tostring(2);
-    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(lua->tointeger(3));
+    auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
     return ctx->builtin(*ch, lua, 0, [=]() {
         ch->message(message, type);
@@ -159,12 +159,9 @@ int fb::game::life::builtin_damage(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto value = (uint32_t)lua->tointeger(2);
-    auto from  = static_cast<fb::game::life*>(nullptr);
-    if (argc >= 3 && lua_type(L, 3) == LUA_TUSERDATA)
-        from = lua->touserdata<fb::game::life>(3);
-
-    auto critical = argc >= 4 ? lua->toboolean(4) : false;
+    auto value    = (uint32_t)lua->tointeger(2);
+    auto from     = lua->touserdata<fb::game::life>(3);
+    auto critical = lua->toboolean(4, false);
     return ctx->builtin(*obj, lua, 0, [=]() {
         obj->damage(value, from, critical);
     });
@@ -219,8 +216,8 @@ int fb::game::life::builtin_action(lua_State* L)
         return 0;
 
     auto action   = lua->tointeger(2);
-    auto duration = argc < 3 ? static_cast<int>(DURATION::SPELL) : lua->tointeger(3);
-    auto sound    = argc < 4 ? (uint8_t)0x00 : (uint8_t)lua->tointeger(4);
+    auto duration = lua->tointeger(3, static_cast<int>(DURATION::SPELL));
+    auto sound    = (uint8_t)lua->tointeger(4, (uint8_t)0x00);
     return ctx->builtin(*obj, lua, 0, [=]() {
         obj->action(ACTION(action), DURATION(duration), sound);
     });
@@ -398,7 +395,7 @@ int fb::game::life::builtin_attack(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto duration = argc >= 2 ? static_cast<DURATION>(lua->tointeger(2)) : DURATION::ATTACK;
+    auto duration = lua->toenum(2, DURATION::ATTACK);
     return ctx->builtin(*obj, lua, 0, [=]() {
         obj->attack(duration);
     });

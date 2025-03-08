@@ -356,7 +356,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    std::string tostring(int offset);
+    std::string tostring(int offset, const std::string& default_value = "");
     /**
      * @brief      { function_description }
      *
@@ -387,10 +387,12 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    int tointeger(int offset)
+    int tointeger(int offset, int default_value = 0)
     {
         if (this->argc() < offset)
-            return -1;
+            return default_value;
+        else if (lua_type(*this, offset) != LUA_TNUMBER)
+            return default_value;
         else
             return (int)lua_tointeger(*this, offset);
     }
@@ -401,12 +403,25 @@ public:
      *
      * @return     The lua integer.
      */
-    lua_Integer tonumber(int offset)
+    lua_Integer tonumber(int offset, lua_Integer default_value = 0)
     {
         if (this->argc() < offset)
-            return -1;
+            return default_value;
+        else if (lua_type(*this, offset) != LUA_TNUMBER)
+            return default_value;
         else
             return lua_tonumber(*this, offset);
+    }
+
+    template <typename T>
+    T toenum(int offset, T default_value = (T)0)
+    {
+        if (this->argc() < offset)
+            return default_value;
+        else if (lua_type(*this, offset) != LUA_TNUMBER)
+            return default_value;
+        else
+            return static_cast<T>(lua_tointeger(*this, offset));
     }
     /**
      * @brief      { function_description }
@@ -438,10 +453,12 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool toboolean(int offset)
+    bool toboolean(int offset, bool default_value = false)
     {
         if (this->argc() < offset)
-            return false;
+            return default_value;
+        else if (lua_type(*this, offset) != LUA_TBOOLEAN)
+            return default_value;
         else
             return lua_toboolean(*this, offset);
     }
@@ -481,6 +498,8 @@ public:
     T* touserdata(int offset)
     {
         if (this->argc() < offset)
+            return nullptr;
+        else if (lua_type(*this, offset) != LUA_TUSERDATA)
             return nullptr;
         else
             return *(T**)lua_touserdata(*this, offset);

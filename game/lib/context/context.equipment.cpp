@@ -64,7 +64,7 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
     auto& model = equipment.based<fb::model::equipment>();
-    if (model.on_inactive != "")
+    if (model.on_inactive.empty() == false)
     {
         auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG

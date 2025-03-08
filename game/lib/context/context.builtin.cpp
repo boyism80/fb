@@ -566,8 +566,8 @@ int fb::game::context::builtin_broadcast(lua_State* L)
     auto context    = lua->env<fb::game::context>("context");
     auto argc       = lua->argc();
     auto text       = lua->tostring(1);
-    auto type       = argc < 2 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(lua->tointeger(2));
-    auto broad_type = argc < 3 ? BROADCAST_TYPE::GLOBAL : static_cast<BROADCAST_TYPE>(lua->tointeger(3));
+    auto type       = lua->toenum(2, MESSAGE_TYPE::STATE);
+    auto broad_type = lua->toenum(3, BROADCAST_TYPE::GLOBAL);
 
     if (broad_type == BROADCAST_TYPE::WORLD)
     {

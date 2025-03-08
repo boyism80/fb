@@ -123,7 +123,7 @@ int fb::game::map::builtin_nears(lua_State* L)
     y = (uint16_t)lua->tointeger(-1);
     lua->remove(-1);
 
-    auto type  = argc < 3 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(3));
+    auto type  = lua->toenum(3, OBJECT_TYPE::UNKNOWN);
     auto nears = map->nears(fb::model::point16_t{x, y}, type);
 
     lua->new_table();
@@ -170,7 +170,7 @@ int fb::game::map::builtin_movable(lua_State* L)
             return 0;
 
         auto argc = lua->argc();
-        auto step = argc < 3 ? 1 : lua->tointeger(3);
+        auto step = lua->tointeger(3, 1);
 
         position = obj->front_position(step);
     }
@@ -271,7 +271,7 @@ int fb::game::map::builtin_belows(lua_State* L)
 
     auto x    = lua->tointeger(2);
     auto y    = lua->tointeger(3);
-    auto type = argc < 4 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(4));
+    auto type = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
 
     lua->new_table();
     auto i = 0;
@@ -339,8 +339,8 @@ int fb::game::map::builtin_at(lua_State* L)
 
     auto x        = (uint16_t)lua->tointeger(2);
     auto y        = (uint16_t)lua->tointeger(3);
+    auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
     auto position = fb::model::point16_t{x, y};
-    auto type     = argc < 4 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(4));
 
     return ctx->builtin(*map, lua, 1, [=]() {
         auto nears = map->nears(fb::model::point16_t{x, y}, type);

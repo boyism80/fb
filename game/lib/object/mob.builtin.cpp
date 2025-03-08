@@ -24,11 +24,8 @@ int mob::builtin_target(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    auto target = (fb::game::life*)nullptr;
-    if (argc > 1 && lua_type(L, 2) != LUA_TNIL)
-        target = lua->touserdata<fb::game::life>(2);
-
-    auto n = (argc == 1 ? 1 : 0);
+    auto target = lua->touserdata<fb::game::life>(2);
+    auto n      = (argc == 1 ? 1 : 0);
     return ctx->builtin(*mob, lua, n, [=]() {
         if (argc == 1)
         {
@@ -56,11 +53,8 @@ int mob::builtin_oblivion(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    auto oblivion = (fb::game::life*)nullptr;
-    if (argc > 1 && lua_type(L, 2) != LUA_TNIL)
-        oblivion = lua->touserdata<fb::game::life>(2);
-
-    auto n = (argc == 1 ? 1 : 0);
+    auto oblivion = lua->touserdata<fb::game::life>(2);
+    auto n        = (argc == 1 ? 1 : 0);
     return ctx->builtin(*mob, lua, n, [=]() {
         if (argc == 1)
         {

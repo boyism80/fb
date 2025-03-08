@@ -18,6 +18,9 @@ async::task<void> context::on_attack(life& me, DURATION duration)
     if (co_await lua->call(1, false) == false)
         co_return;
 
+    if (this->alive(me) == false)
+        co_return;
+
     auto attack_count = (uint32_t)lua->tointeger(1);
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
@@ -26,12 +29,15 @@ async::task<void> context::on_attack(life& me, DURATION duration)
         if (weapon != nullptr)
         {
             auto& model = weapon->based<fb::model::weapon>();
-            if (model.on_attack != "")
+            if (model.on_attack.empty() == false)
             {
                 lua->func(model.on_attack);
                 lua->pushobject(ch);
                 lua->pushobject(weapon);
                 co_await lua->call(2, false);
+
+                if (this->alive(ch) == false)
+                    co_return;
             }
 
             if (attack_count > 0 && weapon->durability_down(attack_count))
