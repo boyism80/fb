@@ -21,7 +21,7 @@ int mob::builtin_target(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
-    if (mob == nullptr)
+    if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
     auto target = (fb::game::life*)nullptr;
@@ -53,7 +53,7 @@ int mob::builtin_oblivion(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
-    if (mob == nullptr)
+    if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
     auto oblivion = (fb::game::life*)nullptr;
@@ -85,7 +85,7 @@ int mob::builtin_owner(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
-    if (mob == nullptr)
+    if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
     return ctx->builtin(*mob, lua, 1, [=]() {
@@ -105,7 +105,7 @@ int mob::builtin_items(lua_State* L)
     auto ctx  = lua->env<fb::game::context>("context");
     auto argc = lua->argc();
     auto mob  = lua->touserdata<fb::game::mob>(1);
-    if (mob == nullptr)
+    if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
     return ctx->builtin(*mob, lua, 1, [=]() {

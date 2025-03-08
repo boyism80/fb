@@ -46,7 +46,6 @@ function ON_CAST_2015(me, spell)
             me:attack(14)
             me:action(ACTION_CAST_SPELL, 25)
             me:message('비영승보를 외웠습니다.')
-            front:sound(30)
             break
         end
     end
