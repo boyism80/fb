@@ -78,11 +78,12 @@ function damage(me, you, rate, sound)
     end
 
     damage_rate = damage_rate / (you:damage_derate() / 1000.0)
-    local damage = math.floor(damage * damage_rate * rate)
-    you:damage(damage, me, critical)
     if sound ~= nil then
         you:sound(sound)
     end
+    
+    local damage = math.floor(damage * damage_rate * rate)
+    you:damage(damage, me, critical)
 end
 
 function on_attack(me, additional_attack)
