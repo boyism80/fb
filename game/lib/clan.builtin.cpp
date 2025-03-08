@@ -195,7 +195,7 @@ int clan::builtin_leave(lua_State* L)
         return 0;
 
     auto name = lua->tostring(2);
-    auto kick = argc >= 3 ? lua->toboolean(3) : false;
+    auto kick = lua->toboolean(3, false);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,
@@ -235,7 +235,7 @@ int clan::builtin_message(lua_State* L)
         return 0;
 
     auto message = lua->tostring(2);
-    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(lua->tointeger(3));
+    auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,

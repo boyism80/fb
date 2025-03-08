@@ -193,7 +193,7 @@ int object::builtin_front_position(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto step = argc < 2 ? 1 : lua->tointeger(2);
+    auto step = lua->tointeger(2, 1);
     obj->assert_thread();
 
     return ctx->builtin(*obj, lua, 2, [=]() {
@@ -238,8 +238,8 @@ int object::builtin_chat(lua_State* L)
         return 0;
 
     auto message  = lua->tostring(2);
-    auto type     = argc < 3 ? CHAT_TYPE::NORMAL : CHAT_TYPE(lua->tointeger(3));
-    auto decorate = argc < 4 ? true : lua->toboolean(4);
+    auto type     = lua->toenum(3, CHAT_TYPE::NORMAL);
+    auto decorate = lua->toboolean(4, true);
 
     return ctx->builtin(*obj, lua, 0, [=]() {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
@@ -281,7 +281,7 @@ int object::builtin_buff(lua_State* L)
         return 0;
 
     auto seconds = (uint32_t)lua->tointeger(3);
-    auto caster  = argc >= 4 ? lua->touserdata<fb::game::object>(4) : nullptr;
+    auto caster  = lua->touserdata<fb::game::object>(4);
     auto buff    = obj->buffs.push_back(*model, seconds, caster);
     if (buff == nullptr)
     {
@@ -563,7 +563,7 @@ int object::builtin_sight_in(lua_State* L)
 
     obj->assert_thread();
 
-    auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(2));
+    auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
 
     lua->new_table();
     const auto& objects = obj->sight_in(filter);
@@ -595,7 +595,7 @@ int object::builtin_nears(lua_State* L)
         return 0;
 
     auto visit  = std::set<uint32_t>();
-    auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(2));
+    auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
     if (argc >= 3 && lua_type(L, 3) == LUA_TTABLE)
     {
         auto size   = lua->rawlen(3);
@@ -616,7 +616,7 @@ int object::builtin_nears(lua_State* L)
             lua->remove(-1);
         }
 
-        auto all = argc < 4 ? true : lua->toboolean(4);
+        auto all = lua->toboolean(4, true);
         lua->new_table();
         const auto& objects = obj->nears(filter);
         for (int i = 0; i < objects.size(); i++)
@@ -649,9 +649,9 @@ int object::builtin_nears(lua_State* L)
     }
     else
     {
-        auto width  = argc < 3 ? -1 : lua->tointeger(3);
-        auto height = argc < 4 ? -1 : lua->tointeger(4);
-        auto all    = argc < 5 ? true : lua->toboolean(5);
+        auto width  = lua->tointeger(3, -1);
+        auto height = lua->tointeger(4, -1);
+        auto all    = lua->toboolean(5, true);
 
         lua->new_table();
         const auto& objects = obj->nears(filter);
@@ -699,7 +699,7 @@ int object::builtin_front(lua_State* L)
 
     obj->assert_thread();
 
-    auto filter = argc < 2 ? OBJECT_TYPE::UNKNOWN : OBJECT_TYPE(lua->tointeger(2));
+    auto filter = lua->toenum(2, OBJECT_TYPE::UNKNOWN);
     auto front  = obj->forward(filter);
     if (front == nullptr)
         lua->pushnil();

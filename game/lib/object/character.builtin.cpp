@@ -303,8 +303,8 @@ int character::builtin_mkitem(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
     auto name  = lua->tostring(2);
-    auto count = argc < 3 ? 1 : lua->tointeger(3);
-    auto store = argc < 4 ? true : lua->toboolean(4);
+    auto count = lua->tointeger(3, 1);
+    auto store = lua->toboolean(4, true);
 
     if (store == false)
         return object::builtin_mkitem(L);
@@ -344,17 +344,16 @@ int character::builtin_rmitem(lua_State* L)
         auto ch   = lua->touserdata<character>(1);
         if (ch == nullptr || ctx->alive(*ch) == false)
             return 0;
+
         auto index       = uint8_t(0);
-        auto count       = argc < 3 ? 1 : (int)lua->tointeger(3);
-        auto delete_attr = argc < 4 ? ITEM_DELETE_TYPE::REMOVED : (ITEM_DELETE_TYPE)lua->tointeger(4);
+        auto count       = (uint8_t)lua->tointeger(3, 1);
+        auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
 
         if (lua->is_obj(2))
         {
             auto item = lua->touserdata<fb::game::item>(2);
             if (item == nullptr)
                 return 0;
-            if (item == nullptr)
-                throw std::exception();
 
             index = ch->items.index(item->based<fb::model::item>());
         }
@@ -693,7 +692,7 @@ int character::builtin_deposit_item(lua_State* L)
         return 0;
 
     auto item  = lua->touserdata<fb::game::item>(2);
-    auto count = argc >= 3 ? lua->tointeger(3) : 1;
+    auto count = lua->tointeger(3, 1);
     auto index = ch->items.index(*item);
     if (index == 0xFF)
     {
@@ -720,7 +719,7 @@ int character::builtin_withdraw_item(lua_State* L)
         return 0;
 
     auto  item            = lua->touserdata<fb::game::item>(2);
-    auto  count           = argc >= 3 ? lua->tointeger(3) : 1;
+    auto  count           = lua->tointeger(3, 1);
     auto& deposited_items = ch->deposited_items();
     auto  found           = std::find(deposited_items.cbegin(), deposited_items.cend(), item);
     if (found == deposited_items.cend())
@@ -1672,10 +1671,7 @@ int character::builtin_script(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto name = std::string{"func"};
-    if (argc >= 2 && lua_type(L, 2) == LUA_TSTRING)
-        name = lua->tostring(2);
-
+    auto name    = lua->tostring(2, "func");
     auto new_lua = fb::lua::new_context(lua);
     new_lua->load("scripts/script.lua");
     new_lua->func(name);
@@ -1709,22 +1705,10 @@ int character::builtin_ad(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto width = 300;
-    if (argc >= 2 && lua->is_nil(2) == false)
-        width = lua->tointeger(2);
-
-    auto height = 120;
-    if (argc >= 3 && lua->is_nil(3) == false)
-        height = lua->tointeger(3);
-
-    auto url = std::string{"http://www.google.com"};
-    if (argc >= 4 && lua->is_nil(4) == false)
-        url = lua->tostring(4);
-
-    auto time = 60;
-    if (argc >= 5 && lua->is_nil(5) == false)
-        time = lua->tointeger(5);
-
+    auto width  = lua->tointeger(2, 300);
+    auto height = lua->tointeger(3, 120);
+    auto url    = lua->tostring(4, "http://www.google.com");
+    auto time   = lua->tointeger(5, 60);
     ch->send(fb::protocol::game::response::ad(width, height, url, time));
     return 0;
 }
@@ -1741,18 +1725,9 @@ int character::builtin_web(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto type = 0;
-    if (argc >= 2 && lua->is_nil(2) == false)
-        type = lua->tointeger(2);
-
-    auto url = std::string{"http://www.google.com"};
-    if (argc >= 3 && lua->is_nil(3) == false)
-        url = lua->tostring(3);
-
-    auto message = std::string{"default message"};
-    if (argc >= 4 && lua->is_nil(4) == false)
-        message = lua->tostring(4);
-
+    auto type    = lua->tointeger(2, 0);
+    auto url     = lua->tostring(3, "http://www.google.com");
+    auto message = lua->tostring(4, "default message");
     ch->send(fb::protocol::game::response::web(type, url, message));
     return 0;
 }

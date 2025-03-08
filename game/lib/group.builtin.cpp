@@ -97,7 +97,7 @@ int group::builtin_message(lua_State* L)
         return 0;
 
     auto message = lua->tostring(2);
-    auto type    = argc < 3 ? MESSAGE_TYPE::STATE : static_cast<MESSAGE_TYPE>(lua->tointeger(3));
+    auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
     static auto fn = [](fb::game::context* context,
                         fb::lua::context*  lua,
