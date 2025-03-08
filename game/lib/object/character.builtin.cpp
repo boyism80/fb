@@ -73,10 +73,10 @@ int character::builtin_look(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -98,10 +98,10 @@ int character::builtin_color(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -123,15 +123,15 @@ int character::builtin_sex(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto sex = static_cast<SEX>(lua->tointeger(2));
     auto n   = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->sex());
         else
@@ -145,10 +145,10 @@ int character::builtin_money(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -170,10 +170,10 @@ int character::builtin_exp(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -195,9 +195,9 @@ int character::builtin_item(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
     auto item = (fb::game::item*)nullptr;
     if (lua->is_num(2))
@@ -225,9 +225,9 @@ int character::builtin_items(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     lua->new_table();
@@ -250,9 +250,9 @@ int character::builtin_equipments(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     lua->new_table();
@@ -275,9 +275,9 @@ int character::builtin_item_drop(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
     auto index    = (uint8_t)lua->tointeger(2);
     auto drop_all = lua->toboolean(3);
@@ -297,10 +297,10 @@ int character::builtin_mkitem(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
     auto name  = lua->tostring(2);
     auto count = argc < 3 ? 1 : lua->tointeger(3);
@@ -309,16 +309,16 @@ int character::builtin_mkitem(lua_State* L)
     if (store == false)
         return object::builtin_mkitem(L);
 
-    auto model = context->model.item.name2item(name);
+    auto model = ctx->model.item.name2item(name);
     if (model == nullptr)
     {
         lua->pushnil();
     }
     else
     {
-        auto context = lua->env<fb::game::context>("context");
-        auto item    = model->make(*context, count);
-        auto slot    = ch->items.add(item);
+        auto ctx  = lua->env<fb::game::context>("context");
+        auto item = model->make(*ctx, count);
+        auto slot = ch->items.add(item);
         if (slot == 0xFF)
         {
             lua->pushnil();
@@ -337,12 +337,12 @@ int character::builtin_rmitem(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
+    auto ctx = lua->env<fb::game::context>("context");
     try
     {
         auto argc = lua->argc();
         auto ch   = lua->touserdata<character>(1);
-        if (ch == nullptr)
+        if (ch == nullptr || ctx->alive(*ch) == false)
             return 0;
         auto index       = uint8_t(0);
         auto count       = argc < 3 ? 1 : (int)lua->tointeger(3);
@@ -368,7 +368,7 @@ int character::builtin_rmitem(lua_State* L)
             if (name.empty())
                 throw std::exception();
 
-            auto model = context->model.item.name2item(name);
+            auto model = ctx->model.item.name2item(name);
             if (model == nullptr)
                 throw std::exception();
 
@@ -395,10 +395,10 @@ int character::builtin_state(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
     if (argc == 1)
     {
@@ -419,10 +419,10 @@ int character::builtin_disguise(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto value = std::optional<uint16_t>{};
@@ -434,7 +434,7 @@ int character::builtin_disguise(lua_State* L)
     };
 
     auto n = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->disguise().value());
         else if (value.has_value())
@@ -450,10 +450,10 @@ int character::builtin_class(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -475,10 +475,10 @@ int character::builtin_promotion(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -500,10 +500,10 @@ int character::builtin_level(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -516,7 +516,7 @@ int character::builtin_level(lua_State* L)
         auto level = std::max(0, std::min((int)lua->tointeger(2), 255));
         ch->level(level);
 
-        auto context = lua->env<fb::game::context>("context");
+        auto ctx = lua->env<fb::game::context>("context");
         ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
         return 0;
     }
@@ -556,10 +556,10 @@ int character::builtin_admin(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -580,10 +580,10 @@ int character::builtin_deposited_money(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -604,10 +604,10 @@ int character::builtin_deposited_item(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     const auto& deposited_items = ch->deposited_items();
@@ -686,10 +686,10 @@ int character::builtin_deposit_item(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto item  = lua->touserdata<fb::game::item>(2);
@@ -713,10 +713,10 @@ int character::builtin_withdraw_item(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto  item            = lua->touserdata<fb::game::item>(2);
@@ -743,17 +743,17 @@ int character::builtin_group(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc < 2)
     {
         // 그룹 Lock scope는 스크립트 내의 다음 yield를
         // 만나기 전까지 유효
-        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
             if (ch->_group == nullptr)
             {
                 lua->pushnil();
@@ -805,24 +805,22 @@ int character::builtin_create_group(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::context* context,
-                        fb::lua::context*  lua,
-                        character&         me,
-                        const std::string& name) -> async::task<void> {
-        lua->pushboolean(co_await context->create_group(me, name));
+    static auto fn =
+        [](fb::game::context* ctx, fb::lua::context* lua, character& ch, const std::string& name) -> async::task<void> {
+        lua->pushboolean(co_await ctx->create_group(ch, name));
         lua->resume(1);
     };
 
-    context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        co_await fn(context, lua, *ch, name);
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        co_await fn(ctx, lua, *ch, name);
     });
 
     return lua->yield(1);
@@ -834,17 +832,17 @@ int character::builtin_clan(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc < 2)
     {
         // 그룹 Lock scope는 스크립트 내의 다음 yield를
         // 만나기 전까지 유효
-        context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
             if (ch->_clan == nullptr)
             {
                 lua->pushnil();
@@ -896,21 +894,19 @@ int character::builtin_create_clan(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto name = lua->tostring(2);
 
-    static auto fn = [](fb::game::context* context,
-                        fb::lua::context*  lua,
-                        character&         me,
-                        const std::string& name) -> async::task<void> {
+    static auto fn =
+        [](fb::game::context* ctx, fb::lua::context* lua, character& ch, const std::string& name) -> async::task<void> {
         try
         {
-            co_await context->create_clan(me, name);
+            co_await ctx->create_clan(ch, name);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -920,8 +916,8 @@ int character::builtin_create_clan(lua_State* L)
         lua->resume(1);
     };
 
-    context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        co_await fn(context, lua, *ch, name);
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        co_await fn(ctx, lua, *ch, name);
     });
 
     return lua->yield(1);
@@ -933,16 +929,16 @@ int character::builtin_destroy_clan(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    static auto fn = [](fb::game::context* context, fb::lua::context* lua, character& me) -> async::task<void> {
+    static auto fn = [](fb::game::context* ctx, fb::lua::context* lua, character& ch) -> async::task<void> {
         try
         {
-            co_await context->destroy_clan(me);
+            co_await ctx->destroy_clan(ch);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -952,8 +948,8 @@ int character::builtin_destroy_clan(lua_State* L)
         lua->resume(1);
     };
 
-    context->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
-        co_await fn(context, lua, *ch);
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        co_await fn(ctx, lua, *ch);
     });
 
     return lua->yield(1);
@@ -965,9 +961,9 @@ int character::builtin_traces(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     lua->new_table();
@@ -989,9 +985,9 @@ int character::builtin_trace(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto i = lua->tointeger(2);
@@ -1012,9 +1008,9 @@ int character::builtin_push_trace(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     const fb::model::trace* model = nullptr;
@@ -1022,13 +1018,13 @@ int character::builtin_push_trace(lua_State* L)
     if (lua->is_num(2))
     {
         auto id = lua->tointeger(2);
-        if (context->model.trace.contains(id) == false)
+        if (ctx->model.trace.contains(id) == false)
         {
             lua->pushnil();
             return 1;
         }
 
-        model = &context->model.trace[id];
+        model = &ctx->model.trace[id];
     }
     else if (lua->is_obj(2))
     {
@@ -1053,9 +1049,9 @@ int character::builtin_erase_trace(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto i = lua->tointeger(2);
@@ -1077,22 +1073,22 @@ int character::builtin_whisper(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto me      = lua->touserdata<character>(1);
-    if (me == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto to      = lua->tostring(2);
     auto message = lua->tostring(3);
 
-    static auto fn = [](fb::game::context*   context,
+    static auto fn = [](fb::game::context*   ctx,
                         fb::lua::context*    lua,
                         fb::game::character* ch,
                         const std::string&   to,
                         const std::string&   message) -> async::task<void> {
         try
         {
-            co_await context->whisper(*ch, to, message);
+            co_await ctx->whisper(*ch, to, message);
             lua->pushnil();
         }
         catch (std::exception& e)
@@ -1103,8 +1099,8 @@ int character::builtin_whisper(lua_State* L)
         lua->resume(1);
     };
 
-    context->threads.enqueue(*me, [=](auto&) -> async::task<void> {
-        co_await fn(context, lua, me, to, message);
+    ctx->threads.enqueue(*ch, [=](auto&) -> async::task<void> {
+        co_await fn(ctx, lua, ch, to, message);
     });
 
     return lua->yield(1);
@@ -1116,8 +1112,9 @@ int character::builtin_assert_state(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto me = lua->touserdata<character>(1);
-    if (me == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto argc   = lua->argc();
@@ -1129,7 +1126,7 @@ int character::builtin_assert_state(lua_State* L)
 
     try
     {
-        me->assert_state(values);
+        ch->assert_state(values);
         lua->pushnil();
         return 1;
     }
@@ -1146,15 +1143,15 @@ int character::builtin_nation(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto value = static_cast<NATION>(lua->tointeger(2));
     auto n     = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(static_cast<uint8_t>(ch->nation()));
         else
@@ -1168,15 +1165,15 @@ int character::builtin_weapon(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto weapon = lua->touserdata<fb::game::weapon>(2);
     auto n      = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() mutable {
+    return ctx->builtin(*ch, lua, n, [=]() mutable {
         if (argc == 1)
         {
             weapon = ch->items.weapon();
@@ -1198,15 +1195,15 @@ int character::builtin_title(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua->tostring(2);
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushstring(ch->title());
         else
@@ -1220,10 +1217,10 @@ int character::builtin_gain(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto items = std::vector<fb::game::item*>{};
@@ -1233,7 +1230,7 @@ int character::builtin_gain(lua_State* L)
         items.push_back(item);
     }
 
-    return context->builtin(*ch, lua, 0, [=]() {
+    return ctx->builtin(*ch, lua, 0, [=]() {
         ch->items.add(items, true);
     });
 }
@@ -1244,16 +1241,16 @@ int character::builtin_weapon_damage(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua->tointeger(2);
 
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->weapon_damage());
         else
@@ -1267,15 +1264,15 @@ int character::builtin_detect(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto value = lua->toboolean(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushboolean(ch->detect());
         else
@@ -1289,10 +1286,10 @@ int character::builtin_spawn_mob(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto map = ch->map();
@@ -1304,7 +1301,7 @@ int character::builtin_spawn_mob(lua_State* L)
 
     auto name  = lua->tostring(2);
     auto owned = true;
-    auto model = context->model.mob.name2mob(name);
+    auto model = ctx->model.mob.name2mob(name);
     if (model == nullptr)
     {
         lua->pushnil();
@@ -1353,9 +1350,9 @@ int character::builtin_spawned_mobs(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto ch      = lua->touserdata<character>(1);
-    if (ch == nullptr)
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     lua->new_table();
@@ -1378,10 +1375,10 @@ int character::builtin_base_hp(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1402,10 +1399,10 @@ int character::builtin_base_mp(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1426,10 +1423,10 @@ int character::builtin_base_str(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1450,10 +1447,10 @@ int character::builtin_base_dex(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1474,10 +1471,10 @@ int character::builtin_base_int(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1498,10 +1495,10 @@ int character::builtin_base_dam(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1522,10 +1519,10 @@ int character::builtin_base_hit(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1546,10 +1543,10 @@ int character::builtin_armor_color(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1582,14 +1579,14 @@ int character::builtin_mkspell(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto name  = lua->tostring(2);
-    auto model = context->model.spell.name2spell(name);
+    auto model = ctx->model.spell.name2spell(name);
     if (model == nullptr)
         return 0;
 
@@ -1607,10 +1604,10 @@ int character::builtin_rmspell(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     if (argc == 1)
@@ -1639,14 +1636,14 @@ int character::builtin_world(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto name = lua->tostring(2);
-    for (auto& [id, world] : context->model.world)
+    for (auto& [id, world] : ctx->model.world)
     {
         for (auto& [index, point] : world)
         {
@@ -1669,10 +1666,10 @@ int character::builtin_script(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto name = std::string{"func"};
@@ -1706,10 +1703,10 @@ int character::builtin_ad(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto width = 300;
@@ -1738,10 +1735,10 @@ int character::builtin_web(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto type = 0;
@@ -1766,17 +1763,17 @@ int character::builtin_delay(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto model = (fb::model::spell*)nullptr;
     if (lua->is_obj(2))
         model = lua->touserdata<fb::model::spell>(2);
     else if (lua->is_str(2))
-        model = context->model.spell.name2spell(lua->tostring(2));
+        model = ctx->model.spell.name2spell(lua->tostring(2));
 
     if (model == nullptr)
         return 0;
@@ -1796,15 +1793,15 @@ int character::builtin_birthday(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua_type(L, 2) == LUA_TNIL ? std::nullopt : std::optional<std::uint32_t>{lua->tointeger(2)};
-    return context->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin(*ch, lua, n, [=]() {
         if (argc == 1)
         {
             auto& birthday = ch->birthday();
@@ -1826,10 +1823,10 @@ int character::builtin_send_mail(lua_State* L)
     if (lua == nullptr)
         return 0;
 
-    auto context = lua->env<fb::game::context>("context");
-    auto argc    = lua->argc();
-    auto ch      = lua->touserdata<fb::game::character>(1);
-    if (ch == nullptr)
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
     auto to    = lua->tostring(2);
@@ -1841,7 +1838,7 @@ int character::builtin_send_mail(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false)
         contents = lua->tostring(4);
 
-    return context->builtin_async(*ch, lua, 0, [=]() -> async::task<void> {
-        co_await context->send_mail(*ch, to, title, contents);
+    return ctx->builtin_async(*ch, lua, 0, [=]() -> async::task<void> {
+        co_await ctx->send_mail(*ch, to, title, contents);
     });
 }
