@@ -627,18 +627,21 @@ float character::experience_percent() const
 {
     this->assert_thread();
 
-    auto level    = this->level();
-    auto required = 0;
     if (this->max_level())
-        required = 0xFFFFFFFF;
+    {
+        return std::min(100.0f, (this->_experience / float(0xFFFFFFFF)) * 100.0f);
+    }
     else
-        required = this->context.model.ability[this->_class][level].exp;
+    {
+        auto level    = this->level();
+        auto required = this->context.model.ability[this->_class][level].exp;
 
-    auto prev_stack_exp = 0;
-    if (this->context.model.ability[this->_class].contains(level - 1))
-        prev_stack_exp = this->context.model.ability[this->_class][level - 1].stacked_exp;
+        auto prev_stack_exp = uint32_t{0};
+        if (this->context.model.ability[this->_class].contains(level - 1))
+            prev_stack_exp = this->context.model.ability[this->_class][level - 1].stacked_exp;
 
-    return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
+        return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
+    }
 }
 
 uint32_t character::money() const
