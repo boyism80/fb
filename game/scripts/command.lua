@@ -38,7 +38,7 @@ command_funcs = {
 
         local error = false
         if x ~= nil and y ~= nil then
-            error = me:map(map, x, y)
+            error = me:map(map, tonumber(x), tonumber(y))
         else
             error = me:map(map)
         end
@@ -48,49 +48,49 @@ command_funcs = {
     ['사운드'] =
     function (me, args)
         local sound = table.unpack(args)
-        me:sound(sound)
+        me:sound(tonumber(sound))
         return true
     end,
 
     ['액션'] = 
     function (me, args)
         local action = table.unpack(args)
-        me:action(action)
+        me:action(tonumber(action))
         return true
     end,
 
     ['날씨'] = 
     function (me, args)
         local value = table.unpack(args)
-        weather(value)
+        weather(tonumber(value))
         return true
     end,
 
     ['밝기'] = 
     function (me, args)
         local value = table.unpack(args)
-        bright(value)
+        bright(tonumber(value))
         return true
     end,
 
     ['타이머'] = 
     function (me, args)
         local time = table.unpack(args)
-        timer(time, true)
+        timer(tonumber(time), true)
         return true
     end,
 
     ['타이틀'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:title(value)
+        me:title(tonumber(value))
         return true
     end,
 
     ['이펙트'] =
     function (me, args)
         local value = table.unpack(args)
-        me:effect(value)
+        me:effect(tonumber(value))
         return true
     end,
 
@@ -147,35 +147,35 @@ command_funcs = {
     ['레벨바꾸기'] = 
     function (me, args)
         local level = table.unpack(args)
-        me:level(level)
+        me:level(tonumber(level))
         return true
     end,
 
     ['힘바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:base_str(value)
+        me:base_str(tonumber(value))
         return true
     end,
 
     ['민첩바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:base_dex(value)
+        me:base_dex(tonumber(value))
         return true
     end,
 
     ['지력바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:base_int(value)
+        me:base_int(tonumber(value))
         return true
     end,
 
     ['체력바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:base_hp(value)
+        me:base_hp(tonumber(value))
         me:hp(me:maxhp())
         if me:state() == STATE_GHOST then
             me:state(STATE_NORMAL)
@@ -186,7 +186,7 @@ command_funcs = {
     ['마력바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:base_mp(value)
+        me:base_mp(tonumber(value))
         me:mp(me:maxmp())
         return true
     end,
@@ -219,21 +219,21 @@ command_funcs = {
     ['머리바꾸기'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:look(value)
+        me:look(tonumber(value))
         return true
     end,
 
     ['머리염색'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:color(value)
+        me:color(tonumber(value))
         return true
     end,
 
     ['갑옷염색'] = 
     function (me, args)
         local value = table.unpack(args)
-        me:armor_color(value)
+        me:armor_color(tonumber(value))
         return true
     end,
 
@@ -303,6 +303,7 @@ command_funcs = {
     ['내구도'] = 
     function (me, args)
         local percent = table.unpack(args)
+        percent = tonumber(percent)
         percent = math.max(0, math.min(100, tonumber(percent)))
         for parts, equipment in pairs(me:equipments()) do
             local model = equipment:model()
@@ -321,7 +322,7 @@ command_funcs = {
     ['sleep'] = 
     function (me, args)
         local time = table.unpack(args)
-        sleep(time)
+        sleep(tonumber(time))
         me:message('done')
         return true
     end,
@@ -329,14 +330,14 @@ command_funcs = {
     ['광고'] = 
     function (me, args)
         local width, height, url, time = table.unpack(args)
-        me:ad(width, height, url, time)
+        me:ad(tonumber(width), tonumber(height), url, tonumber(time))
         return true
     end,
 
     ['웹'] = 
     function (me, args)
         local type, url, message = table.unpack(args)
-        me:web(type, url)
+        me:web(tonumber(type), url)
         return true
     end,
 

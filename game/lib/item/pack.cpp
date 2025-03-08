@@ -39,6 +39,7 @@ bool fb::game::pack::active()
     if (this->_durability <= 0)
         return false;
 
+    fb::game::item::active();
     this->_durability--;
     if (this->_durability <= 0)
         this->count(0);

@@ -144,6 +144,8 @@ bool fb::game::equipment::active()
         throw std::runtime_error("입을 수 없는 물건입니다.");
     }
 
+    fb::game::item::active();
+
     // 인벤토리에서는 사라지지만 소유상태는 유지되므로
     // id를 유지시켜줘야 한다.
     this->_owner->items.remove(*this);

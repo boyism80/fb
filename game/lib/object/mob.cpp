@@ -204,21 +204,10 @@ life* mob::repair_target()
 {
     this->assert_thread();
 
-    try
-    {
-        if (this->_target == nullptr)
-            throw nullptr;
+    auto lost_target = this->_target == nullptr || this->context.alive(*this->_target) == false ||
+                       this->_target->alive() == false || this->sight(*this->_target) == false;
 
-        if (this->context.alive(*this->_target) == false)
-            throw nullptr;
-
-        if (this->_target->alive() == false)
-            throw nullptr;
-
-        if (this->sight(*this->_target) == false)
-            throw nullptr;
-    }
-    catch (...)
+    if (lost_target)
     {
         auto& model = this->based<fb::model::mob>();
         if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)

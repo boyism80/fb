@@ -64,7 +64,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 #endif
         lua->func("on_login");
         lua->pushobject(ch);
-        lua->call(1);
+        std::ignore = lua->call(1);
     }
 
     ch->update(STATE_LEVEL::LEVEL_MAX);

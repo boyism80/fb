@@ -142,7 +142,16 @@ bool item::active()
     if (this->empty())
         std::ignore = this->_owner->items.remove(*this);
 
-    return false;
+    auto& model = this->based<fb::model::item>();
+    if (model.script.empty())
+        return false;
+
+    if (model.on_active.empty())
+        return false;
+
+    auto listener = this->get_listener<fb::game::item>();
+    listener->on_item_active(*this->_owner, *this);
+    return true;
 }
 
 item* item::split(uint16_t count)
