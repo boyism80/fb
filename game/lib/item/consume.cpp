@@ -17,6 +17,7 @@ bool fb::game::consume::active()
     if (this->_count == 0)
         return false;
 
+    fb::game::item::active();
     this->_count--;
 
     auto listener = this->_owner->get_listener<fb::game::character>();
@@ -28,5 +29,6 @@ bool fb::game::consume::active()
 
     if (this->empty())
         std::ignore = this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
+
     return true;
 }
