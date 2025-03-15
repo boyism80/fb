@@ -305,6 +305,7 @@ int fb::game::life::builtin_cast(lua_State* L)
     if (x == nullptr)
         return 0;
 
+    auto count = 2;
 #if defined DEBUG | defined _DEBUG
     x->load("scripts/spell.lua");
     x->load(spell->script);
@@ -312,16 +313,18 @@ int fb::game::life::builtin_cast(lua_State* L)
     x->func(spell->cast);
     x->pushobject(obj);
 
-    if (argc > 2)
+    if (spell->type == SPELL_TYPE::TARGET)
     {
         if (you != nullptr)
             x->pushobject(you);
         else
             x->pushnil();
+
+        count++;
     }
 
     x->pushobject(spell);
-    std::ignore = x->call(argc);
+    std::ignore = x->call(count);
     return 0;
 }
 
