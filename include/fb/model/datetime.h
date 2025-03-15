@@ -257,7 +257,7 @@ private:
     boost::posix_time::ptime _ptime;
 
 public:
-    datetime() : _ptime(boost::posix_time::second_clock::local_time())
+    datetime() : _ptime(boost::posix_time::microsec_clock::local_time())
     {}
 
     datetime(const std::string& f) : _ptime(boost::posix_time::time_from_string(f))

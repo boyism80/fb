@@ -51,16 +51,15 @@ void fb::thread::handle_idle()
     auto now = fb::model::datetime();
     for (int i = this->_timers.size() - 1; i >= 0; i--)
     {
-        auto timer   = this->_timers[i].get();
-        auto elapsed = fb::model::datetime() - timer->begin;
-        if (timer->duration > elapsed)
+        auto timer = this->_timers[i].get();
+        if (now < timer->begin + timer->duration)
             continue;
 
         auto disposable = timer->disposable;
         auto fn         = fb::timer::handle_callback_type{timer->fn};
-        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, disposable](auto result) {
+        async::awaitable_then(fn(now, this->_thread.get_id()), [timer, disposable, now](auto result) {
             if (!disposable)
-                timer->begin = fb::model::datetime();
+                timer->begin = now;
         });
 
         if (disposable)
