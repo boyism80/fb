@@ -126,20 +126,20 @@ bool mob::action()
         this->_attack_thread = fb::lua::new_context();
         if (this->_attack_thread == nullptr)
             return false;
+    }
 
 #if defined DEBUG | defined _DEBUG
-        this->_attack_thread->load(model.script);
+    this->_attack_thread->load(model.script);
 #endif
-        this->_attack_thread->func(model.on_attack);
-        this->_attack_thread->pushobject(this);
+    this->_attack_thread->func(model.on_attack);
+    this->_attack_thread->pushobject(this);
 
-        if (this->_target != nullptr)
-            this->_attack_thread->pushobject(this->_target);
-        else
-            this->_attack_thread->pushnil();
+    if (this->_target != nullptr)
+        this->_attack_thread->pushobject(this->_target);
+    else
+        this->_attack_thread->pushnil();
 
-        std::ignore = this->_attack_thread->call(2);
-    }
+    std::ignore = this->_attack_thread->call(2);
 
     auto stop = false;
     switch (this->_attack_thread->state())
@@ -150,7 +150,8 @@ bool mob::action()
         break;
 
     default:
-        stop                 = this->_attack_thread->toboolean(-1);
+        stop = this->_attack_thread->toboolean(-1);
+
         this->_attack_thread = nullptr;
         break;
     }

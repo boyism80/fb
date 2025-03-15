@@ -7,7 +7,6 @@ function ON_ACTIVE_4003(me, item)
     local i = math.random(1, #maps)
     local map = maps[i]
 
-    if me:map(map) == nil then
-        me:rmitem(item, 1, ITEM_DELETE_TYPE_REDUCE)
-    end
+    me:rmitem(item, 1, ITEM_DELETE_TYPE_REDUCE)
+    me:map(map)
 end
