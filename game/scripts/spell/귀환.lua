@@ -23,9 +23,8 @@ function ON_CAST_5(me, spell)
     math.randomseed(seed())
     local i = math.random(1, #maps)
     local map = maps[i]
-    error = me:map(map)
-    if error ~= nil then
-        return me:message(error)
+    if me:map(map) ~= nil then
+        return
     end
 
     me:sound(sound)

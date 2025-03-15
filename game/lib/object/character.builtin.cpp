@@ -199,6 +199,7 @@ int character::builtin_item(lua_State* L)
     auto ch  = lua->touserdata<character>(1);
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
+
     auto item = (fb::game::item*)nullptr;
     if (lua->is_num(2))
     {
