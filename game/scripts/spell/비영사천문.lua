@@ -39,5 +39,6 @@ function ON_CAST_1(me, spell, message)
         local x = math.random(left, right)
         local y = math.random(top, bottom)
         me:map(dest:name(), x, y)
+        me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
     end
 end

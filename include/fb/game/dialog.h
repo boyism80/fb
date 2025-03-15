@@ -77,12 +77,12 @@ struct listener
      * @brief      Called on dialog.
      *
      * @param      me       { parameter_description }
-     * @param[in]  npc      The npc
+     * @param[in]  obj      The obj
      * @param[in]  message  The message
      * @param[in]  menus    The menus
      */
     virtual void on_dialog(character&                      me,
-                           const fb::model::npc&           npc,
+                           const fb::model::object&        obj,
                            const std::string&              message,
                            const std::vector<std::string>& menus) = 0;
 
@@ -90,13 +90,13 @@ struct listener
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The object
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  button_prev  The button previous
      */
     virtual void on_dialog(character&                      me,
-                           const fb::model::npc&           npc,
+                           const fb::model::object&        obj,
                            const std::string&              message,
                            const std::vector<std::string>& menus,
                            bool                            button_prev) = 0;
@@ -105,14 +105,14 @@ struct listener
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  button_prev  The button previous
      * @param[in]  preset       The preset
      */
     virtual void on_dialog(character&                      me,
-                           const fb::model::npc&           npc,
+                           const fb::model::object&        obj,
                            const std::string&              message,
                            const std::vector<std::string>& menus,
                            bool                            button_prev,
@@ -121,54 +121,54 @@ struct listener
      * @brief      Called on dialog.
      *
      * @param      me          { parameter_description }
-     * @param[in]  npc         The npc
+     * @param[in]  obj         The obj
      * @param[in]  message     The message
      * @param[in]  item_slots  The item slots
      */
     virtual void on_dialog(character&                  me,
-                           const fb::model::npc&       npc,
+                           const fb::model::object&    obj,
                            const std::string&          message,
                            const std::vector<uint8_t>& item_slots) = 0;
     /**
      * @brief      Called on dialog.
      *
      * @param      me       { parameter_description }
-     * @param[in]  npc      The npc
+     * @param[in]  obj      The obj
      * @param[in]  message  The message
      * @param[in]  pairs    The pairs
      * @param[in]  pursuit  The pursuit
      */
-    virtual void on_dialog(character&            me,
-                           const fb::model::npc& npc,
-                           const std::string&    message,
-                           const item_pairs&     pairs,
-                           uint16_t              pursuit = 0xFFFF) = 0;
+    virtual void on_dialog(character&               me,
+                           const fb::model::object& obj,
+                           const std::string&       message,
+                           const item_pairs&        pairs,
+                           uint16_t                 pursuit = 0xFFFF) = 0;
     /**
      * @brief      Called on dialog.
      *
      * @param      me       { parameter_description }
-     * @param[in]  npc      The npc
+     * @param[in]  obj      The obj
      * @param[in]  message  The message
      */
-    virtual void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) = 0;
+    virtual void on_dialog(character& me, const fb::model::object& obj, const std::string& message) = 0;
     /**
      * @brief      Called on dialog.
      *
      * @param      me       { parameter_description }
-     * @param[in]  npc      The npc
+     * @param[in]  obj      The obj
      * @param[in]  message  The message
      * @param[in]  top      The top
      * @param[in]  bottom   The bottom
      * @param[in]  maxlen   The maxlen
      * @param[in]  prev     The previous
      */
-    virtual void on_dialog(character&            me,
-                           const fb::model::npc& npc,
-                           const std::string&    message,
-                           const std::string&    top,
-                           const std::string&    bottom,
-                           int                   maxlen = 0xFF,
-                           bool                  prev   = false) = 0;
+    virtual void on_dialog(character&               me,
+                           const fb::model::object& obj,
+                           const std::string&       message,
+                           const std::string&       top,
+                           const std::string&       bottom,
+                           int                      maxlen = 0xFF,
+                           bool                     prev   = false) = 0;
 };
 } // namespace fb::game::dialog
 #endif

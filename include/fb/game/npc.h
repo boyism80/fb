@@ -73,38 +73,6 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_input(lua_State* L);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_menu(lua_State* L);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_item(lua_State* L);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_slot(lua_State* L);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
     static int builtin_sell(lua_State* L);
 
     /**

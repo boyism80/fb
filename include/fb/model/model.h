@@ -4315,6 +4315,7 @@ DECLARE_OBJECT_INHERIT
 DECLARE_OBJECT_FIELDS
 #else
 public:
+    const uint32_t id;
     const std::string name;
     const uint16_t look;
     const uint8_t color;
@@ -4328,6 +4329,7 @@ public:
 #ifdef DECLARE_OBJECT_CONSTRUCTOR
 DECLARE_OBJECT_CONSTRUCTOR
 #endif
+        id(fb::model::build<uint32_t>(json["id"])),
         name(fb::model::build<std::string>(json["name"])),
         look(fb::model::build<uint16_t>(json["look"])),
         color(fb::model::build<uint8_t>(json["color"]))
@@ -4858,7 +4860,6 @@ class item : public fb::model::object
 DECLARE_ITEM_FIELDS
 #else
 public:
-    const uint32_t id;
     const uint32_t price;
     const std::optional<uint32_t> deposit_price;
     const bool trade;
@@ -4876,7 +4877,6 @@ DECLARE_ITEM_CUSTOM_CONSTRUCTOR
 #else
 public:
     item(const Json::Value& json) : fb::model::object(json),
-        id(fb::model::build<uint32_t>(json["id"])),
         price(fb::model::build<uint32_t>(json["price"])),
         deposit_price(fb::model::build<std::optional<uint32_t>>(json["deposit_price"])),
         trade(fb::model::build<bool>(json["trade"])),
@@ -4938,7 +4938,6 @@ class npc : public fb::model::object
 DECLARE_NPC_FIELDS
 #else
 public:
-    const uint32_t id;
     const std::string script;
     const std::string click;
     const std::vector<uint32_t> sell;
@@ -4955,7 +4954,6 @@ DECLARE_NPC_CUSTOM_CONSTRUCTOR
 #else
 public:
     npc(const Json::Value& json) : fb::model::object(json),
-        id(fb::model::build<uint32_t>(json["id"])),
         script(fb::model::build<std::string>(json["script"])),
         click(fb::model::build<std::string>(json["click"])),
         sell(fb::model::build<std::vector<uint32_t>>(json["sell"])),
@@ -5080,7 +5078,6 @@ class mob : public fb::model::life
 DECLARE_MOB_FIELDS
 #else
 public:
-    const uint32_t id;
     const fb::model::enum_value::MOB_SIZE size;
     const fb::model::enum_value::MOB_ATTACK_TYPE attack_type;
     const range<uint32_t> damage;
@@ -5096,7 +5093,6 @@ DECLARE_MOB_CUSTOM_CONSTRUCTOR
 #else
 public:
     mob(const Json::Value& json) : fb::model::life(json),
-        id(fb::model::build<uint32_t>(json["id"])),
         size(fb::model::build<fb::model::enum_value::MOB_SIZE>(json["size"])),
         attack_type(fb::model::build<fb::model::enum_value::MOB_ATTACK_TYPE>(json["attack_type"])),
         damage(fb::model::build<range<uint32_t>>(json["damage"])),
@@ -5768,13 +5764,13 @@ DECLARE_ITEM_CONTAINER_EXTENSION
 #endif
 };
 
-class __life : public fb::model::array_container<fb::model::life>
+class __life : public fb::model::kv_container<uint32_t, fb::model::life>
 {
 public:
 #ifdef DECLARE_LIFE_CONTAINER_CUSTOM_CONSTRUCTOR
 DECLARE_LIFE_CONTAINER_CUSTOM_CONSTRUCTOR
 #else
-    __life() : fb::model::array_container<fb::model::life>(std::string("json/life.json"))
+    __life() : fb::model::kv_container<uint32_t, fb::model::life>(std::string("json/life.json"))
     { }
     __life(const __life&) = delete;
     ~__life() = default;
@@ -5896,13 +5892,13 @@ DECLARE_NPC_SPAWN_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
-class __object : public fb::model::array_container<fb::model::object>
+class __object : public fb::model::kv_container<uint32_t, fb::model::object>
 {
 public:
 #ifdef DECLARE_OBJECT_CONTAINER_CUSTOM_CONSTRUCTOR
 DECLARE_OBJECT_CONTAINER_CUSTOM_CONSTRUCTOR
 #else
-    __object() : fb::model::array_container<fb::model::object>(std::string("json/object.json"))
+    __object() : fb::model::kv_container<uint32_t, fb::model::object>(std::string("json/object.json"))
     { }
     __object(const __object&) = delete;
     ~__object() = default;

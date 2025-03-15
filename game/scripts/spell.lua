@@ -584,8 +584,8 @@ function spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
     end
 
     if buff_cast(me, me, spell, mp, sound, effect) then
-    
-        me:buff(spell, buff_time, look)
+        me:buff(spell, buff_time)
+        me:disguise(look)
     end
 end
 

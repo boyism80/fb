@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::model::npc&               npc;
+    const fb::model::object&            object;
     const std::vector<std::string>      lists;
     const std::string                   message;
     const bool                          button_prev;
@@ -29,7 +29,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_list(const fb::model::npc&           npc,
+    dialog_list(const fb::model::object&        object,
                 const std::vector<std::string>& list,
                 const std::string&              message,
                 bool                            button_prev,

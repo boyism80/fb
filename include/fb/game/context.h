@@ -1833,13 +1833,13 @@ public:
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  interaction  The interaction
      */
     void on_dialog(character&                      me,
-                   const fb::model::npc&           npc,
+                   const fb::model::object&        obj,
                    const std::string&              message,
                    const std::vector<std::string>& menus) override final;
 
@@ -1847,14 +1847,14 @@ public:
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  button_prev  The button previous
      * @param[in]  interaction  The interaction
      */
     void on_dialog(character&                      me,
-                   const fb::model::npc&           npc,
+                   const fb::model::object&        obj,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev) override final;
@@ -1863,15 +1863,14 @@ public:
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The object
      * @param[in]  message      The message
      * @param[in]  menus        The menus
      * @param[in]  button_prev  The button previous
      * @param[in]  preset       The preset
-     * @param[in]  interaction  The interaction
      */
     void on_dialog(character&                      me,
-                   const fb::model::npc&           npc,
+                   const fb::model::object&        obj,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
@@ -1881,13 +1880,13 @@ public:
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  item_slots   The item slots
      * @param[in]  interaction  The interaction
      */
     void on_dialog(character&                  me,
-                   const fb::model::npc&       npc,
+                   const fb::model::object&    obj,
                    const std::string&          message,
                    const std::vector<uint8_t>& item_slots) override final;
 
@@ -1895,14 +1894,14 @@ public:
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  pairs        The pairs
      * @param[in]  pursuit      The pursuit
      * @param[in]  interaction  The interaction
      */
     void on_dialog(character&                          me,
-                   const fb::model::npc&               npc,
+                   const fb::model::object&            obj,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
                    uint16_t                            pursuit = 0xFFFF) override final;
@@ -1911,17 +1910,17 @@ public:
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character& me, const fb::model::npc& npc, const std::string& message) override final;
+    void on_dialog(character& me, const fb::model::object& obj, const std::string& message) override final;
 
     /**
      * @brief      Called on dialog.
      *
      * @param      me           { parameter_description }
-     * @param[in]  npc          The npc
+     * @param[in]  obj          The obj
      * @param[in]  message      The message
      * @param[in]  top          The top
      * @param[in]  bottom       The bottom
@@ -1929,13 +1928,13 @@ public:
      * @param[in]  prev         The previous
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character&            me,
-                   const fb::model::npc& npc,
-                   const std::string&    message,
-                   const std::string&    top,
-                   const std::string&    bottom,
-                   int                   maxlen = 0xFF,
-                   bool                  prev   = false) override final;
+    void on_dialog(character&               me,
+                   const fb::model::object& obj,
+                   const std::string&       message,
+                   const std::string&       top,
+                   const std::string&       bottom,
+                   int                      maxlen = 0xFF,
+                   bool                     prev   = false) override final;
 
 public:
     /**

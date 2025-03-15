@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::model::npc&               npc;
+    const fb::model::object&            obj;
     const fb::game::dialog::item_pairs& items;
     const std::string                   message;
     const uint16_t                      pursuit;
@@ -29,7 +29,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_item(const fb::model::npc&               npc,
+    dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
                 const std::string&                  message,
                 uint16_t                            pursuit     = 0xFFFF,

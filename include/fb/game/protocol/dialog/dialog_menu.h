@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::model::npc&               npc;
+    const fb::model::object&            obj;
     const std::vector<std::string>      menus;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
@@ -28,7 +28,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_menu(const fb::model::npc&           npc,
+    dialog_menu(const fb::model::object&        obj,
                 const std::vector<std::string>& menus,
                 const std::string&              message,
                 fb::game::dialog::interaction   interaction = fb::game::dialog::interaction::MENU);

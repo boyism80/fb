@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::model::npc&               npc;
+    const fb::model::object&            obj;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
@@ -28,7 +28,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_slot(const fb::model::npc&         npc,
+    dialog_slot(const fb::model::object&      obj,
                 const std::vector<uint8_t>&   slots,
                 const std::string&            message,
                 fb::game::dialog::interaction interaction = fb::game::dialog::interaction::SLOT);

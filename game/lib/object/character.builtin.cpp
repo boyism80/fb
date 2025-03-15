@@ -65,6 +65,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"ad",                  character::builtin_ad},
 {"web",                 character::builtin_web},
 {"birthday",            character::builtin_birthday},
+{"active",              character::builtin_active},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* L)
@@ -1791,6 +1792,30 @@ int character::builtin_birthday(lua_State* L)
             ch->birthday(value);
         }
     });
+}
+
+int character::builtin_active(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    auto item = lua->touserdata<fb::game::item>(2);
+    if (item == nullptr)
+        return 0;
+
+    auto slot = ch->items.index(*item);
+    if (slot == 0xFF)
+        return 0;
+
+    ch->items.active(slot);
+    return 0;
 }
 
 int character::builtin_send_mail(lua_State* L)
