@@ -108,25 +108,24 @@ mob::~mob()
         this->_rezen->decrease();
 }
 
-bool mob::action()
+void mob::action()
 {
     this->assert_thread();
-
     this->repair_target();
 
     auto& model = this->based<fb::model::mob>();
     if (model.script.empty())
-        return false;
+        return;
 
     if (model.on_attack.empty())
-        return false;
+        return;
 
+    if (this->_attack_thread != nullptr)
+        return;
+
+    this->_attack_thread = fb::lua::new_context();
     if (this->_attack_thread == nullptr)
-    {
-        this->_attack_thread = fb::lua::new_context();
-        if (this->_attack_thread == nullptr)
-            return false;
-    }
+        return;
 
 #if defined DEBUG | defined _DEBUG
     this->_attack_thread->load(model.script);
@@ -139,24 +138,9 @@ bool mob::action()
     else
         this->_attack_thread->pushnil();
 
-    std::ignore = this->_attack_thread->call(2);
-
-    auto stop = false;
-    switch (this->_attack_thread->state())
-    {
-    case LUA_PENDING:
-    case LUA_YIELD:
-        stop = true;
-        break;
-
-    default:
-        stop = this->_attack_thread->toboolean(1);
-
+    async::awaitable_then(this->_attack_thread->call(2), [this](auto result) {
         this->_attack_thread = nullptr;
-        break;
-    }
-
-    return stop;
+    });
 }
 
 const fb::model::datetime& mob::action_time() const
@@ -300,6 +284,9 @@ bool mob::move_step(const fb::model::point16_t& position)
 void mob::AI(const fb::model::datetime& now)
 {
     this->assert_thread();
+
+    if (this->_attack_thread != nullptr)
+        return;
 
     if (ENUM_IN(this->crowd_control(), CROWD_CONTROL::SIGHT))
         return;

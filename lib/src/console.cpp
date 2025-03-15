@@ -95,7 +95,7 @@ void console::newline()
     if (!_tty)
         return;
 
-    _y            += (_comment_line + 1);
+    _y            += 1;
     _comment_line  = 0;
     std::cout << std::endl;
 }

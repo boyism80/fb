@@ -63,6 +63,14 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         scripts.insert(v.script);
     }
 
+#if defined DEBUG | defined _DEBUG
+    for (auto& script : scripts)
+    {
+        if (std::filesystem::exists(script) == false)
+            fb::console::comment("  - {} 파일을 찾을 수 없습니다.", script);
+    }
+#endif
+
     static auto& ist = fb::lua::context_pool::ist();
     for (auto& [_, root] : ist)
     {

@@ -2,6 +2,7 @@
 #define __WORKER_H__
 
 #include <fb/model/loader.h>
+#include <filesystem>
 
 namespace fb { namespace game {
 

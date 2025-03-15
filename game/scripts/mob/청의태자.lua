@@ -2,11 +2,11 @@
 function ON_MOB_ATTACK_1095(me, you)
     math.randomseed(seed())
     if math.random() > 0.01 then
-        return false
+        return
     end
     
     if you == nil then
-        return true
+        return
     end
 
     local ptr_me = me:ptr()
@@ -17,19 +17,19 @@ function ON_MOB_ATTACK_1095(me, you)
     sleep(1000);
     
     if not assert_alive(me) then
-        return false
+        return
     end
     me:chat('그대 이름은 청룡일지다...')
     sleep(1000);
     
     if not assert_alive(me) then
-        return false
+        return
     end
     me:chat('나 청의태자의 이름으로 말하노니...')
     sleep(1000);
 
     if not assert_alive(me) then
-        return false
+        return
     end
     me:chat('네 포효를 적에게 발산하라!!')
     if assert_alive(you) and me:near(you) then
@@ -40,5 +40,4 @@ function ON_MOB_ATTACK_1095(me, you)
     me:chat('청룡마령참!!', 0x03)
     
     sleep(1000);
-    return true
 end

@@ -1,0 +1,4 @@
+-- 자명비 공격
+function ON_MOB_ATTACK_375(me, you)
+
+end

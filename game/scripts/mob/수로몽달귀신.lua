@@ -1,0 +1,4 @@
+-- 수로몽달귀신 공격
+function ON_MOB_ATTACK_1222(me, you)
+
+end
