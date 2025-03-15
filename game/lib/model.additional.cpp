@@ -23,6 +23,11 @@ IMPLEMENT_LUA_EXTENSION(fb::model::object, "fb.model.object")
 {"look",                fb::model::object::builtin_look},
 {"color",               fb::model::object::builtin_color},
 {"dialog",              fb::model::object::builtin_dialog},
+{"list",                fb::model::object::builtin_list},
+{"input",               fb::model::object::builtin_input},
+{"menu",                fb::model::object::builtin_menu},
+{"item",                fb::model::object::builtin_item},
+{"slot",                fb::model::object::builtin_slot},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
@@ -35,11 +40,6 @@ END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(fb::model::npc, "fb.model.npc")
-{"input",               fb::model::npc::builtin_input},
-{"menu",                fb::model::npc::builtin_menu},
-{"list",                fb::model::npc::builtin_list},
-{"item",                fb::model::npc::builtin_item},
-{"slot",                fb::model::npc::builtin_slot},
 {"sell",                fb::model::npc::builtin_sell},
 {"sell_price",          fb::model::npc::builtin_sell_price},
 {"buy",                 fb::model::npc::builtin_buy},

@@ -18,7 +18,7 @@ public:
 
 public:
 #ifndef BOT
-    const fb::model::npc&               npc;
+    const fb::model::object&            obj;
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const std::string                   top, bottom;
@@ -31,7 +31,7 @@ public:
 
 public:
 #ifndef BOT
-    dialog_input_ext(const fb::model::npc&         npc,
+    dialog_input_ext(const fb::model::object&      obj,
                      const std::string&            message,
                      const std::string&            top,
                      const std::string&            bottom,

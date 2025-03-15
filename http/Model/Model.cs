@@ -1173,6 +1173,8 @@ namespace Fb.Model
 
     public class Object
     {
+        [JsonProperty("id")]
+        public uint Id { get; set; }
         [JsonProperty("name")]
         public string Name { get; set; }
         [JsonProperty("look")]
@@ -1329,8 +1331,6 @@ namespace Fb.Model
 
     public class Item : Fb.Model.Object
     {
-        [JsonProperty("id")]
-        public uint Id { get; set; }
         [JsonProperty("price")]
         public uint Price { get; set; }
         [JsonProperty("deposit_price")]
@@ -1369,8 +1369,6 @@ namespace Fb.Model
 
     public class Npc : Fb.Model.Object
     {
-        [JsonProperty("id")]
-        public uint Id { get; set; }
         [JsonProperty("script")]
         public string Script { get; set; }
         [JsonProperty("click")]
@@ -1443,8 +1441,6 @@ namespace Fb.Model
 
     public class Mob : Fb.Model.Life
     {
-        [JsonProperty("id")]
-        public uint Id { get; set; }
         [JsonProperty("size")]
         public Fb.Model.EnumValue.MobSize Size { get; set; }
         [JsonProperty("attack_type")]
@@ -2028,7 +2024,7 @@ namespace Fb.Model
         { }
         public ItemTable Item { get; private set; } = new ItemTable();
         [Table("json/life.json")]
-        public partial class LifeTable : ArrayContainer<Life>
+        public partial class LifeTable : KeyValueContainer<uint, Life>
         { }
         public LifeTable Life { get; private set; } = new LifeTable();
         [Table("json/map.json")]
@@ -2060,7 +2056,7 @@ namespace Fb.Model
         { }
         public NpcSpawnAttributeTable NpcSpawnAttribute { get; private set; } = new NpcSpawnAttributeTable();
         [Table("json/object.json")]
-        public partial class ObjectTable : ArrayContainer<Object>
+        public partial class ObjectTable : KeyValueContainer<uint, Object>
         { }
         public ObjectTable Object { get; private set; } = new ObjectTable();
         [Table("json/promotion.json")]

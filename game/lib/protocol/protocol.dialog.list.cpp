@@ -3,12 +3,12 @@
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-dialog_list::dialog_list(const fb::model::npc&           npc,
+dialog_list::dialog_list(const fb::model::object&        object,
                          const std::vector<std::string>& lists,
                          const std::string&              message,
                          bool                            button_prev,
                          fb::game::dialog::interaction   interaction) :
-    npc(npc),
+    object(object),
     lists(lists),
     message(message),
     button_prev(button_prev),
@@ -24,13 +24,13 @@ async::task<void> dialog_list::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(2);
     writer.write<uint8_t>(static_cast<uint8_t>(interaction));
     writer.write<uint32_t>(0x01);
-    writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
+    writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
-    writer.write<uint16_t>(this->npc.look);
-    writer.write<uint8_t>(this->npc.color);
-    writer.write<uint8_t>(this->npc.look > 0xBFFF ? 0x02 : 0x01);
-    writer.write<uint16_t>(this->npc.look);
-    writer.write<uint8_t>(this->npc.color);
+    writer.write<uint16_t>(this->object.look);
+    writer.write<uint8_t>(this->object.color);
+    writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
+    writer.write<uint16_t>(this->object.look);
+    writer.write<uint8_t>(this->object.color);
     writer.write<uint32_t>(1);
     writer.write<uint8_t>(this->button_prev); // button prev
     writer.write<uint8_t>(1);

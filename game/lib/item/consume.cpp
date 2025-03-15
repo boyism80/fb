@@ -20,12 +20,11 @@ bool fb::game::consume::active()
     fb::game::item::active();
     this->_count--;
 
+    this->_owner->action(ACTION::EAT, DURATION::EAT);
+    this->_owner->sound(SOUND::EAT);
     auto listener = this->_owner->get_listener<fb::game::character>();
     if (listener != nullptr)
-    {
         listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
-        listener->on_action(*this->_owner, ACTION::EAT, DURATION::EAT, static_cast<uint8_t>(SOUND::EAT));
-    }
 
     if (this->empty())
         std::ignore = this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
