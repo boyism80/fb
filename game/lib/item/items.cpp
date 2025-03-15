@@ -1,4 +1,5 @@
 #include <fb/game/character.h>
+#include <fb/game/context.h>
 #include <fb/game/item.h>
 #include <fb/game/map.h>
 
@@ -200,8 +201,8 @@ uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
 
 fb::game::item* fb::game::items::active(uint8_t index)
 {
-    auto listener = this->_owner.get_listener<fb::game::character>();
-    auto error    = std::string();
+    auto  listener = this->_owner.get_listener<fb::game::character>();
+    auto& context  = this->_owner.context;
 
     try
     {
@@ -212,6 +213,10 @@ fb::game::item* fb::game::items::active(uint8_t index)
             return nullptr;
 
         item->active();
+        if (context.alive(*item) == false)
+        {
+            return nullptr;
+        }
         if (item->empty())
         {
             std::ignore = item->destroy();
@@ -519,7 +524,6 @@ fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
 fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-    auto error    = std::string();
 
     try
     {
@@ -552,7 +556,6 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count)
 void fb::game::items::pickup(bool boost)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-    auto error    = std::string();
 
     try
     {
@@ -600,7 +603,6 @@ void fb::game::items::pickup(bool boost)
 bool fb::game::items::throws(uint8_t index)
 {
     auto listener = this->_owner.get_listener<fb::game::character>();
-    auto error    = std::string();
 
     try
     {

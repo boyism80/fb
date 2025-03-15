@@ -36,11 +36,10 @@ command_funcs = {
             return false
         end
 
-        local error = false
         if x ~= nil and y ~= nil then
-            error = me:map(map, tonumber(x), tonumber(y))
+            me:map(map, tonumber(x), tonumber(y))
         else
-            error = me:map(map)
+            me:map(map)
         end
         return true
     end,
@@ -194,7 +193,7 @@ command_funcs = {
     ['아이템생성'] = 
     function (me, args)
         local name, count = table.unpack(args)
-        me:mkitem(name, count)
+        me:mkitem(name, tonumber(count))
         return true
     end,
 
@@ -265,7 +264,7 @@ command_funcs = {
             me:message(string.format('타일 : %d\n오브젝트 : %d\n블록 : %s', id, obj, blocked), MESSAGE_TYPE_POPUP)
         else
             local value = table.unpack(args)
-            map:tile(x, y, value)
+            map:tile(x, y, tonumber(value))
         end
         return true
     end,
@@ -291,10 +290,15 @@ command_funcs = {
         local name, map, x, y = table.unpack(args)
         if map == nil then
             map = me:map()
+        else
+            map = name2map(name)
         end
 
         if x == nil or y == nil then
             x, y = me:position()
+        else
+            x = tonumber(x)
+            y = tonumber(y)
         end
         mknpc(name, map, x, y)
         return true

@@ -1,4 +1,5 @@
 -- 도삭산500층비서 사용 스크립트
 function ON_ACTIVE_4014(me, item)
-
+	me:rmitem(item, 1, ITEM_DELETE_TYPE_REDUCE)
+    me:map('도삭산500층주막')
 end

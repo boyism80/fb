@@ -344,10 +344,8 @@ public:
 public:
     /**
      * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
      */
-    bool action();
+    void action();
 
     /**
      * @brief      { function_description }
