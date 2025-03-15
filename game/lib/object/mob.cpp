@@ -150,7 +150,7 @@ bool mob::action()
         break;
 
     default:
-        stop = this->_attack_thread->toboolean(-1);
+        stop = this->_attack_thread->toboolean(1);
 
         this->_attack_thread = nullptr;
         break;
