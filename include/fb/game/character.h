@@ -1995,6 +1995,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_active(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_creature(lua_State* L);
 #pragma endregion
 };
 

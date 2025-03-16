@@ -7,11 +7,13 @@ dialog::dialog(const fb::model::object&      object,
                const std::string&            message,
                bool                          button_prev,
                bool                          button_next,
+               uint32_t                      sequence,
                fb::game::dialog::interaction interaction) :
     object(object),
     message(message),
     button_prev(button_prev),
     button_next(button_next),
+    sequence(sequence),
     interaction(interaction)
 { }
 
@@ -19,8 +21,9 @@ dialog::dialog(const fb::game::object&       object,
                const std::string&            message,
                bool                          button_prev,
                bool                          button_next,
+               uint32_t                      sequence,
                fb::game::dialog::interaction interaction) :
-    dialog(object.based(), message, button_prev, button_next, interaction)
+    dialog(object.based(), message, button_prev, button_next, sequence, interaction)
 { }
 #endif
 
@@ -31,7 +34,7 @@ async::task<void> dialog::serialize(fb::stream_writer<big_endian>& writer) const
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x00);                                    // unknown
     writer.write<uint8_t>(static_cast<uint8_t>(this->interaction)); // interaction
-    writer.write<uint32_t>(0x01);
+    writer.write<uint32_t>(this->sequence);
     writer.write<uint8_t>(this->object.look > 0xBFFF ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(this->object.look);

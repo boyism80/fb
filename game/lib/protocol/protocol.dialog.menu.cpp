@@ -6,10 +6,12 @@ namespace fb::protocol::game::response {
 dialog_menu::dialog_menu(const fb::model::object&        obj,
                          const std::vector<std::string>& menus,
                          const std::string&              message,
+                         uint32_t                        sequence,
                          fb::game::dialog::interaction   interaction) :
     obj(obj),
     menus(menus),
     message(message),
+    sequence(sequence),
     interaction(interaction)
 { }
 #endif
@@ -21,7 +23,7 @@ async::task<void> dialog_menu::serialize(fb::stream_writer<big_endian>& writer) 
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(static_cast<uint8_t>(interaction));
-    writer.write<uint32_t>(0x01);
+    writer.write<uint32_t>(this->sequence);
     writer.write<uint8_t>(this->obj.look > 0xBFFF ? 0x02 : 0x01);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(this->obj.look);

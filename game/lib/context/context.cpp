@@ -754,9 +754,6 @@ void context::handle_click_npc(character& ch, npc& npc)
     if (model.script.empty())
         return;
 
-    // ch.dialog.release();
-
-    // auto lua = ch.dialog.new_context();
     auto lua = fb::lua::new_context();
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/npc.lua");
@@ -764,7 +761,7 @@ void context::handle_click_npc(character& ch, npc& npc)
 #endif
     lua->func(model.click);
     lua->pushobject(ch);
-    lua->pushobject(npc.based<fb::model::npc>());
+    lua->pushobject(npc);
     std::ignore = lua->call(2);
 }
 

@@ -23,6 +23,7 @@ public:
     const bool                          button_prev;
     const bool                          button_next;
     const fb::game::dialog::interaction interaction;
+    const uint32_t                      sequence;
 #else
 
 #endif
@@ -33,12 +34,14 @@ public:
            const std::string&            message,
            bool                          button_prev,
            bool                          button_next,
+           uint32_t                      sequence    = 0xFFFFFFFD,
            fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
 
     dialog(const fb::game::object&       object,
            const std::string&            message,
            bool                          button_prev,
            bool                          button_next,
+           uint32_t                      sequence    = 0xFFFFFFFD,
            fb::game::dialog::interaction interaction = fb::game::dialog::interaction::NORMAL);
 #else
     dialog() = default;

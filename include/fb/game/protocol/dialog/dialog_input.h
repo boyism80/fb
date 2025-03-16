@@ -22,6 +22,7 @@ public:
     const std::vector<uint8_t>          slots;
     const std::string                   message;
     const fb::game::dialog::interaction interaction;
+    const uint32_t                      sequence;
 #else
 
 #endif
@@ -30,6 +31,7 @@ public:
 #ifndef BOT
     dialog_input(const fb::model::object&      obj,
                  const std::string&            message,
+                 uint32_t                      sequence    = 0xFFFFFFFD,
                  fb::game::dialog::interaction interaction = fb::game::dialog::interaction::INPUT);
 #else
     dialog_input() = default;

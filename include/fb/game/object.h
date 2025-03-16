@@ -15,13 +15,37 @@ using namespace fb::model::enum_value;
 
 namespace fb::game {
 
+/**
+ * @brief      This class describes a context.
+ */
 class context;
+/**
+ * @brief      This class describes a map of .
+ */
 class map;
+/**
+ * @brief      This class describes a character.
+ */
 class character;
+/**
+ * @brief      This class describes buffs.
+ */
 class buffs;
+/**
+ * @brief      This class describes objects.
+ */
 class objects;
+/**
+ * @brief      This class describes items.
+ */
 class items;
+/**
+ * @brief      This class describes a sector.
+ */
 class sector;
+/**
+ * @brief      This class describes sectors.
+ */
 class sectors;
 
 /**
@@ -30,9 +54,15 @@ class sectors;
 class object : public fb::thread_switchable
 {
 public:
+    /**
+     * @brief      { struct_description }
+     */
     struct listener;
 
 public:
+    /**
+     * @brief      { struct_description }
+     */
     struct initial_params;
 
 public:
@@ -585,6 +615,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -594,6 +625,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -603,6 +635,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -612,6 +645,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -621,6 +655,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -630,6 +665,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -639,6 +675,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -648,6 +685,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -657,6 +695,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -666,6 +705,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -675,6 +715,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -684,6 +725,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -693,6 +735,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -702,6 +745,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -711,6 +755,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -720,6 +765,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -729,6 +775,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -738,6 +785,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -747,6 +795,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -756,6 +805,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -765,6 +815,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -774,6 +825,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -783,6 +835,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -792,6 +845,7 @@ public:
     /**
      * @brief      { function_description }
      *
+     * @param      L     { parameter_description }
      * @param      lua   The lua
      *
      * @return     { description_of_the_return_value }
@@ -801,31 +855,52 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param      lua   The lua
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_dialog(lua_State* L);
+    
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_list(lua_State* L);
+    
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
     static int builtin_input(lua_State* L);
+    
     /**
      * @brief      { function_description }
      *
-     * @param      lua   The lua
+     * @param      L     { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
     static int builtin_menu(lua_State* L);
+    
     /**
      * @brief      { function_description }
      *
-     * @param      lua   The lua
+     * @param      L     { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
     static int builtin_item(lua_State* L);
+    
     /**
      * @brief      { function_description }
      *
-     * @param      lua   The lua
+     * @param      L     { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */

@@ -23,6 +23,7 @@ public:
     const std::string                   message;
     const uint16_t                      pursuit;
     const fb::game::dialog::interaction interaction;
+    const uint32_t                      sequence;
 #else
 
 #endif
@@ -33,6 +34,7 @@ public:
                 const fb::game::dialog::item_pairs& items,
                 const std::string&                  message,
                 uint16_t                            pursuit     = 0xFFFF,
+                uint32_t                            sequence    = 0xFFFFFFFD,
                 fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
 #else
     dialog_item() = default;

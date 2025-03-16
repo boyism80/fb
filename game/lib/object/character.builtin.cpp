@@ -66,6 +66,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"web",                 character::builtin_web},
 {"birthday",            character::builtin_birthday},
 {"active",              character::builtin_active},
+{"creature",            character::builtin_creature},
 END_LUA_EXTENSION; // clang-format on
 
 int character::builtin_look(lua_State* L)
@@ -1622,9 +1623,31 @@ int character::builtin_rmspell(lua_State* L)
             ch->spells.remove(i);
         }
     }
-    else
+    else if (lua->is_num(2))
     {
         auto slot = lua->tointeger(2);
+        ch->spells.remove(slot);
+    }
+    else if (lua->is_str(2))
+    {
+        auto name = lua->tostring(2);
+        auto slot = uint8_t{0xFF};
+        for (int i = 0; i < CONTAINER_CAPACITY; i++)
+        {
+            auto spell = ch->spells[i];
+            if (spell == nullptr)
+                continue;
+
+            if (spell->model.name == name)
+            {
+                slot = i;
+                break;
+            }
+        }
+
+        if (slot == 0xFF)
+            return 0;
+
         ch->spells.remove(slot);
     }
 
@@ -1841,5 +1864,22 @@ int character::builtin_send_mail(lua_State* L)
 
     return ctx->builtin_async(*ch, lua, 0, [=]() -> async::task<void> {
         co_await ctx->send_mail(*ch, to, title, contents);
+    });
+}
+
+int character::builtin_creature(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    return ctx->builtin(*ch, lua, 1, [=]() {
+        lua->pushinteger(ch->creature());
     });
 }

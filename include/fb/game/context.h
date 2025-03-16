@@ -1827,7 +1827,8 @@ public:
                    const fb::model::object& object,
                    const std::string&       message,
                    bool                     button_prev,
-                   bool                     button_next) override final;
+                   bool                     button_next,
+                   uint32_t                 sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1841,7 +1842,8 @@ public:
     void on_dialog(character&                      me,
                    const fb::model::object&        obj,
                    const std::string&              message,
-                   const std::vector<std::string>& menus) override final;
+                   const std::vector<std::string>& menus,
+                   uint32_t                        sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1857,7 +1859,8 @@ public:
                    const fb::model::object&        obj,
                    const std::string&              message,
                    const std::vector<std::string>& menus,
-                   bool                            button_prev) override final;
+                   bool                            button_prev,
+                   uint32_t                        sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1874,7 +1877,8 @@ public:
                    const std::string&              message,
                    const std::vector<std::string>& menus,
                    bool                            button_prev,
-                   const dialog::preset&           preset) override final;
+                   const dialog::preset&           preset,
+                   uint32_t                        sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1888,7 +1892,8 @@ public:
     void on_dialog(character&                  me,
                    const fb::model::object&    obj,
                    const std::string&          message,
-                   const std::vector<uint8_t>& item_slots) override final;
+                   const std::vector<uint8_t>& item_slots,
+                   uint32_t                    sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1904,7 +1909,8 @@ public:
                    const fb::model::object&            obj,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
-                   uint16_t                            pursuit = 0xFFFF) override final;
+                   uint16_t                            pursuit  = 0xFFFF,
+                   uint32_t                            sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1914,7 +1920,10 @@ public:
      * @param[in]  message      The message
      * @param[in]  interaction  The interaction
      */
-    void on_dialog(character& me, const fb::model::object& obj, const std::string& message) override final;
+    void on_dialog(character&               me,
+                   const fb::model::object& obj,
+                   const std::string&       message,
+                   uint32_t                 sequence = 0xFFFFFFFD) override final;
 
     /**
      * @brief      Called on dialog.
@@ -1933,8 +1942,9 @@ public:
                    const std::string&       message,
                    const std::string&       top,
                    const std::string&       bottom,
-                   int                      maxlen = 0xFF,
-                   bool                     prev   = false) override final;
+                   int                      maxlen   = 0xFF,
+                   bool                     prev     = false,
+                   uint32_t                 sequence = 0xFFFFFFFD) override final;
 
 public:
     /**
