@@ -56,10 +56,10 @@ void context::on_dialog(character&                me,
                         const fb::model::object&  obj,
                         const std::string&        message,
                         const dialog::item_pairs& pairs,
-                        uint16_t                  pursuit,
-                        uint32_t                  sequence)
+                        uint32_t                  sequence,
+                        uint16_t                  pursuit)
 {
-    me.send(fb_resp::dialog_item(obj, pairs, message, pursuit, sequence));
+    me.send(fb_resp::dialog_item(obj, pairs, message, sequence, pursuit));
 }
 
 void context::on_dialog(character& me, const fb::model::object& obj, const std::string& message, uint32_t sequence)

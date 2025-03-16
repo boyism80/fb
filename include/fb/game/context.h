@@ -1909,8 +1909,8 @@ public:
                    const fb::model::object&            obj,
                    const std::string&                  message,
                    const fb::game::dialog::item_pairs& pairs,
-                   uint16_t                            pursuit  = 0xFFFF,
-                   uint32_t                            sequence = 0xFFFFFFFD) override final;
+                   uint32_t                            sequence = 0xFFFFFFFD,
+                   uint16_t                            pursuit  = 0xFFFF) override final;
 
     /**
      * @brief      Called on dialog.

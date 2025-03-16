@@ -35,7 +35,6 @@ function npc_appreciate(me, npc)
     end
 
     if me:hp() > 100 then
-        me:chat(me:hp())
         return true
     end
 
@@ -590,9 +589,9 @@ function npc_buy_item_price(me, npc, name)
     return false
 end
 
-function npc_buy_dialog(me, npc)
+function NPC_BUY_DIALOG(me, npc)
     local purchase_list = {}
-    for i, pair in pairs(pursuit_buy(npc:buy())) do
+    for i, pair in pairs(pursuit_buy(npc:model():buy())) do
         local item, price = table.unpack(pair)
         purchase_list[item:name()] = price
     end
@@ -609,7 +608,7 @@ function npc_buy_dialog(me, npc)
         end
     end
 
-::ROUTINE0000::
+::NPC_BUY_DIALOG_000::
     local slot = npc:slot(me, '뭘 팔래요?', slots)
     if slot == nil then
         return DIALOG_RESULT_NEXT
@@ -622,7 +621,7 @@ function npc_buy_dialog(me, npc)
     if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
         count = npc:input(me, '몇개나 파시겠어요?')
         if count == nil then
-            goto ROUTINE0000
+            goto NPC_BUY_DIALOG_000
         end
 
         count = tonumber(count)
@@ -649,9 +648,11 @@ function npc_buy_dialog(me, npc)
     return DIALOG_RESULT_NEXT
 end
 
-function npc_sell_dialog(me, npc)
-    local pursuit = npc:sell()
-    if #pursuit > 1 then
+function NPC_SELL_DIALOG(me, npc)
+    local pursuit = npc:model():sell()
+    if #pursuit == 0 then
+        pursuit = nil
+    elseif #pursuit > 1 then
         local menu = {}
         for _, sell in pairs(pursuit) do
             table.insert(menu, pursuit_sell_name(sell))
@@ -670,7 +671,7 @@ function npc_sell_dialog(me, npc)
     end
 
     local list = pursuit_sell(pursuit)
-::ROUTINE0002::
+::NPC_SELL_DIALOG_000::
     local selected = npc:item(me, '제가 파는 물건들입니다. 그림도 있고, 옆에 가격도 함께 드리니 잘 생각하시고 골라주세요.', list)
     if selected == nil then
         return DIALOG_RESULT_NEXT
@@ -682,7 +683,7 @@ function npc_sell_dialog(me, npc)
     if is_bundle then
         count = npc:input(me, '몇개나 사시겠어요?')
         if count == nil then
-            goto ROUTINE0002
+            goto NPC_SELL_DIALOG_000
         end
 
         count = tonumber(count)
@@ -753,7 +754,7 @@ end
 
 
 
-function npc_repair_dialog(me, npc)
+function NPC_REPAIR_DIALOG(me, npc)
     local items = repairable_slots(me)
     if items == nil then
         return npc:dialog(me, '고칠 물건이 없는데요', false, true)
@@ -794,7 +795,7 @@ end
 
 
 
-function npc_repair_all_dialog(me, npc)
+function NPC_REPAIR_ALL_DIALOG(me, npc)
     local items = repairable_slots(me)
     if items == nil then
         return npc:dialog(me, '고칠 물건이 없는데요', false, true)
@@ -838,7 +839,7 @@ end
 
 
 
-function npc_hold_money_dialog(me, npc)
+function NPC_HOLD_MONEY_DIALOG(me, npc)
     local count = npc:input(me, '얼마나 맡아드릴까요?')
     if count == nil then
         return DIALOG_RESULT_NEXT
@@ -867,7 +868,7 @@ end
 
 
 
-function npc_hold_item_dialog(me, npc)
+function NPC_HOLD_ITEM_DIALOG(me, npc)
     local slots = {}
     local items = {}
     local my_items = me:items()
@@ -932,7 +933,7 @@ end
 
 
 
-function npc_return_money_dialog(me, npc)
+function NPC_RETURN_MONEY_DIALOG(me, npc)
     local deposited_money = me:deposited_money()
     if deposited_money <= 0 then
         return npc:dialog(me, '돈을 보관하고 있지 않습니다.', false, true)
@@ -965,7 +966,7 @@ end
 
 
 
-function npc_return_item_dialog(me, npc)
+function NPC_RETURN_ITEM_DIALOG(me, npc)
     local list = {}
     for _, deposited_item in pairs(me:deposited_item()) do
         local model = deposited_item:model()
@@ -1017,7 +1018,7 @@ function npc_return_item_dialog(me, npc)
     end
 end
 
-function npc_rename_weapon_dialog(me, npc)
+function NPC_RENAME_WEAPON_DIALOG(me, npc)
     local slots = {}
     local items = {}
     for slot, item in pairs(me:items()) do
@@ -1028,33 +1029,33 @@ function npc_rename_weapon_dialog(me, npc)
         end
     end
 
-::RENAME_WEAPON_0001::
+::NPC_RENAME_WEAPON_DIALOG_001::
     local slot = npc:slot(me, '어떤 장비에 별칭을 부여하시겠어요?', slots)
     if slot == nil then
         return DIALOG_RESULT_NEXT
     end
 
     local weapon = items[slot]
-::RENAME_WEAPON_0002::
+::NPC_RENAME_WEAPON_DIALOG_002::
     local name = npc:input(me, '어떤 이름을 붙이고 싶으세요?')
     if name == nil then
-        goto RENAME_WEAPON_0001
+        goto NPC_RENAME_WEAPON_DIALOG_001
     end
 
     local cp949 = CP949(name)
     if #cp949 < 4 then
         npc:dialog(me, '이름이 너무 짧습니다.', false, true)
-        goto RENAME_WEAPON_0002
+        goto NPC_RENAME_WEAPON_DIALOG_002
     end
 
     if #cp949 > 32 then
         npc:dialog(me, '이름이 너무 깁니다.', false, true)
-        goto RENAME_WEAPON_0002
+        goto NPC_RENAME_WEAPON_DIALOG_002
     end
 
     if not assert_korean(cp949) then
         npc:dialog(me, string.format('%s 사용할 수 없는 이름입니다.', name_with(name, '은', '는')), false, true)
-        goto RENAME_WEAPON_0002
+        goto NPC_RENAME_WEAPON_DIALOG_002
     end
 
     local price = weapon:model():rename_price()

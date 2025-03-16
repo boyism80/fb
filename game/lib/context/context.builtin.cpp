@@ -182,9 +182,12 @@ int fb::game::context::builtin_pursuit_sell(lua_State* L)
         return 0;
 
     auto context = lua->env<fb::game::context>("context");
-    auto pursuit = lua->tointeger(1);
 
     lua->new_table();
+    if (lua->is_nil(1))
+        return 1;
+
+    auto pursuit = lua->tointeger(1);
     if (context->model.sell.contains(pursuit))
     {
         auto& sell = context->model.sell[pursuit];
