@@ -30,6 +30,10 @@ function npc_revive(me, npc, discourteous)
 end
 
 function npc_appreciate(me, npc)
+    if me:state() == STATE_GHOST then
+        return true
+    end
+
     if me:hp() > 100 then
         me:chat(me:hp())
         return true

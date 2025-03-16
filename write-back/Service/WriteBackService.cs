@@ -77,6 +77,7 @@ namespace WriteBack.Service
                         var mod = g.Key;
                         var sql = string.Join(Environment.NewLine, g.Select(x => x.SQL));
                         await dbConn.ExecuteAsync(sql);
+                        _logger.LogInformation(sql);
 
                         var countSet = g.GroupBy(x => x.RedisKey).ToDictionary(x => x.Key, x => x.Count());
                         var values = new List<RedisValue>
