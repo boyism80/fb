@@ -21,6 +21,9 @@ namespace Http.Formatter
 
         public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
+            var sp = context.HttpContext.RequestServices;
+            var logger = sp.GetRequiredService<ILogger<FlatBufferInputFormatter>>();
+
             using var ms = new MemoryStream(bufferLength);
             await context.HttpContext.Request.Body.CopyToAsync(ms);
             ms.Position = 0;
@@ -29,7 +32,11 @@ namespace Http.Formatter
             {
                 case "application/json":
                     {
-                        var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType);
+                        var protocol = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(ms.ToArray()), context.ModelType) as IFlatBufferEx;
+                        var log = OnLog(protocol);
+                        if (log != null)
+                            logger.LogInformation(log);
+
                         return await InputFormatterResult.SuccessAsync(protocol);
                     }
 
@@ -37,12 +44,20 @@ namespace Http.Formatter
                     {
                         using var reader = new BinaryReader(ms);
                         var protocol = GetProtocol(reader);
+                        var log = OnLog(protocol);
+                        if (log != null)
+                            logger.LogInformation(log);
                         return await InputFormatterResult.SuccessAsync(protocol);
                     }
 
                 default:
                     throw new InvalidOperationException();
             }
+        }
+
+        protected virtual string OnLog(IFlatBufferEx protocol)
+        {
+            return null;
         }
     }
 
@@ -70,6 +85,12 @@ namespace Http.Formatter
             var protocol = context.Object as IFlatBufferEx ??
                 throw new InvalidOperationException();
 
+            var sp = context.HttpContext.RequestServices;
+            var logger = sp.GetRequiredService<ILogger<FlatBufferOutputFormatter>>();
+            var log = OnLog(protocol);
+            if (log != null)
+                logger.LogInformation(log);
+
             switch (context.HttpContext.Request.ContentType)
             {
                 case "application/json":
@@ -79,12 +100,18 @@ namespace Http.Formatter
 
                 case "application/octet-stream":
                     {
+
                         var bytes = protocol.ToBytes();
                         context.HttpContext.Response.ContentLength = bytes.Length;
                         await context.HttpContext.Response.BodyWriter.WriteAsync(bytes);
                     }
                     break;
             }
+        }
+
+        protected virtual string OnLog(IFlatBufferEx protocol)
+        {
+            return null;
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using Google.FlatBuffers;
+using Newtonsoft.Json;
 using Request = fb.protocol._internal.request;
+using Response = fb.protocol._internal.response;
 
 namespace Internal.Formatter
 {
@@ -19,6 +21,19 @@ namespace Internal.Formatter
             var type = Request.FlatBufferProtocolRouter.GetProtocolType(protocolType);
             return Activator.CreateInstance(type, bytes) as IFlatBufferEx;
         }
+
+        protected override string OnLog(IFlatBufferEx protocol)
+        {
+            var protocolType = (Request.FlatBufferProtocolType)protocol.ProtocolType;
+            switch (protocolType)
+            {
+                case Request.FlatBufferProtocolType.Ping:
+                    return null;
+
+                default:
+                    return $"Request {protocolType} < {JsonConvert.SerializeObject(protocol)}";
+            }
+        }
     }
 
     public class FlatBufferOutputFormatter : Http.Formatter.FlatBufferOutputFormatter
@@ -26,6 +41,19 @@ namespace Internal.Formatter
         public FlatBufferOutputFormatter()
         {
 
+        }
+
+        protected override string OnLog(IFlatBufferEx protocol)
+        {
+            var protocolType = (Response.FlatBufferProtocolType)protocol.ProtocolType;
+            switch (protocolType)
+            {
+                case Response.FlatBufferProtocolType.Pong:
+                    return null;
+
+                default:
+                    return $"Response {protocolType} > {JsonConvert.SerializeObject(protocol)}";
+            }
         }
     }
 }
