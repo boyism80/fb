@@ -5,7 +5,7 @@ const fb::model::sell* fb::model::__sell::find(uint32_t pursuit, const fb::model
     if (this->contains(pursuit) == false)
         return nullptr;
 
-    for (auto& [_, sell] : (*this)[pursuit])
+    for (auto& sell : (*this)[pursuit])
     {
         if (sell.item == item.id)
             return &sell;

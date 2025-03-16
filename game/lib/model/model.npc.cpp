@@ -39,7 +39,7 @@ int fb::model::npc::builtin_sell_price(lua_State* L)
         if (context->model.sell.contains(sell) == false)
             continue;
 
-        for (auto& [_, x] : context->model.sell[sell])
+        for (auto& x : context->model.sell[sell])
         {
             auto& item = context->model.item[x.item];
             if (item.name != name)
