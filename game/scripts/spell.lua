@@ -1,3 +1,131 @@
+function CREATURE_SPELL(creature, index)
+    if creature == CREATURE_PHOENIX then
+        if index == 1 then
+            return '화염주'
+        elseif index == 2 then
+            return '화영열주'
+        elseif index == 3 then
+            return '화열참주'
+        elseif index == 4 then
+            return '진화열참주'
+        elseif index == 5 then
+            return '극진화열참주'
+        else
+            return nil
+        end
+
+    elseif creature == CREATURE_TIGER then
+        if index == 1 then
+            return '백열주'
+        elseif index == 2 then
+            return '백령주'
+        elseif index == 3 then
+            return '백열참주'
+        elseif index == 4 then
+            return '진백열참주'
+        elseif index == 5 then
+            return '극진백열참주'
+        else
+            return nil
+        end
+
+    elseif creature == CREATURE_TURTLE then
+        if index == 1 then
+            return '자무주'
+        elseif index == 2 then
+            return '자영무주'
+        elseif index == 3 then
+            return '자천무주'
+        elseif index == 4 then
+            return '진자천무주'
+        elseif index == 5 then
+            return '극진자천무주'
+        else
+            return nil
+        end
+    elseif creature == CREATURE_DRAGON then
+        if index == 1 then
+            return '뢰진주'
+        elseif index == 2 then
+            return '뢰격주'
+        elseif index == 3 then
+            return '뢰격참주'
+        elseif index == 4 then
+            return '진뢰격참주'
+        elseif index == 5 then
+            return '극진뢰격참주'
+        else
+            return nil
+        end
+    else
+        return nil
+    end
+end
+
+function CREATURE_AREA_SPELL(creature, index)
+    if creature == CREATURE_PHOENIX then
+        if index == 1 then
+            return "화염주'첨"
+        elseif index == 2 then
+            return "화영열주'첨"
+        elseif index == 3 then
+            return "화열참주'첨"
+        elseif index == 4 then
+            return "진화열참주'첨"
+        elseif index == 5 then
+            return "극진화열참주'첨"
+        else
+            return nil
+        end
+
+    elseif creature == CREATURE_TIGER then
+        if index == 1 then
+            return "백열주'첨"
+        elseif index == 2 then
+            return "백령주'첨"
+        elseif index == 3 then
+            return "백열참주'첨"
+        elseif index == 4 then
+            return "진백열참주'첨"
+        elseif index == 5 then
+            return "극진백열참주'첨"
+        else
+            return nil
+        end
+
+    elseif creature == CREATURE_TURTLE then
+        if index == 1 then
+            return "자무주'첨"
+        elseif index == 2 then
+            return "자영무주'첨"
+        elseif index == 3 then
+            return "자천무주'첨"
+        elseif index == 4 then
+            return "진자천무주'첨"
+        elseif index == 5 then
+            return "극진자천무주'첨"
+        else
+            return nil
+        end
+    elseif creature == CREATURE_DRAGON then
+        if index == 1 then
+            return "뢰진주'첨"
+        elseif index == 2 then
+            return "뢰격주'첨"
+        elseif index == 3 then
+            return "뢰격참주'첨"
+        elseif index == 4 then
+            return "진뢰격참주'첨"
+        elseif index == 5 then
+            return "극진뢰격참주'첨"
+        else
+            return nil
+        end
+    else
+        return nil
+    end
+end
+
 function TELEPORT_LOOKUP(map, x, y, direction)
     math.randomseed(seed())
     local rand_x = nil

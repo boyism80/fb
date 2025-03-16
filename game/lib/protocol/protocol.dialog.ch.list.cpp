@@ -8,12 +8,14 @@ dialog_ch_list::dialog_ch_list(const fb::model::object&        obj,
                                const std::vector<std::string>& list,
                                const std::string&              message,
                                bool                            button_prev,
+                               uint32_t                        sequence,
                                fb::game::dialog::interaction   interaction) :
     obj(obj),
     preset(preset),
     list(list),
     message(message),
     button_prev(button_prev),
+    sequence(sequence),
     interaction(interaction)
 { }
 #endif
@@ -25,7 +27,7 @@ async::task<void> dialog_ch_list::serialize(fb::stream_writer<big_endian>& write
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(2);
     writer.write<uint8_t>(static_cast<uint8_t>(interaction));
-    writer.write<uint32_t>(this->obj.id);
+    writer.write<uint32_t>(this->sequence);
     writer.write<uint8_t>(0x01);
     writer.write<uint8_t>(0x00); // character = 0x00, obj = 0x01
     writer.write<uint8_t>(static_cast<uint8_t>(this->preset.sex));

@@ -266,7 +266,7 @@ int fb::game::life::builtin_spells(lua_State* L)
                 continue;
 
             lua->pushobject(spell);
-            lua_rawseti(L, -2, i);
+            lua_rawseti(L, -2, i+1);
         }
     });
 }

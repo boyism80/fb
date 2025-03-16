@@ -7,26 +7,19 @@ void context::on_dialog(character&               me,
                         const fb::model::object& object,
                         const std::string&       message,
                         bool                     button_prev,
-                        bool                     button_next)
+                        bool                     button_next,
+                        uint32_t                 sequence)
 {
-    me.send(fb_resp::dialog(object, message, button_prev, button_next));
-}
-
-void context::on_dialog(character&                      me,
-                        const fb::model::object&        obj,
-                        const std::string&              message,
-                        const std::vector<std::string>& menus)
-{
-    me.send(fb_resp::dialog_menu(obj, menus, message));
+    me.send(fb_resp::dialog(object, message, button_prev, button_next, sequence));
 }
 
 void context::on_dialog(character&                      me,
                         const fb::model::object&        obj,
                         const std::string&              message,
                         const std::vector<std::string>& menus,
-                        bool                            button_prev)
+                        uint32_t                        sequence)
 {
-    me.send(fb_resp::dialog_list(obj, menus, message, button_prev));
+    me.send(fb_resp::dialog_menu(obj, menus, message, sequence));
 }
 
 void context::on_dialog(character&                      me,
@@ -34,31 +27,44 @@ void context::on_dialog(character&                      me,
                         const std::string&              message,
                         const std::vector<std::string>& menus,
                         bool                            button_prev,
-                        const dialog::preset&           preset)
+                        uint32_t                        sequence)
 {
-    me.send(fb_resp::dialog_ch_list(obj, preset, menus, message, button_prev));
+    me.send(fb_resp::dialog_list(obj, menus, message, button_prev, sequence));
+}
+
+void context::on_dialog(character&                      me,
+                        const fb::model::object&        obj,
+                        const std::string&              message,
+                        const std::vector<std::string>& menus,
+                        bool                            button_prev,
+                        const dialog::preset&           preset,
+                        uint32_t                        sequence)
+{
+    me.send(fb_resp::dialog_ch_list(obj, preset, menus, message, button_prev, sequence));
 }
 
 void context::on_dialog(character&                  me,
                         const fb::model::object&    obj,
                         const std::string&          message,
-                        const std::vector<uint8_t>& item_slots)
+                        const std::vector<uint8_t>& item_slots,
+                        uint32_t                    sequence)
 {
-    me.send(fb_resp::dialog_slot(obj, item_slots, message));
+    me.send(fb_resp::dialog_slot(obj, item_slots, message, sequence));
 }
 
 void context::on_dialog(character&                me,
                         const fb::model::object&  obj,
                         const std::string&        message,
                         const dialog::item_pairs& pairs,
-                        uint16_t                  pursuit)
+                        uint16_t                  pursuit,
+                        uint32_t                  sequence)
 {
-    me.send(fb_resp::dialog_item(obj, pairs, message, pursuit));
+    me.send(fb_resp::dialog_item(obj, pairs, message, pursuit, sequence));
 }
 
-void context::on_dialog(character& me, const fb::model::object& obj, const std::string& message)
+void context::on_dialog(character& me, const fb::model::object& obj, const std::string& message, uint32_t sequence)
 {
-    me.send(fb_resp::dialog_input(obj, message));
+    me.send(fb_resp::dialog_input(obj, message, sequence));
 }
 
 void context::on_dialog(character&               me,
@@ -67,7 +73,8 @@ void context::on_dialog(character&               me,
                         const std::string&       top,
                         const std::string&       bottom,
                         int                      maxlen,
-                        bool                     prev)
+                        bool                     prev,
+                        uint32_t                 sequence)
 {
-    me.send(fb_resp::dialog_input_ext(obj, message, top, bottom, maxlen, prev));
+    me.send(fb_resp::dialog_input_ext(obj, message, top, bottom, maxlen, prev, sequence));
 }

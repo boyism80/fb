@@ -123,6 +123,9 @@ uint32_t object::sequence() const
 {
     this->assert_thread();
 
+    if (this->_map == nullptr)
+        return 0xFFFFFFFD;
+
     return this->_sequence;
 }
 

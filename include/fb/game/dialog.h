@@ -72,7 +72,8 @@ struct listener
                            const fb::model::object& object,
                            const std::string&       message,
                            bool                     button_prev,
-                           bool                     button_next) = 0;
+                           bool                     button_next,
+                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called on dialog.
      *
@@ -84,7 +85,8 @@ struct listener
     virtual void on_dialog(character&                      me,
                            const fb::model::object&        obj,
                            const std::string&              message,
-                           const std::vector<std::string>& menus) = 0;
+                           const std::vector<std::string>& menus,
+                           uint32_t                        sequence = 0xFFFFFFFD) = 0;
 
     /**
      * @brief      Called on dialog.
@@ -99,7 +101,8 @@ struct listener
                            const fb::model::object&        obj,
                            const std::string&              message,
                            const std::vector<std::string>& menus,
-                           bool                            button_prev) = 0;
+                           bool                            button_prev,
+                           uint32_t                        sequence = 0xFFFFFFFD) = 0;
 
     /**
      * @brief      Called on dialog.
@@ -116,7 +119,8 @@ struct listener
                            const std::string&              message,
                            const std::vector<std::string>& menus,
                            bool                            button_prev,
-                           const dialog::preset&           preset) = 0;
+                           const dialog::preset&           preset,
+                           uint32_t                        sequence = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called on dialog.
      *
@@ -128,7 +132,8 @@ struct listener
     virtual void on_dialog(character&                  me,
                            const fb::model::object&    obj,
                            const std::string&          message,
-                           const std::vector<uint8_t>& item_slots) = 0;
+                           const std::vector<uint8_t>& item_slots,
+                           uint32_t                    sequence = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called on dialog.
      *
@@ -142,7 +147,8 @@ struct listener
                            const fb::model::object& obj,
                            const std::string&       message,
                            const item_pairs&        pairs,
-                           uint16_t                 pursuit = 0xFFFF) = 0;
+                           uint16_t                 pursuit  = 0xFFFF,
+                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called on dialog.
      *
@@ -150,7 +156,10 @@ struct listener
      * @param[in]  obj      The obj
      * @param[in]  message  The message
      */
-    virtual void on_dialog(character& me, const fb::model::object& obj, const std::string& message) = 0;
+    virtual void on_dialog(character&               me,
+                           const fb::model::object& obj,
+                           const std::string&       message,
+                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
     /**
      * @brief      Called on dialog.
      *
@@ -167,8 +176,9 @@ struct listener
                            const std::string&       message,
                            const std::string&       top,
                            const std::string&       bottom,
-                           int                      maxlen = 0xFF,
-                           bool                     prev   = false) = 0;
+                           int                      maxlen   = 0xFF,
+                           bool                     prev     = false,
+                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
 };
 } // namespace fb::game::dialog
 #endif
