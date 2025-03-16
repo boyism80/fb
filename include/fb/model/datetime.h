@@ -438,7 +438,7 @@ public:
 
         auto ms = this->milliseconds();
         if (ms > 0)
-            sstream << ':' << ms;
+            sstream << '.' << ms;
 
         return sstream.str();
     }
