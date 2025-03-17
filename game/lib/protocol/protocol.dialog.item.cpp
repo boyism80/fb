@@ -6,14 +6,14 @@ namespace fb::protocol::game::response {
 dialog_item::dialog_item(const fb::model::object&            obj,
                          const fb::game::dialog::item_pairs& items,
                          const std::string&                  message,
-                         uint16_t                            pursuit,
                          uint32_t                            sequence,
+                         uint16_t                            pursuit,
                          fb::game::dialog::interaction       interaction) :
     obj(obj),
     items(items),
     message(message),
-    pursuit(pursuit),
     sequence(sequence),
+    pursuit(pursuit),
     interaction(interaction)
 { }
 #endif

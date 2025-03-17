@@ -2076,7 +2076,7 @@ namespace Fb.Model
         { }
         public RewardTable Reward { get; private set; } = new RewardTable();
         [Table("json/sell.json")]
-        public partial class SellTable : KeyValueContainer<uint, KeyValueContainer<uint, Sell>>
+        public partial class SellTable : KeyValueContainer<uint, ArrayContainer<Sell>>
         { }
         public SellTable Sell { get; private set; } = new SellTable();
         [Table("json/sell_attribute.json")]

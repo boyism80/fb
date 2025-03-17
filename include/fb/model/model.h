@@ -5972,13 +5972,13 @@ DECLARE_REWARD_CONTAINER_EXTENSION
 #endif
 };
 
-class __sell : public fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::sell>>
+class __sell : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::sell>>
 {
 public:
 #ifdef DECLARE_SELL_CONTAINER_CUSTOM_CONSTRUCTOR
 DECLARE_SELL_CONTAINER_CUSTOM_CONSTRUCTOR
 #else
-    __sell() : fb::model::kv_container<uint32_t, fb::model::kv_container<uint32_t, fb::model::sell>>(std::string("json/sell.json"))
+    __sell() : fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::sell>>(std::string("json/sell.json"))
     { }
     __sell(const __sell&) = delete;
     ~__sell() = default;

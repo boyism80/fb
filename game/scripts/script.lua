@@ -257,10 +257,6 @@ function samplee_cc(me)
 end
 
 function func(me)
-    for _, item in pairs(me:items()) do
-        me:rmitem(item)
-    end
-
     -- local items = me:items()
 
     -- for slot, item in pairs(items) do

@@ -1056,46 +1056,49 @@ int fb::game::object::builtin_item(lua_State* L)
     auto message = lua->tostring(3);
 
     auto items = fb::game::dialog::item_pairs();
-    lua->pushnil();
-    while (lua->next(4))
+    if (lua->rawlen(4) > 0)
     {
-        // auto i = lua->tointeger(-2);
-        auto item  = static_cast<fb::model::item*>(nullptr);
-        auto price = uint32_t(0);
+        lua->pushnil();
+        while (lua->next(4))
+        {
+            // auto i = lua->tointeger(-2);
+            auto item  = static_cast<fb::model::item*>(nullptr);
+            auto price = uint32_t(0);
 
-        { // get 1st field
-            lua->pushinteger(1);
-            lua_gettable(L, -2);
-            switch (lua_type(L, -1))
-            {
-            case LUA_TSTRING:
-                item = context->model.item.name2item(lua->tostring(-1));
-                break;
+            { // get 1st field
+                lua->pushinteger(1);
+                lua_gettable(L, -2);
+                switch (lua_type(L, -1))
+                {
+                case LUA_TSTRING:
+                    item = context->model.item.name2item(lua->tostring(-1));
+                    break;
 
-            case LUA_TUSERDATA:
-                item = lua->touserdata<fb::model::item>(-1);
-                break;
+                case LUA_TUSERDATA:
+                    item = lua->touserdata<fb::model::item>(-1);
+                    break;
+                }
+                lua->pop(1);
+            }
+
+            { // get 2nd field
+                lua->pushinteger(2);
+                lua_gettable(L, -2);
+                switch (lua_type(L, -1))
+                {
+                case LUA_TNUMBER:
+                    price = lua->tointeger(-1);
+                    break;
+                }
             }
             lua->pop(1);
+
+            if (item == nullptr)
+                continue;
+
+            items.push_back({*item, price});
+            lua->pop(1);
         }
-
-        { // get 2nd field
-            lua->pushinteger(2);
-            lua_gettable(L, -2);
-            switch (lua_type(L, -1))
-            {
-            case LUA_TNUMBER:
-                price = lua->tointeger(-1);
-                break;
-            }
-        }
-        lua->pop(1);
-
-        if (item == nullptr)
-            continue;
-
-        items.push_back({*item, price});
-        lua->pop(1);
     }
 
     auto listener = ch->get_listener<fb::game::character>();

@@ -147,8 +147,8 @@ struct listener
                            const fb::model::object& obj,
                            const std::string&       message,
                            const item_pairs&        pairs,
-                           uint16_t                 pursuit  = 0xFFFF,
-                           uint32_t                 sequence = 0xFFFFFFFD) = 0;
+                           uint32_t                 sequence = 0xFFFFFFFD,
+                           uint16_t                 pursuit  = 0xFFFF) = 0;
     /**
      * @brief      Called on dialog.
      *

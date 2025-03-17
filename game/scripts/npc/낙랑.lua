@@ -6,39 +6,39 @@ function NPC_0(me, npc)
     end
 
     if selected == 0 then
-        if npc_sell_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_SELL_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
             goto ROUTINE_1
         end
     elseif selected == 1 then
-        if npc_buy_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_BUY_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
             goto ROUTINE_1
         end
     elseif selected == 2 then
-        if npc_repair_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_REPAIR_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
             goto ROUTINE_1
         end
     elseif selected == 3 then
-        if npc_repair_all_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_REPAIR_ALL_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
             goto ROUTINE_1
         end
     elseif selected == 4 then
-        if npc_hold_money_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_HOLD_MONEY_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
            goto ROUTINE_1 
         end
     elseif selected == 5 then
-        if npc_hold_item_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_HOLD_ITEM_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
            goto ROUTINE_1 
         end
     elseif selected == 6 then
-        if npc_return_money_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_RETURN_MONEY_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
            goto ROUTINE_1 
         end
     elseif selected == 7 then
-        if npc_return_item_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_RETURN_ITEM_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
            goto ROUTINE_1 
         end
     elseif selected == 8 then
-        if npc_rename_weapon_dialog(me, npc) == DIALOG_RESULT_NEXT then
+        if NPC_RENAME_WEAPON_DIALOG(me, npc) == DIALOG_RESULT_NEXT then
            goto ROUTINE_1 
         end
     else

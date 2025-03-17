@@ -33,8 +33,8 @@ public:
     dialog_item(const fb::model::object&            obj,
                 const fb::game::dialog::item_pairs& items,
                 const std::string&                  message,
-                uint16_t                            pursuit     = 0xFFFF,
                 uint32_t                            sequence    = 0xFFFFFFFD,
+                uint16_t                            pursuit     = 0xFFFF,
                 fb::game::dialog::interaction       interaction = fb::game::dialog::interaction::ITEM);
 #else
     dialog_item() = default;
