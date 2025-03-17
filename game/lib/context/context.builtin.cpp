@@ -482,13 +482,27 @@ int fb::game::context::builtin_mknpc(lua_State* L)
         if (map_model == nullptr)
             return 0;
 
+        if (context->maps.contains(map_model->id) == false)
+            return 0;
+
         map = &context->maps[map_model->id];
     }
-    else if (lua->is_obj(2))
+    else if (lua->is_userdata<fb::game::map>(2))
     {
         map = lua->touserdata<fb::game::map>(2);
         if (map == nullptr)
             return 0;
+    }
+    else if (lua->is_userdata<fb::model::map>(2))
+    {
+        auto map_model = lua->touserdata<fb::model::map>(2);
+        if (map_model == nullptr)
+            return 0;
+
+        if (context->maps.contains(map_model->id) == false)
+            return 0;
+
+        map = &context->maps[map_model->id];
     }
     else
     {

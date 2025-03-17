@@ -139,6 +139,33 @@ std::string context::get_type(int offset)
     return lua_typename(*this, lua_type(*this, offset));
 }
 
+std::string context::metatable(int offset)
+{
+    lua_getmetatable(*this, offset);
+    lua_getfield(*this, -1, "__name");
+    auto name = this->tostring(-1);
+    lua_pop(*this, 2);
+
+    return name;
+}
+
+std::string fb::lua::context::basetable(const std::string& metaname)
+{
+    luaL_getmetatable(*this, metaname.c_str());
+    lua_getfield(*this, -1, "__parent");
+
+    if (this->is_table(-1) == false)
+    {
+        lua_pop(*this, 2);
+        return std::string{};
+    }
+
+    lua_getfield(*this, -1, "__name");
+    auto name = this->tostring(-1);
+    lua_pop(*this, 3);
+    return name;
+}
+
 std::string context::tostring(int offset, const std::string& default_value)
 {
     if (this->argc() < offset)

@@ -356,6 +356,24 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    std::string metatable(int offset);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  offset  The offset
+     *
+     * @return     { description_of_the_return_value }
+     */
+    std::string basetable(const std::string& metaname);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  offset  The offset
+     *
+     * @return     { description_of_the_return_value }
+     */
     std::string tostring(int offset, const std::string& default_value = "");
     /**
      * @brief      { function_description }
@@ -501,6 +519,8 @@ public:
             return nullptr;
         else if (lua_type(*this, offset) != LUA_TUSERDATA)
             return nullptr;
+        else if (this->is_userdata<T>(offset) == false)
+            return nullptr;
         else
             return *(T**)lua_touserdata(*this, offset);
     }
@@ -526,6 +546,23 @@ public:
     bool is_obj(int offset)
     {
         return lua_isuserdata(*this, offset);
+    }
+
+    template <typename T>
+    bool is_userdata(int offset)
+    {
+        if (this->is_obj(offset) == false)
+            return false;
+
+        auto metaname = this->metatable(offset);
+        while (metaname.empty() == false)
+        {
+            if (metaname == T::LUA_METATABLE_NAME)
+                return true;
+
+            metaname = this->basetable(metaname);
+        }
+        return false;
     }
     /**
      * @brief      Determines whether the specified offset is table.
@@ -873,8 +910,9 @@ public:
 
         auto parent_metaname = B::LUA_METATABLE_NAME.c_str();
         luaL_getmetatable(*this, parent_metaname); // [mt, bt]
-                                                   // mt.__metatable = bt
         lua_setmetatable(*this, -2);               // [mt]
+        luaL_getmetatable(*this, parent_metaname); // [mt, bt]
+        lua_setfield(*this, -2, "__parent");       // [mt] mt.__metatable = bt
         lua_pushvalue(*this, -1);                  // [mt, mt]
                                                    // mt.__index = mt
         lua_setfield(*this, -2, "__index");        // [mt]

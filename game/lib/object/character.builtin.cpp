@@ -352,13 +352,21 @@ int character::builtin_rmitem(lua_State* L)
         auto count       = (uint8_t)lua->tointeger(3, 1);
         auto delete_attr = lua->toenum(4, ITEM_DELETE_TYPE::REMOVED);
 
-        if (lua->is_obj(2))
+        if (lua->is_userdata<fb::game::item>(2))
         {
             auto item = lua->touserdata<fb::game::item>(2);
             if (item == nullptr)
                 return 0;
 
             index = ch->items.index(item->based<fb::model::item>());
+        }
+        else if (lua->is_userdata<fb::model::item>(2))
+        {
+            auto model = lua->touserdata<fb::model::item>(2);
+            if (model == nullptr)
+                return 0;
+
+            index = ch->items.index(*model);
         }
         else if (lua->is_num(2))
         {
@@ -650,7 +658,22 @@ int character::builtin_deposited_item(lua_State* L)
 
                 lua->pushobject(*found);
             }
-            else if (lua->is_obj(2))
+            else if (lua->is_userdata<fb::game::item>(2))
+            {
+                auto  item  = lua->touserdata<fb::game::item>(2);
+                auto& model = item->based<fb::model::item>();
+                auto  found = std::find_if(deposited_items.cbegin(),
+                                          deposited_items.cend(),
+                                          [&model](fb::game::item* deposited_item) {
+                                              return deposited_item->based<fb::model::item>() == model;
+                                          });
+
+                if (found == deposited_items.cend())
+                    throw std::exception();
+
+                lua->pushobject(*found);
+            }
+            else if (lua->is_userdata<fb::model::item>(2))
             {
                 auto model = lua->touserdata<fb::model::item>(2);
                 auto found = std::find_if(deposited_items.cbegin(),
@@ -1028,7 +1051,7 @@ int character::builtin_push_trace(lua_State* L)
 
         model = &ctx->model.trace[id];
     }
-    else if (lua->is_obj(2))
+    else if (lua->is_userdata<fb::game::trace>(2))
     {
         model = (const fb::model::trace*)lua->touserdata<fb::game::trace>(2);
     }
@@ -1769,11 +1792,21 @@ int character::builtin_delay(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto model = (fb::model::spell*)nullptr;
-    if (lua->is_obj(2))
+    auto model = (const fb::model::spell*)nullptr;
+    if (lua->is_userdata<fb::model::spell>(2))
+    {
         model = lua->touserdata<fb::model::spell>(2);
+    }
+    else if (lua->is_userdata<fb::game::spell>(2))
+    {
+        auto spell = lua->touserdata<fb::game::spell>(2);
+        if (spell != nullptr)
+            model = &spell->model;
+    }
     else if (lua->is_str(2))
+    {
         model = ctx->model.spell.name2spell(lua->tostring(2));
+    }
 
     if (model == nullptr)
         return 0;
