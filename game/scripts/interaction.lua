@@ -322,13 +322,13 @@ function on_login(me)
     local npc = name2npc('낙랑')
     local button = nil
 ::BIRTHDAY_DIALOG_1::
-    button = npc:dialog(me, '대단히 중요하니 끝까지 읽어 주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
+    button = me:dialog(npc, '대단히 중요하니 끝까지 읽어 주세요! 빈번히 발생하는 아이디 해킹을 미연에 방지하기 위해 또 하나의 2차 비밀번호를 정해야 합니다.', false, true)
     if button == DIALOG_RESULT_QUIT then
         return
     end
 
 ::BIRTHDAY_DIALOG_2::
-    button = npc:dialog(me, '대충 2차 비밀번호 설정하라고 강경하게 말하는 내용', true, true)
+    button = me:dialog(npc, '대충 2차 비밀번호 설정하라고 강경하게 말하는 내용', true, true)
     if button == DIALOG_RESULT_QUIT then
         return
     end
@@ -338,7 +338,7 @@ function on_login(me)
     end
 
 ::BIRTHDAY_DIALOG_3::
-    local birthday = npc:input(me, '2차 비밀번호 설정 뭘로 할래요?', '내 생년월일은,', '입니다.', 6, true)
+    local birthday = me:input(npc, '2차 비밀번호 설정 뭘로 할래요?', '내 생년월일은,', '입니다.', 6, true)
     if birthday == DIALOG_RESULT_QUIT then
         return
     end
@@ -348,7 +348,7 @@ function on_login(me)
     end
 
     if birthday == '' then
-        button = npc:dialog(me, '제대로 입력하세요.', false, true)
+        button = me:dialog(npc, '제대로 입력하세요.', false, true)
         if button == DIALOG_RESULT_QUIT then
             return
         end
@@ -356,7 +356,7 @@ function on_login(me)
     end
 
     if #birthday ~= 6 then
-        button = npc:dialog(me, '생년월일이 너무 짧습니다.', false, true)
+        button = me:dialog(npc, '생년월일이 너무 짧습니다.', false, true)
         if button == DIALOG_RESULT_QUIT then
             return
         end
@@ -364,7 +364,7 @@ function on_login(me)
         goto BIRTHDAY_DIALOG_3
     end
 
-    local answer = npc:list(me, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'})
+    local answer = me:list(npc, string.format('당신의 생년월일이 %s가 맞습니까?', birthday), {'예', '아니오'})
     if answer == nil then
         return
     end

@@ -29,8 +29,8 @@ end
 
 function sample_group(me)
     local npc = name2npc('낙랑')
-    local name = npc:input(me, '그룹 초대할 유저')
-    local selected = npc:menu(me, '선택', {'그룹 액션', '그룹 메시지'})
+    local name = me:input(npc, '그룹 초대할 유저')
+    local selected = me:menu(npc, '선택', {'그룹 액션', '그룹 메시지'})
     if selected == nil then
         return
     end
@@ -39,7 +39,7 @@ function sample_group(me)
         local group = me:group()
         if group == nil then
             if me:create_group(name) then
-                npc:dialog(me, '그룹이 생성되었습니다.')
+                me:dialog(npc, '그룹이 생성되었습니다.')
             end
         else
             local found = nil
@@ -52,25 +52,25 @@ function sample_group(me)
 
             if me:create_group(name) then
                 if found == nil then
-                    npc:dialog(me, '그룹에 초대했습니다.')
+                    me:dialog(npc, '그룹에 초대했습니다.')
                 else
-                    npc:dialog(me, '그룹에서 추방했습니다.')
+                    me:dialog(npc, '그룹에서 추방했습니다.')
                 end
             else
-                npc:dialog(me, '그룹에 초대할 수 없습니다.')
+                me:dialog(npc, '그룹에 초대할 수 없습니다.')
             end
         end
     elseif selected == 2 then
         local group = me:group()
         if group == nil then
-            npc:dialog(me, '그룹 없음')
+            me:dialog(npc, '그룹 없음')
             return
         end
 
-        local message = npc:input(me, '메시지')
+        local message = me:input(npc, '메시지')
         group = me:group()
         if group == nil then
-            npc:dialog(me, '그룹 없음')
+            me:dialog(npc, '그룹 없음')
             return
         end
 
@@ -82,46 +82,46 @@ function sample_clan(me)
     local npc = name2npc('낙랑')
     local clan = me:clan()
     if clan == nil then
-        local name = npc:input(me, '생성할 문파 이름')
+        local name = me:input(npc, '생성할 문파 이름')
         local error = me:create_clan(name)
         if error ~= nil then
-            npc:dialog(me, error)
+            me:dialog(npc, error)
         else
-            npc:dialog(me, '클랜 생성 성공')
+            me:dialog(npc, '클랜 생성 성공')
         end
     else
         local clan_name = clan:name()
-        local selected = npc:menu(me, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방', '메시지'})
+        local selected = me:menu(npc, string.format('클랜 이름 : %s', clan_name), {'문파 칭호 바꾸기', '문파 해체', '문파 가입', '문파 추방', '메시지'})
         if selected == nil then
             return
         end
 
         clan = me:clan()
         if clan == nil then
-            npc:dialog(me, '클랜 없음')
+            me:dialog(npc, '클랜 없음')
             return
         end
 
         if selected == 0 then
-            local title = npc:input(me, '문파 칭호 입력')
+            local title = me:input(npc, '문파 칭호 입력')
             clan = me:clan()
             if clan == nil then
-                npc:dialog(me, '클랜 없음')
+                me:dialog(npc, '클랜 없음')
                 return
             end
 
             local error = clan:title(title)
             if error ~= nil then
-                npc:dialog(me, error)
+                me:dialog(npc, error)
             else
-                npc:dialog(me, '문파 칭호 변경 성공')
+                me:dialog(npc, '문파 칭호 변경 성공')
             end
         elseif selected == 1 then
             local error = me:destroy_clan()
             if error ~= nil then
-                npc:dialog(me, error)
+                me:dialog(npc, error)
             else
-                npc:dialog(me, '클랜 제거 성공')
+                me:dialog(npc, '클랜 제거 성공')
             end
 
         elseif selected == 2 then
@@ -130,7 +130,7 @@ function sample_clan(me)
                 return
             end
 
-            local name = npc:input(me, '상대 이름 입력')
+            local name = me:input(npc, '상대 이름 입력')
             local nears = map:nears({me:position()}, OBJECT_TYPE_CHARACTER)
             local found = nil
             for _, ch in pairs(nears) do
@@ -141,53 +141,53 @@ function sample_clan(me)
             end
 
             if found == nil then
-                npc:dialog(me, '캐릭터 근처에 없음')
+                me:dialog(npc, '캐릭터 근처에 없음')
                 return
             end
 
-            local yes_or_no = npc:menu(found, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
+            local yes_or_no = found:menu(npc, string.format('%s 문파에 가입?', clan_name), {'네', '아니오'})
             if yes_or_no == 0 then
                 clan = me:clan()
                 if clan == nil then
-                    npc:dialog(found, '클랜 없음')
+                    found:dialog(npc, '클랜 없음')
                     return
                 end
 
                 local error = clan:join(found)
                 if error ~= nil then
-                    npc:dialog(found, error)
+                    found:dialog(npc, error)
                 else
-                    npc:dialog(found, string.format('%s 문파에 가입됨', clan_name))
-                    npc:dialog(me, string.format('%s가 승락함', found:name()))
+                    found:dialog(npc, string.format('%s 문파에 가입됨', clan_name))
+                    me:dialog(npc, string.format('%s가 승락함', found:name()))
                 end
             else
-                npc:dialog(me, string.format('%s가 거절함', found:name()))
+                me:dialog(npc, string.format('%s가 거절함', found:name()))
             end
         elseif selected == 3 then
-            local name = npc:input(me, '상대 이름 입력')
+            local name = me:input(npc, '상대 이름 입력')
             clan = me:clan()
             if clan == nil then
-                npc:dialog(found, '클랜 없음')
+                found:dialog(npc, '클랜 없음')
                 return
             end
 
             local error = clan:leave(name, true)
             if error ~= nil then
-                npc:dialog(me, error)
+                me:dialog(npc, error)
             else
-                npc:dialog(me, '추방했음')
+                me:dialog(npc, '추방했음')
             end
         elseif selected == 4 then
-            local message = npc:input(me, '내용')
+            local message = me:input(npc, '내용')
             clan = me:clan()
             if clan == nil then
-                npc:dialog(found, '클랜 없음')
+                found:dialog(npc, '클랜 없음')
                 return
             end
 
             local error = clan:message(message)
             if error ~= nil then
-                npc:dialog(me, error)
+                me:dialog(npc, error)
             end
         else
         end
@@ -196,43 +196,43 @@ end
 
 function sample_whisper(me)
     local npc = name2npc('낙랑')
-    local name = npc:input(me, '귓속말할 상대 이름')
-    local message = npc:input(me, '귓속말 내용')
+    local name = me:input(npc, '귓속말할 상대 이름')
+    local message = me:input(npc, '귓속말 내용')
 
     local error = me:whisper(name, message)
     if error ~= nil then
-        npc:dialog(me, error)
+        me:dialog(npc, error)
     else
-        npc:dialog(me, '성공')
+        me:dialog(npc, '성공')
     end
 end
 
 function sample_send_mail(me)
     local npc = name2npc('낙랑')
-    local name = npc:input(me, '상대 이름')
-    local title = npc:input(me, '제목')
-    local contents = npc:input(me, '내용')
+    local name = me:input(npc, '상대 이름')
+    local title = me:input(npc, '제목')
+    local contents = me:input(npc, '내용')
 
     local error = me:send_mail(name, title, contents)
     if error ~= nil then
-        npc:dialog(me, error)
+        me:dialog(npc, error)
     else
-        npc:dialog(me, '성공')
+        me:dialog(npc, '성공')
     end
 end
 
 function sample_map(me)
     local npc = name2npc('낙랑')
-    local name = npc:input(me, '맵 이름')
+    local name = me:input(npc, '맵 이름')
     local error = me:map(name)
     if error ~= nil then
-        npc:dialog(me, error)
+        me:dialog(npc, error)
     end
 end
 
 function samplee_cc(me)
     local npc = name2npc('낙랑')
-    local selected = npc:menu(me, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
+    local selected = me:menu(npc, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
     if selected == nil then
         return
     end

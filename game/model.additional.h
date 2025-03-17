@@ -101,13 +101,7 @@ public:                                                               \
 public:                                                               \
     static int builtin_name(lua_State* L);                            \
     static int builtin_look(lua_State* L);                            \
-    static int builtin_color(lua_State* L);                           \
-    static int builtin_dialog(lua_State* L);                          \
-    static int builtin_list(lua_State* L);                            \
-    static int builtin_input(lua_State* L);                           \
-    static int builtin_menu(lua_State* L);                            \
-    static int builtin_item(lua_State* L);                            \
-    static int builtin_slot(lua_State* L);
+    static int builtin_color(lua_State* L);
 
 #define DECLARE_LIFE_EXTENSION           \
                                          \

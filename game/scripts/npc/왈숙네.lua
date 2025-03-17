@@ -1,6 +1,6 @@
 function NPC_7(me, npc)
 ::NPC_7_000::
-    local selected = npc:list(me, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기', '금전 맡기기', '물건 맡기기', '금전 찾기', '물건 찾기'})
+    local selected = me:list(npc, '안녕하세요. 무엇을 도와드릴까요?', {'물건 사기', '물건 팔기', '금전 맡기기', '물건 맡기기', '금전 찾기', '물건 찾기'})
     if selected == nil then
         return
     end
