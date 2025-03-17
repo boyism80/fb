@@ -30,7 +30,7 @@ function ON_CONCAST_4016(me, caster, buff)
     local spell = name2spell('신령지익진')
     for _, obj in pairs(me:nears(OBJECT_TYPE_LIFE)) do
         local obj_x, obj_y = obj:position()
-        if not obj:isbuff('신령지익진') and obj_x >= begin_x and obj_x <= end_x and obj_y >= begin_y and obj_y <= end_y then
+        if not obj:isbuff(spell) and obj_x >= begin_x and obj_x <= end_x and obj_y >= begin_y and obj_y <= end_y then
             table.insert(targets, obj)
         end
     end

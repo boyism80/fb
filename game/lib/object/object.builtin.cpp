@@ -322,13 +322,21 @@ int object::builtin_unbuff(lua_State* L)
         else
             lua->pushboolean(obj->buffs.remove(*model));
     }
-    else if (lua->is_obj(2))
+    else if (lua->is_userdata<fb::game::buff>(2))
     {
         auto buff = lua->touserdata<fb::game::buff>(2);
         if (buff == nullptr)
             return 0;
 
         lua->pushboolean(obj->buffs.remove(buff->model.id));
+    }
+    else if (lua->is_userdata<fb::model::spell>(2))
+    {
+        auto model = lua->touserdata<fb::model::spell>(2);
+        if (model == nullptr)
+            return 0;
+
+        lua->pushboolean(obj->buffs.remove(model->id));
     }
     else
     {
@@ -368,13 +376,26 @@ int object::builtin_isbuff(lua_State* L)
             return 1;
         }
 
-        if (lua->is_obj(i + 1))
+        if (lua->is_userdata<fb::game::buff>(i + 1))
         {
             auto buff = lua->touserdata<fb::game::buff>(i + 1);
             if (buff == nullptr)
                 continue;
 
             if (obj->buffs.contains(buff->model.id) == false)
+                continue;
+
+            lua->pushboolean(true);
+            return 1;
+        }
+
+        if (lua->is_userdata<fb::model::spell>(i + 1))
+        {
+            auto model = lua->touserdata<fb::model::spell>(i + 1);
+            if (model == nullptr)
+                continue;
+
+            if (obj->buffs.contains(model->id) == false)
                 continue;
 
             lua->pushboolean(true);
@@ -419,9 +440,15 @@ int object::builtin_map(lua_State* L)
     auto position = std::optional<fb::model::point16_t>{};
     if (argc > 1)
     {
-        if (lua->is_obj(2))
+        if (lua->is_userdata<fb::game::map>(2))
         {
             map = lua->touserdata<fb::game::map>(2);
+        }
+        else if (lua->is_userdata<fb::model::map>(2))
+        {
+            auto model = lua->touserdata<fb::model::map>(2);
+            if (ctx->maps.contains(model->id))
+                map = &ctx->maps[model->id];
         }
         else if (lua->is_num(2))
         {
