@@ -594,7 +594,7 @@ int fb::game::context::builtin_broadcast(lua_State* L)
     else
     {
         async::awaitable_then(context->broadcast(text, type, broad_type), [lua](auto result) {
-            std::ignore = lua->call(0);
+            lua->resume(0);
         });
         return lua->yield(0);
     }

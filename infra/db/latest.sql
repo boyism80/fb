@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.40, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
 -- Host: 192.168.0.180    Database: fb
 -- ------------------------------------------------------
@@ -44,7 +44,7 @@ CREATE TABLE `board` (
   PRIMARY KEY (`id`),
   KEY `fk.board.owner_idx` (`user`),
   CONSTRAINT `fk.board.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -113,7 +113,8 @@ CREATE TABLE `clan_name` (
   `name` varchar(256) NOT NULL,
   `created_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_UNIQUE` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -178,6 +179,20 @@ CREATE TABLE `mail` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`user`),
   KEY `IX_UNAME` (`user`)
+) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `mail_sequence`
+--
+
+DROP TABLE IF EXISTS `mail_sequence`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mail_sequence` (
+  `user` int NOT NULL,
+  `id` int NOT NULL,
+  PRIMARY KEY (`user`)
 ) ENGINE=InnoDB DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -316,7 +331,9 @@ CREATE TABLE `user` (
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`)
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `name_UNIQUE` (`name`),
+  KEY `INDEX_NAME` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -476,17 +493,18 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_SET`(name NVARCHAR(256))
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_SET`(IN name NVARCHAR(256))
 BEGIN
-    DECLARE exist TINYINT;
-    SELECT EXISTS(SELECT * FROM `clan_name` WHERE `clan_name`.`name` = name FOR UPDATE) INTO exist;
-    
-    IF exist = 0 THEN
-        INSERT INTO `clan_name` (name) VALUES (name);
-        SELECT 1 AS result, last_insert_id() as id;
+    DECLARE clan_id INT;
+
+    INSERT IGNORE INTO `clan_name` (`name`) VALUES (name);
+    SELECT `id` INTO clan_id FROM `clan_name` WHERE `name` = name;
+    IF clan_id IS NOT NULL THEN
+        SELECT 1 AS result, clan_id;
     ELSE
-        SELECT 0 AS result, 0 as id;
+        SELECT 0 AS result, 0;
     END IF;
+
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -535,7 +553,9 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_READ`(IN user INT, IN id INT)
 BEGIN
-	  UPDATE mail
+	  START TRANSACTION;
+      
+      UPDATE mail
 	  SET `read` = 1
 	  WHERE mail.`id` = id AND 
 			mail.`user` = user AND 
@@ -545,6 +565,8 @@ BEGIN
     WHERE mail.`id` = id AND
           mail.`user` = user AND
           `deleted` = 0;
+          
+	COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -568,25 +590,36 @@ CREATE DEFINER=`fb`@`%` PROCEDURE `USP_MAIL_WRITE`(
     IN contents NVARCHAR(256)
 )
 BEGIN
-    DECLARE id TINYINT;
+    DECLARE new_id INT;
+
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
         SELECT 0 AS RESULT;
     END;
-    
+
     START TRANSACTION;
-    SELECT IFNULL(MAX(mail.`id`), 0) INTO id FROM mail WHERE mail.`user` = user FOR UPDATE;
+
+    SELECT id INTO new_id 
+    FROM mail_sequence 
+    WHERE user = user FOR UPDATE;
+
+    IF new_id IS NULL THEN
+        SET new_id = 1;
+        INSERT INTO mail_sequence (`user`, `id`) VALUES (user, new_id);
+    ELSE
+        SET new_id = new_id + 1;
+        UPDATE mail_sequence SET id = new_id WHERE user = user;
+    END IF;
 
     INSERT INTO mail (`id`, `user`, `sender`, `title`, `contents`)
-    VALUES (id + 1, user, sender, title, contents);
-    
+    VALUES (new_id, user, sender, title, contents);
+
     COMMIT;
+
     SELECT 1 AS RESULT;
-    SELECT * 
-    FROM mail 
-    WHERE mail.`id` = id + 1 AND 
-          mail.`user` = user;
+    SELECT * FROM mail WHERE mail.`id` = new_id AND mail.`user` = user;
+
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -622,16 +655,16 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_SET`(name NVARCHAR(256))
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_SET`(IN name NVARCHAR(256))
 BEGIN
-	DECLARE exist TINYINT;
-    SELECT EXISTS(SELECT * FROM name WHERE name.name = name FOR UPDATE) INTO exist;
-    
-    IF exist = 0 THEN
-		INSERT INTO name (name) VALUES (name);
-        SELECT 1 AS result, last_insert_id() as uid;
-	ELSE
-		SELECT 0 AS result, 0 as uid;
+    DECLARE uid INT;
+
+    INSERT IGNORE INTO `name` (`name`) VALUES (name);
+    SELECT `id` INTO uid FROM `name` WHERE `name` = name;
+    IF uid IS NOT NULL THEN
+        SELECT 1 AS result, uid;
+    ELSE
+        SELECT 0 AS result, 0;
     END IF;
 END ;;
 DELIMITER ;
@@ -649,4 +682,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-02-20  6:26:14
+-- Dump completed on 2025-03-23  1:34:53
