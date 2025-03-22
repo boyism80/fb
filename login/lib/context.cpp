@@ -134,7 +134,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
 
         co_await this->update_thread(socket);
 
-        if (response1.uid == -1)
+        if (response1.success == false)
             throw id_exception("이미 존재하는 이름입니다.");
 
         auto        uid    = response1.uid;

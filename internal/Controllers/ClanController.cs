@@ -110,7 +110,7 @@ namespace Internal.Controllers
 
                 var result = await db.QueryFirstAsync<ClanNameSetResult>("USP_CLAN_NAME_SET", new
                 {
-                    name = request.Name
+                    cname = request.Name
                 }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
 
                 if (!result.Result)

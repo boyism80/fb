@@ -1,8 +1,8 @@
 -- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
--- Host: 192.168.0.180    Database: fb
+-- Host: 127.0.0.1    Database: fb
 -- ------------------------------------------------------
--- Server version	8.4.3
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -493,18 +493,23 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_SET`(IN name NVARCHAR(256))
+CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_SET`(IN cname NVARCHAR(256))
 BEGIN
     DECLARE clan_id INT;
 
-    INSERT IGNORE INTO `clan_name` (`name`) VALUES (name);
-    SELECT `id` INTO clan_id FROM `clan_name` WHERE `name` = name;
-    IF clan_id IS NOT NULL THEN
+    START TRANSACTION;
+    
+    SELECT id INTO clan_id FROM clan_name WHERE name = cname FOR UPDATE;
+    
+    IF clan_id IS NULL THEN
+        INSERT INTO clan_name (name) VALUES (cname);
+        SET clan_id = LAST_INSERT_ID();
         SELECT 1 AS result, clan_id;
     ELSE
-        SELECT 0 AS result, 0;
+        SELECT 0 AS result, clan_id;
     END IF;
 
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -655,17 +660,23 @@ DELIMITER ;
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_NAME_SET`(IN name NVARCHAR(256))
+CREATE DEFINER=`fb`@`localhost` PROCEDURE `USP_NAME_SET`(IN uname NVARCHAR(256))
 BEGIN
     DECLARE uid INT;
 
-    INSERT IGNORE INTO `name` (`name`) VALUES (name);
-    SELECT `id` INTO uid FROM `name` WHERE `name` = name;
-    IF uid IS NOT NULL THEN
+    START TRANSACTION;
+    
+    SELECT id INTO uid FROM name WHERE name = uname FOR UPDATE;
+    
+    IF uid IS NULL THEN
+        INSERT INTO name (name) VALUES (uname);
+        SET uid = LAST_INSERT_ID();
         SELECT 1 AS result, uid;
     ELSE
-        SELECT 0 AS result, 0;
+        SELECT 0 AS result, uid;
     END IF;
+
+    COMMIT;
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -682,4 +693,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-23  1:34:53
+-- Dump completed on 2025-03-23  2:36:44
