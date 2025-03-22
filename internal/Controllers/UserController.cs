@@ -106,7 +106,7 @@ namespace Internal.Controllers
             await using var connection = _dbContext.Connection(-1);
             var result = await connection.QueryFirstAsync<ReserveNameResult>("USP_NAME_SET", new
             {
-                name = request.Name
+                uname = request.Name
             }, commandType: CommandType.StoredProcedure);
 
             return new Response.ReserveName
