@@ -114,7 +114,7 @@ namespace Internal.Controllers
                     throw new LogicException(ErrorCode.Offline);
 
                 var member = await _dbContext.Character.Get(memberSession.Uid) ??
-                    throw new Exception($"user {request.Member} not found");
+                    throw new LogicException(ErrorCode.Offline);
 
                 await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(master.Id)))
                 {
