@@ -196,7 +196,7 @@ function sample_map(me, npc)
     end
 end
 
-function sample(me, npc)
+function sample_cc(me, npc)
     local selected = me:menu(npc, '선택', {'방향역전', '암흑', '채팅금지', '듣기금지'})
     if selected == nil then
         return

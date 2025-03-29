@@ -1346,6 +1346,9 @@ fb::thread* character::thread() const
 
 void character::assert_thread() const
 {
+    if (this->_map_lock)
+        return;
+
     object::assert_thread();
 }
 
