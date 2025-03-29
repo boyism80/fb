@@ -84,6 +84,9 @@ private:
 
         co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
             auto client = httplib::Client(host);
+            client.set_connection_timeout(5, 0);
+            client.set_read_timeout(5, 0);
+            client.set_write_timeout(5, 0);
             co_return client.Get(UTF8(path, PLATFORM::Windows), headers);
         });
     }
@@ -163,6 +166,9 @@ private:
         std::memcpy(buffer.data(), bytes, size);
         co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
             auto client = httplib::Client(host);
+            client.set_connection_timeout(5, 0);
+            client.set_read_timeout(5, 0);
+            client.set_write_timeout(5, 0);
             co_return client.Post(UTF8(path, PLATFORM::Windows),
                                   headers,
                                   (const char*)buffer.data(),
