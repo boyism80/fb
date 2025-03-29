@@ -118,7 +118,7 @@ module.exports = {
                         kind: "Deployment",
                         name: deployment.metadata.name,
                     },
-                    minReplicas: 1,
+                    minReplicas: 5,
                     maxReplicas: 30,
                     metrics: [{
                         type: "Resource",
