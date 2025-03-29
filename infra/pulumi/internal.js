@@ -65,14 +65,6 @@ module.exports = {
                                     }
                                 },
                                 ports: [{ containerPort: 80, name: `internal` }],
-                                livenessProbe: {
-                                    httpGet: {
-                                        path: "/health",
-                                        port: 80,
-                                    },
-                                    initialDelaySeconds: 30,
-                                    periodSeconds: 10
-                                },
                                 startupProbe: {
                                     httpGet: {
                                         path: "/health",
