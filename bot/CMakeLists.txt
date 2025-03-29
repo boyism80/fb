@@ -50,7 +50,6 @@ IF(WIN32)
                                 lua$<$<CONFIG:Debug>:d>.lib
                                 zlib$<$<CONFIG:Debug>:d>.lib
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
-                                tacopie$<$<CONFIG:Debug>:d>.lib
                                 hiredis$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
 ELSE()
@@ -66,7 +65,6 @@ ELSE()
                                 lua
                                 boost_program_options
                                 hiredis
-                                tacopie
                                 rabbitmq
                                 ncursesw)
 ENDIF(WIN32)

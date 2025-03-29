@@ -90,42 +90,34 @@ private:
             }
             return values;
         }
+        else if constexpr (std::is_same_v<T, std::string>)
+        {
+            if (reply->type != REDIS_REPLY_STRING)
+                throw std::runtime_error("redis reply type mismatch");
+            return std::string(reply->str, reply->len);
+        }
+        else if constexpr (std::is_same_v<T, int>)
+        {
+            if (reply->type != REDIS_REPLY_INTEGER)
+                throw std::runtime_error("redis reply type mismatch");
+            return reply->integer;
+        }
+        else if constexpr (std::is_same_v<T, double>)
+        {
+            if (reply->type != REDIS_REPLY_DOUBLE)
+                throw std::runtime_error("redis reply type mismatch");
+            return reply->dval;
+        }
+        else if constexpr (std::is_same_v<T, bool>)
+        {
+            if (reply->type != REDIS_REPLY_INTEGER)
+                throw std::runtime_error("redis reply type mismatch");
+            return reply->integer != 0;
+        }
         else
         {
             throw std::runtime_error("unsupported type");
         }
-    }
-
-    template <>
-    static std::string as<std::string>(redisReply* reply)
-    {
-        if (reply->type != REDIS_REPLY_STRING)
-            throw std::runtime_error("redis reply type mismatch");
-        return std::string(reply->str, reply->len);
-    }
-
-    template <>
-    static int as<int>(redisReply* reply)
-    {
-        if (reply->type != REDIS_REPLY_INTEGER)
-            throw std::runtime_error("redis reply type mismatch");
-        return reply->integer;
-    }
-
-    template <>
-    static double as<double>(redisReply* reply)
-    {
-        if (reply->type != REDIS_REPLY_DOUBLE)
-            throw std::runtime_error("redis reply type mismatch");
-        return reply->dval;
-    }
-
-    template <>
-    static bool as<bool>(redisReply* reply)
-    {
-        if (reply->type != REDIS_REPLY_INTEGER)
-            throw std::runtime_error("redis reply type mismatch");
-        return reply->integer != 0;
     }
 
 public:

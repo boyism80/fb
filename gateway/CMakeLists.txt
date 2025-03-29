@@ -46,7 +46,6 @@ IF(WIN32)
                                 librabbitmq.4$<$<CONFIG:Debug>:d>.lib
                                 zlib$<$<CONFIG:Debug>:d>.lib
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
-                                tacopie$<$<CONFIG:Debug>:d>.lib
                                 hiredis$<$<CONFIG:Debug>:d>.lib
                                 lua$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
@@ -63,7 +62,6 @@ ELSE()
                                 lua
                                 boost_program_options
                                 hiredis
-                                tacopie
                                 rabbitmq
                                 ncursesw)
 ENDIF(WIN32)

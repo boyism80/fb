@@ -10,7 +10,9 @@ async::task<void> context::handle_heart_beat()
     root["Port"] = fb::config<uint16_t>("port");
     auto writer  = Json::FastWriter{};
     auto output  = writer.write(root);
-    this->_redis.command<void>(std::format("heart-beat:Game:{}", this->id()));
+
+    this->_redis.command<void>(std::format("SET heart-beat:Game:{} {}", this->id(), output));
+    this->_redis.command<void>(std::format("EXPIRE heart-beat:Game:{} 5", this->id()));
     co_return;
 }
 

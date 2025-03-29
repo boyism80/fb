@@ -20,7 +20,7 @@ module.exports = function () {
                         background: 64
                     },
                     redis: {
-                        ip: sectionConf.redis,
+                        ip: 'redis',
                         port: conf.redis[sectionConf.redis]['-1'].port.cluster,
                         pool: 1
                     },
