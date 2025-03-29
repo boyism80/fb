@@ -23,7 +23,7 @@ module.exports = function () {
                         },
                         save: 600,
                         internal: {
-                            ip: "internal", 
+                            ip: `internal-${sectionConf.internal}`, 
                             port: conf.internal[sectionConf.internal].port.cluster
                         },
                         login: { ip: conf.host, port: conf.login[sectionConf.login].port },

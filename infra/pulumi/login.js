@@ -20,7 +20,7 @@ module.exports = function () {
                         background: 8
                     },
                     internal: {
-                        ip: "internal",
+                        ip: `internal-${sectionConf.internal}`,
                         port: conf.internal[sectionConf.internal].port.cluster
                     },
                     'transfer delay': 0,
