@@ -494,16 +494,16 @@ int object::builtin_map(lua_State* L)
         if (position.has_value())
         {
             if (co_await obj->map(map, position.value()) == false)
-                lua->pushstring(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+                lua->pushboolean(false);
             else
-                lua->pushnil();
+                lua->pushboolean(true);
         }
         else
         {
             if (co_await obj->map(map) == false)
-                lua->pushstring(_TEXT(MESSAGE_NOT_READY_GAME_SERVER));
+                lua->pushboolean(false);
             else
-                lua->pushnil();
+                lua->pushboolean(true);
         }
     };
 
