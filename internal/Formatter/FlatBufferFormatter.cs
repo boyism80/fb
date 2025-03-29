@@ -27,9 +27,6 @@ namespace Internal.Formatter
             var protocolType = (Request.FlatBufferProtocolType)protocol.ProtocolType;
             switch (protocolType)
             {
-                case Request.FlatBufferProtocolType.Ping:
-                    return null;
-
                 default:
                     return $"Request {protocolType} < {JsonConvert.SerializeObject(protocol)}";
             }
@@ -48,9 +45,6 @@ namespace Internal.Formatter
             var protocolType = (Response.FlatBufferProtocolType)protocol.ProtocolType;
             switch (protocolType)
             {
-                case Response.FlatBufferProtocolType.Pong:
-                    return null;
-
                 default:
                     return $"Response {protocolType} > {JsonConvert.SerializeObject(protocol)}";
             }

@@ -5,7 +5,8 @@
 using namespace fb::login;
 
 context::context(boost::asio::io_context& context, uint16_t port) :
-    fb::acceptor<session>(context, "LOGIN", port)
+    fb::acceptor<session>(context, "LOGIN", port),
+    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool"))
 {
     for (auto& x : fb::config<>("forbidden"))
         this->_forbiddens.push_back(x.asString());
@@ -42,14 +43,16 @@ async::task<void> context::handle_start()
 
 async::task<void> context::handle_heart_beat()
 {
-    std::ignore = co_await this->post<fb::protocol::internal::request::Ping, fb::protocol::internal::response::Pong>(
-        "internal",
-        "/in-game/ping",
-        fb::protocol::internal::request::Ping{this->id(),
-                                              this->name(),
-                                              this->service(),
-                                              fb::config<std::string>("ip"),
-                                              fb::config<uint16_t>("port")});
+    auto root    = Json::Value{};
+    root["Name"] = this->name();
+    root["IP"]   = fb::config<std::string>("ip");
+    root["Port"] = fb::config<uint16_t>("port");
+    auto writer  = Json::FastWriter{};
+    auto output  = writer.write(root);
+
+    this->_redis.command<void>(std::format("SET heart-beat:Login:{} {}", this->id(), output));
+    this->_redis.command<void>(std::format("EXPIRE heart-beat:Login:{} 5", this->id()));
+    co_return;
 }
 
 bool context::is_forbidden(const std::string& str) const

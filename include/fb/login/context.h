@@ -16,6 +16,7 @@
 #include <fb/login/session.h>
 #include <fb/login/gateway.h>
 #include <fb/login/protocol.h>
+#include <fb/redis.h>
 
 #define MAX_NXCLUB_SIZE 14
 
@@ -133,6 +134,7 @@ private:
     std::vector<std::string>                 _forbiddens;
     std::vector<unique_session>              _sessions;
     std::vector<boost::asio::deadline_timer> _timers;
+    fb::redis                                _redis;
 
 public:
     fb::model::model model;
