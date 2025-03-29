@@ -15,9 +15,9 @@ module.exports = function () {
                     ip: conf.host,
                     port: sectionConf.port,
                     thread: {
-                        logic: 12,
+                        logic: 32,
                         io: 12,
-                        background: 8
+                        background: 64
                     },
                     internal: {
                         ip: `internal-${sectionConf.internal}`,
