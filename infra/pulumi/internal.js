@@ -4,10 +4,9 @@ const k8s = require("@pulumi/kubernetes")
 module.exports = {
     setup: function (namespace, conf, dependsOn) {
 
-        let index = 0
         const ports = []
-        const appLabels = { app: "internal" }
         for(const [section, sectionConf] of Object.entries(conf.internal)) {
+            const appLabels = { app: `internal-${section}` }
             const config = {
                 "Logging": {
                     "LogLevel": {
@@ -49,7 +48,7 @@ module.exports = {
                 metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
                 spec: {
                     selector: { matchLabels: appLabels },
-                    replicas: sectionConf.replicas,
+                    replicas: 1,
                     template: {
                         metadata: { labels: appLabels },
                         spec: {
@@ -65,51 +64,89 @@ module.exports = {
                                         add: ["SYS_PTRACE"]
                                     }
                                 },
-                                ports: [{ containerPort: 80, name: `internal-${index}` }],
+                                ports: [{ containerPort: 80, name: `internal` }],
+                                startupProbe: {
+                                    httpGet: {
+                                        path: "/health",
+                                        port: 80,
+                                    },
+                                    initialDelaySeconds: 10,
+                                    periodSeconds: 5,
+                                    failureThreshold: 30
+                                },
+                                resources: {
+                                    requests: {
+                                        cpu: "500m"
+                                    },
+                                    limits: {
+                                        cpu: "800m"
+                                    }
+                                },
                                 env: [
-                                {
-                                    name: 'ASPNETCORE_ENVIRONMENT',
-                                    value: 'k8s'
-                                },
-                                {
-                                    name: 'ASPNETCORE_HTTP_PORTS',
-                                    value: '80'
+                                    {
+                                        name: 'ASPNETCORE_ENVIRONMENT',
+                                        value: 'k8s'
+                                    },
+                                    {
+                                        name: 'ASPNETCORE_HTTP_PORTS',
+                                        value: '80'
+                                    }],
+                                    volumeMounts: [{
+                                        name: "config-volume",
+                                        mountPath: "/app/appsettings.k8s.json",
+                                        subPath: "appsettings.k8s.json"
+                                    }],
                                 }],
-                                volumeMounts: [{
+                                volumes: [{
                                     name: "config-volume",
-                                    mountPath: "/app/appsettings.k8s.json",
-                                    subPath: "appsettings.k8s.json"
+                                    configMap: {
+                                        name: configMap.metadata.name,
+                                    },
                                 }],
-                            }],
-                            volumes: [{
-                                name: "config-volume",
-                                configMap: {
-                                    name: configMap.metadata.name,
-                                },
-                            }],
+                            },
                         },
                     },
-                },
-            }, { dependsOn: dependsOn })
+                }, { dependsOn: dependsOn })
 
-            ports.push({ 
-                name: `internal-${section}`,
-                port: sectionConf.port.cluster,
-                targetPort: `internal-${index}`,
-                protocol: "TCP",
-                nodePort: sectionConf.port.node 
+            const hpa = new k8s.autoscaling.v2.HorizontalPodAutoscaler(`internal-hpa-${section}`, {
+                metadata: {
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    scaleTargetRef: {
+                        apiVersion: "apps/v1",
+                        kind: "Deployment",
+                        name: deployment.metadata.name,
+                    },
+                    minReplicas: 5,
+                    maxReplicas: 30,
+                    metrics: [{
+                        type: "Resource",
+                        resource: {
+                            name: "cpu",
+                            target: {
+                                type: "Utilization",
+                                averageUtilization: 50,
+                            },
+                        },
+                    }],
+                },
             })
 
-            index++
+            const service = new k8s.core.v1.Service(`internal-${section}`, {
+                metadata: { name: `internal-${section}`, namespace: namespace.metadata.name },
+                spec: {
+                    type: "NodePort",
+                    ports: [{ 
+                        name: `internal-${section}`,
+                        port: sectionConf.port.cluster,
+                        targetPort: `internal`,
+                        protocol: "TCP",
+                        nodePort: sectionConf.port.node 
+                    }],
+                    selector: appLabels,
+                },
+            }, { dependsOn: dependsOn })
         }
-
-        return new k8s.core.v1.Service("internal", {
-            metadata: { name: "internal", namespace: namespace.metadata.name },
-            spec: {
-                type: "NodePort",
-                ports: ports,
-                selector: appLabels,
-            },
-        }, { dependsOn: dependsOn })
     }
 }

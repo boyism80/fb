@@ -88,8 +88,10 @@ public class Program
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddSingleton<WriteBackService>();
+        builder.Services.AddHealthChecks();
 
         var app = builder.Build();
+        app.MapHealthChecks("/health");
         var dataTableLoader = ActivatorUtilities.CreateInstance(app.Services.CreateScope().ServiceProvider, typeof(DataTableLoader)) as DataTableLoader;
         dataTableLoader.Run();
 
