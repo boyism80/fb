@@ -84,6 +84,9 @@ private:
 
         co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
             auto client = httplib::Client(host);
+            client.set_connection_timeout(5, 0);
+            client.set_read_timeout(5, 0);
+            client.set_write_timeout(5, 0);
             co_return client.Get(UTF8(path, PLATFORM::Windows), headers);
         });
     }
@@ -163,6 +166,9 @@ private:
         std::memcpy(buffer.data(), bytes, size);
         co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
             auto client = httplib::Client(host);
+            client.set_connection_timeout(5, 0);
+            client.set_read_timeout(5, 0);
+            client.set_write_timeout(5, 0);
             co_return client.Post(UTF8(path, PLATFORM::Windows),
                                   headers,
                                   (const char*)buffer.data(),
@@ -322,24 +328,24 @@ private:
                 {
                     auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
                     auto fd       = socket.fd();
-                    std::ignore =
-                        socket.thread()->dispatch([this, protocol, &socket, fd, cmd](auto&) -> async::task<void> {
-                            try
-                            {
-                                if (this->connected(fd) == false)
-                                    co_return;
+                    this->threads.enqueue(socket,
+                                          [this, protocol, &socket, fd, cmd](auto& thread) -> async::task<void> {
+                                              try
+                                              {
+                                                  if (this->connected(fd) == false)
+                                                      co_return;
 
-                                std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
-                            }
-                            catch (std::exception& e)
-                            {
-                                fb::logger::fatal(e.what());
-                            }
-                            catch (...)
-                            {
-                                fb::logger::fatal("unhandled exception");
-                            }
-                        });
+                                                  std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                                              }
+                                              catch (std::exception& e)
+                                              {
+                                                  fb::logger::fatal(e.what());
+                                              }
+                                              catch (...)
+                                              {
+                                                  fb::logger::fatal("unhandled exception");
+                                              }
+                                          });
                 }
 
                 reader.seek(size - sizeof(uint8_t));

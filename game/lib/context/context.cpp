@@ -4,7 +4,8 @@ using namespace std::chrono_literals;
 
 context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<character>(context, "GAME", port),
-    maps(*this, fb::config<uint32_t>("id"))
+    maps(*this, fb::config<uint32_t>("id")),
+    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool"))
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -195,10 +196,8 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_revive);
     this->bind_npc_interaction(&context::npc_interaction_appreciate);
 
-    this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Pong);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
-    this->bind_amqp("fb.global", &context::handle_amqp_Pong);
     this->bind_amqp("fb.global", &context::handle_amqp_Broadcast);
     this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
     this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
@@ -279,7 +278,6 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         });
         clan_lock.reset();
     }
-    ch->init(false);
     co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
@@ -755,6 +753,8 @@ void context::handle_click_npc(character& ch, npc& npc)
         return;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        return;
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/npc.lua");
     lua->load(model.script);

@@ -38,10 +38,10 @@ OBJECT_TYPE character::what() const
 
 async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t& position, DESTROY_TYPE destroy_type)
 {
-    this->assert_thread();
+    if (this->_thread == nullptr)
+        co_return true;
 
-    if (this->_map_lock)
-        co_return false;
+    this->assert_thread();
 
     if (this->_map != map)
     {
@@ -152,16 +152,10 @@ character::operator fb::socket<character>& ()
 
 bool character::inited() const
 {
-    this->assert_thread();
+    if (this->_thread == nullptr)
+        return false;
 
-    return this->_init;
-}
-
-void character::init(bool value)
-{
-    this->assert_thread();
-
-    this->_init = value;
+    return true;
 }
 
 uint32_t character::id() const
@@ -1338,17 +1332,19 @@ void character::message(const std::string& message, MESSAGE_TYPE type)
 
 fb::thread* character::thread() const
 {
-    if (this->_map == nullptr)
-        return this->context.threads.modular(this->_socket.fd());
+    if (this->_thread != nullptr)
+        return this->_thread;
     else
-        return this->context.threads.modular(this->_map->model.id);
+        return this->context.threads.modular(this->_socket.fd());
+}
+
+void fb::game::character::thread(fb::thread* value)
+{
+    this->_thread = value;
 }
 
 void character::assert_thread() const
 {
-    if (this->_map_lock)
-        return;
-
     object::assert_thread();
 }
 

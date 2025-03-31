@@ -24,12 +24,6 @@ table Logout {
 
 
 
-table Pong {
-  
-}
-
-
-
 table Transfer {
   error: uint;
   ip: string;

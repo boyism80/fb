@@ -51,7 +51,7 @@ async::task<void> gateway_bot::handle_crt(const fb::protocol::gateway::response:
 
 async::task<void> gateway_bot::handle_hosts(const fb::protocol::gateway::response::endpoint& response)
 {
-    this->send(fb::protocol::gateway::request::endpoint{0x00, 1});
+    this->send(fb::protocol::gateway::request::endpoint{0x00, 0});
     co_return;
 }
 

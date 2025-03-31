@@ -17,7 +17,12 @@ module.exports = function () {
                     thread: {
                         logic: 32,
                         io: 12,
-                        background: 64
+                        background: 16
+                    },
+                    redis: {
+                        ip: 'redis',
+                        port: conf.redis[sectionConf.redis]['-1'].port.cluster,
+                        pool: 1
                     },
                     internal: {
                         ip: `internal-${sectionConf.internal}`,

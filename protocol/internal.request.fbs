@@ -14,15 +14,6 @@ table Logout {
 }
 
 
-table Ping {
-  id: ubyte;
-  name: string;
-  service: fb.protocol.internal.Service;
-  ip: string;
-  port: ushort;
-}
-
-
 table Transfer {
   service: fb.protocol.internal.Service;
   id: ubyte;

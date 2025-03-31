@@ -152,15 +152,19 @@ async::task<void> context::handle_gear_timer(const fb::model::datetime& now, std
             for (auto equipment : equipments)
             {
                 auto& model = equipment->based<fb::model::equipment>();
-                lua->func(model.on_concast);
-                lua->pushobject(ch);
-                lua->pushobject(equipment);
+                if (lua != nullptr)
+                {
+                    lua->func(model.on_concast);
+                    lua->pushobject(ch);
+                    lua->pushobject(equipment);
+                }
                 co_await lua->call(2, false);
             }
         }
     }
 
-    lua->release();
+    if (lua != nullptr)
+        lua->release();
     co_return;
 }
 

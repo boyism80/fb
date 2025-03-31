@@ -84,15 +84,11 @@ RUN ./b2
 RUN ./b2 install
 
 WORKDIR /app
-RUN git clone --recursive https://github.com/cpp-redis/cpp_redis.git
-WORKDIR /app/cpp_redis/tacopie
-RUN git fetch origin pull/5/head:cmake-fixes && git checkout cmake-fixes
-RUN sed -i 's/add_library(${PROJECT_NAME} SHARED #${tacopie_sources})/add_library(${PROJECT_NAME} ${tacopie_sources})/' CMakeLists.txt
-WORKDIR ../
-RUN sed -i 's/add_library(${PROJECT_NAME} SHARED #${cpp_redis_sources})/add_library(${PROJECT_NAME} ${cpp_redis_sources})/' CMakeLists.txt
-RUN mkdir build
-WORKDIR ./build
-RUN cmake .. -DCMAKE_BUILD_TYPE=Release
+RUN git clone https://github.com/redis/hiredis.git
+WORKDIR /app/hiredis
+RUN git checkout v1.2.0
+WORKDIR /app/hiredis/build
+RUN cmake .. 
 RUN cmake --build . --config Release --parallel
 RUN make install
 

@@ -22,7 +22,8 @@ function ON_CAST_3(me, spell, name)
     local mp = 30
     if spell_cast(me, nil, nil, mp) then
         local x, y = ch:position()
-        local new_x, new_y, direction = TELEPORT_LOOKUP(map, x, y)
+        local direction = me:direction()
+        local new_x, new_y, direction = TELEPORT_LOOKUP(map, x, y, direction)
         me:map(map, new_x, new_y)
         me:direction(direction)
         me:sound(sound)

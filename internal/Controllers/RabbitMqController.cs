@@ -23,11 +23,5 @@ namespace Internal.Controllers
         {
             _rabbitMqService = rabbitMqService;
         }
-
-        [HttpPost]
-        public async Task Post(Publish request)
-        {
-            _rabbitMqService.Publish(new Pong(), request.ExchangeName, request.RouteKey);
-        }
     }
 }

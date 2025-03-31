@@ -77,9 +77,6 @@ module.exports = {
                                 resources: {
                                     requests: {
                                         cpu: "500m"
-                                    },
-                                    limits: {
-                                        cpu: "800m"
                                     }
                                 },
                                 env: [

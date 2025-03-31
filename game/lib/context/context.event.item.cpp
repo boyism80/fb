@@ -19,12 +19,12 @@ void context::on_item_swap(character& me, uint8_t src, uint8_t dst)
 
 void context::on_item_active(character& me, item& item)
 {
-    auto lua = fb::lua::new_context();
-    if (lua == nullptr)
-        return;
-
     auto& model = item.based<fb::model::item>();
     if (model.on_active.empty())
+        return;
+
+    auto lua = fb::lua::new_context();
+    if (lua == nullptr)
         return;
 
 #if defined DEBUG | defined _DEBUG

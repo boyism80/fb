@@ -32,14 +32,14 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
         return names.at(to);
     });
 
-    auto fd = from.fd();
+    auto from_name = from.name();
     if (target != nullptr)
     {
         co_await this->update_thread(*target);
         if (target->option(OPTION::WHISPER) == false)
             throw std::runtime_error(std::format(_TEXT(MESSAGE_WHISPER_DISABLED_TARGET), to));
 
-        target->message(std::format("{}> {}", from.name(), message), MESSAGE_TYPE::NOTIFY);
+        target->message(std::format("{}> {}", from_name, message), MESSAGE_TYPE::NOTIFY);
 
         co_await this->update_thread(from);
         from.message(std::format("{}< {}", target->name(), message), MESSAGE_TYPE::NOTIFY);
@@ -49,7 +49,7 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
         auto&& resp = co_await this->post<internal_reqs::Whisper, internal_resp::Whisper>(
             "internal",
             "/in-game/whisper",
-            internal_reqs::Whisper{from.name(), to, message});
+            internal_reqs::Whisper{from_name, to, message});
         co_await this->update_thread(from);
 
         this->on_whisper(resp);

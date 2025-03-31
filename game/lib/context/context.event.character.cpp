@@ -103,6 +103,9 @@ void context::on_update(character& me, STATE_LEVEL level)
 
 async::task<bool> context::on_transfer(character& me, map& map, const fb::model::point16_t& position)
 {
+    if (me.map() == nullptr)
+        co_return false;
+
     auto& socket = static_cast<fb::socket<character>&>(me);
     auto  fd     = static_cast<uint32_t>(socket.native_handle());
     auto  error  = std::string();
@@ -117,7 +120,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
                                                           map.model.host,
                                                           me.name(),
                                                           false});
-
+        co_await this->update_thread(me);
         switch (static_cast<ERROR_CODE>(response.error))
         {
         case ERROR_CODE::NONE:
@@ -130,14 +133,12 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
             throw std::runtime_error(std::format(_TEXT(MESSAGE_UNKNOWN_ERROR_WITH_CODE), response.error));
         }
 
-        auto ch     = socket.data();
-        std::ignore = co_await ch->map(nullptr);
-
-        std::ignore = this->save(*ch);
+        std::ignore = co_await me.map(nullptr);
+        std::ignore = this->save(me);
         auto stream = fb::stream();
         auto writer = fb::stream_writer<big_endian>(stream);
         writer.write<uint32_t>(me.id());
-        writer.write<std::string>(ch->name());
+        writer.write<std::string>(me.name());
         writer.write<uint8_t>(1);
         writer.write<uint16_t>(map.model.id);
         writer.write<uint16_t>(p.x);

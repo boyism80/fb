@@ -50,8 +50,7 @@ IF(WIN32)
                                 lua$<$<CONFIG:Debug>:d>.lib
                                 zlib$<$<CONFIG:Debug>:d>.lib
                                 flatbuffers$<$<CONFIG:Debug>:d>.lib
-                                tacopie$<$<CONFIG:Debug>:d>.lib
-                                cpp_redis$<$<CONFIG:Debug>:d>.lib
+                                hiredis$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
 ELSE()
   set(CMAKE_CXX_FLAGS_DEBUG "-g")
@@ -65,8 +64,7 @@ ELSE()
                                 crypto
                                 lua
                                 boost_program_options
-                                cpp_redis
-                                tacopie
+                                hiredis
                                 rabbitmq
                                 ncursesw)
 ENDIF(WIN32)

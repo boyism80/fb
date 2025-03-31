@@ -4,14 +4,16 @@ using namespace fb::game;
 
 async::task<void> context::handle_heart_beat()
 {
-    std::ignore = co_await this->post<internal_reqs::Ping, internal_resp::Pong>(
-        "internal",
-        "/in-game/ping",
-        internal_reqs::Ping{this->id(),
-                            this->name(),
-                            this->service(),
-                            fb::config<std::string>("ip"),
-                            fb::config<uint16_t>("port")});
+    auto root    = Json::Value{};
+    root["Name"] = this->name();
+    root["IP"]   = fb::config<std::string>("ip");
+    root["Port"] = fb::config<uint16_t>("port");
+    auto writer  = Json::FastWriter{};
+    auto output  = writer.write(root);
+
+    this->_redis.command<void>(std::format("SET heart-beat:Game:{} {}", this->id(), output));
+    this->_redis.command<void>(std::format("EXPIRE heart-beat:Game:{} 5", this->id()));
+    co_return;
 }
 
 async::task<void> fb::game::context::handle_announce()

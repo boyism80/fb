@@ -12,6 +12,7 @@
 #include <fb/game/map/container.h>
 #include <fb/hash.h>
 #include <fb/game/shard.h>
+#include <fb/redis.h>
 
 using namespace fb::protocol::internal;
 namespace fb_reqs       = fb::protocol::game::request;
@@ -55,6 +56,7 @@ private:
     std::unique_ptr<std::thread>      _amqp_thread;
     fb::hash<shard_params>            _shard;
     std::vector<npc_interaction_func> _npc_interaction_funcs;
+    fb::redis                         _redis;
 
 public:
     fb::model::model        model;
@@ -1171,15 +1173,6 @@ public:
     [[nodiscard]] async::task<void> handle_announce();
 
 public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  response  The response
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<void> handle_amqp_Pong(const internal_resp::Pong& response);
-
     /**
      * @brief      { function_description }
      *

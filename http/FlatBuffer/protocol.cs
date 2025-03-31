@@ -265,18 +265,6 @@ namespace fb.protocol._internal
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.Name));
         }
-        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
-                builder.Build(value.Id),
-                builder.Build(value.Name),
-                builder.Build(value.Service),
-                builder.Build(value.Ip),
-                builder.Build(value.Port));
-        }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
             if (value == null)
@@ -564,14 +552,6 @@ namespace fb.protocol._internal
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
                 builder.Build(value.Success));
-        }
-        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
-        {
-            if (value == null)
-                return default;
-
-            fb.protocol._internal.response.raw.Pong.StartPong(builder);
-            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -1202,18 +1182,6 @@ namespace fb.protocol._internal.request
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.Name));
         }
-        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
-                builder.Build(value.Id),
-                builder.Build(value.Name),
-                builder.Build(value.Service),
-                builder.Build(value.Ip),
-                builder.Build(value.Port));
-        }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
             if (value == null)
@@ -1501,14 +1469,6 @@ namespace fb.protocol._internal.request
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
                 builder.Build(value.Success));
-        }
-        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
-        {
-            if (value == null)
-                return default;
-
-            fb.protocol._internal.response.raw.Pong.StartPong(builder);
-            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -1870,7 +1830,6 @@ namespace fb.protocol._internal.request
     { 
         Login,
         Logout,
-        Ping,
         Transfer,
         Whisper,
         KickOut,
@@ -2154,18 +2113,6 @@ namespace fb.protocol._internal.response
             return fb.protocol._internal.request.raw.Logout.CreateLogout(builder,
                 builder.Build(value.Name));
         }
-        public static Offset<fb.protocol._internal.request.raw.Ping> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Ping value)
-        {
-            if (value == null)
-                return default;
-
-            return fb.protocol._internal.request.raw.Ping.CreatePing(builder,
-                builder.Build(value.Id),
-                builder.Build(value.Name),
-                builder.Build(value.Service),
-                builder.Build(value.Ip),
-                builder.Build(value.Port));
-        }
         public static Offset<fb.protocol._internal.request.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Transfer value)
         {
             if (value == null)
@@ -2453,14 +2400,6 @@ namespace fb.protocol._internal.response
 
             return fb.protocol._internal.response.raw.Logout.CreateLogout(builder,
                 builder.Build(value.Success));
-        }
-        public static Offset<fb.protocol._internal.response.raw.Pong> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Pong value)
-        {
-            if (value == null)
-                return default;
-
-            fb.protocol._internal.response.raw.Pong.StartPong(builder);
-            return fb.protocol._internal.response.raw.Pong.EndPong(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.Transfer> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Transfer value)
         {
@@ -2823,7 +2762,6 @@ namespace fb.protocol._internal.response
         KickOut,
         Login,
         Logout,
-        Pong,
         Transfer,
         Whisper,
         DeleteArticle,
@@ -3550,43 +3488,6 @@ namespace fb.protocol._internal.request
         public static Logout Deserialize(byte[] bytes)
         {
             return new Logout(bytes);
-        }
-    }
-    public class Ping : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.Ping;
-        public byte Id { get; set; } = 0;
-        public string Name { get; set; } = string.Empty;
-        public fb.protocol._internal.Service Service { get; set; }
-        public string Ip { get; set; } = string.Empty;
-        public ushort Port { get; set; } = 0;
-
-        public Ping()
-        { }
-
-        public Ping(fb.protocol._internal.request.raw.Ping raw)
-        {
-            Id = raw.Id;
-            Name = raw.Name;
-            Service = (fb.protocol._internal.Service)raw.Service;
-            Ip = raw.Ip;
-            Port = raw.Port;
-        }
-
-        public Ping(byte[] bytes) : this(fb.protocol._internal.request.raw.Ping.GetRootAsPing(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
-        }
-
-        public static Ping Deserialize(byte[] bytes)
-        {
-            return new Ping(bytes);
         }
     }
     public class Transfer : IFlatBufferEx
@@ -4456,7 +4357,6 @@ namespace fb.protocol._internal.request
             {
                 FlatBufferProtocolType.Login => typeof(fb.protocol._internal.request.Login),
                 FlatBufferProtocolType.Logout => typeof(fb.protocol._internal.request.Logout),
-                FlatBufferProtocolType.Ping => typeof(fb.protocol._internal.request.Ping),
                 FlatBufferProtocolType.Transfer => typeof(fb.protocol._internal.request.Transfer),
                 FlatBufferProtocolType.Whisper => typeof(fb.protocol._internal.request.Whisper),
                 FlatBufferProtocolType.KickOut => typeof(fb.protocol._internal.request.KickOut),
@@ -4584,33 +4484,6 @@ namespace fb.protocol._internal.response
         public static Logout Deserialize(byte[] bytes)
         {
             return new Logout(bytes);
-        }
-    }
-    public class Pong : IFlatBufferEx
-    {
-        public int ProtocolType => (int)FlatBufferProtocolType.Pong;
-
-        public Pong()
-        { }
-
-        public Pong(fb.protocol._internal.response.raw.Pong raw)
-        {
-        }
-
-        public Pong(byte[] bytes) : this(fb.protocol._internal.response.raw.Pong.GetRootAsPong(new ByteBuffer(bytes)))
-        { }
-
-        public byte[] Serialize()
-        {
-            var builder = new FlatBufferBuilder(1);
-            var offset = builder.Build(this);
-            builder.Finish(offset.Value);
-            return builder.SizedByteArray();
-        }
-
-        public static Pong Deserialize(byte[] bytes)
-        {
-            return new Pong(bytes);
         }
     }
     public class Transfer : IFlatBufferEx
@@ -5642,7 +5515,6 @@ namespace fb.protocol._internal.response
                 FlatBufferProtocolType.KickOut => typeof(fb.protocol._internal.response.KickOut),
                 FlatBufferProtocolType.Login => typeof(fb.protocol._internal.response.Login),
                 FlatBufferProtocolType.Logout => typeof(fb.protocol._internal.response.Logout),
-                FlatBufferProtocolType.Pong => typeof(fb.protocol._internal.response.Pong),
                 FlatBufferProtocolType.Transfer => typeof(fb.protocol._internal.response.Transfer),
                 FlatBufferProtocolType.Whisper => typeof(fb.protocol._internal.response.Whisper),
                 FlatBufferProtocolType.DeleteArticle => typeof(fb.protocol._internal.response.DeleteArticle),

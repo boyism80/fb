@@ -157,25 +157,6 @@ namespace Internal.Controllers
             }
         }
 
-        [HttpPost("ping")]
-        public async Task<Response.Pong> Ping(Request.Ping request)
-        {
-            var conn = _redisService.Redis(-1).Connection;
-            var config = new HostConfig
-            {
-                Name = request.Name,
-                IP = request.Ip,
-                Port = request.Port
-            };
-            await conn.StringSetAsync(new HeartBeatKey
-            {
-                Service = request.Service,
-                Id = request.Id,
-            }.Key, JsonConvert.SerializeObject(config), TimeSpan.FromSeconds(30));
-            return new Response.Pong
-            { };
-        }
-
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {

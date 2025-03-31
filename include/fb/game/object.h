@@ -77,13 +77,11 @@ private:
     fb::game::sector*           _sector  = nullptr;
 
 protected:
-    uint32_t                  _sequence = 0;
-    const fb::model::object&  _model;
-    bool                      _map_lock  = false;
-    fb::model::point16_t      _position  = fb::model::point16_t(0, 0);
-    DIRECTION                 _direction = DIRECTION::BOTTOM;
-    fb::game::map*            _map       = nullptr;
-    mutable std::shared_mutex _map_mutex;
+    uint32_t                 _sequence = 0;
+    const fb::model::object& _model;
+    fb::model::point16_t     _position  = fb::model::point16_t(0, 0);
+    DIRECTION                _direction = DIRECTION::BOTTOM;
+    fb::game::map*           _map       = nullptr;
 
 public:
     fb::game::context& context;

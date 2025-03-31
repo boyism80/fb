@@ -63,10 +63,10 @@ public:
     struct listener;
 
 private:
-    bool                    _init = false;
-    uint32_t                _id   = 0xFFFFFFFF;
+    uint32_t                _id = 0xFFFFFFFF;
     fb::socket<character>&  _socket;
-    bool                    _admin = false;
+    fb::thread*             _thread = nullptr;
+    bool                    _admin  = false;
     std::string             _name;
     std::string             _pw;
     std::optional<uint32_t> _birthday;
@@ -192,13 +192,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool inited() const;
-
-    /**
-     * @brief      Initializes the given value.
-     *
-     * @param[in]  value  The value
-     */
-    void init(bool value);
 
     /**
      * @brief      { function_description }
@@ -944,6 +937,13 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::thread* thread() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      value  The value
+     */
+    void thread(fb::thread* value);
 
     /**
      * @brief      { function_description }

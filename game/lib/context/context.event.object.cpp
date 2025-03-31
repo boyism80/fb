@@ -34,12 +34,15 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
 void context::on_direction(object& me)
 {
     auto lua = fb::lua::new_context();
+    if (lua != nullptr)
+    {
 #if defined DEBUG | defined _DEBUG
-    lua->load("scripts/interaction.lua");
+        lua->load("scripts/interaction.lua");
 #endif
-    lua->func("on_direction");
-    lua->pushobject(me);
-    std::ignore = lua->call(1);
+        lua->func("on_direction");
+        lua->pushobject(me);
+        std::ignore = lua->call(1);
+    }
 
     this->send(me, fb_resp::direction(me), scope::PIVOT);
 }
@@ -109,12 +112,15 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 void context::on_move(object& me, const fb::model::point16_t& before)
 {
     auto lua = fb::lua::new_context();
+    if (lua != nullptr)
+    {
 #if defined DEBUG | defined _DEBUG
-    lua->load("scripts/interaction.lua");
+        lua->load("scripts/interaction.lua");
 #endif
-    lua->func("on_move");
-    lua->pushobject(me);
-    std::ignore = lua->call(1);
+        lua->func("on_move");
+        lua->pushobject(me);
+        std::ignore = lua->call(1);
+    }
 
     this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
@@ -125,13 +131,13 @@ void context::on_buff(object& me, buff& buff)
         return;
 
     auto lua = fb::lua::new_context();
-    if (lua == nullptr)
-        return;
-
-    lua->func(buff.model.buff);
-    lua->pushobject(me);
-    lua->pushobject(buff.model);
-    std::ignore = lua->call(2);
+    if (lua != nullptr)
+    {
+        lua->func(buff.model.buff);
+        lua->pushobject(me);
+        lua->pushobject(buff.model);
+        std::ignore = lua->call(2);
+    }
 
     me.send(fb::protocol::game::response::spell_buff(buff));
 }
@@ -142,13 +148,14 @@ void context::on_unbuff(object& me, buff& buff)
         return;
 
     auto lua = fb::lua::new_context();
-    if (lua == nullptr)
-        return;
+    if (lua != nullptr)
+    {
+        lua->func(buff.model.unbuff);
+        lua->pushobject(me);
+        lua->pushobject(buff.model);
+        std::ignore = lua->call(2);
+    }
 
-    lua->func(buff.model.unbuff);
-    lua->pushobject(me);
-    lua->pushobject(buff.model);
-    std::ignore = lua->call(2);
     me.send(fb_resp::spell_unbuff(buff));
 
     if (me.is(OBJECT_TYPE::CHARACTER))

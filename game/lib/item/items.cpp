@@ -584,15 +584,15 @@ void fb::game::items::pickup(bool boost)
         }
 
         auto lua = fb::lua::new_context();
-        if (lua == nullptr)
-            return;
-
+        if (lua != nullptr)
+        {
 #if defined DEBUG | defined _DEBUG
-        lua->load("scripts/interaction.lua");
+            lua->load("scripts/interaction.lua");
 #endif
-        lua->func("on_pickup");
-        lua->pushobject(this->_owner);
-        std::ignore = lua->call(1);
+            lua->func("on_pickup");
+            lua->pushobject(this->_owner);
+            std::ignore = lua->call(1);
+        }
     }
     catch (std::exception& e)
     {
