@@ -155,9 +155,6 @@ bool character::inited() const
     if (this->_thread == nullptr)
         return false;
 
-    if (this->_map == nullptr)
-        return false;
-
     return true;
 }
 

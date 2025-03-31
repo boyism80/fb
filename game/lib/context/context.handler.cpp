@@ -145,8 +145,6 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
         {
             auto  params = fb::model::dsl::world(warp->dest.params);
             auto& world  = this->model.world[params.id][params.index];
-            co_await ch->map(nullptr);
-            co_await this->update_thread(*ch);
             ch->show_world_map(params.id, params.index);
         }
         break;
