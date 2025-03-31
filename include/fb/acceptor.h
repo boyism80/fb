@@ -328,24 +328,24 @@ private:
                 {
                     auto protocol = std::shared_ptr<fb::protocol::header>(co_await this->_deserializer[cmd](reader));
                     auto fd       = socket.fd();
-                    std::ignore =
-                        socket.thread()->dispatch([this, protocol, &socket, fd, cmd](auto&) -> async::task<void> {
-                            try
-                            {
-                                if (this->connected(fd) == false)
-                                    co_return;
+                    this->threads.enqueue(socket,
+                                          [this, protocol, &socket, fd, cmd](auto& thread) -> async::task<void> {
+                                              try
+                                              {
+                                                  if (this->connected(fd) == false)
+                                                      co_return;
 
-                                std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
-                            }
-                            catch (std::exception& e)
-                            {
-                                fb::logger::fatal(e.what());
-                            }
-                            catch (...)
-                            {
-                                fb::logger::fatal("unhandled exception");
-                            }
-                        });
+                                                  std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                                              }
+                                              catch (std::exception& e)
+                                              {
+                                                  fb::logger::fatal(e.what());
+                                              }
+                                              catch (...)
+                                              {
+                                                  fb::logger::fatal("unhandled exception");
+                                              }
+                                          });
                 }
 
                 reader.seek(size - sizeof(uint8_t));

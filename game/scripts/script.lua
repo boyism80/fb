@@ -28,6 +28,12 @@ function sample_message()
 end
 
 function func(me)
+    local nears = me:nears(0xFF & ~OBJECT_TYPE_ITEM)
+    local x, y = me:position()
+    for _, near in pairs(nears) do
+        near:position(x, y)
+    end
+
     -- local items = me:items()
 
     -- for slot, item in pairs(items) do

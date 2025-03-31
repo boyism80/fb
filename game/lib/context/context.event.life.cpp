@@ -10,6 +10,9 @@ void context::on_action(life& me, ACTION action, DURATION duration, uint8_t soun
 async::task<void> context::on_attack(life& me, DURATION duration)
 {
     auto lua = lua::new_context();
+    if (lua == nullptr)
+        co_return;
+
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/interaction.lua");
 #endif
@@ -61,6 +64,9 @@ void context::on_dead(life& me, object* you)
         if (model.script.empty() == false && model.on_die.empty() == false)
         {
             auto lua = fb::lua::new_context();
+            if (lua == nullptr)
+                return;
+
 #if defined DEBUG | defined _DEBUG
             lua->load(model.script);
 #endif

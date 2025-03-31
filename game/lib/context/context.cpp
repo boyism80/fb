@@ -278,7 +278,6 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         });
         clan_lock.reset();
     }
-    ch->init(false);
     co_await ch->destroy();
     socket.data(nullptr);
     co_return true;
@@ -754,6 +753,8 @@ void context::handle_click_npc(character& ch, npc& npc)
         return;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        return;
 #if defined DEBUG | defined _DEBUG
     lua->load("scripts/npc.lua");
     lua->load(model.script);

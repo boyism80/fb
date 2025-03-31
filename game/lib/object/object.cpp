@@ -43,44 +43,32 @@ object::~object()
 
 const fb::model::object& object::based() const
 {
-    this->assert_thread();
-
     return this->_model;
 }
 
 bool object::is(OBJECT_TYPE type) const
 {
-    this->assert_thread();
-
     auto mine = this->what();
     return (type & mine) == mine;
 }
 
 const std::string& object::name() const
 {
-    this->assert_thread();
-
     return this->_model.name;
 }
 
 uint16_t object::look() const
 {
-    this->assert_thread();
-
     return this->_model.look;
 }
 
 uint8_t object::color() const
 {
-    this->assert_thread();
-
     return this->_model.color;
 }
 
 OBJECT_TYPE object::what() const
 {
-    this->assert_thread();
-
     return this->_model.what();
 }
 
@@ -339,7 +327,6 @@ bool object::direction(DIRECTION value)
 
 map* object::map() const
 {
-    READ_LOCK(this->_map_mutex);
     this->assert_thread();
 
     return this->_map;
@@ -472,9 +459,6 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
     auto& context = this->context;
     try
     {
-        if (this->_map_lock)
-            co_return false;
-
         if (this->_map == map)
         {
             this->position(position, true);
@@ -515,10 +499,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             }
 
             auto before_map = this->_map;
-            {
-                WRITE_LOCK(this->_map_mutex);
-                this->_map = nullptr;
-            }
+            this->_map      = nullptr;
             co_await this->context.update_thread(*this);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
@@ -534,13 +515,11 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
 
         if (this->_map != nullptr)
             co_await this->map(nullptr);
-        this->_map_lock = true;
 
-        // update destination map and position
-        {
-            WRITE_LOCK(this->_map_mutex);
-            this->_map = map;
-        }
+        this->_map = map;
+        if (this->is(OBJECT_TYPE::CHARACTER))
+            static_cast<character*>(this)->thread(map->thread());
+
         co_await this->context.update_thread(*this);
         this->_position = before_position;
 
@@ -572,7 +551,6 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             obj->update_external(*this, false);
         }
 
-        this->_map_lock = false;
         co_return true;
     }
     catch (std::exception& e)
@@ -794,8 +772,6 @@ void object::hide(object& to, DESTROY_TYPE destroy_type)
 
 fb::thread* object::thread() const
 {
-    READ_LOCK(this->_map_mutex);
-
     if (this->_map == nullptr)
         return this->context.threads.modular(this->_sequence);
     else

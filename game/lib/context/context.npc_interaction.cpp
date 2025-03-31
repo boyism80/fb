@@ -14,6 +14,9 @@ async::task<bool> context::npc_interaction_sell(character&                      
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -57,6 +60,9 @@ async::task<bool> context::npc_interaction_buy(character&                       
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -95,6 +101,9 @@ async::task<bool> context::npc_interaction_repair(character&                    
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -132,6 +141,9 @@ async::task<bool> context::npc_interaction_deposit_money(character&             
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -172,6 +184,9 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -213,6 +228,9 @@ async::task<bool> context::npc_interaction_deposit_item(character&              
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -255,6 +273,9 @@ async::task<bool> context::npc_interaction_withdraw_item(character&             
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -295,6 +316,9 @@ async::task<bool> context::npc_interaction_sell_list(character&                 
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -330,6 +354,9 @@ async::task<bool> context::npc_interaction_buy_list(character&                  
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -366,6 +393,9 @@ async::task<bool> context::npc_interaction_sell_price(character&                
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -403,6 +433,9 @@ async::task<bool> context::npc_interaction_buy_price(character&                 
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -439,6 +472,9 @@ async::task<bool> context::npc_interaction_show_deposited_money(character&      
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -475,6 +511,9 @@ async::task<bool> context::npc_interaction_rename_weapon(character&             
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -512,6 +551,9 @@ async::task<bool> context::npc_interaction_hold_item_list(character&            
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -548,6 +590,9 @@ async::task<bool> context::npc_interaction_hold_item_count(character&           
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -585,6 +630,9 @@ async::task<bool> context::npc_interaction_revive(character&                    
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
@@ -624,6 +672,9 @@ async::task<bool> context::npc_interaction_appreciate(character&                
         co_return false;
 
     auto lua = fb::lua::new_context();
+    if (lua == nullptr)
+        co_return false;
+
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();

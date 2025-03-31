@@ -28,7 +28,7 @@ game_bot::game_bot(bot_container& owner, uint32_t id) :
     this->pattern(&game_bot::pattern_move, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_pickup, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_emotion, 250ms, 1000ms);
-    this->pattern(&game_bot::pattern_board_sections, 250ms, 1000ms);
+    // this->pattern(&game_bot::pattern_board_sections, 250ms, 1000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::stream& params) :

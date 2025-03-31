@@ -6,9 +6,6 @@ using namespace std::chrono_literals;
 async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_reqs::login& request)
 {
     auto ch = socket.data();
-    if (ch->inited())
-        co_return false;
-
     socket.crt(request.enc_type, request.enc_key);
 
     ch->name(request.name);
@@ -21,7 +18,6 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     auto transfer = request.transfer;
     auto delay    = fb::config<uint32_t>("delay");
     co_await this->sleep(std::chrono::seconds(delay));
-    co_await this->update_thread(*ch);
 
     auto&& login_resp = co_await this->post<internal_reqs::Login, internal_resp::Login>(
         "internal",
@@ -31,6 +27,9 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
 
     auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
+    auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
+    auto   thread   = this->maps[map].thread();
+    ch->thread(thread);
     co_await this->update_thread(*ch);
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
@@ -59,17 +58,19 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
             ch->message(msg, MESSAGE_TYPE::STATE);
 
         auto lua = fb::lua::new_context();
+        if (lua != nullptr)
+        {
 #if defined DEBUG | defined _DEBUG
-        lua->load("scripts/interaction.lua");
+            lua->load("scripts/interaction.lua");
 #endif
-        lua->func("on_login");
-        lua->pushobject(ch);
-        std::ignore = lua->call(1);
+            lua->func("on_login");
+            lua->pushobject(ch);
+            std::ignore = lua->call(1);
+        }
     }
 
     ch->update(STATE_LEVEL::LEVEL_MAX);
     ch->update_option();
-    ch->init(true);
     co_return true;
 }
 
@@ -156,12 +157,15 @@ async::task<bool> context::handle_move(fb::socket<character>& socket, const fb_r
 
             auto params = fb::model::dsl::script(warp->dest.params);
             auto lua    = fb::lua::new_context();
+            if (lua != nullptr)
+            {
 #if defined DEBUG | defined _DEBUG
-            lua->load(params.path);
+                lua->load(params.path);
 #endif
-            lua->func(params.function);
-            lua->pushobject(ch);
-            std::ignore = lua->call(1, false);
+                lua->func(params.function);
+                lua->pushobject(ch);
+                std::ignore = lua->call(1, false);
+            }
         }
         break;
 
@@ -765,18 +769,22 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
     if (ch->admin() == false && ENUM_IN(map->model.option, MAP_OPTION::DISABLE_TALK))
         co_return true;
 
-    auto lua = fb::lua::new_context();
+    auto stop = false;
+    auto lua  = fb::lua::new_context();
+    if (lua != nullptr)
+    {
 #if defined DEBUG | defined _DEBUG
-    lua->load("scripts/interaction.lua");
-    lua->load("scripts/command.lua");
+        lua->load("scripts/interaction.lua");
+        lua->load("scripts/command.lua");
 #endif
-    lua->func("on_chat");
-    lua->pushobject(ch);
-    lua->pushstring(request.message);
-    lua->pushboolean(request.shout);
-    co_await lua->call(3, false);
-    auto stop = lua->toboolean(1);
-    lua->release();
+        lua->func("on_chat");
+        lua->pushobject(ch);
+        lua->pushstring(request.message);
+        lua->pushboolean(request.shout);
+        co_await lua->call(3, false);
+        stop = lua->toboolean(1);
+        lua->release();
+    }
     if (stop)
         co_return true;
 

@@ -1805,6 +1805,9 @@ int character::builtin_script(lua_State* L)
 
     auto name    = lua->tostring(2, "func");
     auto new_lua = fb::lua::new_context(lua);
+    if (new_lua == nullptr)
+        return 0;
+
     new_lua->load("scripts/script.lua");
     new_lua->func(name);
     new_lua->pushobject(ch);
