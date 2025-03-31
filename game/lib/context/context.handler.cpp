@@ -571,6 +571,7 @@ async::task<bool> context::handle_world(fb::socket<character>& socket, const fb_
     if (ch->map() == &this->maps[after.map])
     {
         ch->update_map();
+        ch->update_external(false);
     }
     else
     {
