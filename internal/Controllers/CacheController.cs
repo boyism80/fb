@@ -2,6 +2,7 @@
 using Http.Service;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
+using System.Buffers;
 
 namespace Internal.Controllers
 {
@@ -25,7 +26,22 @@ namespace Internal.Controllers
             var conn = redis.Connection;
             var keys = await conn.ScanKeysAsync(pattern, "10");
             if (keys.Count > 0)
-                await conn.KeyDeleteAsync(keys.Select(x => new RedisKey(x)).ToArray());
+            {
+                var pool = ArrayPool<RedisKey>.Shared;
+                var array = pool.Rent(keys.Count);
+                try
+                {
+                    for (int j = 0; j < keys.Count; j++)
+                    {
+                        array[j] = new RedisKey(keys[j]);
+                    }
+                    await conn.KeyDeleteAsync(array);
+                }
+                finally
+                {
+                    pool.Return(array);
+                }
+            }
 
             return keys.Count;
         }
