@@ -29,8 +29,8 @@ login_bot::~login_bot()
 
 std::string fb::bot::login_bot::generate_id() const
 {
-    constexpr auto min = 0xAC00; // ��
-    constexpr auto max = 0xD7A3; // �R
+    constexpr auto min = 0xAC00; // 가
+    constexpr auto max = 0xD7A3; // 힣
 
     auto length = random(2, 6);
     auto result = std::wstring{};
@@ -76,8 +76,9 @@ bool login_bot::decrypt_policy(int cmd) const
 
 async::task<void> login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
-    auto           id = this->generate_id();
-    constexpr auto pw = "admin123";
+    auto           id     = this->generate_id();
+    auto           exists = false;
+    constexpr auto pw     = "admin123";
 
     try
     {
@@ -92,28 +93,41 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
                 break;
 
             if (resp.type == 0x0E)
-                id = this->generate_id();
+            {
+                if (resp.text == "이미 존재하는 이름입니다.")
+                {
+                    exists = true;
+                    break;
+                }
+                else
+                {
+                    id = this->generate_id();
+                }
+            }
 
             co_await thread->sleep(100ms);
         }
 
-        std::random_device rd;
-        std::mt19937       gen(rd());
-
-        uint8_t hair     = std::uniform_int_distribution<>(0, 101)(gen);
-        uint8_t sex      = std::uniform_int_distribution<>(0, 1)(gen);
-        uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
-        uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
-
-        while (true)
+        if (exists == false)
         {
-            auto&& resp = co_await this->request<fb::protocol::login::response::message>(
-                fb::protocol::login::request::complete{hair, sex, nation, creature});
+            std::random_device rd;
+            std::mt19937       gen(rd());
 
-            if (resp.type == 0x00)
-                break;
+            uint8_t hair     = std::uniform_int_distribution<>(0, 101)(gen);
+            uint8_t sex      = std::uniform_int_distribution<>(0, 1)(gen);
+            uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
+            uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
 
-            co_await thread->sleep(100ms);
+            while (true)
+            {
+                auto&& resp = co_await this->request<fb::protocol::login::response::message>(
+                    fb::protocol::login::request::complete{hair, sex, nation, creature});
+
+                if (resp.type == 0x00)
+                    break;
+
+                co_await thread->sleep(100ms);
+            }
         }
 
         while (true)
