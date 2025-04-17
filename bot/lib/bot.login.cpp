@@ -76,8 +76,8 @@ bool login_bot::decrypt_policy(int cmd) const
 
 async::task<void> login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
-    auto id = this->generate_id();
-    auto pw = "admin123";
+    auto           id = this->generate_id();
+    constexpr auto pw = "admin123";
 
     try
     {
@@ -91,13 +91,16 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
             if (resp.type == 0x00)
                 break;
 
+            if (resp.type == 0x0E)
+                id = this->generate_id();
+
             co_await thread->sleep(100ms);
         }
 
         std::random_device rd;
         std::mt19937       gen(rd());
 
-        uint8_t hair     = std::uniform_int_distribution<>(0, 0xFF)(gen);
+        uint8_t hair     = std::uniform_int_distribution<>(0, 101)(gen);
         uint8_t sex      = std::uniform_int_distribution<>(0, 1)(gen);
         uint8_t nation   = std::uniform_int_distribution<>(0, 1)(gen);
         uint8_t creature = std::uniform_int_distribution<>(0, 3)(gen);
