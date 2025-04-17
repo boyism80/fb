@@ -87,14 +87,11 @@ uint32_t fb::crypto::encrypt(fb::stream& data, uint32_t offset, uint32_t size)
     auto buffer_src    = (uint8_t*)data.data() + offset;
     auto buffer_dst    = new uint8_t[extended_size];
 
-    try
+    buffer_dst[0] = buffer_src[0];
+    buffer_dst[1] = this->_sequence;
+
+    if (size > 1)
     {
-        buffer_dst[0] = buffer_src[0];
-        buffer_dst[1] = this->_sequence;
-
-        if (size <= 1)
-            throw nullptr;
-
         this->crypt(buffer_src + 1, buffer_dst + 2, size - 1, this->_key, KEY_SIZE);
 
         for (int i = 0, loop = uint32_t((size - 2) / KEY_SIZE + 1); i < loop; i++)
@@ -110,10 +107,6 @@ uint32_t fb::crypto::encrypt(fb::stream& data, uint32_t offset, uint32_t size)
                     size - 1,
                     ((const uint8_t*)HEX_TABLE[this->_type]) + this->_sequence * 4,
                     1);
-    }
-    catch (...)
-    {
-        // DO NOTHING
     }
 
     uint32_t new_size = size + 1;
