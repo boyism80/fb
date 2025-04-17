@@ -498,8 +498,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
                 this->_sector = nullptr;
             }
 
-            auto before_map = this->_map;
-            this->_map      = nullptr;
+            this->_map = nullptr;
             co_await this->context.update_thread(*this);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
@@ -510,8 +509,12 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
 
         // here the character is on some map.
         // set map to null.
-        auto before_map      = this->_map;
         auto before_position = fb::model::point16_t{position};
+        if (this->_map != nullptr)
+        {
+            before_position.x = std::min<uint16_t>(position.x, map->width() - 1);
+            before_position.y = std::min<uint16_t>(position.y, map->height() - 1);
+        }
 
         if (this->_map != nullptr)
             co_await this->map(nullptr);
