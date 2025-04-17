@@ -27,6 +27,21 @@ login_bot::login_bot(bot_container& owner, uint32_t id, const fb::stream& params
 login_bot::~login_bot()
 { }
 
+std::string fb::bot::login_bot::generate_id() const
+{
+    constexpr auto min = 0xAC00; // °¡
+    constexpr auto max = 0xD7A3; // ÆR
+
+    auto length = random(2, 6);
+    auto result = std::wstring{};
+    for (int i = 0; i < length; i++)
+    {
+        result += (wchar_t)random(min, max);
+    }
+
+    return fb::M(result);
+}
+
 async::task<void> login_bot::on_connected()
 {
     {
@@ -61,7 +76,7 @@ bool login_bot::decrypt_policy(int cmd) const
 
 async::task<void> login_bot::handle_agreement(const fb::protocol::login::response::agreement& response)
 {
-    auto id = boost::uuids::to_string(boost::uuids::random_generator()());
+    auto id = this->generate_id();
     auto pw = "admin123";
 
     try

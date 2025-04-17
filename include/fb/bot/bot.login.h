@@ -3,6 +3,8 @@
 
 #include <fb/bot/bot.h>
 #include <fb/login/protocol.h>
+#include <random.h>
+#include <fb/encoding.h>
 #include <shared_mutex>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
@@ -20,6 +22,9 @@ public:
     login_bot(bot_container& owner, uint32_t id);
     login_bot(bot_container& owner, uint32_t id, const fb::stream& params);
     ~login_bot();
+
+private:
+    std::string generate_id() const;
 
 protected:
     async::task<void> on_connected() override final;
