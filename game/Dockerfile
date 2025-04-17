@@ -21,4 +21,4 @@ RUN rm -f maps.zip
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-CMD ./app
+CMD ["./app"]

@@ -17,4 +17,4 @@ COPY --from=build /app/bot/build/app .
 COPY --from=build /fb/data/json/server/ /app/json/
 
 WORKDIR /app
-CMD ./app
+CMD ["./app"]
