@@ -15,5 +15,4 @@ ENV SERVICE=$SERVICE
 COPY --from=build /app/dist/${SERVICE} /app
 COPY --from=data-build /fb/data/json/server/ /app/json/
 WORKDIR /app
-ENTRYPOINT ["dotnet"]
-CMD ["${SERVICE}.dll"]
+ENTRYPOINT ["dotnet ${SERVICE}.dll"]
