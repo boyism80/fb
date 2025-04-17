@@ -13,6 +13,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include <stdexcept>
 
 namespace fb {
 

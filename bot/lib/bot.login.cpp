@@ -32,14 +32,21 @@ std::string fb::bot::login_bot::generate_id() const
     constexpr auto min = 0xAC00; // 가
     constexpr auto max = 0xD7A3; // 힣
 
-    auto length = random(2, 6);
-    auto result = std::wstring{};
-    for (int i = 0; i < length; i++)
+    while (true)
     {
-        result += (wchar_t)random(min, max);
-    }
+        auto len = random(2, 6);
+        auto wcs = std::wstring{};
+        for (int i = 0; i < len; i++)
+        {
+            wcs += (wchar_t)random(min, max);
+        }
 
-    return fb::M(result);
+        auto mbs = fb::M(wcs);
+        if (fb::assert_korean(mbs) == false)
+            continue;
+
+        return mbs;
+    }
 }
 
 async::task<void> login_bot::on_connected()
@@ -94,7 +101,7 @@ async::task<void> login_bot::handle_agreement(const fb::protocol::login::respons
 
             if (resp.type == 0x0E)
             {
-                if (resp.text == "이미 존재하는 이름입니다.")
+                if (resp.text == fb::model::const_value::string::MESSAGE_ACCOUNT_ALREADY_EXISTS)
                 {
                     exists = true;
                     break;

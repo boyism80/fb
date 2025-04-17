@@ -118,9 +118,21 @@ async::task<void> game_bot::handle_option(const fb::protocol::game::response::op
 
 async::task<void> game_bot::handle_message(const fb::protocol::game::response::message& response)
 {
-    if (response.text == "비바람이 휘몰아치고 있습니다.")
+    if (response.text == fb::model::const_value::string::MESSAGE_NOT_READY_GAME_SERVER)
     {
         this->send(fb::protocol::game::request::chat(false, "/랜덤이동"));
+    }
+
+    if (response.type == MESSAGE_TYPE::NOTIFY)
+    {
+        static const auto regex = boost::xpressive::sregex::compile("(?P<id>.+)> (?P<msg>.+)");
+        auto              what  = boost::xpressive::smatch();
+        if (boost::xpressive::regex_search(response.text, what, regex) == false)
+            co_return;
+
+        auto id  = what["id"].str();
+        auto msg = std::format("\"{}\"에 대한 응답입니다.", what["msg"].str());
+        this->send(fb::protocol::game::request::whisper(id, msg));
     }
 
     co_return;

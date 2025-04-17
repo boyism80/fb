@@ -137,8 +137,13 @@ std::wstring fb::W(const std::string& m)
 
     return std::wstring(wide.data());
 #else
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-    return conv.from_bytes(m);
+    auto size = mbstowcs(nullptr, m.c_str(), 0);
+    if (size == static_cast<size_t>(-1))
+        throw std::runtime_error("Conversion failed: invalid multibyte sequence");
+
+    auto buffer = std::vector<wchar_t>(size + 1);
+    mbstowcs(buffer.data(), m.c_str(), size + 1);
+    return std::wstring(buffer.data());
 #endif
 }
 
@@ -152,8 +157,13 @@ std::string fb::M(const std::wstring& w)
 
     return std::string(mbs.data());
 #else
-    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
-    return conv.to_bytes(w);
+    auto size = wcstombs(nullptr, w.c_str(), 0);
+    if (size == static_cast<size_t>(-1))
+        throw std::runtime_error("Conversion failed: invalid wide character sequence");
+
+    auto buffer = std::vector<char>(size + 1);
+    wcstombs(buffer.data(), w.c_str(), size + 1);
+    return std::string(buffer.data());
 #endif
 }
 
@@ -175,27 +185,11 @@ std::string fb::name_with(const std::string& name, const std::pair<std::string, 
         return name + postfix.second;
 }
 
-// 참고자료
-// https://gala04.tistory.com/entry/%EC%A0%9C%EB%AA%A9%EC%9D%84-%EC%9E%85%EB%A0%A5%ED%95%B4-%EC%A3%BC%EC%84%B8%EC%9A%94
 bool fb::assert_korean(const std::string& str)
 {
-    auto len = str.length();
-    if (len % 2 > 0)
-        return false;
-
-    auto raw = str.c_str();
-    for (int i = 0; i < len; i += 2)
+    for (auto ch : str)
     {
-        uint8_t e1 = raw[i + 0];
-        uint8_t e2 = raw[i + 1];
-
-        if (isascii(e1))
-            return false;
-
-        if (e1 < 0xB0 || e1 > 0xC8)
-            return false;
-
-        if (e2 < 0xA1 || e2 > 0xFE)
+        if ((ch & 0x80) == 0)
             return false;
     }
 
