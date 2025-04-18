@@ -137,13 +137,8 @@ std::wstring fb::W(const std::string& m)
 
     return std::wstring(wide.data());
 #else
-    auto size = mbstowcs(nullptr, m.c_str(), 0);
-    if (size == static_cast<size_t>(-1))
-        throw std::runtime_error("Conversion failed: invalid multibyte sequence");
-
-    auto buffer = std::vector<wchar_t>(size + 1);
-    mbstowcs(buffer.data(), m.c_str(), size + 1);
-    return std::wstring(buffer.data());
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    return conv.from_bytes(m);
 #endif
 }
 
@@ -157,13 +152,8 @@ std::string fb::M(const std::wstring& w)
 
     return std::string(mbs.data());
 #else
-    auto size = wcstombs(nullptr, w.c_str(), 0);
-    if (size == static_cast<size_t>(-1))
-        throw std::runtime_error("Conversion failed: invalid wide character sequence");
-
-    auto buffer = std::vector<char>(size + 1);
-    wcstombs(buffer.data(), w.c_str(), size + 1);
-    return std::string(buffer.data());
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> conv;
+    return conv.to_bytes(w);
 #endif
 }
 
