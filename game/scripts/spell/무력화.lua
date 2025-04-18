@@ -13,8 +13,9 @@ function ON_CAST_4012(me, you, spell)
     end
     me:mp_down(mp)
 
-    local success = math.random() < 0.5
-    if not debug() and not success then
+    local percent = 0.5 + ((me:int() / 255) * 0.5)
+    local success = boolean_random(percent)
+    if not success then
         return me:message('무력화 실패')
     end
 

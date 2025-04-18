@@ -1,3 +1,7 @@
+function boolean_random(percent)
+    return math.random() < percent
+end
+
 function CREATURE_SPELL(creature, index)
     if creature == CREATURE_PHOENIX then
         if index == 1 then
