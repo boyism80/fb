@@ -50,6 +50,7 @@ protected:
      * @brief      Constructs a new instance.
      *
      * @param      context  The context
+     * @param[in]  name     The name
      * @param[in]  port     The port
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
@@ -286,6 +287,8 @@ private:
      *
      * @param      socket  The socket
      * @param      stream  The stream
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
@@ -367,6 +370,13 @@ private:
     }
 
 private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<void> erase(fb::socket<T>& socket)
     {
         try
@@ -385,38 +395,57 @@ private:
     }
 
     /**
+     * @brief      Called when socket received.
+     *
+     * @param      socket  The socket
+     * @param      stream  The stream
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> on_socket_received(fb::socket<T>& socket, fb::stream& stream)
+    {
+        try
+        {
+            co_await this->execute_handler(socket, stream);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
+    }
+
+    /**
+     * @brief      Called when socket closed.
+     *
+     * @param      socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> on_socket_closed(fb::socket<T>& socket)
+    {
+        try
+        {
+            if (socket.data() == nullptr)
+                co_return;
+
+            co_await this->threads.dispatch(socket, [this, &socket](auto&) -> async::task<void> {
+                co_await this->erase(socket);
+            });
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
+    }
+
+    /**
      * @brief      { function_description }
      */
     void accept()
     {
-        auto callback_received = [this](fb::socket<T>& socket, fb::stream& stream) -> async::task<void> {
-            try
-            {
-                co_await this->execute_handler(socket, stream);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-            }
-        };
-
-        auto callback_closed = [this](fb::socket<T>& socket) -> async::task<void> {
-            try
-            {
-                if (socket.data() == nullptr)
-                    co_return;
-
-                co_await this->threads.dispatch(socket, [this, &socket](auto&) -> async::task<void> {
-                    co_await this->erase(socket);
-                });
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-            }
-        };
-
-        auto socket = std::make_unique<fb::socket<T>>(*this, callback_received, callback_closed);
+        auto socket = std::make_unique<fb::socket<T>>(*this,
+                                                      std::bind_front(&acceptor::on_socket_received, this),
+                                                      std::bind_front(&acceptor::on_socket_closed, this));
         auto ptr    = socket.get();
         this->async_accept(*ptr, [this, socket = std::move(socket), ptr](boost::system::error_code error) mutable {
             try
@@ -705,6 +734,15 @@ protected:
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  route         The route
+     * @param[in]  <unnamed>     { parameter_description }
+     *
+     * @tparam     Class         { description }
+     * @tparam     ResponseType  { description }
+     */
     template <typename Class, typename ResponseType>
     void bind_amqp(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
     {
@@ -719,6 +757,11 @@ protected:
                                            }});
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      queue  The queue
+     */
     void bind_amqp(fb::amqp::queue& queue)
     {
         auto& route = queue.route();
@@ -754,6 +797,8 @@ public:
      * @param[in]  stream   The stream
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<size_t> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
@@ -771,6 +816,8 @@ public:
      * @param[in]  response  The response
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<size_t>
     send(fb::socket<T>& socket, const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
