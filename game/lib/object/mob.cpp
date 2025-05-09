@@ -403,8 +403,7 @@ void mob::drop_items()
     auto& position = this->position();
     for (auto item : this->_items)
     {
-        item->owner(nullptr);
-        item->map(map, position);
+        std::ignore = item->map(map, position);
     }
     this->_items.clear();
 
@@ -482,7 +481,6 @@ bool fb::game::mob::push_item(item& i)
     if (this->_items.size() >= CONTAINER_CAPACITY)
         return false;
 
-    i.owner(nullptr);
     this->_items.push_back(&i);
     return true;
 }

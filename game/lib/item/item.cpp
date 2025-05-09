@@ -127,20 +127,23 @@ const item::nullable_time& item::dropped_time() const
     return this->_dropped_time;
 }
 
-character* item::owner() const
+void fb::game::item::death_cid(std::optional<uint32_t> cid)
 {
-    return this->_owner;
+    this->_death_cid = cid;
 }
 
-void item::owner(character* owner)
+std::optional<uint32_t> fb::game::item::death_cid() const
 {
-    this->_owner = owner;
+    return this->_death_cid;
 }
 
 bool item::active()
 {
+    if (this->_container == nullptr)
+        return false;
+
     if (this->empty())
-        std::ignore = this->_owner->items.remove(*this);
+        std::ignore = this->_container->remove(*this);
 
     auto& model = this->based<fb::model::item>();
     if (model.script.empty())
@@ -150,7 +153,7 @@ bool item::active()
         return false;
 
     auto listener = this->get_listener<fb::game::item>();
-    listener->on_item_active(*this->_owner, *this);
+    listener->on_item_active(this->_container->owner, *this);
     return true;
 }
 
@@ -170,6 +173,9 @@ item* item::split(uint16_t count)
 
 void item::merge(item& item)
 {
+    if (this->_container == nullptr)
+        return;
+
     auto& model = this->based<fb::model::item>();
     if (model.attr(ITEM_ATTRIBUTE::BUNDLE) == false)
         return;
@@ -177,20 +183,21 @@ void item::merge(item& item)
     if (model != item.based())
         return;
 
-    auto before = this->_count;
-    auto remain = this->fill(item.count());
+    auto& owner  = this->_container->owner;
+    auto  before = this->_count;
+    auto  remain = this->fill(item.count());
     item.count(remain);
 
-    auto listener = this->_owner->get_listener<character>();
+    auto listener = this->_container->owner.get_listener<character>();
 
     if (listener != nullptr)
     {
         if (before != this->_count)
-            listener->on_item_update(static_cast<character&>(*this->_owner), this->_owner->items.index(*this));
+            listener->on_item_update(static_cast<character&>(owner), owner.items.index(*this));
     }
 
     if (remain > 0 && this->_count == model.capacity)
-        this->_owner->message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
+        owner.message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));
 }
 
 fb::thread* fb::game::item::thread() const
@@ -198,16 +205,16 @@ fb::thread* fb::game::item::thread() const
     if (this->_map != nullptr)
         return this->context.threads.modular(this->_map->model.id);
 
-    if (this->_owner != nullptr)
-        return this->_owner->thread();
+    if (this->_container != nullptr)
+        return this->_container->owner.thread();
 
     return this->context.threads.current();
 }
 
 void fb::game::item::assert_thread() const
 {
-    if (this->_owner != nullptr)
-        this->_owner->assert_thread();
+    if (this->_container != nullptr)
+        this->_container->owner.assert_thread();
     else if (this->_map == nullptr)
         return;
     else
@@ -216,12 +223,12 @@ void fb::game::item::assert_thread() const
 
 fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
 {
-    if (this->_owner == nullptr)
-        throw std::runtime_error("cannot convert to protocol because owner is empty");
+    if (this->_container == nullptr)
+        throw std::runtime_error("cannot convert to protocol because container is empty");
 
     auto& model        = this->based<fb::model::item>();
     auto  result       = fb::protocol::internal::Item();
-    result.user        = this->_owner->id();
+    result.user        = this->_container->owner.id();
     result.index       = -1;
     result.parts       = static_cast<uint16_t>(parts);
     result.deposited   = -1;

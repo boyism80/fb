@@ -14,20 +14,25 @@ fb::game::consume::~consume()
 
 bool fb::game::consume::active()
 {
+    if (this->_container == nullptr)
+        return false;
+
+    auto& owner = this->_container->owner;
+
     if (this->_count == 0)
         return false;
 
     fb::game::item::active();
     this->_count--;
 
-    this->_owner->action(ACTION::EAT, DURATION::EAT);
-    this->_owner->sound(SOUND::EAT);
-    auto listener = this->_owner->get_listener<fb::game::character>();
+    owner.action(ACTION::EAT, DURATION::EAT);
+    owner.sound(SOUND::EAT);
+    auto listener = owner.get_listener<fb::game::character>();
     if (listener != nullptr)
-        listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
+        listener->on_item_update(owner, owner.items.index(*this));
 
     if (this->empty())
-        std::ignore = this->_owner->items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
+        std::ignore = owner.items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);
 
     return true;
 }

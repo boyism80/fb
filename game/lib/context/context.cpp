@@ -480,7 +480,6 @@ void context::init_items(const std::vector<internal::Item>& response, character&
     for (auto& x : response)
     {
         auto item = this->model.item[x.model].make(*this);
-        item->owner(&ch);
         item->count(x.count);
 
         if (x.durability.has_value())
