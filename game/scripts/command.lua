@@ -375,5 +375,54 @@ command_funcs = {
             me:sex(SEX_MAN)
         end
         return true
+    end,
+
+    ['서버종료'] = 
+    function (me, args)
+        local delay = table.unpack(args)
+        if delay == nil then
+            delay = 10
+        else
+            delay = tonumber(delay)
+        end
+
+        while delay > 0 do
+            if delay > 600 then
+                term = math.min(600, delay-600)
+            elseif delay > 60 then
+                term = math.min(60, delay-60)
+            elseif delay > 10 then
+                term = math.min(10, delay-10)
+            else
+                term = 1
+            end
+
+            times = delay
+            hours = times // 3600
+            times = times - (hours * 3600)
+
+            mins = times // 60
+            times = times - (mins * 60)
+
+            secs = times % 60
+            message = ''
+            if hours > 0 then
+                message = string.format('%d시간', hours)
+            end
+
+            if mins > 0 then
+                message = string.format('%s %d분', message, mins)
+            end
+
+            if secs > 0 then
+                message = string.format('%s %d초', message, secs)
+            end
+
+            broadcast(string.format('[공지] %s 후 서버가 종료됩니다.', message), MESSAGE_TYPE_NOTIFY, BROADCAST_TYPE_GLOBAL)
+            sleep(term * 1000)
+            delay = delay - term
+        end
+        shutdown()
+        return true
     end
 }

@@ -247,6 +247,14 @@ namespace fb.protocol._internal
                 builder.Build(value.Name),
                 builder.Build(value.Position));
         }
+        public static Offset<fb.protocol._internal.request.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Shutdown value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.request.raw.Shutdown.StartShutdown(builder);
+            return fb.protocol._internal.request.raw.Shutdown.EndShutdown(builder);
+        }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
         {
             if (value == null)
@@ -524,6 +532,14 @@ namespace fb.protocol._internal
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Shutdown.StartShutdown(builder);
+            return fb.protocol._internal.response.raw.Shutdown.EndShutdown(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
         {
@@ -1164,6 +1180,14 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Name),
                 builder.Build(value.Position));
         }
+        public static Offset<fb.protocol._internal.request.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Shutdown value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.request.raw.Shutdown.StartShutdown(builder);
+            return fb.protocol._internal.request.raw.Shutdown.EndShutdown(builder);
+        }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
         {
             if (value == null)
@@ -1441,6 +1465,14 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Shutdown.StartShutdown(builder);
+            return fb.protocol._internal.response.raw.Shutdown.EndShutdown(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
         {
@@ -1828,6 +1860,7 @@ namespace fb.protocol._internal.request
 
     public enum FlatBufferProtocolType
     { 
+        Shutdown,
         Login,
         Logout,
         Transfer,
@@ -2095,6 +2128,14 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Name),
                 builder.Build(value.Position));
         }
+        public static Offset<fb.protocol._internal.request.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Shutdown value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.request.raw.Shutdown.StartShutdown(builder);
+            return fb.protocol._internal.request.raw.Shutdown.EndShutdown(builder);
+        }
         public static Offset<fb.protocol._internal.request.raw.Login> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Login value)
         {
             if (value == null)
@@ -2372,6 +2413,14 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Host),
                 builder.Build(value.Message),
                 builder.Build(value.Type));
+        }
+        public static Offset<fb.protocol._internal.response.raw.Shutdown> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.Shutdown value)
+        {
+            if (value == null)
+                return default;
+
+            fb.protocol._internal.response.raw.Shutdown.StartShutdown(builder);
+            return fb.protocol._internal.response.raw.Shutdown.EndShutdown(builder);
         }
         public static Offset<fb.protocol._internal.response.raw.KickOut> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.KickOut value)
         {
@@ -2759,6 +2808,7 @@ namespace fb.protocol._internal.response
 
     public enum FlatBufferProtocolType
     { 
+        Shutdown,
         KickOut,
         Login,
         Logout,
@@ -3428,6 +3478,33 @@ namespace fb.protocol._internal
 namespace fb.protocol._internal.request
 {
 
+    public class Shutdown : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Shutdown;
+
+        public Shutdown()
+        { }
+
+        public Shutdown(fb.protocol._internal.request.raw.Shutdown raw)
+        {
+        }
+
+        public Shutdown(byte[] bytes) : this(fb.protocol._internal.request.raw.Shutdown.GetRootAsShutdown(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Shutdown Deserialize(byte[] bytes)
+        {
+            return new Shutdown(bytes);
+        }
+    }
     public class Login : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.Login;
@@ -4355,6 +4432,7 @@ namespace fb.protocol._internal.request
         {
             return protocolType switch
             {
+                FlatBufferProtocolType.Shutdown => typeof(fb.protocol._internal.request.Shutdown),
                 FlatBufferProtocolType.Login => typeof(fb.protocol._internal.request.Login),
                 FlatBufferProtocolType.Logout => typeof(fb.protocol._internal.request.Logout),
                 FlatBufferProtocolType.Transfer => typeof(fb.protocol._internal.request.Transfer),
@@ -4391,6 +4469,33 @@ namespace fb.protocol._internal.request
 namespace fb.protocol._internal.response
 {
 
+    public class Shutdown : IFlatBufferEx
+    {
+        public int ProtocolType => (int)FlatBufferProtocolType.Shutdown;
+
+        public Shutdown()
+        { }
+
+        public Shutdown(fb.protocol._internal.response.raw.Shutdown raw)
+        {
+        }
+
+        public Shutdown(byte[] bytes) : this(fb.protocol._internal.response.raw.Shutdown.GetRootAsShutdown(new ByteBuffer(bytes)))
+        { }
+
+        public byte[] Serialize()
+        {
+            var builder = new FlatBufferBuilder(1);
+            var offset = builder.Build(this);
+            builder.Finish(offset.Value);
+            return builder.SizedByteArray();
+        }
+
+        public static Shutdown Deserialize(byte[] bytes)
+        {
+            return new Shutdown(bytes);
+        }
+    }
     public class KickOut : IFlatBufferEx
     {
         public int ProtocolType => (int)FlatBufferProtocolType.KickOut;
@@ -5512,6 +5617,7 @@ namespace fb.protocol._internal.response
         {
             return protocolType switch
             {
+                FlatBufferProtocolType.Shutdown => typeof(fb.protocol._internal.response.Shutdown),
                 FlatBufferProtocolType.KickOut => typeof(fb.protocol._internal.response.KickOut),
                 FlatBufferProtocolType.Login => typeof(fb.protocol._internal.response.Login),
                 FlatBufferProtocolType.Logout => typeof(fb.protocol._internal.response.Logout),

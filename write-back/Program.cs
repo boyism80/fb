@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using WriteBack.Service;
 
@@ -9,27 +9,22 @@ namespace WriteBack
     {
         static async Task Main(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", false)
-                .Build() as IConfiguration;
+            var host = Host.CreateDefaultBuilder(args)
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<Http.Service.RedisService>();
+                    services.AddSingleton<Http.Service.DbContext>();
+                    services.AddLogging(builder =>
+                    {
+                        builder.AddConsole();
+                    });
+                    services.AddHostedService<WriteBackService>();
+                    services.AddHostedService<Http.Service.ShutdownListenerService>();
+                })
+                .UseConsoleLifetime()
+                .Build();
 
-
-            var collection = new ServiceCollection();
-            collection.AddSingleton<Http.Service.RedisService>();
-            collection.AddSingleton(configuration);
-            collection.AddSingleton<Http.Service.DbContext>();
-            collection.AddSingleton<WriteBackService>();
-            collection.AddLogging(builder =>
-            {
-                builder.AddConsole();
-            });
-
-            var sp = collection.BuildServiceProvider();
-            var wbs = sp.GetService<WriteBackService>();
-
-            var stoppingToken = new CancellationToken();
-            await wbs.ExecuteAsync(stoppingToken);
+            host.Run();
         }
     }
 }

@@ -79,8 +79,15 @@ void fb::thread::exit()
         return;
 
     this->_exit = true;
-    if (this->_thread.joinable())
-        this->_thread.join();
+    try
+    {
+        if (this->_thread.joinable())
+            this->_thread.join();
+    }
+    catch (std::exception& e)
+    {
+        fb::logger::fatal(e.what());
+    }
 
     this->_mutex_timer.lock();
     this->_timers.clear();

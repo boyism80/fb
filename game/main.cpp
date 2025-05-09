@@ -14,6 +14,7 @@ using namespace fb::model::enum_value;
 
 int main(int argc, const char** argv)
 {
+
     try
     {
         //_CrtSetBreakAlloc(7997394);
@@ -26,8 +27,9 @@ int main(int argc, const char** argv)
         flatbuffers::option::decoding(cp949);
 #endif
 
-        auto io_context                = boost::asio::io_context{};
-        auto context                   = std::make_unique<fb::game::context>(io_context, config<uint16_t>("port"));
+        auto io_context = boost::asio::io_context{};
+        auto context    = std::make_unique<fb::game::context>(io_context, config<uint16_t>("port"));
+
         context->model.item.hook.build = [](const Json::Value& json) -> fb::model::item* {
             auto type = fb::model::build<ITEM_TYPE>(json["type"]);
             switch (type)

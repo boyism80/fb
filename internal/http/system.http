@@ -1,0 +1,5 @@
+###
+POST {{host}}/system/shutdown
+Content-Type: application/json
+
+{}
