@@ -24,6 +24,12 @@ module.exports = function () {
                         port: conf.redis[sectionConf.redis]['-1'].port.cluster,
                         pool: 1
                     },
+                    amqp: {
+                        ip: "rabbitmq",
+                        port: conf.rabbitmq[sectionConf.rabbitmq].port.amqp.cluster,
+                        uid: "fb",
+                        pwd: "admin"
+                    },
                     internal: {
                         ip: `internal-${sectionConf.internal}`,
                         port: conf.internal[sectionConf.internal].port.cluster

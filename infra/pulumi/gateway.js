@@ -17,7 +17,13 @@ module.exports = function () {
                     background: 8
                 },
                 log: ["info", "fatal"],
-                entrypoints: []
+                entrypoints: [],
+                amqp: {
+                    ip: "rabbitmq",
+                    port: conf.rabbitmq['section-1'].port.amqp.cluster,
+                    uid: "fb",
+                    pwd: "admin"
+                },
             }
 
             for(const [section, loginContainerConf] of Object.entries(conf.login)) {

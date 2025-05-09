@@ -18,7 +18,13 @@ module.exports = {
                 "ConnectionStrings": {
                     "MySql": {}
                 },
-                "Redis": {}
+                "Redis": {},
+                "RabbitMQ": {
+                    "Host": "rabbitmq",
+                    "Port": conf.rabbitmq[sectionConf.redis].port.amqp.cluster,
+                    "Uid": "fb",
+                    "Pwd": "admin"
+                }
             }
 
             for(const [id, mysqlConfig] of Object.entries(conf.mysql[sectionConf.mysql])) {

@@ -108,6 +108,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30010
         },
         "section-2": {
@@ -116,6 +117,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30011
         },
         "section-3": {
@@ -124,6 +126,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30012
         },
         "section-4": {
@@ -132,6 +135,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30013
         },
         "section-5": {
@@ -140,6 +144,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30014
         },
         "section-6": {
@@ -148,6 +153,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30015
         },
         "section-7": {
@@ -156,6 +162,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30016
         },
         "section-8": {
@@ -164,6 +171,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30017
         },
         "section-9": {
@@ -172,6 +180,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30018
         },
         "section-10": {
@@ -180,6 +189,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30019
         },
         "section-11": {
@@ -188,6 +198,7 @@
             "internal": "section-1",
             "db": "section-1",
             "redis": "section-1",
+            "rabbitmq": "section-1",
             "port": 30020
         }
     },
