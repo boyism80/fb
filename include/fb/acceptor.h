@@ -38,7 +38,6 @@ private:
     std::unique_ptr<fb::amqp::socket>           _amqp;
     std::mutex                                  _mutex_exit;
     boost_timers                                _timers;
-    bool                                        _running = false;
 
 protected:
     std::queue<background_func> _background_queue;
@@ -822,35 +821,6 @@ protected:
         }
     }
 
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  fn        The function
-     * @param[in]  duration  The duration
-     */
-    template <typename Class>
-    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
-    {
-        auto cfunc = std::bind(fn, static_cast<Class*>(this));
-        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
-        this->_timers.push_back(timer);
-
-        auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
-        auto callback     = [=](const boost::system::error_code& ec) {
-            if (ec || !this->_running)
-                return;
-
-            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
-                timer->expires_at(timer->expires_at() +
-                                  boost::posix_time::milliseconds(
-                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
-                timer->async_wait(*callback_ptr.get());
-            });
-        };
-        *callback_ptr = callback;
-        timer->async_wait(*callback_ptr.get());
-    }
-
 protected:
     /**
      * @brief      { function_description }
@@ -1061,12 +1031,14 @@ private:
         }
     }
 
-public:
+protected:
     /**
      * @brief      { function_description }
      */
-    void exit()
+    void exit() override final
     {
+        // abstract에 있는 exit와 겹치는 코드가 굉장히 많고
+        // 멤버필드의 위치도 애매함. 리팩토링 필요함
         if (this->_running == false)
             return;
 

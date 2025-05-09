@@ -12,12 +12,15 @@ class context
 {
 public:
     using hash_switchable = fb::hash<fb::locker<std::unordered_set<fb::thread_switchable*>>>;
+    using boost_timers    = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
     hash_switchable _hash_switchable;
+    boost_timers    _timers;
 
 protected:
     boost::asio::io_context& _boost_context;
+    bool                     _running = false;
 
 public:
     thread_container threads;
@@ -42,8 +45,40 @@ protected:
         this->threads.settimer(c_func, duration);
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn        The function
+     * @param[in]  duration  The duration
+     */
+    template <typename Class>
+    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
+    {
+        auto cfunc = std::bind(fn, static_cast<Class*>(this));
+        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
+        this->_timers.push_back(timer);
+
+        auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
+        auto callback     = [=, this](const boost::system::error_code& ec) {
+            if (ec || !this->_running)
+                return;
+
+            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
+                timer->expires_at(timer->expires_at() +
+                                  boost::posix_time::milliseconds(
+                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
+                timer->async_wait(*callback_ptr.get());
+            });
+        };
+        *callback_ptr = callback;
+        timer->async_wait(*callback_ptr.get());
+    }
+
 public:
     virtual ~context() = default;
+
+protected:
+    virtual void exit();
 
 public:
     void              push_alive(const fb::thread_switchable& obj);

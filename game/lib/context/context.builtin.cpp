@@ -581,9 +581,10 @@ int fb::game::context::builtin_shutdown(lua_State* L)
         return 0;
 
     auto context = lua->env<fb::game::context>("context");
-    context->post<internal::request::Shutdown, internal::response::Shutdown>("internal",
-                                                                             "/system/shutdown",
-                                                                             internal::request::Shutdown{});
+    std::ignore =
+        context->post<internal::request::Shutdown, internal::response::Shutdown>("internal",
+                                                                                 "/system/shutdown",
+                                                                                 internal::request::Shutdown{});
     return 0;
 }
 
