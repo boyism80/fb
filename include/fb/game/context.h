@@ -52,8 +52,6 @@ public:
 
 private:
     fb::model::datetime               _time;
-    std::unique_ptr<fb::amqp::socket> _amqp;
-    std::unique_ptr<std::thread>      _amqp_thread;
     fb::hash<shard_params>            _shard;
     std::vector<npc_interaction_func> _npc_interaction_funcs;
     fb::redis                         _redis;
@@ -445,11 +443,6 @@ public:
 
     /**
      * @brief      { function_description }
-     */
-    void amqp_thread();
-
-    /**
-     * @brief      { function_description }
      *
      * @param[in]  message         The message
      * @param[in]  type            The type
@@ -652,7 +645,14 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    bool decrypt_policy(uint8_t cmd) const final;
+    bool decrypt_policy(uint8_t cmd) const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      amqp  The amqp
+     */
+    void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;
 
     /**
      * @brief      { function_description }
@@ -1173,6 +1173,14 @@ public:
     [[nodiscard]] async::task<void> handle_announce();
 
 public:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_shutdown(const internal_resp::Shutdown& response);
     /**
      * @brief      { function_description }
      *

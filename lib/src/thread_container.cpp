@@ -223,10 +223,9 @@ void thread_container::settimer(const timer::handle_callback_type& fn, const mod
 
 void thread_container::exit()
 {
-
-    for (auto& thread : this->_thread_container)
+    for (auto& [id, thread] : this->_thread_container)
     {
-        thread.second->exit();
+        thread->exit();
     }
 
     this->_thread_container.clear();

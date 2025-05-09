@@ -37,7 +37,7 @@ public:
 private:
 #ifdef BOT
 #else
-    using container = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::socket<character>>>>;
+    using container = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<character>>>;
 #endif
 
 public:

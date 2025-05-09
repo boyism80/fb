@@ -205,6 +205,7 @@ void context::on_item_tooltip(character& ch, const item& item, uint16_t position
 
 void context::on_show_user_list(character& ch)
 {
+    auto _ = std::lock_guard(this->_sockets_mutex);
     ch.send(fb_resp::user_list(ch, this->_sockets));
 }
 

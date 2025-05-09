@@ -26,15 +26,18 @@ public:
     using handle_func       = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
     using deserilze_func    = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
     using background_func   = std::function<async::task<void>()>;
-    using socket_container  = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>>;
+    using socket_container  = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
     using amqp_handler_func = std::function<async::task<void>(const uint8_t*)>;
     using amqp_handler_type = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
+    using boost_timers      = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
     amqp_handler_type                           _amqp_handler;
+    std::unique_ptr<fb::amqp::socket>           _amqp;
     std::mutex                                  _mutex_exit;
+    boost_timers                                _timers;
     bool                                        _running = false;
 
 protected:
@@ -44,6 +47,7 @@ protected:
 protected:
     fb::mutex        _mutex;
     socket_container _sockets;
+    std::mutex       _sockets_mutex;
 
 protected:
     /**
@@ -67,7 +71,51 @@ public:
         this->exit();
     }
 
+protected:
+    virtual void handle_declare_amqp_queue(fb::amqp::socket& amqp) = 0;
+
 private:
+    /**
+     * @brief      { function_description }
+     */
+    void amqp_thread_loop()
+    {
+        auto timeout = timeval{5, 0};
+        while (this->_running)
+        {
+            try
+            {
+                this->_amqp = std::make_unique<fb::amqp::socket>();
+                this->_amqp->connect(fb::config<std::string>("amqp:ip"),
+                                     fb::config<uint16_t>("amqp:port"),
+                                     fb::config<std::string>("amqp:uid"),
+                                     fb::config<std::string>("amqp:pwd"),
+                                     "/");
+
+                this->handle_declare_amqp_queue(*this->_amqp);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+                std::this_thread::sleep_for(1s);
+                continue;
+            }
+
+            while (this->_running)
+            {
+                try
+                {
+                    if (this->_amqp->select(&timeout) == false)
+                        continue;
+                }
+                catch (std::exception&)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * @brief      Gets the internal.
      *
@@ -273,12 +321,8 @@ public:
      */
     bool connected(uint32_t fd)
     {
-        return this->_sockets.template lock<bool>([fd](auto& container) {
-            if (container.contains(fd))
-                return true;
-
-            return false;
-        });
+        auto _ = std::lock_guard(this->_sockets_mutex);
+        return this->_sockets.contains(fd);
     }
 
 private:
@@ -389,9 +433,10 @@ private:
         }
         this->pop_alive(socket);
 
-        this->_sockets.lock([fd = socket.fd()](auto& container) {
-            container.erase(fd);
-        });
+        {
+            auto _ = std::lock_guard(this->_sockets_mutex);
+            this->_sockets.erase(socket.fd());
+        }
     }
 
     /**
@@ -458,10 +503,12 @@ private:
 
                 ptr->data(this->handle_accepted(*ptr));
 
-                this->_sockets.lock([&socket](auto& container) {
+                {
+                    auto _  = std::lock_guard(this->_sockets_mutex);
                     auto fd = socket->fd();
-                    container.insert({fd, std::move(socket)});
-                });
+                    this->_sockets.insert({fd, std::move(socket)});
+                }
+
                 this->push_alive(*ptr);
                 async::awaitable_get(this->handle_connected(*ptr));
 
@@ -471,6 +518,7 @@ private:
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
+                socket->close();
             }
         });
     }
@@ -774,6 +822,35 @@ protected:
         }
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  fn        The function
+     * @param[in]  duration  The duration
+     */
+    template <typename Class>
+    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
+    {
+        auto cfunc = std::bind(fn, static_cast<Class*>(this));
+        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
+        this->_timers.push_back(timer);
+
+        auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
+        auto callback     = [=](const boost::system::error_code& ec) {
+            if (ec || !this->_running)
+                return;
+
+            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
+                timer->expires_at(timer->expires_at() +
+                                  boost::posix_time::milliseconds(
+                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
+                timer->async_wait(*callback_ptr.get());
+            });
+        };
+        *callback_ptr = callback;
+        timer->async_wait(*callback_ptr.get());
+    }
+
 protected:
     /**
      * @brief      { function_description }
@@ -837,7 +914,7 @@ protected:
      */
     virtual void handle_background()
     {
-        while (this->_running)
+        while (this->_running || !this->_background_queue.empty())
         {
             background_func func;
             {
@@ -923,6 +1000,11 @@ public:
         }
 
         async::awaitable_get(this->handle_start());
+
+        threads.push_back(std::thread([this]() {
+            this->amqp_thread_loop();
+        }));
+
         for (auto& thread : threads)
         {
             thread.join();
@@ -955,25 +1037,50 @@ protected:
             co_await thread->sleep(duration);
     }
 
+private:
+    async::task<void> disconnect_sockets()
+    {
+        this->_sockets_mutex.lock();
+        auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
+        for (auto& [fd, socket] : this->_sockets)
+        {
+            auto thread = socket->thread();
+            if (thread != nullptr)
+                pairs[thread].push_back(socket.get());
+        }
+        this->_sockets_mutex.unlock();
+
+        for (auto& [thread, sockets] : pairs)
+        {
+            co_await thread->switching();
+            for (auto& socket : sockets)
+            {
+                co_await this->handle_disconnected(*socket);
+                socket->close();
+            }
+        }
+    }
+
 public:
     /**
      * @brief      { function_description }
      */
     void exit()
     {
-        auto _ = std::lock_guard(this->_mutex_exit);
-
         if (this->_running == false)
             return;
 
-        this->threads.exit();
+        this->cancel(); // async_accept 취소
+        async::awaitable_get(this->disconnect_sockets());
 
-        async::awaitable_get(this->handle_exit());
-        this->cancel();
-        this->_sockets.lock([](auto& container) {
-            container.clear();
-        });
-        this->_running = false;
+        for (auto& timer : this->_timers)
+        {
+            timer->cancel();
+        }
+
+        this->threads.exit();   // 로직스레드 종료
+        this->_running = false; // 백그라운드 스레드 종료
+        this->close();          // io 스레드 종료
     }
 };
 

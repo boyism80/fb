@@ -62,6 +62,8 @@ async::task<void> context::handle_start()
 {
     static constexpr const char* message = "CONNECTED SERVER\n";
 
+    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
+
     auto writer = fb::stream_writer<big_endian>(this->_connection_cache);
     writer.write<uint8_t>(0x7E);
     writer.write<uint8_t>(0x1B);
@@ -87,6 +89,12 @@ async::task<bool> context::handle_connected(fb::socket<session>& socket)
 async::task<bool> context::handle_disconnected(fb::socket<session>& socket)
 {
     co_return false;
+}
+
+async::task<void> fb::gateway::context::handle_amqp_shutdown(const internal_resp::Shutdown& response)
+{
+    this->exit();
+    co_return;
 }
 
 async::task<bool> context::handle_check_version(fb::socket<session>&                           socket,
@@ -129,4 +137,11 @@ async::task<bool> context::handle_entry_list(fb::socket<session>&               
     default:
         co_return false;
     }
+}
+
+void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+{
+    auto& queue = amqp.declare_queue();
+    queue.bind("amq.direct", "fb.system");
+    this->bind_amqp(queue);
 }

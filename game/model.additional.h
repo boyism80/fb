@@ -137,36 +137,36 @@ public:                                                                         
     static int builtin_rename_price(lua_State* L);                                      \
     static int builtin_deposit_price(lua_State* L);
 
-#define DECLARE_CASH_EXTENSION                                                        \
-                                                                                      \
-public:                                                                               \
-    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const final; \
-                                                                                      \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                   \
-    {                                                                                 \
-        return enum_value::ITEM_ATTRIBUTE::CASH;                                      \
+#define DECLARE_CASH_EXTENSION                                                                 \
+                                                                                               \
+public:                                                                                        \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final; \
+                                                                                               \
+    virtual enum_value::ITEM_ATTRIBUTE attr() const                                            \
+    {                                                                                          \
+        return enum_value::ITEM_ATTRIBUTE::CASH;                                               \
     }
 
-#define DECLARE_CONSUME_EXTENSION                                                                        \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        auto attr = enum_value::ITEM_ATTRIBUTE::CONSUME;                                                 \
-        if (this->capacity > 1)                                                                          \
-            attr = enum_value::ITEM_ATTRIBUTE(attr | enum_value::ITEM_ATTRIBUTE::BUNDLE);                \
-                                                                                                         \
-        return attr;                                                                                     \
+#define DECLARE_CONSUME_EXTENSION                                                                    \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        auto attr = enum_value::ITEM_ATTRIBUTE::CONSUME;                                             \
+        if (this->capacity > 1)                                                                      \
+            attr = enum_value::ITEM_ATTRIBUTE(attr | enum_value::ITEM_ATTRIBUTE::BUNDLE);            \
+                                                                                                     \
+        return attr;                                                                                 \
     }
 
-#define DECLARE_PACK_EXTENSION                                                                           \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::PACK;                                                         \
+#define DECLARE_PACK_EXTENSION                                                                       \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::PACK;                                                     \
     }
 
 #define DECLARE_EQUIPMENT_EXTENSION                   \
@@ -177,94 +177,94 @@ public:                                               \
         return enum_value::ITEM_ATTRIBUTE::EQUIPMENT; \
     }
 
-#define DECLARE_WEAPON_EXTENSION                                                                         \
-                                                                                                         \
-public:                                                                                                  \
-    LUA_PROTOTYPE                                                                                        \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::WEAPON;                                                       \
-    }                                                                                                    \
-    enum_value::WEAPON_TYPE weapon_type() const                                                          \
-    {                                                                                                    \
-        switch (this->dress / 10000)                                                                     \
-        {                                                                                                \
-        case 0:                                                                                          \
-            return enum_value::WEAPON_TYPE::NORMAL;                                                      \
-                                                                                                         \
-        case 1:                                                                                          \
-            return enum_value::WEAPON_TYPE::SPEAR;                                                       \
-                                                                                                         \
-        case 2:                                                                                          \
-            return enum_value::WEAPON_TYPE::BOW;                                                         \
-                                                                                                         \
-        case 3:                                                                                          \
-            return enum_value::WEAPON_TYPE::FAN;                                                         \
-                                                                                                         \
-        default:                                                                                         \
-            return enum_value::WEAPON_TYPE::UNKNOWN;                                                     \
-        }                                                                                                \
-    }                                                                                                    \
-    static int builtin_damage_small(lua_State* L);                                                       \
-    static int builtin_damage_large(lua_State* L);                                                       \
-    static int builtin_sound(lua_State* L);                                                              \
+#define DECLARE_WEAPON_EXTENSION                                                                     \
+                                                                                                     \
+public:                                                                                              \
+    LUA_PROTOTYPE                                                                                    \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::WEAPON;                                                   \
+    }                                                                                                \
+    enum_value::WEAPON_TYPE weapon_type() const                                                      \
+    {                                                                                                \
+        switch (this->dress / 10000)                                                                 \
+        {                                                                                            \
+        case 0:                                                                                      \
+            return enum_value::WEAPON_TYPE::NORMAL;                                                  \
+                                                                                                     \
+        case 1:                                                                                      \
+            return enum_value::WEAPON_TYPE::SPEAR;                                                   \
+                                                                                                     \
+        case 2:                                                                                      \
+            return enum_value::WEAPON_TYPE::BOW;                                                     \
+                                                                                                     \
+        case 3:                                                                                      \
+            return enum_value::WEAPON_TYPE::FAN;                                                     \
+                                                                                                     \
+        default:                                                                                     \
+            return enum_value::WEAPON_TYPE::UNKNOWN;                                                 \
+        }                                                                                            \
+    }                                                                                                \
+    static int builtin_damage_small(lua_State* L);                                                   \
+    static int builtin_damage_large(lua_State* L);                                                   \
+    static int builtin_sound(lua_State* L);                                                          \
     static int builtin_type(lua_State* L);
 
-#define DECLARE_ARMOR_EXTENSION                                                                          \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::ARMOR;                                                        \
+#define DECLARE_ARMOR_EXTENSION                                                                      \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::ARMOR;                                                    \
     }
 
-#define DECLARE_HELMET_EXTENSION                                                                         \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::HELMET;                                                       \
+#define DECLARE_HELMET_EXTENSION                                                                     \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::HELMET;                                                   \
     }
 
-#define DECLARE_SHIELD_EXTENSION                                                                         \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::SHIELD;                                                       \
+#define DECLARE_SHIELD_EXTENSION                                                                     \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::SHIELD;                                                   \
     }
 
-#define DECLARE_RING_EXTENSION                                                                           \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::RING;                                                         \
+#define DECLARE_RING_EXTENSION                                                                       \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::RING;                                                     \
     }
 
-#define DECLARE_AUXILIARY_EXTENSION                                                                      \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                    \
+#define DECLARE_AUXILIARY_EXTENSION                                                                  \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::AUXILIARY;                                                \
     }
 
-#define DECLARE_BOW_EXTENSION                                                                            \
-                                                                                                         \
-public:                                                                                                  \
-    fb::game::item*                    make(fb::game::context& context, uint16_t count = 1) const final; \
-    virtual enum_value::ITEM_ATTRIBUTE attr() const                                                      \
-    {                                                                                                    \
-        return enum_value::ITEM_ATTRIBUTE::ARROW;                                                        \
+#define DECLARE_BOW_EXTENSION                                                                        \
+                                                                                                     \
+public:                                                                                              \
+    fb::game::item* make(fb::game::context& context, uint16_t count = 1) const override final;       \
+    virtual enum_value::ITEM_ATTRIBUTE                                                  attr() const \
+    {                                                                                                \
+        return enum_value::ITEM_ATTRIBUTE::ARROW;                                                    \
     }
 
 #define DECLARE_NPC_EXTENSION                          \

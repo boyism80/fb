@@ -671,7 +671,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    std::string mid_message() const final;
+    std::string mid_message() const override final;
 
 public:
     /**

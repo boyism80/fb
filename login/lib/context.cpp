@@ -36,9 +36,10 @@ bool context::decrypt_policy(uint8_t cmd) const
 
 async::task<void> context::handle_start()
 {
-    this->bind_timer(&context::handle_heart_beat, 1s);
-
     co_await fb::acceptor<session>::handle_start();
+
+    this->bind_timer(&context::handle_heart_beat, 1s);
+    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
 }
 
 async::task<void> context::handle_heart_beat()
@@ -99,6 +100,12 @@ async::task<bool> context::handle_connected(fb::socket<session>& socket)
 async::task<bool> context::handle_disconnected(fb::socket<session>& socket)
 {
     co_return false;
+}
+
+async::task<void> context::handle_amqp_shutdown(const internal_resp::Shutdown& response)
+{
+    this->exit();
+    co_return;
 }
 
 async::task<bool> context::handle_agreement(fb::socket<session>& socket, const request::agreement& request)
@@ -390,4 +397,11 @@ async::task<bool> context::handle_change_password(fb::socket<session>& socket, c
     }
 
     co_return true;
+}
+
+void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
+{
+    auto& queue = amqp.declare_queue();
+    queue.bind("amq.direct", "fb.system");
+    this->bind_amqp(queue);
 }

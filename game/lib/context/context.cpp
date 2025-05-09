@@ -127,8 +127,6 @@ async::task<void> context::handle_start()
         async::awaitable_get(async_task);
     }
 
-    this->_amqp_thread = std::make_unique<std::thread>(&context::amqp_thread, this);
-
     this->bind(&context::handle_login);          // 게임서버 접속 핸들러
     this->bind(&context::handle_direction);      // 방향전환 핸들러
     this->bind(&context::handle_logout);         // 접속 종료
@@ -198,6 +196,7 @@ async::task<void> context::handle_start()
 
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_KickOut);
     this->bind_amqp(std::format("fb.game.{}", config<uint32_t>("id")), &context::handle_amqp_Whisper);
+    this->bind_amqp("fb.system", &context::handle_amqp_shutdown);
     this->bind_amqp("fb.global", &context::handle_amqp_Broadcast);
     this->bind_amqp("fb.group", &context::handle_amqp_EnterGroup);
     this->bind_amqp("fb.group", &context::handle_amqp_LeaveGroup);
@@ -683,60 +682,31 @@ fb::thread* context::thread(const map& map)
     return this->threads.at(map.model.id % count);
 }
 
-void context::amqp_thread()
+void context::handle_declare_amqp_queue(fb::amqp::socket& amqp)
 {
-    auto timeout = timeval{5, 0};
-    while (this->running())
-    {
-        try
-        {
-            this->_amqp = std::make_unique<fb::amqp::socket>();
-            this->_amqp->connect(fb::config<std::string>("amqp:ip"),
-                                 fb::config<uint16_t>("amqp:port"),
-                                 fb::config<std::string>("amqp:uid"),
-                                 fb::config<std::string>("amqp:pwd"),
-                                 "/");
+    auto& queue0 = amqp.declare_queue();
+    queue0.bind("amq.direct", "fb.system");
+    this->bind_amqp(queue0);
 
-            auto& queue1 = this->_amqp->declare_queue();
-            queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
-            this->bind_amqp(queue1);
+    auto& queue1 = amqp.declare_queue();
+    queue1.bind("amq.direct", std::format("fb.game.{}", fb::config<uint32_t>("id")));
+    this->bind_amqp(queue1);
 
-            auto& queue2 = this->_amqp->declare_queue();
-            queue2.bind("amq.direct", "fb.global");
-            this->bind_amqp(queue2);
+    auto& queue2 = amqp.declare_queue();
+    queue2.bind("amq.direct", "fb.global");
+    this->bind_amqp(queue2);
 
-            auto& queue3 = this->_amqp->declare_queue();
-            queue3.bind("amq.direct", "fb.group");
-            this->bind_amqp(queue3);
+    auto& queue3 = amqp.declare_queue();
+    queue3.bind("amq.direct", "fb.group");
+    this->bind_amqp(queue3);
 
-            auto& queue4 = this->_amqp->declare_queue();
-            queue4.bind("amq.direct", "fb.clan");
-            this->bind_amqp(queue4);
+    auto& queue4 = amqp.declare_queue();
+    queue4.bind("amq.direct", "fb.clan");
+    this->bind_amqp(queue4);
 
-            auto& queue5 = this->_amqp->declare_queue();
-            queue5.bind("amq.direct", "fb.mail");
-            this->bind_amqp(queue5);
-        }
-        catch (std::exception& e)
-        {
-            fb::logger::fatal(e.what());
-            std::this_thread::sleep_for(1s);
-            continue;
-        }
-
-        while (this->running())
-        {
-            try
-            {
-                if (this->_amqp->select(&timeout) == false)
-                    continue;
-            }
-            catch (std::exception&)
-            {
-                break;
-            }
-        }
-    }
+    auto& queue5 = amqp.declare_queue();
+    queue5.bind("amq.direct", "fb.mail");
+    this->bind_amqp(queue5);
 }
 
 // TODO : 클릭도 인터페이스로
