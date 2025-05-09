@@ -63,6 +63,7 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     lua::build("save", builtin_save);
     lua::build("mknpc", builtin_mknpc);
     lua::build("maps", builtin_maps);
+    lua::build("shutdown", builtin_shutdown);
 
     for (auto& [_, root] : ist)
     {

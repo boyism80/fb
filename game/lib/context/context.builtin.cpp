@@ -574,6 +574,19 @@ int fb::game::context::builtin_maps(lua_State* L)
     return 1;
 }
 
+int fb::game::context::builtin_shutdown(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto context = lua->env<fb::game::context>("context");
+    context->post<internal::request::Shutdown, internal::response::Shutdown>("internal",
+                                                                             "/system/shutdown",
+                                                                             internal::request::Shutdown{});
+    return 0;
+}
+
 int fb::game::context::builtin_broadcast(lua_State* L)
 {
     auto lua = fb::lua::get(L);

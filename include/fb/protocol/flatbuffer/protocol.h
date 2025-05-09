@@ -21,6 +21,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.trace_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clanmember_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.shutdown_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.login_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.logout_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.transfer_generated.h>
@@ -106,6 +107,7 @@ namespace fb::protocol::internal
 } // end of namespace fb::protocol::internal
 namespace fb::protocol::internal::request
 {
+    class Shutdown;
     class Login;
     class Logout;
     class Transfer;
@@ -277,6 +279,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Group> { typedef fla
 template <> struct FlatBufferOffset<fb::protocol::internal::Trace> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Trace> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Clan> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Clan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ClanMember> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::request::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Shutdown> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Login> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Login> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Logout> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Logout> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Transfer> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Transfer> type; };
@@ -377,6 +380,8 @@ template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Clan> build<fb::protocol::internal::Clan>(FlatBufferBuilder& builder, const fb::protocol::internal::Clan& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> build<fb::protocol::internal::ClanMember>(FlatBufferBuilder& builder, const fb::protocol::internal::ClanMember& value);
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Shutdown> build<fb::protocol::internal::request::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Shutdown& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value);
 template <>
@@ -1191,6 +1196,7 @@ namespace fb::protocol::internal::request {
 
 enum class FlatBufferProtocolType
 {
+    Shutdown,
     Login,
     Logout,
     Transfer,
@@ -1221,6 +1227,38 @@ enum class FlatBufferProtocolType
     Broadcast,
 };
 
+class Shutdown
+{
+public:
+    static inline fb::protocol::internal::request::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::request::FlatBufferProtocolType::Shutdown;
+
+
+public:
+    Shutdown() = default;
+
+    Shutdown(const Shutdown& x)
+    { }
+
+
+    Shutdown(const fb::protocol::internal::request::raw::Shutdown& raw)
+    { }
+
+public:
+    std::vector<uint8_t> Serialize() const
+    {
+        auto builder = flatbuffers::FlatBufferBuilder();
+        builder.Finish(build<fb::protocol::internal::request::Shutdown>(builder, *this));
+        auto buffer = std::vector<uint8_t>(builder.GetSize());
+        std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
+        return buffer;
+    }
+
+    static Shutdown Deserialize(const uint8_t* bytes)
+    {
+        auto raw = fb::protocol::internal::request::raw::GetShutdown(bytes);
+        return Shutdown(*raw);
+    }
+};
 class Login
 {
 public:
@@ -4069,6 +4107,11 @@ flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> build<fb::protocol:
             flatbuffers::build<uint32_t>(builder, value.uid),
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<uint32_t>(builder, value.position));
+}
+template <>
+flatbuffers::Offset<fb::protocol::internal::request::raw::Shutdown> build<fb::protocol::internal::request::Shutdown>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Shutdown& value)
+{
+    return fb::protocol::internal::request::raw::CreateShutdown(builder);
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Login> build<fb::protocol::internal::request::Login>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Login& value)

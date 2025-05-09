@@ -2416,6 +2416,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_maps(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_shutdown(lua_State* L);
 };
 
 } // namespace fb::game

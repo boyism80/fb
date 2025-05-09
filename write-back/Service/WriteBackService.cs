@@ -5,13 +5,14 @@ using Http.Redis;
 using Http.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
 namespace WriteBack.Service
 {
-    public class WriteBackService
+    public class WriteBackService : BackgroundService
     {
         private readonly RedisService _redisService;
         private readonly DbContext _dbContext;
@@ -30,7 +31,7 @@ namespace WriteBack.Service
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
         }
 
-        public async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var section = _configuration.GetSection("ConnectionStrings:MySql");
             var threads = section.GetChildren().Select(x => new Thread(() =>
@@ -54,7 +55,9 @@ namespace WriteBack.Service
         private async Task OnWork(int db, CancellationToken stoppingToken)
         {
             var bufferKey = $"{Const.RedisBufferKey}:{db}";
-            while (!stoppingToken.IsCancellationRequested)
+            var continuous = true;
+            var bulk = 100;
+            while (continuous || !stoppingToken.IsCancellationRequested)
             {
                 try
                 {
@@ -62,8 +65,10 @@ namespace WriteBack.Service
                     var result = await redisSqlConn.ScriptEvaluateAsync("pop_sql_range.lua", new
                     {
                         key = new RedisKey(bufferKey),
-                        count = 100
+                        count = bulk
                     });
+                    continuous = result.Length == bulk;
+
                     if (result.Length == 0)
                     {
                         await Task.Delay(_delay, stoppingToken);

@@ -23,7 +23,7 @@ namespace Internal.Controllers
         {
             var redis = _redisService.Redis(i);
             var conn = redis.Connection;
-            var keys = await conn.ScanKeysAsync(pattern, "10");
+            var keys = await conn.ScanKeysAsync(pattern, 10);
             if (keys.Count > 0)
                 await conn.KeyDeleteAsync(keys.Select(x => new RedisKey(x)).ToArray());
 
