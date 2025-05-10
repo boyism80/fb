@@ -28,8 +28,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
-    auto   thread   = this->maps[map].thread();
-    ch->thread(thread);
+    ch->thread(this->maps[map].thread());
     co_await this->update_thread(*ch);
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)

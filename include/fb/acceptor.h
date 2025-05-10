@@ -9,6 +9,7 @@
 #include <httplib.h>
 #include <iomanip>
 #include <fb/amqp.h>
+#include <boost/stacktrace.hpp>
 
 using namespace std::chrono_literals;
 
@@ -1025,7 +1026,15 @@ private:
             co_await thread->switching();
             for (auto& socket : sockets)
             {
-                co_await this->handle_disconnected(*socket);
+                try
+                {
+                    co_await this->handle_disconnected(*socket);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal(e.what());
+                    std::cerr << boost::stacktrace::stacktrace() << std::endl;
+                }
                 socket->close();
             }
         }

@@ -313,6 +313,9 @@ bool fb::game::items::update(uint8_t index) const
 
 fb::game::equipment* fb::game::items::wear(EQUIPMENT_PARTS parts, fb::game::equipment* item)
 {
+    if (item != nullptr)
+        item->_container = this;
+
     switch (parts) // EQUIPMENT_PARTS
     {
     case EQUIPMENT_PARTS::WEAPON:
