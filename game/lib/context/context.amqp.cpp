@@ -2,6 +2,12 @@
 
 using namespace fb::game;
 
+async::task<void> context::handle_amqp_shutdown(const internal_resp::Shutdown& response)
+{
+    this->exit();
+    co_return;
+}
+
 async::task<void> context::handle_amqp_Broadcast(const internal_resp::Broadcast& resp)
 {
     if (resp.host == fb::config<uint32_t>("id"))

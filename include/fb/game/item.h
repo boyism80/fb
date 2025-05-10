@@ -66,10 +66,11 @@ public:
     using nullable_time = std::optional<fb::model::datetime>;
 
 protected:
-    uint16_t      _count        = 0;
-    uint16_t      _trade_count  = 0;
-    character*    _owner        = nullptr;
-    nullable_time _dropped_time = std::nullopt;
+    uint16_t                _count        = 0;
+    uint16_t                _trade_count  = 0;
+    items*                  _container    = nullptr;
+    std::optional<uint32_t> _death_cid    = std::nullopt;
+    nullable_time           _dropped_time = std::nullopt;
 
 public:
     /**
@@ -199,15 +200,15 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  cid   The cid
      */
-    fb::game::character* owner() const;
+    void death_cid(std::optional<uint32_t> cid);
     /**
      * @brief      { function_description }
      *
-     * @param      owner  The owner
+     * @return     { description_of_the_return_value }
      */
-    void owner(fb::game::character* owner);
+    std::optional<uint32_t> death_cid() const;
 
 public:
     /**
@@ -670,7 +671,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    std::string mid_message() const final;
+    std::string mid_message() const override final;
 
 public:
     /**
@@ -871,15 +872,15 @@ public:
 class items : public fb::game::inventory<fb::game::item>
 {
 private:
-    fb::game::character& _owner;
-
-private:
     fb::game::weapon*    _weapon         = nullptr;
     fb::game::armor*     _armor          = nullptr;
     fb::game::helmet*    _helmet         = nullptr;
     fb::game::shield*    _shield         = nullptr;
     fb::game::ring*      _rings[2]       = {nullptr, nullptr};
     fb::game::auxiliary* _auxiliaries[2] = {nullptr, nullptr};
+
+public:
+    fb::game::character& owner;
 
 public:
     /**
@@ -1128,12 +1129,15 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  index  The index
-     * @param[in]  count  The count
+     * @param[in]  index        The index
+     * @param[in]  count        The count
+     * @param[in]  action       The action
+     * @param[in]  delete_type  The delete type
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* drop(uint8_t index, uint8_t count);
+    fb::game::item*
+    drop(uint8_t index, uint8_t count, bool action = true, ITEM_DELETE_TYPE delete_type = ITEM_DELETE_TYPE::DROP);
     /**
      * @brief      { function_description }
      *
@@ -1175,7 +1179,8 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    fb::game::item*
+    remove(uint8_t index, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE, bool detach = true);
     /**
      * @brief      { function_description }
      *
@@ -1185,7 +1190,10 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::item* remove(fb::game::item& item, uint16_t count = 1, ITEM_DELETE_TYPE attr = ITEM_DELETE_TYPE::NONE);
+    fb::game::item* remove(fb::game::item&  item,
+                           uint16_t         count  = 1,
+                           ITEM_DELETE_TYPE attr   = ITEM_DELETE_TYPE::NONE,
+                           bool             detach = true);
 };
 
 } // namespace fb::game

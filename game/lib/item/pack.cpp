@@ -36,6 +36,9 @@ std::string fb::game::pack::inven_name() const
 
 bool fb::game::pack::active()
 {
+    if (this->_container == nullptr)
+        return false;
+
     if (this->_durability <= 0)
         return false;
 
@@ -44,12 +47,12 @@ bool fb::game::pack::active()
     if (this->_durability <= 0)
         this->count(0);
 
-    auto listener = this->_owner->get_listener<fb::game::character>();
+    auto listener = this->_container->owner.get_listener<fb::game::character>();
     if (listener != nullptr)
-        listener->on_item_update(*this->_owner, this->_owner->items.index(*this));
+        listener->on_item_update(this->_container->owner, this->_container->index(*this));
 
     if (this->empty())
-        std::ignore = this->_owner->items.remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
+        std::ignore = this->_container->remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 
     return true;
 }

@@ -23,7 +23,8 @@
 using namespace fb::protocol::login;
 using namespace fb::model::enum_value;
 
-namespace internal = fb::protocol::internal;
+namespace internal      = fb::protocol::internal;
+namespace internal_resp = fb::protocol::internal::response;
 
 namespace fb { namespace login {
 
@@ -179,7 +180,14 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    bool decrypt_policy(uint8_t) const final;
+    bool decrypt_policy(uint8_t) const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      amqp  The amqp
+     */
+    void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;
 
     /**
      * @brief      { function_description }
@@ -220,6 +228,15 @@ protected:
      */
     [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::login::session>&) final;
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  response  The response
+     *
+     * @return     { description_of_the_return_value }
+     */
+    [[nodiscard]] async::task<void> handle_amqp_shutdown(const internal_resp::Shutdown& response);
+
     // for heart-beat
 
 protected:
@@ -228,7 +245,7 @@ protected:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::protocol::internal::Service service() const final
+    fb::protocol::internal::Service service() const override final
     {
         return fb::protocol::internal::Service::Login;
     };

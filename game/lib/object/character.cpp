@@ -764,7 +764,6 @@ bool character::deposit_item(item& item)
 {
     this->assert_thread();
 
-    item.owner(this);
     if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
         auto found =
@@ -2054,8 +2053,8 @@ async::task<void> character::death_penalty()
     {
         this->money_reduce(money);
         auto cash = this->context.make<fb::game::cash>(money);
-        cash->owner(this);
-        co_await cash->map(this->map(), this->position());
+        cash->death_cid(this->id());
+        std::ignore = co_await cash->map(this->map(), this->position());
     }
 
     for (int i = 0; i < CONTAINER_CAPACITY; i++)
@@ -2079,8 +2078,9 @@ async::task<void> character::death_penalty()
 
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
-            auto dropped = this->items.remove(*item, item->count(), ITEM_DELETE_TYPE::NONE);
-            co_await dropped->map(this->map(), this->position());
+            this->items.drop(i, item->count(), false, ITEM_DELETE_TYPE::NONE);
+            item->death_cid(this->id());
+            std::ignore = co_await item->map(this->map(), this->position());
         }
     }
 
@@ -2102,6 +2102,7 @@ async::task<void> character::death_penalty()
         if (ENUM_IN(model.death_penalty, DEATH_PENALTY::DROP))
         {
             this->items.equipment_off(parts);
+            equipment->death_cid(this->id());
             co_await equipment->map(this->map(), this->position());
         }
         else if (this->items.free())

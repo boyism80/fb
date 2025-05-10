@@ -2,6 +2,10 @@ include "internal.fbs";
 
 namespace fb.protocol.internal.request;
 
+table Shutdown {
+  
+}
+
 table Login {
   uid: uint;
   name: string;

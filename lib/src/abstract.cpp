@@ -22,6 +22,20 @@ context::operator boost::asio::io_context& () const
     return this->_boost_context;
 }
 
+void context::exit()
+{
+    if (this->_running == false)
+        return;
+
+    for (auto& timer : this->_timers)
+    {
+        timer->cancel();
+    }
+
+    this->threads.exit();
+    this->_running = false;
+}
+
 void context::push_alive(const fb::thread_switchable& obj)
 {
     auto ptr = static_cast<const void*>(&obj);

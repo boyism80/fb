@@ -88,6 +88,7 @@ public class Program
         builder.Services.AddSingleton<SessionService>();
         builder.Services.AddScoped<DbContext>();
         builder.Services.AddSingleton<WriteBackService>();
+        builder.Services.AddHostedService<ShutdownListenerService>();
         builder.Services.AddHealthChecks();
 
         var app = builder.Build();

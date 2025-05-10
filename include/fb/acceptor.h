@@ -9,6 +9,7 @@
 #include <httplib.h>
 #include <iomanip>
 #include <fb/amqp.h>
+#include <boost/stacktrace.hpp>
 
 using namespace std::chrono_literals;
 
@@ -26,16 +27,18 @@ public:
     using handle_func       = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
     using deserilze_func    = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
     using background_func   = std::function<async::task<void>()>;
-    using socket_container  = fb::locker<std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>>;
+    using socket_container  = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
     using amqp_handler_func = std::function<async::task<void>(const uint8_t*)>;
     using amqp_handler_type = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
+    using boost_timers      = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
     std::unordered_map<uint8_t, handle_func>    _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
     amqp_handler_type                           _amqp_handler;
+    std::unique_ptr<fb::amqp::socket>           _amqp;
     std::mutex                                  _mutex_exit;
-    bool                                        _running = false;
+    boost_timers                                _timers;
 
 protected:
     std::queue<background_func> _background_queue;
@@ -44,12 +47,14 @@ protected:
 protected:
     fb::mutex        _mutex;
     socket_container _sockets;
+    std::mutex       _sockets_mutex;
 
 protected:
     /**
      * @brief      Constructs a new instance.
      *
      * @param      context  The context
+     * @param[in]  name     The name
      * @param[in]  port     The port
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
@@ -66,7 +71,51 @@ public:
         this->exit();
     }
 
+protected:
+    virtual void handle_declare_amqp_queue(fb::amqp::socket& amqp) = 0;
+
 private:
+    /**
+     * @brief      { function_description }
+     */
+    void amqp_thread_loop()
+    {
+        auto timeout = timeval{5, 0};
+        while (this->_running)
+        {
+            try
+            {
+                this->_amqp = std::make_unique<fb::amqp::socket>();
+                this->_amqp->connect(fb::config<std::string>("amqp:ip"),
+                                     fb::config<uint16_t>("amqp:port"),
+                                     fb::config<std::string>("amqp:uid"),
+                                     fb::config<std::string>("amqp:pwd"),
+                                     "/");
+
+                this->handle_declare_amqp_queue(*this->_amqp);
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(e.what());
+                std::this_thread::sleep_for(1s);
+                continue;
+            }
+
+            while (this->_running)
+            {
+                try
+                {
+                    if (this->_amqp->select(&timeout) == false)
+                        continue;
+                }
+                catch (std::exception&)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
     /**
      * @brief      Gets the internal.
      *
@@ -272,12 +321,8 @@ public:
      */
     bool connected(uint32_t fd)
     {
-        return this->_sockets.template lock<bool>([fd](auto& container) {
-            if (container.contains(fd))
-                return true;
-
-            return false;
-        });
+        auto _ = std::lock_guard(this->_sockets_mutex);
+        return this->_sockets.contains(fd);
     }
 
 private:
@@ -286,6 +331,8 @@ private:
      *
      * @param      socket  The socket
      * @param      stream  The stream
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
@@ -367,6 +414,13 @@ private:
     }
 
 private:
+    /**
+     * @brief      { function_description }
+     *
+     * @param      socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
     async::task<void> erase(fb::socket<T>& socket)
     {
         try
@@ -379,9 +433,54 @@ private:
         }
         this->pop_alive(socket);
 
-        this->_sockets.lock([fd = socket.fd()](auto& container) {
-            container.erase(fd);
-        });
+        {
+            auto _ = std::lock_guard(this->_sockets_mutex);
+            this->_sockets.erase(socket.fd());
+        }
+    }
+
+    /**
+     * @brief      Called when socket received.
+     *
+     * @param      socket  The socket
+     * @param      stream  The stream
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> on_socket_received(fb::socket<T>& socket, fb::stream& stream)
+    {
+        try
+        {
+            co_await this->execute_handler(socket, stream);
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
+    }
+
+    /**
+     * @brief      Called when socket closed.
+     *
+     * @param      socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
+    async::task<void> on_socket_closed(fb::socket<T>& socket)
+    {
+        try
+        {
+            if (socket.data() == nullptr)
+                co_return;
+
+            co_await this->threads.dispatch(socket, [this, &socket](auto&) -> async::task<void> {
+                co_await this->erase(socket);
+            });
+        }
+        catch (std::exception& e)
+        {
+            fb::logger::fatal(e.what());
+        }
     }
 
     /**
@@ -389,34 +488,9 @@ private:
      */
     void accept()
     {
-        auto callback_received = [this](fb::socket<T>& socket, fb::stream& stream) -> async::task<void> {
-            try
-            {
-                co_await this->execute_handler(socket, stream);
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-            }
-        };
-
-        auto callback_closed = [this](fb::socket<T>& socket) -> async::task<void> {
-            try
-            {
-                if (socket.data() == nullptr)
-                    co_return;
-
-                co_await this->threads.dispatch(socket, [this, &socket](auto&) -> async::task<void> {
-                    co_await this->erase(socket);
-                });
-            }
-            catch (std::exception& e)
-            {
-                fb::logger::fatal(e.what());
-            }
-        };
-
-        auto socket = std::make_unique<fb::socket<T>>(*this, callback_received, callback_closed);
+        auto socket = std::make_unique<fb::socket<T>>(*this,
+                                                      std::bind_front(&acceptor::on_socket_received, this),
+                                                      std::bind_front(&acceptor::on_socket_closed, this));
         auto ptr    = socket.get();
         this->async_accept(*ptr, [this, socket = std::move(socket), ptr](boost::system::error_code error) mutable {
             try
@@ -429,10 +503,12 @@ private:
 
                 ptr->data(this->handle_accepted(*ptr));
 
-                this->_sockets.lock([&socket](auto& container) {
+                {
+                    auto _  = std::lock_guard(this->_sockets_mutex);
                     auto fd = socket->fd();
-                    container.insert({fd, std::move(socket)});
-                });
+                    this->_sockets.insert({fd, std::move(socket)});
+                }
+
                 this->push_alive(*ptr);
                 async::awaitable_get(this->handle_connected(*ptr));
 
@@ -442,6 +518,7 @@ private:
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
+                socket->close();
             }
         });
     }
@@ -705,6 +782,15 @@ protected:
     }
 
 protected:
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  route         The route
+     * @param[in]  <unnamed>     { parameter_description }
+     *
+     * @tparam     Class         { description }
+     * @tparam     ResponseType  { description }
+     */
     template <typename Class, typename ResponseType>
     void bind_amqp(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
     {
@@ -719,6 +805,11 @@ protected:
                                            }});
     }
 
+    /**
+     * @brief      { function_description }
+     *
+     * @param      queue  The queue
+     */
     void bind_amqp(fb::amqp::queue& queue)
     {
         auto& route = queue.route();
@@ -754,6 +845,8 @@ public:
      * @param[in]  stream   The stream
      * @param[in]  encrypt  The encrypt
      * @param[in]  wrap     The wrap
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<size_t> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
@@ -771,6 +864,8 @@ public:
      * @param[in]  response  The response
      * @param[in]  encrypt   The encrypt
      * @param[in]  wrap      The wrap
+     *
+     * @return     { description_of_the_return_value }
      */
     async::task<size_t>
     send(fb::socket<T>& socket, const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
@@ -790,7 +885,7 @@ protected:
      */
     virtual void handle_background()
     {
-        while (this->_running)
+        while (this->_running || !this->_background_queue.empty())
         {
             background_func func;
             {
@@ -876,6 +971,11 @@ public:
         }
 
         async::awaitable_get(this->handle_start());
+
+        threads.push_back(std::thread([this]() {
+            this->amqp_thread_loop();
+        }));
+
         for (auto& thread : threads)
         {
             thread.join();
@@ -908,25 +1008,60 @@ protected:
             co_await thread->sleep(duration);
     }
 
-public:
+private:
+    async::task<void> disconnect_sockets()
+    {
+        this->_sockets_mutex.lock();
+        auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
+        for (auto& [fd, socket] : this->_sockets)
+        {
+            auto thread = socket->thread();
+            if (thread != nullptr)
+                pairs[thread].push_back(socket.get());
+        }
+        this->_sockets_mutex.unlock();
+
+        for (auto& [thread, sockets] : pairs)
+        {
+            co_await thread->switching();
+            for (auto& socket : sockets)
+            {
+                try
+                {
+                    co_await this->handle_disconnected(*socket);
+                }
+                catch (std::exception& e)
+                {
+                    fb::logger::fatal(e.what());
+                    std::cerr << boost::stacktrace::stacktrace() << std::endl;
+                }
+                socket->close();
+            }
+        }
+    }
+
+protected:
     /**
      * @brief      { function_description }
      */
-    void exit()
+    void exit() override final
     {
-        auto _ = std::lock_guard(this->_mutex_exit);
-
+        // abstract에 있는 exit와 겹치는 코드가 굉장히 많고
+        // 멤버필드의 위치도 애매함. 리팩토링 필요함
         if (this->_running == false)
             return;
 
-        this->threads.exit();
+        this->cancel(); // async_accept 취소
+        async::awaitable_get(this->disconnect_sockets());
 
-        async::awaitable_get(this->handle_exit());
-        this->cancel();
-        this->_sockets.lock([](auto& container) {
-            container.clear();
-        });
-        this->_running = false;
+        for (auto& timer : this->_timers)
+        {
+            timer->cancel();
+        }
+
+        this->threads.exit();   // 로직스레드 종료
+        this->_running = false; // 백그라운드 스레드 종료
+        this->close();          // io 스레드 종료
     }
 };
 
