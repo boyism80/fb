@@ -1076,15 +1076,16 @@ protected:
 private:
     async::task<void> disconnect_sockets()
     {
-        this->_sockets_mutex.lock();
         auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
-        for (auto& [fd, socket] : this->_sockets)
         {
-            auto thread = socket->thread();
-            if (thread != nullptr)
-                pairs[thread].push_back(socket.get());
+            auto _ = std::lock_guard(this->_sockets_mutex);
+            for (auto& [fd, socket] : this->_sockets)
+            {
+                auto thread = socket->thread();
+                if (thread != nullptr)
+                    pairs[thread].push_back(socket.get());
+            }
         }
-        this->_sockets_mutex.unlock();
 
         for (auto& [thread, sockets] : pairs)
         {
@@ -1127,6 +1128,8 @@ protected:
         this->threads.exit();   // 로직스레드 종료
         this->_running = false; // 백그라운드 스레드 종료
         this->close();          // io 스레드 종료
+
+        static_cast<boost::asio::io_context&>(*this).stop();
     }
 };
 

@@ -12,6 +12,7 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
 
         auto& pair  = map.context.model.door_pair[this->pairs[i]];
         auto  value = is_open ? pair.open : pair.close;
+        fb::logger::info("map : {} / x : {} / y : {}", map.model.id, position.x, position.y);
         if (tile->object != value)
             return false;
     }

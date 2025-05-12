@@ -169,7 +169,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    const std::vector<fb::game::item*>& items() const;
+    const std::vector<fb::game::item*> items() const;
 
     /**
      * @brief      { function_description }

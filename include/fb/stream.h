@@ -5,6 +5,7 @@
 #include <vector>
 #include <zlib.h>
 #include <cstdint>
+#include <memory>
 #ifdef __linux__
 #include <sys/types.h>
 #endif

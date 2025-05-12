@@ -16,6 +16,7 @@ RUN apt-get upgrade -y
 RUN apt-get install git gcc-14 g++-14 gdb make cmake libssl-dev libstdc++-14-dev wget -y
 RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g++
 RUN apt-get install libncurses5-dev libncursesw5-dev -y
+RUN apt-get install libubsan1 -y
 
 
 WORKDIR /app
