@@ -4,7 +4,7 @@
 
 bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool is_open) const
 {
-    for (int i = 0, n = this->width; i < n; i++)
+    for (int i = 0; i < this->width; i++)
     {
         auto tile = map(position.x + i, position.y);
         if (tile == nullptr)
@@ -12,7 +12,6 @@ bool fb::model::door::matched(const fb::game::map& map, const point16_t& positio
 
         auto& pair  = map.context.model.door_pair[this->pairs[i]];
         auto  value = is_open ? pair.open : pair.close;
-        fb::logger::info("map : {} / x : {} / y : {}", map.model.id, position.x, position.y);
         if (tile->object != value)
             return false;
     }

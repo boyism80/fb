@@ -15,10 +15,10 @@ RUN cmake --build . --parallel
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 
 WORKDIR /app
-COPY --from=build /app/game/build/app ./game-server
+COPY --from=build /app/game/build/app .
 COPY --from=build /app/maps/ ./maps/
 COPY game/scripts/ ./scripts/
 COPY --from=build /fb/data/json/server/ ./json/
 
 WORKDIR /app
-CMD ["./game-server"]
+CMD ["./app"]

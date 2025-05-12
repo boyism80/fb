@@ -6,6 +6,7 @@
 #include <zlib.h>
 #include <cstdint>
 #include <memory>
+#include <fb/logger.h>
 #ifdef __linux__
 #include <sys/types.h>
 #endif
