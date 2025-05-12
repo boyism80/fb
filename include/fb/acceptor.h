@@ -336,7 +336,8 @@ private:
      */
     async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
-        static constexpr uint8_t base_size = sizeof(uint8_t) + sizeof(uint16_t);
+        static constexpr uint8_t  base_size = sizeof(uint8_t) + sizeof(uint16_t);
+        static constexpr uint32_t MAX_TPS   = 100;
 
         auto reader = fb::stream_reader<big_endian>(stream);
         try
@@ -351,11 +352,14 @@ private:
                     throw std::runtime_error("magic code mismatch");
 
                 auto size = reader.read<uint16_t>();
+                if (size > fb::socket<T>::MAX_BUFFER_SIZE)
+                    throw std::runtime_error("packet size mismatch");
+
                 if (reader.readable_size() < size)
-                {
-                    reader.seek(0);
-                    co_return;
-                }
+                    break;
+
+                if (socket.update_tps(MAX_TPS) == false)
+                    throw std::runtime_error("tps limit exceeded");
 
                 auto cmd = reader.read<uint8_t>();
                 if (this->decrypt_policy(cmd))
@@ -365,11 +369,11 @@ private:
 
                 if (this->_deserializer.contains(cmd) == false)
                 {
-                    fb::logger::fatal(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
+                    fb::logger::warn(std::format("정의되지 않은 프로토콜입니다. [{:#x}]", cmd));
                 }
                 else if (this->_handler.contains(cmd) == false)
                 {
-                    fb::logger::fatal(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
+                    fb::logger::warn(std::format("정의되지 않은 핸들러입니다. [{:#x}]", cmd));
                 }
                 else
                 {
@@ -398,18 +402,18 @@ private:
                 reader.seek(size - sizeof(uint8_t));
                 reader.flush(); // remove packet body
             }
+
+            reader.seek(0);
         }
         catch (std::exception& e)
         {
             fb::logger::fatal(e.what());
-            reader.seek(0);
-            reader.clear();
+            socket.close();
         }
         catch (...)
         {
             fb::logger::fatal("unhandled exception while parse packet");
-            reader.seek(0);
-            reader.clear();
+            socket.close();
         }
     }
 

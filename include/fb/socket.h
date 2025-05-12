@@ -22,20 +22,25 @@ template <typename T = void*>
 class socket : public boost::asio::ip::tcp::socket, public thread_switchable
 {
 public:
+    static constexpr uint32_t MAX_BUFFER_SIZE = 256;
+
+public:
     using handle_read_event = std::function<async::task<void>(fb::socket<T>&, fb::stream&)>;
     using handler_event     = std::function<async::task<void>(fb::socket<T>&)>;
 
 private:
-    context&          _context;
-    fb::crypto        _crypto;
-    handle_read_event _handle_received;
-    handler_event     _handle_closed;
-    fb::stream        _stream;
+    context&            _context;
+    fb::crypto          _crypto;
+    handle_read_event   _handle_received;
+    handler_event       _handle_closed;
+    fb::stream          _stream;
+    uint32_t            _tps = 0;
+    fb::model::datetime _last_tps_time;
 
 protected:
-    std::array<char, 256> _buffer;
-    T*                    _data;
-    std::recursive_mutex  _boost_mutex;
+    std::array<char, MAX_BUFFER_SIZE> _buffer;
+    T*                                _data;
+    std::recursive_mutex              _boost_mutex;
 
 public:
     socket(context& context, const handle_read_event& handle_received, const handler_event& handle_closed) :
@@ -215,6 +220,22 @@ public:
     void crt(uint8_t enctype, const uint8_t* enckey)
     {
         this->_crypto = fb::crypto(enctype, enckey);
+    }
+
+public:
+    bool update_tps(uint32_t limit)
+    {
+        auto elapsed_time = fb::model::datetime() - this->_last_tps_time;
+        if (elapsed_time.total_milliseconds() > 1000)
+        {
+            this->_last_tps_time = fb::model::datetime();
+            this->_tps           = 0;
+        }
+
+        if (++this->_tps > limit)
+            return false;
+
+        return true;
     }
 
 public:
