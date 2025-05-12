@@ -5,8 +5,8 @@ COPY include ./include
 COPY gateway ./gateway
 
 WORKDIR /app/gateway/build
-RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release ..
+RUN cmake --build . --parallel
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 WORKDIR /app

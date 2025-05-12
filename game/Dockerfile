@@ -3,22 +3,22 @@ FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build AS build
 WORKDIR /app
 COPY include ./include
 COPY game ./game
+COPY resources/maps/maps.zip ./maps.zip
+
+RUN apt-get install zip unzip -y
+RUN mkdir -p maps && unzip -qq maps.zip -d ./maps && rm -f maps.zip
 
 WORKDIR /app/game/build
-RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release ..
+RUN cmake --build . --parallel
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
-RUN apt-get install zip unzip -y
 
 WORKDIR /app
-COPY --from=build /app/game/build/app .
-COPY game/scripts/ /app/scripts/
-COPY resources/maps/maps.zip /app/maps/maps.zip
-WORKDIR /app/maps
-RUN unzip -qq maps.zip
-RUN rm -f maps.zip
-COPY --from=build /fb/data/json/server/ /app/json/
+COPY --from=build /app/game/build/app ./game-server
+COPY --from=build /app/maps/ ./maps/
+COPY game/scripts/ ./scripts/
+COPY --from=build /fb/data/json/server/ ./json/
 
 WORKDIR /app
-CMD ["./app"]
+CMD ["./game-server"]

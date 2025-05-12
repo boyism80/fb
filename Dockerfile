@@ -23,8 +23,8 @@ RUN git clone https://github.com/open-source-parsers/jsoncpp
 WORKDIR /app/jsoncpp
 RUN git checkout 1.9.6
 WORKDIR /app/jsoncpp/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -39,8 +39,8 @@ RUN make install
 WORKDIR /app
 RUN git clone --recursive https://github.com/boyism80/lua
 WORKDIR /app/lua/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -48,8 +48,8 @@ RUN git clone https://github.com/intel/zlib
 WORKDIR /app/zlib
 RUN git checkout v1.2.9
 WORKDIR /app/zlib/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -64,8 +64,8 @@ RUN git clone https://github.com/yhirose/cpp-httplib
 WORKDIR /app/cpp-httplib
 RUN git checkout v0.18.1
 WORKDIR /app/cpp-httplib/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -88,8 +88,8 @@ RUN git clone https://github.com/redis/hiredis.git
 WORKDIR /app/hiredis
 RUN git checkout v1.2.0
 WORKDIR /app/hiredis/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 # fb.lib
@@ -97,8 +97,8 @@ WORKDIR /app
 COPY include ./include
 COPY lib ./lib
 WORKDIR /app/lib/build
-RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 RUN rm -rf /app
