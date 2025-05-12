@@ -396,7 +396,7 @@ private:
                 if (reader.readable_size() < size)
                     break;
 
-                if (socket.update_tps(MAX_TPS) == false)
+                if (this->assert_tps(socket) && socket.update_tps(MAX_TPS) == false)
                     throw std::runtime_error("tps limit exceeded");
 
                 auto cmd = reader.read<uint8_t>();
@@ -425,7 +425,7 @@ private:
                                                       co_return;
 
                                                   auto& handler = this->_handler[cmd];
-                                                  if (handler.update_tps() == false)
+                                                  if (this->assert_tps(socket) && handler.update_tps() == false)
                                                       co_return;
 
                                                   std::ignore = co_await handler.fn(socket, *protocol.get());
@@ -689,6 +689,18 @@ protected:
      * @return     { description_of_the_return_value }
      */
     virtual bool decrypt_policy(uint8_t cmd) const
+    {
+        return true;
+    }
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  socket  The socket
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual bool assert_tps(const fb::socket<T>& socket) const
     {
         return true;
     }

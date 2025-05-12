@@ -650,6 +650,15 @@ protected:
     /**
      * @brief      { function_description }
      *
+     * @param      ch    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool assert_tps(const fb::socket<fb::game::character>& socket) const override final;
+
+    /**
+     * @brief      { function_description }
+     *
      * @param      amqp  The amqp
      */
     void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;

@@ -220,6 +220,15 @@ bool context::decrypt_policy(uint8_t cmd) const
     }
 }
 
+bool context::assert_tps(const fb::socket<fb::game::character>& socket) const
+{
+    auto ch = socket.data();
+    if (ch == nullptr)
+        return true;
+
+    return !ch->admin();
+}
+
 async::task<bool> context::handle_connected(fb::socket<character>& socket)
 {
     co_return true;
