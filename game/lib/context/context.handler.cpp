@@ -1118,9 +1118,6 @@ async::task<bool> context::handle_spell(fb::socket<character>& socket, const fb_
     if (spell == nullptr)
         co_return false;
 
-    if (ch->admin() == false && spell->update_lock() == false)
-        co_return true;
-
     auto delay = spell->delay();
     if (delay > 0)
     {

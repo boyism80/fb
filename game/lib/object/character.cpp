@@ -160,8 +160,6 @@ bool character::inited() const
 
 uint32_t character::id() const
 {
-    this->assert_thread();
-
     return this->_id;
 }
 
@@ -179,8 +177,6 @@ uint32_t character::fd()
 
 bool character::admin() const
 {
-    this->assert_thread();
-
     return this->_admin;
 }
 
