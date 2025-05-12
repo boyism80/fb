@@ -120,6 +120,33 @@ public:
     }
 
 public:
+    std::string ip() const
+    {
+        return this->remote_endpoint().address().to_string();
+    }
+
+    uint32_t ip_raw() const
+    {
+        try
+        {
+            auto addr = this->remote_endpoint().address();
+            if (addr.is_v4())
+                return addr.to_v4().to_uint();
+            else
+                return 0;
+        }
+        catch (...)
+        {
+            return 0;
+        }
+    }
+
+    uint16_t port() const
+    {
+        return this->remote_endpoint().port();
+    }
+
+public:
     async::task<size_t> send(const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
     {
         auto stream = fb::stream();
@@ -190,12 +217,6 @@ public:
     T* data() const
     {
         return _data;
-    }
-
-public:
-    std::string IP() const
-    {
-        return this->remote_endpoint().address().to_string();
     }
 
 public:
