@@ -26,8 +26,6 @@ public:
 
 private:
     fb::model::datetime _next;
-    fb::model::datetime _internal_next;
-    uint8_t             _internal_cast_count = 0;
 
 public:
     const fb::game::context& context;
@@ -71,13 +69,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     const fb::model::datetime& next() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool update_lock();
 
     /**
      * @brief      { function_description }

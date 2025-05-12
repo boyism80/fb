@@ -33,7 +33,45 @@ public:
     using boost_timers      = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
-    std::unordered_map<uint8_t, handle_func>    _handler;
+    struct handler
+    {
+    private:
+        fb::model::datetime last        = fb::model::datetime();
+        uint32_t            transitions = 0;
+
+    public:
+        const handle_func                         fn;
+        const std::chrono::steady_clock::duration duration = 1s;
+        const uint32_t                            limit    = 0xFFFFFFFF;
+
+    public:
+        handler() = default;
+        handler(const handle_func&                         fn,
+                const std::chrono::steady_clock::duration& duration,
+                uint32_t                                   limit = 0xFFFFFFFF) :
+            fn(fn),
+            duration(duration),
+            limit(limit)
+        { }
+
+        bool update_tps()
+        {
+            auto elapsed_time = fb::model::datetime() - this->last;
+            if (elapsed_time > duration)
+            {
+                this->last        = fb::model::datetime();
+                this->transitions = 0;
+            }
+
+            if (++this->transitions > this->limit)
+                return false;
+
+            return true;
+        }
+    };
+
+private:
+    std::unordered_map<uint8_t, handler>        _handler;
     std::unordered_map<uint8_t, deserilze_func> _deserializer;
     amqp_handler_type                           _amqp_handler;
     std::unique_ptr<fb::amqp::socket>           _amqp;
@@ -386,7 +424,11 @@ private:
                                                   if (this->connected(fd) == false)
                                                       co_return;
 
-                                                  std::ignore = co_await this->_handler[cmd](socket, *protocol.get());
+                                                  auto& handler = this->_handler[cmd];
+                                                  if (handler.update_tps() == false)
+                                                      co_return;
+
+                                                  std::ignore = co_await handler.fn(socket, *protocol.get());
                                               }
                                               catch (std::exception& e)
                                               {
@@ -770,7 +812,10 @@ protected:
      * @tparam     RequestType  { description }
      */
     template <typename Class, typename RequestType>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const RequestType&), uint8_t header)
+    void bind_cmd(async::task<bool> (Class::*fn)(fb::socket<T>&, const RequestType&),
+                  uint8_t                                    header,
+                  const std::chrono::steady_clock::duration& duration = 1s,
+                  uint32_t                                   limit    = 10)
     {
         this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
                                         auto protocol = new RequestType();
@@ -779,10 +824,12 @@ protected:
                                     }});
 
         auto func_bound = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
-        this->_handler.insert({header, [func_bound](auto& socket, auto& header) -> async::task<bool> {
-                                   auto protocol = static_cast<RequestType&>(header);
-                                   co_return co_await func_bound(socket, protocol);
-                               }});
+        auto handler_fn = [func_bound](auto& socket, auto& header) -> async::task<bool> {
+            auto protocol = static_cast<RequestType&>(header);
+            co_return co_await func_bound(socket, protocol);
+        };
+
+        this->_handler.insert({header, handler(handler_fn, duration, limit)});
     }
 
 protected:
@@ -836,9 +883,11 @@ protected:
      * @tparam     Request    { description }
      */
     template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&))
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
+              const std::chrono::steady_clock::duration& duration = 1s,
+              uint32_t                                   limit    = 10)
     {
-        this->bind(fn, Request::header);
+        this->bind_cmd(fn, Request::header, duration, limit);
     }
 
 public:

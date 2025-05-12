@@ -128,39 +128,39 @@ async::task<void> context::handle_start()
         async::awaitable_get(async_task);
     }
 
-    this->bind(&context::handle_login);          // 게임서버 접속 핸들러
-    this->bind(&context::handle_direction);      // 방향전환 핸들러
-    this->bind(&context::handle_logout);         // 접속 종료
-    this->bind(&context::handle_update_move);    // 이동과 맵 데이터 업데이트 핸들러
-    this->bind(&context::handle_move);           // 이동 핸들러
-    this->bind(&context::handle_attack);         // 공격 핸들러
-    this->bind(&context::handle_pickup);         // 아이템 줍기 핸들러
-    this->bind(&context::handle_emotion);        // 감정표현 핸들러
-    this->bind(&context::handle_update_map);     // 맵 데이터 업데이트 핸들러
-    this->bind(&context::handle_update_screen);  // 새로고침 핸들러
-    this->bind(&context::handle_active_item);    // 아이템 사용 핸들러
-    this->bind(&context::handle_inactive_item);  // 아이템 장착 해제 핸들러
-    this->bind(&context::handle_drop_item);      // 아이템 버리기 핸들러
-    this->bind(&context::handle_drop_money);     // 금전 버리기 핸들러
-    this->bind(&context::handle_front_info);     // 앞방향 정보 핸들러
-    this->bind(&context::handle_self_info);      // 나 자신의 정보 핸들러
-    this->bind(&context::handle_option_changed); // 옵션 설정 핸들러
-    this->bind(&context::handle_click_object);   // 오브젝트 클릭 핸들러
-    this->bind(&context::handle_item_info);      // 인벤토리 우클릭 핸들러
-    this->bind(&context::handle_itemmix);        // 아이템 조합 핸들러
-    this->bind(&context::handle_trade);          // 교환 핸들러
-    this->bind(&context::handle_group);          // 그룹 핸들러
-    this->bind(&context::handle_user_list);      // 유저 리스트 핸들러
-    this->bind(&context::handle_chat);           // 유저 채팅 핸들러
-    this->bind(&context::handle_board);          // 게시판 섹션 리스트 핸들러
-    this->bind(&context::handle_swap);           // 스펠 순서 변경
-    this->bind(&context::handle_dialog);         // 다이얼로그
-    this->bind(&context::handle_dialog, 0x39);   // 다이얼로그
-    this->bind(&context::handle_throw_item);     // 아이템 던지기 핸들러
-    this->bind(&context::handle_spell);          // 스펠 핸들러
-    this->bind(&context::handle_door);           // 도어 핸들러
-    this->bind(&context::handle_whisper);        // 귓속말 핸들러
-    this->bind(&context::handle_world);          // 월드맵 핸들러
+    this->bind(&context::handle_login);            // 게임서버 접속 핸들러
+    this->bind(&context::handle_direction);        // 방향전환 핸들러
+    this->bind(&context::handle_logout);           // 접속 종료
+    this->bind(&context::handle_update_move);      // 이동과 맵 데이터 업데이트 핸들러
+    this->bind(&context::handle_move, 1s, 6);      // 이동 핸들러
+    this->bind(&context::handle_attack, 500ms, 2); // 공격 핸들러
+    this->bind(&context::handle_pickup);           // 아이템 줍기 핸들러
+    this->bind(&context::handle_emotion);          // 감정표현 핸들러
+    this->bind(&context::handle_update_map);       // 맵 데이터 업데이트 핸들러
+    this->bind(&context::handle_update_screen);    // 새로고침 핸들러
+    this->bind(&context::handle_active_item);      // 아이템 사용 핸들러
+    this->bind(&context::handle_inactive_item);    // 아이템 장착 해제 핸들러
+    this->bind(&context::handle_drop_item);        // 아이템 버리기 핸들러
+    this->bind(&context::handle_drop_money);       // 금전 버리기 핸들러
+    this->bind(&context::handle_front_info);       // 앞방향 정보 핸들러
+    this->bind(&context::handle_self_info);        // 나 자신의 정보 핸들러
+    this->bind(&context::handle_option_changed);   // 옵션 설정 핸들러
+    this->bind(&context::handle_click_object);     // 오브젝트 클릭 핸들러
+    this->bind(&context::handle_item_info);        // 인벤토리 우클릭 핸들러
+    this->bind(&context::handle_itemmix);          // 아이템 조합 핸들러
+    this->bind(&context::handle_trade);            // 교환 핸들러
+    this->bind(&context::handle_group);            // 그룹 핸들러
+    this->bind(&context::handle_user_list);        // 유저 리스트 핸들러
+    this->bind(&context::handle_chat);             // 유저 채팅 핸들러
+    this->bind(&context::handle_board);            // 게시판 섹션 리스트 핸들러
+    this->bind(&context::handle_swap);             // 스펠 순서 변경
+    this->bind(&context::handle_dialog);           // 다이얼로그
+    this->bind_cmd(&context::handle_dialog, 0x39); // 다이얼로그
+    this->bind(&context::handle_throw_item);       // 아이템 던지기 핸들러
+    this->bind(&context::handle_spell, 500ms, 3);  // 스펠 핸들러
+    this->bind(&context::handle_door);             // 도어 핸들러
+    this->bind(&context::handle_whisper);          // 귓속말 핸들러
+    this->bind(&context::handle_world);            // 월드맵 핸들러
     this->bind(&context::handle_object_miss);
     this->bind(&context::handle_give_item);
     this->bind(&context::handle_give_money);
