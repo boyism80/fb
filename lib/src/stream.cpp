@@ -7,6 +7,11 @@ stream::stream(const uint8_t* data, size_t size)
     this->std::vector<uint8_t>::assign(data, data + size);
 }
 
+stream::stream(std::vector<uint8_t>&& v)
+{
+    this->swap(v);
+}
+
 stream::stream(const stream& right) :
     stream(right.data(), right.size())
 { }
@@ -18,28 +23,37 @@ uint32_t stream::crc() const
 
 stream stream::compress() const
 {
-    auto src_size = uint32_t(this->size());
-    auto dst_size = uint32_t(src_size * 2);
-    auto buffer   = std::unique_ptr<uint8_t[]>(new uint8_t[dst_size]);
+    auto src_size = static_cast<uLongf>(this->size());
+    auto dst_size = compressBound(src_size);
+    auto buffer   = std::unique_ptr<uint8_t[]>(new uint8_t[dst_size + 16]);
+    std::memset(buffer.get(), 0xCC, dst_size + 16);
 
-    if (compress2(buffer.get(), (uLongf*)&dst_size, this->data(), src_size, Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
-        throw std::runtime_error("cannot compress data");
+    if (compress2(buffer.get(), &dst_size, this->data(), src_size, Z_BEST_COMPRESSION) != Z_OK)
+        throw std::runtime_error("compress failed");
 
-    // 최적화 과정에서 발생하는 문제로 객체를 먼저 생성한 뒤에 리턴해야함
-    auto result = stream(buffer.get(), dst_size);
-    return result;
+    return stream(std::vector<uint8_t>(buffer.get(), buffer.get() + dst_size));
 }
 
 stream stream::decompress() const
 {
-    auto src_size = uint32_t(this->size());
-    auto dst_size = uint32_t(src_size * 2);
-    auto buffer   = std::unique_ptr<uint8_t[]>(new uint8_t[dst_size]);
+    auto src_size = static_cast<uLongf>(this->size());
+    auto buffer   = std::unique_ptr<uint8_t[]>();
+    auto dst_size = src_size * 2;
 
-    if (uncompress(buffer.get(), (uLongf*)&dst_size, this->data(), src_size) != Z_OK)
-        throw std::runtime_error("cannot decompress data");
+    while (true)
+    {
+        buffer = std::make_unique<uint8_t[]>(dst_size + 16);
+        std::memset(buffer.get(), 0xCC, dst_size + 16);
 
-    // 최적화 과정에서 발생하는 문제로 객체를 먼저 생성한 뒤에 리턴해야함
-    auto result = stream(buffer.get(), dst_size);
-    return result;
+        auto result = uncompress(buffer.get(), &dst_size, this->data(), src_size);
+        if (result == Z_OK)
+            break;
+
+        if (result != Z_BUF_ERROR)
+            throw std::runtime_error("decompress failed");
+
+        dst_size *= 2;
+    }
+
+    return stream(std::vector<uint8_t>(buffer.get(), buffer.get() + dst_size));
 }

@@ -35,6 +35,13 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
+     * @param      v     { parameter_description }
+     */
+    stream(std::vector<uint8_t>&& v);
+
+    /**
+     * @brief      Constructs a new instance.
+     *
      * @param[in]  right  The right
      */
     stream(const stream& right);
