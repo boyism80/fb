@@ -25,7 +25,9 @@ stream stream::compress() const
     if (compress2(buffer.get(), (uLongf*)&dst_size, this->data(), src_size, Z_BEST_COMPRESSION) == Z_STREAM_ERROR)
         throw std::runtime_error("cannot compress data");
 
-    return stream(buffer.get(), dst_size);
+    // 최적화 과정에서 발생하는 문제로 객체를 먼저 생성한 뒤에 리턴해야함
+    auto result = stream(buffer.get(), dst_size);
+    return result;
 }
 
 stream stream::decompress() const
@@ -37,5 +39,7 @@ stream stream::decompress() const
     if (uncompress(buffer.get(), (uLongf*)&dst_size, this->data(), src_size) != Z_OK)
         throw std::runtime_error("cannot decompress data");
 
-    return stream(buffer.get(), dst_size);
+    // 최적화 과정에서 발생하는 문제로 객체를 먼저 생성한 뒤에 리턴해야함
+    auto result = stream(buffer.get(), dst_size);
+    return result;
 }
