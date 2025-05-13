@@ -16,6 +16,7 @@ RUN apt-get upgrade -y
 RUN apt-get install git gcc-14 g++-14 gdb make cmake libssl-dev libstdc++-14-dev wget -y
 RUN ln -s -f /usr/bin/gcc-14 /usr/bin/gcc && ln -s -f /usr/bin/g++-14 /usr/bin/g++
 RUN apt-get install libncurses5-dev libncursesw5-dev -y
+RUN apt-get install libubsan1 -y
 
 
 WORKDIR /app
@@ -23,8 +24,8 @@ RUN git clone https://github.com/open-source-parsers/jsoncpp
 WORKDIR /app/jsoncpp
 RUN git checkout 1.9.6
 WORKDIR /app/jsoncpp/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -39,8 +40,8 @@ RUN make install
 WORKDIR /app
 RUN git clone --recursive https://github.com/boyism80/lua
 WORKDIR /app/lua/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -48,8 +49,8 @@ RUN git clone https://github.com/intel/zlib
 WORKDIR /app/zlib
 RUN git checkout v1.2.9
 WORKDIR /app/zlib/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -64,8 +65,8 @@ RUN git clone https://github.com/yhirose/cpp-httplib
 WORKDIR /app/cpp-httplib
 RUN git checkout v0.18.1
 WORKDIR /app/cpp-httplib/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 WORKDIR /app
@@ -88,8 +89,8 @@ RUN git clone https://github.com/redis/hiredis.git
 WORKDIR /app/hiredis
 RUN git checkout v1.2.0
 WORKDIR /app/hiredis/build
-RUN cmake .. 
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 # fb.lib
@@ -97,8 +98,8 @@ WORKDIR /app
 COPY include ./include
 COPY lib ./lib
 WORKDIR /app/lib/build
-RUN cmake ..
-RUN cmake --build . --config Release --parallel
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
 RUN make install
 
 RUN rm -rf /app

@@ -66,7 +66,8 @@ async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) con
     // 패킷 형식으로 저장
     writer.write<uint8_t>(header);
     writer.write<uint16_t>(compressed.size());
-    writer.write(compressed.data(), compressed.size() + 1);
+    writer.write(compressed.data(), compressed.size());
+    writer.write<uint8_t>(0);
 }
 #else
 async::task<void> endpoint::deserialize(fb::stream_reader<big_endian>& reader)

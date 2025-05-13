@@ -4,7 +4,7 @@
 
 bool fb::model::door::matched(const fb::game::map& map, const point16_t& position, bool is_open) const
 {
-    for (int i = 0, n = this->width; i < n; i++)
+    for (int i = 0; i < this->width; i++)
     {
         auto tile = map(position.x + i, position.y);
         if (tile == nullptr)

@@ -407,7 +407,7 @@ bool fb::game::trade::lock()
     }
 }
 
-const std::vector<fb::game::item*>& fb::game::trade::items() const
+const std::vector<fb::game::item*> fb::game::trade::items() const
 {
     auto result = std::vector<fb::game::item*>();
     for (auto& [index, order] : this->_items)
@@ -418,7 +418,7 @@ const std::vector<fb::game::item*>& fb::game::trade::items() const
 
         result.push_back(item);
     }
-    return std::ref(result);
+    return result;
 }
 
 const fb::game::item* fb::game::trade::item(uint8_t index) const

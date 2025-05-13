@@ -50,7 +50,9 @@ IF(WIN32)
                                 lua$<$<CONFIG:Debug>:d>.lib
                                 ws2_32)
 ELSE()
-  set(CMAKE_CXX_FLAGS_DEBUG "-g")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer -DNDEBUG")
+  set(CMAKE_CXX_FLAGS_DEBUG   "-O0 -g -fsanitize=address -fstack-protector-strong -fno-omit-frame-pointer")
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG "-fsanitize=address")
   set(THREADS_PREFER_PTHREAD_FLAG ON)
   add_compile_definitions(NCURSES_NOMACROS)
   find_package(Threads REQUIRED)
@@ -63,5 +65,6 @@ ELSE()
                                 boost_program_options
                                 hiredis
                                 rabbitmq
-                                ncursesw)
+                                ncursesw
+                                ubsan)
 ENDIF(WIN32)

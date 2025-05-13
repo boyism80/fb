@@ -5,6 +5,8 @@
 #include <vector>
 #include <zlib.h>
 #include <cstdint>
+#include <memory>
+#include <fb/logger.h>
 #ifdef __linux__
 #include <sys/types.h>
 #endif
@@ -29,6 +31,13 @@ public:
      * @param[in]  size  The size
      */
     stream(const uint8_t* data, size_t size);
+
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param      v     { parameter_description }
+     */
+    stream(std::vector<uint8_t>&& v);
 
     /**
      * @brief      Constructs a new instance.

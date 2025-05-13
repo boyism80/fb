@@ -174,27 +174,20 @@ public:
             }
         }
         catch (boost::system::system_error& e)
-        { }
-        catch (boost::system::error_code& e)
         {
-            auto ec = e.value();
-            switch (ec)
+            auto ec = e.code();
+
+            if (ec == boost::asio::error::operation_aborted)
             {
-            case ENOENT:
-                break;
-
-            case ECONNABORTED:
-#ifdef _WIN32
-            case WSA_OPERATION_ABORTED:
-#endif
-                break;
-
-            case ECONNRESET:
-                fb::logger::info("SYSTEM SHUTDOWN ALERT?");
-                break;
-
-            default:
-                break;
+                fb::logger::info("socket recv cancelled (possibly shutdown)");
+            }
+            else if (ec == boost::asio::error::connection_reset)
+            {
+                fb::logger::info("client disconnected (connection reset)");
+            }
+            else
+            {
+                fb::logger::fatal("recv error: {}", ec.message());
             }
         }
         catch (std::exception& e)
@@ -202,9 +195,18 @@ public:
             fb::logger::fatal(e.what());
         }
         catch (...)
-        { }
+        {
+            fb::logger::fatal("unknown error in socket::recv");
+        }
 
-        std::ignore = this->_handle_closed(*this);
+        try
+        {
+            std::ignore = this->_handle_closed(*this);
+        }
+        catch(std::exception& e)
+        {
+            fb::logger::fatal("handle_closed exception: {}", e.what());
+        }
     }
 
 public:

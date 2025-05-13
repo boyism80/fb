@@ -14,6 +14,7 @@
 #include <cstring>
 #include <vector>
 #include <stdexcept>
+#include <memory>
 
 namespace fb {
 
