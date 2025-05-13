@@ -37,8 +37,8 @@ stream stream::compress() const
 stream stream::decompress() const
 {
     auto src_size = static_cast<uLongf>(this->size());
-    auto buffer   = std::unique_ptr<uint8_t[]>();
     auto dst_size = src_size * 2;
+    auto buffer   = std::unique_ptr<uint8_t[]>();
 
     while (true)
     {
