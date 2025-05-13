@@ -4,11 +4,7 @@ using namespace fb;
 
 stream::stream(const uint8_t* data, size_t size)
 {
-    fb::logger::info("[stream] constructing from size: {}", size);
-    this->std::vector<uint8_t>::reserve(size);
-    fb::logger::info("[stream] constructing from size: {} - end of reserve", size);
     this->std::vector<uint8_t>::assign(data, data + size);
-    fb::logger::info("[stream] constructing from size: {} - end of assign", size);
 }
 
 stream::stream(const stream& right) :

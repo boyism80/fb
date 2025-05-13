@@ -1106,7 +1106,7 @@ private:
         }
     }
 
-protected:
+public:
     /**
      * @brief      { function_description }
      */
@@ -1117,7 +1117,8 @@ protected:
         if (this->_running == false)
             return;
 
-        this->cancel(); // async_accept 취소
+        this->_running = false; // 백그라운드 스레드 종료
+        this->cancel();         // async_accept 취소
         async::awaitable_get(this->disconnect_sockets());
 
         for (auto& timer : this->_timers)
@@ -1125,9 +1126,8 @@ protected:
             timer->cancel();
         }
 
-        this->threads.exit();   // 로직스레드 종료
-        this->_running = false; // 백그라운드 스레드 종료
-        this->close();          // io 스레드 종료
+        this->threads.exit(); // 로직스레드 종료
+        this->close();        // io 스레드 종료
 
         static_cast<boost::asio::io_context&>(*this).stop();
     }

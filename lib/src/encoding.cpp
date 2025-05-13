@@ -25,17 +25,15 @@ std::string fb::cp949(const std::string& utf8)
     char*  src      = const_cast<char*>(utf8.data());
 
     size_t dst_size = src_size * 2;
-    char*  dst      = new char[dst_size];
-    char*  dst_head = dst;
+    auto   dst_ptr  = std::unique_ptr<char[]>(new char[dst_size]);
+    char*  dst      = dst_ptr.get();
     std::memset(dst, 0, dst_size);
 
     iconv_t cd = iconv_open("CP949", "UTF-8");
     iconv(cd, &src, &src_size, &dst, &dst_size);
     iconv_close(cd);
 
-    auto cp949 = std::string(dst_head);
-    delete[] dst_head;
-    return std::move(cp949);
+    return std::string(dst_ptr.get());
 #endif
 }
 
@@ -61,17 +59,15 @@ std::string fb::utf8(const std::string& cp949)
     char*  src      = const_cast<char*>(cp949.data());
 
     size_t dst_size = src_size * 2;
-    char*  dst      = new char[dst_size];
-    char*  dst_head = dst;
+    auto   dst_ptr  = std::unique_ptr<char[]>(new char[dst_size]);
+    char*  dst      = dst_ptr.get();
     std::memset(dst, 0, dst_size);
 
     iconv_t cd = iconv_open("UTF-8", "CP949");
     iconv(cd, &src, &src_size, &dst, &dst_size);
     iconv_close(cd);
 
-    auto utf8 = std::string(dst_head);
-    delete[] dst_head;
-    return std::move(utf8);
+    return std::string(dst_ptr.get());
 #endif
 }
 

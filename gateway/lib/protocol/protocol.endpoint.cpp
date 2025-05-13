@@ -42,8 +42,6 @@ endpoint::endpoint(const std::vector<fb::protocol::gateway::endpoint>& entries) 
 #ifndef BOT
 async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) const
 {
-    fb::logger::info("[endpoint::serialize] entry");
-
     co_await header::serialize(writer);
     // 서버정보를 바이너리 형식으로 변환
     auto formats = fb::stream();
@@ -68,11 +66,8 @@ async::task<void> endpoint::serialize(fb::stream_writer<big_endian>& writer) con
     // 패킷 형식으로 저장
     writer.write<uint8_t>(header);
     writer.write<uint16_t>(compressed.size());
-    fb::logger::info("[endpoint::serialize] entry - 1");
     writer.write(compressed.data(), compressed.size());
-    fb::logger::info("[endpoint::serialize] entry - 2");
     writer.write<uint8_t>(0);
-    fb::logger::info("[endpoint::serialize] entry - 3");
 }
 #else
 async::task<void> endpoint::deserialize(fb::stream_reader<big_endian>& reader)

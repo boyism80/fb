@@ -77,7 +77,7 @@ protected:
 public:
     virtual ~context() = default;
 
-protected:
+public:
     virtual void exit();
 
 public:

@@ -290,10 +290,10 @@ fb::thread* map::thread() const
 
 map::tile* map::operator() (uint16_t x, uint16_t y) const
 {
-    if (x > this->_size.width)
+    if (x >= this->_size.width)
         return nullptr;
 
-    if (y > this->_size.height)
+    if (y >= this->_size.height)
         return nullptr;
 
     auto i = this->index(fb::model::point16_t(x, y));

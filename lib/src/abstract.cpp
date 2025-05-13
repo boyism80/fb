@@ -27,13 +27,13 @@ void context::exit()
     if (this->_running == false)
         return;
 
+    this->_running = false;
     for (auto& timer : this->_timers)
     {
         timer->cancel();
     }
 
     this->threads.exit();
-    this->_running = false;
 }
 
 void context::push_alive(const fb::thread_switchable& obj)

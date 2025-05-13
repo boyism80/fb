@@ -30,21 +30,15 @@ int main(int argc, const char** argv)
 
         auto io_context = boost::asio::io_context{};
         auto context    = std::make_unique<fb::gateway::context>(io_context, config<uint16_t>("port"));
-        // auto signals    = boost::asio::signal_set(io_context, SIGINT, SIGTERM);
-        // signals.async_wait([&io_context, &context](const boost::system::error_code& error, int signal_number) {
-        //     fb::console::puts("received signal: {}", signal_number);
-        // });
+        auto signals    = boost::asio::signal_set(io_context, SIGINT, SIGTERM);
+        signals.async_wait([&context](const boost::system::error_code& ec, int signal_number) {
+            context->exit();
+        });
         context->run();
     }
     catch (std::exception& e)
     {
         fb::logger::fatal(std::format("unhandled exception catched in main : {}", e.what()));
-#ifndef _WIN32
-        void*  array[10];
-        size_t size;
-        size = backtrace(array, 10);
-        backtrace_symbols_fd(array, size, STDERR_FILENO);
-#endif
     }
 
     // Clean up
