@@ -2057,11 +2057,14 @@ public:
  */
 class character::container : private std::vector<character*>
 {
+private:
+    using super = std::vector<character*>;
+
 public:
-    using std::vector<character*>::begin;
-    using std::vector<character*>::end;
-    using std::vector<character*>::size;
-    using std::vector<character*>::operator[];
+    using super::begin;
+    using super::end;
+    using super::size;
+    using super::operator[];
 
 public:
     /**

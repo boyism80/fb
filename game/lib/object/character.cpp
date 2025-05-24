@@ -1422,7 +1422,7 @@ character::container& character::container::push(character& ch)
 
 character::container& character::container::erase(character& ch)
 {
-    std::vector<character*>::erase(std::find(this->begin(), this->end(), &ch));
+    super::erase(std::find(this->begin(), this->end(), &ch));
     return *this;
 }
 

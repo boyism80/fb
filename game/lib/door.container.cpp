@@ -14,32 +14,33 @@ door_container::~door_container()
 
 door_container::iterator door_container::begin()
 {
-    return door_container::iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::begin(), *this);
+    return door_container::iterator(super::begin(), *this);
 }
 
 door_container::iterator door_container::end()
 {
-    return door_container::iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::end(), *this);
+    return door_container::iterator(super::end(), *this);
 }
 
 door_container::const_iterator door_container::begin() const
 {
-    return door_container::const_iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::cbegin(), *this);
+    return door_container::const_iterator(super::cbegin(), *this);
 }
 
 door_container::const_iterator door_container::end() const
 {
-    return door_container::const_iterator(std::unordered_map<uint64_t, std::unique_ptr<door>>::cend(), *this);
+    return door_container::const_iterator(super::cend(), *this);
 }
 
-void door_container::add(const fb::model::point16_t& position,
-                         const fb::model::point16_t& pivot,
-                         const fb::model::door&      model,
-                         bool                        opened)
+void door_container::add(std::shared_ptr<door>& door)
 {
-    auto index = this->map.index(position);
-    std::unordered_map<uint64_t, std::unique_ptr<door>>::insert(
-        {index, std::make_unique<door>(this->map, model, position, pivot, opened)});
+    auto pivot = door->pivot;
+    for (int i = 0; i < door->width; i++)
+    {
+        pivot.x    = door->pivot.x + i;
+        auto index = this->map.index(pivot);
+        super::insert({index, door});
+    }
 }
 
 fb::game::door* door_container::find(const character& ch) const
@@ -54,6 +55,15 @@ fb::game::door* door_container::find(const character& ch) const
 
     case DIRECTION::BOTTOM:
         position.y = std::min(this->map.height() - 1, position.y + 1);
+        break;
+
+    case DIRECTION::LEFT:
+        position.x = std::max(0, position.x - 1);
+        break;
+
+    case DIRECTION::RIGHT:
+        position.x = std::min(this->map.width() - 1, position.x + 1);
+        break;
     }
 
     auto index = this->map.index(position);
@@ -65,7 +75,7 @@ fb::game::door* door_container::find(const character& ch) const
 
 door_container::iterator::iterator(const door_container::base_iterator& i, const door_container& container) :
     door_container::base_iterator(i),
-    pair(i != static_cast<const std::unordered_map<uint64_t, std::unique_ptr<door>>&>(container).end()
+    pair(i != static_cast<const super&>(container).end()
              ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
                                                                           *i->second.get())
              : std::nullopt)
@@ -79,7 +89,7 @@ std::pair<fb::model::point16_t, fb::game::door&> door_container::iterator::opera
 door_container::const_iterator::const_iterator(const door_container::const_base_iterator& i,
                                                const door_container&                      container) :
     door_container::const_base_iterator(i),
-    pair(i != static_cast<const std::unordered_map<uint64_t, std::unique_ptr<door>>&>(container).end()
+    pair(i != static_cast<const super&>(container).end()
              ? std::make_optional<std::pair<fb::model::point16_t, door&>>(container.map.point(i->first),
                                                                           *i->second.get())
              : std::nullopt)

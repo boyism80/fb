@@ -303,17 +303,20 @@ public:
 class buffs : private std::unordered_map<uint32_t, buff*>
 {
 private:
+    using super = std::unordered_map<uint32_t, buff*>;
+
+private:
     fb::game::object& _owner;
 
 public:
-    using std::unordered_map<uint32_t, buff*>::size;
-    using std::unordered_map<uint32_t, buff*>::begin;
-    using std::unordered_map<uint32_t, buff*>::end;
-    using std::unordered_map<uint32_t, buff*>::cbegin;
-    using std::unordered_map<uint32_t, buff*>::cend;
-    using std::unordered_map<uint32_t, buff*>::contains;
-    using std::unordered_map<uint32_t, buff*>::insert;
-    using std::unordered_map<uint32_t, buff*>::erase;
+    using super::begin;
+    using super::cbegin;
+    using super::cend;
+    using super::contains;
+    using super::end;
+    using super::erase;
+    using super::insert;
+    using super::size;
 
 public:
     /**

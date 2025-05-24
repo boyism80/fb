@@ -103,12 +103,15 @@ public:
 template <typename T>
 class array_container : private std::vector<std::unique_ptr<T>>
 {
+private:
+    using super = std::vector<std::unique_ptr<T>>;
+
 public:
     class iterator;
     class const_iterator;
 
 public:
-    using std::vector<std::unique_ptr<T>>::size;
+    using super::size;
 
 protected:
     array_container() = default;
@@ -116,16 +119,16 @@ protected:
 public:
     void push(T* value)
     {
-        std::vector<std::unique_ptr<T>>::push_back(std::unique_ptr<T>(value));
+        super::push_back(std::unique_ptr<T>(value));
     }
 
 public:
     T* find(uint32_t i) const
     {
-        if (i > std::vector<std::unique_ptr<T>>::size() - 1)
+        if (i > super::size() - 1)
             return nullptr;
 
-        return &std::vector<std::unique_ptr<T>>::at(i);
+        return &super::at(i);
     }
 
 public:
@@ -148,9 +151,12 @@ public:
 template <typename T>
 class array_container<T>::iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator
 {
+private:
+    using super = std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator;
+
 public:
-    iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator& i) :
-        std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator(i)
+    iterator(const super& i) :
+        super(i)
     { }
     ~iterator() = default;
 
@@ -164,9 +170,12 @@ public:
 template <typename T>
 class array_container<T>::const_iterator : public std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator
 {
+private:
+    using super = std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator;
+
 public:
-    const_iterator(const typename std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator& i) :
-        std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator(i)
+    const_iterator(const super& i) :
+        super(i)
     { }
     ~const_iterator() = default;
 

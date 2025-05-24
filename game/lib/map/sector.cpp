@@ -27,7 +27,7 @@ void sector::erase(object& object)
     if (found == this->end())
         return;
 
-    std::vector<fb::game::object*>::erase(found);
+    super::erase(found);
     if (object.is(OBJECT_TYPE::CHARACTER))
         this->_character_count--;
 }

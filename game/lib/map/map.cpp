@@ -56,13 +56,9 @@ void map::update_door()
             {
                 if (door.matched(*this, pivot, &opened))
                 {
-                    for (uint16_t i = 0; i < door.width; i++)
-                    {
-                        this->doors.add(fb::model::point16_t{uint16_t(pivot.x + i), uint16_t(pivot.y)},
-                                        pivot,
-                                        door,
-                                        opened);
-                    }
+                    auto ptr = std::make_shared<fb::game::door>(*this, door, pivot, opened);
+                    this->doors.add(ptr);
+
                     found    = true;
                     pivot.x += door.width;
                     break;

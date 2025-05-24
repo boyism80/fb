@@ -8,8 +8,11 @@ namespace fb::game {
 /**
  * @brief      This class describes door_container.
  */
-class door_container : private std::unordered_map<uint64_t, std::unique_ptr<door>>
+class door_container : private std::unordered_map<uint64_t, std::shared_ptr<fb::game::door>>
 {
+private:
+    using super = std::unordered_map<uint64_t, std::shared_ptr<fb::game::door>>;
+
 public:
     /**
      * @brief      This class describes an iterator.
@@ -20,8 +23,8 @@ public:
      */
     class const_iterator;
 
-    using base_iterator       = std::unordered_map<uint64_t, std::unique_ptr<door>>::iterator;
-    using const_base_iterator = std::unordered_map<uint64_t, std::unique_ptr<door>>::const_iterator;
+    using base_iterator       = super::iterator;
+    using const_base_iterator = super::const_iterator;
 
     friend class iterator;
     friend class const_iterator;
@@ -30,13 +33,13 @@ public:
     const fb::game::map& map;
 
 public:
-    using unordered_map<uint64_t, std::unique_ptr<door>>::begin;
-    using unordered_map<uint64_t, std::unique_ptr<door>>::end;
-    using unordered_map<uint64_t, std::unique_ptr<door>>::cbegin;
-    using unordered_map<uint64_t, std::unique_ptr<door>>::cend;
-    using unordered_map<uint64_t, std::unique_ptr<door>>::size;
-    using unordered_map<uint64_t, std::unique_ptr<door>>::at;
-    using unordered_map<uint64_t, std::unique_ptr<door>>::contains;
+    using super::at;
+    using super::begin;
+    using super::cbegin;
+    using super::cend;
+    using super::contains;
+    using super::end;
+    using super::size;
 
 public:
     /**
@@ -82,17 +85,11 @@ public:
      */
     const_iterator end() const;
     /**
-     * @brief      { function_description }
+     * @brief      Adds the specified door.
      *
-     * @param[in]  position  The position
-     * @param[in]  pivot     The pivot
-     * @param[in]  model     The model
-     * @param[in]  opened    Indicates if opened
+     * @param      door  The door
      */
-    void add(const fb::model::point16_t& position,
-             const fb::model::point16_t& pivot,
-             const fb::model::door&      model,
-             bool                        opened);
+    void add(std::shared_ptr<door>& door);
 
     /**
      * @brief      Searches for the first match.

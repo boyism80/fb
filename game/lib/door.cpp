@@ -5,14 +5,9 @@
 
 using namespace fb::game;
 
-door::door(const fb::game::map&        map,
-           const fb::model::door&      model,
-           const fb::model::point16_t& position,
-           const fb::model::point16_t& pivot,
-           bool                        opened) :
+door::door(const fb::game::map& map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened) :
     map(map),
     model(model),
-    position(position),
     pivot(pivot),
     _opened(opened),
     width(static_cast<uint16_t>(model.pairs.size()))
