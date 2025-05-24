@@ -258,5 +258,5 @@ buff* buffs::operator[] (uint32_t id) const
     if (this->contains(id) == false)
         return nullptr;
 
-    return std::unordered_map<uint32_t, buff*>::at(id);
+    return super::at(id);
 }

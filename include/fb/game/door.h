@@ -36,7 +36,7 @@ private:
 public:
     const fb::game::map&       map;
     const fb::model::door&     model;
-    const fb::model::point16_t position, pivot;
+    const fb::model::point16_t pivot;
     const uint16_t             width;
 
 public:
@@ -45,14 +45,9 @@ public:
      *
      * @param[in]  map       The map
      * @param[in]  model     The model
-     * @param[in]  position  The position
      * @param[in]  opened    Indicates if opened
      */
-    door(const fb::game::map&        map,
-         const fb::model::door&      model,
-         const fb::model::point16_t& position,
-         const fb::model::point16_t& pivot,
-         bool                        opened);
+    door(const fb::game::map& map, const fb::model::door& model, const fb::model::point16_t& pivot, bool opened);
     /**
      * @brief      Constructs a new instance.
      *

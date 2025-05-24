@@ -203,7 +203,7 @@ public:
         {
             std::ignore = this->_handle_closed(*this);
         }
-        catch(std::exception& e)
+        catch (std::exception& e)
         {
             fb::logger::fatal("handle_closed exception: {}", e.what());
         }

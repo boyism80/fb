@@ -24,18 +24,21 @@ class sectors;
  */
 class sector : private std::vector<fb::game::object*>
 {
+private:
+    using super = std::vector<fb::game::object*>;
+
 public:
     friend class sectors;
 
 public:
-    using std::vector<fb::game::object*>::begin;
-    using std::vector<fb::game::object*>::cbegin;
-    using std::vector<fb::game::object*>::end;
-    using std::vector<fb::game::object*>::cend;
-    using std::vector<fb::game::object*>::erase;
-    using std::vector<fb::game::object*>::at;
-    using std::vector<fb::game::object*>::operator[];
-    using std::vector<fb::game::object*>::size;
+    using super::at;
+    using super::begin;
+    using super::cbegin;
+    using super::cend;
+    using super::end;
+    using super::erase;
+    using super::operator[];
+    using super::size;
 
 private:
     const uint32_t _id              = 0;
