@@ -155,7 +155,7 @@ private:
     using super = std::vector<std::unique_ptr<std::unique_ptr<T>>>::iterator;
 
 public:
-    iterator(const typename super& i) :
+    iterator(const super& i) :
         super(i)
     { }
     ~iterator() = default;
@@ -174,7 +174,7 @@ private:
     using super = std::vector<std::unique_ptr<std::unique_ptr<T>>>::const_iterator;
 
 public:
-    const_iterator(const typename super& i) :
+    const_iterator(const super& i) :
         super(i)
     { }
     ~const_iterator() = default;
