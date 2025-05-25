@@ -28,9 +28,11 @@ async::task<void> context::handle_mob_action(const fb::model::datetime& now, std
                 continue;
 
             auto target = mob.target();
-            if (target == nullptr || map->objects.contains(*target) == false || target->alive() == false)
-                mob.target(nullptr);
-
+            if (target != nullptr)
+            {
+                if (!this->alive(*target) || !map->objects.contains(*target))
+                    mob.target(nullptr);
+            }
             mob.action();
             mob.AI(now);
         }

@@ -24,18 +24,21 @@ namespace Internal.Controllers
         private readonly DbContext _dbContext;
         private readonly RedisService _redisService;
         private readonly RedisDistributedLockService _distributedLock;
+        private readonly ILogger<UserController> _logger;
 
         public UserController(IConfiguration configuration,
             IMapper mapper,
             DbContext dbContext,
             RedisService redisService,
-            RedisDistributedLockService distributedLock)
+            RedisDistributedLockService distributedLock,
+            ILogger<UserController> logger)
         {
             _configuration = configuration;
             _mapper = mapper;
             _dbContext = dbContext;
             _redisService = redisService;
             _distributedLock = distributedLock;
+            _logger = logger;
         }
 
         [HttpGet("uid/{name}")]
@@ -248,10 +251,16 @@ namespace Internal.Controllers
             }
         }
 
-        private static T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
+        private T[] Override<T>(IEnumerable<T> request, IEnumerable<T> exists) where T : IModel, IRedisHashKey
         {
             var src = request.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
             var dst = exists.ToDictionary(x => $"{x.GetRedisKey()}:{x.GetRedisField()}");
+
+            var deletedKeys = dst.Keys.Except(src.Keys).ToArray();
+            if (deletedKeys.Length > 0)
+            {
+                _logger.LogWarning($"deleted keys : {string.Join(", ", deletedKeys)}");
+            }
 
             foreach (var x in dst.Values)
             {
