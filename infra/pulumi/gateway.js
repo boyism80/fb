@@ -16,7 +16,7 @@ module.exports = function () {
                     io: 12,
                     background: 8
                 },
-                log: ["info", "fatal"],
+                log: ["info", "warn", "fatal"],
                 entrypoints: [],
                 amqp: {
                     ip: "rabbitmq",
