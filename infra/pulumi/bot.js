@@ -10,7 +10,7 @@ module.exports = function () {
             const ports = []
             for(const [section, sectionConf] of Object.entries(conf.bot)) {
                 const config = {
-                    log: ["debug", "info", "warn", "fatal"],
+                    log: ["info", "warn", "fatal"],
                     ip: conf.host,
                     port: conf.gateway.port,
                     io_size: sectionConf.io_size,

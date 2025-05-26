@@ -38,7 +38,7 @@ module.exports = function () {
                             uid: "fb",
                             pwd: "admin"
                         },
-                        log: ["debug", "info", "warn", "fatal"]
+                        log: ["info", "warn", "fatal"]
                     }
 
                     const configMap = new k8s.core.v1.ConfigMap(`game-${section}-${i}`, {
