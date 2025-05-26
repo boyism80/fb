@@ -207,103 +207,113 @@ int character::builtin_item(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    if (lua->is_obj(2))
+    if (lua->is_num(2))
     {
-        auto sequence = uint32_t{0xFFFFFFFD};
-        auto model    = (const fb::model::object*)nullptr;
-        if (lua->is_userdata<fb::game::object>(2))
-        {
-            auto obj = lua->touserdata<fb::game::object>(2);
-            model    = &obj->based<fb::model::object>();
-            sequence = obj->sequence();
-        }
-        else if (lua->is_userdata<fb::model::object>(2))
-        {
-            model = lua->touserdata<fb::model::object>(2);
-        }
-        else
-        {
-            return 0;
-        }
-
-        auto message = lua->tostring(3);
-        auto items   = fb::game::dialog::item_pairs();
-        if (lua->rawlen(4) > 0)
-        {
-            lua->pushnil();
-            while (lua->next(4))
-            {
-                // auto i = lua->tointeger(-2);
-                auto item  = static_cast<fb::model::item*>(nullptr);
-                auto price = uint32_t(0);
-
-                { // get 1st field
-                    lua->pushinteger(1);
-                    lua_gettable(L, -2);
-                    switch (lua_type(L, -1))
-                    {
-                    case LUA_TSTRING:
-                        item = ctx->model.item.name2item(lua->tostring(-1));
-                        break;
-
-                    case LUA_TUSERDATA:
-                        item = lua->touserdata<fb::model::item>(-1);
-                        break;
-                    }
-                    lua->pop(1);
-                }
-
-                { // get 2nd field
-                    lua->pushinteger(2);
-                    lua_gettable(L, -2);
-                    switch (lua_type(L, -1))
-                    {
-                    case LUA_TNUMBER:
-                        price = lua->tointeger(-1);
-                        break;
-                    }
-                }
-                lua->pop(1);
-
-                if (item == nullptr)
-                    continue;
-
-                items.push_back({*item, price});
-                lua->pop(1);
-            }
-        }
-
-        auto listener = ch->get_listener<fb::game::character>();
-        if (listener != nullptr)
-            listener->on_dialog(*ch, *model, message, items, sequence);
-
-        if (ch->dialog != nullptr)
-            ch->dialog->release();
-
-        ch->dialog = lua;
-        return lua->yield(1);
-    }
-    else
-    {
-        auto item = (fb::game::item*)nullptr;
-        if (lua->is_num(2))
-        {
-            auto index = (uint8_t)lua->tointeger(2);
-            item       = ch->items[index];
-        }
-        else if (lua->is_str(2))
-        {
-            auto name = lua->tostring(2);
-            item      = ch->items.find(name);
-        }
-
+        auto index = (uint8_t)lua->tointeger(2);
+        auto item  = ch->items[index];
         if (item == nullptr)
             lua->pushnil();
         else
             lua->pushobject(item);
-
         return 1;
     }
+
+    if (lua->is_str(2))
+    {
+        auto name = lua->tostring(2);
+        auto item = ch->items.find(name);
+        if (item == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(item);
+        return 1;
+    }
+
+    if (lua->is_userdata<fb::model::item>(2))
+    {
+        auto model = lua->touserdata<fb::model::item>(2);
+        auto item  = ch->items.find(*model);
+        if (item == nullptr)
+            lua->pushnil();
+        else
+            lua->pushobject(item);
+        return 1;
+    }
+
+    // item dialog
+    auto sequence = uint32_t{0xFFFFFFFD};
+    auto model    = (const fb::model::object*)nullptr;
+    if (lua->is_userdata<fb::game::object>(2))
+    {
+        auto obj = lua->touserdata<fb::game::object>(2);
+        model    = &obj->based<fb::model::object>();
+        sequence = obj->sequence();
+    }
+    else if (lua->is_userdata<fb::model::object>(2))
+    {
+        model = lua->touserdata<fb::model::object>(2);
+    }
+    else
+    {
+        return 0;
+    }
+
+    auto message = lua->tostring(3);
+    auto items   = fb::game::dialog::item_pairs();
+    if (lua->rawlen(4) > 0)
+    {
+        lua->pushnil();
+        while (lua->next(4))
+        {
+            // auto i = lua->tointeger(-2);
+            auto item  = static_cast<fb::model::item*>(nullptr);
+            auto price = uint32_t(0);
+
+            { // get 1st field
+                lua->pushinteger(1);
+                lua_gettable(L, -2);
+                switch (lua_type(L, -1))
+                {
+                case LUA_TSTRING:
+                    item = ctx->model.item.name2item(lua->tostring(-1));
+                    break;
+
+                case LUA_TUSERDATA:
+                    item = lua->touserdata<fb::model::item>(-1);
+                    break;
+                }
+                lua->pop(1);
+            }
+
+            { // get 2nd field
+                lua->pushinteger(2);
+                lua_gettable(L, -2);
+                switch (lua_type(L, -1))
+                {
+                case LUA_TNUMBER:
+                    price = lua->tointeger(-1);
+                    break;
+                }
+            }
+            lua->pop(1);
+
+            if (item == nullptr)
+                continue;
+
+            items.push_back({*item, price});
+            lua->pop(1);
+        }
+    }
+
+    auto listener = ch->get_listener<fb::game::character>();
+    if (listener != nullptr)
+        listener->on_dialog(*ch, *model, message, items, sequence);
+
+    if (ch->dialog != nullptr)
+        ch->dialog->release();
+
+    ch->dialog = lua;
+    return lua->yield(1);
 }
 
 int character::builtin_items(lua_State* L)

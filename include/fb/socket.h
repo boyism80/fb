@@ -40,7 +40,6 @@ private:
 protected:
     std::array<char, MAX_BUFFER_SIZE> _buffer;
     T*                                _data;
-    std::recursive_mutex              _boost_mutex;
 
 public:
     socket(context& context, const handle_read_event& handle_received, const handler_event& handle_closed) :
@@ -63,11 +62,7 @@ public:
     { }
 
 public:
-    ~socket()
-    {
-        auto _ = std::lock_guard(this->_boost_mutex);
-        this->close();
-    }
+    ~socket() = default;
 
 protected:
     virtual bool on_encrypt(fb::stream& out)
@@ -107,7 +102,6 @@ public:
 
         auto buffer = boost::asio::buffer(clone.data(), clone.size());
         {
-            auto _ = std::lock_guard(this->_boost_mutex);
             boost::asio::async_write(*this, buffer, [promise](const boost::system::error_code& ec, size_t transferred) {
                 if (ec)
                     promise->set_exception(std::make_exception_ptr(std::runtime_error("boost async write failed")));
@@ -179,15 +173,15 @@ public:
 
             if (ec == boost::asio::error::operation_aborted)
             {
-                fb::logger::info("socket recv cancelled (possibly shutdown)");
+                fb::logger::debug("socket recv cancelled (possibly shutdown)");
             }
             else if (ec == boost::asio::error::connection_reset)
             {
-                fb::logger::info("client disconnected (connection reset)");
+                fb::logger::debug("client disconnected (connection reset)");
             }
             else
             {
-                fb::logger::fatal("recv error: {}", ec.message());
+                fb::logger::debug("recv error: {}", ec.message());
             }
         }
         catch (std::exception& e)
