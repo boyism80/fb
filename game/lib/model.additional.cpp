@@ -55,7 +55,7 @@ IMPLEMENT_LUA_EXTENSION(fb::model::item, "fb.model.item")
 {"price",               fb::model::item::builtin_price},
 {"repair_price",        fb::model::item::builtin_repair_price},
 {"rename_price",        fb::model::item::builtin_rename_price},
-{"storage_fee",       fb::model::item::builtin_storage_fee},
+{"storage_fee",         fb::model::item::builtin_storage_fee},
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
