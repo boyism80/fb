@@ -84,8 +84,8 @@ bool fb::model::const_value::regex::match_repair_message(const std::string& mess
     return true;
 }
 
-bool fb::model::const_value::regex::match_store_money_message(const std::string&       message,
-                                                              std::optional<uint32_t>& money)
+bool fb::model::const_value::regex::match_deposit_money_message(const std::string&       message,
+                                                                std::optional<uint32_t>& money)
 {
     static const auto regex = boost::xpressive::sregex::compile(fb::model::const_value::regex::DEPOSIT_MONEY);
     auto              what  = boost::xpressive::smatch();

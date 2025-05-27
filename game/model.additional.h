@@ -372,7 +372,7 @@ public:                                                                         
     static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
     static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                 \
     static bool match_repair_message(const std::string& message, std::string& item);                               \
-    static bool match_store_money_message(const std::string& message, std::optional<uint32_t>& money);             \
+    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);           \
     static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);          \
     static bool match_store_item_message(const std::string&       message,                                         \
                                          std::string&             item,                                            \

@@ -719,7 +719,7 @@ void character::deposited_money(uint32_t value)
     this->_deposited_money = value;
 }
 
-uint32_t character::store_money(uint32_t value)
+uint32_t character::deposit_money(uint32_t value)
 {
     this->assert_thread();
 

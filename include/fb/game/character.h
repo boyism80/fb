@@ -612,7 +612,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t store_money(uint32_t value);
+    uint32_t deposit_money(uint32_t value);
 
     /**
      * @brief      { function_description }

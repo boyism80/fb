@@ -130,14 +130,14 @@ async::task<bool> context::npc_interaction_repair(character&                    
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_store_money(character&                         ch,
-                                                       const std::string&                 message,
-                                                       const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_deposit_money(character&                         ch,
+                                                         const std::string&                 message,
+                                                         const std::vector<fb::game::npc*>& npcs)
 {
     ch.assert_thread();
 
     auto money = std::optional<uint32_t>();
-    if (fb::model::const_value::regex::match_store_money_message(message, money) == false)
+    if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
         co_return false;
 
     auto lua = fb::lua::new_context();

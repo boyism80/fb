@@ -180,7 +180,7 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
     this->bind_npc_interaction(&context::npc_interaction_repair);
-    this->bind_npc_interaction(&context::npc_interaction_store_money);
+    this->bind_npc_interaction(&context::npc_interaction_deposit_money);
     this->bind_npc_interaction(&context::npc_interaction_withdraw_money);
     this->bind_npc_interaction(&context::npc_interaction_store_item);
     this->bind_npc_interaction(&context::npc_interaction_retrieve_item);
