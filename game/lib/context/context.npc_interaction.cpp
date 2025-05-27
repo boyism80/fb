@@ -130,14 +130,14 @@ async::task<bool> context::npc_interaction_repair(character&                    
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_deposit_money(character&                         ch,
-                                                         const std::string&                 message,
-                                                         const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_money(character&                         ch,
+                                                       const std::string&                 message,
+                                                       const std::vector<fb::game::npc*>& npcs)
 {
     ch.assert_thread();
 
     auto money = std::optional<uint32_t>();
-    if (fb::model::const_value::regex::match_deposit_money_message(message, money) == false)
+    if (fb::model::const_value::regex::match_store_money_message(message, money) == false)
         co_return false;
 
     auto lua = fb::lua::new_context();
@@ -147,13 +147,13 @@ async::task<bool> context::npc_interaction_deposit_money(character&             
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_money == false)
+        if (model.deposit_money == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
 #endif
-        lua->func("npc_hold_money");
+        lua->func("npc_deposit_money");
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (money.has_value())
@@ -190,13 +190,13 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_money == false)
+        if (model.deposit_money == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
 #endif
-        lua->func("npc_return_money");
+        lua->func("npc_withdraw_money");
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (money.has_value())
@@ -216,15 +216,15 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_deposit_item(character&                         ch,
-                                                        const std::string&                 message,
-                                                        const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_item(character&                         ch,
+                                                      const std::string&                 message,
+                                                      const std::vector<fb::game::npc*>& npcs)
 {
     ch.assert_thread();
 
     auto name  = std::string();
     auto count = std::optional<uint16_t>(0);
-    if (fb::model::const_value::regex::match_deposit_item_message(message, name, count) == false)
+    if (fb::model::const_value::regex::match_store_item_message(message, name, count) == false)
         co_return false;
 
     auto lua = fb::lua::new_context();
@@ -234,13 +234,13 @@ async::task<bool> context::npc_interaction_deposit_item(character&              
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_item == false)
+        if (model.store_item == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
 #endif
-        lua->func("npc_hold_item");
+        lua->func("npc_store_item");
         lua->pushobject(ch);
         lua->pushobject(npc);
         lua->pushstring(name);
@@ -261,7 +261,7 @@ async::task<bool> context::npc_interaction_deposit_item(character&              
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_withdraw_item(character&                         ch,
+async::task<bool> context::npc_interaction_retrieve_item(character&                         ch,
                                                          const std::string&                 message,
                                                          const std::vector<fb::game::npc*>& npcs)
 {
@@ -269,7 +269,7 @@ async::task<bool> context::npc_interaction_withdraw_item(character&             
 
     auto name  = std::string();
     auto count = std::optional<uint16_t>(0);
-    if (fb::model::const_value::regex::match_withdraw_item_message(message, name, count) == false)
+    if (fb::model::const_value::regex::match_retrieve_item_message(message, name, count) == false)
         co_return false;
 
     auto lua = fb::lua::new_context();
@@ -279,13 +279,13 @@ async::task<bool> context::npc_interaction_withdraw_item(character&             
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_item == false)
+        if (model.store_item == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
 #endif
-        lua->func("npc_return_item");
+        lua->func("npc_retrieve_item");
         lua->pushobject(ch);
         lua->pushobject(npc);
         lua->pushstring(name);
@@ -478,7 +478,7 @@ async::task<bool> context::npc_interaction_show_deposited_money(character&      
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_money == false)
+        if (model.deposit_money == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
@@ -541,13 +541,13 @@ async::task<bool> context::npc_interaction_rename_weapon(character&             
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_hold_item_list(character&                         ch,
-                                                          const std::string&                 message,
-                                                          const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_item_list(character&                         ch,
+                                                           const std::string&                 message,
+                                                           const std::vector<fb::game::npc*>& npcs)
 {
     ch.assert_thread();
 
-    if (fb::model::const_value::regex::match_hold_item_list(message) == false)
+    if (fb::model::const_value::regex::match_store_item_list(message) == false)
         co_return false;
 
     auto lua = fb::lua::new_context();
@@ -557,13 +557,13 @@ async::task<bool> context::npc_interaction_hold_item_list(character&            
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_item == false)
+        if (model.store_item == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
 #endif
-        lua->func("npc_hold_item_list");
+        lua->func("npc_store_item_list");
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (co_await lua->call(2, false) == false)
@@ -579,14 +579,14 @@ async::task<bool> context::npc_interaction_hold_item_list(character&            
     co_return true;
 }
 
-async::task<bool> context::npc_interaction_hold_item_count(character&                         ch,
-                                                           const std::string&                 message,
-                                                           const std::vector<fb::game::npc*>& npcs)
+async::task<bool> context::npc_interaction_store_item_count(character&                         ch,
+                                                            const std::string&                 message,
+                                                            const std::vector<fb::game::npc*>& npcs)
 {
     ch.assert_thread();
 
     auto name = std::string();
-    if (fb::model::const_value::regex::match_hold_item_count(message, name) == false)
+    if (fb::model::const_value::regex::match_store_item_count(message, name) == false)
         co_return false;
 
     auto lua = fb::lua::new_context();
@@ -596,13 +596,13 @@ async::task<bool> context::npc_interaction_hold_item_count(character&           
     for (auto npc : npcs)
     {
         auto& model = npc->based<fb::model::npc>();
-        if (model.hold_item == false)
+        if (model.store_item == false)
             continue;
 
 #if defined DEBUG | defined _DEBUG
         lua->load("scripts/npc.lua");
 #endif
-        lua->func("npc_hold_item_count");
+        lua->func("npc_store_item_count");
         lua->pushobject(ch);
         lua->pushobject(npc);
         lua->pushstring(name);

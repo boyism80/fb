@@ -719,7 +719,7 @@ void character::deposited_money(uint32_t value)
     this->_deposited_money = value;
 }
 
-uint32_t character::deposit_money(uint32_t value)
+uint32_t character::store_money(uint32_t value)
 {
     this->assert_thread();
 
@@ -756,41 +756,40 @@ uint32_t character::withdraw_money(uint32_t value)
     return lack;
 }
 
-bool character::deposit_item(item& item)
+bool character::store_item(item& item)
 {
     this->assert_thread();
 
     if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
     {
-        auto found =
-            std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto* deposited_item) {
-                auto& model = deposited_item->template based<fb::model::item>();
-                return item.based<fb::model::item>() == model;
-            });
+        auto found = std::find_if(this->_stored_items.begin(), this->_stored_items.end(), [&item](auto* stored_item) {
+            auto& model = stored_item->template based<fb::model::item>();
+            return item.based<fb::model::item>() == model;
+        });
 
-        if (found == this->_deposited_items.end())
+        if (found == this->_stored_items.end())
         {
-            this->_deposited_items.push_back(&item);
+            this->_stored_items.push_back(&item);
         }
         else
         {
-            auto deposited_item = *found;
-            auto capacity       = 0xFFFF - deposited_item->count();
+            auto stored_item = *found;
+            auto capacity    = 0xFFFF - stored_item->count();
             if (item.count() > capacity)
                 return false;
 
-            deposited_item->count(deposited_item->count() + item.count());
+            stored_item->count(stored_item->count() + item.count());
         }
     }
     else
     {
-        this->_deposited_items.push_back(&item);
+        this->_stored_items.push_back(&item);
     }
 
     return true;
 }
 
-bool character::deposit_item(uint8_t index, uint16_t count)
+bool character::store_item(uint8_t index, uint16_t count)
 {
     this->assert_thread();
 
@@ -802,14 +801,14 @@ bool character::deposit_item(uint8_t index, uint16_t count)
         return false;
 
     auto deleted = this->items.remove(*item, count);
-    auto result  = this->deposit_item(*deleted);
+    auto result  = this->store_item(*deleted);
     if (result == false)
         this->items.add(deleted);
 
     return result;
 }
 
-bool character::deposit_item(const std::string& name, uint16_t count)
+bool character::store_item(const std::string& name, uint16_t count)
 {
     this->assert_thread();
 
@@ -821,59 +820,58 @@ bool character::deposit_item(const std::string& name, uint16_t count)
     if (index == 0xFF)
         return false;
 
-    return this->deposit_item(index, count);
+    return this->store_item(index, count);
 }
 
-item* character::deposited_item(const fb::model::item& item) const
+item* character::stored_item(const fb::model::item& item) const
 {
     this->assert_thread();
 
-    auto found =
-        std::find_if(this->_deposited_items.cbegin(), this->_deposited_items.cend(), [&item](auto* deposited_item) {
-            return deposited_item->template based<fb::model::item>() == item;
-        });
+    auto found = std::find_if(this->_stored_items.cbegin(), this->_stored_items.cend(), [&item](auto* stored_item) {
+        return stored_item->template based<fb::model::item>() == item;
+    });
 
-    if (found == this->_deposited_items.cend())
+    if (found == this->_stored_items.cend())
         return nullptr;
 
     return *found;
 }
 
-const std::vector<item*>& character::deposited_items() const
+const std::vector<item*>& character::stored_items() const
 {
     this->assert_thread();
 
-    return this->_deposited_items;
+    return this->_stored_items;
 }
 
-item* character::withdraw_item(uint8_t index, uint16_t count)
+item* character::retrieve_item(uint8_t index, uint16_t count)
 {
     this->assert_thread();
 
-    if (index > this->_deposited_items.size() - 1)
+    if (index > this->_stored_items.size() - 1)
         return nullptr;
 
     if (this->items.free() == false)
         return nullptr;
 
-    auto deposited_item  = this->_deposited_items.at(index);
-    auto deposited_count = deposited_item->count();
-    if (deposited_count < count)
+    auto stored_item  = this->_stored_items.at(index);
+    auto stored_count = stored_item->count();
+    if (stored_count < count)
         return nullptr;
 
-    auto& model  = deposited_item->based<fb::model::item>();
+    auto& model  = stored_item->based<fb::model::item>();
     auto  exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->items.find(model) : nullptr;
     if (exists != nullptr)
     {
         if (exists->count() + count > model.capacity)
             return nullptr;
 
-        deposited_item->count(deposited_count - count);
-        auto added_slot = this->items.add(deposited_item->based<fb::model::item>().make(this->context, count));
-        if (deposited_item->empty())
+        stored_item->count(stored_count - count);
+        auto added_slot = this->items.add(stored_item->based<fb::model::item>().make(this->context, count));
+        if (stored_item->empty())
         {
-            auto i = this->_deposited_items.begin() + index;
-            this->_deposited_items.erase(i);
+            auto i = this->_stored_items.begin() + index;
+            this->_stored_items.erase(i);
         }
 
         return this->items.at(added_slot);
@@ -883,46 +881,46 @@ item* character::withdraw_item(uint8_t index, uint16_t count)
         if (this->items.free() == false)
             return nullptr;
 
-        auto item = deposited_item->split();
-        this->_deposited_items.erase(this->_deposited_items.begin() + index);
+        auto item = stored_item->split(count);
+        if (stored_item->empty())
+            this->_stored_items.erase(this->_stored_items.begin() + index);
+
         this->items.add(item);
         return item;
     }
 }
 
-item* character::withdraw_item(const std::string& name, uint16_t count)
+item* character::retrieve_item(const std::string& name, uint16_t count)
 {
 
     this->assert_thread();
 
-    auto found =
-        std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&name](auto* deposited_item) {
-            auto& model = deposited_item->template based<fb::model::item>();
-            return model.name == name;
-        });
+    auto found = std::find_if(this->_stored_items.begin(), this->_stored_items.end(), [&name](auto* stored_item) {
+        auto& model = stored_item->template based<fb::model::item>();
+        return model.name == name;
+    });
 
-    if (found == this->_deposited_items.end())
+    if (found == this->_stored_items.end())
         return nullptr;
 
-    auto index = std::distance(this->_deposited_items.begin(), found);
-    return this->withdraw_item((uint8_t)index, count);
+    auto index = std::distance(this->_stored_items.begin(), found);
+    return this->retrieve_item((uint8_t)index, count);
 }
 
-item* character::withdraw_item(const fb::model::item& item, uint16_t count)
+item* character::retrieve_item(const fb::model::item& item, uint16_t count)
 {
     this->assert_thread();
 
-    auto found =
-        std::find_if(this->_deposited_items.begin(), this->_deposited_items.end(), [&item](auto* deposited_item) {
-            auto& model = deposited_item->template based<fb::model::item>();
-            return model == item;
-        });
+    auto found = std::find_if(this->_stored_items.begin(), this->_stored_items.end(), [&item](auto* stored_item) {
+        auto& model = stored_item->template based<fb::model::item>();
+        return model == item;
+    });
 
-    if (found == this->_deposited_items.end())
+    if (found == this->_stored_items.end())
         return nullptr;
 
-    auto index = std::distance(this->_deposited_items.begin(), found);
-    return this->withdraw_item((uint8_t)index, count);
+    auto index = std::distance(this->_stored_items.begin(), found);
+    return this->retrieve_item((uint8_t)index, count);
 }
 
 uint32_t character::regenerative() const

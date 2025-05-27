@@ -231,7 +231,7 @@ fb::protocol::internal::Item item::to_protocol(EQUIPMENT_PARTS parts) const
     result.user        = this->_container->owner.id();
     result.index       = -1;
     result.parts       = static_cast<uint16_t>(parts);
-    result.deposited   = -1;
+    result.stored      = -1;
     result.model       = model.id;
     result.count       = this->_count;
     result.durability  = this->durability();

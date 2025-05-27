@@ -627,7 +627,7 @@ public:
     uint32_t user = 0;
     int16_t index = 0;
     int16_t parts = 0;
-    int16_t deposited = 0;
+    int16_t stored = 0;
     uint32_t model = 0;
     uint16_t count = 0;
     std::optional<uint32_t> durability = std::nullopt;
@@ -637,15 +637,15 @@ public:
     Item() = default;
 
     Item(const Item& x)
-        : user(x.user), index(x.index), parts(x.parts), deposited(x.deposited), model(x.model), count(x.count), durability(x.durability), custom_name(x.custom_name)
+        : user(x.user), index(x.index), parts(x.parts), stored(x.stored), model(x.model), count(x.count), durability(x.durability), custom_name(x.custom_name)
     { }
 
-    Item(uint32_t user, int16_t index, int16_t parts, int16_t deposited, uint32_t model, uint16_t count, const std::optional<uint32_t>& durability, const std::optional<std::string>& custom_name)
-        : user(user), index(index), parts(parts), deposited(deposited), model(model), count(count), durability(durability), custom_name(custom_name)
+    Item(uint32_t user, int16_t index, int16_t parts, int16_t stored, uint32_t model, uint16_t count, const std::optional<uint32_t>& durability, const std::optional<std::string>& custom_name)
+        : user(user), index(index), parts(parts), stored(stored), model(model), count(count), durability(durability), custom_name(custom_name)
     { }
 
     Item(const fb::protocol::internal::raw::Item& raw)
-        : user(raw.user()), index(raw.index()), parts(raw.parts()), deposited(raw.deposited()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>())
+        : user(raw.user()), index(raw.index()), parts(raw.parts()), stored(raw.stored()), model(raw.model()), count(raw.count()), durability(raw.durability() != nullptr ? raw.durability()->value() : std::optional<uint32_t>()), custom_name(raw.custom_name() != nullptr ? flatbuffers::option::decode(raw.custom_name()->c_str()) : std::optional<std::string>())
     { }
 
 public:
@@ -3560,7 +3560,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Item> build<fb::protocol::inter
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<int16_t>(builder, value.index),
             flatbuffers::build<int16_t>(builder, value.parts),
-            flatbuffers::build<int16_t>(builder, value.deposited),
+            flatbuffers::build<int16_t>(builder, value.stored),
             flatbuffers::build<uint32_t>(builder, value.model),
             flatbuffers::build<uint16_t>(builder, value.count),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.durability),

@@ -146,7 +146,7 @@ CREATE TABLE `item` (
   `owner` int unsigned NOT NULL,
   `index` smallint NOT NULL DEFAULT '-1',
   `parts` smallint NOT NULL DEFAULT '0',
-  `deposited` smallint NOT NULL DEFAULT '-1',
+  `stored` smallint NOT NULL DEFAULT '-1',
   `model` int unsigned NOT NULL,
   `count` smallint unsigned DEFAULT '1',
   `durability` int unsigned DEFAULT NULL,
@@ -154,7 +154,7 @@ CREATE TABLE `item` (
   `deleted` tinyint NOT NULL DEFAULT '0',
   `created_date` datetime NOT NULL,
   `updated_date` datetime NOT NULL,
-  PRIMARY KEY (`owner`,`index`,`parts`,`deposited`),
+  PRIMARY KEY (`owner`,`index`,`parts`,`stored`),
   KEY `item_owner_idx` (`owner`),
   CONSTRAINT `fk.item.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;

@@ -39,7 +39,7 @@ public struct Item : IFlatbufferObject
       uint user = 0,
       short index = 0,
       short parts = 0,
-      short deposited = 0,
+      short stored = 0,
       uint model = 0,
       ushort count = 0,
       Offset<nullable.nullable_uint> durabilityOffset = default(Offset<nullable.nullable_uint>),
@@ -50,7 +50,7 @@ public struct Item : IFlatbufferObject
     Item.AddModel(builder, model);
     Item.AddUser(builder, user);
     Item.AddCount(builder, count);
-    Item.AddDeposited(builder, deposited);
+    Item.AddDeposited(builder, stored);
     Item.AddParts(builder, parts);
     Item.AddIndex(builder, index);
     return Item.EndItem(builder);
@@ -60,7 +60,7 @@ public struct Item : IFlatbufferObject
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddIndex(FlatBufferBuilder builder, short index) { builder.AddShort(1, index, 0); }
   public static void AddParts(FlatBufferBuilder builder, short parts) { builder.AddShort(2, parts, 0); }
-  public static void AddDeposited(FlatBufferBuilder builder, short deposited) { builder.AddShort(3, deposited, 0); }
+  public static void AddDeposited(FlatBufferBuilder builder, short stored) { builder.AddShort(3, stored, 0); }
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(4, model, 0); }
   public static void AddCount(FlatBufferBuilder builder, ushort count) { builder.AddUshort(5, count, 0); }
   public static void AddDurability(FlatBufferBuilder builder, Offset<nullable.nullable_uint> durabilityOffset) { builder.AddOffset(6, durabilityOffset.Value, 0); }

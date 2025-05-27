@@ -108,7 +108,7 @@ namespace fb.protocol._internal
                 builder.Build(value.User),
                 builder.Build(value.Index),
                 builder.Build(value.Parts),
-                builder.Build(value.Deposited),
+                builder.Build(value.Stored),
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
@@ -1041,7 +1041,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.User),
                 builder.Build(value.Index),
                 builder.Build(value.Parts),
-                builder.Build(value.Deposited),
+                builder.Build(value.Stored),
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
@@ -1989,7 +1989,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.User),
                 builder.Build(value.Index),
                 builder.Build(value.Parts),
-                builder.Build(value.Deposited),
+                builder.Build(value.Stored),
                 builder.Build(value.Model),
                 builder.Build(value.Count),
                 builder.Build(value.Durability),
@@ -3003,7 +3003,7 @@ namespace fb.protocol._internal
         public uint User { get; set; } = 0;
         public short Index { get; set; } = 0;
         public short Parts { get; set; } = 0;
-        public short Deposited { get; set; } = 0;
+        public short Stored { get; set; } = 0;
         public uint Model { get; set; } = 0;
         public ushort Count { get; set; } = 0;
         public uint? Durability { get; set; } = null;
@@ -3017,7 +3017,7 @@ namespace fb.protocol._internal
             User = raw.User;
             Index = raw.Index;
             Parts = raw.Parts;
-            Deposited = raw.Deposited;
+            Stored = raw.Stored;
             Model = raw.Model;
             Count = raw.Count;
             Durability = raw.Durability != null ? (uint?)raw.Durability.Value.Value : null;

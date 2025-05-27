@@ -2516,8 +2516,8 @@ public:
     inline static constexpr const char* REPAIR = "(((?P<all>전부|모두|다)|(?P<name>\\S+))\\s+?(?:고쳐|수리\\s*해))\\s*줘";
     inline static constexpr const char* DEPOSIT_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+맡아\\s*(?:줘|놔|주세요)";
     inline static constexpr const char* WITHDRAW_MONEY = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+돌려\\s*(?:줘|놔|주세요)";
-    inline static constexpr const char* DEPOSIT_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
-    inline static constexpr const char* WITHDRAW_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
+    inline static constexpr const char* STORE_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
+    inline static constexpr const char* RETRIEVE_ITEM = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
     inline static constexpr const char* SELL_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))";
     inline static constexpr const char* BUY_LIST = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))";
     inline static constexpr const char* SELL_PRICE = "(?P<name>\\S+)\\s+얼마(?:(?:(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
@@ -4861,7 +4861,7 @@ DECLARE_ITEM_FIELDS
 #else
 public:
     const uint32_t price;
-    const std::optional<uint32_t> deposit_price;
+    const std::optional<uint32_t> storage_fee;
     const bool trade;
     const fb::model::enum_value::ITEM_TYPE type;
     const std::string desc;
@@ -4878,7 +4878,7 @@ DECLARE_ITEM_CUSTOM_CONSTRUCTOR
 public:
     item(const Json::Value& json) : fb::model::object(json),
         price(fb::model::build<uint32_t>(json["price"])),
-        deposit_price(fb::model::build<std::optional<uint32_t>>(json["deposit_price"])),
+        storage_fee(fb::model::build<std::optional<uint32_t>>(json["storage_fee"])),
         trade(fb::model::build<bool>(json["trade"])),
         type(fb::model::build<fb::model::enum_value::ITEM_TYPE>(json["type"])),
         desc(fb::model::build<std::string>(json["desc"])),
@@ -4943,8 +4943,8 @@ public:
     const std::vector<uint32_t> sell;
     const std::optional<uint32_t> buy;
     const bool repair;
-    const bool hold_money;
-    const bool hold_item;
+    const bool deposit_money;
+    const bool store_item;
     const bool rename;
     const bool revive;
 #endif
@@ -4959,8 +4959,8 @@ public:
         sell(fb::model::build<std::vector<uint32_t>>(json["sell"])),
         buy(fb::model::build<std::optional<uint32_t>>(json["buy"])),
         repair(fb::model::build<bool>(json["repair"])),
-        hold_money(fb::model::build<bool>(json["hold_money"])),
-        hold_item(fb::model::build<bool>(json["hold_item"])),
+        deposit_money(fb::model::build<bool>(json["deposit_money"])),
+        store_item(fb::model::build<bool>(json["store_item"])),
         rename(fb::model::build<bool>(json["rename"])),
         revive(fb::model::build<bool>(json["revive"]))
 #ifdef DECLARE_NPC_INITIALIZER
@@ -5537,30 +5537,36 @@ public:
 template <typename T>
 class array_container<T>::iterator : public std::vector<std::unique_ptr<T>>::iterator
 {
+private:
+    using super = std::vector<std::unique_ptr<T>>::iterator;
+
 public:
-    iterator(const typename std::vector<std::unique_ptr<T>>::iterator& i) : std::vector<std::unique_ptr<T>>::iterator(i)
+    iterator(const super& i) : super(i)
     {}
     ~iterator() = default;
 
 public:
     T& operator * ()
     {
-        return *(std::vector<std::unique_ptr<T>>::iterator::operator*()).get();
+        return *(super::operator*()).get();
     }
 };
 
 template <typename T>
 class array_container<T>::const_iterator : public std::vector<std::unique_ptr<T>>::const_iterator
 {
+private:
+    using super = std::vector<std::unique_ptr<T>>::const_iterator;
+
 public:
-    const_iterator(const typename std::vector<std::unique_ptr<T>>::const_iterator& i) : std::vector<std::unique_ptr<T>>::const_iterator(i)
+    const_iterator(const super& i) : super(i)
     {}
     ~const_iterator() = default;
 
 public:
     const T& operator * () const
     {
-        return *(std::vector<std::unique_ptr<T>>::const_iterator::operator*()).get();
+        return *(super::operator*()).get();
     }
 };
 
