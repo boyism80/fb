@@ -43,13 +43,13 @@ function npc_appreciate(me, npc)
     return true
 end
 
-function npc_hold_item_count(me, npc, name)
+function npc_store_item_count(me, npc, name)
     local model = name2item(name)
     if model == nil then
         return true
     end
 
-    local item = me:deposited_item(model)
+    local item = me:stored_item(model)
     if item == nil then
         npc:chat('그런 물건은 맡고 있지 않습니다.') -- MESSAGE_NO_ITEM_DEPOSITED
         return true
@@ -59,8 +59,8 @@ function npc_hold_item_count(me, npc, name)
     return true
 end
 
-function npc_hold_item_list(me, npc)
-    local items = me:deposited_item()
+function npc_store_item_list(me, npc)
+    local items = me:stored_item()
     local count = #items
     if count == 0 then
         npc:chat('맡긴 물건이 없습니다.') -- MESSAGE_NO_ANY_DEPOSITED
@@ -141,16 +141,16 @@ end
 
 function npc_deposited_money(me, npc)
 
-    local deposited = me:deposited_money()
-    if deposited == 0 then
+    local stored = me:deposited_money()
+    if stored == 0 then
         npc:chat('맡긴 돈이 없습니다.')
     else
-        npc:chat(string.format('금전 %d전을 맡아두고 있습니다.', deposited))
+        npc:chat(string.format('금전 %d전을 맡아두고 있습니다.', stored))
     end
     return true
 end
 
-function npc_hold_money(me, npc, money)
+function npc_deposit_money(me, npc, money)
 
     local my_money = me:money()
     if money == nil then
@@ -166,35 +166,35 @@ function npc_hold_money(me, npc, money)
         return true
     end
 
-    local deposited = me:deposited_money()
-    local capacity = 0xFFFFFFFF - deposited
+    local stored = me:deposited_money()
+    local capacity = 0xFFFFFFFF - stored
     if money > capacity then
         npc:chat('더 이상 맡길 수 없습니다.')
         return true
     end
 
     me:money(my_money - money)
-    me:deposited_money(deposited + money)
+    me:deposited_money(stored + money)
     npc:chat(string.format('금전 %d전을 맡았습니다.', money))
 end
 
-function npc_return_money(me, npc, money)
+function npc_withdraw_money(me, npc, money)
 
-    local deposited = me:deposited_money()
+    local stored = me:deposited_money()
     if money == nil then
-        money = deposited
+        money = stored
     end
 
     if money == 0 then
         return true
     end
 
-    if deposited == 0 then
+    if stored == 0 then
         npc:chat('맡아둔 돈이 없습니다.')
         return true
     end
 
-    if money > deposited then
+    if money > stored then
         npc:chat('그만큼 맡기지 않았습니다.')
         return true
     end
@@ -205,7 +205,7 @@ function npc_return_money(me, npc, money)
         return false
     end
 
-    me:deposited_money(deposited - money)
+    me:deposited_money(stored - money)
     me:money(me:money() + money)
     npc:chat(string.format('금전 %d전을 돌려드렸습니다.', money))
 end
@@ -289,7 +289,7 @@ function npc_repair(me, npc, name)
     end
 end
 
-function npc_hold_item(me, npc, name, count)
+function npc_store_item(me, npc, name, count)
     local model = name2item(name)
     if model == nil then
         npc:chat('뭘 맡아줘?')
@@ -302,7 +302,7 @@ function npc_hold_item(me, npc, name, count)
         return true
     end
 
-    if model:deposit_price() == nil then
+    if model:storage_fee() == nil then
         npc:chat(string.format('%s 맡을 수 없습니다.', name_with(name, '은', '는')))
         return true
     end
@@ -320,13 +320,13 @@ function npc_hold_item(me, npc, name, count)
         count = 1
     end
 
-    if model:deposit_price() > me:money() then
+    if model:storage_fee() > me:money() then
         npc:chat('돈이 모자랍니다.')
         return true
     end
 
-    me:deposit_item(item, count)
-    me:money(me:money() - model:deposit_price())
+    me:store_item(item, count)
+    me:money(me:money() - model:storage_fee())
     if count > 1 then
         npc:chat(string.format('%s %d개 맡았습니다.', name_with(name, '을', '를'), count))
     else
@@ -336,14 +336,14 @@ function npc_hold_item(me, npc, name, count)
     return true
 end
 
-function npc_return_item(me, npc, name, count)
+function npc_retrieve_item(me, npc, name, count)
     local model = name2item(name)
     if model == nil then
         npc:chat('뭘 돌려줘?')
         return true
     end
 
-    local item = me:deposited_item(name)
+    local item = me:stored_item(name)
     if item == nil then
         npc:chat('그런 물품은 맡아두고 있지 않습니다.')
         return true
@@ -368,7 +368,7 @@ function npc_return_item(me, npc, name, count)
         return true
     end
 
-    if me:withdraw_item(item, count) == nil then
+    if me:retrieve_item(item, count) == nil then
         npc:chat('공간이 부족합니다.')
         return true
     end
@@ -874,7 +874,7 @@ function NPC_HOLD_ITEM_DIALOG(me, npc)
     local my_items = me:items()
     for slot, item in pairs(my_items) do
         local model = item:model()
-        if model:deposit_price() ~= nil then
+        if model:storage_fee() ~= nil then
             table.insert(slots, slot)
             items[slot] = item
         end
@@ -899,31 +899,31 @@ function NPC_HOLD_ITEM_DIALOG(me, npc)
             return me:dialog(npc, '그만큼 가지고 있지 않습니다.', false, true)
         end
 
-        local deposited_item = me:deposited_item(model:name())
-        if deposited_item ~= nil then
-            local deposited_count = deposited_item:count()
-            local capacity = 0xFFFF - deposited_count
+        local stored_item = me:stored_item(model:name())
+        if stored_item ~= nil then
+            local stored_count = stored_item:count()
+            local capacity = 0xFFFF - stored_count
             if count > capacity then
                 return me:dialog(npc, '더 이상 맡길 수 없습니다.', false, true)
             end
         end
     end
 
-    local deposit_price = model:deposit_price()
-    if deposit_price > 0 then
-        local selected = me:menu(npc, string.format('맡기는데 %d전이 필요합니다. 맡기시겠습니까?', deposit_price), {'네', '아니오'})
+    local storage_fee = model:storage_fee()
+    if storage_fee > 0 then
+        local selected = me:menu(npc, string.format('맡기는데 %d전이 필요합니다. 맡기시겠습니까?', storage_fee), {'네', '아니오'})
         if selected == 0 then
-            if me:money() < deposit_price then
+            if me:money() < storage_fee then
                 return me:dialog(npc, '돈이 모자랍니다.')
             else
-                me:money(me:money() - deposit_price)
+                me:money(me:money() - storage_fee)
             end
         else
             return DIALOG_RESULT_NEXT
         end
     end
 
-    me:deposit_item(item, count)
+    me:store_item(item, count)
     if model:attr(ITEM_ATTRIBUTE_BUNDLE) then
         return me:dialog(npc, string.format('%s %d개를 맡았습니다.', model:name(), count), false, true)
     else
@@ -968,9 +968,9 @@ end
 
 function NPC_RETURN_ITEM_DIALOG(me, npc)
     local list = {}
-    for _, deposited_item in pairs(me:deposited_item()) do
-        local model = deposited_item:model()
-        local count = deposited_item:count()
+    for _, stored_item in pairs(me:stored_item()) do
+        local model = stored_item:model()
+        local count = stored_item:count()
         table.insert(list, {model, count})
     end
 
@@ -979,11 +979,11 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
         return DIALOG_RESULT_NEXT
     end
 
-    local deposited_item = me:deposited_item(selected)
-    local model = deposited_item:model()
+    local stored_item = me:stored_item(selected)
+    local model = stored_item:model()
     local count = 1
     if model:attr(ITEM_ATTRIBUTE_BUNDLE)  then
-        if deposited_item:count() > 1 then
+        if stored_item:count() > 1 then
             count = me:input(npc, '얼마나 돌려드릴까요?')
             if count == nil then
                 return DIALOG_RESULT_NEXT
@@ -997,7 +997,7 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
             return me:dialog(npc, '수량이 올바르지 않습니다.', false, true)
         end
 
-        if deposited_item:count() < count then
+        if stored_item:count() < count then
             return me:dialog(npc, '그만큼 맡고 있지 않습니다.', false, true)
         end
 
@@ -1007,7 +1007,7 @@ function NPC_RETURN_ITEM_DIALOG(me, npc)
         end
     end
     
-    if me:withdraw_item(deposited_item, count) == nil then
+    if me:retrieve_item(stored_item, count) == nil then
         return me:dialog(npc, '공간이 부족합니다.', false, true)
     end
 

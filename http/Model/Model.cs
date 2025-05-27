@@ -843,8 +843,8 @@ namespace Fb.Model.ConstValue
         public const string Repair = "(((?P<all>전부|모두|다)|(?P<name>\\S+))\\s+?(?:고쳐|수리\\s*해))\\s*줘";
         public const string DepositMoney = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+맡아\\s*(?:줘|놔|주세요)";
         public const string WithdrawMoney = "(?:돈|금전)\\s+(?:(?P<money>\\d+)(?:원|전)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+돌려\\s*(?:줘|놔|주세요)";
-        public const string DepositItem = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
-        public const string WithdrawItem = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
+        public const string StoreItem = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?맡아\\s*(?:줘|놔|주세요)";
+        public const string RetrieveItem = "(?P<name>\\S+)\\s+(?:(?:(?P<count>\\d+)(?:개)|(?P<all>(?:전부)?(?:\\s*다)?))\\s+)?돌려\\s*(?:줘|놔|주세요)";
         public const string SellList = "(?:뭐|뭘|무엇을|무얼)\\s*(?:파니|파냐|팔고\\s*(?:있니|있냐))";
         public const string BuyList = "(?:뭐|뭘|무엇을|무얼)\\s*(?:사니|사냐|사고\\s*(?:있니|있냐))";
         public const string SellPrice = "(?P<name>\\S+)\\s+얼마(?:(?:(?:니|야|임|냐|에\\s*파(?:니|냐)))|(?:파(?:니|냐|)))";
@@ -1333,8 +1333,8 @@ namespace Fb.Model
     {
         [JsonProperty("price")]
         public uint Price { get; set; }
-        [JsonProperty("deposit_price")]
-        public uint? DepositPrice { get; set; }
+        [JsonProperty("storage_fee")]
+        public uint? StorageFee { get; set; }
         [JsonProperty("trade")]
         public bool Trade { get; set; }
         [JsonProperty("type")]
@@ -1379,10 +1379,10 @@ namespace Fb.Model
         public uint? Buy { get; set; }
         [JsonProperty("repair")]
         public bool Repair { get; set; }
-        [JsonProperty("hold_money")]
-        public bool HoldMoney { get; set; }
-        [JsonProperty("hold_item")]
-        public bool HoldItem { get; set; }
+        [JsonProperty("deposit_money")]
+        public bool DepositMoney { get; set; }
+        [JsonProperty("store_item")]
+        public bool StoreItem { get; set; }
         [JsonProperty("rename")]
         public bool Rename { get; set; }
         [JsonProperty("revive")]

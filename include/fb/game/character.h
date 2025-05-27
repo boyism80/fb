@@ -90,7 +90,7 @@ private:
     uint32_t                _money           = 0;
     std::optional<uint16_t> _disguise        = 0;
     uint32_t                _deposited_money = 0;
-    std::vector<item*>      _deposited_items;
+    std::vector<item*>      _stored_items;
     std::string             _title;
     shared_group_lock       _group         = nullptr;
     shared_clan_lock        _clan          = nullptr;
@@ -612,7 +612,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    uint32_t deposit_money(uint32_t value);
+    uint32_t store_money(uint32_t value);
 
     /**
      * @brief      { function_description }
@@ -630,7 +630,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool deposit_item(item& item);
+    bool store_item(item& item);
 
     /**
      * @brief      { function_description }
@@ -640,7 +640,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool deposit_item(uint8_t index, uint16_t count);
+    bool store_item(uint8_t index, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -650,7 +650,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool deposit_item(const std::string& name, uint16_t count);
+    bool store_item(const std::string& name, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -659,14 +659,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    item* deposited_item(const fb::model::item& item) const;
+    item* stored_item(const fb::model::item& item) const;
 
     /**
      * @brief      { function_description }
      *
      * @return     { description_of_the_return_value }
      */
-    const std::vector<item*>& deposited_items() const;
+    const std::vector<item*>& stored_items() const;
 
     /**
      * @brief      { function_description }
@@ -676,7 +676,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    item* withdraw_item(uint8_t index, uint16_t count);
+    item* retrieve_item(uint8_t index, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -686,7 +686,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    item* withdraw_item(const std::string& name, uint16_t count);
+    item* retrieve_item(const std::string& name, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -696,7 +696,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    item* withdraw_item(const fb::model::item& item, uint16_t count);
+    item* retrieve_item(const fb::model::item& item, uint16_t count);
 
     /**
      * @brief      { function_description }
@@ -1643,7 +1643,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_deposited_item(lua_State* L);
+    static int builtin_stored_item(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1652,7 +1652,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_deposit_item(lua_State* L);
+    static int builtin_store_item(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1661,7 +1661,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_withdraw_item(lua_State* L);
+    static int builtin_retrieve_item(lua_State* L);
 
     /**
      * @brief      { function_description }

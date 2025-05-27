@@ -164,16 +164,16 @@ int fb::model::item::builtin_rename_price(lua_State* L)
     return 1;
 }
 
-int fb::model::item::builtin_deposit_price(lua_State* L)
+int fb::model::item::builtin_storage_fee(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
         return 0;
 
     auto model = lua->touserdata<fb::model::item>(1);
-    if (model->deposit_price.has_value())
+    if (model->storage_fee.has_value())
     {
-        lua->pushinteger(model->deposit_price.value());
+        lua->pushinteger(model->storage_fee.value());
     }
     else
     {

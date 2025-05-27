@@ -13,14 +13,14 @@ namespace Http.Reepository
         {
         }
 
-        public async Task<Item> Get(uint owner, short index, short parts, short deposited)
+        public async Task<Item> Get(uint owner, short index, short parts, short stored)
         {
             return await Get(new ItemKey
             {
                 Owner = owner,
                 Index = index,
                 Parts = parts,
-                Deposited = deposited
+                Stored = stored
             });
         }
 
@@ -39,7 +39,7 @@ namespace Http.Reepository
                 `owner` = {key.Owner} AND
                 `index` = {key.Index} AND
                 `parts` = {key.Parts} AND
-                `deposited` = {key.Deposited}
+                `stored` = {key.Stored}
                 LIMIT 1;
                 """";
         }
@@ -59,7 +59,7 @@ namespace Http.Reepository
                     `owner`,
                     `index`,
                     `parts`,
-                    `deposited`,
+                    `stored`,
                     `model`,
                     `count`,
                     `durability`,
@@ -71,7 +71,7 @@ namespace Http.Reepository
                     {value.Owner.Escape()},
                     {value.Index.Escape()},
                     {value.Parts.Escape()},
-                    {value.Deposited.Escape()},
+                    {value.Stored.Escape()},
                     {value.Model.Escape()},
                     {value.Count.Escape()},
                     {value.Durability.Escape()},
@@ -99,7 +99,7 @@ namespace Http.Reepository
                         ({item.Owner.Escape()},
                          {item.Index.Escape()},
                          {item.Parts.Escape()},
-                         {item.Deposited.Escape()},
+                         {item.Stored.Escape()},
                          {item.Model.Escape()},
                          {item.Count.Escape()},
                          {item.Durability.Escape()},
@@ -115,7 +115,7 @@ namespace Http.Reepository
                         `owner`,
                         `index`,
                         `parts`,
-                        `deposited`,
+                        `stored`,
                         `model`,
                         `count`,
                         `durability`,

@@ -64,7 +64,7 @@ table Item {
     user: uint;
     index: short;
     parts: short;
-    deposited: short;
+    stored: short;
     model: uint;
     count: ushort;
     durability: uint?;

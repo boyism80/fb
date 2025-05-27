@@ -135,7 +135,7 @@ public:                                                                         
     static int builtin_price(lua_State* L);                                             \
     static int builtin_repair_price(lua_State* L);                                      \
     static int builtin_rename_price(lua_State* L);                                      \
-    static int builtin_deposit_price(lua_State* L);
+    static int builtin_storage_fee(lua_State* L);
 
 #define DECLARE_CASH_EXTENSION                                                                 \
                                                                                                \
@@ -372,12 +372,12 @@ public:                                                                         
     static bool match_sell_message(const std::string& message, std::string& item, std::optional<uint16_t>& count); \
     static bool match_buy_message(const std::string& message, std::string& item, uint16_t& count);                 \
     static bool match_repair_message(const std::string& message, std::string& item);                               \
-    static bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);           \
+    static bool match_store_money_message(const std::string& message, std::optional<uint32_t>& money);             \
     static bool match_withdraw_money_message(const std::string& message, std::optional<uint32_t>& money);          \
-    static bool match_deposit_item_message(const std::string&       message,                                       \
-                                           std::string&             item,                                          \
-                                           std::optional<uint16_t>& count);                                        \
-    static bool match_withdraw_item_message(const std::string&       message,                                      \
+    static bool match_store_item_message(const std::string&       message,                                         \
+                                         std::string&             item,                                            \
+                                         std::optional<uint16_t>& count);                                          \
+    static bool match_retrieve_item_message(const std::string&       message,                                      \
                                             std::string&             item,                                         \
                                             std::optional<uint16_t>& count);                                       \
     static bool match_sell_list(const std::string& message);                                                       \
@@ -386,8 +386,8 @@ public:                                                                         
     static bool match_buy_price(const std::string& message, std::string& item);                                    \
     static bool match_deposited_money(const std::string& message);                                                 \
     static bool match_rename_weapon(const std::string& message, std::string& weapon, std::string& name);           \
-    static bool match_hold_item_list(const std::string& message);                                                  \
-    static bool match_hold_item_count(const std::string& message, std::string& item);                              \
+    static bool match_store_item_list(const std::string& message);                                                 \
+    static bool match_store_item_count(const std::string& message, std::string& item);                             \
     static bool match_revive(const std::string& message, bool& discourteous);                                      \
     static bool match_appreciate(const std::string& message);
 

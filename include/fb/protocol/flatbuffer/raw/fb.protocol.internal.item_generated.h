@@ -29,7 +29,7 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_USER = 4,
     VT_INDEX = 6,
     VT_PARTS = 8,
-    VT_DEPOSITED = 10,
+    VT_STORED = 10,
     VT_MODEL = 12,
     VT_COUNT = 14,
     VT_DURABILITY = 16,
@@ -44,8 +44,8 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   int16_t parts() const {
     return GetField<int16_t>(VT_PARTS, 0);
   }
-  int16_t deposited() const {
-    return GetField<int16_t>(VT_DEPOSITED, 0);
+  int16_t stored() const {
+    return GetField<int16_t>(VT_STORED, 0);
   }
   uint32_t model() const {
     return GetField<uint32_t>(VT_MODEL, 0);
@@ -64,7 +64,7 @@ struct Item FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint32_t>(verifier, VT_USER, 4) &&
            VerifyField<int16_t>(verifier, VT_INDEX, 2) &&
            VerifyField<int16_t>(verifier, VT_PARTS, 2) &&
-           VerifyField<int16_t>(verifier, VT_DEPOSITED, 2) &&
+           VerifyField<int16_t>(verifier, VT_STORED, 2) &&
            VerifyField<uint32_t>(verifier, VT_MODEL, 4) &&
            VerifyField<uint16_t>(verifier, VT_COUNT, 2) &&
            VerifyOffset(verifier, VT_DURABILITY) &&
@@ -88,8 +88,8 @@ struct ItemBuilder {
   void add_parts(int16_t parts) {
     fbb_.AddElement<int16_t>(Item::VT_PARTS, parts, 0);
   }
-  void add_deposited(int16_t deposited) {
-    fbb_.AddElement<int16_t>(Item::VT_DEPOSITED, deposited, 0);
+  void add_stored(int16_t stored) {
+    fbb_.AddElement<int16_t>(Item::VT_STORED, stored, 0);
   }
   void add_model(uint32_t model) {
     fbb_.AddElement<uint32_t>(Item::VT_MODEL, model, 0);
@@ -119,7 +119,7 @@ inline ::flatbuffers::Offset<Item> CreateItem(
     uint32_t user = 0,
     int16_t index = 0,
     int16_t parts = 0,
-    int16_t deposited = 0,
+    int16_t stored = 0,
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
@@ -130,7 +130,7 @@ inline ::flatbuffers::Offset<Item> CreateItem(
   builder_.add_model(model);
   builder_.add_user(user);
   builder_.add_count(count);
-  builder_.add_deposited(deposited);
+  builder_.add_stored(stored);
   builder_.add_parts(parts);
   builder_.add_index(index);
   return builder_.Finish();
@@ -141,7 +141,7 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
     uint32_t user = 0,
     int16_t index = 0,
     int16_t parts = 0,
-    int16_t deposited = 0,
+    int16_t stored = 0,
     uint32_t model = 0,
     uint16_t count = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> durability = 0,
@@ -152,7 +152,7 @@ inline ::flatbuffers::Offset<Item> CreateItemDirect(
       user,
       index,
       parts,
-      deposited,
+      stored,
       model,
       count,
       durability,

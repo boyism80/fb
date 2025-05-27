@@ -42,7 +42,7 @@ bool match_repair_message(const std::string& message, const fb::model::item* ite
  *
  * @return     { description_of_the_return_value }
  */
-bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);
+bool match_store_money_message(const std::string& message, std::optional<uint32_t>& money);
 /**
  * @brief      { function_description }
  *
@@ -61,9 +61,7 @@ bool match_withdraw_money_message(const std::string& message, std::optional<uint
  *
  * @return     { description_of_the_return_value }
  */
-bool match_deposit_item_message(const std::string&       message,
-                                const fb::model::item*   item,
-                                std::optional<uint16_t>& count);
+bool match_store_item_message(const std::string& message, const fb::model::item* item, std::optional<uint16_t>& count);
 /**
  * @brief      { function_description }
  *
@@ -73,7 +71,7 @@ bool match_deposit_item_message(const std::string&       message,
  *
  * @return     { description_of_the_return_value }
  */
-bool match_withdraw_item_message(const std::string&       message,
+bool match_retrieve_item_message(const std::string&       message,
                                  const fb::model::item*   item,
                                  std::optional<uint16_t>& count);
 /**
@@ -135,7 +133,7 @@ bool match_rename_weapon(const std::string& message, const fb::model::item* item
  *
  * @return     { description_of_the_return_value }
  */
-bool match_hold_item_list(const std::string& message);
+bool match_store_item_list(const std::string& message);
 /**
  * @brief      { function_description }
  *
@@ -144,7 +142,7 @@ bool match_hold_item_list(const std::string& message);
  *
  * @return     { description_of_the_return_value }
  */
-bool match_hold_item_count(const std::string& message, const fb::model::item* item);
+bool match_store_item_count(const std::string& message, const fb::model::item* item);
 
 }}} // namespace fb::game::regex
 

@@ -23,7 +23,7 @@ public struct Item : IFlatbufferObject
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public short Index { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
   public short Parts { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
-  public short Deposited { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
+  public short Stored { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetShort(o + __p.bb_pos) : (short)0; } }
   public uint Model { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public ushort Count { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public nullable.nullable_uint? Durability { get { int o = __p.__offset(16); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
@@ -39,7 +39,7 @@ public struct Item : IFlatbufferObject
       uint user = 0,
       short index = 0,
       short parts = 0,
-      short deposited = 0,
+      short stored = 0,
       uint model = 0,
       ushort count = 0,
       Offset<nullable.nullable_uint> durabilityOffset = default(Offset<nullable.nullable_uint>),
@@ -50,7 +50,7 @@ public struct Item : IFlatbufferObject
     Item.AddModel(builder, model);
     Item.AddUser(builder, user);
     Item.AddCount(builder, count);
-    Item.AddDeposited(builder, deposited);
+    Item.AddStored(builder, stored);
     Item.AddParts(builder, parts);
     Item.AddIndex(builder, index);
     return Item.EndItem(builder);
@@ -60,7 +60,7 @@ public struct Item : IFlatbufferObject
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddIndex(FlatBufferBuilder builder, short index) { builder.AddShort(1, index, 0); }
   public static void AddParts(FlatBufferBuilder builder, short parts) { builder.AddShort(2, parts, 0); }
-  public static void AddDeposited(FlatBufferBuilder builder, short deposited) { builder.AddShort(3, deposited, 0); }
+  public static void AddStored(FlatBufferBuilder builder, short stored) { builder.AddShort(3, stored, 0); }
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(4, model, 0); }
   public static void AddCount(FlatBufferBuilder builder, ushort count) { builder.AddUshort(5, count, 0); }
   public static void AddDurability(FlatBufferBuilder builder, Offset<nullable.nullable_uint> durabilityOffset) { builder.AddOffset(6, durabilityOffset.Value, 0); }
@@ -82,7 +82,7 @@ static public class ItemVerify
       && verifier.VerifyField(tablePos, 4 /*User*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Index*/, 2 /*short*/, 2, false)
       && verifier.VerifyField(tablePos, 8 /*Parts*/, 2 /*short*/, 2, false)
-      && verifier.VerifyField(tablePos, 10 /*Deposited*/, 2 /*short*/, 2, false)
+      && verifier.VerifyField(tablePos, 10 /*Stored*/, 2 /*short*/, 2, false)
       && verifier.VerifyField(tablePos, 12 /*Model*/, 4 /*uint*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*Count*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyTable(tablePos, 16 /*Durability*/, nullable.nullable_uintVerify.Verify, false)

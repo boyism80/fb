@@ -167,7 +167,7 @@ public struct Character : IFlatbufferObject
   public static void AddPromotion(FlatBufferBuilder builder, byte promotion) { builder.AddByte(14, promotion, 0); }
   public static void AddExp(FlatBufferBuilder builder, uint exp) { builder.AddUint(15, exp, 0); }
   public static void AddMoney(FlatBufferBuilder builder, uint money) { builder.AddUint(16, money, 0); }
-  public static void AddDepositedMoney(FlatBufferBuilder builder, uint depositedMoney) { builder.AddUint(17, depositedMoney, 0); }
+  public static void AddDepositedMoney(FlatBufferBuilder builder, uint storedMoney) { builder.AddUint(17, storedMoney, 0); }
   public static void AddDisguise(FlatBufferBuilder builder, Offset<nullable.nullable_ushort> disguiseOffset) { builder.AddOffset(18, disguiseOffset.Value, 0); }
   public static void AddHp(FlatBufferBuilder builder, uint hp) { builder.AddUint(19, hp, 0); }
   public static void AddBaseHp(FlatBufferBuilder builder, uint baseHp) { builder.AddUint(20, baseHp, 0); }

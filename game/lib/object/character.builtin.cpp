@@ -27,9 +27,9 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"level",               character::builtin_level},
 {"assert",              character::builtin_assert},
 {"deposited_money",     character::builtin_deposited_money},
-{"deposited_item",      character::builtin_deposited_item},
-{"deposit_item",        character::builtin_deposit_item},
-{"withdraw_item",       character::builtin_withdraw_item},
+{"stored_item",         character::builtin_stored_item},
+{"store_item",          character::builtin_store_item},
+{"retrieve_item",       character::builtin_retrieve_item},
 {"group",               character::builtin_group},
 {"create_group",        character::builtin_create_group},
 {"clan",                character::builtin_clan},
@@ -702,7 +702,7 @@ int character::builtin_deposited_money(lua_State* L)
     }
 }
 
-int character::builtin_deposited_item(lua_State* L)
+int character::builtin_stored_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -714,14 +714,14 @@ int character::builtin_deposited_item(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    const auto& deposited_items = ch->deposited_items();
+    const auto& stored_items = ch->stored_items();
     if (argc == 1)
     {
         lua->new_table();
-        for (int i = 0; i < deposited_items.size(); i++)
+        for (int i = 0; i < stored_items.size(); i++)
         {
             lua->pushinteger(i + 1);
-            lua->pushobject(deposited_items.at(i));
+            lua->pushobject(stored_items.at(i));
             lua_settable(L, -3);
         }
     }
@@ -732,22 +732,21 @@ int character::builtin_deposited_item(lua_State* L)
             if (lua->is_num(2))
             {
                 auto index = lua->tointeger(2);
-                if (index > deposited_items.size() - 1)
+                if (index > stored_items.size() - 1)
                     throw std::exception();
 
-                auto deposited_item = deposited_items.at(index);
-                lua->pushobject(deposited_item);
+                auto stored_item = stored_items.at(index);
+                lua->pushobject(stored_item);
             }
             else if (lua->is_str(2))
             {
-                auto name  = lua->tostring(2);
-                auto found = std::find_if(deposited_items.cbegin(),
-                                          deposited_items.cend(),
-                                          [&name](fb::game::item* deposited_item) {
-                                              return deposited_item->based<fb::model::item>().name == name;
-                                          });
+                auto name = lua->tostring(2);
+                auto found =
+                    std::find_if(stored_items.cbegin(), stored_items.cend(), [&name](fb::game::item* stored_item) {
+                        return stored_item->based<fb::model::item>().name == name;
+                    });
 
-                if (found == deposited_items.cend())
+                if (found == stored_items.cend())
                     throw std::exception();
 
                 lua->pushobject(*found);
@@ -756,13 +755,12 @@ int character::builtin_deposited_item(lua_State* L)
             {
                 auto  item  = lua->touserdata<fb::game::item>(2);
                 auto& model = item->based<fb::model::item>();
-                auto  found = std::find_if(deposited_items.cbegin(),
-                                          deposited_items.cend(),
-                                          [&model](fb::game::item* deposited_item) {
-                                              return deposited_item->based<fb::model::item>() == model;
-                                          });
+                auto  found =
+                    std::find_if(stored_items.cbegin(), stored_items.cend(), [&model](fb::game::item* stored_item) {
+                        return stored_item->based<fb::model::item>() == model;
+                    });
 
-                if (found == deposited_items.cend())
+                if (found == stored_items.cend())
                     throw std::exception();
 
                 lua->pushobject(*found);
@@ -770,13 +768,12 @@ int character::builtin_deposited_item(lua_State* L)
             else if (lua->is_userdata<fb::model::item>(2))
             {
                 auto model = lua->touserdata<fb::model::item>(2);
-                auto found = std::find_if(deposited_items.cbegin(),
-                                          deposited_items.cend(),
-                                          [model](fb::game::item* deposited_item) {
-                                              return deposited_item->based<fb::model::item>() == *model;
-                                          });
+                auto found =
+                    std::find_if(stored_items.cbegin(), stored_items.cend(), [model](fb::game::item* stored_item) {
+                        return stored_item->based<fb::model::item>() == *model;
+                    });
 
-                if (found == deposited_items.cend())
+                if (found == stored_items.cend())
                     throw std::exception();
 
                 lua->pushobject(*found);
@@ -799,7 +796,7 @@ int character::builtin_deposited_item(lua_State* L)
     return 1;
 }
 
-int character::builtin_deposit_item(lua_State* L)
+int character::builtin_store_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -820,13 +817,13 @@ int character::builtin_deposit_item(lua_State* L)
     }
     else
     {
-        lua->pushboolean(ch->deposit_item(index, count));
+        lua->pushboolean(ch->store_item(index, count));
     }
 
     return 1;
 }
 
-int character::builtin_withdraw_item(lua_State* L)
+int character::builtin_retrieve_item(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -838,18 +835,18 @@ int character::builtin_withdraw_item(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto  item            = lua->touserdata<fb::game::item>(2);
-    auto  count           = lua->tointeger(3, 1);
-    auto& deposited_items = ch->deposited_items();
-    auto  found           = std::find(deposited_items.cbegin(), deposited_items.cend(), item);
-    if (found == deposited_items.cend())
+    auto  item         = lua->touserdata<fb::game::item>(2);
+    auto  count        = lua->tointeger(3, 1);
+    auto& stored_items = ch->stored_items();
+    auto  found        = std::find(stored_items.cbegin(), stored_items.cend(), item);
+    if (found == stored_items.cend())
     {
         lua->pushnil();
     }
     else
     {
-        auto index    = std::distance(deposited_items.cbegin(), found);
-        auto returned = ch->withdraw_item(index, count);
+        auto index    = std::distance(stored_items.cbegin(), found);
+        auto returned = ch->retrieve_item(index, count);
         lua->pushobject(returned);
     }
 

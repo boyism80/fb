@@ -180,18 +180,18 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
     this->bind_npc_interaction(&context::npc_interaction_repair);
-    this->bind_npc_interaction(&context::npc_interaction_deposit_money);
+    this->bind_npc_interaction(&context::npc_interaction_store_money);
     this->bind_npc_interaction(&context::npc_interaction_withdraw_money);
-    this->bind_npc_interaction(&context::npc_interaction_deposit_item);
-    this->bind_npc_interaction(&context::npc_interaction_withdraw_item);
+    this->bind_npc_interaction(&context::npc_interaction_store_item);
+    this->bind_npc_interaction(&context::npc_interaction_retrieve_item);
     this->bind_npc_interaction(&context::npc_interaction_sell_list);
     this->bind_npc_interaction(&context::npc_interaction_buy_list);
     this->bind_npc_interaction(&context::npc_interaction_sell_price);
     this->bind_npc_interaction(&context::npc_interaction_buy_price);
     this->bind_npc_interaction(&context::npc_interaction_show_deposited_money);
     this->bind_npc_interaction(&context::npc_interaction_rename_weapon);
-    this->bind_npc_interaction(&context::npc_interaction_hold_item_list);
-    this->bind_npc_interaction(&context::npc_interaction_hold_item_count);
+    this->bind_npc_interaction(&context::npc_interaction_store_item_list);
+    this->bind_npc_interaction(&context::npc_interaction_store_item_count);
     this->bind_npc_interaction(&context::npc_interaction_revive);
     this->bind_npc_interaction(&context::npc_interaction_appreciate);
 
@@ -497,8 +497,8 @@ void context::init_items(const std::vector<internal::Item>& response, character&
         if (x.custom_name.has_value() && item->based<fb::model::item>().attr(ITEM_ATTRIBUTE::WEAPON))
             static_cast<weapon*>(item)->custom_name(x.custom_name.value());
 
-        if (x.deposited != -1)
-            ch.deposit_item(*item);
+        if (x.stored != -1)
+            ch.store_item(*item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
             ch.items.add(*item, x.index);
         else
@@ -635,12 +635,12 @@ async::task<void> context::save(character& ch)
         items.push_back(equipment->to_protocol(parts));
     }
 
-    auto& deposited_items = ch.deposited_items();
-    for (int i = 0; i < deposited_items.size(); i++)
+    auto& stored_items = ch.stored_items();
+    for (int i = 0; i < stored_items.size(); i++)
     {
-        auto item          = deposited_items.at(i);
-        auto protocol      = item->to_protocol();
-        protocol.deposited = i;
+        auto item       = stored_items.at(i);
+        auto protocol   = item->to_protocol();
+        protocol.stored = i;
         items.push_back(protocol);
     }
 

@@ -8,11 +8,11 @@ namespace Http.Model
         public required uint Owner { get; set; }
         public short Index { get; set; }
         public short Parts { get; set; }
-        public short Deposited { get; set; }
+        public short Stored { get; set; }
 
         public uint GetHash() => Owner;
         public RedisKey GetRedisKey() => $"cache:item:{Owner}";
-        public RedisValue GetRedisField() => $"{Index}-{Parts}-{Deposited}";
+        public RedisValue GetRedisField() => $"{Index}-{Parts}-{Stored}";
     }
 
     public class Item : ItemKey, IModel
@@ -28,7 +28,7 @@ namespace Http.Model
             Owner = Owner,
             Index = Index,
             Parts = Parts,
-            Deposited = Deposited,
+            Stored = Stored,
         };
     }
 }

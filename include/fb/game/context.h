@@ -2005,9 +2005,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> npc_interaction_deposit_money(character&                         ch,
-                                                    const std::string&                 message,
-                                                    const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_money(character&                         ch,
+                                                  const std::string&                 message,
+                                                  const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -2031,9 +2031,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> npc_interaction_deposit_item(character&                         ch,
-                                                   const std::string&                 message,
-                                                   const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item(character&                         ch,
+                                                 const std::string&                 message,
+                                                 const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -2044,7 +2044,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> npc_interaction_withdraw_item(character&                         ch,
+    async::task<bool> npc_interaction_retrieve_item(character&                         ch,
                                                     const std::string&                 message,
                                                     const std::vector<fb::game::npc*>& npcs);
 
@@ -2135,9 +2135,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> npc_interaction_hold_item_list(character&                         ch,
-                                                     const std::string&                 message,
-                                                     const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item_list(character&                         ch,
+                                                      const std::string&                 message,
+                                                      const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }
@@ -2148,9 +2148,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> npc_interaction_hold_item_count(character&                         ch,
-                                                      const std::string&                 message,
-                                                      const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_store_item_count(character&                         ch,
+                                                       const std::string&                 message,
+                                                       const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }

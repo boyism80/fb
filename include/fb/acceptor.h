@@ -481,7 +481,10 @@ private:
 
         {
             auto _ = std::lock_guard(this->_sockets_mutex);
-            this->_sockets.erase(socket.fd());
+
+            auto fd = socket.fd();
+            this->_sockets.erase(fd);
+            fb::logger::info(std::format("socket closed. fd: {}", fd));
         }
     }
 
@@ -552,6 +555,12 @@ private:
                 {
                     auto _  = std::lock_guard(this->_sockets_mutex);
                     auto fd = socket->fd();
+                    if (this->_sockets.contains(fd))
+                    {
+                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                        this->_sockets.erase(fd); // remove old socket if exists
+                    }
+
                     this->_sockets.insert({fd, std::move(socket)});
                 }
 
