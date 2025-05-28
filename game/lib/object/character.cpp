@@ -800,7 +800,7 @@ bool character::store_item(uint8_t index, uint16_t count)
     if (item->count() < count)
         return false;
 
-    auto deleted = this->items.remove(*item, count);
+    auto deleted = this->items.remove(*item, count, ITEM_DELETE_TYPE::NONE, false);
     auto result  = this->store_item(*deleted);
     if (result == false)
         this->items.add(deleted);

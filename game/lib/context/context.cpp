@@ -255,9 +255,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
-    co_await this->save(*ch);
     try
     {
+        co_await this->save(*ch);
         std::ignore =
             co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                               "/in-game/logout",
