@@ -2005,9 +2005,9 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    async::task<bool> npc_interaction_store_money(character&                         ch,
-                                                  const std::string&                 message,
-                                                  const std::vector<fb::game::npc*>& npcs);
+    async::task<bool> npc_interaction_deposit_money(character&                         ch,
+                                                    const std::string&                 message,
+                                                    const std::vector<fb::game::npc*>& npcs);
 
     /**
      * @brief      { function_description }

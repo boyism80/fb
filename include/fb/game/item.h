@@ -878,6 +878,8 @@ private:
     fb::game::shield*    _shield         = nullptr;
     fb::game::ring*      _rings[2]       = {nullptr, nullptr};
     fb::game::auxiliary* _auxiliaries[2] = {nullptr, nullptr};
+    std::vector<item*>   _stored;
+    uint32_t             _deposited = 0;
 
 public:
     fb::game::character& owner;
@@ -929,6 +931,99 @@ public:
      * @return     { description_of_the_return_value }
      */
     uint8_t add(fb::game::item& item, uint8_t index);
+    /**
+     * @brief      { function_description }
+     *
+     * @param      item  The item
+     */
+    bool store(fb::game::item& item);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  index  The index
+     * @param[in]  count  The count
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool store(uint8_t index, uint16_t count);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name   The name
+     * @param[in]  count  The count
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool store(const std::string& name, uint16_t count);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  item  The item
+     *
+     * @return     { description_of_the_return_value }
+     */
+    item* stored(const fb::model::item& item) const;
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    const std::vector<item*>& stored() const;
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  index  The index
+     * @param[in]  count  The count
+     *
+     * @return     { description_of_the_return_value }
+     */
+    item* retrieve(uint8_t index, uint16_t count);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  name   The name
+     * @param[in]  count  The count
+     *
+     * @return     { description_of_the_return_value }
+     */
+    item* retrieve(const std::string& name, uint16_t count);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  item   The item
+     * @param[in]  count  The count
+     *
+     * @return     { description_of_the_return_value }
+     */
+    item* retrieve(const fb::model::item& item, uint16_t count);
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t deposited() const;
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     */
+    void deposited(uint32_t value);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t deposit(uint32_t value);
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  value  The value
+     *
+     * @return     { description_of_the_return_value }
+     */
+    uint32_t withdraw(uint32_t value);
     /**
      * @brief      { function_description }
      *

@@ -166,35 +166,35 @@ function npc_deposit_money(me, npc, money)
         return true
     end
 
-    local stored = me:deposited_money()
-    local capacity = 0xFFFFFFFF - stored
+    local deposited = me:deposited_money()
+    local capacity = 0xFFFFFFFF - deposited
     if money > capacity then
         npc:chat('더 이상 맡길 수 없습니다.')
         return true
     end
 
     me:money(my_money - money)
-    me:deposited_money(stored + money)
+    me:deposited_money(deposited + money)
     npc:chat(string.format('금전 %d전을 맡았습니다.', money))
 end
 
 function npc_withdraw_money(me, npc, money)
 
-    local stored = me:deposited_money()
+    local deposited = me:deposited_money()
     if money == nil then
-        money = stored
+        money = deposited
     end
 
     if money == 0 then
         return true
     end
 
-    if stored == 0 then
+    if deposited == 0 then
         npc:chat('맡아둔 돈이 없습니다.')
         return true
     end
 
-    if money > stored then
+    if money > deposited then
         npc:chat('그만큼 맡기지 않았습니다.')
         return true
     end
@@ -205,7 +205,7 @@ function npc_withdraw_money(me, npc, money)
         return false
     end
 
-    me:deposited_money(stored - money)
+    me:deposited_money(deposited - money)
     me:money(me:money() + money)
     npc:chat(string.format('금전 %d전을 돌려드렸습니다.', money))
 end

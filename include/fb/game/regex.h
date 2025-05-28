@@ -42,7 +42,7 @@ bool match_repair_message(const std::string& message, const fb::model::item* ite
  *
  * @return     { description_of_the_return_value }
  */
-bool match_store_money_message(const std::string& message, std::optional<uint32_t>& money);
+bool match_deposit_money_message(const std::string& message, std::optional<uint32_t>& money);
 /**
  * @brief      { function_description }
  *

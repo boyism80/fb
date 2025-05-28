@@ -78,19 +78,17 @@ private:
     stat_value<uint8_t>     _str, _dex, _int;
     stat_value<int32_t>     _phydef, _magdef;
     stat_value<int32_t>     _dam, _hit;
-    uint32_t                _experience      = 0;
-    uint8_t                 _regenerative    = 0; // 재생력
-    NATION                  _nation          = NATION::GOGURYEO;
-    CREATURE                _creature        = CREATURE::DRAGON;
-    SEX                     _sex             = SEX::MAN;
-    STATE                   _state           = STATE::NORMAL;
-    uint8_t                 _level           = 1;
-    CLASS                   _class           = CLASS::NONE;
-    uint8_t                 _promotion       = 0;
-    uint32_t                _money           = 0;
-    std::optional<uint16_t> _disguise        = 0;
-    uint32_t                _deposited_money = 0;
-    std::vector<item*>      _stored_items;
+    uint32_t                _experience   = 0;
+    uint8_t                 _regenerative = 0; // 재생력
+    NATION                  _nation       = NATION::GOGURYEO;
+    CREATURE                _creature     = CREATURE::DRAGON;
+    SEX                     _sex          = SEX::MAN;
+    STATE                   _state        = STATE::NORMAL;
+    uint8_t                 _level        = 1;
+    CLASS                   _class        = CLASS::NONE;
+    uint8_t                 _promotion    = 0;
+    uint32_t                _money        = 0;
+    std::optional<uint16_t> _disguise     = 0;
     std::string             _title;
     shared_group_lock       _group         = nullptr;
     shared_clan_lock        _clan          = nullptr;
@@ -590,113 +588,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::game::cash* money_drop(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t deposited_money() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void deposited_money(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t store_money(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     *
-     * @return     { description_of_the_return_value }
-     */
-    uint32_t withdraw_money(uint32_t value);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      item  The item
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool store_item(item& item);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  index  The index
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool store_item(uint8_t index, uint16_t count);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name   The name
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    bool store_item(const std::string& name, uint16_t count);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  item  The item
-     *
-     * @return     { description_of_the_return_value }
-     */
-    item* stored_item(const fb::model::item& item) const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    const std::vector<item*>& stored_items() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  index  The index
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    item* retrieve_item(uint8_t index, uint16_t count);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  name   The name
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    item* retrieve_item(const std::string& name, uint16_t count);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  item   The item
-     * @param[in]  count  The count
-     *
-     * @return     { description_of_the_return_value }
-     */
-    item* retrieve_item(const fb::model::item& item, uint16_t count);
 
     /**
      * @brief      { function_description }

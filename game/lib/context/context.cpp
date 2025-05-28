@@ -180,7 +180,7 @@ async::task<void> context::handle_start()
     this->bind_npc_interaction(&context::npc_interaction_sell);
     this->bind_npc_interaction(&context::npc_interaction_buy);
     this->bind_npc_interaction(&context::npc_interaction_repair);
-    this->bind_npc_interaction(&context::npc_interaction_store_money);
+    this->bind_npc_interaction(&context::npc_interaction_deposit_money);
     this->bind_npc_interaction(&context::npc_interaction_withdraw_money);
     this->bind_npc_interaction(&context::npc_interaction_store_item);
     this->bind_npc_interaction(&context::npc_interaction_retrieve_item);
@@ -255,9 +255,9 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
 
     fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
 
-    co_await this->save(*ch);
     try
     {
+        co_await this->save(*ch);
         std::ignore =
             co_await this->post<internal_reqs::Logout, internal_resp::Logout>("internal",
                                                                               "/in-game/logout",
@@ -409,7 +409,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.direction(DIRECTION(response.direction));
     ch.look(response.look);
     ch.money(response.money);
-    ch.deposited_money(response.deposited_money);
+    ch.items.deposited(response.deposited_money);
     ch.sex(SEX(response.sex));
     ch.base_hp(response.base_hp);
     ch.hp(response.hp);
@@ -498,7 +498,7 @@ void context::init_items(const std::vector<internal::Item>& response, character&
             static_cast<weapon*>(item)->custom_name(x.custom_name.value());
 
         if (x.stored != -1)
-            ch.store_item(*item);
+            ch.items.store(*item);
         else if (x.parts == static_cast<uint32_t>(EQUIPMENT_PARTS::UNKNOWN))
             ch.items.add(*item, x.index);
         else
@@ -635,7 +635,7 @@ async::task<void> context::save(character& ch)
         items.push_back(equipment->to_protocol(parts));
     }
 
-    auto& stored_items = ch.stored_items();
+    auto& stored_items = ch.items.stored();
     for (int i = 0; i < stored_items.size(); i++)
     {
         auto item       = stored_items.at(i);

@@ -200,6 +200,225 @@ uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
     return index;
 }
 
+bool fb::game::items::store(fb::game::item& item)
+{
+    this->owner.assert_thread();
+
+    if (item.based<fb::model::item>().attr(ITEM_ATTRIBUTE::BUNDLE))
+    {
+        auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&item](auto* stored) {
+            auto& model = stored->template based<fb::model::item>();
+            return item.based<fb::model::item>() == model;
+        });
+
+        if (found == this->_stored.end())
+        {
+            this->_stored.push_back(&item);
+        }
+        else
+        {
+            auto stored   = *found;
+            auto capacity = 0xFFFF - stored->count();
+            if (item.count() > capacity)
+                return false;
+
+            stored->count(stored->count() + item.count());
+        }
+    }
+    else
+    {
+        this->_stored.push_back(&item);
+    }
+
+    item._container = this;
+    return true;
+}
+
+bool fb::game::items::store(uint8_t index, uint16_t count)
+{
+    this->owner.assert_thread();
+
+    auto item = this->at(index);
+    if (item == nullptr)
+        return false;
+
+    if (item->count() < count)
+        return false;
+
+    auto deleted = this->remove(*item, count, ITEM_DELETE_TYPE::NONE, false);
+    auto result  = this->store(*deleted);
+    if (result == false)
+        this->add(deleted);
+
+    return result;
+}
+
+bool fb::game::items::store(const std::string& name, uint16_t count)
+{
+    this->owner.assert_thread();
+
+    auto item = this->find(name);
+    if (item == nullptr)
+        return false;
+
+    auto index = this->index(*item);
+    if (index == 0xFF)
+        return false;
+
+    return this->store(index, count);
+}
+
+item* fb::game::items::stored(const fb::model::item& item) const
+{
+    this->owner.assert_thread();
+
+    auto found = std::find_if(this->_stored.cbegin(), this->_stored.cend(), [&item](auto* stored) {
+        return stored->template based<fb::model::item>() == item;
+    });
+
+    if (found == this->_stored.cend())
+        return nullptr;
+
+    return *found;
+}
+
+const std::vector<item*>& fb::game::items::stored() const
+{
+    this->owner.assert_thread();
+
+    return this->_stored;
+}
+
+item* fb::game::items::retrieve(uint8_t index, uint16_t count)
+{
+    this->owner.assert_thread();
+
+    if (index > this->_stored.size() - 1)
+        return nullptr;
+
+    if (this->free() == false)
+        return nullptr;
+
+    auto stored       = this->_stored.at(index);
+    auto stored_count = stored->count();
+    if (stored_count < count)
+        return nullptr;
+
+    auto& model  = stored->based<fb::model::item>();
+    auto  exists = model.attr(ITEM_ATTRIBUTE::BUNDLE) ? this->find(model) : nullptr;
+    if (exists != nullptr)
+    {
+        if (exists->count() + count > model.capacity)
+            return nullptr;
+
+        stored->count(stored_count - count);
+        auto added_slot = this->add(stored->based<fb::model::item>().make(this->owner.context, count));
+        if (stored->empty())
+        {
+            auto i = this->_stored.begin() + index;
+            this->_stored.erase(i);
+        }
+
+        return this->at(added_slot);
+    }
+    else
+    {
+        if (this->free() == false)
+            return nullptr;
+
+        auto item = stored->split(count);
+        if (stored->empty())
+            this->_stored.erase(this->_stored.begin() + index);
+
+        this->add(item);
+        return item;
+    }
+}
+
+item* fb::game::items::retrieve(const std::string& name, uint16_t count)
+{
+
+    this->owner.assert_thread();
+
+    auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&name](auto* stored) {
+        auto& model = stored->template based<fb::model::item>();
+        return model.name == name;
+    });
+
+    if (found == this->_stored.end())
+        return nullptr;
+
+    auto index = std::distance(this->_stored.begin(), found);
+    return this->retrieve((uint8_t)index, count);
+}
+
+item* fb::game::items::retrieve(const fb::model::item& item, uint16_t count)
+{
+    this->owner.assert_thread();
+
+    auto found = std::find_if(this->_stored.begin(), this->_stored.end(), [&item](auto* stored) {
+        auto& model = stored->template based<fb::model::item>();
+        return model == item;
+    });
+
+    if (found == this->_stored.end())
+        return nullptr;
+
+    auto index = std::distance(this->_stored.begin(), found);
+    return this->retrieve((uint8_t)index, count);
+}
+
+uint32_t fb::game::items::deposited() const
+{
+    this->owner.assert_thread();
+
+    return this->_deposited;
+}
+
+void fb::game::items::deposited(uint32_t value)
+{
+    this->owner.assert_thread();
+
+    this->_deposited = value;
+}
+
+uint32_t fb::game::items::deposit(uint32_t value)
+{
+    this->owner.assert_thread();
+
+    uint32_t capacity = 0xFFFFFFFF - this->_deposited;
+    uint32_t lack     = 0;
+    if (value > capacity)
+    {
+        this->deposited(this->_deposited + capacity);
+        lack = value - capacity;
+    }
+    else
+    {
+        this->deposited(this->_deposited + value);
+    }
+
+    return lack;
+}
+
+uint32_t fb::game::items::withdraw(uint32_t value)
+{
+    this->owner.assert_thread();
+
+    uint32_t lack = 0;
+    if (this->_deposited < value)
+    {
+        lack = value - this->_deposited;
+        this->deposited(0);
+    }
+    else
+    {
+        this->deposited(this->_deposited - value);
+    }
+
+    return lack;
+}
+
 fb::game::item* fb::game::items::active(uint8_t index)
 {
     auto  listener = this->owner.get_listener<fb::game::character>();
