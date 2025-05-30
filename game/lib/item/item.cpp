@@ -153,7 +153,8 @@ bool item::active()
         return false;
 
     auto listener = this->get_listener<fb::game::item>();
-    listener->on_item_active(this->_container->owner, *this);
+    if (listener != nullptr)
+        listener->on_item_active(this->_container->owner, *this);
     return true;
 }
 
