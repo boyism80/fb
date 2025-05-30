@@ -122,9 +122,8 @@ bool spells::remove(uint8_t index)
     auto success  = inventory<spell>::remove(index);
     auto listener = this->owner().get_listener<spells>();
 
-    if (success)
-        if (listener != nullptr)
-            listener->on_spell_remove(this->owner(), index);
+    if (success && listener != nullptr)
+        listener->on_spell_remove(this->owner(), index);
 
     return success;
 }

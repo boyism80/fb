@@ -1,28 +1,37 @@
-## fb
-fb is 2d mmorpg game server implemented by ```C++20``` and ```ASP.NET CORE 8.0``` and ```lua.5.3```.
+# fb
 
-## Instasllation
-### Setup configuration
-Create ```config.json``` file into ```each-server-dir/config```. This file required to run server. If you set environment variable ```KINGDOM_OF_WIND_ENVIRONMENT```, server load config file named ```config.{KINGDOM_OF_WIND_ENVIRONMENT}.json``` file. Sample config files are : <br>
-[config file for gateway](https://github.com/boyism80/fb/blob/develop/gateway/config/config.dev.json)<br>
-[config file for login](https://github.com/boyism80/fb/blob/develop/login/config/config.dev.json)<br>
-[config file for game](https://github.com/boyism80/fb/blob/develop/game/config/config.dev.json)<br>
+fb is a 2D MMORPG game server written in C++20.
 
-And you have to unzip ```resources/maps.zip``` file into directory that contains binary game server. Then convert excel files in ```resources/table``` to json files using [data-converter](https://github.com/boyism80/data-converter). If you update protocol that used for communicate with internal server, modify fbs file in ```protocol``` path and run [flatbuffer-ex](https://github.com/boyism80/flatbuffer-ex). 
+## Installation
 
-### On Windows
-Install git, cmake, visual studio 2022 and run 'tools/update-modules.bat'. then run this:
-```
+Before running the server, install MySQL, Redis, and RabbitMQ. Then follow the instructions for your target OS.
+
+### Windows
+
+To build on Windows, you need Visual Studio 2022 and CMake. First, run the `update-modules.bat` and `update-data.bat` scripts in the `tools` directory. Then configure the project:
+
+```sh
 mkdir build
 cd build
 cmake ..
 ```
-Build 'fb.sln' and execute all servers.
 
+Open `fb.sln` and build the `lib` project first. After that, build the remaining projects.
 
-### On Linux
-Install docker.io and run this:
+Before starting the servers, edit each server's `config/config.dev.json`. For the `.NET Core`–based `internal` server and the `write-back` process, update their `appsettings` files.
+
+Extract the `resources/maps/maps.zip` archive under `game/maps`:
+
+```powershell
+# On Windows (PowerShell)
+Expand-Archive game/maps/maps.zip -DestinationPath game/maps
 ```
+
+### Linux
+
+On Linux, you can build and deploy using Docker, Kubernetes, and Pulumi. Build the images:
+
+```sh
 docker build --tag fb/build:latest -f Dockerfile .
 docker build --tag fb/gateway:latest -f gateway/Dockerfile .
 docker build --tag fb/login:latest -f login/Dockerfile .
@@ -32,63 +41,43 @@ docker build --tag fb/internal:latest -f http/Dockerfile --build-arg SERVICE=int
 docker build --tag fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
 ```
 
-You can run all servers simply using kubernetes and pulumi. First, change ```host``` field in ```infra/pulumi/develop.json``` file.
-```json
-{
-    "host": {
-        "private": "{enter your private ip}",
-        "public": "{enter your external ip}"
-    },
-    "mysql": {
-        "section-1": {
-            "-1": {
-                "port": {
-                    "cluster": 3306,
-                    "node": 30100
-                }
-            },
-            "0": {
-                "port": {
-                    "cluster": 3307,
-                    "node": 30101
-                }
-            },
+Next, edit `develop.json` to match your environment. Then set your external IP address and deploy:
+
+```sh
+cd infra/pulumi
+pulumi config set --secret host <YOUR_EXTERNAL_IP>
+pulumi up -y
 ```
-Then install [pulumi](https://github.com/pulumi/pulumi) and call ```pulumi up -y``` command in ```infra/pulumi``` directory.
-
-## Build
-If you need to build, look ```Dockerfile``` and ```CMakeLists.txt``` and ```build.sh``` files. ```lib``` module is used by other serveres so you build ```lib``` first. Then build ```gateway```, ```login```, ```game```, ```internal``` serveres.
-
 
 ## Architecture
-![screenshot](image/architecture.png)
-The gateway server is responsible for routing to one of several login servers, which create accounts, change passwords, and route to game servers. The server-to-server communication is via the internal server.
 
-internal server is based on HTTP 2.0. It reads and writes DBs, notifies all servers (using RabbitMQ), inquires about the status of multiple servers, synchronizes, and so on.
+![Architecture](image/architecture.png)
 
-'write-back' is a single process that will carry out a redis caching strategy. When the internal server writes data to the DB, it saves it to Redis first immediately and stores the query to be passed to the actual DB in the Redis buffer. The 'write-back' process continues to query this buffer and applies the query to the DB when it can be done.
+- **Gateway**: The first point of contact for clients. It checks client version, issues encryption keys, and provides a list of available login servers.
+- **Login**: Handles account-related tasks like character creation and password changes, then directs clients to a game server. It communicates with other servers via the internal service.
+- **Game**: Runs one process per zone rather than scaling out. It also uses the internal service to communicate with other game servers.
+- **Internal**: Enables communication between the gateway, login, and game servers, and manages database operations. It synchronizes global resources (e.g., parties, clans) and uses RabbitMQ for messaging.
+- **Write-back**: A standalone process that executes database queries generated by the internal server. It applies changes to MySQL instead of writing directly from the internal service, which first caches data in Redis.
 
+## Game Server & Map
 
-### Game server & map
-![screenshot](image/map_group.png)
-Each game server manages some of the map groups. Unmanaged maps do not perform any operations, and when a character moves to an unmanaged map, it transfers through the internal server to the game server that manages that map.
+![Map Sector Layout](image/map_group.png)
 
-As shown in the picture above, there are several maps that are managed by a single game server. According to the picture, game servers with id of 0 only manage maps with map id from 0 to 99. This is for ease of description, and in reality, each map has an id of the game server that you need to connect to.
+The game server divides each map into sectors. When an object's position changes, it may move to a different sector. For spatial queries, only nearby sectors are considered, reducing search costs.
 
-In addition, one map consists of several sectors. It is used to efficiently search for surrounding objects from one object. To the right of the picture above, there are sectors from 0 to 19. Assuming that the character is in sector 7, the game server will search for objects in sectors [1, 2, 3, 6, 7, 8, 11, 12, 13].
+## Thread Model
 
-### Thread
-![screenshot](image/thread.png)
-After the I/O thread reads the data, it passes the data to one of several logic threads. The game server determines the thread as follows:
+![Thread Architecture](image/thread.png)
 
-```C++
+All game logic for objects on the same map runs on the same logic thread. The I/O thread receives data and posts packets to the appropriate logic thread's queue. The logic thread parses the packet and runs the handler. We assign the logic thread by map ID:
+
+```cpp
 thread_id = character.map.id % (logic_thread.length+1)
 ```
 
-For example, if the character who received the data from the I/O thread is currently on the map 40, thread 0 would call the handler. If it was on the map 62, it would be called in thread 2. This makes it possible to avoid considering the concurrency between objects on the same map. However, it makes it difficult to interact between characters located on different maps.
-
-The gateway server or login server determines by modulating the fd in the socket. The number of I/O threads and logical threads can also be determined by the configuration file.
+This ensures objects on the same map are always processed by the same thread, eliminating locks between nearby objects. However, uneven map distribution can overload a single thread, and communication between different maps becomes more complex. You can configure the counts of I/O, logic, and background threads in the config file.
 
 ## Contact
- - [youtube](https://www.youtube.com/channel/UCPcH5qX7aLTFs3mgh32_FVQ?view_as=subscriber)
- - [blog](https://blog.naver.com/boyism)
+
+- [YouTube](https://www.youtube.com/channel/UCPcH5qX7aLTFs3mgh32_FVQ?view_as=subscriber)
+- [Blog](https://blog.naver.com/boyism)
