@@ -4,28 +4,23 @@ fb is a 2D MMORPG game server written in C++20.
 
 ## Installation
 
-Before running the server, install MySQL, Redis, and RabbitMQ. Then follow the instructions for your target OS.
+Before running the server, install MySQL, Redis, RabbitMQ, and CMake. Then follow the instructions for your target OS.
 
 ### Windows
 
-To build on Windows, you need Visual Studio 2022 and CMake. First, run the `update-modules.bat` and `update-data.bat` scripts in the `tools` directory. Then configure the project:
+1. Run the `setup.bat` script in the project root. This will:
+   - Prompt for MySQL, Redis, and RabbitMQ connection details.
+   - Verify service availability via TCP ports.
+   - Generate all `config/config.dev.json` files for each server.
+   - Generate the `internal/appsettings.Development.json` and `write-back/appsettings.json` files.
+   - Apply `fb/infra/db/latest.sql` to MySQL.
+   - Extract `resources/maps/maps.zip` under `game/maps`.
+   - Update modules and data via the scripts in the `tools` directory.
+   - Create the `build` directory and run CMake to produce `fb.sln`.
 
-```sh
-mkdir build
-cd build
-cmake ..
-```
+2. After `setup.bat` completes, open `build\fb.sln` in Visual Studio 2022, build the `lib` project first, then build the remaining server projects.
 
-Open `fb.sln` and build the `lib` project first. After that, build the remaining projects.
-
-Before starting the servers, edit each server's `config/config.dev.json`. For the `.NET Core`–based `internal` server and the `write-back` process, update their `appsettings` files.
-
-Extract the `resources/maps/maps.zip` archive under `game/maps`:
-
-```powershell
-# On Windows (PowerShell)
-Expand-Archive game/maps/maps.zip -DestinationPath game/maps
-```
+3. If you need to change server settings later, edit the generated `config/config.dev.json` files or the `appsettings` files in the `internal` and `write-back` folders as needed.
 
 ### Linux
 
