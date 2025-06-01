@@ -10,7 +10,14 @@ RUN mkdir -p maps && unzip -qq maps.zip -d ./maps && rm -f maps.zip
 
 WORKDIR /app/game/build
 RUN cmake -DCMAKE_BUILD_TYPE=Release ..
-RUN cmake --build . --parallel
+RUN AVAILABLE_MEM_KB=$(grep MemAvailable /proc/meminfo | awk '{print $2}') && \
+    MEM_PER_JOB_KB=$((1500 * 1024)) && \
+    MAX_BY_MEM=$((AVAILABLE_MEM_KB / MEM_PER_JOB_KB)) && \
+    CPU_CORES=$(nproc) && \
+    if [ "$MAX_BY_MEM" -lt "$CPU_CORES" ]; then JOBS="$MAX_BY_MEM"; else JOBS="$CPU_CORES"; fi && \
+    if [ "$JOBS" -lt 1 ]; then JOBS=1; fi && \
+    echo "Building with ${JOBS} jobs (using Available Memory: ${AVAILABLE_MEM_KB} KB)" && \
+    cmake --build . --config Release --parallel "$JOBS"
 
 FROM --platform=$BUILDPLATFORM ghcr.io/boyism80/fb/build
 

@@ -14,7 +14,14 @@ EXTERNAL_IP=$(curl -s https://ifconfig.me)
 if [[ -z "$EXTERNAL_IP" ]]; then
   error_exit "Failed to retrieve external IP."
 fi
-echo "External IP: $EXTERNAL_IP"
+echo "Detected External IP: $EXTERNAL_IP"
+
+# Prompt user to confirm or override
+read -p "Enter external IP [${EXTERNAL_IP}]: " INPUT_IP
+if [[ -n "$INPUT_IP" ]]; then
+  EXTERNAL_IP="$INPUT_IP"
+fi
+echo "Using External IP: $EXTERNAL_IP"
 
 # Build Docker images with error handling
 echo "Building Docker images..."

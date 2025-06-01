@@ -13,6 +13,8 @@ if "%IP%"=="" (
     echo [ERROR] Unable to retrieve external IP. Check network or DNS settings.
     goto :ErrorExit
 )
+set /p EXTERNAL_IP=Enter External IP [!IP!]: 
+if "%EXTERNAL_IP%"=="" set "EXTERNAL_IP=%IP%"
 echo [INFO] External IP: !IP!
 
 :: 2) Prompt for MySQL connection info (defaults provided)
@@ -331,7 +333,7 @@ if exist "%WRITEBACK_PATH%" del /f /q "%WRITEBACK_PATH%"
     echo     },
     echo     "RabbitMQ": {
     echo         "Host": "!RABBIT_HOST!",
-    echo         "Port": !RABBIT    PORT!,
+    echo         "Port": !RABBIT_PORT!,
     echo         "Uid": "!RABBIT_UID!",
     echo         "Pwd": "!RABBIT_PWD!"
     echo     }
