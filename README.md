@@ -4,50 +4,37 @@ fb is a 2D MMORPG game server written in C++20.
 
 ## Installation
 
-Before running the server, install MySQL, Redis, and RabbitMQ. Then follow the instructions for your target OS.
+Follow the instructions for your target OS.
 
 ### Windows
 
-To build on Windows, you need Visual Studio 2022 and CMake. First, run the `update-modules.bat` and `update-data.bat` scripts in the `tools` directory. Then configure the project:
+1. **Prerequisites**  
+   - Windows 10 or higher
+   - Visual Studio 2022 must be installed.
+   - MySQL 8.0 or higher
+   - Redis 3.2.1 or
+   - RabbitMQ 4.0.7 or higher
+   - CMake 3.28 or higher
 
-```sh
-mkdir build
-cd build
-cmake ..
-```
+2. Run the `setup.bat` script in the project root.
 
-Open `fb.sln` and build the `lib` project first. After that, build the remaining projects.
+3. After `setup.bat` completes, open `build\fb.sln` in Visual Studio 2022. Build the `lib` project first, then the remaining server projects.
 
-Before starting the servers, edit each server's `config/config.dev.json`. For the `.NET Core`–based `internal` server and the `write-back` process, update their `appsettings` files.
-
-Extract the `resources/maps/maps.zip` archive under `game/maps`:
-
-```powershell
-# On Windows (PowerShell)
-Expand-Archive game/maps/maps.zip -DestinationPath game/maps
-```
+4. If you need to change server settings later, edit `config/config.dev.json` or the `appsettings` files in the `internal` and `write-back` folders.
 
 ### Linux
 
-On Linux, you can build and deploy using Docker, Kubernetes, and Pulumi. Build the images:
+1. **Prerequisites**  
+   - Ubuntu 24.04.1 LTS or higher
+   - Docker 26.1.3 or higher
+   - Kubernetes 1.30.9 (kubectl) or higher
+   - Pulumi 3.145.0 or higher
 
-```sh
-docker build --tag fb/build:latest -f Dockerfile .
-docker build --tag fb/gateway:latest -f gateway/Dockerfile .
-docker build --tag fb/login:latest -f login/Dockerfile .
-docker build --tag fb/game:latest -f game/Dockerfile .
-docker build --tag fb/bot:latest -f bot/Dockerfile .
-docker build --tag fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .
-docker build --tag fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .
-```
-
-Next, edit `develop.json` to match your environment. Then set your external IP address and deploy:
-
-```sh
-cd infra/pulumi
-pulumi config set --secret host <YOUR_EXTERNAL_IP>
-pulumi up -y
-```
+2. Run the setup script:
+   ```sh
+   ./shell.sh
+   ```
+3. If you need, edit infra/pulumi/develop.json to configure your cluster before deploying.
 
 ## Architecture
 

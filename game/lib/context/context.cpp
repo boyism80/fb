@@ -155,7 +155,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_board);            // 게시판 섹션 리스트 핸들러
     this->bind(&context::handle_swap);             // 스펠 순서 변경
     this->bind(&context::handle_dialog);           // 다이얼로그
-    this->bind_cmd(&context::handle_dialog, 0x39); // 다이얼로그
+    this->bind(&context::handle_dialog, 0x39);     // 다이얼로그
     this->bind(&context::handle_throw_item);       // 아이템 던지기 핸들러
     this->bind(&context::handle_spell, 500ms, 3);  // 스펠 핸들러
     this->bind(&context::handle_door);             // 도어 핸들러
