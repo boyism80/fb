@@ -26,31 +26,31 @@ echo "Using External IP: $EXTERNAL_IP"
 # Build Docker images with error handling
 echo "Building Docker images..."
 
-if ! sudo docker buildx build --progress=plain --tag fb/build:latest -f Dockerfile .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .; then
   error_exit "Docker build failed for fb/build:latest"
 fi
 
-if ! sudo docker buildx build --progress=plain --tag fb/gateway:latest -f gateway/Dockerfile .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/gateway:latest -f gateway/Dockerfile .; then
   error_exit "Docker build failed for fb/gateway:latest"
 fi
 
-if ! sudo docker buildx build --progress=plain --tag fb/login:latest -f login/Dockerfile .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/login:latest -f login/Dockerfile .; then
   error_exit "Docker build failed for fb/login:latest"
 fi
 
-if ! sudo docker buildx build --progress=plain --tag fb/game:latest -f game/Dockerfile .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/game:latest -f game/Dockerfile .; then
   error_exit "Docker build failed for fb/game:latest"
 fi
 
-if ! sudo docker buildx build --progress=plain --tag fb/bot:latest -f bot/Dockerfile .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/bot:latest -f bot/Dockerfile .; then
   error_exit "Docker build failed for fb/bot:latest"
 fi
 
-if ! sudo docker buildx build --progress=plain --tag fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/internal:latest -f http/Dockerfile --build-arg SERVICE=internal .; then
   error_exit "Docker build failed for fb/internal:latest"
 fi
 
-if ! sudo docker buildx build --progress=plain --tag fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/write-back:latest -f http/Dockerfile --build-arg SERVICE=write-back .; then
   error_exit "Docker build failed for fb/write-back:latest"
 fi
 
