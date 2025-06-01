@@ -833,10 +833,10 @@ protected:
      * @tparam     RequestType  { description }
      */
     template <typename Class, typename RequestType>
-    void bind_cmd(async::task<bool> (Class::*fn)(fb::socket<T>&, const RequestType&),
-                  uint8_t                                    header,
-                  const std::chrono::steady_clock::duration& duration = 1s,
-                  uint32_t                                   limit    = 10)
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const RequestType&),
+              uint8_t                                    header,
+              const std::chrono::steady_clock::duration& duration = 1s,
+              uint32_t                                   limit    = 10)
     {
         this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
                                         auto protocol = new RequestType();
@@ -908,7 +908,7 @@ protected:
               const std::chrono::steady_clock::duration& duration = 1s,
               uint32_t                                   limit    = 10)
     {
-        this->bind_cmd(fn, Request::header, duration, limit);
+        this->bind(fn, Request::header, duration, limit);
     }
 
 public:
