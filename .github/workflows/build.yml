@@ -426,13 +426,15 @@ jobs:
             build/write-back
           retention-days: 7
 
-      - name: Download artifact as zip
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist_zip
+      - name: Zip the downloaded artifact
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist_zip\* -DestinationPath dist.zip
 
       - name: Upload zip to NAS
-        shell: bash
+        shell: pwsh
         run: |
-          curl -T dist_zip/dist.zip -u "${{ secrets.NAS_ID }}:${{ secrets.NAS_PW }}" http://cshyeon.com:8080/upload/public/dist.zip
+          curl.exe -T dist.zip -u "$env:NAS_ID`:$env:NAS_PW" http://cshyeon.com:8080/upload/public/fb/dist.zip
+        env:
+          NAS_ID: ${{ secrets.NAS_ID }}
+          NAS_PW: ${{ secrets.NAS_PW }}
