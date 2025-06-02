@@ -33,6 +33,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
+    co_await this->switch_thread(*ch);
 
     this->switch_thread(*ch);
     ch->unread_mail(response.mail);
@@ -363,6 +364,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
                 "internal",
                 "/group/leave",
                 internal_reqs::LeaveGroup{ch->name()});
+            co_await this->switch_thread(*ch);
 
             this->on_leave_group(response);
         }
@@ -371,6 +373,7 @@ async::task<bool> context::handle_option_changed(fb::socket<character>& socket, 
             "internal",
             "/user/option",
             internal_reqs::SetOption{ch->id(), static_cast<uint8_t>(option), enabled});
+        co_await this->switch_thread(*ch);
 
         if (response.success == false)
             ch->message("설정을 변경하지 못했습니다.");
@@ -470,7 +473,7 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
             auto count   = item->count();
             auto deleted = ch->items.remove(*item, count);
             if (deleted != nullptr)
-                co_await deleted->destroy();
+                std::ignore = deleted->destroy();
 
             deleted_count += count;
         }
@@ -869,7 +872,8 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (mail)
             {
                 auto&& resp = co_await this->read_mail(*ch, request.article);
-                auto   flag = MAIL_BUTTON_ENABLE::NEW;
+                co_await this->switch_thread(*ch);
+                auto flag = MAIL_BUTTON_ENABLE::NEW;
                 ch->show_mail_box(resp.mail, flag);
             }
             else
@@ -920,6 +924,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (mail)
             {
                 auto&& resp = co_await this->delete_mail(*ch, request.article);
+                co_await this->switch_thread(*ch);
                 ch->show_board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, true);
             }
             else
@@ -961,6 +966,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             auto&& resp = co_await this->send_mail(*ch, request.user, request.title, request.contents);
+            co_await this->switch_thread(*ch);
             ch->show_board_message("우편을 보냈습니다.", true, true);
         }
         catch (std::exception& e)
@@ -1184,6 +1190,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     try
     {
         co_await this->whisper(*me, request.name, request.message);
+        co_await this->switch_thread(*ch);
     }
     catch (std::exception& e)
     {
