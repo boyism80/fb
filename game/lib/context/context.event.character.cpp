@@ -120,7 +120,7 @@ async::task<bool> context::on_transfer(character& me, map& map, const fb::model:
                                                           map.model.host,
                                                           me.name(),
                                                           false});
-        co_await this->update_thread(me);
+        co_await this->switch_thread(me);
         switch (static_cast<ERROR_CODE>(response.error))
         {
         case ERROR_CODE::NONE:

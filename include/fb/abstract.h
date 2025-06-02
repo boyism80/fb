@@ -84,7 +84,7 @@ public:
     void              push_alive(const fb::thread_switchable& obj);
     void              pop_alive(const fb::thread_switchable& obj);
     bool              alive(const fb::thread_switchable& obj) const;
-    async::task<void> update_thread(const fb::thread_switchable& obj);
+    async::task<void> switch_thread(const fb::thread_switchable& obj);
 
 public:
     /**

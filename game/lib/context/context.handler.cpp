@@ -29,12 +29,12 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
     auto&& response = co_await this->get<internal_resp::Init>("internal", std::format("/user/init/{}", id));
     auto   map      = request.transfer.has_value() ? request.transfer->map : response.character.map;
     ch->thread(this->maps[map].thread());
-    co_await this->update_thread(*ch);
+    co_await this->switch_thread(*ch);
 
     if (co_await this->init_ch(response.character, *ch, response.group, response.clan, transfer) == false)
         co_return false;
 
-    this->update_thread(*ch);
+    this->switch_thread(*ch);
     ch->unread_mail(response.mail);
 
     this->init_items(response.items, *ch);
@@ -835,7 +835,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             if (mail)
             {
                 auto&& resp = co_await this->mail_list(*ch, request.offset, 20);
-                co_await this->update_thread(*ch);
+                co_await this->switch_thread(*ch);
 
                 ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
             }
@@ -843,7 +843,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             {
                 auto   section  = request.section;
                 auto&& articles = co_await this->board_list(request.section, request.offset);
-                co_await this->update_thread(*ch);
+                co_await this->switch_thread(*ch);
 
                 auto& model = this->model.board[section];
                 auto  flag  = BOARD_BUTTON_ENABLE::UP;
@@ -875,7 +875,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             else
             {
                 auto&& article = co_await this->read_board(request.section, request.article);
-                co_await this->update_thread(*ch);
+                co_await this->switch_thread(*ch);
 
                 auto flag = BOARD_BUTTON_ENABLE::NONE;
                 if (article.next)
@@ -900,7 +900,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             co_await this->write_board(*ch, request.section, request.title, request.contents);
-            co_await this->update_thread(*ch);
+            co_await this->switch_thread(*ch);
 
             ch->show_board_message(_TEXT(MESSAGE_BOARD_WRITE), true, true);
         }
@@ -925,7 +925,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
             else
             {
                 co_await this->delete_board(*ch, request.section, request.article);
-                co_await this->update_thread(*ch);
+                co_await this->switch_thread(*ch);
 
                 ch->show_board_message(_TEXT(MESSAGE_BOARD_SUCCESS_DELETE), true, false);
             }
@@ -943,7 +943,7 @@ async::task<bool> context::handle_board(fb::socket<character>& socket, const fb_
         try
         {
             auto&& resp = co_await this->mail_list(*ch, 0xFFFF, 20); // TODO: 20 -> const
-            co_await this->update_thread(*ch);
+            co_await this->switch_thread(*ch);
 
             this->assert_mail(resp.error);
             ch->show_mail_box(resp.summary_list, MAIL_BUTTON_ENABLE::NEW);
