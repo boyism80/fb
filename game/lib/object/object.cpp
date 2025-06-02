@@ -499,7 +499,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             }
 
             this->_map = nullptr;
-            co_await this->context.update_thread(*this);
+            co_await this->context.switch_thread(*this);
             this->_position = fb::model::point16_t(1, 1);
             co_return true;
         }
@@ -523,7 +523,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
         if (this->is(OBJECT_TYPE::CHARACTER))
             static_cast<character*>(this)->thread(map->thread());
 
-        co_await this->context.update_thread(*this);
+        co_await this->context.switch_thread(*this);
         this->_position = before_position;
 
         // switch thread of destination map

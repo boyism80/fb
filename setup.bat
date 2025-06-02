@@ -2,6 +2,17 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
+:: Check for .NET Core 8.0
+echo [INFO] Checking for .NET Core 8.0...
+dotnet --list-runtimes | find "Microsoft.NETCore.App 8.0" >nul
+if errorlevel 1 (
+    echo [ERROR] .NET Core 8.0 is not installed.
+    echo Please download and install .NET Core 8.0 from:
+    echo https://dotnet.microsoft.com/download/dotnet/8.0
+    goto :ErrorExit
+)
+echo [INFO] .NET Core 8.0 is installed.
+
 :: 1) Retrieve external IP using OpenDNS
 set "IP="
 for /f "tokens=2 delims=: " %%a in (
@@ -159,7 +170,7 @@ if exist "%LOGIN_CONFIG_PATH%" del /f /q "%LOGIN_CONFIG_PATH%"
     echo     "transfer delay": 0,
     echo     "allow other language": false,
     echo     "forbidden": [],
-    echo     "agreement": "Hello",
+    echo     "agreement": "안녕하세요",
     echo     "admin_mode": true,
     echo     "thread": {
     echo         "logic": 12,
@@ -242,8 +253,8 @@ if exist "%GATEWAY_CONFIG_PATH%" del /f /q "%GATEWAY_CONFIG_PATH%"
     echo     ],
     echo     "entrypoints": [
     echo         {
-    echo             "name": "yun",
-    echo             "desc": "description",
+    echo             "name": "로그인서버",
+    echo             "desc": "설명을 입력하세요",
     echo             "ip": "!IP!",
     echo             "port": 3002
     echo         }

@@ -27,15 +27,6 @@ public:
      */
     gateway(const std::string& name, const std::string& desc, uint32_t ip, uint16_t port);
     /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  name  The name
-     * @param[in]  desc  The description
-     * @param[in]  ip    { parameter_description }
-     * @param[in]  port  The port
-     */
-    gateway(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port);
-    /**
      * @brief      Destroys the object.
      */
     ~gateway();

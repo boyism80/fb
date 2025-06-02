@@ -60,7 +60,7 @@ bool context::alive(const fb::thread_switchable& obj) const
     });
 }
 
-async::task<void> context::update_thread(const fb::thread_switchable& obj)
+async::task<void> context::switch_thread(const fb::thread_switchable& obj)
 {
     while (true)
     {

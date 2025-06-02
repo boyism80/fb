@@ -268,7 +268,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         fb::logger::fatal(e.what());
     }
 
-    co_await this->update_thread(*ch);
+    co_await this->switch_thread(*ch);
 
     auto& group_lock = ch->group();
     if (group_lock != nullptr)
@@ -361,7 +361,7 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
                 auto ch     = ch_names[name];
                 auto thread = ch->thread();
                 std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
-                    co_await this->update_thread(*ch);
+                    co_await this->switch_thread(*ch);
                     fn(*ch);
                 });
             }
@@ -666,7 +666,7 @@ async::task<void> context::save(character& ch)
         "/user/save",
         internal_reqs::Save{ch.to_protocol(), items, spells, traces});
 
-    co_await this->update_thread(ch);
+    co_await this->switch_thread(ch);
     ch.send(fb_resp::save());
 }
 

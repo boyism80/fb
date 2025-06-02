@@ -9,10 +9,6 @@ gateway::gateway(const std::string& name, const std::string& desc, uint32_t ip, 
     _port(port)
 { }
 
-gateway::gateway(const std::string& name, const std::string& desc, const std::string& ip, uint16_t port) :
-    gateway(name, desc, inet_addr(ip.c_str()), port)
-{ }
-
 gateway::~gateway()
 { }
 

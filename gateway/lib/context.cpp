@@ -22,7 +22,7 @@ async::task<void> context::load_entries()
     {
         this->_entrypoints.push_back(endpoint(cp949((*i)["name"].asCString()),
                                               cp949((*i)["desc"].asCString()),
-                                              (*i)["ip"].asCString(),
+                                              this->ipv4((*i)["ip"].asString()),
                                               (*i)["port"].asInt()));
     }
 
