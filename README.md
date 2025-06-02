@@ -17,11 +17,9 @@ Follow the instructions for your target OS.
    - RabbitMQ 4.0.7 or higher
    - CMake 3.28 or higher
 
-2. Run the `setup.bat` script in the project root.
+2. Run the `setup.bat` script in the project root. This will generate the build output in the build folder.
 
-3. After `setup.bat` completes, open `build/fb.sln` in Visual Studio 2022. Build the `lib` project first, then the remaining server projects.
-
-4. If you need to change server settings later, edit `config/config.dev.json` or the `appsettings` files in the `internal` and `write-back` folders.
+3. If you need to change server settings later, edit `config/config.dev.json` or the `appsettings` files in the `internal` and `write-back` folders.
 
 ### Linux
 
