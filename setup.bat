@@ -422,6 +422,7 @@ echo [INFO] Creating build directory and running CMake...
 if not exist "build" mkdir "build"
 cd build
 cmake ..
+cmake --build . --config Release
 
 goto :Success
 
