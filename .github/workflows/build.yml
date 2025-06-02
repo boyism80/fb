@@ -434,7 +434,7 @@ jobs:
       - name: Upload zip to NAS
         shell: powershell
         run: |
-          curl.exe -T dist.zip -u "$env:NAS_ID`:$env:NAS_PW" http://cshyeon.com:8080/upload/public/fb/dist.zip
+          curl.exe -T dist.zip -u "$env:NAS_ID`:$env:NAS_PW" http://cshyeon.com:8080/upload/fb/dist.zip
         env:
           NAS_ID: ${{ secrets.NAS_ID }}
           NAS_PW: ${{ secrets.NAS_PW }}
