@@ -484,7 +484,6 @@ private:
 
             auto fd = socket.fd();
             this->_sockets.erase(fd);
-            fb::logger::info(std::format("socket closed. fd: {}", fd));
         }
     }
 

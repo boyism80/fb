@@ -36,14 +36,22 @@ async::task<bool> context::npc_interaction_sell(character&                      
             lua->pushnil();
 
         if (co_await lua->call(4, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -78,14 +86,22 @@ async::task<bool> context::npc_interaction_buy(character&                       
         lua->pushstring(name);
         lua->pushinteger(count);
         if (co_await lua->call(4, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -118,14 +134,22 @@ async::task<bool> context::npc_interaction_repair(character&                    
         lua->pushobject(npc);
         lua->pushstring(name);
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -161,14 +185,22 @@ async::task<bool> context::npc_interaction_deposit_money(character&             
         else
             lua->pushnil();
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -204,14 +236,22 @@ async::task<bool> context::npc_interaction_withdraw_money(character&            
         else
             lua->pushnil();
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -249,14 +289,22 @@ async::task<bool> context::npc_interaction_store_item(character&                
         else
             lua->pushnil();
         if (co_await lua->call(4, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -294,14 +342,22 @@ async::task<bool> context::npc_interaction_retrieve_item(character&             
         else
             lua->pushnil();
         if (co_await lua->call(4, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -332,14 +388,22 @@ async::task<bool> context::npc_interaction_sell_list(character&                 
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (co_await lua->call(2, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -370,14 +434,22 @@ async::task<bool> context::npc_interaction_buy_list(character&                  
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (co_await lua->call(2, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -410,14 +482,22 @@ async::task<bool> context::npc_interaction_sell_price(character&                
         lua->pushobject(npc);
         lua->pushstring(name);
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -450,14 +530,22 @@ async::task<bool> context::npc_interaction_buy_price(character&                 
         lua->pushobject(npc);
         lua->pushstring(name);
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -488,14 +576,22 @@ async::task<bool> context::npc_interaction_show_deposited_money(character&      
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (co_await lua->call(2, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -529,14 +625,22 @@ async::task<bool> context::npc_interaction_rename_weapon(character&             
         lua->pushstring(model_name);
         lua->pushstring(custom_name);
         if (co_await lua->call(4, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -567,14 +671,22 @@ async::task<bool> context::npc_interaction_store_item_list(character&           
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (co_await lua->call(2, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -607,14 +719,22 @@ async::task<bool> context::npc_interaction_store_item_count(character&          
         lua->pushobject(npc);
         lua->pushstring(name);
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -647,17 +767,25 @@ async::task<bool> context::npc_interaction_revive(character&                    
         lua->pushobject(npc);
         lua->pushboolean(discourteous);
         if (co_await lua->call(3, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->pending())
-            co_return true;
+            goto release_true;
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }
@@ -688,14 +816,22 @@ async::task<bool> context::npc_interaction_appreciate(character&                
         lua->pushobject(ch);
         lua->pushobject(npc);
         if (co_await lua->call(2, false) == false)
-            co_return false;
+            goto release_false;
+
+        if (!this->alive(ch))
+            goto release_true;
+
+        co_await this->switch_thread(ch);
 
         if (lua->toboolean(1))
-        {
-            lua->release();
-            co_return true;
-        }
+            goto release_true;
     }
+
+release_false:
+    lua->release();
+    co_return false;
+
+release_true:
     lua->release();
     co_return true;
 }

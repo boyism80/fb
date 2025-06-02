@@ -783,6 +783,13 @@ async::task<bool> context::handle_chat(fb::socket<character>& socket, const fb_r
         lua->pushstring(request.message);
         lua->pushboolean(request.shout);
         co_await lua->call(3, false);
+        if (this->alive(*ch) == false)
+        {
+            lua->release();
+            co_return true;
+        }
+        co_await ch->thread()->switching();
+
         stop = lua->toboolean(1);
         lua->release();
     }
@@ -1190,7 +1197,7 @@ async::task<bool> context::handle_whisper(fb::socket<character>& socket, const f
     try
     {
         co_await this->whisper(*me, request.name, request.message);
-        co_await this->switch_thread(*ch);
+        co_await this->switch_thread(*me);
     }
     catch (std::exception& e)
     {
