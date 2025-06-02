@@ -429,7 +429,7 @@ jobs:
       - name: Zip the downloaded artifact
         shell: powershell
         run: |
-          Compress-Archive -Path dist_zip\* -DestinationPath dist.zip
+          Compress-Archive -Path dist_zip\* -DestinationPath dist.zip -Force
 
       - name: Upload zip to NAS
         shell: powershell
