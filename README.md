@@ -11,6 +11,7 @@ Follow the instructions for your target OS.
 1. **Prerequisites**  
    - Windows 10 or higher
    - Visual Studio 2022 must be installed.
+   - .NET Core 8.0 or higher
    - MySQL 8.0 or higher
    - Redis 3.2.1 or
    - RabbitMQ 4.0.7 or higher
