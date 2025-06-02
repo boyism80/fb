@@ -427,12 +427,12 @@ jobs:
           retention-days: 7
 
       - name: Zip the downloaded artifact
-        shell: pwsh
+        shell: powershell
         run: |
           Compress-Archive -Path dist_zip\* -DestinationPath dist.zip
 
       - name: Upload zip to NAS
-        shell: pwsh
+        shell: powershell
         run: |
           curl.exe -T dist.zip -u "$env:NAS_ID`:$env:NAS_PW" http://cshyeon.com:8080/upload/public/fb/dist.zip
         env:
