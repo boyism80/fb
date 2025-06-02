@@ -112,6 +112,29 @@ public:
 protected:
     virtual void handle_declare_amqp_queue(fb::amqp::socket& amqp) = 0;
 
+protected:
+    std::string ipv4(const std::string& ip) const
+    {
+        try
+        {
+            auto resolver = boost::asio::ip::tcp::resolver(this->_boost_context);
+            auto results  = resolver.resolve(ip, "0");
+
+            for (const auto& entry : results)
+            {
+                auto addr = entry.endpoint().address();
+                if (addr.is_v4())
+                    return addr.to_string();
+            }
+
+            throw std::runtime_error(std::format("Failed to resolve IPv4 address for: {}", ip));
+        }
+        catch (const std::exception& e)
+        {
+            throw std::runtime_error(std::format("Error resolving address: {}", e.what()));
+        }
+    }
+
 private:
     /**
      * @brief      { function_description }
@@ -625,7 +648,7 @@ public:
     [[nodiscard]] async::task<void>
     transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
     {
-        co_await this->transfer(socket, inet_addr(ip.c_str()), port, from);
+        co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from);
     }
 
 public:
@@ -685,7 +708,7 @@ public:
                                              fb::protocol::internal::Service from,
                                              const fb::stream&               parameter)
     {
-        co_await this->transfer(socket, inet_addr(ip.c_str()), port, from, parameter);
+        co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from, parameter);
     }
 
 protected:
