@@ -37,7 +37,7 @@ Follow the instructions for your target OS.
 
 ## Architecture
 
-![Architecture](image/architecture.png)
+![Architecture](resources/image/architecture.png)
 
 - **Gateway**: The first point of contact for clients. It checks client version, issues encryption keys, and provides a list of available login servers.
 - **Login**: Handles account-related tasks like character creation and password changes, then directs clients to a game server. It communicates with other servers via the internal service.
@@ -47,13 +47,13 @@ Follow the instructions for your target OS.
 
 ## Map division
 
-![Map Sector Layout](image/map_group.png)
+![Map Sector Layout](resources/image/map_group.png)
 
 The game server divides each map into sectors. When an object's position changes, it may move to a different sector. For spatial queries, only nearby sectors are considered, reducing search costs.
 
 ## Thread Model
 
-![Thread Architecture](image/thread.png)
+![Thread Architecture](resources/image/thread.png)
 
 All game logic for objects on the same map runs on the same logic thread. The I/O thread receives data and posts packets to the appropriate logic thread's queue. The logic thread parses the packet and runs the handler. We assign the logic thread by map ID:
 

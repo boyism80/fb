@@ -3,7 +3,7 @@
 echo "Retrieving external IP..."
 EXTERNAL_IP=$(curl -s https://ifconfig.me)
 
-sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .
+sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/build:latest -f lib/Dockerfile .
 if [ $? -ne 0 ]; then
     echo "build fb/build failed"
     exit $?

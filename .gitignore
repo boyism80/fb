@@ -28,3 +28,4 @@ tools/library
 tools/map-split/*.txt
 */config
 tools/runner/settings.json
+*.sln*
