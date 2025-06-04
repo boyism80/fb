@@ -5,7 +5,8 @@ using namespace std::chrono_literals;
 context::context(boost::asio::io_context& context, uint16_t port) :
     fb::acceptor<character>(context, "GAME", port),
     maps(*this, fb::config<uint32_t>("id")),
-    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool"))
+    _redis(config<std::string>("redis:ip").c_str(), config<uint16_t>("redis:port"), config<uint32_t>("redis:pool")),
+    listener(*this)
 {
     auto& ist = fb::lua::context_pool::ist();
     ist.setup(this->threads);
@@ -540,8 +541,11 @@ character* context::handle_accepted(fb::socket<character>& socket)
     return this->make<character>(socket);
 }
 
-async::task<void>
-context::send(object& object, const fb::protocol::header& header, context::scope scope, bool exclude_self, bool encrypt)
+async::task<void> context::send(object&                     object,
+                                const fb::protocol::header& header,
+                                fb::game::scope             scope,
+                                bool                        exclude_self,
+                                bool                        encrypt)
 {
     auto stream = fb::stream();
     auto writer = fb::stream_writer<big_endian>(stream);
@@ -549,7 +553,7 @@ context::send(object& object, const fb::protocol::header& header, context::scope
 
     switch (scope)
     {
-    case context::scope::PIVOT:
+    case fb::game::scope::PIVOT:
     {
         if (!exclude_self)
             object.send(stream, encrypt);
@@ -564,7 +568,7 @@ context::send(object& object, const fb::protocol::header& header, context::scope
     }
     break;
 
-    case context::scope::GROUP:
+    case fb::game::scope::GROUP:
     {
         if (object.is(OBJECT_TYPE::CHARACTER) == false)
             co_return;
@@ -583,7 +587,7 @@ context::send(object& object, const fb::protocol::header& header, context::scope
     }
     break;
 
-    case context::scope::MAP:
+    case fb::game::scope::MAP:
     {
         auto map = object.map();
         if (map == nullptr)
@@ -599,7 +603,7 @@ context::send(object& object, const fb::protocol::header& header, context::scope
     }
     break;
 
-    case context::scope::WORLD:
+    case fb::game::scope::WORLD:
     {
         this->foreach_ch([stream, encrypt](auto& ch) -> async::task<void> {
             ch.send(stream, encrypt);

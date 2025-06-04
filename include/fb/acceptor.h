@@ -24,13 +24,14 @@ template <typename T>
 class acceptor : public fb::acceptable
 {
 public:
-    using handle_func       = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
-    using deserilze_func    = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
-    using background_func   = std::function<async::task<void>()>;
-    using socket_container  = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
-    using amqp_handler_func = std::function<async::task<void>(const uint8_t*)>;
-    using amqp_handler_type = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
-    using boost_timers      = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
+    using handle_func           = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
+    using deserilze_func        = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
+    using background_func       = std::function<async::task<void>()>;
+    using socket_container      = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
+    using socket_container_lock = fb::locker<socket_container>;
+    using amqp_handler_func     = std::function<async::task<void>(const uint8_t*)>;
+    using amqp_handler_type     = std::unordered_map<std::string, std::unordered_map<uint32_t, amqp_handler_func>>;
+    using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
     struct handler
@@ -83,9 +84,8 @@ protected:
     std::mutex                  _background_queue_mutex;
 
 protected:
-    fb::mutex        _mutex;
-    socket_container _sockets;
-    std::mutex       _sockets_mutex;
+    fb::mutex             _mutex;
+    socket_container_lock _sockets;
 
 protected:
     /**
@@ -382,8 +382,9 @@ public:
      */
     bool connected(uint32_t fd)
     {
-        auto _ = std::lock_guard(this->_sockets_mutex);
-        return this->_sockets.contains(fd);
+        return this->_sockets.template lock<bool>([fd](const auto& v) -> bool {
+            return v.contains(fd);
+        });
     }
 
 private:
@@ -502,12 +503,10 @@ private:
         }
         this->pop_alive(socket);
 
-        {
-            auto _ = std::lock_guard(this->_sockets_mutex);
-
-            auto fd = socket.fd();
-            this->_sockets.erase(fd);
-        }
+        auto fd = socket.fd();
+        this->_sockets.lock([fd](auto& v) -> void {
+            v.erase(fd);
+        });
     }
 
     /**
@@ -575,15 +574,16 @@ private:
                 ptr->data(this->handle_accepted(*ptr));
 
                 {
-                    auto _  = std::lock_guard(this->_sockets_mutex);
                     auto fd = socket->fd();
-                    if (this->_sockets.contains(fd))
-                    {
-                        fb::logger::warn(std::format("socket already exists. fd: {}", fd));
-                        this->_sockets.erase(fd); // remove old socket if exists
-                    }
+                    this->_sockets.lock([fd, &socket](auto& v) -> void {
+                        if (v.contains(fd))
+                        {
+                            fb::logger::warn(std::format("socket already exists. fd: {}", fd));
+                            v.erase(fd); // remove old socket if exists
+                        }
 
-                    this->_sockets.insert({fd, std::move(socket)});
+                        v.insert({fd, std::move(socket)});
+                    });
                 }
 
                 this->push_alive(*ptr);
@@ -1108,15 +1108,14 @@ private:
     async::task<void> disconnect_sockets()
     {
         auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
-        {
-            auto _ = std::lock_guard(this->_sockets_mutex);
-            for (auto& [fd, socket] : this->_sockets)
+        this->_sockets.lock([&pairs](const auto& v) -> void {
+            for (auto& [fd, socket] : v)
             {
                 auto thread = socket->thread();
                 if (thread != nullptr)
                     pairs[thread].push_back(socket.get());
             }
-        }
+        });
 
         for (auto& [thread, sockets] : pairs)
         {
@@ -1135,6 +1134,14 @@ private:
                 socket->close();
             }
         }
+    }
+
+public:
+    void access_sockets(std::function<void(const socket_container&)> fn)
+    {
+        this->_sockets.lock([fn](auto& v) {
+            fn(v);
+        });
     }
 
 public:

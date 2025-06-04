@@ -34,24 +34,18 @@ class user_list : public fb::protocol::header
 public:
     inline static uint8_t header = 0x36;
 
-private:
-#ifdef BOT
-#else
-    using container = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<character>>>;
-#endif
-
 public:
 #ifdef BOT
 #else
-    const character& me;
-    container&       sockets;
+    const character&        me;
+    std::vector<character*> users;
 #endif
 
 public:
 #ifdef BOT
     user_list() = default;
 #else
-    user_list(const character& me, container& sockets);
+    user_list(const character& me, std::vector<character*>&& users);
 #endif
 
 public:

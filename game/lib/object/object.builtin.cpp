@@ -571,7 +571,7 @@ int object::builtin_mkitem(lua_State* L)
         auto item = model->make(*ctx);
         item->map(obj->_map, obj->_position);
         lua->pushobject(item);
-        ctx->send(*item, fb::protocol::game::response::update(*item), context::scope::PIVOT);
+        ctx->send(*item, fb::protocol::game::response::update(*item), fb::game::scope::PIVOT);
     }
 
     return 1;

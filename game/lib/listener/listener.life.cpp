@@ -2,12 +2,12 @@
 
 using namespace fb::game;
 
-void context::on_action(life& me, ACTION action, DURATION duration, uint8_t sound)
+void listener_impl::on_action(life& me, ACTION action, DURATION duration, uint8_t sound)
 {
-    this->send(me, fb_resp::action(me, action, duration), scope::PIVOT);
+    this->context.send(me, fb_resp::action(me, action, duration), scope::PIVOT);
 }
 
-async::task<void> context::on_attack(life& me, DURATION duration)
+async::task<void> listener_impl::on_attack(life& me, DURATION duration)
 {
     auto lua = lua::new_context();
     if (lua == nullptr)
@@ -21,7 +21,7 @@ async::task<void> context::on_attack(life& me, DURATION duration)
     if (co_await lua->call(1, false) == false)
         goto cleanup;
 
-    if (this->alive(me) == false)
+    if (this->context.alive(me) == false)
         goto cleanup;
     co_await me.thread()->switching();
 
@@ -40,7 +40,7 @@ async::task<void> context::on_attack(life& me, DURATION duration)
                 lua->pushobject(weapon);
                 co_await lua->call(2, false);
 
-                if (this->alive(ch) == false)
+                if (this->context.alive(ch) == false)
                     goto cleanup;
                 co_await ch.thread()->switching();
             }
@@ -57,7 +57,7 @@ cleanup:
     lua->release();
 }
 
-void context::on_dead(life& me, object* you)
+void listener_impl::on_dead(life& me, object* you)
 {
     switch (me.what())
     {
@@ -87,7 +87,7 @@ void context::on_dead(life& me, object* you)
 
         if (mob.owner != nullptr)
         {
-            if (this->alive(*mob.owner))
+            if (this->context.alive(*mob.owner))
                 mob.owner->detach_spawned_mob(mob);
             return;
         }
@@ -134,7 +134,7 @@ void context::on_dead(life& me, object* you)
     }
 }
 
-void context::on_update_hp(life& me, uint32_t diff, bool critical)
+void listener_impl::on_update_hp(life& me, uint32_t diff, bool critical)
 {
-    this->send(me, fb_resp::update_hp(me, diff, critical), scope::PIVOT);
+    this->context.send(me, fb_resp::update_hp(me, diff, critical), scope::PIVOT);
 }

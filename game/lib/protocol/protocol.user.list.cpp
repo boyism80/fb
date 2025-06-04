@@ -13,9 +13,9 @@ async::task<void> user_list::deserialize(fb::stream_reader<big_endian>& reader)
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-user_list::user_list(const character& me, container& sockets) :
+user_list::user_list(const character& me, std::vector<character*>&& users) :
     me(me),
-    sockets(sockets)
+    users(users)
 { }
 #endif
 
@@ -24,13 +24,12 @@ async::task<void> user_list::serialize(fb::stream_writer<big_endian>& writer) co
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);
-    writer.write<uint16_t>((uint16_t)this->sockets.size());
-    writer.write<uint16_t>((uint16_t)this->sockets.size());
+    writer.write<uint16_t>((uint16_t)this->users.size());
+    writer.write<uint16_t>((uint16_t)this->users.size());
     writer.write<uint8_t>(0x00);
 
-    for (auto& [fd, socket] : this->sockets)
+    for (auto ch : this->users)
     {
-        auto  ch   = socket->data();
         auto& name = ch->name();
 
         writer.write<uint8_t>(0x10 * static_cast<int>(ch->nation()));
