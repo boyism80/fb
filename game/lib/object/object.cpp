@@ -8,7 +8,7 @@ using namespace fb::game;
 object::object(fb::game::context& context, const fb::model::object& model, const initial_params& params) :
     fb::thread_switchable(params.id),
     context(context),
-    _listener(&context),
+    _listener(&context.listener),
     _sequence(params.id),
     _model(model),
     _position(params.position),

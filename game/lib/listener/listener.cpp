@@ -1,18 +1,23 @@
+#include <fb/game/listener.h>
 #include <fb/game/context.h>
 
 using namespace fb::game;
 
-void context::on_create(object& me)
+listener_impl::listener_impl(fb::game::context& ctx) :
+    context(ctx)
+{ }
+
+void listener_impl::on_create(object& me)
 {
     return;
 }
 
-void context::on_destroy(object& me)
+void listener_impl::on_destroy(object& me)
 {
     return;
 }
 
-void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_type)
+void listener_impl::on_chat(object& me, const std::string& message, CHAT_TYPE chat_type)
 {
     if (me.is(OBJECT_TYPE::ITEM))
         return;
@@ -28,10 +33,11 @@ void context::on_chat(object& me, const std::string& message, CHAT_TYPE chat_typ
         scp = scope::PIVOT;
         break;
     }
-    this->send(me, fb_resp::chat(me, message, chat_type), scp);
+
+    this->context.send(me, fb_resp::chat(me, message, chat_type), scp);
 }
 
-void context::on_direction(object& me)
+void listener_impl::on_direction(object& me)
 {
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
@@ -44,10 +50,10 @@ void context::on_direction(object& me)
         std::ignore = lua->call(1);
     }
 
-    this->send(me, fb_resp::direction(me), scope::PIVOT);
+    this->context.send(me, fb_resp::direction(me), scope::PIVOT);
 }
 
-void context::on_update_external(object& me, bool light)
+void listener_impl::on_update_external(object& me, bool light)
 {
     if (me.is(OBJECT_TYPE::CHARACTER))
     {
@@ -63,11 +69,11 @@ void context::on_update_external(object& me, bool light)
     }
     else
     {
-        this->send(me, fb_resp::update(me), scope::PIVOT);
+        this->context.send(me, fb_resp::update(me), scope::PIVOT);
     }
 }
 
-void context::on_update_external(object& me, object& you, bool light)
+void listener_impl::on_update_external(object& me, object& you, bool light)
 {
     if (me.is(OBJECT_TYPE::CHARACTER))
         you.send(fb_resp::update_external(static_cast<character&>(me), you, light));
@@ -75,24 +81,24 @@ void context::on_update_external(object& me, object& you, bool light)
         you.send(fb_resp::update(me));
 }
 
-void context::on_hide(object& me, DESTROY_TYPE destroy_type)
+void listener_impl::on_hide(object& me, DESTROY_TYPE destroy_type)
 {
     switch (destroy_type)
     {
     case DESTROY_TYPE::DEFAULT:
-        this->send(me, fb_resp::hide(me), scope::PIVOT, true);
+        this->context.send(me, fb_resp::hide(me), scope::PIVOT, true);
         break;
 
     case DESTROY_TYPE::DEAD:
         if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
-        this->send(me, fb_resp::die(static_cast<life&>(me)), scope::PIVOT, true);
+        this->context.send(me, fb_resp::die(static_cast<life&>(me)), scope::PIVOT, true);
         break;
     }
 }
 
-void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
+void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
 {
     switch (destroy_type)
     {
@@ -109,7 +115,7 @@ void context::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
     }
 }
 
-void context::on_move(object& me, const fb::model::point16_t& before)
+void listener_impl::on_move(object& me, const fb::model::point16_t& before)
 {
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
@@ -122,10 +128,10 @@ void context::on_move(object& me, const fb::model::point16_t& before)
         std::ignore = lua->call(1);
     }
 
-    this->send(me, fb_resp::move(me, before), scope::PIVOT, true);
+    this->context.send(me, fb_resp::move(me, before), scope::PIVOT, true);
 }
 
-void context::on_buff(object& me, buff& buff)
+void listener_impl::on_buff(object& me, buff& buff)
 {
     if (buff.model.buff.empty())
         return;
@@ -142,7 +148,7 @@ void context::on_buff(object& me, buff& buff)
     me.send(fb::protocol::game::response::spell_buff(buff));
 }
 
-void context::on_unbuff(object& me, buff& buff)
+void listener_impl::on_unbuff(object& me, buff& buff)
 {
     if (buff.model.unbuff.empty())
         return;
@@ -165,11 +171,11 @@ void context::on_unbuff(object& me, buff& buff)
     }
 }
 
-void context::on_sound(object& me, SOUND sound)
+void listener_impl::on_sound(object& me, SOUND sound)
 {
-    this->send(me, fb_resp::sound(me, sound), scope::PIVOT);
+    this->context.send(me, fb_resp::sound(me, sound), scope::PIVOT);
 }
-void context::on_effect(object& me, uint8_t value)
+void listener_impl::on_effect(object& me, uint8_t value)
 {
-    this->send(me, fb_resp::effect(me, value), scope::PIVOT);
+    this->context.send(me, fb_resp::effect(me, value), scope::PIVOT);
 }

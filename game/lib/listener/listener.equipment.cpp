@@ -2,7 +2,7 @@
 
 using namespace fb::game;
 
-void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
+void listener_impl::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
 {
     auto lua = fb::lua::new_context();
     if (lua != nullptr)
@@ -64,7 +64,7 @@ void context::on_equipment_on(character& me, item& item, EQUIPMENT_PARTS parts)
     me.message(sstream.str(), MESSAGE_TYPE::STATE);
 }
 
-void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
+void listener_impl::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::equipment& equipment)
 {
     auto& model = equipment.based<fb::model::equipment>();
     if (model.on_inactive.empty() == false)
@@ -86,7 +86,7 @@ void context::on_equipment_off(character& me, EQUIPMENT_PARTS parts, fb::game::e
     me.sound(SOUND::EQUIPMENT_OFF);
 }
 
-void context::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
+void listener_impl::on_durability_down(character& me, fb::game::equipment& equipment, uint32_t before, uint32_t after)
 {
     auto& model          = equipment.based<fb::model::equipment>();
     auto  percent_before = (uint8_t)std::ceil((before * 100) / (double)model.durability);
