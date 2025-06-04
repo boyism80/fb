@@ -18,10 +18,8 @@ struct listener : public virtual character::listener, public virtual mob::listen
  */
 struct listener_impl : public listener
 {
-    friend class fb::game::context;
-
 public:
-    context& const context;
+    fb::game::context& context;
 
 public:
     listener_impl(fb::game::context& ctx);

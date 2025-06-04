@@ -382,7 +382,7 @@ public:
      */
     bool connected(uint32_t fd)
     {
-        return this->_sockets.lock<bool>([fd](const auto& v) -> bool {
+        return this->_sockets.template lock<bool>([fd](const auto& v) -> bool {
             return v.contains(fd);
         });
     }

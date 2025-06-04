@@ -350,7 +350,7 @@ public:
      */
     async::task<void> send(fb::game::object&           object,
                            const fb::protocol::header& header,
-                           fb::game::context::scope    scope,
+                           fb::game::scope             scope,
                            bool                        exclude_self = false,
                            bool                        encrypt      = true);
 
