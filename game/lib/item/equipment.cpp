@@ -152,10 +152,7 @@ bool fb::game::equipment::active()
 
     owner.items.remove(*this, 1, ITEM_DELETE_TYPE::NONE, false);
     owner.items.add(before);
-
-    auto listener = owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_equipment_on(owner, *this, parts);
+    owner.listener.on_equipment_on(owner, *this, parts);
 
     return true;
 }
@@ -189,10 +186,7 @@ bool fb::game::equipment::durability_down(uint32_t value)
         this->_durability -= value;
     }
 
-    auto listener = owner.get_listener<fb::game::equipment>();
-    if (listener != nullptr)
-        listener->on_durability_down(owner, *this, before, this->_durability);
-
+    owner.listener.on_durability_down(owner, *this, before, this->_durability);
     return this->_durability == 0;
 }
 

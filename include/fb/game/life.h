@@ -14,13 +14,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct listener;
-    /**
-     * @brief      { struct_description }
-     */
+    struct listener_t;
+    struct builtin;
     struct initial_params;
 
 protected:
@@ -33,7 +28,8 @@ protected:
     bool          _cover         = false;
 
 public:
-    fb::game::spells spells;
+    life::listener_t& listener;
+    fb::game::spells  spells;
 
 protected:
     /**
@@ -631,9 +627,54 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool cover() const;
+};
 
-#pragma region builtin
+/**
+ * @brief      { struct_description }
+ */
+struct life::listener_t : public virtual fb::game::object::listener_t, public virtual fb::game::spells::listener_t
+{
+    /**
+     * @brief      Called on action.
+     *
+     * @param      me        { parameter_description }
+     * @param[in]  action    The action
+     * @param[in]  duration  The duration
+     * @param[in]  sound     The sound
+     */
+    virtual void on_action(life& me, ACTION action, DURATION duration, uint8_t sound) = 0;
 
+    /**
+     * @brief      Called on attack.
+     *
+     * @param      me        { parameter_description }
+     * @param[in]  duration  The duration
+     */
+    virtual async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
+
+    /**
+     * @brief      Called on dead.
+     *
+     * @param      me    { parameter_description }
+     * @param      you   You
+     */
+    virtual void on_dead(life& me, object* you) = 0;
+
+    /**
+     * @brief      Called on update hp.
+     *
+     * @param      me        { parameter_description }
+     * @param[in]  diff      The difference
+     * @param[in]  critical  The critical
+     */
+    virtual void on_update_hp(life& me, uint32_t diff, bool critical) = 0;
+};
+
+/**
+ * @brief      { struct_description }
+ */
+struct life::builtin
+{
 public:
     /**
      * @brief      { function_description }
@@ -1066,48 +1107,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_hit(lua_State* L);
-#pragma endregion
-};
-
-/**
- * @brief      { struct_description }
- */
-struct life::listener : public virtual fb::game::object::listener, public virtual fb::game::spells::listener
-{
-    /**
-     * @brief      Called on action.
-     *
-     * @param      me        { parameter_description }
-     * @param[in]  action    The action
-     * @param[in]  duration  The duration
-     * @param[in]  sound     The sound
-     */
-    virtual void on_action(life& me, ACTION action, DURATION duration, uint8_t sound) = 0;
-
-    /**
-     * @brief      Called on attack.
-     *
-     * @param      me        { parameter_description }
-     * @param[in]  duration  The duration
-     */
-    virtual async::task<void> on_attack(life& me, DURATION duration = DURATION::ATTACK) = 0;
-
-    /**
-     * @brief      Called on dead.
-     *
-     * @param      me    { parameter_description }
-     * @param      you   You
-     */
-    virtual void on_dead(life& me, object* you) = 0;
-
-    /**
-     * @brief      Called on update hp.
-     *
-     * @param      me        { parameter_description }
-     * @param[in]  diff      The difference
-     * @param[in]  critical  The critical
-     */
-    virtual void on_update_hp(life& me, uint32_t diff, bool critical) = 0;
 };
 
 /**

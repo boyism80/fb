@@ -5,7 +5,7 @@
 #include <format>
 #include <optional>
 
-namespace fb { namespace game {
+namespace fb::game {
 
 /**
  * @brief      This class describes a character.
@@ -22,6 +22,9 @@ public:
 
 public:
     LUA_PROTOTYPE
+
+public:
+    struct builtin;
 
 private:
     uint16_t _soliloquy_time;
@@ -64,44 +67,11 @@ public:
      * @brief      { function_description }
      */
     void assert_thread() const override final;
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_sell(lua_State* L);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_sell_price(lua_State* L);
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_buy(lua_State* L);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_buy_price(lua_State* L);
 };
 
-}} // namespace fb::game
+struct npc::builtin
+{ };
+
+} // namespace fb::game
 
 #endif // !__NPC_H__

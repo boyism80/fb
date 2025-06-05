@@ -63,10 +63,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct listener;
+    struct listener_t;
+    struct builtin;
 
 public:
     /**
@@ -81,7 +79,6 @@ public:
     };
 
 private:
-    listener*           _listener = nullptr;
     fb::model::datetime _action_time;
     fb::game::rezen*    _rezen         = nullptr;
     fb::game::life*     _target        = nullptr;
@@ -99,6 +96,7 @@ private:
     std::vector<item*>  _items;
 
 public:
+    mob::listener_t&     listener;
     fb::game::character* owner = nullptr;
 
 public:
@@ -472,10 +470,19 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool push_item(item& i);
+};
 
-#pragma region builtin
+/**
+ * @brief      { struct_description }
+ */
+struct mob::listener_t : public virtual fb::game::life::listener_t
+{ };
 
-public:
+/**
+ * @brief      { struct_description }
+ */
+struct mob::builtin
+{
     /**
      * @brief      { function_description }
      *
@@ -511,14 +518,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_items(lua_State* L);
-#pragma endregion
 };
-
-/**
- * @brief      { struct_description }
- */
-struct mob::listener : public virtual fb::game::life::listener
-{ };
 
 } // namespace fb::game
 

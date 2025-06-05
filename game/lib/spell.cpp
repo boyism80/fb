@@ -79,24 +79,21 @@ fb::game::spell* fb::game::spells::find(const fb::model::spell& model) const
 
 uint8_t spells::add(spell& element)
 {
-    auto index    = inventory<spell>::add(element);
-    auto listener = this->owner().get_listener<spells>();
+    auto& owner = this->owner();
+    auto  index = super::add(element);
 
-    if (index != 0xFF && listener != nullptr)
-        listener->on_spell_update(this->owner(), index);
+    if (index != 0xFF)
+        owner.listener.on_spell_update(this->owner(), index);
 
     return index;
 }
 
 uint8_t spells::add(spell& element, uint8_t index)
 {
-    auto listener = this->owner().get_listener<spells>();
+    auto& owner = this->owner();
 
-    if (inventory<spell>::add(element, index) != 0xFF)
-    {
-        if (listener != nullptr)
-            listener->on_spell_update(this->owner(), index);
-    }
+    if (super::add(element, index) != 0xFF)
+        owner.listener.on_spell_update(this->owner(), index);
 
     return index;
 }
@@ -119,35 +116,33 @@ uint8_t spells::add(const fb::model::spell& model)
 
 bool spells::remove(uint8_t index)
 {
-    auto success  = inventory<spell>::remove(index);
-    auto listener = this->owner().get_listener<spells>();
+    auto& owner   = this->owner();
+    auto  success = super::remove(index);
 
-    if (success && listener != nullptr)
-        listener->on_spell_remove(this->owner(), index);
+    if (success)
+        owner.listener.on_spell_remove(this->owner(), index);
 
     return success;
 }
 
 bool spells::swap(uint8_t src, uint8_t dst)
 {
-    if (inventory<spell>::swap(src, dst) == false)
+    auto& owner = this->owner();
+
+    if (super::swap(src, dst) == false)
         return false;
 
-    auto listener = this->owner().get_listener<spells>();
-    if (listener != nullptr)
-    {
-        const auto right = this->at(src);
-        if (right != nullptr)
-            listener->on_spell_update(this->owner(), src);
-        else
-            listener->on_spell_remove(this->owner(), src);
+    const auto right = this->at(src);
+    if (right != nullptr)
+        owner.listener.on_spell_update(this->owner(), src);
+    else
+        owner.listener.on_spell_remove(this->owner(), src);
 
-        const auto left = this->at(dst);
-        if (left != nullptr)
-            listener->on_spell_update(this->owner(), dst);
-        else
-            listener->on_spell_remove(this->owner(), dst);
-    }
+    const auto left = this->at(dst);
+    if (left != nullptr)
+        owner.listener.on_spell_update(this->owner(), dst);
+    else
+        owner.listener.on_spell_remove(this->owner(), dst);
 
     return true;
 }
@@ -202,10 +197,7 @@ bool buffs::push_back(buff& buff)
         return false;
 
     this->insert({model.id, &buff});
-
-    auto listener = this->_owner.get_listener<character>();
-    if (listener != nullptr)
-        listener->on_buff(this->_owner, buff);
+    this->_owner.listener.on_buff(this->_owner, buff);
 
     return true;
 }
@@ -238,10 +230,7 @@ bool buffs::remove(uint32_t id)
     if (buff == nullptr)
         return false;
 
-    auto listener = this->_owner.get_listener<object>();
-    if (listener != nullptr)
-        listener->on_unbuff(this->_owner, *buff);
-
+    this->_owner.listener.on_unbuff(this->_owner, *buff);
     this->erase(id);
     std::ignore = this->_owner.context.destroy(*buff);
     return true;

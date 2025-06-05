@@ -57,7 +57,7 @@ struct preset
 /**
  * @brief      { struct_description }
  */
-struct listener
+struct listener_t
 {
     /**
      * @brief      Called on dialog.

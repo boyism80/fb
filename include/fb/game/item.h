@@ -40,7 +40,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
     /**
      * @brief      { struct_description }
      */
@@ -71,6 +71,9 @@ protected:
     items*                  _container    = nullptr;
     std::optional<uint32_t> _death_cid    = std::nullopt;
     nullable_time           _dropped_time = std::nullopt;
+
+public:
+    listener_t& listener;
 
 public:
     /**
@@ -290,7 +293,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct item::listener : public virtual fb::game::object::listener
+struct item::listener_t : public virtual fb::game::object::listener_t
 {
     /**
      * @brief      Called on item remove.
@@ -498,7 +501,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
 
 protected:
     uint32_t _durability = 0;
@@ -591,7 +594,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct equipment::listener : public virtual fb::game::item::listener
+struct equipment::listener_t : public virtual fb::game::item::listener_t
 {
     /**
      * @brief      Called on equipment on.
