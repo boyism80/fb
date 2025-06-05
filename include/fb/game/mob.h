@@ -63,10 +63,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
     struct listener_t;
+    struct builtin;
 
 public:
     /**
@@ -472,10 +470,19 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool push_item(item& i);
+};
 
-#pragma region builtin
+/**
+ * @brief      { struct_description }
+ */
+struct mob::listener_t : public virtual fb::game::life::listener_t
+{ };
 
-public:
+/**
+ * @brief      { struct_description }
+ */
+struct mob::builtin
+{
     /**
      * @brief      { function_description }
      *
@@ -511,14 +518,7 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_items(lua_State* L);
-#pragma endregion
 };
-
-/**
- * @brief      { struct_description }
- */
-struct mob::listener_t : public virtual fb::game::life::listener_t
-{ };
 
 } // namespace fb::game
 

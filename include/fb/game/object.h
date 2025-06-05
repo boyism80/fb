@@ -55,6 +55,7 @@ class object : public fb::thread_switchable
 {
 public:
     struct listener_t;
+    struct builtin;
     struct initial_params;
 
 public:
@@ -586,7 +587,123 @@ public:
      * @return     The result of the inequality
      */
     bool operator!= (const object& right) const;
+};
 
+/**
+ * @brief      { struct_description }
+ */
+struct object::listener_t
+{
+    /**
+     * @brief      Called on chat.
+     *
+     * @param      me         { parameter_description }
+     * @param[in]  message    The message
+     * @param[in]  chat_type  The chat type
+     */
+    virtual void on_chat(fb::game::object& me, const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
+
+    /**
+     * @brief      Called on direction.
+     *
+     * @param      me    { parameter_description }
+     */
+    virtual void on_direction(fb::game::object& me) = 0;
+
+    /**
+     * @brief      Called on update external.
+     *
+     * @param      me     { parameter_description }
+     * @param[in]  light  The light
+     */
+    virtual void on_update_external(fb::game::object& me, bool light) = 0;
+
+    /**
+     * @brief      Called on update external.
+     *
+     * @param      me     { parameter_description }
+     * @param      you    You
+     * @param[in]  light  The light
+     */
+    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool light) = 0;
+
+    /**
+     * @brief      Called on hide.
+     *
+     * @param      me            { parameter_description }
+     * @param[in]  destroy_type  The destroy type
+     */
+    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
+
+    /**
+     * @brief      Called on hide.
+     *
+     * @param      me            { parameter_description }
+     * @param      you           You
+     * @param[in]  destroy_type  The destroy type
+     */
+    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
+
+    /**
+     * @brief      Called on move.
+     *
+     * @param      me      { parameter_description }
+     * @param[in]  before  The before
+     */
+    virtual void on_move(fb::game::object& me, const fb::model::point16_t& before) = 0;
+
+    /**
+     * @brief      Called on buffer.
+     *
+     * @param      me    { parameter_description }
+     * @param      buff  The buffer
+     */
+    virtual void on_buff(fb::game::object& me, fb::game::buff& buff) = 0;
+
+    /**
+     * @brief      Called on unbuff.
+     *
+     * @param      me    { parameter_description }
+     * @param      buff  The buffer
+     */
+    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
+
+    /**
+     * @brief      Called on create.
+     *
+     * @param      me    { parameter_description }
+     */
+    virtual void on_create(fb::game::object& me) = 0;
+
+    /**
+     * @brief      Called on destroy.
+     *
+     * @param      me    { parameter_description }
+     */
+    virtual void on_destroy(fb::game::object& me) = 0;
+
+    /**
+     * @brief      Called on sound.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  sound  The sound
+     */
+    virtual void on_sound(fb::game::object& ch, SOUND sound) = 0;
+
+    /**
+     * @brief      Called on effect.
+     *
+     * @param      ch     { parameter_description }
+     * @param[in]  value  The value
+     */
+    virtual void on_effect(fb::game::object& ch, uint8_t value) = 0;
+};
+
+/**
+ * @brief      { struct_description }
+ */
+struct object::builtin
+{
 public:
     /**
      * @brief      { function_description }
@@ -827,116 +944,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_buffs(lua_State* L);
-};
-
-/**
- * @brief      { struct_description }
- */
-struct object::listener_t
-{
-    /**
-     * @brief      Called on chat.
-     *
-     * @param      me         { parameter_description }
-     * @param[in]  message    The message
-     * @param[in]  chat_type  The chat type
-     */
-    virtual void on_chat(fb::game::object& me, const std::string& message, CHAT_TYPE chat_type = CHAT_TYPE::NORMAL) = 0;
-
-    /**
-     * @brief      Called on direction.
-     *
-     * @param      me    { parameter_description }
-     */
-    virtual void on_direction(fb::game::object& me) = 0;
-
-    /**
-     * @brief      Called on update external.
-     *
-     * @param      me     { parameter_description }
-     * @param[in]  light  The light
-     */
-    virtual void on_update_external(fb::game::object& me, bool light) = 0;
-
-    /**
-     * @brief      Called on update external.
-     *
-     * @param      me     { parameter_description }
-     * @param      you    You
-     * @param[in]  light  The light
-     */
-    virtual void on_update_external(fb::game::object& me, fb::game::object& you, bool light) = 0;
-
-    /**
-     * @brief      Called on hide.
-     *
-     * @param      me            { parameter_description }
-     * @param[in]  destroy_type  The destroy type
-     */
-    virtual void on_hide(fb::game::object& me, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) = 0;
-
-    /**
-     * @brief      Called on hide.
-     *
-     * @param      me            { parameter_description }
-     * @param      you           You
-     * @param[in]  destroy_type  The destroy type
-     */
-    virtual void on_hide(fb::game::object& me, fb::game::object& you, DESTROY_TYPE destroy_type) = 0;
-
-    /**
-     * @brief      Called on move.
-     *
-     * @param      me      { parameter_description }
-     * @param[in]  before  The before
-     */
-    virtual void on_move(fb::game::object& me, const fb::model::point16_t& before) = 0;
-
-    /**
-     * @brief      Called on buffer.
-     *
-     * @param      me    { parameter_description }
-     * @param      buff  The buffer
-     */
-    virtual void on_buff(fb::game::object& me, fb::game::buff& buff) = 0;
-
-    /**
-     * @brief      Called on unbuff.
-     *
-     * @param      me    { parameter_description }
-     * @param      buff  The buffer
-     */
-    virtual void on_unbuff(fb::game::object& me, fb::game::buff& buff) = 0;
-
-    /**
-     * @brief      Called on create.
-     *
-     * @param      me    { parameter_description }
-     */
-    virtual void on_create(fb::game::object& me) = 0;
-
-    /**
-     * @brief      Called on destroy.
-     *
-     * @param      me    { parameter_description }
-     */
-    virtual void on_destroy(fb::game::object& me) = 0;
-
-    /**
-     * @brief      Called on sound.
-     *
-     * @param      ch     { parameter_description }
-     * @param[in]  sound  The sound
-     */
-    virtual void on_sound(fb::game::object& ch, SOUND sound) = 0;
-
-    /**
-     * @brief      Called on effect.
-     *
-     * @param      ch     { parameter_description }
-     * @param[in]  value  The value
-     */
-    virtual void on_effect(fb::game::object& ch, uint8_t value) = 0;
 };
 
 /**
