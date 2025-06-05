@@ -30,7 +30,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
 
 private:
     character&                           _owner;
@@ -197,7 +197,7 @@ enum class trade::state : uint8_t
 /**
  * @brief      { struct_description }
  */
-struct trade::listener
+struct trade::listener_t
 {
     /**
      * @brief      Called on trade begin.

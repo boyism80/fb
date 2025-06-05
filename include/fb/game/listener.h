@@ -10,7 +10,7 @@ class context;
 /**
  * @brief      { struct_description }
  */
-struct listener : public virtual character::listener, public virtual mob::listener
+struct listener : public virtual character::listener_t, public virtual mob::listener_t
 { };
 
 /**

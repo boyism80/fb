@@ -54,7 +54,7 @@ class sectors;
 class object : public fb::thread_switchable
 {
 public:
-    struct listener;
+    struct listener_t;
     struct initial_params;
 
 public:
@@ -75,7 +75,7 @@ protected:
     fb::game::map*           _map       = nullptr;
 
 public:
-    object::listener&  listener;
+    listener_t&        listener;
     fb::game::context& context;
     fb::game::buffs    buffs;
 
@@ -832,7 +832,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct object::listener
+struct object::listener_t
 {
     /**
      * @brief      Called on chat.

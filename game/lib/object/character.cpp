@@ -6,7 +6,7 @@ using namespace fb::game;
 
 character::character(fb::game::context& context, fb::socket<character>& socket) :
     life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
-    listener(static_cast<fb::game::character::listener&>(context.listener)),
+    listener(context.listener),
     _socket(socket)
 { }
 

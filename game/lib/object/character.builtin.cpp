@@ -305,10 +305,7 @@ int character::builtin_item(lua_State* L)
         }
     }
 
-    auto listener = ch->get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_dialog(*ch, *model, message, items, sequence);
-
+    ch->listener.on_dialog(*ch, *model, message, items, sequence);
     if (ch->dialog != nullptr)
         ch->dialog->release();
 
@@ -2049,9 +2046,7 @@ int fb::game::character::builtin_dialog(lua_State* L)
     auto button_prev = lua->toboolean(4, false);
     auto button_next = lua->toboolean(5, false);
 
-    auto listener = ch->get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_dialog(*ch, *model, message, button_prev, button_next, sequence);
+    ch->listener.on_dialog(*ch, *model, message, button_prev, button_next, sequence);
 
     if (ch->dialog != nullptr)
         ch->dialog->release();
@@ -2144,14 +2139,10 @@ int fb::game::character::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    auto listener = ch->get_listener<fb::game::character>();
-    if (listener != nullptr)
-    {
-        if (custom_preset)
-            listener->on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
-        else
-            listener->on_dialog(*ch, *model, message, menus, button_prev, sequence);
-    }
+    if (custom_preset)
+        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
+    else
+        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
 
     if (ch->dialog != nullptr)
         ch->dialog->release();
@@ -2189,9 +2180,8 @@ int fb::game::character::builtin_input(lua_State* L)
         return 0;
     }
 
-    auto message  = lua->tostring(3);
-    auto argc     = lua->argc();
-    auto listener = ch->get_listener<fb::game::character>();
+    auto message = lua->tostring(3);
+    auto argc    = lua->argc();
     if (argc > 3)
     {
         auto message_top = lua->tostring(4);
@@ -2199,13 +2189,11 @@ int fb::game::character::builtin_input(lua_State* L)
         auto maxlen      = (uint8_t)lua->tointeger(6, 0xFF);
         auto prev        = lua->toboolean(7, false);
 
-        if (listener != nullptr)
-            listener->on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, sequence);
+        ch->listener.on_dialog(*ch, *model, message, message_top, message_bot, maxlen, prev, sequence);
     }
     else
     {
-        if (listener != nullptr)
-            listener->on_dialog(*ch, *model, message, sequence);
+        ch->listener.on_dialog(*ch, *model, message, sequence);
     }
 
     if (ch->dialog != nullptr)
@@ -2255,9 +2243,7 @@ int fb::game::character::builtin_menu(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    auto listener = ch->get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_dialog(*ch, *model, message, menus, sequence);
+    ch->listener.on_dialog(*ch, *model, message, menus, sequence);
 
     if (ch->dialog != nullptr)
         ch->dialog->release();
@@ -2305,9 +2291,7 @@ int fb::game::character::builtin_slot(lua_State* L)
         lua->pop(1);
     }
 
-    auto listener = ch->get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_dialog(*ch, *model, message, slots, sequence);
+    ch->listener.on_dialog(*ch, *model, message, slots, sequence);
 
     if (ch->dialog != nullptr)
         ch->dialog->release();

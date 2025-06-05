@@ -60,7 +60,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
 
 private:
     uint32_t                _id = 0xFFFFFFFF;
@@ -103,7 +103,7 @@ private:
     };
 
 public:
-    character::listener&                       listener;
+    character::listener_t&                     listener;
     fb::game::trade                            trade  = fb::game::trade(*this);
     fb::game::items                            items  = fb::game::items(*this);
     fb::lua::context*                          dialog = nullptr;
@@ -2028,10 +2028,10 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct character::listener : public virtual fb::game::life::listener,
-                             public virtual dialog::listener,
-                             public virtual fb::game::trade::listener,
-                             public virtual fb::game::equipment::listener
+struct character::listener_t : public virtual fb::game::life::listener_t,
+                               public virtual dialog::listener_t,
+                               public virtual fb::game::trade::listener_t,
+                               public virtual fb::game::equipment::listener_t
 {
 public:
     /**

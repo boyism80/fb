@@ -96,11 +96,14 @@ public:
  */
 class spells : public fb::game::inventory<fb::game::spell>
 {
+private:
+    using super = inventory<spell>;
+
 public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
 
 public:
     /**
@@ -192,7 +195,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct spells::listener
+struct spells::listener_t
 {
     /**
      * @brief      Called on spell update.

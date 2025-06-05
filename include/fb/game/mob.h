@@ -66,7 +66,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
 
 public:
     /**
@@ -81,7 +81,6 @@ public:
     };
 
 private:
-    listener*           _listener = nullptr;
     fb::model::datetime _action_time;
     fb::game::rezen*    _rezen         = nullptr;
     fb::game::life*     _target        = nullptr;
@@ -99,7 +98,7 @@ private:
     std::vector<item*>  _items;
 
 public:
-    mob::listener&       listener;
+    mob::listener_t&     listener;
     fb::game::character* owner = nullptr;
 
 public:
@@ -518,7 +517,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct mob::listener : public virtual fb::game::life::listener
+struct mob::listener_t : public virtual fb::game::life::listener_t
 { };
 
 } // namespace fb::game

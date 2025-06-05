@@ -25,7 +25,6 @@ fb::game::items::~items()
 
 fb::game::equipment* fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
 {
-    auto listener  = this->owner.get_listener<fb::game::equipment>();
     auto equipment = (fb::game::equipment*)nullptr;
     switch (parts)
     {
@@ -82,8 +81,7 @@ fb::game::equipment* fb::game::items::equipment_off(EQUIPMENT_PARTS parts)
         return nullptr;
 
     this->owner.update(STATE_LEVEL::LEVEL_MAX);
-    if (listener != nullptr)
-        listener->on_equipment_off(this->owner, parts, *equipment);
+    owner.listener.on_equipment_off(this->owner, parts, *equipment);
 
     this->owner.update_external(false);
     return equipment;
@@ -105,9 +103,8 @@ uint8_t fb::game::items::add(fb::game::item* item)
 
 std::vector<uint8_t> fb::game::items::add(const std::vector<fb::game::item*>& items, bool stop_if_remained)
 {
-    auto indices  = std::vector<uint8_t>();
-    auto updates  = fb::game::item::container();
-    auto listener = this->owner.get_listener<fb::game::character>();
+    auto indices = std::vector<uint8_t>();
+    auto updates = fb::game::item::container();
 
     for (auto item : items)
     {
@@ -193,9 +190,8 @@ uint8_t fb::game::items::add(fb::game::item& item, uint8_t index)
 
     item._container = this;
     item._death_cid = std::nullopt;
-    auto listener   = this->owner.get_listener<fb::game::character>();
-    if (item.empty() == false && listener != nullptr)
-        listener->on_item_update(static_cast<character&>(this->owner), index);
+    if (item.empty() == false)
+        this->owner.listener.on_item_update(static_cast<character&>(this->owner), index);
 
     return index;
 }
@@ -421,8 +417,7 @@ uint32_t fb::game::items::withdraw(uint32_t value)
 
 fb::game::item* fb::game::items::active(uint8_t index)
 {
-    auto  listener = this->owner.get_listener<fb::game::character>();
-    auto& context  = this->owner.context;
+    auto& context = this->owner.context;
 
     try
     {
@@ -519,14 +514,10 @@ bool fb::game::items::update(uint8_t index) const
         return false;
 
     auto remained = item->count() - item->trade_count();
-    auto listener = this->owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-    {
-        if (remained == 0)
-            listener->on_item_remove(this->owner, index, ITEM_DELETE_TYPE::NONE);
-        else
-            listener->on_item_update(this->owner, index);
-    }
+    if (remained == 0)
+        this->owner.listener.on_item_remove(this->owner, index, ITEM_DELETE_TYPE::NONE);
+    else
+        this->owner.listener.on_item_update(this->owner, index);
     return true;
 }
 
@@ -734,7 +725,6 @@ fb::game::item* fb::game::items::find_bundle(const fb::model::item& model) const
 
 fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, bool action, ITEM_DELETE_TYPE delete_type)
 {
-    auto listener = this->owner.get_listener<fb::game::character>();
 
     try
     {
@@ -769,7 +759,6 @@ fb::game::item* fb::game::items::drop(uint8_t index, uint8_t count, bool action,
 
 void fb::game::items::pickup(bool boost)
 {
-    auto listener = this->owner.get_listener<fb::game::character>();
 
     try
     {
@@ -816,7 +805,6 @@ void fb::game::items::pickup(bool boost)
 
 bool fb::game::items::throws(uint8_t index)
 {
-    auto listener = this->owner.get_listener<fb::game::character>();
 
     try
     {
@@ -845,8 +833,7 @@ bool fb::game::items::throws(uint8_t index)
             }
         }
 
-        if (listener != nullptr)
-            listener->on_item_throws(this->owner, *dropped, position);
+        this->owner.listener.on_item_throws(this->owner, *dropped, position);
         std::ignore = dropped->map(map, position);
         return true;
     }
@@ -863,7 +850,6 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
     if (item == nullptr)
         return nullptr;
 
-    auto listener = this->owner.get_listener<fb::game::character>();
     auto splitted = item->split(count);
     if (splitted == item)
     {
@@ -871,16 +857,11 @@ fb::game::item* fb::game::items::remove(uint8_t index, uint16_t count, ITEM_DELE
             splitted->_container = nullptr;
 
         std::ignore = fb::game::inventory<fb::game::item>::remove(index);
-        if (listener != nullptr)
-            listener->on_item_remove(this->owner, index, attr);
+        this->owner.listener.on_item_remove(this->owner, index, attr);
     }
 
-    if (listener != nullptr)
-    {
-        auto current = this->at(index);
-        listener->on_item_update(this->owner, index);
-    }
-
+    auto current = this->at(index);
+    this->owner.listener.on_item_update(this->owner, index);
     return splitted;
 }
 
@@ -898,24 +879,19 @@ bool fb::game::items::swap(uint8_t src, uint8_t dst)
     if (fb::game::inventory<fb::game::item>::swap(src, dst) == false)
         return false;
 
-    auto listener = this->owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-    {
-        const auto right = this->at(src);
-        if (right != nullptr)
-            listener->on_item_update(this->owner, src);
-        else
-            listener->on_item_remove(this->owner, src);
+    const auto right = this->at(src);
+    if (right != nullptr)
+        this->owner.listener.on_item_update(this->owner, src);
+    else
+        this->owner.listener.on_item_remove(this->owner, src);
 
-        const auto left = this->at(dst);
-        if (left != nullptr)
-            listener->on_item_update(this->owner, dst);
-        else
-            listener->on_item_remove(this->owner, dst);
+    const auto left = this->at(dst);
+    if (left != nullptr)
+        this->owner.listener.on_item_update(this->owner, dst);
+    else
+        this->owner.listener.on_item_remove(this->owner, dst);
 
-        listener->on_item_swap(this->owner, src, dst);
-    }
-
+    this->owner.listener.on_item_swap(this->owner, src, dst);
     return true;
 }
 

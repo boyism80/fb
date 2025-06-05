@@ -17,7 +17,7 @@ public:
     /**
      * @brief      { struct_description }
      */
-    struct listener;
+    struct listener_t;
     /**
      * @brief      { struct_description }
      */
@@ -33,8 +33,8 @@ protected:
     bool          _cover         = false;
 
 public:
-    life::listener&  listener;
-    fb::game::spells spells;
+    life::listener_t& listener;
+    fb::game::spells  spells;
 
 protected:
     /**
@@ -1073,7 +1073,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct life::listener : public virtual fb::game::object::listener, public virtual fb::game::spells::listener
+struct life::listener_t : public virtual fb::game::object::listener_t, public virtual fb::game::spells::listener_t
 {
     /**
      * @brief      Called on action.
