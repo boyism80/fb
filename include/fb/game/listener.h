@@ -10,13 +10,13 @@ class context;
 /**
  * @brief      { struct_description }
  */
-struct listener : public virtual character::listener, public virtual mob::listener
+struct listener_t : public virtual character::listener_t, public virtual mob::listener_t
 { };
 
 /**
  * @brief      { struct_description }
  */
-struct listener_impl : public listener
+struct listener_impl : public listener_t
 {
 public:
     fb::game::context& context;

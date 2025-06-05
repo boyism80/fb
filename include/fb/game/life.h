@@ -14,13 +14,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct listener;
-    /**
-     * @brief      { struct_description }
-     */
+    struct builtin;
+    struct listener_t;
     struct initial_params;
 
 protected:
@@ -33,6 +28,7 @@ protected:
     bool          _cover         = false;
 
 public:
+    listener_t&      listener;
     fb::game::spells spells;
 
 protected:
@@ -631,10 +627,13 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool cover() const;
+};
 
-#pragma region builtin
-
-public:
+/**
+ * @brief      { struct_description }
+ */
+struct life::builtin
+{
     /**
      * @brief      { function_description }
      *
@@ -1066,13 +1065,12 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_hit(lua_State* L);
-#pragma endregion
 };
 
 /**
  * @brief      { struct_description }
  */
-struct life::listener : public virtual fb::game::object::listener, public virtual fb::game::spells::listener
+struct life::listener_t : public virtual fb::game::object::listener_t, public virtual fb::game::spells::listener_t
 {
     /**
      * @brief      Called on action.

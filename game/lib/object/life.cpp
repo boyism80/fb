@@ -6,6 +6,7 @@ using namespace fb::game;
 
 life::life(fb::game::context& context, const fb::model::life& model, const initial_params& params) :
     object(context, model, params),
+    listener(context.listener),
     _hp(params.hp),
     _mp(params.mp),
     spells(*this)
@@ -68,17 +69,13 @@ void life::update(STATE_LEVEL value)
 
 void life::update_hp(uint32_t diff, bool critical)
 {
-    auto listener = this->get_listener<life>();
-    if (listener != nullptr)
-        listener->on_update_hp(*this, diff, critical);
+    this->listener.on_update_hp(*this, diff, critical);
 }
 
 void life::kill(fb::game::object* from, DESTROY_TYPE destroy_type)
 {
-    this->_hp     = 0;
-    auto listener = this->get_listener<life>();
-    if (listener != nullptr)
-        listener->on_dead(*this, from);
+    this->_hp = 0;
+    this->listener.on_dead(*this, from);
 }
 
 void life::attack(DURATION duration)
@@ -90,9 +87,7 @@ void life::attack(DURATION duration)
     if (this->alive() == false)
         return;
 
-    auto listener = this->get_listener<life>();
-    if (listener != nullptr)
-        listener->on_attack(*this, duration);
+    this->listener.on_attack(*this, duration);
 }
 
 uint32_t life::hp() const
@@ -273,9 +268,7 @@ bool life::active(fb::game::spell& spell)
 
 void life::action(ACTION action, DURATION duration, uint8_t sound)
 {
-    auto listener = this->get_listener<life>();
-    if (listener != nullptr)
-        listener->on_action(*this, action, duration, sound);
+    this->listener.on_action(*this, action, duration, sound);
 }
 
 bool life::calculate_critical(life& you) const

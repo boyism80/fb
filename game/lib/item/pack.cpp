@@ -47,10 +47,8 @@ bool fb::game::pack::active()
     if (this->_durability <= 0)
         this->count(0);
 
-    auto listener = this->_container->owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_item_update(this->_container->owner, this->_container->index(*this));
-
+    auto& owner = this->_container->owner;
+    owner.listener.on_item_update(owner, this->_container->index(*this));
     if (this->empty())
         std::ignore = this->_container->remove(*this, 0xFF, ITEM_DELETE_TYPE::REDUCE);
 

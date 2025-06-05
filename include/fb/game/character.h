@@ -57,10 +57,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
-    struct listener;
+    struct listener_t;
+    struct builtin;
 
 private:
     uint32_t                _id = 0xFFFFFFFF;
@@ -107,6 +105,7 @@ public:
     fb::game::items                            items  = fb::game::items(*this);
     fb::lua::context*                          dialog = nullptr;
     std::map<uint32_t, std::unique_ptr<trace>> traces; // order required
+    listener_t&                                listener;
 
 private:
     using object::based;
@@ -1352,9 +1351,10 @@ public:
      */
     void buff_hit(uint8_t value) override final;
 #pragma endregion
+};
 
-#pragma region builtin
-
+struct character::builtin
+{
 public:
     /**
      * @brief      { function_description }
@@ -1940,7 +1940,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_slot(lua_State* L);
-#pragma endregion
 };
 
 /**
@@ -2027,10 +2026,10 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct character::listener : public virtual life::listener,
-                             public virtual dialog::listener,
-                             public virtual trade::listener,
-                             public virtual equipment::listener
+struct character::listener_t : public virtual life::listener_t,
+                               public virtual dialog::listener_t,
+                               public virtual trade::listener_t,
+                               public virtual equipment::listener_t
 {
 public:
     /**

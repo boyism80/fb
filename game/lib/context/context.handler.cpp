@@ -479,9 +479,8 @@ async::task<bool> context::handle_itemmix(fb::socket<character>& socket, const f
         }
     }
 
-    auto  listener = ch->get_listener<character>();
-    auto  success  = (std::rand() % 100) < found->percent;
-    auto& result   = success ? found->success : found->failed;
+    auto  success = (std::rand() % 100) < found->percent;
+    auto& result  = success ? found->success : found->failed;
     for (auto& dsl : result)
     {
         auto  params = fb::model::dsl::item(dsl.params);

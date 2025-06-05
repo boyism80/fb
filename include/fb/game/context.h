@@ -43,6 +43,9 @@ public:
     LUA_PROTOTYPE
 
 public:
+    struct builtin;
+
+public:
     using object_set         = std::unordered_map<const fb::game::object*, std::unique_ptr<fb::game::object>>;
     using transfer_param     = fb_reqs::login::transfer_param;
     using protocol_generator = std::function<std::unique_ptr<fb::protocol::header>(const fb::game::object&)>;
@@ -1516,8 +1519,10 @@ public:
     async::task<bool> npc_interaction(character&                         ch,
                                       const std::string&                 message,
                                       const std::vector<fb::game::npc*>& npcs);
+};
 
-public:
+struct context::builtin
+{
     /**
      * @brief      { function_description }
      *

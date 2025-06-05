@@ -5,11 +5,13 @@ using namespace fb::game;
 
 item::item(fb::game::context& context, const fb::model::item& model, const initial_params& params) :
     object(context, model, params),
+    listener(context.listener),
     _count(params.count)
 { }
 
 item::item(const item& right) :
-    object(right.context, right._model, initial_params{.count = right._count})
+    object(right.context, right._model, initial_params{.count = right._count}),
+    listener(right.listener)
 { }
 
 item::~item()
@@ -152,9 +154,7 @@ bool item::active()
     if (model.on_active.empty())
         return false;
 
-    auto listener = this->get_listener<fb::game::item>();
-    if (listener != nullptr)
-        listener->on_item_active(this->_container->owner, *this);
+    this->listener.on_item_active(this->_container->owner, *this);
     return true;
 }
 
@@ -189,13 +189,8 @@ void item::merge(item& item)
     auto  remain = this->fill(item.count());
     item.count(remain);
 
-    auto listener = this->_container->owner.get_listener<character>();
-
-    if (listener != nullptr)
-    {
-        if (before != this->_count)
-            listener->on_item_update(static_cast<character&>(owner), owner.items.index(*this));
-    }
+    if (before != this->_count)
+        this->listener.on_item_update(static_cast<character&>(owner), owner.items.index(*this));
 
     if (remain > 0 && this->_count == model.capacity)
         owner.message(_TEXT(MESSAGE_ITEM_CANNOT_PICKUP_ANYMORE));

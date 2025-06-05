@@ -22,10 +22,8 @@ public:
     static constexpr uint32_t HALF_SCREEN_HEIGHT = uint32_t(MAX_SCREEN_HEIGHT / 2);
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
     struct tile;
+    struct builtin;
 
 public:
     using unique_tiles  = std::unique_ptr<tile[]>;
@@ -241,8 +239,10 @@ public:
      * @return     The result of the function call
      */
     tile* operator() (uint16_t x, uint16_t y) const;
+};
 
-public:
+struct map::builtin
+{
     /**
      * @brief      { function_description }
      *

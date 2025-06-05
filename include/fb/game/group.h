@@ -14,6 +14,9 @@ class group : public fb::thread_switchable
 public:
     LUA_PROTOTYPE
 
+public:
+    struct builtin;
+
 private:
     context&                 _context;
     uint32_t                 _id;
@@ -125,8 +128,10 @@ public:
      * @return     { description_of_the_return_value }
      */
     fb::thread* thread() const override;
+};
 
-public:
+struct group::builtin
+{
     /**
      * @brief      { function_description }
      *

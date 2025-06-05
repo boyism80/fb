@@ -4,14 +4,14 @@
 using namespace fb::game;
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::group, "fb.game.group")
-{"master",              fb::game::group::builtin_master},
-{"members",             fb::game::group::builtin_members},
-{"nears",               fb::game::group::builtin_nears},
-{"message",             fb::game::group::builtin_message},
+IMPLEMENT_LUA_EXTENSION(group, "fb.game.group")
+{"master",              group::builtin::builtin_master},
+{"members",             group::builtin::builtin_members},
+{"nears",               group::builtin::builtin_nears},
+{"message",             group::builtin::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
-int group::builtin_master(lua_State* L)
+int group::builtin::builtin_master(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -26,7 +26,7 @@ int group::builtin_master(lua_State* L)
     return 1;
 }
 
-int group::builtin_members(lua_State* L)
+int group::builtin::builtin_members(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -47,7 +47,7 @@ int group::builtin_members(lua_State* L)
     return 1;
 }
 
-int group::builtin_nears(lua_State* L)
+int group::builtin::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -84,7 +84,7 @@ int group::builtin_nears(lua_State* L)
     return 1;
 }
 
-int group::builtin_message(lua_State* L)
+int group::builtin::builtin_message(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

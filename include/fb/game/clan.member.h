@@ -17,14 +17,19 @@ public:
     LUA_PROTOTYPE
 
 public:
+    struct builtin;
+
+public:
     std::string   name;
     CLAN_POSITION position;
 
 public:
     clan_member(const std::string& name, CLAN_POSITION position);
     ~clan_member() = default;
+};
 
-public:
+struct clan_member::builtin
+{
     /**
      * @brief      { function_description }
      *

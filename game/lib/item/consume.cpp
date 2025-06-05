@@ -27,9 +27,7 @@ bool fb::game::consume::active()
 
     owner.action(ACTION::EAT, DURATION::EAT);
     owner.sound(SOUND::EAT);
-    auto listener = owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-        listener->on_item_update(owner, owner.items.index(*this));
+    owner.listener.on_item_update(owner, owner.items.index(*this));
 
     if (this->empty())
         std::ignore = owner.items.remove(*this, -1, ITEM_DELETE_TYPE::EAT);

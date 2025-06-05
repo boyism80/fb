@@ -1,14 +1,16 @@
 #include <fb/game/spell.h>
 #include <fb/game/context.h>
 
+using namespace fb::game;
+
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::spell, "fb.game.spell")
-{"model",              fb::game::spell::builtin_model},
-{"delay",              fb::game::spell::builtin_delay},
-{"delay2",             fb::game::spell::builtin_delay2},
+IMPLEMENT_LUA_EXTENSION(spell, "fb.game.spell")
+{"model",              spell::builtin::builtin_model},
+{"delay",              spell::builtin::builtin_delay},
+{"delay2",             spell::builtin::builtin_delay2},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::spell::builtin_model(lua_State* L)
+int spell::builtin::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -24,7 +26,7 @@ int fb::game::spell::builtin_model(lua_State* L)
     return 1;
 }
 
-int fb::game::spell::builtin_delay(lua_State* L)
+int spell::builtin::builtin_delay(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -48,7 +50,7 @@ int fb::game::spell::builtin_delay(lua_State* L)
     }
 }
 
-int fb::game::spell::builtin_delay2(lua_State* L)
+int spell::builtin::builtin_delay2(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

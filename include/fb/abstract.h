@@ -96,7 +96,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    int builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<void()>& fn);
+    int builtin_with_thread(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<void()>& fn);
 
     /**
      * @brief      { function_description }
@@ -108,8 +108,10 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    int
-    builtin_async(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<async::task<void>()>& fn);
+    int builtin_with_thread_async(thread_switchable&                        obj,
+                                  fb::lua::context*                         lua,
+                                  int                                       n,
+                                  const std::function<async::task<void>()>& fn);
 
 public:
     operator boost::asio::io_context& () const;

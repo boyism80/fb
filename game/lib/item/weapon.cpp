@@ -61,13 +61,11 @@ void fb::game::weapon::custom_name(const std::string& name)
         return;
 
     this->_custom_name = name;
-    auto listener      = this->_container->owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-    {
-        auto index = this->_container->index(*this);
-        if (index != 0xFF)
-            listener->on_item_update(this->_container->owner, index);
-    }
+
+    auto& owner = this->_container->owner;
+    auto  index = this->_container->index(*this);
+    if (index != 0xFF)
+        owner.listener.on_item_update(owner, index);
 }
 
 void fb::game::weapon::reset_custom_name()
@@ -76,13 +74,11 @@ void fb::game::weapon::reset_custom_name()
         return;
 
     this->_custom_name.reset();
-    auto listener = this->_container->owner.get_listener<fb::game::character>();
-    if (listener != nullptr)
-    {
-        auto index = this->_container->index(*this);
-        if (index != 0xFF)
-            listener->on_item_update(this->_container->owner, index);
-    }
+
+    auto& owner = this->_container->owner;
+    auto  index = this->_container->index(*this);
+    if (index != 0xFF)
+        owner.listener.on_item_update(owner, index);
 }
 
 fb::protocol::internal::Item fb::game::weapon::to_protocol(EQUIPMENT_PARTS parts) const

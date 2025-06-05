@@ -6,33 +6,33 @@ using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
-{"model",               object::builtin_model},
-{"__eq",                object::builtin_eq},
-{"__tostring",          object::builtin_tostring},
-{"id",                  object::builtin_id},
-{"name",                object::builtin_name},
-{"sound",               object::builtin_sound},
-{"position",            object::builtin_position},
-{"front_position",      object::builtin_front_position},
-{"direction",           object::builtin_direction},
-{"chat",                object::builtin_chat},
-{"buff",                object::builtin_buff},
-{"isbuff",              object::builtin_isbuff},
-{"unbuff",              object::builtin_unbuff},
-{"buffs",               object::builtin_buffs},
-{"effect",              object::builtin_effect},
-{"map",                 object::builtin_map},
-{"mkitem",              object::builtin_mkitem},
-{"sight_in",            object::builtin_sight_in},
-{"nears",               object::builtin_nears},
-{"front",               object::builtin_front},
-{"is",                  object::builtin_is},
-{"thread",              object::builtin_thread},
-{"ptr",                 object::builtin_ptr},
-{"near",                object::builtin_near},
+{"model",               object::builtin::builtin_model},
+{"__eq",                object::builtin::builtin_eq},
+{"__tostring",          object::builtin::builtin_tostring},
+{"id",                  object::builtin::builtin_id},
+{"name",                object::builtin::builtin_name},
+{"sound",               object::builtin::builtin_sound},
+{"position",            object::builtin::builtin_position},
+{"front_position",      object::builtin::builtin_front_position},
+{"direction",           object::builtin::builtin_direction},
+{"chat",                object::builtin::builtin_chat},
+{"buff",                object::builtin::builtin_buff},
+{"isbuff",              object::builtin::builtin_isbuff},
+{"unbuff",              object::builtin::builtin_unbuff},
+{"buffs",               object::builtin::builtin_buffs},
+{"effect",              object::builtin::builtin_effect},
+{"map",                 object::builtin::builtin_map},
+{"mkitem",              object::builtin::builtin_mkitem},
+{"sight_in",            object::builtin::builtin_sight_in},
+{"nears",               object::builtin::builtin_nears},
+{"front",               object::builtin::builtin_front},
+{"is",                  object::builtin::builtin_is},
+{"thread",              object::builtin::builtin_thread},
+{"ptr",                 object::builtin::builtin_ptr},
+{"near",                object::builtin::builtin_near},
 END_LUA_EXTENSION; // clang-format on
 
-int object::builtin_model(lua_State* L)
+int object::builtin::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -50,7 +50,7 @@ int object::builtin_model(lua_State* L)
     return 1;
 }
 
-int object::builtin_id(lua_State* L)
+int object::builtin::builtin_id(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -67,7 +67,7 @@ int object::builtin_id(lua_State* L)
     return 1;
 }
 
-int object::builtin_eq(lua_State* L)
+int object::builtin::builtin_eq(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -89,7 +89,7 @@ int object::builtin_eq(lua_State* L)
     return 1;
 }
 
-int object::builtin_tostring(lua_State* L)
+int object::builtin::builtin_tostring(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -105,7 +105,7 @@ int object::builtin_tostring(lua_State* L)
     return 1;
 }
 
-int object::builtin_name(lua_State* L)
+int object::builtin::builtin_name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -122,7 +122,7 @@ int object::builtin_name(lua_State* L)
     return 1;
 }
 
-int object::builtin_sound(lua_State* L)
+int object::builtin::builtin_sound(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -134,12 +134,12 @@ int object::builtin_sound(lua_State* L)
         return 0;
 
     auto sound = static_cast<SOUND>(lua->tointeger(2));
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->sound(sound);
     });
 }
 
-int object::builtin_position(lua_State* L)
+int object::builtin::builtin_position(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -152,7 +152,7 @@ int object::builtin_position(lua_State* L)
         return 0;
 
     auto n = (argc == 1 ? 2 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
         {
             lua->pushinteger(obj->_position.x);
@@ -182,7 +182,7 @@ int object::builtin_position(lua_State* L)
     });
 }
 
-int object::builtin_front_position(lua_State* L)
+int object::builtin::builtin_front_position(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -197,14 +197,14 @@ int object::builtin_front_position(lua_State* L)
     auto step = lua->tointeger(2, 1);
     obj->assert_thread();
 
-    return ctx->builtin(*obj, lua, 2, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 2, [=]() {
         auto position = obj->front_position(step);
         lua->pushinteger(position.x);
         lua->pushinteger(position.y);
     });
 }
 
-int object::builtin_direction(lua_State* L)
+int object::builtin::builtin_direction(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -218,7 +218,7 @@ int object::builtin_direction(lua_State* L)
 
     auto direction = static_cast<DIRECTION>(lua->tointeger(2));
     auto n         = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->_direction);
         else
@@ -226,7 +226,7 @@ int object::builtin_direction(lua_State* L)
     });
 }
 
-int object::builtin_chat(lua_State* L)
+int object::builtin::builtin_chat(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -242,13 +242,13 @@ int object::builtin_chat(lua_State* L)
     auto type     = lua->toenum(3, CHAT_TYPE::NORMAL);
     auto decorate = lua->toboolean(4, true);
 
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
     });
 }
 
-int object::builtin_buff(lua_State* L)
+int object::builtin::builtin_buff(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -294,7 +294,7 @@ int object::builtin_buff(lua_State* L)
     return 1;
 }
 
-int object::builtin_unbuff(lua_State* L)
+int object::builtin::builtin_unbuff(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -340,7 +340,7 @@ int object::builtin_unbuff(lua_State* L)
     return 1;
 }
 
-int object::builtin_isbuff(lua_State* L)
+int object::builtin::builtin_isbuff(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -401,7 +401,7 @@ int object::builtin_isbuff(lua_State* L)
     return 1;
 }
 
-int object::builtin_effect(lua_State* L)
+int object::builtin::builtin_effect(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -413,12 +413,12 @@ int object::builtin_effect(lua_State* L)
         return 0;
 
     auto effect = static_cast<uint8_t>(lua->tointeger(2));
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->effect(effect);
     });
 }
 
-int object::builtin_map(lua_State* L)
+int object::builtin::builtin_map(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -509,7 +509,7 @@ int object::builtin_map(lua_State* L)
 
     if (argc == 1)
     {
-        return ctx->builtin(*obj, lua, 1, [=]() {
+        return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
             auto map = obj->map();
             if (map == nullptr)
                 lua->pushnil();
@@ -533,20 +533,20 @@ int object::builtin_map(lua_State* L)
         {
             auto task = static_func(obj, map, position, lua);
 
-            return ctx->builtin(*obj, lua, 1, [=]() {
+            return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
                 async::awaitable_get(static_func(obj, map, position, lua));
             });
         }
         else
         {
-            return ctx->builtin_async(*obj, lua, 1, [=]() -> async::task<void> {
+            return ctx->builtin_with_thread_async(*obj, lua, 1, [=]() -> async::task<void> {
                 co_await static_func(obj, map, position, lua);
             });
         }
     }
 }
 
-int object::builtin_mkitem(lua_State* L)
+int object::builtin::builtin_mkitem(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -577,7 +577,7 @@ int object::builtin_mkitem(lua_State* L)
     return 1;
 }
 
-int object::builtin_sight_in(lua_State* L)
+int object::builtin::builtin_sight_in(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -605,7 +605,7 @@ int object::builtin_sight_in(lua_State* L)
     return 1;
 }
 
-int object::builtin_nears(lua_State* L)
+int object::builtin::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -713,7 +713,7 @@ int object::builtin_nears(lua_State* L)
     return 1;
 }
 
-int object::builtin_front(lua_State* L)
+int object::builtin::builtin_front(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -737,7 +737,7 @@ int object::builtin_front(lua_State* L)
     return 1;
 }
 
-int object::builtin_is(lua_State* L)
+int object::builtin::builtin_is(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -749,13 +749,13 @@ int object::builtin_is(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         auto type = lua->tointeger(2);
         lua->pushboolean(obj->is(OBJECT_TYPE(type)));
     });
 }
 
-int object::builtin_thread(lua_State* L)
+int object::builtin::builtin_thread(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -778,7 +778,7 @@ int object::builtin_thread(lua_State* L)
     return 1;
 }
 
-int object::builtin_ptr(lua_State* L)
+int object::builtin::builtin_ptr(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -795,7 +795,7 @@ int object::builtin_ptr(lua_State* L)
     return 1;
 }
 
-int object::builtin_near(lua_State* L)
+int object::builtin::builtin_near(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -829,7 +829,7 @@ int object::builtin_near(lua_State* L)
     return 1;
 }
 
-int object::builtin_buffs(lua_State* L)
+int object::builtin::builtin_buffs(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
