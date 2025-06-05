@@ -73,6 +73,9 @@ protected:
     nullable_time           _dropped_time = std::nullopt;
 
 public:
+    item::listener& listener;
+
+public:
     /**
      * @brief      Constructs a new instance.
      *

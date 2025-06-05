@@ -6,6 +6,7 @@ using namespace fb::game;
 
 character::character(fb::game::context& context, fb::socket<character>& socket) :
     life(context, context.model.life[0], initial_params{{.id = (uint32_t)socket.fd()}}),
+    listener(static_cast<fb::game::character::listener&>(context.listener)),
     _socket(socket)
 { }
 
@@ -52,11 +53,7 @@ async::task<bool> character::map(fb::game::map* map, const fb::model::point16_t&
     auto switch_process = (map != nullptr && map->active == false);
     if (switch_process)
     {
-        auto listener = this->get_listener<character>();
-        if (listener != nullptr)
-            co_return co_await listener->on_transfer(*this, *map, position);
-        else
-            co_return false;
+        co_return co_await this->listener.on_transfer(*this, *map, position);
     }
     else
     {
@@ -190,15 +187,12 @@ void character::admin(bool value)
 void character::attack(DURATION duration)
 {
     this->assert_thread();
-
-    auto listener = this->get_listener<character>();
-    auto error    = std::string();
     try
     {
         this->assert_state({STATE::RIDING, STATE::GHOST});
         life::attack(duration);
     }
-    catch (std::exception& e)
+    catch (const std::exception& e)
     {
         this->message(e.what());
     }
@@ -415,10 +409,7 @@ bool character::level_up()
     this->level(this->_level + 1);
     this->message(_TEXT(MESSAGE_LEVEL_UP));
 
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_level_up(*this);
-
+    this->listener.on_level_up(*this);
     return true;
 }
 
@@ -517,7 +508,6 @@ uint32_t character::add_exp(uint32_t value, bool limit, bool notify)
 
     auto capacity = 0xFFFFFFFF - this->_experience;
     auto lack     = 0;
-    auto error    = std::string();
 
     try
     {
@@ -744,10 +734,7 @@ void character::option(OPTION key, bool value, bool notify)
     this->update(STATE_LEVEL::LEVEL_MIN);
     this->_options[opt] = value;
 
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr && notify)
-        listener->on_option_changed(*this, key, value);
-
+    this->listener.on_option_changed(*this, key, value);
     this->update_option();
 }
 
@@ -765,16 +752,12 @@ bool character::option_toggle(OPTION key, bool notify)
 
 void character::update_option()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_option(*this);
+    this->listener.on_update_option(*this);
 }
 
 void character::update_map(const fb::game::map& map)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_map(*this, map);
+    this->listener.on_update_map(*this, map);
 }
 
 void character::update_map()
@@ -785,51 +768,37 @@ void character::update_map()
 
 void character::update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_map(*this, map, begin, size);
+    this->listener.on_update_map(*this, map, begin, size);
 }
 
 void character::update_bgm(uint16_t bgm, uint8_t volume)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_bgm(*this, bgm, volume);
+    this->listener.on_update_bgm(*this, bgm, volume);
 }
 
 void character::update_buff()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_buff(*this, this->buffs);
+    this->listener.on_update_buff(*this, this->buffs);
 }
 
 void character::update_internal()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_internal(*this);
+    this->listener.on_update_internal(*this);
 }
 
 void character::update_time(uint16_t hours)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_time(*this, hours);
+    this->listener.on_update_time(*this, hours);
 }
 
 void character::init()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_character_init(*this);
+    this->listener.on_character_init(*this);
 }
 
 void character::update_position()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_position(*this);
+    this->listener.on_update_position(*this);
 }
 
 const std::string& character::title() const
@@ -920,8 +889,6 @@ bool character::move(const fb::model::point16_t& before)
 bool character::move(DIRECTION direction, const fb::model::point16_t& before)
 {
     this->assert_thread();
-
-    auto listener = this->get_listener<character>();
 
     if (this->_position != before)
     {
@@ -1099,10 +1066,7 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
 void character::message(const std::string& message, MESSAGE_TYPE type)
 {
     this->assert_thread();
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_message(*this, message, type);
+    this->listener.on_message(*this, message, type);
 }
 
 fb::thread* character::thread() const
@@ -1126,10 +1090,7 @@ void character::assert_thread() const
 void character::update(STATE_LEVEL value)
 {
     this->assert_thread();
-
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update(*this, value);
+    this->listener.on_update(*this, value);
 }
 
 fb::protocol::internal::Character character::to_protocol() const
@@ -1234,94 +1195,68 @@ void character::unread_mail(uint16_t value)
 
 void character::browse_ch(const character& ch)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_browse_character(*this, ch);
+    this->listener.on_browse_character(*this, ch);
 }
 
 void character::item_tooltip(const item& item, uint16_t position)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_item_tooltip(*this, item, position);
+    this->listener.on_item_tooltip(*this, item, position);
 }
 
 void character::show_user_list()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_user_list(*this);
+    this->listener.on_show_user_list(*this);
 }
 
 void character::show_board()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_board(*this);
+    this->listener.on_show_board(*this);
 }
 
 void character::show_board(const fb::model::board&                    section,
                            const std::list<fb::game::board::article>& articles,
                            BOARD_BUTTON_ENABLE                        flag)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_board(*this, section, articles, flag);
+    this->listener.on_show_board(*this, section, articles, flag);
 }
 
 void character::show_board(const fb::game::board::article& article, BOARD_BUTTON_ENABLE flag)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_board(*this, article, flag);
+    this->listener.on_show_board(*this, article, flag);
 }
 
 void character::show_mail_box(const std::vector<MailSummary>& mails, MAIL_BUTTON_ENABLE flag)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_mail_box(*this, mails, flag);
+    this->listener.on_show_mail_box(*this, mails, flag);
 }
 
 void character::show_mail_box(const Mail& mail, MAIL_BUTTON_ENABLE flag)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_mail_box(*this, mail, flag);
+    this->listener.on_show_mail_box(*this, mail, flag);
 }
 
 void character::show_board_message(const std::string& message, bool success, bool mail)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_board_message(*this, message, success, mail);
+    this->listener.on_show_board_message(*this, message, success, mail);
 }
 
 void character::show_world_map(uint32_t id, uint16_t index)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_show_world_map(*this, id, index);
+    this->listener.on_show_world_map(*this, id, index);
 }
 
 void character::timer(uint32_t time, TIMER_TYPE type)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_timer(*this, time, type);
+    this->listener.on_timer(*this, time, type);
 }
 void character::weather(WEATHER_TYPE weather)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_weather(*this, weather);
+    this->listener.on_weather(*this, weather);
 }
 
 void character::update_id()
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_update_id(*this);
+    this->listener.on_update_id(*this);
 }
 
 void character::weapon_damage(uint16_t value)
@@ -1396,9 +1331,7 @@ bool character::detach_spawned_mob(fb::game::mob& mob)
 
 void character::bright(uint8_t value)
 {
-    auto listener = this->get_listener<character>();
-    if (listener != nullptr)
-        listener->on_bright(*this, value);
+    this->listener.on_bright(*this, value);
 }
 
 bool character::container::contains(const character& ch) const

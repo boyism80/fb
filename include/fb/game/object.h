@@ -54,15 +54,7 @@ class sectors;
 class object : public fb::thread_switchable
 {
 public:
-    /**
-     * @brief      { struct_description }
-     */
     struct listener;
-
-public:
-    /**
-     * @brief      { struct_description }
-     */
     struct initial_params;
 
 public:
@@ -72,9 +64,8 @@ public:
     friend fb::game::items;
 
 private:
-    fb::game::object::listener* _listener;
-    bool                        _visible = true;
-    fb::game::sector*           _sector  = nullptr;
+    bool              _visible = true;
+    fb::game::sector* _sector  = nullptr;
 
 protected:
     uint32_t                 _sequence = 0;
@@ -84,6 +75,7 @@ protected:
     fb::game::map*           _map       = nullptr;
 
 public:
+    object::listener&  listener;
     fb::game::context& context;
     fb::game::buffs    buffs;
 
@@ -126,20 +118,6 @@ private:
      * @return     { description_of_the_return_value }
      */
     static bool sight(const fb::model::point16_t me, const fb::model::point16_t you, const fb::game::map* map);
-
-public:
-    /**
-     * @brief      Gets the listener.
-     *
-     * @tparam     T     { description }
-     *
-     * @return     The listener.
-     */
-    template <typename T>
-    typename T::listener* get_listener() const
-    {
-        return dynamic_cast<typename T::listener*>(this->_listener);
-    }
 
 public:
     /**

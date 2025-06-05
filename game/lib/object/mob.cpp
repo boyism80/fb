@@ -85,6 +85,7 @@ void rezen::spawn(std::thread::id thread_id)
 
 mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params) :
     life(context, model, params),
+    listener(context.listener),
     _rezen(params.rezen),
     owner(params.owner)
 {
@@ -98,6 +99,7 @@ mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_
 
 mob::mob(const mob& right) :
     life(right),
+    listener(right.listener),
     _action_time(right._action_time),
     _target(right._target)
 { }

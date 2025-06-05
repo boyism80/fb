@@ -99,6 +99,7 @@ private:
     std::vector<item*>  _items;
 
 public:
+    mob::listener&       listener;
     fb::game::character* owner = nullptr;
 
 public:

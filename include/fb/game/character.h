@@ -103,6 +103,7 @@ private:
     };
 
 public:
+    character::listener&                       listener;
     fb::game::trade                            trade  = fb::game::trade(*this);
     fb::game::items                            items  = fb::game::items(*this);
     fb::lua::context*                          dialog = nullptr;
@@ -2027,10 +2028,10 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct character::listener : public virtual life::listener,
+struct character::listener : public virtual fb::game::life::listener,
                              public virtual dialog::listener,
-                             public virtual trade::listener,
-                             public virtual equipment::listener
+                             public virtual fb::game::trade::listener,
+                             public virtual fb::game::equipment::listener
 {
 public:
     /**

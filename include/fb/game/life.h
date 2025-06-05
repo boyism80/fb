@@ -33,6 +33,7 @@ protected:
     bool          _cover         = false;
 
 public:
+    life::listener&  listener;
     fb::game::spells spells;
 
 protected:

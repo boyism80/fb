@@ -8,7 +8,7 @@ using namespace fb::game;
 object::object(fb::game::context& context, const fb::model::object& model, const initial_params& params) :
     fb::thread_switchable(params.id),
     context(context),
-    _listener(&context.listener),
+    listener(context.listener),
     _sequence(params.id),
     _model(model),
     _position(params.position),
@@ -17,10 +17,7 @@ object::object(fb::game::context& context, const fb::model::object& model, const
     buffs(*this)
 {
     this->context.push_alive(*this);
-    if (this->_listener != nullptr)
-    {
-        this->_listener->on_create(*this);
-    }
+    this->listener.on_create(*this);
 }
 
 object::object(const object& right) :
@@ -35,10 +32,7 @@ object::object(const object& right) :
 object::~object()
 {
     this->context.pop_alive(*this);
-    if (this->_listener != nullptr)
-    {
-        this->_listener->on_destroy(*this);
-    }
+    this->listener.on_destroy(*this);
 }
 
 const fb::model::object& object::based() const
@@ -75,17 +69,13 @@ OBJECT_TYPE object::what() const
 void object::update_external(bool light)
 {
     this->assert_thread();
-
-    if (this->_listener != nullptr)
-        this->_listener->on_update_external(*this, light);
+    this->listener.on_update_external(*this, light);
 }
 
 void object::update_external(object& to, bool light)
 {
     this->assert_thread();
-
-    if (this->_listener != nullptr)
-        this->_listener->on_update_external(*this, to, light);
+    this->listener.on_update_external(*this, to, light);
 }
 
 async::task<void> object::destroy(DESTROY_TYPE destroy_type)
@@ -128,29 +118,25 @@ void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate
 {
     this->assert_thread();
 
-    if (this->_listener != nullptr)
+    if (decorate)
     {
-
-        if (decorate)
+        auto decorated = std::string{message};
+        switch (chat_type)
         {
-            auto decorated = std::string{message};
-            switch (chat_type)
-            {
-            case CHAT_TYPE::NORMAL:
-                decorated = std::format("{}: {}", this->name(), message);
-                break;
+        case CHAT_TYPE::NORMAL:
+            decorated = std::format("{}: {}", this->name(), message);
+            break;
 
-            case CHAT_TYPE::SHOUT:
-                decorated = std::format("{}! {}", this->name(), message);
-                break;
-            }
+        case CHAT_TYPE::SHOUT:
+            decorated = std::format("{}! {}", this->name(), message);
+            break;
+        }
 
-            this->_listener->on_chat(*this, decorated, chat_type);
-        }
-        else
-        {
-            this->_listener->on_chat(*this, message, chat_type);
-        }
+        this->listener.on_chat(*this, decorated, chat_type);
+    }
+    else
+    {
+        this->listener.on_chat(*this, message, chat_type);
     }
 }
 
@@ -267,8 +253,7 @@ bool object::move(DIRECTION direction)
 
     auto before = this->_position;
     this->position(after);
-    if (this->_listener != nullptr)
-        this->_listener->on_move(*this, before);
+    this->listener.on_move(*this, before);
 
     return true;
 }
@@ -319,8 +304,7 @@ bool object::direction(DIRECTION value)
         return true;
 
     this->_direction = value;
-    if (this->_listener != nullptr)
-        this->_listener->on_direction(*this);
+    this->listener.on_direction(*this);
 
     return true;
 }
@@ -478,13 +462,10 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             }
 
             // broadcast near characters
-            if (this->_listener != nullptr)
+            for (auto x : this->_map->nears(this->_position))
             {
-                for (auto x : this->_map->nears(this->_position))
-                {
-                    if (x != this)
-                        x->hide(*this, destroy_type);
-                }
+                if (x != this)
+                    x->hide(*this, destroy_type);
             }
 
             // erase cache of map
@@ -763,14 +744,12 @@ bool object::available() const
 
 void object::hide(DESTROY_TYPE destroy_type)
 {
-    if (this->_listener != nullptr)
-        this->_listener->on_hide(*this, destroy_type);
+    this->listener.on_hide(*this, destroy_type);
 }
 
 void object::hide(object& to, DESTROY_TYPE destroy_type)
 {
-    if (this->_listener != nullptr)
-        this->_listener->on_hide(*this, to, destroy_type);
+    this->listener.on_hide(*this, to, destroy_type);
 }
 
 fb::thread* object::thread() const
@@ -795,16 +774,12 @@ void object::update_position()
 
 void object::sound(SOUND sound)
 {
-    auto listener = this->get_listener<object>();
-    if (listener != nullptr)
-        listener->on_sound(*this, sound);
+    this->listener.on_sound(*this, sound);
 }
 
 void object::effect(uint8_t value)
 {
-    auto listener = this->get_listener<object>();
-    if (listener != nullptr)
-        listener->on_effect(*this, value);
+    this->listener.on_effect(*this, value);
 }
 
 bool object::operator== (const object& right) const
