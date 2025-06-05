@@ -26,7 +26,7 @@ echo "Using External IP: $EXTERNAL_IP"
 # Build Docker images with error handling
 echo "Building Docker images..."
 
-if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/build:latest -f Dockerfile .; then
+if ! sudo docker buildx build --progress=plain --push --tag ghcr.io/boyism80/fb/build:latest -f lib/Dockerfile .; then
   error_exit "Docker build failed for fb/build:latest"
 fi
 
