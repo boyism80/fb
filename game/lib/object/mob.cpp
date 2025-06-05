@@ -138,8 +138,10 @@ void mob::action()
     else
         this->_attack_thread->pushnil();
 
-    async::awaitable_then(this->_attack_thread->call(2), [this](auto result) {
-        this->_attack_thread = nullptr;
+    auto& ctx = this->context;
+    async::awaitable_then(this->_attack_thread->call(2), [this, &ctx](auto result) {
+        if (ctx.alive(*this))
+            this->_attack_thread = nullptr;
     });
 }
 

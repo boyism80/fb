@@ -2,11 +2,14 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Runner.Command;
+using System.Buffers;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Windows;
@@ -403,7 +406,7 @@ namespace Runner.ViewModel
         public ICommand NewLogin { get; private set; }
         public ICommand NewGame { get; private set; }
         public ICommand FindWorkingDirectory { get; private set; }
-        public ICommand BuildCommand { get; private set; }
+        public ICommand PatchCommand { get; private set; }
         public ICommand RunCommand { get; private set; }
         public ICommand DeleteMySQL { get; private set; }
         public ICommand DeleteRedis { get; private set; }
@@ -461,7 +464,7 @@ namespace Runner.ViewModel
             NewLogin = new RelayCommand(OnNewLogin);
             NewGame = new RelayCommand(OnNewGame);
             FindWorkingDirectory = new RelayCommand(OnFindWorkingDirectory);
-            BuildCommand = new RelayCommand(OnBuild);
+            PatchCommand = new RelayCommand(OnPatch);
             RunCommand = new RelayCommand(OnRun);
             DeleteMySQL = new RelayCommand(OnDeleteMySQL);
             DeleteRedis = new RelayCommand(OnDeleteRedis);
@@ -1041,59 +1044,252 @@ namespace Runner.ViewModel
             return sp;
         }
 
-        private void OnBuild(object obj)
+        private static async Task DownloadFileAsync(string url, string destinationPath, Action<long, long> progressCallback)
         {
-            if (BuildProcess != null)
+            using (var httpClient = new HttpClient())
+            using (var response = await httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false))
+            {
+                response.EnsureSuccessStatusCode();
+
+                var totalBytes = response.Content.Headers.ContentLength ?? -1L;
+                var bufferSize = 128 * 1024;
+                using (var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                using (var fileStream = new FileStream(
+                           destinationPath,
+                           FileMode.Create,
+                           FileAccess.Write,
+                           FileShare.None,
+                           bufferSize: bufferSize,
+                           useAsync: true))
+                {
+                    var pool = ArrayPool<byte>.Shared;
+                    var buffer = pool.Rent(bufferSize);
+
+                    long totalRead = 0;
+                    int bytesRead;
+                    long lastLoggedMb = 0;
+
+                    while ((bytesRead = await contentStream.ReadAsync(buffer, 0, bufferSize).ConfigureAwait(false)) > 0)
+                    {
+                        await fileStream.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+                        totalRead += bytesRead;
+
+                        var currentMb = totalRead / (1024 * 1024);
+                        if (currentMb > lastLoggedMb)
+                        {
+                            lastLoggedMb = currentMb;
+                            progressCallback(currentMb, totalBytes / (1024 * 1024));
+                        }
+                    }
+
+                    pool.Return(buffer);
+                }
+
+                progressCallback(-1, totalBytes / (1024 * 1024));
+            }
+        }
+
+        private static async Task ExtractZipAsync(string zipPath, string destDir, Action<int, int, string> progressCallback)
+        {
+            if (!Directory.Exists(destDir))
+                Directory.CreateDirectory(destDir);
+
+            List<string> entryNames;
+            using (var archive = ZipFile.OpenRead(zipPath))
+            {
+                entryNames = archive.Entries
+                    .Where(e => !string.IsNullOrEmpty(e.Name))
+                    .Select(e => e.FullName)
+                    .ToList();
+            }
+
+            int totalFiles = entryNames.Count;
+            int extractedCount = 0;
+
+            await Task.Run(() =>
+            {
+                Parallel.ForEach(
+                    entryNames,
+                    new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                    entryName =>
+                    {
+                        using (var fs = new FileStream(zipPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                        using (var localArchive = new ZipArchive(fs, ZipArchiveMode.Read, leaveOpen: false))
+                        {
+                            var entry = localArchive.GetEntry(entryName);
+                            var destinationPath = Path.Combine(destDir, entry.FullName);
+                            Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
+
+                            using (var entryStream = entry.Open())
+                            using (var fileStream = new FileStream(
+                                       destinationPath,
+                                       FileMode.Create,
+                                       FileAccess.Write,
+                                       FileShare.None,
+                                       bufferSize: 65536,
+                                       useAsync: false))
+                            {
+                                entryStream.CopyTo(fileStream);
+                            }
+                        }
+
+                        int count = Interlocked.Increment(ref extractedCount);
+                        progressCallback(count, totalFiles, entryName);
+                    });
+            });
+        }
+
+        private static void ParallelDirectoryCopy(string sourceDir, string destDir)
+        {
+            if (!Directory.Exists(sourceDir))
                 return;
 
+            foreach (var dirPath in Directory.EnumerateDirectories(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                var relativePath = Path.GetRelativePath(sourceDir, dirPath);
+                var targetPath = Path.Combine(destDir, relativePath);
+                Directory.CreateDirectory(targetPath);
+            }
+
+            var allFiles = Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories);
+            Parallel.ForEach(
+                allFiles,
+                new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
+                filePath =>
+                {
+                    var relativeFile = Path.GetRelativePath(sourceDir, filePath);
+                    var destFile = Path.Combine(destDir, relativeFile);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destFile));
+                    File.Copy(filePath, destFile, overwrite: true);
+                });
+        }
+
+        private void OnPatch(object obj)
+        {
             if (IsConverting)
                 return;
 
-            if (string.IsNullOrEmpty(WorkingDirectory) || Directory.Exists(WorkingDirectory) == false)
+            if (string.IsNullOrEmpty(WorkingDirectory) || !Directory.Exists(WorkingDirectory))
                 return;
 
-            KillProcesses();
-
-            BuildProcess = new Process
-            {
-                EnableRaisingEvents = true,
-                StartInfo = new ProcessStartInfo
-                {
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    WorkingDirectory = WorkingDirectory,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    //StandardOutputEncoding = Encoding.UTF8,
-                    //StandardErrorEncoding = Encoding.UTF8,
-                    FileName = "cmd.exe",
-                    Arguments = @"/C mkdir build & pushd build & cmake .. & cmake --build . --config Debug & mkdir dist & XCOPY /s /y gateway\Debug\gateway.exe dist\gateway.* & XCOPY /s /y login\Debug\login.exe dist\login.* & XCOPY /s /y game\Debug\game.exe dist\game.* & popd & dotnet publish internal/internal.csproj -c Release -o build/dist/internal & dotnet publish write-back/write-back.csproj -c Release -o build/dist/write-back & rmdir /s /q build\\dist\\json & ROBOCOPY /NP /NFL game\\json\\ build\\dist\\json\\ & ROBOCOPY /NP /NFL game\\maps\\ build\\dist\\maps\\ & ROBOCOPY /NP /NFL game\\scripts\\ build\\dist\\scripts\\"
-                }
-            };
-
+            IsConverting = true;
             BuildLog = string.Empty;
-            BuildProcess.OutputDataReceived += (sender, e) =>
-            {
-                if (e.Data == null)
-                    return;
 
-                BuildLog += (e.Data + Environment.NewLine);
-            };
-            BuildProcess.ErrorDataReceived += (sender, e) =>
-            {
-                if (e.Data == null)
-                    return;
+            var zipUrl = "http://cshyeon.com:8080/fb/dist.zip";
+            var buildDir = Path.Combine(WorkingDirectory, "build");
+            var distDir = Path.Combine(buildDir, "dist");
+            var zipPath = Path.Combine(buildDir, "dist.zip");
 
-                BuildLog += (e.Data + Environment.NewLine);
-            };
-            BuildProcess.Start();
-            BuildProcess.BeginOutputReadLine();
-            BuildProcess.BeginErrorReadLine();
-            BuildProcess.Exited += (sender, e) =>
+            Task.Run(async () =>
             {
-                LastBuildDate = DateTime.Now;
-                BuildProcess = null;
-            };
+                try
+                {
+                    if (!Directory.Exists(buildDir))
+                        Directory.CreateDirectory(buildDir);
+
+                    if (Directory.Exists(distDir))
+                    {
+                        Directory.Delete(distDir, recursive: true);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            BuildLog += $"Deleted existing directory: {distDir}{Environment.NewLine}";
+                        });
+                    }
+
+
+                    await DownloadFileAsync(zipUrl, zipPath, (currentMb, totalMb) =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            if (currentMb < 0)
+                                BuildLog += $"Download completed: {zipPath}{Environment.NewLine}";
+                            else
+                                BuildLog += totalMb > 0
+                                    ? $"Downloading: {currentMb} MB / {totalMb} MB{Environment.NewLine}"
+                                    : $"Downloading: {currentMb} MB{Environment.NewLine}";
+                        });
+                    });
+
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        BuildLog += $"Extracting ZIP to: {distDir}{Environment.NewLine}";
+                    });
+
+                    await ExtractZipAsync(zipPath, distDir, (count, total, entryName) =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            BuildLog += $"Extracted {count}/{total}: {entryName}{Environment.NewLine}";
+                        });
+                    });
+
+                    if (File.Exists(zipPath))
+                    {
+                        File.Delete(zipPath);
+                        await Application.Current.Dispatcher.InvokeAsync(() =>
+                        {
+                            BuildLog += $"Deleted ZIP file: {zipPath}{Environment.NewLine}";
+                        });
+                    }
+
+                    var subDirs = new[] { "json", "maps", "scripts" };
+                    foreach (var sub in subDirs)
+                    {
+                        var sourceDir = Path.Combine(WorkingDirectory, "game", sub);
+                        var targetDir = Path.Combine(distDir, sub);
+
+                        if (Directory.Exists(targetDir))
+                        {
+                            Directory.Delete(targetDir, recursive: true);
+                            await Application.Current.Dispatcher.InvokeAsync(() =>
+                            {
+                                BuildLog += $"Deleted: {targetDir}{Environment.NewLine}";
+                            });
+                        }
+
+                        if (Directory.Exists(sourceDir))
+                        {
+                            await Task.Run(() =>
+                            {
+                                ParallelDirectoryCopy(sourceDir, targetDir);
+                            }).ConfigureAwait(false);
+                            await Application.Current.Dispatcher.InvokeAsync(() =>
+                            {
+                                BuildLog += $"Copied (parallel): {sourceDir} → {targetDir}{Environment.NewLine}";
+                            });
+                        }
+                        else
+                        {
+                            await Application.Current.Dispatcher.InvokeAsync(() =>
+                            {
+                                BuildLog += $"WARNING: Source {sub.ToUpper()} not found: {sourceDir}{Environment.NewLine}";
+                            });
+                        }
+                    }
+
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        LastBuildDate = DateTime.Now;
+                        BuildLog += $"Patch + post-copy completed at {LastBuildDate}{Environment.NewLine}";
+                        MessageBox.Show("패치가 완료되었습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        BuildLog += $"Error during patch: {ex}{Environment.NewLine}";
+                        MessageBox.Show("에러가 발생했습니다.", "알림", MessageBoxButton.OK, MessageBoxImage.Information);
+                    });
+                }
+                finally
+                {
+                    await Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        IsConverting = false;
+                    });
+                }
+            });
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
