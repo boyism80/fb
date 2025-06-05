@@ -4,23 +4,23 @@
 using namespace fb::game;
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::map, "fb.game.map")
-{"model",               fb::game::map::builtin_model},
-{"width",               fb::game::map::builtin_width},
-{"height",              fb::game::map::builtin_height},
-{"area",                fb::game::map::builtin_area},
-{"objects",             fb::game::map::builtin_objects},
-{"nears",               fb::game::map::builtin_nears},
-{"movable",             fb::game::map::builtin_movable},
-{"door",                fb::game::map::builtin_door},
-{"doors",               fb::game::map::builtin_doors},
-{"contains",            fb::game::map::builtin_contains},
-{"belows",              fb::game::map::builtin_belows},
-{"tile",                fb::game::map::builtin_tile},
-{"at",                  fb::game::map::builtin_at},
+IMPLEMENT_LUA_EXTENSION(map, "fb.game.map")
+{"model",               map::builtin::builtin_model},
+{"width",               map::builtin::builtin_width},
+{"height",              map::builtin::builtin_height},
+{"area",                map::builtin::builtin_area},
+{"objects",             map::builtin::builtin_objects},
+{"nears",               map::builtin::builtin_nears},
+{"movable",             map::builtin::builtin_movable},
+{"door",                map::builtin::builtin_door},
+{"doors",               map::builtin::builtin_doors},
+{"contains",            map::builtin::builtin_contains},
+{"belows",              map::builtin::builtin_belows},
+{"tile",                map::builtin::builtin_tile},
+{"at",                  map::builtin::builtin_at},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::map::builtin_model(lua_State* L)
+int map::builtin::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -34,7 +34,7 @@ int fb::game::map::builtin_model(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_width(lua_State* L)
+int map::builtin::builtin_width(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -48,7 +48,7 @@ int fb::game::map::builtin_width(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_height(lua_State* L)
+int map::builtin::builtin_height(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -62,7 +62,7 @@ int fb::game::map::builtin_height(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_area(lua_State* L)
+int map::builtin::builtin_area(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -77,7 +77,7 @@ int fb::game::map::builtin_area(lua_State* L)
     return 2;
 }
 
-int fb::game::map::builtin_objects(lua_State* L)
+int map::builtin::builtin_objects(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -101,7 +101,7 @@ int fb::game::map::builtin_objects(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_nears(lua_State* L)
+int map::builtin::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -136,7 +136,7 @@ int fb::game::map::builtin_nears(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_movable(lua_State* L)
+int map::builtin::builtin_movable(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -180,12 +180,12 @@ int fb::game::map::builtin_movable(lua_State* L)
         return 1;
     }
 
-    return ctx->builtin(*map, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*map, lua, 1, [=]() {
         lua->pushboolean(map->movable(position));
     });
 }
 
-int fb::game::map::builtin_door(lua_State* L)
+int map::builtin::builtin_door(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -209,7 +209,7 @@ int fb::game::map::builtin_door(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_doors(lua_State* L)
+int map::builtin::builtin_doors(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -231,7 +231,7 @@ int fb::game::map::builtin_doors(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_contains(lua_State* L)
+int map::builtin::builtin_contains(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -258,7 +258,7 @@ int fb::game::map::builtin_contains(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_belows(lua_State* L)
+int map::builtin::builtin_belows(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -286,7 +286,7 @@ int fb::game::map::builtin_belows(lua_State* L)
     return 1;
 }
 
-int fb::game::map::builtin_tile(lua_State* L)
+int map::builtin::builtin_tile(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -325,7 +325,7 @@ int fb::game::map::builtin_tile(lua_State* L)
     }
 }
 
-int fb::game::map::builtin_at(lua_State* L)
+int map::builtin::builtin_at(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -342,7 +342,7 @@ int fb::game::map::builtin_at(lua_State* L)
     auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
     auto position = fb::model::point16_t{x, y};
 
-    return ctx->builtin(*map, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*map, lua, 1, [=]() {
         auto nears = map->nears(fb::model::point16_t{x, y}, type);
         for (auto obj : nears)
         {

@@ -14,6 +14,9 @@ class clan : public lua::luable
 public:
     LUA_PROTOTYPE
 
+public:
+    struct builtin;
+
 private:
     context&                                           _context;
     uint32_t                                           _id;
@@ -136,8 +139,10 @@ public:
      * @return     { description_of_the_return_value }
      */
     std::vector<character*> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
+};
 
-public:
+struct clan::builtin
+{
     /**
      * @brief      { function_description }
      *

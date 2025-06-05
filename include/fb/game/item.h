@@ -37,13 +37,8 @@ public:
     friend class items;
 
 public:
-    /**
-     * @brief      { struct_description }
-     */
+    struct builtin;
     struct listener_t;
-    /**
-     * @brief      { struct_description }
-     */
     struct conditions;
 
 public:
@@ -254,8 +249,10 @@ public:
      * @return     Protocol representation of the object.
      */
     virtual fb::protocol::internal::Item to_protocol(EQUIPMENT_PARTS parts = EQUIPMENT_PARTS::UNKNOWN) const;
+};
 
-public:
+struct item::builtin
+{
     /**
      * @brief      { function_description }
      *
@@ -293,7 +290,7 @@ public:
 /**
  * @brief      { struct_description }
  */
-struct item::listener_t : public virtual fb::game::object::listener_t
+struct item::listener_t : public virtual object::listener_t
 {
     /**
      * @brief      Called on item remove.

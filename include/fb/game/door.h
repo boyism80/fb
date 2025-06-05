@@ -24,10 +24,8 @@ public:
     LUA_PROTOTYPE
 
 public:
-    /**
-     * @brief      This class describes a model.
-     */
     class model;
+    struct builtin;
 
 private:
     bool _opened = false;
@@ -83,8 +81,13 @@ public:
      * @param[in]  value  The value
      */
     void lock(bool value);
+};
 
-public:
+/**
+ * @brief      { struct_description }
+ */
+struct door::builtin
+{
     /**
      * @brief      { function_description }
      *

@@ -75,7 +75,7 @@ async::task<void> context::switch_thread(const fb::thread_switchable& obj)
     }
 }
 
-int context::builtin(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<void()>& fn)
+int context::builtin_with_thread(thread_switchable& obj, fb::lua::context* lua, int n, const std::function<void()>& fn)
 {
     if (obj.matched_thread())
     {
@@ -93,10 +93,10 @@ int context::builtin(thread_switchable& obj, fb::lua::context* lua, int n, const
     }
 }
 
-int fb::context::builtin_async(thread_switchable&                        obj,
-                               fb::lua::context*                         lua,
-                               int                                       n,
-                               const std::function<async::task<void>()>& fn)
+int fb::context::builtin_with_thread_async(thread_switchable&                        obj,
+                                           fb::lua::context*                         lua,
+                                           int                                       n,
+                                           const std::function<async::task<void>()>& fn)
 {
     if (obj.matched_thread())
     {

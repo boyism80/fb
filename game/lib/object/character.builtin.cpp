@@ -5,7 +5,7 @@ using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
-{"__eq",                fb::game::object::builtin_eq},
+{"__eq",                object::builtin::builtin_eq},
 {"look",                character::builtin::builtin_look},
 {"color",               character::builtin::builtin_color},
 {"sex",                 character::builtin::builtin_sex},
@@ -135,7 +135,7 @@ int character::builtin::builtin_sex(lua_State* L)
 
     auto sex = static_cast<SEX>(lua->tointeger(2));
     auto n   = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->sex());
         else
@@ -398,7 +398,7 @@ int character::builtin::builtin_mkitem(lua_State* L)
     auto store = lua->toboolean(4, true);
 
     if (store == false)
-        return object::builtin_mkitem(L);
+        return object::builtin::builtin_mkitem(L);
 
     auto model = ctx->model.item.name2item(name);
     if (model == nullptr)
@@ -532,7 +532,7 @@ int character::builtin::builtin_disguise(lua_State* L)
     };
 
     auto n = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->disguise().value());
         else if (value.has_value())
@@ -1261,7 +1261,7 @@ int character::builtin::builtin_nation(lua_State* L)
 
     auto value = static_cast<NATION>(lua->tointeger(2));
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(static_cast<uint8_t>(ch->nation()));
         else
@@ -1283,7 +1283,7 @@ int character::builtin::builtin_weapon(lua_State* L)
 
     auto weapon = lua->touserdata<fb::game::weapon>(2);
     auto n      = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*ch, lua, n, [=]() mutable {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() mutable {
         if (argc == 1)
         {
             weapon = ch->items.weapon();
@@ -1313,7 +1313,7 @@ int character::builtin::builtin_title(lua_State* L)
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua->tostring(2);
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushstring(ch->title());
         else
@@ -1340,7 +1340,7 @@ int character::builtin::builtin_gain(lua_State* L)
         items.push_back(item);
     }
 
-    return ctx->builtin(*ch, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, 0, [=]() {
         ch->items.add(items, true);
     });
 }
@@ -1360,7 +1360,7 @@ int character::builtin::builtin_weapon_damage(lua_State* L)
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua->tointeger(2);
 
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(ch->weapon_damage());
         else
@@ -1382,7 +1382,7 @@ int character::builtin::builtin_detect(lua_State* L)
 
     auto value = lua->toboolean(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
             lua->pushboolean(ch->detect());
         else
@@ -1922,7 +1922,7 @@ int character::builtin::builtin_birthday(lua_State* L)
 
     auto n     = (argc == 1 ? 1 : 0);
     auto value = lua_type(L, 2) == LUA_TNIL ? std::nullopt : std::optional<std::uint32_t>{lua->tointeger(2)};
-    return ctx->builtin(*ch, lua, n, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
         if (argc == 1)
         {
             auto& birthday = ch->birthday();
@@ -1983,7 +1983,7 @@ int character::builtin::builtin_send_mail(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false)
         contents = lua->tostring(4);
 
-    return ctx->builtin_async(*ch, lua, 0, [=]() -> async::task<void> {
+    return ctx->builtin_with_thread_async(*ch, lua, 0, [=]() -> async::task<void> {
         co_await ctx->send_mail(*ch, to, title, contents);
     });
 }
@@ -2000,7 +2000,7 @@ int character::builtin::builtin_creature(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    return ctx->builtin(*ch, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, 1, [=]() {
         lua->pushinteger(ch->creature());
     });
 }
@@ -2136,10 +2136,12 @@ int fb::game::character::builtin::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    if (custom_preset)
-        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
-    else
-        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
+    {
+        if (custom_preset)
+            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
+        else
+            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
+    }
 
     if (ch->dialog != nullptr)
         ch->dialog->release();

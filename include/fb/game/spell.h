@@ -24,6 +24,9 @@ class spell : public lua::luable
 public:
     LUA_PROTOTYPE
 
+public:
+    struct builtin;
+
 private:
     fb::model::datetime _next;
 
@@ -69,26 +72,6 @@ public:
      * @return     { description_of_the_return_value }
      */
     const fb::model::datetime& next() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_model(lua_State* L);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_delay(lua_State* L);
-
-    static int builtin_delay2(lua_State* L);
 };
 
 /**
@@ -96,13 +79,9 @@ public:
  */
 class spells : public fb::game::inventory<fb::game::spell>
 {
-private:
-    using super = inventory<spell>;
-
 public:
-    /**
-     * @brief      { struct_description }
-     */
+    using super = fb::game::inventory<fb::game::spell>;
+
     struct listener_t;
 
 public:
@@ -195,6 +174,39 @@ public:
 /**
  * @brief      { struct_description }
  */
+struct spell::builtin
+{
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_model(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_delay(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_delay2(lua_State* L);
+};
+
+/**
+ * @brief      { struct_description }
+ */
 struct spells::listener_t
 {
     /**
@@ -220,6 +232,9 @@ class buff : public lua::luable
 {
 public:
     LUA_PROTOTYPE
+
+public:
+    struct builtin;
 
 private:
     std::chrono::milliseconds _time;
@@ -279,25 +294,6 @@ public:
      * @param[in]  dec   The decrement
      */
     void time_dec(const std::chrono::steady_clock::duration& dec);
-
-public:
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_model(lua_State* L);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param      lua   The lua
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static int builtin_time(lua_State* L);
 };
 
 /**
@@ -388,6 +384,30 @@ public:
      * @return     The result of the array indexer
      */
     buff* operator[] (uint32_t id) const;
+};
+
+/**
+ * @brief      { struct_description }
+ */
+struct buff::builtin
+{
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_model(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      lua   The lua
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_time(lua_State* L);
 };
 
 } // namespace fb::game

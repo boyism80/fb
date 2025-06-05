@@ -5,7 +5,7 @@ using namespace fb::game;
 
 // clang-format off
 IMPLEMENT_LUA_EXTENSION(mob, "fb.game.mob")
-{"__eq",                object::builtin_eq},
+{"__eq",                object::builtin::builtin_eq},
 {"target",              mob::builtin::builtin_target},
 {"oblivion",            mob::builtin::builtin_oblivion},
 {"owner",               mob::builtin::builtin_owner},
@@ -26,7 +26,7 @@ int mob::builtin::builtin_target(lua_State* L)
 
     auto target = lua->touserdata<fb::game::life>(2);
     auto n      = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*mob, lua, n, [=]() {
+    return ctx->builtin_with_thread(*mob, lua, n, [=]() {
         if (argc == 1)
         {
             if (mob->_target == nullptr)
@@ -55,7 +55,7 @@ int mob::builtin::builtin_oblivion(lua_State* L)
 
     auto oblivion = lua->touserdata<fb::game::life>(2);
     auto n        = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*mob, lua, n, [=]() {
+    return ctx->builtin_with_thread(*mob, lua, n, [=]() {
         if (argc == 1)
         {
             if (mob->_oblivion == nullptr)
@@ -82,7 +82,7 @@ int mob::builtin::builtin_owner(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    return ctx->builtin(*mob, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*mob, lua, 1, [=]() {
         if (ctx->alive(*mob->owner))
             lua->pushobject(mob->owner);
         else
@@ -102,7 +102,7 @@ int mob::builtin::builtin_items(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    return ctx->builtin(*mob, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*mob, lua, 1, [=]() {
         lua->new_table();
         auto i = 0;
         for (auto item : mob->items())

@@ -134,7 +134,7 @@ int object::builtin::builtin_sound(lua_State* L)
         return 0;
 
     auto sound = static_cast<SOUND>(lua->tointeger(2));
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->sound(sound);
     });
 }
@@ -152,7 +152,7 @@ int object::builtin::builtin_position(lua_State* L)
         return 0;
 
     auto n = (argc == 1 ? 2 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
         {
             lua->pushinteger(obj->_position.x);
@@ -197,7 +197,7 @@ int object::builtin::builtin_front_position(lua_State* L)
     auto step = lua->tointeger(2, 1);
     obj->assert_thread();
 
-    return ctx->builtin(*obj, lua, 2, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 2, [=]() {
         auto position = obj->front_position(step);
         lua->pushinteger(position.x);
         lua->pushinteger(position.y);
@@ -218,7 +218,7 @@ int object::builtin::builtin_direction(lua_State* L)
 
     auto direction = static_cast<DIRECTION>(lua->tointeger(2));
     auto n         = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->_direction);
         else
@@ -242,7 +242,7 @@ int object::builtin::builtin_chat(lua_State* L)
     auto type     = lua->toenum(3, CHAT_TYPE::NORMAL);
     auto decorate = lua->toboolean(4, true);
 
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
     });
@@ -413,7 +413,7 @@ int object::builtin::builtin_effect(lua_State* L)
         return 0;
 
     auto effect = static_cast<uint8_t>(lua->tointeger(2));
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->effect(effect);
     });
 }
@@ -509,7 +509,7 @@ int object::builtin::builtin_map(lua_State* L)
 
     if (argc == 1)
     {
-        return ctx->builtin(*obj, lua, 1, [=]() {
+        return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
             auto map = obj->map();
             if (map == nullptr)
                 lua->pushnil();
@@ -533,13 +533,13 @@ int object::builtin::builtin_map(lua_State* L)
         {
             auto task = static_func(obj, map, position, lua);
 
-            return ctx->builtin(*obj, lua, 1, [=]() {
+            return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
                 async::awaitable_get(static_func(obj, map, position, lua));
             });
         }
         else
         {
-            return ctx->builtin_async(*obj, lua, 1, [=]() -> async::task<void> {
+            return ctx->builtin_with_thread_async(*obj, lua, 1, [=]() -> async::task<void> {
                 co_await static_func(obj, map, position, lua);
             });
         }
@@ -749,7 +749,7 @@ int object::builtin::builtin_is(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         auto type = lua->tointeger(2);
         lua->pushboolean(obj->is(OBJECT_TYPE(type)));
     });

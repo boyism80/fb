@@ -4,17 +4,17 @@
 using namespace fb::game;
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::clan, "fb.game.clan")
-{"name",                fb::game::clan::builtin_name},
-{"members",             fb::game::clan::builtin_members},
-{"nears",               fb::game::clan::builtin_nears},
-{"title",               fb::game::clan::builtin_title},
-{"join",                fb::game::clan::builtin_join},
-{"leave",               fb::game::clan::builtin_leave},
-{"message",             fb::game::clan::builtin_message},
+IMPLEMENT_LUA_EXTENSION(clan, "fb.game.clan")
+{"name",                clan::builtin::builtin_name},
+{"members",             clan::builtin::builtin_members},
+{"nears",               clan::builtin::builtin_nears},
+{"title",               clan::builtin::builtin_title},
+{"join",                clan::builtin::builtin_join},
+{"leave",               clan::builtin::builtin_leave},
+{"message",             clan::builtin::builtin_message},
 END_LUA_EXTENSION; // clang-format on
 
-int clan::builtin_name(lua_State* L)
+int clan::builtin::builtin_name(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -28,7 +28,7 @@ int clan::builtin_name(lua_State* L)
     return 1;
 }
 
-int clan::builtin_members(lua_State* L)
+int clan::builtin::builtin_members(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -51,7 +51,7 @@ int clan::builtin_members(lua_State* L)
     return 1;
 }
 
-int clan::builtin_nears(lua_State* L)
+int clan::builtin::builtin_nears(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -88,7 +88,7 @@ int clan::builtin_nears(lua_State* L)
     return 1;
 }
 
-int clan::builtin_title(lua_State* L)
+int clan::builtin::builtin_title(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -142,7 +142,7 @@ int clan::builtin_title(lua_State* L)
     }
 }
 
-int clan::builtin_join(lua_State* L)
+int clan::builtin::builtin_join(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -182,7 +182,7 @@ int clan::builtin_join(lua_State* L)
     return lua->yield(1);
 }
 
-int clan::builtin_leave(lua_State* L)
+int clan::builtin::builtin_leave(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -222,7 +222,7 @@ int clan::builtin_leave(lua_State* L)
     return lua->yield(1);
 }
 
-int clan::builtin_message(lua_State* L)
+int clan::builtin::builtin_message(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

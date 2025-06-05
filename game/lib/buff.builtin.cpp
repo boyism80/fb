@@ -1,13 +1,15 @@
 #include <fb/game/spell.h>
 #include <fb/game/context.h>
 
+using namespace fb::game;
+
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::buff, "fb.game.buff")
-{"model",              fb::game::buff::builtin_model},
-{"time",               fb::game::buff::builtin_time},
+IMPLEMENT_LUA_EXTENSION(buff, "fb.game.buff")
+{"model",              buff::builtin::builtin_model},
+{"time",               buff::builtin::builtin_time},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::buff::builtin_model(lua_State* L)
+int buff::builtin::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -23,7 +25,7 @@ int fb::game::buff::builtin_model(lua_State* L)
     return 1;
 }
 
-int fb::game::buff::builtin_time(lua_State* L)
+int buff::builtin::builtin_time(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

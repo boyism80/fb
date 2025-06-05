@@ -1,15 +1,17 @@
 #include <fb/game/context.h>
 #include <fb/game/item.h>
 
+using namespace fb::game;
+
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::game::item, "fb.game.item")
-{"model",               fb::game::item::builtin_model},
-{"count",               fb::game::item::builtin_count},
-{"durability",          fb::game::item::builtin_durability},
-{"rename",              fb::game::item::builtin_rename},
+IMPLEMENT_LUA_EXTENSION(item, "fb.game.item")
+{"model",               item::builtin::builtin_model},
+{"count",               item::builtin::builtin_count},
+{"durability",          item::builtin::builtin_durability},
+{"rename",              item::builtin::builtin_rename},
 END_LUA_EXTENSION; // clang-format on
 
-int fb::game::item::builtin_model(lua_State* L)
+int item::builtin::builtin_model(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -22,7 +24,7 @@ int fb::game::item::builtin_model(lua_State* L)
     return 1;
 }
 
-int fb::game::item::builtin_count(lua_State* L)
+int item::builtin::builtin_count(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -33,7 +35,7 @@ int fb::game::item::builtin_count(lua_State* L)
     return 1;
 }
 
-int fb::game::item::builtin_durability(lua_State* L)
+int item::builtin::builtin_durability(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -59,7 +61,7 @@ int fb::game::item::builtin_durability(lua_State* L)
     }
 }
 
-int fb::game::item::builtin_rename(lua_State* L)
+int item::builtin::builtin_rename(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)

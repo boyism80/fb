@@ -76,7 +76,7 @@ int life::builtin::builtin_message(lua_State* L)
     auto message = lua->tostring(2);
     auto type    = lua->toenum(3, MESSAGE_TYPE::STATE);
 
-    return ctx->builtin(*ch, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*ch, lua, 0, [=]() {
         ch->message(message, type);
     });
 }
@@ -144,7 +144,7 @@ int life::builtin::builtin_heal(lua_State* L)
         return 0;
 
     auto value = (uint32_t)lua->tointeger(2);
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->heal(value);
     });
 }
@@ -164,7 +164,7 @@ int life::builtin::builtin_damage(lua_State* L)
     auto value    = (uint32_t)lua->tointeger(2);
     auto from     = lua->touserdata<fb::game::life>(3);
     auto critical = lua->toboolean(4, false);
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->damage(value, from, critical);
     });
 }
@@ -182,7 +182,7 @@ int life::builtin::builtin_mp_up(lua_State* L)
         return 0;
 
     auto value = (uint32_t)lua->tointeger(2);
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->mp_up(value);
     });
 }
@@ -200,7 +200,7 @@ int life::builtin::builtin_mp_down(lua_State* L)
         return 0;
 
     auto value = (uint32_t)lua->tointeger(2);
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->mp_down(value);
     });
 }
@@ -220,7 +220,7 @@ int life::builtin::builtin_action(lua_State* L)
     auto action   = lua->tointeger(2);
     auto duration = lua->tointeger(3, static_cast<int>(DURATION::SPELL));
     auto sound    = (uint8_t)lua->tointeger(4, (uint8_t)0x00);
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->action(ACTION(action), DURATION(duration), sound);
     });
 }
@@ -238,7 +238,7 @@ int life::builtin::builtin_spell(lua_State* L)
         return 0;
 
     auto index = (int)lua->tointeger(2);
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         auto spell = obj->spells[index];
         if (spell == nullptr)
             lua->pushnil();
@@ -259,7 +259,7 @@ int life::builtin::builtin_spells(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->new_table();
         for (int i = 0; i < CONTAINER_CAPACITY; i++)
         {
@@ -344,7 +344,7 @@ int life::builtin::builtin_cc(lua_State* L)
 
     auto cc = static_cast<CROWD_CONTROL>(lua->tointeger(2));
     auto n  = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(static_cast<uint32_t>(obj->crowd_control()));
         else
@@ -365,7 +365,7 @@ int life::builtin::builtin_add_cc(lua_State* L)
         return 0;
 
     auto cc = static_cast<CROWD_CONTROL>(lua->tointeger(2));
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->add_cc(cc);
     });
 }
@@ -383,7 +383,7 @@ int life::builtin::builtin_remove_cc(lua_State* L)
         return 0;
 
     auto cc = static_cast<CROWD_CONTROL>(lua->tointeger(2));
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->remove_cc(cc);
     });
 }
@@ -401,7 +401,7 @@ int life::builtin::builtin_attack(lua_State* L)
         return 0;
 
     auto duration = lua->toenum(2, DURATION::ATTACK);
-    return ctx->builtin(*obj, lua, 0, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
         obj->attack(duration);
     });
 }
@@ -420,7 +420,7 @@ int life::builtin::builtin_damage_rate(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->damage_rate());
         else
@@ -442,7 +442,7 @@ int life::builtin::builtin_damage_derate(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->damage_derate());
         else
@@ -464,7 +464,7 @@ int life::builtin::builtin_skill_damage_rate(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->skill_damage_rate());
         else
@@ -486,7 +486,7 @@ int life::builtin::builtin_paralysis(lua_State* L)
 
     auto value = lua->toboolean(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushboolean(obj->paralysis());
         else
@@ -508,7 +508,7 @@ int life::builtin::builtin_invincible(lua_State* L)
 
     auto value = lua->toboolean(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushboolean(obj->invincible());
         else
@@ -530,7 +530,7 @@ int life::builtin::builtin_cover(lua_State* L)
 
     auto value = lua->toboolean(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushboolean(obj->cover());
         else
@@ -549,7 +549,7 @@ int life::builtin::builtin_base_hp(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_hp());
     });
 
@@ -570,7 +570,7 @@ int life::builtin::builtin_buff_hp(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_hp());
         else
@@ -589,7 +589,7 @@ int life::builtin::builtin_maxhp(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->maxhp());
     });
 }
@@ -605,7 +605,7 @@ int life::builtin::builtin_base_mp(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_mp());
     });
 }
@@ -624,7 +624,7 @@ int life::builtin::builtin_buff_mp(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_mp());
         else
@@ -643,7 +643,7 @@ int life::builtin::builtin_maxmp(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->maxmp());
     });
 }
@@ -659,7 +659,7 @@ int life::builtin::builtin_base_str(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_str());
     });
 }
@@ -678,7 +678,7 @@ int life::builtin::builtin_buff_str(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_str());
         else
@@ -697,7 +697,7 @@ int life::builtin::builtin_str(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->str());
     });
 }
@@ -713,7 +713,7 @@ int life::builtin::builtin_base_dex(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_dex());
     });
 }
@@ -732,7 +732,7 @@ int life::builtin::builtin_buff_dex(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_dex());
         else
@@ -751,7 +751,7 @@ int life::builtin::builtin_dex(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->dex());
     });
 }
@@ -767,7 +767,7 @@ int life::builtin::builtin_base_int(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_int());
     });
 }
@@ -786,7 +786,7 @@ int life::builtin::builtin_buff_int(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_int());
         else
@@ -805,7 +805,7 @@ int life::builtin::builtin_intelligence(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->intelligence());
     });
 }
@@ -821,7 +821,7 @@ int life::builtin::builtin_base_phydef(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_phydef());
     });
 }
@@ -840,7 +840,7 @@ int life::builtin::builtin_buff_phydef(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_phydef());
         else
@@ -859,7 +859,7 @@ int life::builtin::builtin_phydef(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->phydef());
     });
 }
@@ -875,7 +875,7 @@ int life::builtin::builtin_base_magdef(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_magdef());
     });
 }
@@ -894,7 +894,7 @@ int life::builtin::builtin_buff_magdef(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_magdef());
         else
@@ -913,7 +913,7 @@ int life::builtin::builtin_magdef(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->magdef());
     });
 }
@@ -929,7 +929,7 @@ int life::builtin::builtin_base_dam(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_dam());
     });
 }
@@ -948,7 +948,7 @@ int life::builtin::builtin_buff_dam(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_dam());
         else
@@ -967,7 +967,7 @@ int life::builtin::builtin_dam(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->dam());
     });
 }
@@ -983,7 +983,7 @@ int life::builtin::builtin_base_hit(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->base_hit());
     });
 }
@@ -1002,7 +1002,7 @@ int life::builtin::builtin_buff_hit(lua_State* L)
 
     auto value = lua->tointeger(2);
     auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin(*obj, lua, n, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
         if (argc == 1)
             lua->pushinteger(obj->buff_hit());
         else
@@ -1021,7 +1021,7 @@ int life::builtin::builtin_hit(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin(*obj, lua, 1, [=]() {
+    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
         lua->pushinteger(obj->hit());
     });
 }
