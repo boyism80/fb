@@ -269,15 +269,16 @@ int character::builtin::builtin_item(lua_State* L)
             { // get 1st field
                 lua->pushinteger(1);
                 lua_gettable(L, -2);
-                switch (lua_type(L, -1))
+                if (lua->is_str(-1))
                 {
-                case LUA_TSTRING:
                     item = ctx->model.item.name2item(lua->tostring(-1));
-                    break;
-
-                case LUA_TUSERDATA:
+                }
+                else if (lua->is_userdata<fb::model::item>(-1))
+                {
                     item = lua->touserdata<fb::model::item>(-1);
-                    break;
+                }
+                else
+                {
                 }
                 lua->pop(1);
             }
@@ -285,11 +286,12 @@ int character::builtin::builtin_item(lua_State* L)
             { // get 2nd field
                 lua->pushinteger(2);
                 lua_gettable(L, -2);
-                switch (lua_type(L, -1))
+                if (lua->is_num(-1))
                 {
-                case LUA_TNUMBER:
                     price = lua->tointeger(-1);
-                    break;
+                }
+                else
+                {
                 }
             }
             lua->pop(1);
@@ -2136,12 +2138,10 @@ int fb::game::character::builtin::builtin_list(lua_State* L)
         menus.push_back(lua->tostring(-1));
     }
 
-    {
-        if (custom_preset)
-            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
-        else
-            ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
-    }
+    if (custom_preset)
+        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, preset, sequence);
+    else
+        ch->listener.on_dialog(*ch, *model, message, menus, button_prev, sequence);
 
     if (ch->dialog != nullptr)
         ch->dialog->release();

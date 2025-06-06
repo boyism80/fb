@@ -289,7 +289,7 @@ int life::builtin::builtin_cast(lua_State* L)
     fb::game::life* you = nullptr;
     if (argc == 2)
         you = obj;
-    else if (lua_type(L, offset) == LUA_TUSERDATA)
+    else if (lua->is_userdata<fb::game::life>(offset))
         you = lua->touserdata<fb::game::life>(offset++);
     else
         you = nullptr;
