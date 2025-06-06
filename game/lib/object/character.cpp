@@ -734,7 +734,8 @@ void character::option(OPTION key, bool value, bool notify)
     this->update(STATE_LEVEL::LEVEL_MIN);
     this->_options[opt] = value;
 
-    this->listener.on_option_changed(*this, key, value);
+    if (notify)
+        this->listener.on_option_changed(*this, key, value);
     this->update_option();
 }
 
