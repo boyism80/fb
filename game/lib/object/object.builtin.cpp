@@ -264,18 +264,16 @@ int object::builtin::builtin_buff(lua_State* L)
         return 0;
 
     const fb::model::spell* model = nullptr;
-    switch (lua_type(L, 2))
+    if (lua->is_userdata<fb::model::spell>(2))
     {
-    case LUA_TUSERDATA:
         model = lua->touserdata<fb::model::spell>(2);
-        break;
-
-    case LUA_TSTRING:
+    }
+    else if (lua->is_str(2))
+    {
         model = ctx->model.spell.name2spell(lua->tostring(2));
-        break;
-
-    default:
-        return 0;
+    }
+    else
+    {
     }
 
     if (model == nullptr)
@@ -624,7 +622,7 @@ int object::builtin::builtin_nears(lua_State* L)
 
     auto visit  = std::set<uint32_t>();
     auto filter = OBJECT_TYPE(lua->tointeger(2, (int)OBJECT_TYPE::UNKNOWN));
-    if (argc >= 3 && lua_type(L, 3) == LUA_TTABLE)
+    if (argc >= 3 && lua->is_table(3))
     {
         auto size   = lua->rawlen(3);
         auto points = std::vector<fb::model::point16_t>{};

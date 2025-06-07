@@ -1,8 +1,7 @@
 .vs
 Debug
 Release
-.filters
-.user
+node_modules
 resources/maps/*.map
 resources/maps/*.block
 resources/maps/*.txt
@@ -29,3 +28,9 @@ tools/map-split/*.txt
 */config
 tools/runner/settings.json
 *.sln*
+
+game/maps
+game/table*
+*.vcxproj
+*.user
+*.filters

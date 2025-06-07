@@ -241,7 +241,7 @@ int map::builtin::builtin_contains(lua_State* L)
     if (map == nullptr)
         return 0;
 
-    auto you = lua->touserdata<object>(1);
+    auto you = lua->touserdata<object>(2);
     if (you == nullptr)
         return 0;
 
