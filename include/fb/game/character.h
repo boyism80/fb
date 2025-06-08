@@ -64,8 +64,8 @@ private:
     uint32_t                _id = 0xFFFFFFFF;
     fb::socket<character>&  _socket;
     fb::thread*             _thread = nullptr;
-    bool                    _admin  = false;
     std::string             _name;
+    ROLE                    _role;
     std::string             _pw;
     std::optional<uint32_t> _birthday;
     fb::model::datetime     _updated_date;
@@ -217,14 +217,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool admin() const;
+    ROLE role() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void admin(bool value);
+    void role(ROLE value);
 
     /**
      * @brief      { function_description }
@@ -1549,7 +1549,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_admin(lua_State* L);
+    static int builtin_role(lua_State* L);
 
     /**
      * @brief      { function_description }

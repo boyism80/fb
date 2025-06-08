@@ -63,6 +63,9 @@ void listener_impl::on_update_external(object& me, bool light)
 
         for (auto obj : map->nears(me.position(), OBJECT_TYPE::CHARACTER))
         {
+            if (me.hidden(*obj))
+                continue;
+
             auto you = static_cast<character*>(obj);
             you->send(fb_resp::update_external(static_cast<character&>(me), *you, light));
         }
@@ -75,6 +78,9 @@ void listener_impl::on_update_external(object& me, bool light)
 
 void listener_impl::on_update_external(object& me, object& you, bool light)
 {
+    if (me.hidden(you))
+        return;
+
     if (me.is(OBJECT_TYPE::CHARACTER))
         you.send(fb_resp::update_external(static_cast<character&>(me), you, light));
     else

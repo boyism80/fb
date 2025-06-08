@@ -172,16 +172,16 @@ uint32_t character::fd()
     return this->_socket.fd();
 }
 
-bool character::admin() const
+ROLE character::role() const
 {
-    return this->_admin;
+    return this->_role;
 }
 
-void character::admin(bool value)
+void character::role(ROLE value)
 {
     this->assert_thread();
 
-    this->_admin = value;
+    this->_role = value;
 }
 
 void character::attack(DURATION duration)
@@ -456,7 +456,7 @@ STATE character::state_to(const fb::game::object& to) const
 
     if (this->_state == STATE::HALF_CLOACK)
     {
-        if (ch.admin())
+        if (this->role() < ch.role())
             return STATE::HALF_CLOACK;
 
         if (ch.detect())
@@ -1087,10 +1087,10 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
                 return false;
         }
 
-        case DSL::admin:
+        case DSL::role:
         {
-            auto params = fb::model::dsl::admin(dsl.params);
-            if (params.value != this->_admin)
+            auto params = fb::model::dsl::role(dsl.params);
+            if (params.value > this->_role)
                 return false;
         }
         break;
@@ -1140,7 +1140,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
     dto.updated_date     = fb::model::datetime().to_string();
-    dto.admin            = this->_admin;
+    dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;
     dto.color            = this->_color;
     dto.sex              = (uint16_t)this->_sex;
@@ -1811,13 +1811,14 @@ void character::super_hide(bool enabled)
 
 bool character::hidden(const object& target) const
 {
-    if (this->super_hide())
-    {
-        // TODO: user level check
-        return true;
-    }
+    if (this->super_hide() == false)
+        return false;
 
-    return false;
+    if (target.is(OBJECT_TYPE::CHARACTER) == false)
+        return true;
+
+    auto& ch = static_cast<const character&>(target);
+    return this->role() > ch.role();
 }
 
 async::task<void> character::death_penalty()

@@ -257,8 +257,8 @@ namespace Fb.Model.EnumValue
         Promotion = 6, 
         [EnumMember(Value = "class_t")]
         ClassT = 7, 
-        [EnumMember(Value = "admin")]
-        Admin = 8, 
+        [EnumMember(Value = "role")]
+        Role = 8, 
         [EnumMember(Value = "world")]
         World = 9, 
         [EnumMember(Value = "map")]
@@ -681,6 +681,21 @@ namespace Fb.Model.EnumValue
         HoldItemList = 13, 
         [EnumMember(Value = "HOLD_ITEM_COUNT")]
         HoldItemCount = 14
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum Role
+    {
+        [EnumMember(Value = "USER")]
+        User = 0, 
+        [EnumMember(Value = "MODERATOR")]
+        Moderator = 1, 
+        [EnumMember(Value = "ADMIN")]
+        Admin = 2, 
+        [EnumMember(Value = "SUPERADMIN")]
+        Superadmin = 3, 
+        [EnumMember(Value = "OWNER")]
+        Owner = 4
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -1511,28 +1526,6 @@ namespace Fb.Model
         public Fb.Model.EnumValue.Dsl Header { get; set; }
         public object[] Params { get; set; }
 
-        public class Admin
-        {
-            [JsonProperty("value")]
-            public bool Value { get; set; }
-
-            public static Admin Parse(object[] parameters)
-            {
-                return new Admin
-                {
-                    Value = (bool)System.Convert.ChangeType(parameters[0], typeof(bool))
-                };
-            }
-
-            public Dsl ToDSL()
-            {
-                return new Dsl
-                {
-                    Header = Fb.Model.EnumValue.Dsl.Admin,
-                    Params = new object[] {Value}
-                };
-            }
-        }
         public class Area
         {
             [JsonProperty("left")]
@@ -1760,6 +1753,28 @@ namespace Fb.Model
                 return new Dsl
                 {
                     Header = Fb.Model.EnumValue.Dsl.Promotion,
+                    Params = new object[] {Value}
+                };
+            }
+        }
+        public class Role
+        {
+            [JsonProperty("value")]
+            public Fb.Model.EnumValue.Role Value { get; set; }
+
+            public static Role Parse(object[] parameters)
+            {
+                return new Role
+                {
+                    Value = (Fb.Model.EnumValue.Role)Enum.Parse(typeof(Fb.Model.EnumValue.Role), parameters[0].ToString())
+                };
+            }
+
+            public Dsl ToDSL()
+            {
+                return new Dsl
+                {
+                    Header = Fb.Model.EnumValue.Dsl.Role,
                     Params = new object[] {Value}
                 };
             }

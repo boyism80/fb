@@ -15,7 +15,7 @@ namespace Http.Model
         public string Name { get; set; }
         public string Pw { get; set; }
         public uint? Birth { get; set; }
-        public bool Admin { get; set; }
+        public Fb.Model.EnumValue.Role Role { get; set; }
         public ushort Look { get; set; }
         public byte Color { get; set; }
         public byte Sex { get; set; }

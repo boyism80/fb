@@ -651,7 +651,7 @@ int character::builtin::builtin_assert(lua_State* L)
     }
 }
 
-int character::builtin::builtin_admin(lua_State* L)
+int character::builtin::builtin_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -665,12 +665,12 @@ int character::builtin::builtin_admin(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushboolean(ch->admin());
+        lua->pushinteger(ch->role());
         return 1;
     }
     else
     {
-        ch->admin(lua->toboolean(2));
+        ch->role(static_cast<ROLE>(lua->tointeger(2)));
         return 0;
     }
 }

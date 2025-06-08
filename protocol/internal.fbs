@@ -24,7 +24,7 @@ table Character {
     name: string;
     pw: string;
     birth: uint?;
-    admin: bool;
+    role: ubyte;
     look: ushort;
     color: ushort;
     sex: ushort;

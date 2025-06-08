@@ -168,7 +168,7 @@ async::task<bool> context::handle_create_account(fb::socket<session>& socket, co
                 fb::config<uint16_t>("init:map"),                                                         // map
                 init_x,                                                                                   // position_x
                 init_y,                                                                                   // position_y
-                admin,                                                                                    // admin
+                static_cast<uint8_t>(admin ? ROLE::ADMIN : ROLE::USER),                                   // admin
             });
 
         // 여기서 새로운 promise handler

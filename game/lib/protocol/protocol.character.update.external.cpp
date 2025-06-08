@@ -14,32 +14,6 @@ update_external::update_external(const fb::game::character& ch, const fb::game::
 #endif
 
 #ifndef BOT
-bool update_external::is_detected() const
-{
-    if (this->ch.admin())
-        return true;
-
-    if (&this->ch == &this->to)
-        return true;
-
-    if (this->to.is(OBJECT_TYPE::CHARACTER) == false)
-        return false;
-
-    auto& you = static_cast<const fb::game::character&>(this->to);
-    if (you.detect())
-        return true;
-
-    auto& mine = this->ch.group();
-    if (mine == nullptr)
-        return false;
-
-    auto& your = you.group();
-    if (your == nullptr)
-        return false;
-
-    return mine.get() == your.get();
-}
-
 HEAD_MARKER update_external::head_marker() const
 {
     if (&this->ch == &this->to)

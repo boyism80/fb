@@ -32,7 +32,6 @@ public:
 
 private:
 #ifndef BOT
-    bool        is_detected() const;
     HEAD_MARKER head_marker() const;
 #endif
 

@@ -603,7 +603,7 @@ public:
     std::string name;
     std::string pw;
     std::optional<uint32_t> birth = std::nullopt;
-    bool admin = false;
+    uint8_t role = 0;
     uint16_t look = 0;
     uint16_t color = 0;
     uint16_t sex = 0;
@@ -642,15 +642,15 @@ public:
     Character() = default;
 
     Character(const Character& x)
-        : id(x.id), name(x.name), pw(x.pw), birth(x.birth), admin(x.admin), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), buffs(x.buffs), title(x.title), updated_date(x.updated_date)
+        : id(x.id), name(x.name), pw(x.pw), birth(x.birth), role(x.role), look(x.look), color(x.color), sex(x.sex), nation(x.nation), creature(x.creature), map(x.map), position(x.position), direction(x.direction), state(x.state), class_type(x.class_type), promotion(x.promotion), level(x.level), exp(x.exp), money(x.money), deposited_money(x.deposited_money), disguise(x.disguise), hp(x.hp), base_hp(x.base_hp), additional_hp(x.additional_hp), mp(x.mp), base_mp(x.base_mp), additional_mp(x.additional_mp), weapon_color(x.weapon_color), helmet_color(x.helmet_color), armor_color(x.armor_color), shield_color(x.shield_color), ring_left_color(x.ring_left_color), ring_right_color(x.ring_right_color), aux_top_color(x.aux_top_color), aux_bot_color(x.aux_bot_color), buffs(x.buffs), title(x.title), updated_date(x.updated_date)
     { }
 
-    Character(uint32_t id, const std::string& name, const std::string& pw, const std::optional<uint32_t>& birth, bool admin, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, std::vector<fb::protocol::internal::Buff> buffs, const std::string& title, const std::string& updated_date)
-        : id(id), name(name), pw(pw), birth(birth), admin(admin), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), buffs(buffs), title(title), updated_date(updated_date)
+    Character(uint32_t id, const std::string& name, const std::string& pw, const std::optional<uint32_t>& birth, uint8_t role, uint16_t look, uint16_t color, uint16_t sex, uint16_t nation, const std::optional<uint16_t>& creature, uint32_t map, const fb::protocol::internal::Position& position, uint8_t direction, uint8_t state, uint8_t class_type, uint8_t promotion, uint8_t level, uint32_t exp, uint32_t money, uint32_t deposited_money, const std::optional<uint16_t>& disguise, uint32_t hp, uint32_t base_hp, uint32_t additional_hp, uint32_t mp, uint32_t base_mp, uint32_t additional_mp, const std::optional<uint8_t>& weapon_color, const std::optional<uint8_t>& helmet_color, const std::optional<uint8_t>& armor_color, const std::optional<uint8_t>& shield_color, const std::optional<uint8_t>& ring_left_color, const std::optional<uint8_t>& ring_right_color, const std::optional<uint8_t>& aux_top_color, const std::optional<uint8_t>& aux_bot_color, std::vector<fb::protocol::internal::Buff> buffs, const std::string& title, const std::string& updated_date)
+        : id(id), name(name), pw(pw), birth(birth), role(role), look(look), color(color), sex(sex), nation(nation), creature(creature), map(map), position(position), direction(direction), state(state), class_type(class_type), promotion(promotion), level(level), exp(exp), money(money), deposited_money(deposited_money), disguise(disguise), hp(hp), base_hp(base_hp), additional_hp(additional_hp), mp(mp), base_mp(base_mp), additional_mp(additional_mp), weapon_color(weapon_color), helmet_color(helmet_color), armor_color(armor_color), shield_color(shield_color), ring_left_color(ring_left_color), ring_right_color(ring_right_color), aux_top_color(aux_top_color), aux_bot_color(aux_bot_color), buffs(buffs), title(title), updated_date(updated_date)
     { }
 
     Character(const fb::protocol::internal::raw::Character& raw)
-        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), birth(raw.birth() != nullptr ? raw.birth()->value() : std::optional<uint32_t>()), admin(raw.admin()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), buffs(unpack<fb::protocol::internal::Buff>(raw.buffs())), title(flatbuffers::option::decode(raw.title()->c_str())), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
+        : id(raw.id()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), birth(raw.birth() != nullptr ? raw.birth()->value() : std::optional<uint32_t>()), role(raw.role()), look(raw.look()), color(raw.color()), sex(raw.sex()), nation(raw.nation()), creature(raw.creature() != nullptr ? raw.creature()->value() : std::optional<uint16_t>()), map(raw.map()), position(*raw.position()), direction(raw.direction()), state(raw.state()), class_type(raw.class_type()), promotion(raw.promotion()), level(raw.level()), exp(raw.exp()), money(raw.money()), deposited_money(raw.deposited_money()), disguise(raw.disguise() != nullptr ? raw.disguise()->value() : std::optional<uint16_t>()), hp(raw.hp()), base_hp(raw.base_hp()), additional_hp(raw.additional_hp()), mp(raw.mp()), base_mp(raw.base_mp()), additional_mp(raw.additional_mp()), weapon_color(raw.weapon_color() != nullptr ? raw.weapon_color()->value() : std::optional<uint8_t>()), helmet_color(raw.helmet_color() != nullptr ? raw.helmet_color()->value() : std::optional<uint8_t>()), armor_color(raw.armor_color() != nullptr ? raw.armor_color()->value() : std::optional<uint8_t>()), shield_color(raw.shield_color() != nullptr ? raw.shield_color()->value() : std::optional<uint8_t>()), ring_left_color(raw.ring_left_color() != nullptr ? raw.ring_left_color()->value() : std::optional<uint8_t>()), ring_right_color(raw.ring_right_color() != nullptr ? raw.ring_right_color()->value() : std::optional<uint8_t>()), aux_top_color(raw.aux_top_color() != nullptr ? raw.aux_top_color()->value() : std::optional<uint8_t>()), aux_bot_color(raw.aux_bot_color() != nullptr ? raw.aux_bot_color()->value() : std::optional<uint8_t>()), buffs(unpack<fb::protocol::internal::Buff>(raw.buffs())), title(flatbuffers::option::decode(raw.title()->c_str())), updated_date(flatbuffers::option::decode(raw.updated_date()->c_str()))
     { }
 
 public:
@@ -1556,21 +1556,21 @@ public:
     uint16_t map = 0;
     uint16_t x = 0;
     uint16_t y = 0;
-    bool admin = false;
+    uint8_t role = 0;
 
 public:
     InitCharacter() = default;
 
     InitCharacter(const InitCharacter& x)
-        : uid(x.uid), name(x.name), pw(x.pw), hp(x.hp), mp(x.mp), map(x.map), x(x.x), y(x.y), admin(x.admin)
+        : uid(x.uid), name(x.name), pw(x.pw), hp(x.hp), mp(x.mp), map(x.map), x(x.x), y(x.y), role(x.role)
     { }
 
-    InitCharacter(uint32_t uid, const std::string& name, const std::string& pw, uint32_t hp, uint32_t mp, uint16_t map, uint16_t x, uint16_t y, bool admin)
-        : uid(uid), name(name), pw(pw), hp(hp), mp(mp), map(map), x(x), y(y), admin(admin)
+    InitCharacter(uint32_t uid, const std::string& name, const std::string& pw, uint32_t hp, uint32_t mp, uint16_t map, uint16_t x, uint16_t y, uint8_t role)
+        : uid(uid), name(name), pw(pw), hp(hp), mp(mp), map(map), x(x), y(y), role(role)
     { }
 
     InitCharacter(const fb::protocol::internal::request::raw::InitCharacter& raw)
-        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), hp(raw.hp()), mp(raw.mp()), map(raw.map()), x(raw.x()), y(raw.y()), admin(raw.admin())
+        : uid(raw.uid()), name(flatbuffers::option::decode(raw.name()->c_str())), pw(flatbuffers::option::decode(raw.pw()->c_str())), hp(raw.hp()), mp(raw.mp()), map(raw.map()), x(raw.x()), y(raw.y()), role(raw.role())
     { }
 
 public:
@@ -3949,7 +3949,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Character> build<fb::protocol::
             flatbuffers::build<std::string>(builder, value.name),
             flatbuffers::build<std::string>(builder, value.pw),
             flatbuffers::build<std::optional<uint32_t>>(builder, value.birth),
-            flatbuffers::build<bool>(builder, value.admin),
+            flatbuffers::build<uint8_t>(builder, value.role),
             flatbuffers::build<uint16_t>(builder, value.look),
             flatbuffers::build<uint16_t>(builder, value.color),
             flatbuffers::build<uint16_t>(builder, value.sex),
@@ -4177,7 +4177,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::InitCharacter> build<f
             flatbuffers::build<uint16_t>(builder, value.map),
             flatbuffers::build<uint16_t>(builder, value.x),
             flatbuffers::build<uint16_t>(builder, value.y),
-            flatbuffers::build<bool>(builder, value.admin));
+            flatbuffers::build<uint8_t>(builder, value.role));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::Authenticate> build<fb::protocol::internal::request::Authenticate>(FlatBufferBuilder& builder, const fb::protocol::internal::request::Authenticate& value)

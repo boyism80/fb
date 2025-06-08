@@ -33,7 +33,7 @@ struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_MAP = 14,
     VT_X = 16,
     VT_Y = 18,
-    VT_ADMIN = 20
+    VT_ROLE = 20
   };
   uint32_t uid() const {
     return GetField<uint32_t>(VT_UID, 0);
@@ -59,8 +59,8 @@ struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   uint16_t y() const {
     return GetField<uint16_t>(VT_Y, 0);
   }
-  bool admin() const {
-    return GetField<uint8_t>(VT_ADMIN, 0) != 0;
+  uint8_t role() const {
+    return GetField<uint8_t>(VT_ROLE, 0);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -74,7 +74,7 @@ struct InitCharacter FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyField<uint16_t>(verifier, VT_MAP, 2) &&
            VerifyField<uint16_t>(verifier, VT_X, 2) &&
            VerifyField<uint16_t>(verifier, VT_Y, 2) &&
-           VerifyField<uint8_t>(verifier, VT_ADMIN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            verifier.EndTable();
   }
 };
@@ -107,8 +107,8 @@ struct InitCharacterBuilder {
   void add_y(uint16_t y) {
     fbb_.AddElement<uint16_t>(InitCharacter::VT_Y, y, 0);
   }
-  void add_admin(bool admin) {
-    fbb_.AddElement<uint8_t>(InitCharacter::VT_ADMIN, static_cast<uint8_t>(admin), 0);
+  void add_role(uint8_t role) {
+    fbb_.AddElement<uint8_t>(InitCharacter::VT_ROLE, role, 0);
   }
   explicit InitCharacterBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -131,7 +131,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacter(
     uint16_t map = 0,
     uint16_t x = 0,
     uint16_t y = 0,
-    bool admin = false) {
+    uint8_t role = 0) {
   InitCharacterBuilder builder_(_fbb);
   builder_.add_mp(mp);
   builder_.add_hp(hp);
@@ -141,7 +141,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacter(
   builder_.add_y(y);
   builder_.add_x(x);
   builder_.add_map(map);
-  builder_.add_admin(admin);
+  builder_.add_role(role);
   return builder_.Finish();
 }
 
@@ -155,7 +155,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacterDirect(
     uint16_t map = 0,
     uint16_t x = 0,
     uint16_t y = 0,
-    bool admin = false) {
+    uint8_t role = 0) {
   auto name__ = name ? _fbb.CreateString(name) : 0;
   auto pw__ = pw ? _fbb.CreateString(pw) : 0;
   return fb::protocol::internal::request::raw::CreateInitCharacter(
@@ -168,7 +168,7 @@ inline ::flatbuffers::Offset<InitCharacter> CreateInitCharacterDirect(
       map,
       x,
       y,
-      admin);
+      role);
 }
 
 inline const fb::protocol::internal::request::raw::InitCharacter *GetInitCharacter(const void *buf) {
