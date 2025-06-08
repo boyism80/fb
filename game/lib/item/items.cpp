@@ -766,6 +766,17 @@ void fb::game::items::pickup(bool boost)
         if (map == nullptr)
             return;
 
+        auto lua = fb::lua::new_context();
+        if (lua != nullptr)
+        {
+#if defined DEBUG | defined _DEBUG
+            lua->load("scripts/interaction.lua");
+#endif
+            lua->func("on_pickup");
+            lua->pushobject(this->owner);
+            std::ignore = lua->call(1);
+        }
+
         this->owner.assert_state({STATE::GHOST, STATE::RIDING});
         this->owner.action(ACTION::PICKUP, DURATION::PICKUP);
 
@@ -785,17 +796,6 @@ void fb::game::items::pickup(bool boost)
         {
             std::ignore = this->owner.items.add(belows[0]);
         }
-
-        auto lua = fb::lua::new_context();
-        if (lua != nullptr)
-        {
-#if defined DEBUG | defined _DEBUG
-            lua->load("scripts/interaction.lua");
-#endif
-            lua->func("on_pickup");
-            lua->pushobject(this->owner);
-            std::ignore = lua->call(1);
-        }
     }
     catch (std::exception& e)
     {
@@ -805,7 +805,6 @@ void fb::game::items::pickup(bool boost)
 
 bool fb::game::items::throws(uint8_t index)
 {
-
     try
     {
         auto item = this->owner.items.at(index);
@@ -826,7 +825,7 @@ bool fb::game::items::throws(uint8_t index)
         {
             auto before = position;
             position.forward(this->owner.direction());
-            if (map->movable(position) == false)
+            if (map->movable(this->owner, position) == false)
             {
                 position = before;
                 break;

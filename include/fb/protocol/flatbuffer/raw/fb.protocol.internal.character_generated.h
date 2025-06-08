@@ -34,7 +34,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_NAME = 6,
     VT_PW = 8,
     VT_BIRTH = 10,
-    VT_ADMIN = 12,
+    VT_ROLE = 12,
     VT_LOOK = 14,
     VT_COLOR = 16,
     VT_SEX = 18,
@@ -81,8 +81,8 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const nullable::nullable_uint *birth() const {
     return GetPointer<const nullable::nullable_uint *>(VT_BIRTH);
   }
-  bool admin() const {
-    return GetField<uint8_t>(VT_ADMIN, 0) != 0;
+  uint8_t role() const {
+    return GetField<uint8_t>(VT_ROLE, 0);
   }
   uint16_t look() const {
     return GetField<uint16_t>(VT_LOOK, 0);
@@ -192,7 +192,7 @@ struct Character FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyString(pw()) &&
            VerifyOffset(verifier, VT_BIRTH) &&
            verifier.VerifyTable(birth()) &&
-           VerifyField<uint8_t>(verifier, VT_ADMIN, 1) &&
+           VerifyField<uint8_t>(verifier, VT_ROLE, 1) &&
            VerifyField<uint16_t>(verifier, VT_LOOK, 2) &&
            VerifyField<uint16_t>(verifier, VT_COLOR, 2) &&
            VerifyField<uint16_t>(verifier, VT_SEX, 2) &&
@@ -261,8 +261,8 @@ struct CharacterBuilder {
   void add_birth(::flatbuffers::Offset<nullable::nullable_uint> birth) {
     fbb_.AddOffset(Character::VT_BIRTH, birth);
   }
-  void add_admin(bool admin) {
-    fbb_.AddElement<uint8_t>(Character::VT_ADMIN, static_cast<uint8_t>(admin), 0);
+  void add_role(uint8_t role) {
+    fbb_.AddElement<uint8_t>(Character::VT_ROLE, role, 0);
   }
   void add_look(uint16_t look) {
     fbb_.AddElement<uint16_t>(Character::VT_LOOK, look, 0);
@@ -380,7 +380,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
     ::flatbuffers::Offset<::flatbuffers::String> name = 0,
     ::flatbuffers::Offset<::flatbuffers::String> pw = 0,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
-    bool admin = false,
+    uint8_t role = 0,
     uint16_t look = 0,
     uint16_t color = 0,
     uint16_t sex = 0,
@@ -452,7 +452,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacter(
   builder_.add_class_type(class_type);
   builder_.add_state(state);
   builder_.add_direction(direction);
-  builder_.add_admin(admin);
+  builder_.add_role(role);
   return builder_.Finish();
 }
 
@@ -462,7 +462,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
     const char *name = nullptr,
     const char *pw = nullptr,
     ::flatbuffers::Offset<nullable::nullable_uint> birth = 0,
-    bool admin = false,
+    uint8_t role = 0,
     uint16_t look = 0,
     uint16_t color = 0,
     uint16_t sex = 0,
@@ -507,7 +507,7 @@ inline ::flatbuffers::Offset<Character> CreateCharacterDirect(
       name__,
       pw__,
       birth,
-      admin,
+      role,
       look,
       color,
       sex,

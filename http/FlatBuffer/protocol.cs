@@ -64,7 +64,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
                 builder.Build(value.Birth),
-                builder.Build(value.Admin),
+                builder.Build(value.Role),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
                 builder.Build(value.Sex),
@@ -335,7 +335,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Map),
                 builder.Build(value.X),
                 builder.Build(value.Y),
-                builder.Build(value.Admin));
+                builder.Build(value.Role));
         }
         public static Offset<fb.protocol._internal.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Authenticate value)
         {
@@ -997,7 +997,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
                 builder.Build(value.Birth),
-                builder.Build(value.Admin),
+                builder.Build(value.Role),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
                 builder.Build(value.Sex),
@@ -1268,7 +1268,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Map),
                 builder.Build(value.X),
                 builder.Build(value.Y),
-                builder.Build(value.Admin));
+                builder.Build(value.Role));
         }
         public static Offset<fb.protocol._internal.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Authenticate value)
         {
@@ -1945,7 +1945,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Name),
                 builder.Build(value.Pw),
                 builder.Build(value.Birth),
-                builder.Build(value.Admin),
+                builder.Build(value.Role),
                 builder.Build(value.Look),
                 builder.Build(value.Color),
                 builder.Build(value.Sex),
@@ -2216,7 +2216,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Map),
                 builder.Build(value.X),
                 builder.Build(value.Y),
-                builder.Build(value.Admin));
+                builder.Build(value.Role));
         }
         public static Offset<fb.protocol._internal.request.raw.Authenticate> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.Authenticate value)
         {
@@ -2901,7 +2901,7 @@ namespace fb.protocol._internal
         public string Name { get; set; } = string.Empty;
         public string Pw { get; set; } = string.Empty;
         public uint? Birth { get; set; } = null;
-        public bool Admin { get; set; } = false;
+        public byte Role { get; set; } = 0;
         public ushort Look { get; set; } = 0;
         public ushort Color { get; set; } = 0;
         public ushort Sex { get; set; } = 0;
@@ -2945,7 +2945,7 @@ namespace fb.protocol._internal
             Name = raw.Name;
             Pw = raw.Pw;
             Birth = raw.Birth != null ? (uint?)raw.Birth.Value.Value : null;
-            Admin = raw.Admin;
+            Role = raw.Role;
             Look = raw.Look;
             Color = raw.Color;
             Sex = raw.Sex;
@@ -3739,7 +3739,7 @@ namespace fb.protocol._internal.request
         public ushort Map { get; set; } = 0;
         public ushort X { get; set; } = 0;
         public ushort Y { get; set; } = 0;
-        public bool Admin { get; set; } = false;
+        public byte Role { get; set; } = 0;
 
         public InitCharacter()
         { }
@@ -3754,7 +3754,7 @@ namespace fb.protocol._internal.request
             Map = raw.Map;
             X = raw.X;
             Y = raw.Y;
-            Admin = raw.Admin;
+            Role = raw.Role;
         }
 
         public InitCharacter(byte[] bytes) : this(fb.protocol._internal.request.raw.InitCharacter.GetRootAsInitCharacter(new ByteBuffer(bytes)))

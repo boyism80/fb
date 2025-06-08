@@ -40,7 +40,7 @@ public struct InitCharacter : IFlatbufferObject
   public ushort Map { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort X { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort Y { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public bool Admin { get { int o = __p.__offset(20); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public byte Role { get { int o = __p.__offset(20); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
 
   public static Offset<fb.protocol._internal.request.raw.InitCharacter> CreateInitCharacter(FlatBufferBuilder builder,
       uint uid = 0,
@@ -51,7 +51,7 @@ public struct InitCharacter : IFlatbufferObject
       ushort map = 0,
       ushort x = 0,
       ushort y = 0,
-      bool admin = false) {
+      byte role = 0) {
     builder.StartTable(9);
     InitCharacter.AddMp(builder, mp);
     InitCharacter.AddHp(builder, hp);
@@ -61,7 +61,7 @@ public struct InitCharacter : IFlatbufferObject
     InitCharacter.AddY(builder, y);
     InitCharacter.AddX(builder, x);
     InitCharacter.AddMap(builder, map);
-    InitCharacter.AddAdmin(builder, admin);
+    InitCharacter.AddRole(builder, role);
     return InitCharacter.EndInitCharacter(builder);
   }
 
@@ -74,7 +74,7 @@ public struct InitCharacter : IFlatbufferObject
   public static void AddMap(FlatBufferBuilder builder, ushort map) { builder.AddUshort(5, map, 0); }
   public static void AddX(FlatBufferBuilder builder, ushort x) { builder.AddUshort(6, x, 0); }
   public static void AddY(FlatBufferBuilder builder, ushort y) { builder.AddUshort(7, y, 0); }
-  public static void AddAdmin(FlatBufferBuilder builder, bool admin) { builder.AddBool(8, admin, false); }
+  public static void AddRole(FlatBufferBuilder builder, byte role) { builder.AddByte(8, role, 0); }
   public static Offset<fb.protocol._internal.request.raw.InitCharacter> EndInitCharacter(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<fb.protocol._internal.request.raw.InitCharacter>(o);
@@ -97,7 +97,7 @@ static public class InitCharacterVerify
       && verifier.VerifyField(tablePos, 14 /*Map*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 16 /*X*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 18 /*Y*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyField(tablePos, 20 /*Admin*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 20 /*Role*/, 1 /*byte*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -30,6 +30,7 @@ IMPLEMENT_LUA_EXTENSION(object, "fb.game.object")
 {"thread",              object::builtin::builtin_thread},
 {"ptr",                 object::builtin::builtin_ptr},
 {"near",                object::builtin::builtin_near},
+{"hidden",              object::builtin::builtin_hidden},
 END_LUA_EXTENSION; // clang-format on
 
 int object::builtin::builtin_model(lua_State* L)
@@ -849,5 +850,24 @@ int object::builtin::builtin_buffs(lua_State* L)
         i++;
     }
 
+    return 1;
+}
+
+int object::builtin::builtin_hidden(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx = lua->env<fb::game::context>("context");
+    auto me  = lua->touserdata<fb::game::object>(1);
+    if (me == nullptr || ctx->alive(*me) == false)
+        return 0;
+
+    auto you = lua->touserdata<fb::game::object>(2);
+    if (you == nullptr || ctx->alive(*you) == false)
+        return 0;
+
+    lua->pushboolean(me->hidden(*you));
     return 1;
 }

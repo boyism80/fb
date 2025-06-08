@@ -36,7 +36,7 @@ public struct Character : IFlatbufferObject
 #endif
   public byte[] GetPwArray() { return __p.__vector_as_array<byte>(8); }
   public nullable.nullable_uint? Birth { get { int o = __p.__offset(10); return o != 0 ? (nullable.nullable_uint?)(new nullable.nullable_uint()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public bool Admin { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public byte Role { get { int o = __p.__offset(12); return o != 0 ? __p.bb.Get(o + __p.bb_pos) : (byte)0; } }
   public ushort Look { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort Color { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
   public ushort Sex { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
@@ -89,7 +89,7 @@ public struct Character : IFlatbufferObject
       StringOffset nameOffset = default(StringOffset),
       StringOffset pwOffset = default(StringOffset),
       Offset<nullable.nullable_uint> birthOffset = default(Offset<nullable.nullable_uint>),
-      bool admin = false,
+      byte role = 0,
       ushort look = 0,
       ushort color = 0,
       ushort sex = 0,
@@ -161,7 +161,7 @@ public struct Character : IFlatbufferObject
     Character.AddClassType(builder, class_type);
     Character.AddState(builder, state);
     Character.AddDirection(builder, direction);
-    Character.AddAdmin(builder, admin);
+    Character.AddRole(builder, role);
     return Character.EndCharacter(builder);
   }
 
@@ -170,7 +170,7 @@ public struct Character : IFlatbufferObject
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(1, nameOffset.Value, 0); }
   public static void AddPw(FlatBufferBuilder builder, StringOffset pwOffset) { builder.AddOffset(2, pwOffset.Value, 0); }
   public static void AddBirth(FlatBufferBuilder builder, Offset<nullable.nullable_uint> birthOffset) { builder.AddOffset(3, birthOffset.Value, 0); }
-  public static void AddAdmin(FlatBufferBuilder builder, bool admin) { builder.AddBool(4, admin, false); }
+  public static void AddRole(FlatBufferBuilder builder, byte role) { builder.AddByte(4, role, 0); }
   public static void AddLook(FlatBufferBuilder builder, ushort look) { builder.AddUshort(5, look, 0); }
   public static void AddColor(FlatBufferBuilder builder, ushort color) { builder.AddUshort(6, color, 0); }
   public static void AddSex(FlatBufferBuilder builder, ushort sex) { builder.AddUshort(7, sex, 0); }
@@ -227,7 +227,7 @@ static public class CharacterVerify
       && verifier.VerifyString(tablePos, 6 /*Name*/, false)
       && verifier.VerifyString(tablePos, 8 /*Pw*/, false)
       && verifier.VerifyTable(tablePos, 10 /*Birth*/, nullable.nullable_uintVerify.Verify, false)
-      && verifier.VerifyField(tablePos, 12 /*Admin*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 12 /*Role*/, 1 /*byte*/, 1, false)
       && verifier.VerifyField(tablePos, 14 /*Look*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 16 /*Color*/, 2 /*ushort*/, 2, false)
       && verifier.VerifyField(tablePos, 18 /*Sex*/, 2 /*ushort*/, 2, false)

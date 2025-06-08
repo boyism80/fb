@@ -921,7 +921,7 @@ enum class DSL
     dexterity = 5, 
     promotion = 6, 
     class_t = 7, 
-    admin = 8, 
+    role = 8, 
     world = 9, 
     map = 10, 
     area = 11, 
@@ -942,7 +942,7 @@ inline DSL enum_parse<DSL>(const std::string k)
         { "dexterity", DSL::dexterity }, 
         { "promotion", DSL::promotion }, 
         { "class_t", DSL::class_t }, 
-        { "admin", DSL::admin }, 
+        { "role", DSL::role }, 
         { "world", DSL::world }, 
         { "map", DSL::map }, 
         { "area", DSL::area }, 
@@ -970,7 +970,7 @@ inline const char* enum_tostring<DSL>(DSL k)
         { DSL::dexterity, "dexterity" }, 
         { DSL::promotion, "promotion" }, 
         { DSL::class_t, "class_t" }, 
-        { DSL::admin, "admin" }, 
+        { DSL::role, "role" }, 
         { DSL::world, "world" }, 
         { DSL::map, "map" }, 
         { DSL::area, "area" }, 
@@ -2044,6 +2044,53 @@ inline const char* enum_tostring<REGEX>(REGEX k)
     return i->second;
 }
 
+enum class ROLE
+{
+    USER = 0, 
+    MODERATOR = 1, 
+    ADMIN = 2, 
+    SUPERADMIN = 3, 
+    OWNER = 4
+}; // end of enum 'ROLE'
+
+template <>
+inline ROLE enum_parse<ROLE>(const std::string k)
+{
+    static const std::unordered_map<std::string, ROLE> enums
+    {
+        { "USER", ROLE::USER }, 
+        { "MODERATOR", ROLE::MODERATOR }, 
+        { "ADMIN", ROLE::ADMIN }, 
+        { "SUPERADMIN", ROLE::SUPERADMIN }, 
+        { "OWNER", ROLE::OWNER }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
+template <>
+inline const char* enum_tostring<ROLE>(ROLE k)
+{
+    static const std::unordered_map<ROLE, const char*> enums
+    {
+        { ROLE::USER, "USER" }, 
+        { ROLE::MODERATOR, "MODERATOR" }, 
+        { ROLE::ADMIN, "ADMIN" }, 
+        { ROLE::SUPERADMIN, "SUPERADMIN" }, 
+        { ROLE::OWNER, "OWNER" }
+    };
+
+    auto i = enums.find(k);
+    if (i == enums.end())
+        throw std::runtime_error("no enum value");
+
+    return i->second;
+}
+
 enum class SEX
 {
     MAN = 0, 
@@ -2861,8 +2908,8 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "DSL_promotion");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::class_t);
     lua_setglobal(lua, "DSL_class_t");
-    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::admin);
-    lua_setglobal(lua, "DSL_admin");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::role);
+    lua_setglobal(lua, "DSL_role");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::world);
     lua_setglobal(lua, "DSL_world");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::DSL::map);
@@ -3195,6 +3242,16 @@ inline static void map_enum(lua_State* lua)
     lua_setglobal(lua, "REGEX_HOLD_ITEM_LIST");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::REGEX::HOLD_ITEM_COUNT);
     lua_setglobal(lua, "REGEX_HOLD_ITEM_COUNT");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ROLE::USER);
+    lua_setglobal(lua, "ROLE_USER");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ROLE::MODERATOR);
+    lua_setglobal(lua, "ROLE_MODERATOR");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ROLE::ADMIN);
+    lua_setglobal(lua, "ROLE_ADMIN");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ROLE::SUPERADMIN);
+    lua_setglobal(lua, "ROLE_SUPERADMIN");
+    lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::ROLE::OWNER);
+    lua_setglobal(lua, "ROLE_OWNER");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::MAN);
     lua_setglobal(lua, "SEX_MAN");
     lua_pushinteger(lua, (lua_Integer)fb::model::enum_value::SEX::WOMAN);
@@ -3343,7 +3400,6 @@ template <> fb::model::dsl build<fb::model::dsl>(const Json::Value& json);
 class dsl
 {
 public:
-    class admin;
     class area;
     class class_t;
     class dexterity;
@@ -3353,6 +3409,7 @@ public:
     class map;
     class point;
     class promotion;
+    class role;
     class script;
     class sex;
     class strength;
@@ -3373,30 +3430,6 @@ public:
     ~dsl()
     { }
 };
-
-class fb::model::dsl::admin
-{
-public:
-    const bool value;
-
-public:
-    admin(bool value) : 
-        value(value)
-    { }
-    admin(const Json::Value& json) : 
-        value(fb::model::build<bool>(json[0]))
-    { }
-    admin(const std::vector<std::any>& parameters) : 
-        value(any_cast<bool>(parameters[0]))
-    { }
-
-public:
-    fb::model::dsl to_dsl()
-    {
-        return fb::model::dsl(fb::model::enum_value::DSL::admin, {value});
-    }
-};
-
 
 class fb::model::dsl::area
 {
@@ -3658,6 +3691,30 @@ public:
 };
 
 
+class fb::model::dsl::role
+{
+public:
+    const fb::model::enum_value::ROLE value;
+
+public:
+    role(fb::model::enum_value::ROLE value) : 
+        value(value)
+    { }
+    role(const Json::Value& json) : 
+        value(fb::model::build<fb::model::enum_value::ROLE>(json[0]))
+    { }
+    role(const std::vector<std::any>& parameters) : 
+        value(any_cast<fb::model::enum_value::ROLE>(parameters[0]))
+    { }
+
+public:
+    fb::model::dsl to_dsl()
+    {
+        return fb::model::dsl(fb::model::enum_value::DSL::role, {value});
+    }
+};
+
+
 class fb::model::dsl::script
 {
 public:
@@ -3766,7 +3823,6 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
 {
     static auto data = std::unordered_map<fb::model::enum_value::DSL, std::function<std::vector<std::any>(const Json::Value&)>>
     {
-        { fb::model::enum_value::DSL::admin, [](const Json::Value& json) { return fb::model::dsl::admin(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::area, [](const Json::Value& json) { return fb::model::dsl::area(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::class_t, [](const Json::Value& json) { return fb::model::dsl::class_t(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::dexterity, [](const Json::Value& json) { return fb::model::dsl::dexterity(json).to_dsl().params; }},
@@ -3776,6 +3832,7 @@ inline std::vector<std::any> fb::model::dsl::parse_params(const Json::Value& jso
         { fb::model::enum_value::DSL::map, [](const Json::Value& json) { return fb::model::dsl::map(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::point, [](const Json::Value& json) { return fb::model::dsl::point(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::promotion, [](const Json::Value& json) { return fb::model::dsl::promotion(json).to_dsl().params; }},
+        { fb::model::enum_value::DSL::role, [](const Json::Value& json) { return fb::model::dsl::role(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::script, [](const Json::Value& json) { return fb::model::dsl::script(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::sex, [](const Json::Value& json) { return fb::model::dsl::sex(json).to_dsl().params; }},
         { fb::model::enum_value::DSL::strength, [](const Json::Value& json) { return fb::model::dsl::strength(json).to_dsl().params; }},

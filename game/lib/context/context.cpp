@@ -227,7 +227,7 @@ bool context::assert_tps(const fb::socket<fb::game::character>& socket) const
     if (ch == nullptr)
         return true;
 
-    return !ch->admin();
+    return ch->role() == ROLE::USER;
 }
 
 async::task<bool> context::handle_connected(fb::socket<character>& socket)
@@ -404,7 +404,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     ch.pw(response.pw);
     ch.birthday(response.birth);
     ch.updated_date(fb::model::datetime(response.updated_date));
-    ch.admin(response.admin);
+    ch.role(static_cast<ROLE>(response.role));
     ch.cls(static_cast<CLASS>(response.class_type));
     ch.color(response.color);
     ch.direction(DIRECTION(response.direction));
@@ -558,9 +558,12 @@ async::task<void> context::send(object&                     object,
         if (!exclude_self)
             object.send(stream, encrypt);
 
-        for (auto& x : object.nears(OBJECT_TYPE::CHARACTER))
+        for (auto& x : object.nears(OBJECT_TYPE::CHARACTER, true))
         {
             if (x->sight(object) == false)
+                continue;
+
+            if (object.hidden(*x))
                 continue;
 
             x->send(stream, encrypt);

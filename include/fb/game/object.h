@@ -65,8 +65,7 @@ public:
     friend fb::game::items;
 
 private:
-    bool              _visible = true;
-    fb::game::sector* _sector  = nullptr;
+    fb::game::sector* _sector = nullptr;
 
 protected:
     uint32_t                 _sequence = 0;
@@ -230,6 +229,22 @@ public:
      * @param[in]  light  The light
      */
     virtual void update_external(object& you, bool light);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual bool super_hide() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  target  The target
+     *
+     * @return     { description_of_the_return_value }
+     */
+    virtual bool hidden(const object& target) const;
 
     /**
      * @brief      { function_description }
@@ -445,20 +460,6 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @return     { description_of_the_return_value }
-     */
-    bool visible() const;
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  value  The value
-     */
-    void visible(bool value);
-
-    /**
-     * @brief      { function_description }
-     *
      * @param[in]  right  The right
      *
      * @return     { description_of_the_return_value }
@@ -517,11 +518,12 @@ public:
     /**
      * @brief      { function_description }
      *
-     * @param[in]  type  The type
+     * @param[in]  type                 The type
+     * @param[in]  contains_super_hide  The contains super hide
      *
      * @return     { description_of_the_return_value }
      */
-    std::vector<object*> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
+    std::vector<object*> nears(OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN, bool contains_super_hide = false) const;
 
     /**
      * @brief      { function_description }
@@ -944,6 +946,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_buffs(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_hidden(lua_State* L);
 };
 
 /**

@@ -63,6 +63,7 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"web",                 character::builtin::builtin_web},
 {"birthday",            character::builtin::builtin_birthday},
 {"active",              character::builtin::builtin_active},
+{"super_hide",          character::builtin::builtin_super_hide},
 {"creature",            character::builtin::builtin_creature},
 {"dialog",              character::builtin::builtin_dialog},
 {"list",                character::builtin::builtin_list},
@@ -650,7 +651,7 @@ int character::builtin::builtin_assert(lua_State* L)
     }
 }
 
-int character::builtin::builtin_admin(lua_State* L)
+int character::builtin::builtin_role(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -664,12 +665,12 @@ int character::builtin::builtin_admin(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushboolean(ch->admin());
+        lua->pushinteger(ch->role());
         return 1;
     }
     else
     {
-        ch->admin(lua->toboolean(2));
+        ch->role(static_cast<ROLE>(lua->tointeger(2)));
         return 0;
     }
 }
@@ -1962,6 +1963,30 @@ int character::builtin::builtin_active(lua_State* L)
 
     ch->items.active(slot);
     return 0;
+}
+
+int character::builtin::builtin_super_hide(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx  = lua->env<fb::game::context>("context");
+    auto argc = lua->argc();
+    auto ch   = lua->touserdata<character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    if (argc == 1)
+    {
+        lua->pushboolean(ch->super_hide());
+        return 1;
+    }
+    else
+    {
+        ch->super_hide(lua->toboolean(2));
+        return 0;
+    }
 }
 
 int character::builtin::builtin_send_mail(lua_State* L)

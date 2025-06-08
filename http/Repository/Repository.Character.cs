@@ -40,7 +40,7 @@ namespace Http.Reepository
                     `id`,
                     `name`,
                     `pw`,
-                    `admin`,
+                    `role`,
                     `birth`,
                     `look`,
                     `color`,
@@ -82,7 +82,7 @@ namespace Http.Reepository
                     {value.Id.Escape()},
                     {value.Name.Escape()},
                     {value.Pw.Escape()},
-                    {value.Admin.Escape()},
+                    {((byte)value.Role).Escape()},
                     {value.Birth.Escape()},
                     {value.Look.Escape()},
                     {value.Color.Escape()},
@@ -122,7 +122,7 @@ namespace Http.Reepository
                     {value.UpdatedDate.Escape()})
                 ON DUPLICATE KEY UPDATE 
                     `pw`=VALUES(`pw`),
-                    `admin`=VALUES(`admin`),
+                    `role`=VALUES(`role`),
                     `birth`=VALUES(`birth`),
                     `look`=VALUES(`look`),
                     `color`=VALUES(`color`),

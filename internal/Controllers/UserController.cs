@@ -136,7 +136,7 @@ namespace Internal.Controllers
                 PositionX = request.X,
                 PositionY = request.Y,
                 Direction = (byte)Direction.Bottom,
-                Admin = request.Admin
+                Role = (Role)request.Role
             };
             _dbContext.Character.Set(ch);
 

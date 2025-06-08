@@ -14,32 +14,6 @@ update_external::update_external(const fb::game::character& ch, const fb::game::
 #endif
 
 #ifndef BOT
-bool update_external::is_detected() const
-{
-    if (this->ch.admin())
-        return true;
-
-    if (&this->ch == &this->to)
-        return true;
-
-    if (this->to.is(OBJECT_TYPE::CHARACTER) == false)
-        return false;
-
-    auto& you = static_cast<const fb::game::character&>(this->to);
-    if (you.detect())
-        return true;
-
-    auto& mine = this->ch.group();
-    if (mine == nullptr)
-        return false;
-
-    auto& your = you.group();
-    if (your == nullptr)
-        return false;
-
-    return mine.get() == your.get();
-}
-
 HEAD_MARKER update_external::head_marker() const
 {
     if (&this->ch == &this->to)
@@ -79,25 +53,7 @@ async::task<void> update_external::serialize(fb::stream_writer<big_endian>& writ
     writer.write<uint32_t>(this->ch.sequence());
     writer.write<uint8_t>(this->ch.state() == STATE::DISGUISE);  // 변신유무
     writer.write<uint8_t>(static_cast<uint8_t>(this->ch.sex())); // sex
-
-    switch (this->ch.state())
-    {
-    case STATE::HALF_CLOACK:
-    {
-        if (this->is_detected())
-            writer.write<uint8_t>(static_cast<uint8_t>(STATE::HALF_CLOACK));
-        else
-            writer.write<uint8_t>(static_cast<uint8_t>(STATE::CLOACK));
-    }
-    break;
-
-    default:
-    {
-        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state()));
-    }
-    break;
-    }
-
+    writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state_to(this->to)));
     if (this->ch.state() == STATE::DISGUISE)
     {
         writer.write<uint16_t>(this->ch.disguise().value());

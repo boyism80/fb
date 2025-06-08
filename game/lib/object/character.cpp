@@ -172,16 +172,16 @@ uint32_t character::fd()
     return this->_socket.fd();
 }
 
-bool character::admin() const
+ROLE character::role() const
 {
-    return this->_admin;
+    return this->_role;
 }
 
-void character::admin(bool value)
+void character::role(ROLE value)
 {
     this->assert_thread();
 
-    this->_admin = value;
+    this->_role = value;
 }
 
 void character::attack(DURATION duration)
@@ -438,6 +438,42 @@ void character::sex(SEX value)
 STATE character::state() const
 {
     this->assert_thread();
+
+    return this->_state;
+}
+
+STATE character::state_to(const fb::game::object& to) const
+{
+    this->assert_thread();
+
+    if (this == &to)
+        return this->_state;
+
+    if (to.is(OBJECT_TYPE::CHARACTER) == false)
+        return this->_state;
+
+    const auto& ch = static_cast<const fb::game::character&>(to);
+
+    if (this->_state == STATE::HALF_CLOACK)
+    {
+        if (this->role() < ch.role())
+            return STATE::HALF_CLOACK;
+
+        if (ch.detect())
+            return STATE::HALF_CLOACK;
+
+        auto& g1 = this->_group;
+        auto& g2 = ch._group;
+        if (g1 != nullptr && g2 != nullptr && g1.get() == g2.get())
+            return STATE::HALF_CLOACK;
+
+        return STATE::CLOACK;
+    }
+
+    if (this->_state == STATE::TRANSLUCENCY)
+    {
+        return STATE::CLOACK;
+    }
 
     return this->_state;
 }
@@ -1051,10 +1087,10 @@ bool character::condition(const std::vector<fb::model::dsl>& conditions) const
                 return false;
         }
 
-        case DSL::admin:
+        case DSL::role:
         {
-            auto params = fb::model::dsl::admin(dsl.params);
-            if (params.value != this->_admin)
+            auto params = fb::model::dsl::role(dsl.params);
+            if (params.value > this->_role)
                 return false;
         }
         break;
@@ -1104,7 +1140,7 @@ fb::protocol::internal::Character character::to_protocol() const
     dto.pw               = this->_pw;
     dto.birth            = this->_birthday;
     dto.updated_date     = fb::model::datetime().to_string();
-    dto.admin            = this->_admin;
+    dto.role             = static_cast<uint8_t>(this->_role);
     dto.look             = this->_look;
     dto.color            = this->_color;
     dto.sex              = (uint16_t)this->_sex;
@@ -1744,6 +1780,45 @@ void character::buff_hit(uint8_t value)
 {
     this->assert_thread();
     this->_hit.buff = value;
+}
+
+bool character::super_hide() const
+{
+    return this->_super_hide;
+}
+
+void character::super_hide(bool enabled)
+{
+    this->_super_hide = enabled;
+    if (enabled)
+    {
+        for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+        {
+            if (this->hidden(*obj))
+                obj->hide(*this); // TODO: 반대로
+            else
+                this->update_external(*obj, false);
+        }
+    }
+    else
+    {
+        for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+        {
+            this->update_external(*obj, false);
+        }
+    }
+}
+
+bool character::hidden(const object& target) const
+{
+    if (this->super_hide() == false)
+        return false;
+
+    if (target.is(OBJECT_TYPE::CHARACTER) == false)
+        return true;
+
+    auto& ch = static_cast<const character&>(target);
+    return this->role() > ch.role();
 }
 
 async::task<void> character::death_penalty()

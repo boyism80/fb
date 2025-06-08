@@ -44,7 +44,7 @@ CREATE TABLE `board` (
   PRIMARY KEY (`id`),
   KEY `fk.board.owner_idx` (`user`),
   CONSTRAINT `fk.board.user` FOREIGN KEY (`user`) REFERENCES `name` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -179,7 +179,7 @@ CREATE TABLE `mail` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`,`user`),
   KEY `IX_UNAME` (`user`)
-) ENGINE=InnoDB DEFAULT CHARSET=euckr;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=euckr;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -210,7 +210,7 @@ CREATE TABLE `name` (
   `updated_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_bin;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,7 +293,7 @@ CREATE TABLE `user` (
   `name` varchar(256) NOT NULL,
   `pw` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `birth` int unsigned DEFAULT NULL,
-  `admin` tinyint unsigned NOT NULL DEFAULT '0',
+  `role` smallint unsigned NOT NULL DEFAULT '0',
   `look` smallint unsigned NOT NULL DEFAULT '0',
   `color` tinyint unsigned NOT NULL DEFAULT '0',
   `sex` tinyint unsigned NOT NULL DEFAULT '0',
@@ -705,4 +705,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-25  1:43:56
+-- Dump completed on 2025-06-09  4:59:58

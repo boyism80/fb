@@ -155,7 +155,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool movable(const fb::model::point16_t position) const;
+    bool movable(const object& object, const fb::model::point16_t position) const;
 
     /**
      * @brief      { function_description }

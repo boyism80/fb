@@ -147,30 +147,34 @@ int map::builtin::builtin_movable(lua_State* L)
     if (map == nullptr)
         return 0;
 
+    auto obj = lua->touserdata<fb::game::object>(2);
+    if (obj == nullptr)
+        return 0;
+
     auto position = fb::model::point16_t();
-    if (lua_istable(L, 2))
+    if (lua_istable(L, 3))
     {
-        lua_rawgeti(L, 2, 1);
+        lua_rawgeti(L, 3, 1);
         position.x = (uint16_t)lua->tointeger(-1);
         lua->remove(-1);
 
-        lua_rawgeti(L, 2, 2);
+        lua_rawgeti(L, 3, 2);
         position.y = (uint16_t)lua->tointeger(-1);
         lua->remove(-1);
     }
-    else if (lua_isnumber(L, 2) && lua_isnumber(L, 3))
+    else if (lua_isnumber(L, 3) && lua_isnumber(L, 4))
     {
-        position.x = (uint16_t)lua->tointeger(2);
-        position.y = (uint16_t)lua->tointeger(3);
+        position.x = (uint16_t)lua->tointeger(3);
+        position.y = (uint16_t)lua->tointeger(4);
     }
-    else if (lua_isuserdata(L, 2))
+    else if (lua_isuserdata(L, 3))
     {
-        auto obj = lua->touserdata<object>(2);
+        auto obj = lua->touserdata<object>(3);
         if (obj == nullptr)
             return 0;
 
         auto argc = lua->argc();
-        auto step = lua->tointeger(3, 1);
+        auto step = lua->tointeger(4, 1);
 
         position = obj->front_position(step);
     }
@@ -181,7 +185,7 @@ int map::builtin::builtin_movable(lua_State* L)
     }
 
     return ctx->builtin_with_thread(*map, lua, 1, [=]() {
-        lua->pushboolean(map->movable(position));
+        lua->pushboolean(map->movable(*obj, position));
     });
 }
 

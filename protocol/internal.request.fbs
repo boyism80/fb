@@ -59,7 +59,7 @@ table InitCharacter {
   map: ushort;
   x: ushort;
   y: ushort;
-  admin: bool;
+  role: ubyte;
 }
 
 table Authenticate {

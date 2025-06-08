@@ -64,8 +64,8 @@ private:
     uint32_t                _id = 0xFFFFFFFF;
     fb::socket<character>&  _socket;
     fb::thread*             _thread = nullptr;
-    bool                    _admin  = false;
     std::string             _name;
+    ROLE                    _role;
     std::string             _pw;
     std::optional<uint32_t> _birthday;
     fb::model::datetime     _updated_date;
@@ -95,6 +95,7 @@ private:
     bool                    _detect        = false;
     std::vector<mob*>       _spawned_mobs  = {};
     fb::model::datetime     _last_spell_cast;
+    bool                    _super_hide        = false;
     uint8_t                 _spell_cast_count  = 0;
     bool                    _options[0x0B + 1] = {
         1,
@@ -216,14 +217,14 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    bool admin() const;
+    ROLE role() const;
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  value  The value
      */
-    void admin(bool value);
+    void role(ROLE value);
 
     /**
      * @brief      { function_description }
@@ -465,6 +466,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     STATE state() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  to    { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    STATE state_to(const fb::game::object& to) const;
 
     /**
      * @brief      { function_description }
@@ -1350,6 +1360,29 @@ public:
      * @param[in]  value  The value
      */
     void buff_hit(uint8_t value) override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool super_hide() const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  enabled  Indicates if enabled
+     */
+    void super_hide(bool enabled);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  target  The target
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool hidden(const object& target) const override final;
 #pragma endregion
 };
 
@@ -1516,7 +1549,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_admin(lua_State* L);
+    static int builtin_role(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1886,6 +1919,15 @@ public:
      * @return     { description_of_the_return_value }
      */
     static int builtin_active(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_super_hide(lua_State* L);
 
     /**
      * @brief      { function_description }

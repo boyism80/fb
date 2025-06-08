@@ -17,7 +17,7 @@ function ON_CAST_2015_LOOKUP(me, you, direction)
         mine_y = your_y
     end
     
-    if map:movable(mine_x, mine_y) == false then
+    if map:movable(me, mine_x, mine_y) == false then
         return false
     end
 

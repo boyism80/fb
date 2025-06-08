@@ -52,7 +52,7 @@ void rezen::spawn(std::thread::id thread_id)
     for (int i = 0; i < spawn_count; i++)
     {
         auto mob = this->_context.make<fb::game::mob>(this->_context.model.mob[this->_model.mob],
-                                                      fb::game::mob::initial_params{.alive = true, .rezen = this});
+                                                      mob::initial_params{.alive = true, .rezen = this});
 
         mob->direction(DIRECTION(std::rand() % 4));
         mob->heal(mob->base_hp());
@@ -77,7 +77,7 @@ void rezen::spawn(std::thread::id thread_id)
         }
 
         mob->action_time(now);
-        mob->visible(true);
+        mob->hidden(false);
     }
 
     this->_respawn_time.reset();
@@ -89,7 +89,7 @@ mob::mob(fb::game::context& context, const fb::model::mob& model, const initial_
     _rezen(params.rezen),
     owner(params.owner)
 {
-    this->visible(params.alive);
+    this->hidden(!params.alive);
     if (params.alive)
     {
         this->heal(this->base_hp());
@@ -194,7 +194,8 @@ life* mob::repair_target()
     this->assert_thread();
 
     auto lost_target = this->_target == nullptr || this->context.alive(*this->_target) == false ||
-                       this->_target->alive() == false || this->sight(*this->_target) == false;
+                       this->_target->alive() == false || this->sight(*this->_target) == false ||
+                       this->_target->hidden(*this);
 
     if (lost_target)
     {
@@ -475,18 +476,28 @@ bool mob::move(DIRECTION direction)
     return fb::game::object::move(direction);
 }
 
-const std::vector<item*>& fb::game::mob::items() const
+const std::vector<item*>& mob::items() const
 {
     return this->_items;
 }
 
-bool fb::game::mob::push_item(item& i)
+bool mob::push_item(item& i)
 {
     if (this->_items.size() >= CONTAINER_CAPACITY)
         return false;
 
     this->_items.push_back(&i);
     return true;
+}
+
+bool mob::hidden(const object& target) const
+{
+    return this->_hidden;
+}
+
+void mob::hidden(bool enabled)
+{
+    this->_hidden = enabled;
 }
 
 uint32_t mob::base_hp() const

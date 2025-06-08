@@ -73,11 +73,11 @@
             "desc": "class"
         }
     ],
-    "admin": [
+    "role": [
         {
             "name": "value",
-            "type": "bool",
-            "desc": "is admin"
+            "type": "ROLE",
+            "desc": "role"
         }
     ],
     "world": [
