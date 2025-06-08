@@ -153,7 +153,7 @@ bool map::in_ground(const fb::model::point16_t position) const
     return position.x < this->_size.width && position.y < this->_size.height;
 }
 
-bool map::movable(const fb::model::point16_t position) const
+bool map::movable(const object& object, const fb::model::point16_t position) const
 {
     if (this->in_ground(position) == false)
         return false;
@@ -167,7 +167,7 @@ bool map::movable(const fb::model::point16_t position) const
 
     for (const auto& [key, value] : this->objects)
     {
-        if (value.visible() == false)
+        if (value.hidden(object))
             continue;
 
         if (value.is(OBJECT_TYPE::ITEM))
@@ -203,7 +203,7 @@ bool map::movable(const object& object, DIRECTION direction) const
         break;
     }
 
-    if (this->movable(position) == false)
+    if (this->movable(object, position) == false)
         return false;
 
     return true;

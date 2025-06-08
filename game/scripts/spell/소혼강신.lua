@@ -38,16 +38,16 @@ function ON_CAST_4001(me, spell, message)
 
     local x, y = me:position()
     local direction = DIRECTION_BOTTOM
-    if x > 0 and map:movable(x-1, y) then
+    if x > 0 and map:movable(me, x-1, y) then
         x = x - 1
         direction = DIRECTION_RIGHT
-    elseif x < map:width() and map:movable(x+1, y) then
+    elseif x < map:width() and map:movable(me, x+1, y) then
         x = x + 1
         direction = DIRECTION_LEFT
-    elseif y > 0 and map:movable(x, y-1) then
+    elseif y > 0 and map:movable(me, x, y-1) then
         y = y - 1
         direction = DIRECTION_BOTTOM
-    elseif y < map:width() and map:movable(x, y+1) then
+    elseif y < map:width() and map:movable(me, x, y+1) then
         y = y + 1
         direction = DIRECTION_TOP
     end

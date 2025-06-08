@@ -79,25 +79,7 @@ async::task<void> update_external::serialize(fb::stream_writer<big_endian>& writ
     writer.write<uint32_t>(this->ch.sequence());
     writer.write<uint8_t>(this->ch.state() == STATE::DISGUISE);  // 변신유무
     writer.write<uint8_t>(static_cast<uint8_t>(this->ch.sex())); // sex
-
-    switch (this->ch.state())
-    {
-    case STATE::HALF_CLOACK:
-    {
-        if (this->is_detected())
-            writer.write<uint8_t>(static_cast<uint8_t>(STATE::HALF_CLOACK));
-        else
-            writer.write<uint8_t>(static_cast<uint8_t>(STATE::CLOACK));
-    }
-    break;
-
-    default:
-    {
-        writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state()));
-    }
-    break;
-    }
-
+    writer.write<uint8_t>(static_cast<uint8_t>(this->ch.state_to(this->to)));
     if (this->ch.state() == STATE::DISGUISE)
     {
         writer.write<uint16_t>(this->ch.disguise().value());

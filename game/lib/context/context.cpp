@@ -558,9 +558,12 @@ async::task<void> context::send(object&                     object,
         if (!exclude_self)
             object.send(stream, encrypt);
 
-        for (auto& x : object.nears(OBJECT_TYPE::CHARACTER))
+        for (auto& x : object.nears(OBJECT_TYPE::CHARACTER, true))
         {
             if (x->sight(object) == false)
+                continue;
+
+            if (object.hidden(*x))
                 continue;
 
             x->send(stream, encrypt);

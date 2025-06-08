@@ -442,6 +442,42 @@ STATE character::state() const
     return this->_state;
 }
 
+STATE character::state_to(const fb::game::object& to) const
+{
+    this->assert_thread();
+
+    if (this == &to)
+        return this->_state;
+
+    if (to.is(OBJECT_TYPE::CHARACTER) == false)
+        return this->_state;
+
+    const auto& ch = static_cast<const fb::game::character&>(to);
+
+    if (this->_state == STATE::HALF_CLOACK)
+    {
+        if (ch.admin())
+            return STATE::HALF_CLOACK;
+
+        if (ch.detect())
+            return STATE::HALF_CLOACK;
+
+        auto& g1 = this->_group;
+        auto& g2 = ch._group;
+        if (g1 != nullptr && g2 != nullptr && g1.get() == g2.get())
+            return STATE::HALF_CLOACK;
+
+        return STATE::CLOACK;
+    }
+
+    if (this->_state == STATE::TRANSLUCENCY)
+    {
+        return STATE::CLOACK;
+    }
+
+    return this->_state;
+}
+
 void character::state(STATE value)
 {
     this->assert_thread();
@@ -1744,6 +1780,44 @@ void character::buff_hit(uint8_t value)
 {
     this->assert_thread();
     this->_hit.buff = value;
+}
+
+bool character::super_hide() const
+{
+    return this->_super_hide;
+}
+
+void character::super_hide(bool enabled)
+{
+    this->_super_hide = enabled;
+    if (enabled)
+    {
+        for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+        {
+            if (this->hidden(*obj))
+                obj->hide(*this); // TODO: 반대로
+            else
+                this->update_external(*obj, false);
+        }
+    }
+    else
+    {
+        for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
+        {
+            this->update_external(*obj, false);
+        }
+    }
+}
+
+bool character::hidden(const object& target) const
+{
+    if (this->super_hide())
+    {
+        // TODO: user level check
+        return true;
+    }
+
+    return false;
 }
 
 async::task<void> character::death_penalty()

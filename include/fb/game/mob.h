@@ -94,6 +94,7 @@ private:
     uint8_t             _buff_dam      = 0;
     uint8_t             _buff_hit      = 0;
     std::vector<item*>  _items;
+    bool                _hidden = false;
 
 public:
     mob::listener_t&     listener;
@@ -470,6 +471,22 @@ public:
      * @return     { description_of_the_return_value }
      */
     bool push_item(item& i);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  target  The target
+     *
+     * @return     { description_of_the_return_value }
+     */
+    bool hidden(const object& target) const override final;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  enabled  Indicates if enabled
+     */
+    void hidden(bool enabled);
 };
 
 /**

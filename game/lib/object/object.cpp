@@ -78,6 +78,16 @@ void object::update_external(object& to, bool light)
     this->listener.on_update_external(*this, to, light);
 }
 
+bool object::super_hide() const
+{
+    return false;
+}
+
+bool object::hidden(const object& target) const
+{
+    return false;
+}
+
 async::task<void> object::destroy(DESTROY_TYPE destroy_type)
 {
     this->assert_thread();
@@ -192,7 +202,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         if (this == obj)
             continue;
 
-        if (this->visible())
+        if (this->hidden(*obj) == false)
         {
             auto before_sight = obj->sight(before);
             auto after_sight  = obj->sight(*this);
@@ -211,7 +221,7 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         }
 
         // 내 시야에 상대가 추가됨
-        if (obj->visible())
+        if (obj->hidden(*this) == false)
         {
             if (!sight(before, obj->_position, this->_map) && this->sight(*obj))
             {
@@ -245,7 +255,7 @@ bool object::move(DIRECTION direction)
         return false;
 
     auto after = this->side_position(direction);
-    if (this->_map->movable(after) == false)
+    if (this->_map->movable(*this, after) == false)
         return false;
 
     if (this->direction(direction) == false)
@@ -352,9 +362,6 @@ bool object::sight(const object& object) const
         return false;
 
     if (this->_map != object.map())
-        return false;
-
-    if (object.visible() == false)
         return false;
 
     return this->sight(object._position);
@@ -590,7 +597,10 @@ object* object::side(DIRECTION direction, OBJECT_TYPE type) const
         return nullptr;
 
     auto nears = map->nears(this->_position, type);
-    auto found = std::find_if(nears.begin(), nears.end(), [&front](auto x) {
+    auto found = std::find_if(nears.begin(), nears.end(), [this, &front](auto x) {
+        if (x->hidden(*this))
+            return false;
+
         return x->position() == front;
     });
 
@@ -632,7 +642,10 @@ std::vector<object*> object::sides(DIRECTION direction, OBJECT_TYPE type) const
             throw std::exception();
 
         auto nears = map->nears(this->_position, type);
-        std::copy_if(nears.begin(), nears.end(), std::back_inserter(result), [&front](auto x) {
+        std::copy_if(nears.begin(), nears.end(), std::back_inserter(result), [this, &front](auto x) {
+            if (x->hidden(*this))
+                return false;
+
             return x->position() == front;
         });
     }
@@ -664,6 +677,9 @@ std::vector<object*> object::sight_in(OBJECT_TYPE type) const
         if (obj->is(type) == false)
             continue;
 
+        if (obj->hidden(*this))
+            continue;
+
         if (this->sight(*obj) == false && obj->sight(*this))
             continue;
 
@@ -673,7 +689,7 @@ std::vector<object*> object::sight_in(OBJECT_TYPE type) const
     return std::move(result);
 }
 
-std::vector<object*> object::nears(OBJECT_TYPE type) const
+std::vector<object*> object::nears(OBJECT_TYPE type, bool contains_super_hide) const
 {
     if (this->_map == nullptr)
         return {};
@@ -684,7 +700,7 @@ std::vector<object*> object::nears(OBJECT_TYPE type) const
         if (this == obj)
             continue;
 
-        if (obj->visible() == false)
+        if (!contains_super_hide && obj->hidden(*this))
             continue;
 
         if (type != OBJECT_TYPE::UNKNOWN && obj->is(type) == false)
@@ -694,23 +710,6 @@ std::vector<object*> object::nears(OBJECT_TYPE type) const
     }
 
     return std::move(result);
-}
-
-bool object::visible() const
-{
-    this->assert_thread();
-
-    return this->_visible;
-}
-
-void object::visible(bool value)
-{
-    this->assert_thread();
-
-    if (this->_visible == value)
-        return;
-
-    this->_visible = value;
 }
 
 double object::distance(const object& right) const

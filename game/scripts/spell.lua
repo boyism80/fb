@@ -130,7 +130,7 @@ function CREATURE_AREA_SPELL(creature, index)
     end
 end
 
-function TELEPORT_LOOKUP(map, x, y, direction)
+function TELEPORT_LOOKUP(me, map, x, y, direction)
     math.randomseed(seed())
     local rand_x = nil
     local rand_y = nil
@@ -150,7 +150,7 @@ function TELEPORT_LOOKUP(map, x, y, direction)
             rand_y = 1
         end
 
-        if map:movable(x+rand_x, y+rand_y) then
+        if map:movable(me, x+rand_x, y+rand_y) then
             return x+rand_x, y+rand_y
         end
     end
