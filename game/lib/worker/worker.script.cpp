@@ -63,15 +63,9 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         scripts.insert(v.script);
     }
 
-#if defined DEBUG | defined _DEBUG
-    for (auto& script : scripts)
-    {
-        if (std::filesystem::exists(script) == false)
-            fb::console::comment("  - {} 파일을 찾을 수 없습니다.", script);
-    }
-#endif
-
-    static auto& ist = fb::lua::context_pool::ist();
+    static auto& ist   = fb::lua::context_pool::ist();
+    static auto  logs  = std::set<std::string>{};
+    static auto  mutex = std::mutex{};
     for (auto& [_, root] : ist)
     {
         auto& thread = root->initial_thread();
@@ -79,7 +73,19 @@ fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_re
         {
             co_yield [&thread, root, script]() -> async::task<void> {
                 co_await thread.dispatch([root, script](auto&) -> async::task<void> {
-                    root->dump(script);
+                    try
+                    {
+                        root->dump(script);
+                    }
+                    catch (std::exception& e)
+                    {
+                        auto _ = std::lock_guard(mutex);
+                        if (logs.contains(e.what()) == false)
+                        {
+                            logs.insert(e.what());
+                            fb::console::comment("    - {}", e.what());
+                        }
+                    }
                     co_return;
                 });
             };

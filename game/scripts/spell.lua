@@ -134,28 +134,33 @@ function TELEPORT_LOOKUP(me, map, x, y, direction)
     math.randomseed(seed())
     local rand_x = nil
     local rand_y = nil
+    local new_direction = nil
     for i = 0, 3 do
         local case = (direction + i) % 4
         if case == DIRECTION_LEFT then
             rand_x = -1
             rand_y = 0
+            new_direction = DIRECTION_RIGHT
         elseif case == DIRECTION_TOP then
             rand_x = 0
             rand_y = -1
+            new_direction = DIRECTION_BOTTOM
         elseif case == DIRECTION_RIGHT then
             rand_x = 1
             rand_y = 0
+            new_direction = DIRECTION_LEFT
         else
             rand_x = 0
             rand_y = 1
+            new_direction = DIRECTION_TOP
         end
 
         if map:movable(me, x+rand_x, y+rand_y) then
-            return x+rand_x, y+rand_y
+            return x+rand_x, y+rand_y, new_direction
         end
     end
 
-    return x, y
+    return x, y, new_direction
 end
 
 function relative_buff_name(buff_name)
@@ -260,9 +265,13 @@ function assert_map_damage(me, you)
     return true
 end
 
-function spell_cast(me, you, spell, mp, sound, effect, no_assert)
+function spell_cast(me, you, spell, mp, sound, effect, no_assert, default_action)
     if no_assert == nil then
         no_assert = false
+    end
+
+    if default_action == nil then
+        default_action = true
     end
 
     if not no_assert then
@@ -295,7 +304,10 @@ function spell_cast(me, you, spell, mp, sound, effect, no_assert)
             you:message(string.format('%s님이 %s 외워주셨습니다.', me:name(), name_with(spell:name())))
         end
     end
-    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+
+    if default_action then
+        me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    end
     return true
 end
 

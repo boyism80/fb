@@ -27,7 +27,7 @@ function sample_message()
     broadcast('message BROWN', MESSAGE_TYPE_BROWN)
 end
 
-function func(me)
+function func(me, val1, val2, val3)
     -- local items = me:items()
 
     -- for slot, item in pairs(items) do
@@ -50,4 +50,8 @@ function func(me)
     -- for _, near in pairs(nears) do
     --     near:chat(near:name())
     -- end
+    -- sleep(1000)
+    me:chat(val3)
+
+    return 'hello', 'world'
 end

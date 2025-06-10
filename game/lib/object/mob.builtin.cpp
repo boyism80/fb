@@ -24,21 +24,29 @@ int mob::builtin::builtin_target(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    auto target = lua->touserdata<fb::game::life>(2);
-    auto n      = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*mob, lua, n, [=]() {
-        if (argc == 1)
-        {
-            if (mob->_target == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(mob->_target);
-        }
-        else
-        {
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *mob, [=]() {
+            auto target = mob->target();
+            return lua->ensure_resume(*ctx, *mob, [=]() {
+                if (target == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(target);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto target = lua->touserdata<fb::game::life>(2);
+        return lua->ensure_yield(*ctx, *mob, [=]() {
             mob->target(target);
-        }
-    });
+            return lua->ensure_resume(*ctx, *mob, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int mob::builtin::builtin_oblivion(lua_State* L)
@@ -53,21 +61,29 @@ int mob::builtin::builtin_oblivion(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    auto oblivion = lua->touserdata<fb::game::life>(2);
-    auto n        = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*mob, lua, n, [=]() {
-        if (argc == 1)
-        {
-            if (mob->_oblivion == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(mob->_oblivion);
-        }
-        else
-        {
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *mob, [=]() {
+            auto oblivion = mob->oblivion();
+            return lua->ensure_resume(*ctx, *mob, [=]() {
+                if (oblivion == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(oblivion);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto oblivion = lua->touserdata<fb::game::life>(2);
+        return lua->ensure_yield(*ctx, *mob, [=]() {
             mob->oblivion(oblivion);
-        }
-    });
+            return lua->ensure_resume(*ctx, *mob, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int mob::builtin::builtin_owner(lua_State* L)
@@ -82,11 +98,15 @@ int mob::builtin::builtin_owner(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    return ctx->builtin_with_thread(*mob, lua, 1, [=]() {
-        if (ctx->alive(*mob->owner))
-            lua->pushobject(mob->owner);
-        else
-            lua->pushnil();
+    return lua->ensure_yield(*ctx, *mob, [=]() {
+        auto owner = mob->owner;
+        return lua->ensure_resume(*ctx, *mob, [=]() {
+            if (owner == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(owner);
+            return 1;
+        });
     });
 }
 
@@ -102,14 +122,18 @@ int mob::builtin::builtin_items(lua_State* L)
     if (mob == nullptr || ctx->alive(*mob) == false)
         return 0;
 
-    return ctx->builtin_with_thread(*mob, lua, 1, [=]() {
-        lua->new_table();
-        auto i = 0;
-        for (auto item : mob->items())
-        {
-            lua->pushobject(item);
-            lua_rawseti(L, -2, i + 1);
-            i++;
-        }
+    return lua->ensure_yield(*ctx, *mob, [=]() {
+        auto buffer = mob->items();
+        return lua->ensure_resume(*ctx, *mob, [=]() {
+            lua->new_table();
+            auto i = 0;
+            for (auto item : buffer)
+            {
+                lua->pushobject(item);
+                lua_rawseti(L, -2, i + 1);
+                i++;
+            }
+            return 1;
+        });
     });
 }

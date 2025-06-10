@@ -170,6 +170,9 @@ async::task<void> fb::thread::dispatch(const handle_func_type<void>& fn)
 
 async::task<void> fb::thread::switching()
 {
+    if (this->id() == std::this_thread::get_id())
+        co_return;
+
     co_await this->dispatch([](auto& thread) -> async::task<void> {
         co_return;
     });

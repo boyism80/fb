@@ -20,14 +20,19 @@ function ON_CAST_3(me, spell, name)
     local sound = 29
     local effect = 16
     local mp = 30
-    if spell_cast(me, nil, nil, mp) then
+    if spell_cast(me, nil, nil, mp, nil, nil, nil, false) then
         local x, y = ch:position()
         local direction = me:direction()
         local new_x, new_y, direction = TELEPORT_LOOKUP(me, map, x, y, direction)
         me:map(map, new_x, new_y)
-        me:direction(direction)
-        me:sound(sound)
-        me:effect(effect)
-        me:message(string.format('%s 외웠습니다.', name_with(spell:name())))
+        me:script('spell/출두.lua', "ON_CAST_3_BULK", spell:name(), map:model():name(), {new_x, new_y}, direction, sound, effect)
     end
+end
+
+function ON_CAST_3_BULK(me, spell, map, position, direction, sound, effect)
+    me:direction(direction)
+    me:sound(sound)
+    me:effect(effect)
+    me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
+    me:message(string.format('%s 외웠습니다.', name_with(spell)))
 end

@@ -14,7 +14,7 @@ function ON_CAST_4014(me, you, spell)
     if error ~= nil then
         return me:message(error)
     end
-    if not spell_cast(me, you, spell, 300, 8, 11, true) then
+    if not spell_cast(me, you, spell, 300, 8, 11, nil, true) then
         return
     end
 

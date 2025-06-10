@@ -56,6 +56,8 @@ namespace fb {
 
 class thread;
 class thread_container;
+class thread_switchable;
+class context;
 
 } // namespace fb
 
@@ -171,7 +173,8 @@ private:
     bool         _auto_release = false;
 
 protected:
-    lua_State* _ctx = nullptr;
+    lua_State*  _ctx = nullptr;
+    fb::thread& _initial_thread;
 
 public:
     context* owner = nullptr;
@@ -180,14 +183,16 @@ protected:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      ctx   The context
+     * @param      ctx             The context
+     * @param      initial_thread  The initial thread
      */
-    context(lua_State* ctx, context* parent = nullptr);
+    context(lua_State* ctx, fb::thread& initial_thread);
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      ctx    The context
-     * @param      owner  The owner
+     * @param      ctx     The context
+     * @param      owner   The owner
+     * @param      parent  The parent
      */
     context(lua_State* ctx, context& owner, context* parent = nullptr);
     /**
@@ -671,17 +676,19 @@ public:
      *
      * @param[in]  argc          The count of arguments
      * @param[in]  auto_release  The automatic release
+     * @param      n             { parameter_description }
      *
      * @return     { description_of_the_return_value }
      */
-    [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true);
+    [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true, int* n = nullptr);
 
     /**
      * @brief      { function_description }
      *
      * @param[in]  argc  The count of arguments
+     * @param      n     { parameter_description }
      */
-    void resume(int argc);
+    void resume(int argc, int* n = nullptr);
     /**
      * @brief      { function_description }
      *
@@ -729,6 +736,29 @@ public:
      * @return     { description_of_the_return_value }
      */
     context* parent() const;
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ctx   The context
+     * @param      obj   The object
+     * @param[in]  fn    The function
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::function<int()> fn);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      ctx           The context
+     * @param      obj           The object
+     * @param[in]  fn            The function
+     * @param[in]  force_resume  The force resume
+     *
+     * @return     { description_of_the_return_value }
+     */
+    int ensure_resume(fb::context& ctx, fb::thread_switchable& obj, std::function<int()> fn, bool force_resume = false);
 
 public:
     operator lua_State* () const;
@@ -781,7 +811,6 @@ public:
 private:
     bytecode_set _bytecodes;
     std::mutex   _mutex;
-    fb::thread&  _thread;
 
 public:
     friend class context;
@@ -1100,7 +1129,12 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 {
     auto fname = std::vformat(fmt, std::make_format_args(args...));
 #if defined DEBUG || defined _DEBUG
-    luaL_dofile(*this, fname.c_str());
+    if (luaL_dofile(*this, fname.c_str()) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        this->pop(1); // pop error message
+        throw std::runtime_error(error);
+    }
 #else
     auto root = static_cast<fb::lua::root*>(this->owner);
     root->dump(fname);

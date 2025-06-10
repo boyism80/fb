@@ -65,6 +65,8 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"active",              character::builtin::builtin_active},
 {"super_hide",          character::builtin::builtin_super_hide},
 {"creature",            character::builtin::builtin_creature},
+{"teleport",            character::builtin::builtin_teleport},
+{"summon",              character::builtin::builtin_summon},
 {"dialog",              character::builtin::builtin_dialog},
 {"list",                character::builtin::builtin_list},
 {"input",               character::builtin::builtin_input},
@@ -86,14 +88,23 @@ int character::builtin::builtin_look(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->look());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto look = ch->look();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(look);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = (uint16_t)lua->tointeger(2);
-        ch->look(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->look(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -111,14 +122,23 @@ int character::builtin::builtin_color(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->color());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto color = ch->color();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(color);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = (uint8_t)lua->tointeger(2);
-        ch->color(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->color(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -134,14 +154,26 @@ int character::builtin::builtin_sex(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto sex = static_cast<SEX>(lua->tointeger(2));
-    auto n   = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushinteger(ch->sex());
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto sex = ch->sex();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(sex);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto sex = static_cast<SEX>(lua->tointeger(2));
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->sex(sex);
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_money(lua_State* L)
@@ -158,14 +190,23 @@ int character::builtin::builtin_money(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->money());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto money = ch->money();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(money);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = (uint32_t)lua->tointeger(2);
-        ch->money(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->money(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -183,14 +224,23 @@ int character::builtin::builtin_exp(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->exp());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto exp = ch->exp();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(exp);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = (uint32_t)lua->tointeger(2);
-        ch->exp(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->exp(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -503,14 +553,23 @@ int character::builtin::builtin_state(lua_State* L)
         return 0;
     if (argc == 1)
     {
-        lua->pushinteger(ch->state());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto state = ch->state();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(state);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = STATE(lua->tointeger(2));
-        ch->state(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->state(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -530,19 +589,35 @@ int character::builtin::builtin_disguise(lua_State* L)
     if (argc >= 2 && lua_type(L, 2) == LUA_TNUMBER)
         value = static_cast<uint16_t>(lua->tointeger(2));
 
-    static auto static_func = [](fb::lua::context* lua, character* ch, int argc, std::optional<uint16_t> value) {
-
-    };
-
-    auto n = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushinteger(ch->disguise().value());
-        else if (value.has_value())
-            ch->disguise(value.value());
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto disguise = ch->disguise();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(disguise.value());
+                return 1;
+            });
+        });
+    }
+    else if (lua->is_nil(2))
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->undisguise();
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
+    else
+    {
+        auto value = static_cast<uint16_t>(lua->tointeger(2));
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->disguise(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_class(lua_State* L)
@@ -559,14 +634,23 @@ int character::builtin::builtin_class(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->_class);
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto cls = ch->cls();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(cls);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = lua->tointeger(2);
-        ch->cls(static_cast<CLASS>(value));
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->cls(static_cast<CLASS>(value));
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -584,14 +668,23 @@ int character::builtin::builtin_promotion(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->_promotion);
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto promotion = ch->promotion();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(promotion);
+                return 1;
+            });
+        });
     }
     else
     {
         auto value = lua->tointeger(2);
-        ch->promotion(value);
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->promotion(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -609,17 +702,23 @@ int character::builtin::builtin_level(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->level());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto level = ch->level();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(level);
+                return 1;
+            });
+        });
     }
     else
     {
         auto level = std::max(0, std::min((int)lua->tointeger(2), 255));
-        ch->level(level);
-
-        auto ctx = lua->env<fb::game::context>("context");
-        ch->send(fb::protocol::game::response::update_internal(*ch, STATE_LEVEL::LEVEL_MAX));
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->level(level);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -665,13 +764,23 @@ int character::builtin::builtin_role(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->role());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto role = ch->role();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(role);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->role(static_cast<ROLE>(lua->tointeger(2)));
-        return 0;
+        auto value = static_cast<ROLE>(lua->tointeger(2));
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->role(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -689,13 +798,23 @@ int character::builtin::builtin_deposited_money(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->items.deposited());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto deposited = ch->items.deposited();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(deposited);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->items.deposited(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->items.deposited(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1262,14 +1381,26 @@ int character::builtin::builtin_nation(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto value = static_cast<NATION>(lua->tointeger(2));
-    auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushinteger(static_cast<uint8_t>(ch->nation()));
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto nation = ch->nation();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(static_cast<uint8_t>(nation));
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = static_cast<NATION>(lua->tointeger(2));
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->nation(value);
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_weapon(lua_State* L)
@@ -1284,22 +1415,29 @@ int character::builtin::builtin_weapon(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto weapon = lua->touserdata<fb::game::weapon>(2);
-    auto n      = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() mutable {
-        if (argc == 1)
-        {
-            weapon = ch->items.weapon();
-            if (weapon == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(weapon);
-        }
-        else
-        {
-            ch->items.weapon(weapon);
-        }
-    });
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto weapon = ch->items.weapon();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (weapon == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(weapon);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = lua->touserdata<fb::game::weapon>(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->items.weapon(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_title(lua_State* L)
@@ -1314,14 +1452,26 @@ int character::builtin::builtin_title(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto n     = (argc == 1 ? 1 : 0);
-    auto value = lua->tostring(2);
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushstring(ch->title());
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto title = ch->title();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushstring(title);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = lua->tostring(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->title(value);
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_gain(lua_State* L)
@@ -1343,8 +1493,11 @@ int character::builtin::builtin_gain(lua_State* L)
         items.push_back(item);
     }
 
-    return ctx->builtin_with_thread(*ch, lua, 0, [=]() {
+    return lua->ensure_yield(*ctx, *ch, [=]() {
         ch->items.add(items, true);
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            return 0;
+        });
     });
 }
 
@@ -1360,15 +1513,26 @@ int character::builtin::builtin_weapon_damage(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto n     = (argc == 1 ? 1 : 0);
-    auto value = lua->tointeger(2);
-
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushinteger(ch->weapon_damage());
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto weapon_damage = ch->weapon_damage();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(weapon_damage);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->weapon_damage(value);
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_detect(lua_State* L)
@@ -1383,14 +1547,26 @@ int character::builtin::builtin_detect(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto value = lua->toboolean(2);
-    auto n     = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushboolean(ch->detect());
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto detect = ch->detect();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushboolean(detect);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = lua->toboolean(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->detect(value);
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_spawn_mob(lua_State* L)
@@ -1422,39 +1598,47 @@ int character::builtin::builtin_spawn_mob(lua_State* L)
     }
 
     uint16_t x, y;
-    if (argc < 3)
+    if (argc > 3)
     {
-        x = ch->x();
-        y = ch->y();
-    }
-    else if (lua->is_table(3))
-    {
-        if (argc >= 4)
-            owned = lua->toboolean(4);
+        if (lua->is_table(3))
+        {
+            if (argc >= 4)
+                owned = lua->toboolean(4);
 
-        lua->rawgeti(3, 1);
-        x = (uint16_t)lua->tointeger(-1);
-        lua->remove(-1);
+            lua->rawgeti(3, 1);
+            x = (uint16_t)lua->tointeger(-1);
+            lua->remove(-1);
 
-        lua->rawgeti(3, 2);
-        y = (uint16_t)lua->tointeger(-1);
-        lua->remove(-1);
-    }
-    else
-    {
-        if (argc >= 5)
-            owned = lua->toboolean(5);
+            lua->rawgeti(3, 2);
+            y = (uint16_t)lua->tointeger(-1);
+            lua->remove(-1);
+        }
+        else
+        {
+            if (argc >= 5)
+                owned = lua->toboolean(5);
 
-        x = (uint16_t)lua->tointeger(3);
-        y = (uint16_t)lua->tointeger(4);
+            x = (uint16_t)lua->tointeger(3);
+            y = (uint16_t)lua->tointeger(4);
+        }
     }
 
-    auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y), owned);
-    if (mob == nullptr)
-        lua->pushnil();
-    else
-        lua->pushobject(mob);
-    return 1;
+    return lua->ensure_yield(*ctx, *ch, [=]() mutable {
+        if (argc < 3)
+        {
+            x = ch->x();
+            y = ch->y();
+        }
+
+        auto mob = ch->spawn_mob(*model, fb::model::point16_t(x, y), owned);
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            if (mob == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(mob);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_spawned_mobs(lua_State* L)
@@ -1468,18 +1652,20 @@ int character::builtin::builtin_spawned_mobs(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    lua->new_table();
-    auto i = 0;
-    for (auto mob : ch->spawned_mobs())
-    {
-        lua->pushinteger(i + 1);
-        lua->pushobject(mob);
-        lua_settable(L, -3);
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto& spawned_mobs = ch->spawned_mobs();
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->new_table();
+            for (int i = 0; i < spawned_mobs.size(); i++)
+            {
+                lua->pushinteger(i + 1);
+                lua->pushobject(spawned_mobs[i]);
+                lua_settable(L, -3);
+            }
 
-        i++;
-    }
-
-    return 1;
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_base_hp(lua_State* L)
@@ -1496,13 +1682,23 @@ int character::builtin::builtin_base_hp(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_hp());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_hp = ch->base_hp();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_hp);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_hp(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_hp(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1520,13 +1716,23 @@ int character::builtin::builtin_base_mp(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_mp());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_mp = ch->base_mp();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_mp);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_mp(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_mp(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1544,13 +1750,23 @@ int character::builtin::builtin_base_str(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_str());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_str = ch->base_str();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_str);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_str(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_str(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1568,13 +1784,23 @@ int character::builtin::builtin_base_dex(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_dex());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_dex = ch->base_dex();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_dex);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_dex(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_dex(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1592,13 +1818,23 @@ int character::builtin::builtin_base_int(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_int());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_int = ch->base_int();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_int);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_int(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_int(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1616,13 +1852,23 @@ int character::builtin::builtin_base_dam(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_dam());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_dam = ch->base_dam();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_dam);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_dam(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_dam(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1640,13 +1886,23 @@ int character::builtin::builtin_base_hit(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushinteger(ch->base_hit());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto base_hit = ch->base_hit();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushinteger(base_hit);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->base_hit(lua->tointeger(2));
-        return 0;
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->base_hit(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1664,25 +1920,32 @@ int character::builtin::builtin_armor_color(lua_State* L)
 
     if (argc == 1)
     {
-        if (ch->_armor_color.has_value())
-            lua->pushinteger(ch->_armor_color.value());
-        else
-            lua->pushnil();
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto result = std::optional<uint16_t>{};
+            if (ch->_armor_color.has_value())
+                result = ch->_armor_color.value();
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (result.has_value())
+                    lua->pushinteger(result.value());
+                else
+                    lua->pushnil();
+                return 1;
+            });
+        });
     }
     else
     {
-        switch (lua_type(L, 2))
-        {
-        case LUA_TNIL:
-            ch->armor_color(std::nullopt);
-            break;
+        auto value = std::optional<uint16_t>{};
+        if (lua->is_num(2))
+            value = lua->tointeger(2);
 
-        default:
-            ch->armor_color(lua->tointeger(2));
-            break;
-        }
-        return 0;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->armor_color(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -1703,12 +1966,16 @@ int character::builtin::builtin_mkspell(lua_State* L)
     if (model == nullptr)
         return 0;
 
-    auto slot = ch->spells.add(*model);
-    if (slot == 0xFF)
-        return 0;
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto slot = ch->spells.add(*model);
+        if (slot == 0xFF)
+            return 0;
 
-    lua->pushinteger(slot);
-    return 1;
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->pushinteger(slot);
+            return 1;
+        });
+    });
 }
 
 int character::builtin::builtin_rmspell(lua_State* L)
@@ -1725,44 +1992,61 @@ int character::builtin::builtin_rmspell(lua_State* L)
 
     if (argc == 1)
     {
-        for (int i = 0; i < CONTAINER_CAPACITY; i++)
-        {
-            auto spell = ch->spells[i];
-            if (spell == nullptr)
-                continue;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            for (int i = 0; i < CONTAINER_CAPACITY; i++)
+            {
+                auto spell = ch->spells[i];
+                if (spell == nullptr)
+                    continue;
 
-            ch->spells.remove(i);
-        }
+                ch->spells.remove(i);
+            }
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
     else if (lua->is_num(2))
     {
         auto slot = lua->tointeger(2);
-        ch->spells.remove(slot);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->spells.remove(slot);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
     else if (lua->is_str(2))
     {
-        auto name = lua->tostring(2);
-        auto slot = uint8_t{0xFF};
-        for (int i = 0; i < CONTAINER_CAPACITY; i++)
-        {
-            auto spell = ch->spells[i];
-            if (spell == nullptr)
-                continue;
-
-            if (spell->model.name == name)
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto name = lua->tostring(2);
+            auto slot = uint8_t{0xFF};
+            for (int i = 0; i < CONTAINER_CAPACITY; i++)
             {
-                slot = i;
-                break;
+                auto spell = ch->spells[i];
+                if (spell == nullptr)
+                    continue;
+
+                if (spell->model.name == name)
+                {
+                    slot = i;
+                    break;
+                }
             }
-        }
 
-        if (slot == 0xFF)
-            return 0;
+            if (slot != 0xFF)
+                ch->spells.remove(slot);
 
-        ch->spells.remove(slot);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
-
-    return 0;
+    else
+    {
+        return 0;
+    }
 }
 
 int character::builtin::builtin_world(lua_State* L)
@@ -1784,9 +2068,13 @@ int character::builtin::builtin_world(lua_State* L)
         {
             if (point.name == name)
             {
-                ch->show_world_map(id, index);
-                lua->pushboolean(true);
-                return 1;
+                return lua->ensure_yield(*ctx, *ch, [=]() {
+                    ch->show_world_map(id, index);
+                    return lua->ensure_resume(*ctx, *ch, [=]() {
+                        lua->pushboolean(true);
+                        return 1;
+                    });
+                });
             }
         }
     }
@@ -1807,28 +2095,53 @@ int character::builtin::builtin_script(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto name    = lua->tostring(2, "func");
-    auto new_lua = fb::lua::new_context(lua);
-    if (new_lua == nullptr)
-        return 0;
+    auto file = lua->tostring(2, "script.lua");
+    auto func = lua->tostring(3, "func");
 
-    new_lua->load("scripts/script.lua");
-    new_lua->func(name);
-    new_lua->pushobject(ch);
-    std::ignore = new_lua->call(1);
-    switch (new_lua->state())
+    // 1. 캐릭터가 여기 스레드 아니면 -> lua->yield
+    // 2. 캐릭터가 여기 스레드이지만 call 결과가 yield면 ->lua-> yield
+    // 3. 캐릭터가 여기 스레드이고 call 결과가 yield가 아닌 경우 -> return
+
+    if (ch->thread() == ctx->threads.current())
     {
-    case LUA_PENDING:
-    case LUA_YIELD:
-        return lua->yield(1);
+        auto new_lua = fb::lua::new_context(lua);
+        if (new_lua == nullptr)
+            return 0;
 
-    case LUA_OK:
-        lua->pushboolean(true);
-        return 1;
+        new_lua->load(std::format("scripts/{}", file));
+        new_lua->func(func);
+        new_lua->pushobject(ch);
+        lua_xmove(L, *new_lua, argc - 3);
 
-    default:
-        lua->pushboolean(false);
-        return 1;
+        int n       = 0;
+        std::ignore = new_lua->call(argc - 2, true, &n);
+        switch (new_lua->state())
+        {
+        case LUA_PENDING:
+        case LUA_YIELD:
+            return lua->yield(0);
+
+        case LUA_OK:
+            return n;
+
+        default:
+            return 0;
+        }
+    }
+    else
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto new_lua = fb::lua::new_context(lua);
+            if (new_lua == nullptr)
+                return 0;
+
+            new_lua->load(std::format("scripts/{}", file));
+            new_lua->func(func);
+            new_lua->pushobject(ch);
+            lua_xmove(L, *new_lua, argc - 3);
+            new_lua->call(argc - 2);
+            return lua->yield(0);
+        });
     }
 }
 
@@ -1923,22 +2236,32 @@ int character::builtin::builtin_birthday(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    auto n     = (argc == 1 ? 1 : 0);
-    auto value = lua_type(L, 2) == LUA_TNIL ? std::nullopt : std::optional<std::uint32_t>{lua->tointeger(2)};
-    return ctx->builtin_with_thread(*ch, lua, n, [=]() {
-        if (argc == 1)
-        {
-            auto& birthday = ch->birthday();
-            if (birthday.has_value())
-                lua->pushinteger(birthday.value());
-            else
-                lua->pushnil();
-        }
-        else
-        {
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto result = std::optional<std::uint32_t>{};
+            if (ch->birthday().has_value())
+                result = ch->birthday().value();
+
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                if (result.has_value())
+                    lua->pushinteger(result.value());
+                else
+                    lua->pushnil();
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto value = lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
             ch->birthday(value);
-        }
-    });
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int character::builtin::builtin_active(lua_State* L)
@@ -1979,13 +2302,23 @@ int character::builtin::builtin_super_hide(lua_State* L)
 
     if (argc == 1)
     {
-        lua->pushboolean(ch->super_hide());
-        return 1;
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            auto result = ch->super_hide();
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                lua->pushboolean(result);
+                return 1;
+            });
+        });
     }
     else
     {
-        ch->super_hide(lua->toboolean(2));
-        return 0;
+        auto value = lua->toboolean(2);
+        return lua->ensure_yield(*ctx, *ch, [=]() {
+            ch->super_hide(value);
+            return lua->ensure_resume(*ctx, *ch, [=]() {
+                return 0;
+            });
+        });
     }
 }
 
@@ -2010,8 +2343,11 @@ int character::builtin::builtin_send_mail(lua_State* L)
     if (argc >= 4 && lua->is_nil(4) == false)
         contents = lua->tostring(4);
 
-    return ctx->builtin_with_thread_async(*ch, lua, 0, [=]() -> async::task<void> {
-        co_await ctx->send_mail(*ch, to, title, contents);
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        ctx->send_mail(*ch, to, title, contents);
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            return 0;
+        });
     });
 }
 
@@ -2027,9 +2363,68 @@ int character::builtin::builtin_creature(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    return ctx->builtin_with_thread(*ch, lua, 1, [=]() {
-        lua->pushinteger(ch->creature());
+    return lua->ensure_yield(*ctx, *ch, [=]() {
+        auto creature = ch->creature();
+        return lua->ensure_resume(*ctx, *ch, [=]() {
+            lua->pushinteger(creature);
+            return 1;
+        });
     });
+}
+
+int fb::game::character::builtin::builtin_teleport(lua_State* L)
+{
+    auto lua = fb::lua::get(L);
+    if (lua == nullptr)
+        return 0;
+
+    auto ctx = lua->env<fb::game::context>("context");
+    auto ch  = lua->touserdata<fb::game::character>(1);
+    if (ch == nullptr || ctx->alive(*ch) == false)
+        return 0;
+
+    auto target = lua->touserdata<fb::game::character>(2);
+    if (target == nullptr || ctx->alive(*target) == false)
+        return 0;
+
+    if (ch->thread() == target->thread())
+    {
+        auto map = target->map();
+        ch->map(map, target->position());
+        lua->pushboolean(true);
+        return 1;
+    }
+    else
+    {
+        ctx->threads.enqueue(*target, [=](auto& thread) -> async::task<void> {
+            auto map = target->map();
+            if (map == nullptr)
+            {
+                lua->release();
+                co_return;
+            }
+            auto position = target->position();
+
+            ctx->threads.enqueue(*ch, [=](auto& thread) -> async::task<void> {
+                async::awaitable_then(ch->map(map, position), [=](auto result) {
+                    auto success = result();
+                    lua->ensure_resume(*ctx, *ch, [=]() {
+                        lua->pushboolean(success);
+                        return 1;
+                    });
+                });
+                co_return;
+            });
+        });
+
+        lua->yield(0);
+        return 0;
+    }
+}
+
+int fb::game::character::builtin::builtin_summon(lua_State* L)
+{
+    return 0;
 }
 
 int fb::game::character::builtin::builtin_dialog(lua_State* L)

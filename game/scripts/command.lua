@@ -206,12 +206,7 @@ command_funcs = {
 
     ['스크립트'] = 
     function (me, args)
-        local success = me:script()
-        if success then
-            me:chat('success')
-        else
-            me:chat('failed')
-        end
+        me:script("script.lua", "func", 1, "hello", "good")
         return true
     end,
 
