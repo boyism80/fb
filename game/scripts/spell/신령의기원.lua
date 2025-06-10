@@ -7,7 +7,7 @@ function ON_CAST_4038(me, you, spell)
     local mp = 1000
     local sound = 97
     local effect = 63
-    if not spell_cast(me, you, spell, mp, sound, effect) then
+    if not spell_cast(me, you, spell, {mp=mp, sound=sound, effect=effect}) then
         return
     end
     

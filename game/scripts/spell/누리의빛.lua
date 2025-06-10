@@ -8,7 +8,7 @@ function ON_CAST_2001(me, spell)
     local mp = 30
     local effect = nil
     local sound = 19
-    if not spell_cast(me, you, spell, mp, sound, effect) then
+    if not spell_cast(me, you, spell, {mp=mp, sound=sound, effect=effect}) then
         return
     end
 

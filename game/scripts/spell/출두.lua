@@ -20,7 +20,7 @@ function ON_CAST_3(me, spell, name)
     local sound = 29
     local effect = 16
     local mp = 30
-    if spell_cast(me, nil, nil, mp, nil, nil, nil, false) then
+    if spell_cast(me, nil, nil, {mp=mp, default_action=false}) then
         local x, y = ch:position()
         local direction = me:direction()
         local new_x, new_y, direction = TELEPORT_LOOKUP(me, map, x, y, direction)

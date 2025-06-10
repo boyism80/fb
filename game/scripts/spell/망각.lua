@@ -8,7 +8,7 @@ function ON_CAST_2009(me, you, spell)
     local sound = 32
     local effect = 34
     local buff_time = 4
-    if buff_cast(me, you, spell, mp, sound, effect) then
+    if buff_cast(me, you, spell, {mp = mp, sound = sound, effect = effect}) then
         you:oblivion(me)
     	you:buff(spell, buff_time, me)
     end

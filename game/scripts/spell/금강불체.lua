@@ -21,7 +21,7 @@ function ON_CAST_4011(me, spell)
         return me:message('실패')
     end
 
-    if buff_cast(me, me, spell, mp, sound, effect) then
+    if buff_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
         me:buff(spell, buff_time)
     end
 end

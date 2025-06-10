@@ -12,7 +12,7 @@ function ON_CAST_2002(me, spell, name)
     local effect = 3
     local sound = 25
     local buff_time = 60
-    spell_disguise(me, mobs, name, spell, mp, sound, effect, buff_time)
+    spell_disguise(me, mobs, name, spell, {mp=mp, sound=sound, effect=effect, buff_time=buff_time})
 end
 
 -- 금수 버프 효과

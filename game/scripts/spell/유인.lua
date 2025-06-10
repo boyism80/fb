@@ -7,7 +7,7 @@ function ON_CAST_1004(me, you, spell)
     local mp = 50
     local sound = 2
     local effect = 88
-    if spell_cast(me, you, spell, mp, sound, effect) then
+    if spell_cast(me, you, spell, {mp=mp, sound=sound, effect=effect}) then
         you:target(me)
     end
 end

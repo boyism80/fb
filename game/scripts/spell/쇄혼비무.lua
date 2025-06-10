@@ -37,7 +37,7 @@ function ON_CAST_1019(me, spell)
 
     local effect = 97
     local sound = 100
-    attack_cast(me, front, spell, mp, sound, effect)
+    attack_cast(me, front, spell, {mp=mp, sound=sound, effect=effect})
 
     if front:is(OBJECT_TYPE_LIFE) then
         local rate = me:skill_damage_rate() / 1000.0
@@ -58,6 +58,7 @@ function ON_CAST_1019(me, spell)
     local effect = 97
     local sound = 100
     local damage = me:hp() * 3
+    local message = '쇄혼비무'
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -92,5 +93,5 @@ function ON_CAST_1019(me, spell)
     end 
     me:position(x, y)
 
-    attack_cast(me, front, spell, hp, mp, damage, '쇄혼비무', sound, effect)
+    attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect})
 end

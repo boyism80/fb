@@ -5,9 +5,10 @@ function ON_CAST_1014(me, spell)
     local hp = me:hp()*2 // 3
     local mp = 40
     local damage = me:hp()
+    local message = '건곤대나이'
 
     local front = me:front(OBJECT_TYPE_LIFE)
-    if not attack_cast(me, front, spell, hp, mp, damage, '건곤대나이', sound, effect) then
+    if not attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect}) then
         return
     end
 end

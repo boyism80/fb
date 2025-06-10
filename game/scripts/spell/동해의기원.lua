@@ -4,5 +4,5 @@ function ON_CAST_4028(me, you, spell)
     local mp = 30
     local sound = 5
     local effect = 5
-    spell_heal(me, you, spell, hp, mp, sound, effect)
+    spell_heal(me, you, spell, {hp=hp, mp=mp, sound=sound, effect=effect})
 end

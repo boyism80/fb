@@ -27,5 +27,5 @@ function ON_CAST_4037(me, you, spell)
         end
     end
     me:delay(spell, delay)
-    spell_heal(me, you, spell, hp, mp, sound, effect)
+    spell_heal(me, you, spell, {hp=hp, mp=mp, sound=sound, effect=effect})
 end

@@ -5,7 +5,7 @@ function ON_CAST_1013(me, spell)
     local effect = 57
     local buff_time = 60
 
-    if not buff_cast(me, me, spell, mp, sound, effect) then
+    if not buff_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
         return
     end
     me:buff(spell, buff_time)

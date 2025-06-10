@@ -32,7 +32,7 @@ function ON_CAST_4001(me, spell, message)
     local mp = 30
     local sound = 81
     local effect = nil
-    if not spell_cast(me, me, spell, mp, sound, effect) then
+    if not spell_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
         return
     end
 
