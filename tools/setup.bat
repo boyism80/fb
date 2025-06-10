@@ -2,6 +2,30 @@
 chcp 65001 >nul
 setlocal enabledelayedexpansion
 
+pushd ..
+
+set "GIT_URL=https://github.com/git-for-windows/git/releases/download/v2.49.0.windows.1/Git-2.49.0-64-bit.exe"
+set "CMAKE_URL=https://github.com/Kitware/CMake/releases/download/v4.0.2/cmake-4.0.2-windows-x86_64.msi"
+
+set "GIT_INSTALLER=%TEMP%\Git-2.49.0-64-bit.exe"
+set "CMAKE_INSTALLER=%TEMP%\cmake-4.0.2-windows-x86_64.msi"
+
+git --version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] Git is not installed.
+    echo Please download it from:
+    echo     https://git-scm.com/downloads/win
+    goto :ErrorExit
+)
+
+cmake --version >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] CMake is not installed.
+    echo Please download it from:
+    echo     https://cmake.org/download/
+    goto :ErrorExit
+)
+
 :: Check for .NET Core 8.0
 echo [INFO] Checking for .NET Core 8.0...
 dotnet --list-runtimes | find "Microsoft.NETCore.App 8.0" >nul
@@ -423,6 +447,7 @@ if not exist "build" mkdir "build"
 cd build
 cmake ..
 cmake --build . --config Release
+popd
 
 goto :Success
 
