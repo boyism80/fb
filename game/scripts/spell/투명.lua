@@ -4,7 +4,7 @@ function ON_CAST_2012(me, spell)
     local sound = 28
     local effect = 20
     local buff_time = 180
-    if buff_cast(me, me, spell, mp, sound, effect) then
+    if buff_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
         me:state(STATE_HALF_CLOACK)
         me:buff(spell, buff_time)
     end

@@ -4,7 +4,7 @@ function ON_CAST_4039(me, spell)
     local sound = 97
     local effect = 63
     local hp = 10000
-    if not spell_heal_group(me, spell, hp, mp, sound, effect) then
+    if not spell_heal_group(me, spell, {hp=hp, mp=mp, sound=sound, effect=effect}) then
         return
     end
 end

@@ -4,5 +4,5 @@ function ON_CAST_3031(me, spell)
     local mp = 330
     local sound = 47
     local effect = 25
-    spell_damage_near(me, spell, damage, mp, sound, effect)
+    spell_damage_near(me, spell, {damage=damage, mp=mp, sound=sound, effect=effect})
 end

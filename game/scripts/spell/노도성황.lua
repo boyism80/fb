@@ -4,7 +4,7 @@ function ON_CAST_3049(me, you, spell)
     local sound = 106
     local effect = 96
     local buff_time = 30
-    if debuff_cast(me, you, spell, mp, sound, effect) then
+    if debuff_cast(me, you, spell, {mp = mp, sound = sound, effect = effect}) then
         you:buff(spell, buff_time, me)
     end
 end

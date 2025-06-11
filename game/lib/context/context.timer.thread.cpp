@@ -27,14 +27,7 @@ async::task<void> context::handle_mob_action(const fb::model::datetime& now, std
             if (mob.paralysis())
                 continue;
 
-            auto target = mob.target();
-            if (target != nullptr)
-            {
-                if (!this->alive(*target) || !map->objects.contains(*target) || !target->alive() || target->hidden(mob))
-                    mob.target(nullptr);
-            }
-            mob.action();
-            mob.AI(now);
+            std::ignore = mob.action(now);
         }
     }
     co_return;

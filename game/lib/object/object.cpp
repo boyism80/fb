@@ -187,13 +187,13 @@ bool object::position(uint16_t x, uint16_t y, bool refresh)
         // 상대 시야에서 내가 사라짐
         if (obj->sight(before) && !obj->sight(*this))
         {
-            obj->hide(*this);
+            this->hide(*obj);
         }
 
         // 내 시야에서 상대방이 사라짐
         if (sight(before, obj->_position, this->_map) && !this->sight(*obj))
         {
-            this->hide(*obj);
+            obj->hide(*this);
         }
     }
 
@@ -472,7 +472,7 @@ async::task<bool> object::map(fb::game::map* map, const fb::model::point16_t& po
             for (auto x : this->_map->nears(this->_position))
             {
                 if (x != this)
-                    x->hide(*this, destroy_type);
+                    this->hide(*x, destroy_type);
             }
 
             // erase cache of map

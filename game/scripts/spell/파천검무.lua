@@ -9,6 +9,7 @@ function ON_CAST_2022(me, spell)
     local hp = me:hp()//2
     local mp = 180
     local damage = me:hp()
+    local message = '파천검무'
 
     local map = me:map()
     if map == nil then
@@ -32,7 +33,7 @@ function ON_CAST_2022(me, spell)
 
     if #targets > 0 then
         me:position(me:front_position(5))
-        attack_cast(me, targets, spell, hp, mp, damage, '파천검무', sound, effect)
+        attack_cast(me, targets, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect})
         return
     else
         return failed(me)

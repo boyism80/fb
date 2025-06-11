@@ -6,5 +6,5 @@ function ON_CAST_3045(me, spell)
     local sound = 107
     local effect = 104
 
-    spell_damage_area(me, me:nears(OBJECT_TYPE_LIFE, 8, 7), spell, damage, hp, mp, sound, nil, effect)
+    spell_damage_area(me, me:nears(OBJECT_TYPE_LIFE, 8, 7), spell, {damage=damage, hp=hp, mp=mp, sound=sound, effect={you=effect}})
 end

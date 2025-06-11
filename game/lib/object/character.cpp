@@ -1795,7 +1795,7 @@ void character::super_hide(bool enabled)
         for (auto& obj : this->nears(OBJECT_TYPE::CHARACTER))
         {
             if (this->hidden(*obj))
-                obj->hide(*this); // TODO: 반대로
+                this->hide(*obj);
             else
                 this->update_external(*obj, false);
         }

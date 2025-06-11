@@ -80,9 +80,9 @@ public:
 
 private:
     fb::model::datetime _action_time;
-    fb::game::rezen*    _rezen         = nullptr;
-    fb::game::life*     _target        = nullptr;
-    fb::game::life*     _oblivion      = nullptr;
+    rezen*              _rezen         = nullptr;
+    life*               _target        = nullptr;
+    life*               _oblivion      = nullptr;
     lua::context*       _attack_thread = nullptr;
     uint32_t            _buff_hp       = 0;
     uint32_t            _buff_mp       = 0;
@@ -95,10 +95,13 @@ private:
     uint8_t             _buff_hit      = 0;
     std::vector<item*>  _items;
     bool                _hidden = false;
+    character*          _owner  = nullptr;
 
 public:
-    mob::listener_t&     listener;
-    fb::game::character* owner = nullptr;
+    character* const owner = nullptr;
+
+public:
+    mob::listener_t& listener;
 
 public:
     /**
@@ -149,6 +152,18 @@ private:
      * @return     { description_of_the_return_value }
      */
     bool move_step(const fb::model::point16_t& position);
+
+    /**
+     * @brief      { function_description }
+     */
+    [[nodiscard]] async::task<bool> call_script();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  now   The now
+     */
+    void AI(const fb::model::datetime& now);
 
 public:
     /**
@@ -344,7 +359,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    void action();
+    [[nodiscard]] async::task<void> action(const fb::model::datetime& now);
 
     /**
      * @brief      { function_description }
@@ -393,14 +408,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    fb::game::life* repair_target();
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  now   The now
-     */
-    void AI(const fb::model::datetime& now);
+    fb::game::life* update_target();
 
     /**
      * @brief      { function_description }

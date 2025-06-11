@@ -27,7 +27,7 @@ function ON_CAST_1(me, spell, message)
     local mp = 30
     local effect = nil
     local sound = 1
-    if spell_cast(me, me, spell, mp, sound, effect) then
+    if spell_cast(me, me, spell, {mp=mp, sound=sound, effect=effect}) then
         local root = map:model():root()
         local cardinal = root:cardinal(input)
         if cardinal == nil then

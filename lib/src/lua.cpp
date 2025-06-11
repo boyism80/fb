@@ -1,5 +1,7 @@
+#include <fb/abstract.h>
 #include <fb/lua.h>
 #include <fb/thread_container.h>
+#include <async/awaitable_then.h>
 
 using namespace fb::lua;
 
@@ -68,14 +70,14 @@ int luable::builtin_gc(lua_State* ctx)
     return 0;
 }
 
-context::context(lua_State* ctx, context* parent) :
+context::context(lua_State* ctx, fb::thread& initial_thread) :
     _ctx(ctx),
-    _parent(parent),
-    owner(nullptr)
+    _initial_thread(initial_thread)
 { }
 
 context::context(lua_State* ctx, context& owner, context* parent) :
     _ctx(ctx),
+    _initial_thread(owner._initial_thread),
     _parent(parent),
     owner(&owner)
 { }
@@ -201,16 +203,16 @@ int context::argc()
     return lua_gettop(this->_ctx);
 }
 
-async::task<bool> context::call(int argc, bool auto_release)
+async::task<bool> context::call(int argc, bool auto_release, int* n)
 {
     auto promise        = std::make_shared<async::task_completion_source<bool>>();
     this->_promise      = promise;
     this->_auto_release = auto_release;
-    this->resume(argc);
+    this->resume(argc, n);
     return promise->task();
 }
 
-void fb::lua::context::resume(int argc)
+void fb::lua::context::resume(int argc, int* n)
 {
     if (this->_promise == nullptr)
         return;
@@ -248,8 +250,9 @@ void fb::lua::context::resume(int argc)
 
         if (parent != nullptr && parent->_state == LUA_YIELD)
         {
-            parent->pushboolean(false);
-            parent->resume(1);
+            async::awaitable_then(parent->_initial_thread.switching(), [=](auto result) {
+                parent->resume(0);
+            });
         }
         promise->set_exception(std::make_exception_ptr(std::runtime_error(message)));
     }
@@ -258,14 +261,21 @@ void fb::lua::context::resume(int argc)
     default:
     {
         auto parent = this->_parent;
+        if (parent != nullptr)
+        {
+            async::awaitable_then(parent->_initial_thread.switching(), [=](auto result) {
+                auto argc = this->argc();
+                if (n != nullptr)
+                    *n = argc;
+
+                lua_xmove(*this, *parent, argc);
+                if (parent->_state == LUA_YIELD)
+                    parent->resume(argc);
+            });
+        }
         if (this->_auto_release)
             root->release(*this);
 
-        if (parent != nullptr && parent->_state == LUA_YIELD)
-        {
-            parent->pushboolean(true);
-            parent->resume(1);
-        }
         this->_promise->set_value(true);
     }
     break;
@@ -302,9 +312,69 @@ void context::pending(bool value)
     this->_state = value ? LUA_PENDING : LUA_YIELD;
 }
 
+int context::ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::function<int()> fn)
+{
+    if (this->_initial_thread.id() == obj.thread()->id())
+    {
+        return fn();
+    }
+    else
+    {
+        async::awaitable_then(ctx.switch_thread(obj), [this, fn](auto result) {
+            try
+            {
+                result();
+                return fn();
+            }
+            catch (std::exception& e)
+            {
+                this->release();
+            }
+        });
+        return this->yield(0);
+    }
+}
+
+int fb::lua::context::ensure_resume(fb::context&           ctx,
+                                    fb::thread_switchable& obj,
+                                    std::function<int()>   fn,
+                                    bool                   force_resume)
+{
+    if (this->_initial_thread.id() == std::this_thread::get_id())
+    {
+        auto n = fn();
+        if (force_resume)
+            this->resume(n);
+        else
+            return n;
+    }
+    else
+    {
+        async::awaitable_then(this->_initial_thread.switching(), [this, fn, &ctx, &obj](auto result) {
+            try
+            {
+                result();
+
+                if (ctx.alive(obj) == false)
+                {
+                    this->release();
+                    return;
+                }
+
+                auto n = fn();
+                this->resume(n);
+            }
+            catch (std::exception& e)
+            {
+                this->release();
+            }
+        });
+        return 0;
+    }
+}
+
 root::root(fb::thread& thread) :
-    context(::luaL_newstate()),
-    _thread(thread)
+    context(::luaL_newstate(), thread)
 {
     luaL_openlibs(*this);
 }
@@ -337,7 +407,12 @@ bool root::dump(const std::string& path)
     if (_bytecodes.contains(path))
         return true;
 
-    luaL_loadfile(*this, path.c_str());
+    if (luaL_loadfile(*this, path.c_str()) != LUA_OK)
+    {
+        auto error = lua_tostring(*this, -1);
+        context::pop(1); // pop error message
+        throw std::runtime_error(error);
+    }
     void*      params[] = {this, (void*)path.c_str()};
     const auto callback = [](lua_State* ctx, const void* bytes, size_t size, void* params) {
         auto casted = (void**)(params);
@@ -416,9 +491,9 @@ void root::release(context& ctx)
         this->busy.erase(key);
     };
 
-    if (this->_thread.id() != std::this_thread::get_id())
+    if (this->_initial_thread.id() != std::this_thread::get_id())
     {
-        std::ignore = this->_thread.dispatch([=, &ctx](auto&) -> async::task<void> {
+        std::ignore = this->_initial_thread.dispatch([=, &ctx](auto&) -> async::task<void> {
             internal_func(ctx);
             co_return;
         });
@@ -447,12 +522,12 @@ void root::revoke(context& ctx)
 
 async::task<void> fb::lua::root::switching()
 {
-    co_await this->_thread.switching();
+    co_await this->_initial_thread.switching();
 }
 
 fb::thread& fb::lua::root::initial_thread()
 {
-    return this->_thread;
+    return this->_initial_thread;
 }
 
 fb::lua::context_pool::~context_pool()
@@ -546,7 +621,7 @@ thread::thread(context& owner, context* parent) :
 { }
 
 thread::thread(thread&& ctx) :
-    context(ctx._ctx, ctx.parent()),
+    context(ctx._ctx, *ctx.owner, ctx.parent()),
     ref(ctx.ref)
 { }
 

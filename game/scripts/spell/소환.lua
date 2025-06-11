@@ -28,7 +28,7 @@ function ON_CAST_4(me, spell, name)
     local sound = 36
     local effect = 3
     local mp = 30
-    if spell_cast(me, nil, nil, mp) then
+    if spell_cast(me, nil, nil, {mp=mp}) then
         local new_x, new_y = TELEPORT_LOOKUP(me, map, x, y, direction)
         ch:map(map, new_x, new_y)
         me:action(ACTION_CAST_SPELL, DURATION_SPELL)

@@ -135,8 +135,11 @@ int object::builtin::builtin_sound(lua_State* L)
         return 0;
 
     auto sound = static_cast<SOUND>(lua->tointeger(2));
-    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
+    return lua->ensure_yield(*ctx, *obj, [=]() {
         obj->sound(sound);
+        return lua->ensure_resume(*ctx, *obj, [=]() {
+            return 0;
+        });
     });
 }
 
@@ -152,35 +155,42 @@ int object::builtin::builtin_position(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto n = (argc == 1 ? 2 : 0);
-    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
-        if (argc == 1)
-        {
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *obj, [=]() {
             lua->pushinteger(obj->_position.x);
             lua->pushinteger(obj->_position.y);
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                return 2;
+            });
+        });
+    }
+    else
+    {
+        uint16_t x, y;
+        if (lua->is_table(2))
+        {
+            lua->rawgeti(2, 1);
+            x = (uint16_t)lua->tointeger(-1);
+            lua->remove(-1);
+
+            lua->rawgeti(2, 2);
+            y = (uint16_t)lua->tointeger(-1);
+            lua->remove(-1);
         }
         else
         {
-            uint16_t x, y;
-            if (lua->is_table(2))
-            {
-                lua->rawgeti(2, 1);
-                x = (uint16_t)lua->tointeger(-1);
-                lua->remove(-1);
-
-                lua->rawgeti(2, 2);
-                y = (uint16_t)lua->tointeger(-1);
-                lua->remove(-1);
-            }
-            else
-            {
-                x = (uint16_t)lua->tointeger(2);
-                y = (uint16_t)lua->tointeger(3);
-            }
-
-            obj->position(x, y, true);
+            x = (uint16_t)lua->tointeger(2);
+            y = (uint16_t)lua->tointeger(3);
         }
-    });
+
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            obj->position(x, y, true);
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int object::builtin::builtin_front_position(lua_State* L)
@@ -198,10 +208,13 @@ int object::builtin::builtin_front_position(lua_State* L)
     auto step = lua->tointeger(2, 1);
     obj->assert_thread();
 
-    return ctx->builtin_with_thread(*obj, lua, 2, [=]() {
+    return lua->ensure_yield(*ctx, *obj, [=]() {
         auto position = obj->front_position(step);
-        lua->pushinteger(position.x);
-        lua->pushinteger(position.y);
+        return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushinteger(position.x);
+            lua->pushinteger(position.y);
+            return 2;
+        });
     });
 }
 
@@ -217,14 +230,26 @@ int object::builtin::builtin_direction(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto direction = static_cast<DIRECTION>(lua->tointeger(2));
-    auto n         = (argc == 1 ? 1 : 0);
-    return ctx->builtin_with_thread(*obj, lua, n, [=]() {
-        if (argc == 1)
-            lua->pushinteger(obj->_direction);
-        else
+    if (argc == 1)
+    {
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            auto direction = obj->_direction;
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                lua->pushinteger(direction);
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        auto direction = static_cast<DIRECTION>(lua->tointeger(2));
+        return lua->ensure_yield(*ctx, *obj, [=]() {
             obj->direction(direction);
-    });
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                return 0;
+            });
+        });
+    }
 }
 
 int object::builtin::builtin_chat(lua_State* L)
@@ -243,9 +268,12 @@ int object::builtin::builtin_chat(lua_State* L)
     auto type     = lua->toenum(3, CHAT_TYPE::NORMAL);
     auto decorate = lua->toboolean(4, true);
 
-    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
+    return lua->ensure_yield(*ctx, *obj, [=]() {
         if (obj->is(OBJECT_TYPE::ITEM) == false)
             obj->chat(message, type, decorate);
+        return lua->ensure_resume(*ctx, *obj, [=]() {
+            return 0;
+        });
     });
 }
 
@@ -412,8 +440,11 @@ int object::builtin::builtin_effect(lua_State* L)
         return 0;
 
     auto effect = static_cast<uint8_t>(lua->tointeger(2));
-    return ctx->builtin_with_thread(*obj, lua, 0, [=]() {
+    return lua->ensure_yield(*ctx, *obj, [=]() {
         obj->effect(effect);
+        return lua->ensure_resume(*ctx, *obj, [=]() {
+            return 0;
+        });
     });
 }
 
@@ -486,62 +517,45 @@ int object::builtin::builtin_map(lua_State* L)
         }
     }
 
-    static auto static_func = [](object*                                    obj,
-                                 fb::game::map*                             map,
-                                 const std::optional<fb::model::point16_t>& position,
-                                 fb::lua::context*                          lua) -> async::task<void> {
+    static auto static_func =
+        [](object* obj, fb::game::map* map, const std::optional<fb::model::point16_t>& position) -> async::task<bool> {
         if (position.has_value())
-        {
-            if (co_await obj->map(map, position.value()) == false)
-                lua->pushboolean(false);
-            else
-                lua->pushboolean(true);
-        }
+            co_return co_await obj->map(map, position.value());
         else
-        {
-            if (co_await obj->map(map) == false)
-                lua->pushboolean(false);
-            else
-                lua->pushboolean(true);
-        }
+            co_return co_await obj->map(map);
     };
 
     if (argc == 1)
     {
-        return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
+        return lua->ensure_yield(*ctx, *obj, [=]() {
             auto map = obj->map();
-            if (map == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(map);
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                if (map == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(map);
+                return 1;
+            });
         });
     }
     else
     {
-        auto no_async = false;
-        if (obj->_map == nullptr)
-            no_async = false;
-        else if (obj->_map->model.host != map->model.host)
-            no_async = false;
-        else if (obj->_map->thread() != map->thread())
-            no_async = false;
-        else
-            no_async = true;
-
-        if (no_async)
-        {
-            auto task = static_func(obj, map, position, lua);
-
-            return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
-                async::awaitable_get(static_func(obj, map, position, lua));
+        ctx->threads.enqueue(*obj, [=](auto& thread) -> async::task<void> {
+            async::awaitable_then(static_func(obj, map, position), [=](auto result) {
+                auto success = result();
+                lua->ensure_resume(
+                    *ctx,
+                    *obj,
+                    [=]() {
+                        lua->pushboolean(success);
+                        return 1;
+                    },
+                    true);
             });
-        }
-        else
-        {
-            return ctx->builtin_with_thread_async(*obj, lua, 1, [=]() -> async::task<void> {
-                co_await static_func(obj, map, position, lua);
-            });
-        }
+            co_return;
+        });
+
+        return lua->yield(0);
     }
 }
 
@@ -748,9 +762,12 @@ int object::builtin::builtin_is(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    return ctx->builtin_with_thread(*obj, lua, 1, [=]() {
+    return lua->ensure_yield(*ctx, *obj, [=]() {
         auto type = lua->tointeger(2);
-        lua->pushboolean(obj->is(OBJECT_TYPE(type)));
+        return lua->ensure_resume(*ctx, *obj, [=]() {
+            lua->pushboolean(obj->is(OBJECT_TYPE(type)));
+            return 1;
+        });
     });
 }
 

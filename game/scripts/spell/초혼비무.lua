@@ -10,6 +10,7 @@ function ON_CAST_1018(me, spell)
     local effect = 105
     local sound = 99
     local damage = me:hp() * 3
+    local message = '초혼비무'
     if me:mp() < mp then
         me:message('마력이 부족합니다.')
         return false
@@ -47,5 +48,5 @@ function ON_CAST_1018(me, spell)
         front:position(x, y)
     end
 
-    attack_cast(me, front, spell, hp, mp, damage, '초혼비무', sound, effect)
+    attack_cast(me, front, spell, {hp = hp, mp = mp, damage = damage, message = message, sound = sound, effect = effect})
 end

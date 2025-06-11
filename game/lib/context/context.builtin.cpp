@@ -149,8 +149,11 @@ int context::builtin::builtin_name2ch(lua_State* L)
         return 1;
     }
 
-    return context->builtin_with_thread(*ch, lua, 1, [=]() {
-        lua->pushobject(ch);
+    return lua->ensure_yield(*context, *ch, [=]() {
+        return lua->ensure_resume(*context, *ch, [=]() {
+            lua->pushobject(ch);
+            return 1;
+        });
     });
 }
 
@@ -539,20 +542,28 @@ int context::builtin::builtin_mknpc(lua_State* L)
 
     if (map->thread()->id() == std::this_thread::get_id())
     {
-        return context->builtin_with_thread(*map, lua, 1, [=]() {
+        return lua->ensure_yield(*context, *map, [=]() {
             auto npc = model->make<fb::game::npc>(*context);
-            lua->pushobject(npc);
             npc->direction(direction);
             npc->map(map, fb::model::point16_t{x, y});
+
+            return lua->ensure_resume(*context, *npc, [=]() {
+                lua->pushobject(npc);
+                return 1;
+            });
         });
     }
     else
     {
-        return context->builtin_with_thread_async(*map, lua, 1, [=]() -> async::task<void> {
+        return lua->ensure_yield(*context, *map, [=]() {
             auto npc = model->make<fb::game::npc>(*context);
-            lua->pushobject(npc);
             npc->direction(direction);
-            co_await npc->map(map, fb::model::point16_t{x, y});
+            npc->map(map, fb::model::point16_t{x, y});
+
+            return lua->ensure_resume(*context, *npc, [=]() {
+                lua->pushobject(npc);
+                return 1;
+            });
         });
     }
 }

@@ -184,8 +184,12 @@ int map::builtin::builtin_movable(lua_State* L)
         return 1;
     }
 
-    return ctx->builtin_with_thread(*map, lua, 1, [=]() {
-        lua->pushboolean(map->movable(*obj, position));
+    return lua->ensure_yield(*ctx, *map, [=]() {
+        auto result = map->movable(*obj, position);
+        return lua->ensure_resume(*ctx, *map, [=]() {
+            lua->pushboolean(result);
+            return 1;
+        });
     });
 }
 
@@ -346,16 +350,24 @@ int map::builtin::builtin_at(lua_State* L)
     auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
     auto position = fb::model::point16_t{x, y};
 
-    return ctx->builtin_with_thread(*map, lua, 1, [=]() {
-        auto nears = map->nears(fb::model::point16_t{x, y}, type);
+    lua->ensure_yield(*ctx, *map, [=]() {
+        auto nears  = map->nears(fb::model::point16_t{x, y}, type);
+        auto result = static_cast<object*>(nullptr);
         for (auto obj : nears)
         {
             if (obj->position() == position)
             {
-                lua->pushobject(obj);
+                result = obj;
+                break;
             }
         }
 
-        lua->pushnil();
+        return lua->ensure_resume(*ctx, *map, [=]() {
+            if (result == nullptr)
+                lua->pushnil();
+            else
+                lua->pushobject(result);
+            return 1;
+        });
     });
 }

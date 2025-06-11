@@ -5,6 +5,7 @@ function ON_CAST_1022(me, spell)
     local hp = me:hp()//2
     local mp = 50
     local damage = me:hp()
+    local message = '극\'백호참'
 
     local targets = {}
     local x, y = me:position()
@@ -62,7 +63,7 @@ function ON_CAST_1022(me, spell)
         end
     end
 
-    if not attack_cast(me, targets, spell, hp, mp, damage, '극\'백호참', sound, effect) then
+    if not attack_cast(me, targets, spell, {hp=hp, mp=mp, damage=damage, message=message, sound=sound, effect=effect}) then
         return
     end
 end

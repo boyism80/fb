@@ -352,27 +352,6 @@ public:
     }
 
 public:
-    using dispatch_callback = std::function<async::task<void>(void)>;
-    /**
-     * @brief      { function_description }
-     *
-     * @param      socket    The socket
-     * @param[in]  fn        The function
-     * @param[in]  priority  The priority
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<void> dispatch(fb::socket<T>& socket, const dispatch_callback& fn, uint32_t priority = 0)
-    {
-        auto id     = this->thread_id(socket);
-        auto thread = this->threads[id];
-
-        if (thread == nullptr)
-            throw std::runtime_error("thread does not exists");
-
-        co_await this->threads[id]->dispatch(fn, 0s, priority);
-    }
-
     /**
      * @brief      { function_description }
      *

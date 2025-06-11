@@ -84,11 +84,11 @@ void listener_impl::on_dead(life& me, object* you)
         }
 
         mob.drop_items();
-
-        if (mob.owner != nullptr)
+        auto owner = mob.owner;
+        if (owner != nullptr)
         {
-            if (this->context.alive(*mob.owner))
-                mob.owner->detach_spawned_mob(mob);
+            if (this->context.alive(*owner))
+                owner->detach_spawned_mob(mob);
             return;
         }
 
@@ -98,7 +98,7 @@ void listener_impl::on_dead(life& me, object* you)
         if (you == nullptr)
             return;
 
-        if (mob.owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
+        if (owner == nullptr && you->is(OBJECT_TYPE::CHARACTER))
         {
             auto& ch    = static_cast<character&>(*you);
             auto& group = ch.group();

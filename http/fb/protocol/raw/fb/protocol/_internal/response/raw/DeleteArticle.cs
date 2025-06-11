@@ -13,7 +13,7 @@ public struct DeleteArticle : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
   public static DeleteArticle GetRootAsDeleteArticle(ByteBuffer _bb) { return GetRootAsDeleteArticle(_bb, new DeleteArticle()); }
   public static DeleteArticle GetRootAsDeleteArticle(ByteBuffer _bb, DeleteArticle obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public static bool VerifyDeleteArticle(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, DeleteArticleVerify.Verify); }

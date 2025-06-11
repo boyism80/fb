@@ -7,7 +7,7 @@ function ON_CAST_4010(me, you, spell)
     local mp = me:mp()
     local sound = 80
     local effect = 18
-    if spell_cast(me, you, spell, mp, sound, effect) then
+    if spell_cast(me, you, spell, {mp=mp, sound=sound, effect=effect}) then
         you:mp(math.min(you:maxmp(), you:mp() + mp))
     end
 end

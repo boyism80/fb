@@ -11,7 +11,7 @@ if %ERRORLEVEL% NEQ 0 GOTO END
 
 PUSHD ..
 del /S /Q http\FlatBuffer
-del /S /Q http\fb\protocol\flatbuffer
+del /S /Q http\fb\protocol\raw
 xcopy tools\flatbuffer-ex\output\c#\* http\FlatBuffer\* /S /E
 robocopy tools\flatbuffer-ex\output\raw\c# http\fb\protocol\raw /S /E
 

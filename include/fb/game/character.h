@@ -1945,6 +1945,24 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
+    static int builtin_teleport(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
+    static int builtin_summon(lua_State* L);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param      L     { parameter_description }
+     *
+     * @return     { description_of_the_return_value }
+     */
     static int builtin_dialog(lua_State* L);
 
     /**

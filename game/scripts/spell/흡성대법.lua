@@ -14,5 +14,5 @@ function ON_CAST_2017(me, you, spell)
     end
     
     me:heal(math.min(damage, you:hp()))
-    spell_damage(me, you, spell, damage, mp, sound, effect)
+    spell_damage(me, you, spell, {damage=damage, mp=mp, sound=sound, effect=effect})
 end
