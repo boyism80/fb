@@ -110,24 +110,24 @@ mob::~mob()
         this->_rezen->decrease();
 }
 
-void mob::action()
+async::task<bool> mob::call_script()
 {
     this->assert_thread();
-    this->repair_target();
+    this->update_target();
 
     auto& model = this->based<fb::model::mob>();
     if (model.script.empty())
-        return;
+        co_return true;
 
     if (model.on_attack.empty())
-        return;
+        co_return true;
 
     if (this->_attack_thread != nullptr)
-        return;
+        co_return false;
 
     this->_attack_thread = fb::lua::new_context();
     if (this->_attack_thread == nullptr)
-        return;
+        co_return true;
 
 #if defined DEBUG | defined _DEBUG
     this->_attack_thread->load(model.script);
@@ -141,10 +141,20 @@ void mob::action()
         this->_attack_thread->pushnil();
 
     auto& ctx = this->context;
-    async::awaitable_then(this->_attack_thread->call(2), [this, &ctx](auto result) {
-        if (ctx.alive(*this))
-            this->_attack_thread = nullptr;
-    });
+    co_await this->_attack_thread->call(2);
+    if (ctx.alive(*this) == false)
+        co_return false;
+
+    this->_attack_thread = nullptr;
+    co_return true;
+}
+
+async::task<void> mob::action(const fb::model::datetime& now)
+{
+    if (co_await this->call_script() == false)
+        co_return;
+
+    this->AI(now);
 }
 
 const fb::model::datetime& mob::action_time() const
@@ -189,7 +199,7 @@ void mob::oblivion(life* value)
     this->_oblivion = value;
 }
 
-life* mob::repair_target()
+life* mob::update_target()
 {
     this->assert_thread();
 
@@ -302,7 +312,7 @@ void mob::AI(const fb::model::datetime& now)
 
     // 유효한 타겟이 없으면 고쳐준다.
     auto direction = DIRECTION::BOTTOM;
-    if (this->repair_target() == nullptr)
+    if (this->update_target() == nullptr)
     {
         if (this->owner == nullptr || this->owner->map() != this->map())
             this->move(DIRECTION(std::rand() % 4));

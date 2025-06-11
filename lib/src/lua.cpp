@@ -328,7 +328,6 @@ int context::ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::fun
             }
             catch (std::exception& e)
             {
-                fb::logger::fatal("Lua ensure_yield error: {}", e.what());
                 this->release();
             }
         });
@@ -358,7 +357,6 @@ int fb::lua::context::ensure_resume(fb::context&           ctx,
 
                 if (ctx.alive(obj) == false)
                 {
-                    fb::logger::fatal("Lua ensure_resume error: object is not alive");
                     this->release();
                     return;
                 }
@@ -369,7 +367,6 @@ int fb::lua::context::ensure_resume(fb::context&           ctx,
             catch (std::exception& e)
             {
                 this->release();
-                fb::logger::fatal("Lua ensure_resume error: {}", e.what());
             }
         });
         return 0;
