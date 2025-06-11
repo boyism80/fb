@@ -21,7 +21,7 @@ function ON_CAST_3043(me, you, spell)
                 delay = delay - 4
             end
         end
-        me:delay(spell, delay)
+        me:spell(spell):delay(delay)
     end
 
     local damage = math.floor(me:mp() * 1.5)
