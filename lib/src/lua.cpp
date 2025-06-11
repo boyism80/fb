@@ -263,7 +263,7 @@ void fb::lua::context::resume(int argc, int* n)
         auto parent = this->_parent;
         if (parent != nullptr)
         {
-            async::awaitable_then(parent->_initial_thread.switching(), [this, = ](auto result) {
+            async::awaitable_then(parent->_initial_thread.switching(), [=, this](auto result) {
                 auto argc = this->argc();
                 if (n != nullptr)
                     *n = argc;
