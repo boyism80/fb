@@ -13,7 +13,7 @@ public struct WriteArticle : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
   public static WriteArticle GetRootAsWriteArticle(ByteBuffer _bb) { return GetRootAsWriteArticle(_bb, new WriteArticle()); }
   public static WriteArticle GetRootAsWriteArticle(ByteBuffer _bb, WriteArticle obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public static bool VerifyWriteArticle(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, WriteArticleVerify.Verify); }

@@ -13,7 +13,7 @@ public struct GetMailList : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
   public static GetMailList GetRootAsGetMailList(ByteBuffer _bb) { return GetRootAsGetMailList(_bb, new GetMailList()); }
   public static GetMailList GetRootAsGetMailList(ByteBuffer _bb, GetMailList obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public static bool VerifyGetMailList(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, GetMailListVerify.Verify); }

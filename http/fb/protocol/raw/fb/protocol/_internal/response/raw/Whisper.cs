@@ -13,7 +13,7 @@ public struct Whisper : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
-  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
+  public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
   public static Whisper GetRootAsWhisper(ByteBuffer _bb) { return GetRootAsWhisper(_bb, new Whisper()); }
   public static Whisper GetRootAsWhisper(ByteBuffer _bb, Whisper obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public static bool VerifyWhisper(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, WhisperVerify.Verify); }
