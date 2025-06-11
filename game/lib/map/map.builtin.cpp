@@ -350,7 +350,7 @@ int map::builtin::builtin_at(lua_State* L)
     auto type     = lua->toenum(4, OBJECT_TYPE::UNKNOWN);
     auto position = fb::model::point16_t{x, y};
 
-    lua->ensure_yield(*ctx, *map, [=]() {
+    return lua->ensure_yield(*ctx, *map, [=]() {
         auto nears  = map->nears(fb::model::point16_t{x, y}, type);
         auto result = static_cast<object*>(nullptr);
         for (auto obj : nears)

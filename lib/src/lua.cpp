@@ -263,7 +263,7 @@ void fb::lua::context::resume(int argc, int* n)
         auto parent = this->_parent;
         if (parent != nullptr)
         {
-            async::awaitable_then(parent->_initial_thread.switching(), [=](auto result) {
+            async::awaitable_then(parent->_initial_thread.switching(), [this, = ](auto result) {
                 auto argc = this->argc();
                 if (n != nullptr)
                     *n = argc;
@@ -326,9 +326,10 @@ int context::ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::fun
                 result();
                 return fn();
             }
-            catch (std::exception& e)
+            catch (std::exception&)
             {
                 this->release();
+                return 0;
             }
         });
         return this->yield(0);
@@ -344,9 +345,14 @@ int fb::lua::context::ensure_resume(fb::context&           ctx,
     {
         auto n = fn();
         if (force_resume)
+        {
             this->resume(n);
-        else
             return n;
+        }
+        else
+        {
+            return n;
+        }
     }
     else
     {
