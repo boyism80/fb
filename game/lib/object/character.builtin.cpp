@@ -2098,10 +2098,6 @@ int character::builtin::builtin_script(lua_State* L)
     auto file = lua->tostring(2, "script.lua");
     auto func = lua->tostring(3, "func");
 
-    // 1. 캐릭터가 여기 스레드 아니면 -> lua->yield
-    // 2. 캐릭터가 여기 스레드이지만 call 결과가 yield면 ->lua-> yield
-    // 3. 캐릭터가 여기 스레드이고 call 결과가 yield가 아닌 경우 -> return
-
     if (ch->thread() == ctx->threads.current())
     {
         auto new_lua = fb::lua::new_context(lua);
@@ -2139,7 +2135,7 @@ int character::builtin::builtin_script(lua_State* L)
             new_lua->func(func);
             new_lua->pushobject(ch);
             lua_xmove(L, *new_lua, argc - 3);
-            new_lua->call(argc - 2);
+            std::ignore = new_lua->call(argc - 2);
             return lua->yield(0);
         });
     }
@@ -2344,7 +2340,7 @@ int character::builtin::builtin_send_mail(lua_State* L)
         contents = lua->tostring(4);
 
     return lua->ensure_yield(*ctx, *ch, [=]() {
-        ctx->send_mail(*ch, to, title, contents);
+        std::ignore = ctx->send_mail(*ch, to, title, contents);
         return lua->ensure_resume(*ctx, *ch, [=]() {
             return 0;
         });
@@ -2389,8 +2385,8 @@ int fb::game::character::builtin::builtin_teleport(lua_State* L)
 
     if (ch->thread() == target->thread())
     {
-        auto map = target->map();
-        ch->map(map, target->position());
+        auto map    = target->map();
+        std::ignore = ch->map(map, target->position());
         lua->pushboolean(true);
         return 1;
     }
