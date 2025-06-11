@@ -113,7 +113,7 @@ void listener_impl::on_hide(object& me, object& you, DESTROY_TYPE destroy_type)
         break;
 
     case DESTROY_TYPE::DEAD:
-        if (you.is(OBJECT_TYPE::LIFE) == false)
+        if (me.is(OBJECT_TYPE::LIFE) == false)
             throw std::runtime_error("object must be life type");
 
         you.send(fb_resp::die(static_cast<life&>(me)));

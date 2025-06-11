@@ -28,5 +28,5 @@ function ON_CAST_3043(me, you, spell)
     local mp = me:mp()
     local sound = 73
     local effect = 8
-    spell_damage(me, you, spell, {damage,=damage mp=mp, sound=sound, effect=effect})
+    spell_damage(me, you, spell, {damage=damage, mp=mp, sound=sound, effect=effect})
 end

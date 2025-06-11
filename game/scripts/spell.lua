@@ -603,12 +603,12 @@ end
 
 function spell_damage_area(me, you, spell, opts)
     opts = opts or {}
-    local damage = opts.damage or 0
-    local hp = opts.hp or 0
-    local mp = opts.mp or 0
-    local sound = opts.sound
-    local effect_me = opts.effect_me
-    local effect_you = opts.effect_you
+    local damage     = opts.damage or 0
+    local hp         = opts.hp or 0
+    local mp         = opts.mp or 0
+    local sound      = opts.sound
+    local effect     = opts.effect or {}
+
     if me:is(OBJECT_TYPE_CHARACTER) then
         local err = me:assert_state(STATE_GHOST, STATE_RIDING)
         if err then
@@ -621,23 +621,28 @@ function spell_damage_area(me, you, spell, opts)
         return false
     end
     me:mp_down(mp)
+
     if type(you) == 'userdata' then
-        you = {you}
+        you = { you }
     end
+
     local rate = me:skill_damage_rate() / 1000.0
     for _, obj in pairs(you) do
         if obj:is(OBJECT_TYPE_CHARACTER) then
             obj:message(string.format('%s님이 %s 가합니다.', me:name(), name_with(spell:name())))
         end
-        if effect_you then obj:effect(effect_you) end
+        if effect.you then obj:effect(effect.you) end
         obj:damage(math.floor(damage * rate), me)
     end
+
     me:sound(sound)
-    if effect_me then me:effect(effect_me) end
+    if effect.me then me:effect(effect.me) end
     me:action(ACTION_CAST_SPELL, DURATION_SPELL, 1)
-    if hp then
+
+    if hp > 0 then
         me:hp(me:hp() - hp)
     end
+
     return true
 end
 
