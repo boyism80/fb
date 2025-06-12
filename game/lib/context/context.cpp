@@ -77,17 +77,15 @@ context::context(boost::asio::io_context& context, uint16_t port) :
 }
 
 context::~context()
-{
-    for (int i = 0; i < threads.count(); i++)
-    {
-        auto thread = this->threads.at(i);
-        auto params = thread->template data<thread_params>();
-        delete params;
-    }
-}
+{ }
 
 async::task<void> context::handle_start()
 {
+    this->threads.deletor = [](void* data) {
+        auto params = static_cast<thread_params*>(data);
+        delete params;
+    };
+
     co_await fb::acceptor<character>::handle_start();
 
     auto maps_division = std::unordered_map<fb::thread*, std::vector<fb::game::map*>>{};

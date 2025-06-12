@@ -5,6 +5,7 @@
 #include <fb/thread_container.h>
 #include <fb/hash.h>
 #include <fb/locker.h>
+#include <async/awaitable_get.h>>
 
 namespace fb {
 
@@ -52,26 +53,27 @@ protected:
      * @param[in]  duration  The duration
      */
     template <typename Class>
-    void bind_timer(async::task<void> (Class::*fn)(void), const std::chrono::steady_clock::duration& duration)
+    void bind_timer(async::task<void> (Class::*fn)(void), std::chrono::steady_clock::duration interval)
     {
+        // 멤버 함수 바인딩
         auto cfunc = std::bind(fn, static_cast<Class*>(this));
-        auto timer = std::make_shared<boost::asio::deadline_timer>(this->_boost_context, boost::posix_time::seconds(1));
-        this->_timers.push_back(timer);
 
-        auto callback_ptr = std::make_shared<std::function<void(const boost::system::error_code&)>>();
-        auto callback     = [=, this](const boost::system::error_code& ec) {
-            if (ec || !this->_running)
-                return;
+        // executor 얻기
+        auto exec = this->_boost_context.get_executor();
 
-            async::awaitable_then(cfunc(), [timer, callback_ptr, duration](async::awaitable_result<void> result) {
-                timer->expires_at(timer->expires_at() +
-                                  boost::posix_time::milliseconds(
-                                      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()));
-                timer->async_wait(*callback_ptr.get());
-            });
-        };
-        *callback_ptr = callback;
-        timer->async_wait(*callback_ptr.get());
+        // 코루틴 스폰
+        boost::asio::co_spawn(
+            exec,
+            [this, cfunc, interval]() -> boost::asio::awaitable<void> {
+                boost::asio::steady_timer timer(co_await boost::asio::this_coro::executor);
+                while (this->_running)
+                {
+                    timer.expires_after(interval);
+                    co_await timer.async_wait(boost::asio::use_awaitable);
+                    async::awaitable_get(cfunc());
+                }
+            },
+            boost::asio::detached);
     }
 
 public:

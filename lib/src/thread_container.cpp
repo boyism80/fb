@@ -18,6 +18,20 @@ thread_container::thread_container(fb::context& context, uint32_t count) :
     }
 }
 
+thread_container::~thread_container()
+{
+    if (this->deletor)
+    {
+        for (auto& [id, thread] : this->_thread_container)
+        {
+            if (thread == nullptr)
+                continue;
+
+            this->deletor(thread->_data);
+        }
+    }
+}
+
 void thread_container::enqueue(thread_switchable&                          pivot,
                                const std::function<bool(fb::thread&)>&     condition,
                                const thread::handle_func_type<void>&       fn,
@@ -227,8 +241,6 @@ void thread_container::exit()
     {
         thread->exit();
     }
-
-    this->_thread_container.clear();
 }
 
 thread* thread_container::operator[] (uint8_t index) const
