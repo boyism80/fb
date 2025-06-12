@@ -297,7 +297,7 @@ int object::builtin::builtin_buff(lua_State* L)
     {
         model = lua->touserdata<fb::model::spell>(2);
     }
-    else if (lua->is_str(2))
+    else if (lua->is_string(2))
     {
         model = ctx->model.spell.name2spell(lua->tostring(2));
     }
@@ -334,7 +334,7 @@ int object::builtin::builtin_unbuff(lua_State* L)
 
     obj->assert_thread();
 
-    if (lua->is_str(2))
+    if (lua->is_string(2))
     {
         auto name  = lua->tostring(2);
         auto model = ctx->model.spell.name2spell(name);
@@ -383,7 +383,7 @@ int object::builtin::builtin_isbuff(lua_State* L)
     auto argc = lua->argc();
     for (int i = 1; i < argc; i++)
     {
-        if (lua->is_str(i + 1))
+        if (lua->is_string(i + 1))
         {
             auto name  = lua->tostring(i + 1);
             auto model = ctx->model.spell.name2spell(name);
@@ -474,13 +474,13 @@ int object::builtin::builtin_map(lua_State* L)
             if (ctx->maps.contains(model->id))
                 map = &ctx->maps[model->id];
         }
-        else if (lua->is_num(2))
+        else if (lua->is_number(2))
         {
             auto id = lua->tointeger(2);
             if (ctx->maps.contains(id))
                 map = &ctx->maps[id];
         }
-        else if (lua->is_str(2))
+        else if (lua->is_string(2))
         {
             map = ctx->maps.name2map(lua->tostring(2));
         }
@@ -506,7 +506,7 @@ int object::builtin::builtin_map(lua_State* L)
 
             position = fb::model::point16_t{x, y};
         }
-        else if (lua->is_num(3) && lua->is_num(4))
+        else if (lua->is_number(3) && lua->is_number(4))
         {
             auto x   = (uint16_t)lua->tointeger(3);
             auto y   = (uint16_t)lua->tointeger(4);

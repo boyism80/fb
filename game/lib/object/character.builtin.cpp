@@ -255,7 +255,7 @@ int character::builtin::builtin_item(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    if (lua->is_num(2))
+    if (lua->is_number(2))
     {
         auto index = (uint8_t)lua->tointeger(2);
         auto item  = ch->items[index];
@@ -266,7 +266,7 @@ int character::builtin::builtin_item(lua_State* L)
         return 1;
     }
 
-    if (lua->is_str(2))
+    if (lua->is_string(2))
     {
         auto name = lua->tostring(2);
         auto item = ch->items.find(name);
@@ -320,7 +320,7 @@ int character::builtin::builtin_item(lua_State* L)
             { // get 1st field
                 lua->pushinteger(1);
                 lua_gettable(L, -2);
-                if (lua->is_str(-1))
+                if (lua->is_string(-1))
                 {
                     item = ctx->model.item.name2item(lua->tostring(-1));
                 }
@@ -337,7 +337,7 @@ int character::builtin::builtin_item(lua_State* L)
             { // get 2nd field
                 lua->pushinteger(2);
                 lua_gettable(L, -2);
-                if (lua->is_num(-1))
+                if (lua->is_number(-1))
                 {
                     price = lua->tointeger(-1);
                 }
@@ -509,11 +509,11 @@ int character::builtin::builtin_rmitem(lua_State* L)
 
             index = ch->items.index(*model);
         }
-        else if (lua->is_num(2))
+        else if (lua->is_number(2))
         {
             index = (uint8_t)lua->tointeger(2) - 1;
         }
-        else if (lua->is_str(2))
+        else if (lua->is_string(2))
         {
             auto name = lua->tostring(2);
             if (name.empty())
@@ -845,7 +845,7 @@ int character::builtin::builtin_stored_item(lua_State* L)
     {
         try
         {
-            if (lua->is_num(2))
+            if (lua->is_number(2))
             {
                 auto index = lua->tointeger(2);
                 if (index > stored_items.size() - 1)
@@ -854,7 +854,7 @@ int character::builtin::builtin_stored_item(lua_State* L)
                 auto stored_item = stored_items.at(index);
                 lua->pushobject(stored_item);
             }
-            else if (lua->is_str(2))
+            else if (lua->is_string(2))
             {
                 auto name = lua->tostring(2);
                 auto found =
@@ -1247,7 +1247,7 @@ int character::builtin::builtin_push_trace(lua_State* L)
 
     const fb::model::trace* model = nullptr;
 
-    if (lua->is_num(2))
+    if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
         if (ctx->model.trace.contains(id) == false)
@@ -1937,7 +1937,7 @@ int character::builtin::builtin_armor_color(lua_State* L)
     else
     {
         auto value = std::optional<uint16_t>{};
-        if (lua->is_num(2))
+        if (lua->is_number(2))
             value = lua->tointeger(2);
 
         return lua->ensure_yield(*ctx, *ch, [=]() {
@@ -2007,7 +2007,7 @@ int character::builtin::builtin_rmspell(lua_State* L)
             });
         });
     }
-    else if (lua->is_num(2))
+    else if (lua->is_number(2))
     {
         auto slot = lua->tointeger(2);
         return lua->ensure_yield(*ctx, *ch, [=]() {
@@ -2017,7 +2017,7 @@ int character::builtin::builtin_rmspell(lua_State* L)
             });
         });
     }
-    else if (lua->is_str(2))
+    else if (lua->is_string(2))
     {
         return lua->ensure_yield(*ctx, *ch, [=]() {
             auto name = lua->tostring(2);
@@ -2203,7 +2203,7 @@ int character::builtin::builtin_delay(lua_State* L)
         if (spell != nullptr)
             model = &spell->model;
     }
-    else if (lua->is_str(2))
+    else if (lua->is_string(2))
     {
         model = ctx->model.spell.name2spell(lua->tostring(2));
     }

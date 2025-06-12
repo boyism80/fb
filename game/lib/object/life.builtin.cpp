@@ -255,19 +255,58 @@ int life::builtin::builtin_spell(lua_State* L)
     if (obj == nullptr || ctx->alive(*obj) == false)
         return 0;
 
-    auto index = (int)lua->tointeger(2);
-    return lua->ensure_yield(*ctx, *obj, [=]() {
-        auto spell = obj->spells[index];
+    if (lua->is_number(2))
+    {
+        auto index = (int)lua->tointeger(2);
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            auto spell = obj->spells[index];
 
-        return lua->ensure_resume(*ctx, *obj, [=]() {
-            if (spell == nullptr)
-                lua->pushnil();
-            else
-                lua->pushobject(spell);
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                if (spell == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(spell);
 
-            return 1;
+                return 1;
+            });
         });
-    });
+    }
+    else if (lua->is_string(2))
+    {
+        auto name = lua->tostring(2);
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            auto spell = obj->spells.find(name);
+
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                if (spell == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(spell);
+
+                return 1;
+            });
+        });
+    }
+    else if (lua->is_userdata<fb::model::spell>(2))
+    {
+        auto model = lua->touserdata<fb::model::spell>(2);
+        return lua->ensure_yield(*ctx, *obj, [=]() {
+            auto spell = obj->spells.find(*model);
+
+            return lua->ensure_resume(*ctx, *obj, [=]() {
+                if (spell == nullptr)
+                    lua->pushnil();
+                else
+                    lua->pushobject(spell);
+
+                return 1;
+            });
+        });
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 int life::builtin::builtin_spells(lua_State* L)

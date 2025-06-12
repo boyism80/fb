@@ -478,7 +478,7 @@ int context::builtin::builtin_mknpc(lua_State* L)
         return 0;
 
     auto map = static_cast<fb::game::map*>(nullptr);
-    if (lua->is_str(2))
+    if (lua->is_string(2))
     {
         auto name      = lua->tostring(2);
         auto map_model = context->model.map.name2map(name);

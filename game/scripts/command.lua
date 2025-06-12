@@ -350,7 +350,7 @@ command_funcs = {
     ['쿨타임초기화'] = 
     function (me, args)
         for slot, spell in pairs(me:spells()) do
-            me:spell(spell):delay(0)
+            spell:delay(0)
         end
         return true
     end,

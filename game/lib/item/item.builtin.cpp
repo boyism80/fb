@@ -80,7 +80,7 @@ int item::builtin::builtin_rename(lua_State* L)
 
     if (argc > 1)
     {
-        if (lua->is_str(2))
+        if (lua->is_string(2))
         {
             auto name = lua->tostring(2);
             weapon->custom_name(name);
