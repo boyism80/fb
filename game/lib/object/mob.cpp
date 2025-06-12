@@ -149,7 +149,7 @@ async::task<bool> mob::call_script()
     co_return true;
 }
 
-async::task<void> mob::action(const fb::model::datetime& now)
+async::task<void> mob::action(fb::model::datetime now)
 {
     if (co_await this->call_script() == false)
         co_return;
