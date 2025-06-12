@@ -537,7 +537,7 @@ public:
      *
      * @return     True if the specified offset is string, False otherwise.
      */
-    bool is_str(int offset)
+    bool is_string(int offset)
     {
         return lua_isstring(*this, offset);
     }
@@ -587,7 +587,7 @@ public:
      *
      * @return     True if the specified offset is number, False otherwise.
      */
-    bool is_num(int offset)
+    bool is_number(int offset)
     {
         return lua_isnumber(*this, offset);
     }
