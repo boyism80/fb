@@ -5,7 +5,7 @@
 #include <fb/thread_container.h>
 #include <fb/hash.h>
 #include <fb/locker.h>
-#include <async/awaitable_get.h>>
+#include <async/awaitable_get.h>
 
 namespace fb {
 
