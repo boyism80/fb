@@ -209,6 +209,8 @@ life* mob::update_target()
 
     if (lost_target)
     {
+        this->_target = nullptr;
+
         auto& model = this->based<fb::model::mob>();
         if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
             this->_target = this->find_target();
