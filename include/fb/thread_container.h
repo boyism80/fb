@@ -26,6 +26,9 @@ private:
     unique_id_list          _keys;
 
 public:
+    std::function<void(void*)> deletor;
+
+public:
     /**
      * @brief      Constructs a new instance.
      *
@@ -35,7 +38,7 @@ public:
     /**
      * @brief      Destroys the object.
      */
-    ~thread_container() = default;
+    ~thread_container();
 
     /**
      * @brief      Constructs a new instance.

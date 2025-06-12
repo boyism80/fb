@@ -359,7 +359,7 @@ public:
     /**
      * @brief      { function_description }
      */
-    [[nodiscard]] async::task<void> action(const fb::model::datetime& now);
+    [[nodiscard]] async::task<void> action(fb::model::datetime now);
 
     /**
      * @brief      { function_description }

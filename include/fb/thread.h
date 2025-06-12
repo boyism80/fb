@@ -17,6 +17,8 @@
 
 namespace fb {
 
+class thread_container;
+
 /**
  * @brief      This class describes a thread.
  */
@@ -24,6 +26,8 @@ class thread : public fb::lua::luable
 {
 public:
     LUA_PROTOTYPE
+
+    friend class thread_container;
 
 public:
     template <typename ReturnType>

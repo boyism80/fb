@@ -149,7 +149,7 @@ async::task<bool> mob::call_script()
     co_return true;
 }
 
-async::task<void> mob::action(const fb::model::datetime& now)
+async::task<void> mob::action(fb::model::datetime now)
 {
     if (co_await this->call_script() == false)
         co_return;
@@ -209,6 +209,8 @@ life* mob::update_target()
 
     if (lost_target)
     {
+        this->_target = nullptr;
+
         auto& model = this->based<fb::model::mob>();
         if (model.attack_type == MOB_ATTACK_TYPE::CONTAINMENT)
             this->_target = this->find_target();

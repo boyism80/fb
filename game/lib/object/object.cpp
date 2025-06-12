@@ -133,12 +133,12 @@ void object::chat(const std::string& message, CHAT_TYPE chat_type, bool decorate
         auto decorated = std::string{message};
         switch (chat_type)
         {
-        case CHAT_TYPE::NORMAL:
-            decorated = std::format("{}: {}", this->name(), message);
-            break;
-
         case CHAT_TYPE::SHOUT:
             decorated = std::format("{}! {}", this->name(), message);
+            break;
+
+        default:
+            decorated = std::format("{}: {}", this->name(), message);
             break;
         }
 

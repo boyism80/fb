@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pushd ..
+
 echo "Retrieving external IP..."
 EXTERNAL_IP=$(curl -s https://ifconfig.me)
 
@@ -41,4 +43,5 @@ fi
 pushd infra/pulumi
 pulumi config set --secret host "$EXTERNAL_IP"
 pulumi down -y && pulumi up -y
+popd
 popd
