@@ -170,8 +170,10 @@ public:
         catch (boost::system::system_error& e)
         {
             auto ec = e.code();
-
-            if (ec == boost::asio::error::operation_aborted)
+            if (ec == boost::asio::error::eof)
+            {
+            }
+            else if (ec == boost::asio::error::operation_aborted)
             {
                 fb::logger::debug("socket recv cancelled (possibly shutdown)");
             }
