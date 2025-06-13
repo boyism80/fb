@@ -110,19 +110,14 @@ async::task<void> context::create_clan(character& me, const std::string& name)
             clans.insert({id, std::move(shared_ptr)});
         }
 
-        this->_shard[id]->clans.write([this, id, fd, &me](auto& clans) {
-            if (!clans.contains(id))
-                return;
-
-            auto& clan_lock_ptr = clans.at(id);
-            if (this->alive(me))
-            {
-                me.clan(clan_lock_ptr);
-                clan_lock_ptr->write([this, &me](auto& clan) {
-                    clan.attach_character(me);
-                });
-            }
-        });
+        auto& clan_lock_ptr = clans.at(id);
+        if (this->alive(me))
+        {
+            me.clan(clan_lock_ptr);
+            clan_lock_ptr->write([this, &me](auto& clan) {
+                clan.attach_character(me);
+            });
+        }
     });
 }
 

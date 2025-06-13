@@ -108,17 +108,23 @@ namespace Internal.Controllers
                 var ch = await _dbContext.Character.Get(request.Master) ??
                     throw new LogicException(ErrorCode.NotFoundCharacter);
 
-                var result = await db.QueryFirstAsync<ClanNameSetResult>("USP_CLAN_NAME_SET", new
-                {
-                    cname = request.Name
-                }, transaction: trans, commandType: System.Data.CommandType.StoredProcedure);
-
-                if (!result.Result)
+                var existing = await db.QueryFirstOrDefaultAsync<uint?>(
+                    @"SELECT id FROM clan_name WHERE name = @Name FOR UPDATE",
+                    new { Name = request.Name },
+                    transaction: trans
+                );
+                if (existing.HasValue)
                     throw new LogicException(ErrorCode.ClanNameAlreadyExists);
+
+                var newClanId = await db.QuerySingleAsync<uint>(
+                    @"INSERT INTO clan_name (name) VALUES (@Name);SELECT LAST_INSERT_ID();",
+                    new { Name = request.Name },
+                    transaction: trans
+                );
 
                 await using (await _distributedLock.Lock(CharacterSync.DistributedLockKey(ch.Id)))
                 {
-                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(result.Id)))
+                    await using (await _distributedLock.Lock(Clan.DistributedLockKey(newClanId)))
                     {
                         var sync = await _dbContext.CharacterSync.Get(ch.Id) ??
                             throw new LogicException(ErrorCode.NotFoundCharacterSync);
@@ -128,7 +134,7 @@ namespace Internal.Controllers
 
                         var clan = _dbContext.Clan.Set(new Clan
                         {
-                            Id = result.Id,
+                            Id = newClanId,
                             Name = request.Name,
                             Title = null,
                             Deleted = false
