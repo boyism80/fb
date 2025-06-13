@@ -13,11 +13,11 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.achievement_generated.h"
 #include "fb.protocol.internal.character_generated.h"
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.option_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
-#include "fb.protocol.internal.trace_generated.h"
 #include "nullable_uint_generated.h"
 
 namespace fb {
@@ -38,7 +38,7 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_ITEMS = 10,
     VT_SPELLS = 12,
     VT_OPTION = 14,
-    VT_TRACES = 16,
+    VT_ACHIEVEMENTS = 16,
     VT_MAIL = 18
   };
   const fb::protocol::internal::raw::Character *character() const {
@@ -59,8 +59,8 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const fb::protocol::internal::raw::Option *option() const {
     return GetPointer<const fb::protocol::internal::raw::Option *>(VT_OPTION);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *>(VT_TRACES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *>(VT_ACHIEVEMENTS);
   }
   uint32_t mail() const {
     return GetField<uint32_t>(VT_MAIL, 0);
@@ -81,9 +81,9 @@ struct Init FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            verifier.VerifyVectorOfTables(spells()) &&
            VerifyOffset(verifier, VT_OPTION) &&
            verifier.VerifyTable(option()) &&
-           VerifyOffset(verifier, VT_TRACES) &&
-           verifier.VerifyVector(traces()) &&
-           verifier.VerifyVectorOfTables(traces()) &&
+           VerifyOffset(verifier, VT_ACHIEVEMENTS) &&
+           verifier.VerifyVector(achievements()) &&
+           verifier.VerifyVectorOfTables(achievements()) &&
            VerifyField<uint32_t>(verifier, VT_MAIL, 4) &&
            verifier.EndTable();
   }
@@ -111,8 +111,8 @@ struct InitBuilder {
   void add_option(::flatbuffers::Offset<fb::protocol::internal::raw::Option> option) {
     fbb_.AddOffset(Init::VT_OPTION, option);
   }
-  void add_traces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces) {
-    fbb_.AddOffset(Init::VT_TRACES, traces);
+  void add_achievements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements) {
+    fbb_.AddOffset(Init::VT_ACHIEVEMENTS, achievements);
   }
   void add_mail(uint32_t mail) {
     fbb_.AddElement<uint32_t>(Init::VT_MAIL, mail, 0);
@@ -136,11 +136,11 @@ inline ::flatbuffers::Offset<Init> CreateInit(
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces = 0,
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0,
     uint32_t mail = 0) {
   InitBuilder builder_(_fbb);
   builder_.add_mail(mail);
-  builder_.add_traces(traces);
+  builder_.add_achievements(achievements);
   builder_.add_option(option);
   builder_.add_spells(spells);
   builder_.add_items(items);
@@ -158,11 +158,11 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
     ::flatbuffers::Offset<fb::protocol::internal::raw::Option> option = 0,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces = nullptr,
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr,
     uint32_t mail = 0) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
-  auto traces__ = traces ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>(*traces) : 0;
+  auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   return fb::protocol::internal::response::raw::CreateInit(
       _fbb,
       character,
@@ -171,7 +171,7 @@ inline ::flatbuffers::Offset<Init> CreateInitDirect(
       items__,
       spells__,
       option,
-      traces__,
+      achievements__,
       mail);
 }
 

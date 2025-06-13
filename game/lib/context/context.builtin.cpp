@@ -136,7 +136,7 @@ int context::builtin::builtin_name2ch(lua_State* L)
     auto argc    = lua->argc();
     auto name    = lua->tostring(1);
 
-    auto ch = context->_shard[name]->names.template lock<character*>([&name](auto& names) -> character* {
+    auto ch = context->_shard[name]->names.template read<character*>([&name](const auto& names) -> character* {
         if (names.contains(name) == false)
             return nullptr;
 

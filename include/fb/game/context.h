@@ -134,7 +134,7 @@ private:
      * @param[in]  id    The identifier
      * @param[in]  fn    The function
      */
-    void upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn);
+    void upsert_clan_then(uint32_t id, std::function<void(shared_clan_lock&)> fn);
 
     /**
      * @brief      Initializes the ch.
@@ -178,12 +178,12 @@ private:
     void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
 
     /**
-     * @brief      Initializes the traces.
+     * @brief      Initializes the achievements.
      *
      * @param[in]  response  The response
      * @param      ch        { parameter_description }
      */
-    void init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch);
+    void init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch);
 
 private:
     /**

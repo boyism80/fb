@@ -10,7 +10,7 @@
 #include <fb/game/mob.h>
 #include <sstream>
 #include <fb/game/trade.h>
-#include <fb/game/trace.h>
+#include <fb/game/achievement.h>
 #include <fb/game/clan.h>
 #include <fb/game/board.h>
 #include <fb/game/stat.h>
@@ -102,11 +102,11 @@ private:
     };
 
 public:
-    fb::game::trade                            trade  = fb::game::trade(*this);
-    fb::game::items                            items  = fb::game::items(*this);
-    fb::lua::context*                          dialog = nullptr;
-    std::map<uint32_t, std::unique_ptr<trace>> traces; // order required
-    listener_t&                                listener;
+    fb::game::trade                                  trade  = fb::game::trade(*this);
+    fb::game::items                                  items  = fb::game::items(*this);
+    fb::lua::context*                                dialog = nullptr;
+    std::map<uint32_t, std::unique_ptr<achievement>> achievements; // order required
+    listener_t&                                      listener;
 
 private:
     using object::based;
@@ -1639,7 +1639,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_traces(lua_State* L);
+    static int builtin_achievements(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1648,7 +1648,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_trace(lua_State* L);
+    static int builtin_achievement(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1657,7 +1657,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_push_trace(lua_State* L);
+    static int builtin_push_achievement(lua_State* L);
 
     /**
      * @brief      { function_description }
@@ -1666,7 +1666,7 @@ public:
      *
      * @return     { description_of_the_return_value }
      */
-    static int builtin_erase_trace(lua_State* L);
+    static int builtin_erase_achievement(lua_State* L);
 
     /**
      * @brief      { function_description }

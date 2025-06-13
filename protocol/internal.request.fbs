@@ -91,7 +91,7 @@ table Save {
   character: fb.protocol.internal.Character;
   items: [fb.protocol.internal.Item];
   spells: [fb.protocol.internal.Spell];
-  traces: [fb.protocol.internal.Trace];
+  achievements: [fb.protocol.internal.Achievement];
 }
 
 

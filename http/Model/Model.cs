@@ -1064,6 +1064,18 @@ namespace Fb.Model
         public Fb.Model.EnumValue.Class Id { get; set; }
     }
 
+    public class Achievement
+    {
+        [JsonProperty("id")]
+        public uint Id { get; set; }
+        [JsonProperty("look")]
+        public byte Look { get; set; }
+        [JsonProperty("color")]
+        public byte Color { get; set; }
+        [JsonProperty("text")]
+        public string Text { get; set; }
+    }
+
     public class Announce
     {
         [JsonProperty("message")]
@@ -1286,18 +1298,6 @@ namespace Fb.Model
         public string Concast { get; set; }
         [JsonProperty("message")]
         public string Message { get; set; }
-    }
-
-    public class Trace
-    {
-        [JsonProperty("id")]
-        public uint Id { get; set; }
-        [JsonProperty("look")]
-        public byte Look { get; set; }
-        [JsonProperty("color")]
-        public byte Color { get; set; }
-        [JsonProperty("text")]
-        public string Text { get; set; }
     }
 
     public class Warp
@@ -2002,6 +2002,10 @@ namespace Fb.Model
         public partial class AbilityAttributeTable : KeyValueContainer<Fb.Model.EnumValue.Class, AbilityAttribute>
         { }
         public AbilityAttributeTable AbilityAttribute { get; private set; } = new AbilityAttributeTable();
+        [Table("json/achievement.json")]
+        public partial class AchievementTable : KeyValueContainer<uint, Achievement>
+        { }
+        public AchievementTable Achievement { get; private set; } = new AchievementTable();
         [Table("json/announce.json")]
         public partial class AnnounceTable : ArrayContainer<Announce>
         { }
@@ -2110,10 +2114,6 @@ namespace Fb.Model
         public partial class SpellTable : KeyValueContainer<uint, Spell>
         { }
         public SpellTable Spell { get; private set; } = new SpellTable();
-        [Table("json/trace.json")]
-        public partial class TraceTable : KeyValueContainer<uint, Trace>
-        { }
-        public TraceTable Trace { get; private set; } = new TraceTable();
         [Table("json/warp.json")]
         public partial class WarpTable : KeyValueContainer<uint, ArrayContainer<Warp>>
         { }
@@ -2139,6 +2139,7 @@ namespace Fb.Model
             {
                 Ability, 
                 AbilityAttribute, 
+                Achievement, 
                 Announce, 
                 Board, 
                 Buy, 
@@ -2166,7 +2167,6 @@ namespace Fb.Model
                 Soliloquy, 
                 SoliloquyAttribute, 
                 Spell, 
-                Trace, 
                 Warp, 
                 WarpAttribute, 
                 World, 

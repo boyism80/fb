@@ -4,9 +4,9 @@ using Http.Service;
 
 namespace Http.Reepository
 {
-    public class TraceRepository : RedisHashRepository<Trace, TraceKey>
+    public class AchievementRepository : RedisHashRepository<Achievement, AchievementKey>
     {
-        public TraceRepository(DbContext dbContext,
+        public AchievementRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
             WriteBackService dbExecuteService) : base(dbContext, redisService, distributedLock, dbExecuteService)
@@ -14,27 +14,27 @@ namespace Http.Reepository
 
         }
 
-        public async Task<Trace> Get(uint uid, uint model)
+        public async Task<Achievement> Get(uint uid, uint model)
         {
-            return await base.Get(new TraceKey
+            return await base.Get(new AchievementKey
             {
                 Uid = uid,
                 Model = model
             });
         }
 
-        public async Task<IEnumerable<Trace>> Get(uint uid)
+        public async Task<IEnumerable<Achievement>> Get(uint uid)
         {
-            return await base.GetAll(new TraceKey
+            return await base.GetAll(new AchievementKey
             {
                 Uid = uid
             });
         }
 
-        protected override string OnSelect(TraceKey key)
+        protected override string OnSelect(AchievementKey key)
         {
             var sql = $"""
-                SELECT * FROM `trace` WHERE 
+                SELECT * FROM `achievement` WHERE 
                 `uid` = {key.Uid} AND
                 `model` = {key.Model}
                 LIMIT 1;
@@ -43,19 +43,19 @@ namespace Http.Reepository
             return sql;
         }
 
-        protected override string OnSelectBulk(TraceKey key)
+        protected override string OnSelectBulk(AchievementKey key)
         {
             var sql = $"""
-                SELECT * FROM `trace` WHERE
+                SELECT * FROM `achievement` WHERE
                 `uid` = {key.Uid};
                 """;
             return sql;
         }
 
-        protected override string OnUpsert(Trace value)
+        protected override string OnUpsert(Achievement value)
         {
             var sql = $"""
-                    INSERT INTO `trace` (
+                    INSERT INTO `achievement` (
                         `uid`,
                         `model`,
                         `text`,
@@ -78,22 +78,22 @@ namespace Http.Reepository
             return sql;
         }
 
-        protected override string OnUpsert(Trace[] values)
+        protected override string OnUpsert(Achievement[] values)
         {
-            var args = values.Select(trace =>
+            var args = values.Select(achievement =>
             {
                 return $"""
-                        ({trace.Uid.Escape()},
-                         {trace.Model.Escape()},
-                         {trace.Text.Escape()},
-                         {trace.Deleted.Escape()},
-                         {trace.CreatedDate.Escape()},
-                         {trace.UpdatedDate.Escape()})
+                        ({achievement.Uid.Escape()},
+                         {achievement.Model.Escape()},
+                         {achievement.Text.Escape()},
+                         {achievement.Deleted.Escape()},
+                         {achievement.CreatedDate.Escape()},
+                         {achievement.UpdatedDate.Escape()})
                         """;
             });
 
             var sql = $"""
-                    INSERT INTO `trace` (
+                    INSERT INTO `achievement` (
                         `uid`,
                         `model`,
                         `text`,

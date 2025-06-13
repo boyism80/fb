@@ -217,12 +217,12 @@ namespace fb.protocol._internal
                 builder.Build(value.Master),
                 builder.Build(value.Members));
         }
-        public static Offset<fb.protocol._internal.raw.Trace> Build(this FlatBufferBuilder builder, fb.protocol._internal.Trace value)
+        public static Offset<fb.protocol._internal.raw.Achievement> Build(this FlatBufferBuilder builder, fb.protocol._internal.Achievement value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.raw.Trace.CreateTrace(builder,
+            return fb.protocol._internal.raw.Achievement.CreateAchievement(builder,
                 builder.Build(value.User),
                 builder.Build(value.Model),
                 builder.Build(value.Text));
@@ -383,7 +383,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Traces));
+                builder.Build(value.Achievements));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -710,7 +710,7 @@ namespace fb.protocol._internal
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
                 builder.Build(value.Option),
-                builder.Build(value.Traces),
+                builder.Build(value.Achievements),
                 builder.Build(value.Mail));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
@@ -899,9 +899,9 @@ namespace fb.protocol._internal
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Trace> value)
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Achievement> value)
         {
-            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Trace>(value.Select(x => Build(builder, x)).ToArray());
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Achievement>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ArticleSummary> value)
         {
@@ -938,7 +938,7 @@ namespace fb.protocol._internal
         MailSummary,
         Mail,
         Group,
-        Trace,
+        Achievement,
         Clan,
         ClanMember
     }
@@ -1150,12 +1150,12 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Master),
                 builder.Build(value.Members));
         }
-        public static Offset<fb.protocol._internal.raw.Trace> Build(this FlatBufferBuilder builder, fb.protocol._internal.Trace value)
+        public static Offset<fb.protocol._internal.raw.Achievement> Build(this FlatBufferBuilder builder, fb.protocol._internal.Achievement value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.raw.Trace.CreateTrace(builder,
+            return fb.protocol._internal.raw.Achievement.CreateAchievement(builder,
                 builder.Build(value.User),
                 builder.Build(value.Model),
                 builder.Build(value.Text));
@@ -1316,7 +1316,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Traces));
+                builder.Build(value.Achievements));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -1643,7 +1643,7 @@ namespace fb.protocol._internal.request
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
                 builder.Build(value.Option),
-                builder.Build(value.Traces),
+                builder.Build(value.Achievements),
                 builder.Build(value.Mail));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
@@ -1832,9 +1832,9 @@ namespace fb.protocol._internal.request
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Trace> value)
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Achievement> value)
         {
-            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Trace>(value.Select(x => Build(builder, x)).ToArray());
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Achievement>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ArticleSummary> value)
         {
@@ -2098,12 +2098,12 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Master),
                 builder.Build(value.Members));
         }
-        public static Offset<fb.protocol._internal.raw.Trace> Build(this FlatBufferBuilder builder, fb.protocol._internal.Trace value)
+        public static Offset<fb.protocol._internal.raw.Achievement> Build(this FlatBufferBuilder builder, fb.protocol._internal.Achievement value)
         {
             if (value == null)
                 return default;
 
-            return fb.protocol._internal.raw.Trace.CreateTrace(builder,
+            return fb.protocol._internal.raw.Achievement.CreateAchievement(builder,
                 builder.Build(value.User),
                 builder.Build(value.Model),
                 builder.Build(value.Text));
@@ -2264,7 +2264,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Character),
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
-                builder.Build(value.Traces));
+                builder.Build(value.Achievements));
         }
         public static Offset<fb.protocol._internal.request.raw.WriteArticle> Build(this FlatBufferBuilder builder, fb.protocol._internal.request.WriteArticle value)
         {
@@ -2591,7 +2591,7 @@ namespace fb.protocol._internal.response
                 builder.Build(value.Items),
                 builder.Build(value.Spells),
                 builder.Build(value.Option),
-                builder.Build(value.Traces),
+                builder.Build(value.Achievements),
                 builder.Build(value.Mail));
         }
         public static Offset<fb.protocol._internal.response.raw.MakeCharacter> Build(this FlatBufferBuilder builder, fb.protocol._internal.response.MakeCharacter value)
@@ -2780,9 +2780,9 @@ namespace fb.protocol._internal.response
         {
             return builder.CreateVectorOfTables<fb.protocol._internal.raw.Spell>(value.Select(x => Build(builder, x)).ToArray());
         }
-        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Trace> value)
+        public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.Achievement> value)
         {
-            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Trace>(value.Select(x => Build(builder, x)).ToArray());
+            return builder.CreateVectorOfTables<fb.protocol._internal.raw.Achievement>(value.Select(x => Build(builder, x)).ToArray());
         }
         public static VectorOffset Build(this FlatBufferBuilder builder, List<fb.protocol._internal.ArticleSummary> value)
         {
@@ -3350,24 +3350,24 @@ namespace fb.protocol._internal
             return new Group(bytes);
         }
     }
-    public class Trace : IFlatBufferEx
+    public class Achievement : IFlatBufferEx
     {
-        public int ProtocolType => (int)FlatBufferProtocolType.Trace;
+        public int ProtocolType => (int)FlatBufferProtocolType.Achievement;
         public uint User { get; set; } = 0;
         public uint Model { get; set; } = 0;
         public string Text { get; set; } = null;
 
-        public Trace()
+        public Achievement()
         { }
 
-        public Trace(fb.protocol._internal.raw.Trace raw)
+        public Achievement(fb.protocol._internal.raw.Achievement raw)
         {
             User = raw.User;
             Model = raw.Model;
             Text = raw.Text;
         }
 
-        public Trace(byte[] bytes) : this(fb.protocol._internal.raw.Trace.GetRootAsTrace(new ByteBuffer(bytes)))
+        public Achievement(byte[] bytes) : this(fb.protocol._internal.raw.Achievement.GetRootAsAchievement(new ByteBuffer(bytes)))
         { }
 
         public byte[] Serialize()
@@ -3378,9 +3378,9 @@ namespace fb.protocol._internal
             return builder.SizedByteArray();
         }
 
-        public static Trace Deserialize(byte[] bytes)
+        public static Achievement Deserialize(byte[] bytes)
         {
-            return new Trace(bytes);
+            return new Achievement(bytes);
         }
     }
     public class Clan : IFlatBufferEx
@@ -3467,7 +3467,7 @@ namespace fb.protocol._internal
                 FlatBufferProtocolType.MailSummary => typeof(fb.protocol._internal.MailSummary),
                 FlatBufferProtocolType.Mail => typeof(fb.protocol._internal.Mail),
                 FlatBufferProtocolType.Group => typeof(fb.protocol._internal.Group),
-                FlatBufferProtocolType.Trace => typeof(fb.protocol._internal.Trace),
+                FlatBufferProtocolType.Achievement => typeof(fb.protocol._internal.Achievement),
                 FlatBufferProtocolType.Clan => typeof(fb.protocol._internal.Clan),
                 FlatBufferProtocolType.ClanMember => typeof(fb.protocol._internal.ClanMember),
                 _ => throw new ArgumentException(),
@@ -3905,7 +3905,7 @@ namespace fb.protocol._internal.request
         public fb.protocol._internal.Character Character { get; set; } = new fb.protocol._internal.Character();
         public List<fb.protocol._internal.Item> Items { get; set; } = new List<fb.protocol._internal.Item>();
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
-        public List<fb.protocol._internal.Trace> Traces { get; set; } = new List<fb.protocol._internal.Trace>();
+        public List<fb.protocol._internal.Achievement> Achievements { get; set; } = new List<fb.protocol._internal.Achievement>();
 
         public Save()
         { }
@@ -3915,7 +3915,7 @@ namespace fb.protocol._internal.request
             Character = new Character(raw.Character.Value);
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
-            Traces = Enumerable.Range(0, raw.TracesLength).Select(i => raw.Traces(i)).Select(x => new Trace(x.Value)).ToList();
+            Achievements = Enumerable.Range(0, raw.AchievementsLength).Select(i => raw.Achievements(i)).Select(x => new Achievement(x.Value)).ToList();
         }
 
         public Save(byte[] bytes) : this(fb.protocol._internal.request.raw.Save.GetRootAsSave(new ByteBuffer(bytes)))
@@ -5040,7 +5040,7 @@ namespace fb.protocol._internal.response
         public List<fb.protocol._internal.Item> Items { get; set; } = new List<fb.protocol._internal.Item>();
         public List<fb.protocol._internal.Spell> Spells { get; set; } = new List<fb.protocol._internal.Spell>();
         public fb.protocol._internal.Option Option { get; set; } = new fb.protocol._internal.Option();
-        public List<fb.protocol._internal.Trace> Traces { get; set; } = new List<fb.protocol._internal.Trace>();
+        public List<fb.protocol._internal.Achievement> Achievements { get; set; } = new List<fb.protocol._internal.Achievement>();
         public uint Mail { get; set; } = 0;
 
         public Init()
@@ -5054,7 +5054,7 @@ namespace fb.protocol._internal.response
             Items = Enumerable.Range(0, raw.ItemsLength).Select(i => raw.Items(i)).Select(x => new Item(x.Value)).ToList();
             Spells = Enumerable.Range(0, raw.SpellsLength).Select(i => raw.Spells(i)).Select(x => new Spell(x.Value)).ToList();
             Option = new Option(raw.Option.Value);
-            Traces = Enumerable.Range(0, raw.TracesLength).Select(i => raw.Traces(i)).Select(x => new Trace(x.Value)).ToList();
+            Achievements = Enumerable.Range(0, raw.AchievementsLength).Select(i => raw.Achievements(i)).Select(x => new Achievement(x.Value)).ToList();
             Mail = raw.Mail;
         }
 

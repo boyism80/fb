@@ -25,7 +25,7 @@ async::task<void> context::whisper(character& from, std::string to, std::string 
     if (from.option(OPTION::WHISPER) == false)
         throw std::runtime_error(_TEXT(MESSAGE_WHISPER_DISABLED_MINE));
 
-    auto target = this->_shard[to]->names.template lock<character*>([&to](auto& names) -> character* {
+    auto target = this->_shard[to]->names.template read<character*>([&to](auto& names) -> character* {
         if (names.contains(to) == false)
             return nullptr;
 

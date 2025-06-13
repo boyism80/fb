@@ -26,6 +26,25 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fb` /*!40100 DEFAULT CHARACTER SET euc
 USE `fb`;
 
 --
+-- Table structure for table `achievement`
+--
+
+DROP TABLE IF EXISTS `achievement`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `achievement` (
+  `uid` int unsigned NOT NULL,
+  `model` int unsigned NOT NULL,
+  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `deleted` tinyint DEFAULT NULL,
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
+  PRIMARY KEY (`uid`,`model`),
+  KEY `fk.legend.owner_idx` (`model`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `board`
 --
 
@@ -263,25 +282,6 @@ CREATE TABLE `spell` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `trace`
---
-
-DROP TABLE IF EXISTS `trace`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `trace` (
-  `uid` int unsigned NOT NULL,
-  `model` int unsigned NOT NULL,
-  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `deleted` tinyint DEFAULT NULL,
-  `created_date` datetime NOT NULL,
-  `updated_date` datetime NOT NULL,
-  PRIMARY KEY (`uid`,`model`),
-  KEY `fk.legend.owner_idx` (`model`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `user`
 --
 
@@ -483,45 +483,6 @@ DELIMITER ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
 /*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 DROP PROCEDURE IF EXISTS `USP_CLAN_NAME_SET` */;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-CREATE DEFINER=`fb`@`%` PROCEDURE `USP_CLAN_NAME_SET`(IN cname NVARCHAR(256))
-BEGIN
-    DECLARE clan_id INT;
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-		ROLLBACK;
-        SELECT 0 AS result, 0;
-    END;
-    
-    SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-    START TRANSACTION;
-    
-    SELECT id INTO clan_id FROM clan_name WHERE name = cname FOR UPDATE;
-    
-    IF clan_id IS NULL THEN
-        INSERT INTO clan_name (name) VALUES (cname);
-        SET clan_id = LAST_INSERT_ID();
-        SELECT 1 AS result, clan_id;
-    ELSE
-        SELECT 0 AS result, clan_id;
-    END IF;
-
-    COMMIT;
-END ;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 /*!50003 DROP PROCEDURE IF EXISTS `USP_MAIL_GET_LIST` */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
 /*!50003 SET @saved_cs_results     = @@character_set_results */ ;
@@ -705,4 +666,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  4:59:58
+-- Dump completed on 2025-06-14  4:06:31

@@ -67,9 +67,9 @@ IMPLEMENT_LUA_EXTENSION(fb::model::weapon, "fb.model.weapon")
 END_LUA_EXTENSION; // clang-format on
 
 // clang-format off
-IMPLEMENT_LUA_EXTENSION(fb::model::trace, "fb.model.trace")
-{"id",                  fb::model::trace::builtin_id},
-{"look",                fb::model::trace::builtin_look},
-{"color",               fb::model::trace::builtin_color},
-{"text",                fb::model::trace::builtin_text},
+IMPLEMENT_LUA_EXTENSION(fb::model::achievement, "fb.model.achievement")
+{"id",                  fb::model::achievement::builtin_id},
+{"look",                fb::model::achievement::builtin_look},
+{"color",               fb::model::achievement::builtin_color},
+{"text",                fb::model::achievement::builtin_text},
 END_LUA_EXTENSION; // clang-format on

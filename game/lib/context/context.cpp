@@ -15,12 +15,12 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     lua::build<door, lua::luable>();
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
-    lua::build<trace, lua::luable>();
+    lua::build<achievement, lua::luable>();
     lua::build<spell, lua::luable>();
     lua::build<buff, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
-    lua::build<fb::model::trace, lua::luable>();
+    lua::build<fb::model::achievement, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
     lua::build<map, fb::thread_switchable>();
     lua::build<group, fb::thread_switchable>();
@@ -243,12 +243,12 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         ch->trade.cancel();
 
     auto id = ch->id();
-    this->_shard[id]->ids.lock([&id](auto& ids) {
+    this->_shard[id]->ids.write([&id](auto& ids) {
         ids.erase(id);
     });
 
     auto& name = ch->name();
-    this->_shard[name]->names.lock([&name](auto& names) {
+    this->_shard[name]->names.write([&name](auto& names) {
         names.erase(name);
     });
 
@@ -272,7 +272,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto& group_lock = ch->group();
     if (group_lock != nullptr)
     {
-        group_lock->lock([this, ch](auto& group) {
+        group_lock->write([this, ch](auto& group) {
             group.leave(*ch);
         });
         group_lock.reset();
@@ -281,7 +281,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto& clan_lock = ch->clan();
     if (clan_lock != nullptr)
     {
-        clan_lock->lock([ch](auto& clan) {
+        clan_lock->write([ch](auto& clan) {
             clan.detach_character(*ch);
         });
         clan_lock.reset();
@@ -348,7 +348,7 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
 
     for (auto& [mod, names] : g)
     {
-        this->_shard[mod]->names.lock([this, &names, &fn, &miss](auto& ch_names) {
+        this->_shard[mod]->names.read([this, &names, &fn, &miss](auto& ch_names) {
             for (auto& name : names)
             {
                 if (!ch_names.contains(name))
@@ -357,11 +357,13 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
                     continue;
                 }
 
-                auto ch     = ch_names[name];
-                auto thread = ch->thread();
-                std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
-                    co_await this->switch_thread(*ch);
+                auto ch = ch_names.at(name);
+                if (ch == nullptr || this->alive(*ch) == false)
+                    continue;
+
+                this->threads.enqueue(*ch, [=, this](auto& thread) -> async::task<void> {
                     fn(*ch);
+                    co_return;
                 });
             }
         });
@@ -448,7 +450,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     if (group.has_value())
     {
         this->upsert_group_then(group.value(), [&ch](auto& lock) {
-            lock->lock([&ch](auto& group) {
+            lock->write([&ch](auto& group) {
                 group.enter(ch);
             });
             ch.group(lock);
@@ -458,7 +460,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     if (clan.has_value())
     {
         this->upsert_clan_then(clan.value(), [&ch](auto& lock) {
-            lock->lock([&ch](auto& clan) {
+            lock->write([&ch](auto& clan) {
                 clan.attach_character(ch);
             });
             ch.clan(lock);
@@ -523,14 +525,16 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
     }
 }
 
-void context::init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch)
+void context::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
+                                fb::game::character&                                    ch)
 {
     for (auto& x : response)
     {
-        if (this->model.trace.contains(x.model) == false)
+        if (this->model.achievement.contains(x.model) == false)
             continue;
 
-        ch.traces.insert({x.model, std::make_unique<fb::game::trace>(this->model.trace[x.model], x.text)});
+        ch.achievements.insert(
+            {x.model, std::make_unique<fb::game::achievement>(this->model.achievement[x.model], x.text)});
     }
 }
 
@@ -579,7 +583,7 @@ async::task<void> context::send(object&                     object,
         if (shared_group_lock == nullptr)
             co_return;
 
-        shared_group_lock->lock([&stream, encrypt](auto& group) {
+        shared_group_lock->read([&stream, encrypt](auto& group) {
             for (auto ch : group.characters())
             {
                 ch->send(stream, encrypt);
@@ -659,17 +663,17 @@ async::task<void> context::save(character& ch)
         spells.push_back(internal::Spell{ch.id(), i, spell->model.id, spell->next().to_string()});
     }
 
-    auto traces = std::vector<internal::Trace>();
-    for (auto& [model, trace] : ch.traces)
+    auto achievements = std::vector<internal::Achievement>();
+    for (auto& [model, achievement] : ch.achievements)
     {
-        traces.push_back(internal::Trace{ch.id(), model, trace->text});
+        achievements.push_back(internal::Achievement{ch.id(), model, achievement->text});
     }
 
     auto fd     = ch.fd();
     std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
-        internal_reqs::Save{ch.to_protocol(), items, spells, traces});
+        internal_reqs::Save{ch.to_protocol(), items, spells, achievements});
 
     co_await this->switch_thread(ch);
     ch.send(fb_resp::save());

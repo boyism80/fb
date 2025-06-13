@@ -32,10 +32,10 @@ IMPLEMENT_LUA_EXTENSION(character, "fb.game.character")
 {"clan",                character::builtin::builtin_clan},
 {"create_clan",         character::builtin::builtin_create_clan},
 {"destroy_clan",        character::builtin::builtin_destroy_clan},
-{"traces",              character::builtin::builtin_traces},
-{"trace",               character::builtin::builtin_trace},
-{"push_trace",          character::builtin::builtin_push_trace},
-{"erase_trace",         character::builtin::builtin_erase_trace},
+{"achievements",        character::builtin::builtin_achievements},
+{"achievement",         character::builtin::builtin_achievement},
+{"push_achievement",    character::builtin::builtin_push_achievement},
+{"erase_achievement",   character::builtin::builtin_erase_achievement},
 {"whisper",             character::builtin::builtin_whisper},
 {"send_mail",           character::builtin::builtin_send_mail},
 {"assert_state",        character::builtin::builtin_assert_state},
@@ -993,7 +993,7 @@ int character::builtin::builtin_group(lua_State* L)
             }
             else
             {
-                ch->_group->lock([=](auto& group) {
+                ch->_group->read([=](const auto& group) {
                     lua->pushobject(group);
                     lua->resume(1);
                 });
@@ -1019,7 +1019,7 @@ int character::builtin::builtin_group(lua_State* L)
         }
         else
         {
-            return ch->_group->template lock<uint32_t>([=](auto& group) {
+            return ch->_group->template read<uint32_t>([=](const auto& group) {
                 lua->pushobject(group);
                 return static_func(lua);
             });
@@ -1082,7 +1082,7 @@ int character::builtin::builtin_clan(lua_State* L)
             }
             else
             {
-                ch->_clan->lock([=](auto& clan) {
+                ch->_clan->read([=](const auto& clan) {
                     lua->pushobject(clan);
                     lua->resume(1);
                 });
@@ -1108,7 +1108,7 @@ int character::builtin::builtin_clan(lua_State* L)
         }
         else
         {
-            return ch->_clan->template lock<uint32_t>([=](auto& clan) {
+            return ch->_clan->template read<uint32_t>([=](const auto& clan) {
                 lua->pushobject(clan);
                 return static_func(lua);
             });
@@ -1187,7 +1187,7 @@ int character::builtin::builtin_destroy_clan(lua_State* L)
     return lua->yield(1);
 }
 
-int character::builtin::builtin_traces(lua_State* L)
+int character::builtin::builtin_achievements(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1200,10 +1200,10 @@ int character::builtin::builtin_traces(lua_State* L)
 
     lua->new_table();
     int i = 0;
-    for (auto& [id, trace] : ch->traces)
+    for (auto& [id, achievement] : ch->achievements)
     {
         lua->pushinteger(i + 1);
-        lua->pushobject(*trace);
+        lua->pushobject(*achievement);
         lua_settable(L, -3);
 
         i++;
@@ -1211,7 +1211,7 @@ int character::builtin::builtin_traces(lua_State* L)
     return 1;
 }
 
-int character::builtin::builtin_trace(lua_State* L)
+int character::builtin::builtin_achievement(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1223,18 +1223,18 @@ int character::builtin::builtin_trace(lua_State* L)
         return 0;
 
     auto i = lua->tointeger(2);
-    if (ch->traces.contains(i) == false)
+    if (ch->achievements.contains(i) == false)
     {
         lua->pushnil();
     }
     else
     {
-        lua->pushobject(*ch->traces.at(i));
+        lua->pushobject(*ch->achievements.at(i));
     }
     return 1;
 }
 
-int character::builtin::builtin_push_trace(lua_State* L)
+int character::builtin::builtin_push_achievement(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1245,37 +1245,37 @@ int character::builtin::builtin_push_trace(lua_State* L)
     if (ch == nullptr || ctx->alive(*ch) == false)
         return 0;
 
-    const fb::model::trace* model = nullptr;
+    const fb::model::achievement* model = nullptr;
 
     if (lua->is_number(2))
     {
         auto id = lua->tointeger(2);
-        if (ctx->model.trace.contains(id) == false)
+        if (ctx->model.achievement.contains(id) == false)
         {
             lua->pushnil();
             return 1;
         }
 
-        model = &ctx->model.trace[id];
+        model = &ctx->model.achievement[id];
     }
-    else if (lua->is_userdata<fb::game::trace>(2))
+    else if (lua->is_userdata<fb::game::achievement>(2))
     {
-        model = (const fb::model::trace*)lua->touserdata<fb::game::trace>(2);
+        model = (const fb::model::achievement*)lua->touserdata<fb::game::achievement>(2);
     }
 
-    if (ch->traces.contains(model->id))
+    if (ch->achievements.contains(model->id))
     {
         lua->pushnil();
         return 1;
     }
 
     auto text = lua->argc() < 3 ? std::optional<std::string>{std::nullopt} : lua->tostring(3);
-    ch->traces.insert({model->id, std::make_unique<fb::game::trace>(*model, text)});
-    lua->pushobject(*ch->traces[model->id]);
+    ch->achievements.insert({model->id, std::make_unique<fb::game::achievement>(*model, text)});
+    lua->pushobject(*ch->achievements[model->id]);
     return 1;
 }
 
-int character::builtin::builtin_erase_trace(lua_State* L)
+int character::builtin::builtin_erase_achievement(lua_State* L)
 {
     auto lua = fb::lua::get(L);
     if (lua == nullptr)
@@ -1287,13 +1287,13 @@ int character::builtin::builtin_erase_trace(lua_State* L)
         return 0;
 
     auto i = lua->tointeger(2);
-    if (ch->traces.contains(i) == false)
+    if (ch->achievements.contains(i) == false)
     {
         lua->pushboolean(false);
     }
     else
     {
-        ch->traces.erase(i);
+        ch->achievements.erase(i);
         lua->pushboolean(true);
     }
     return 1;

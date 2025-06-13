@@ -35,16 +35,15 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
     co_await this->switch_thread(*ch);
 
-    this->switch_thread(*ch);
     ch->unread_mail(response.mail);
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
-    this->init_traces(response.traces, *ch);
-    this->_shard[name]->names.lock([&name, ch](auto& names) {
+    this->init_achievements(response.achievements, *ch);
+    this->_shard[name]->names.write([&name, ch](auto& names) {
         names.insert({name, ch});
     });
-    this->_shard[id]->ids.lock([id, ch](auto& ids) {
+    this->_shard[id]->ids.write([id, ch](auto& ids) {
         ids.insert({id, ch});
     });
 

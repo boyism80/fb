@@ -42,7 +42,7 @@ public class Program
             .ForMember(x => x.User, x => x.MapFrom(u => u.Owner))
             .ReverseMap();
 
-            cfg.CreateMap<Http.Model.Trace, Trace>()
+            cfg.CreateMap<Http.Model.Achievement, Achievement>()
             .ForMember(x => x.User, x => x.MapFrom(u => u.Uid))
             .ReverseMap();
 

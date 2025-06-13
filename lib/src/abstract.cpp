@@ -39,7 +39,7 @@ void context::exit()
 void context::push_alive(const fb::thread_switchable& obj)
 {
     auto ptr = static_cast<const void*>(&obj);
-    this->_hash_switchable[ptr]->lock([&obj](auto& switchables) {
+    this->_hash_switchable[ptr]->write([&obj](auto& switchables) {
         switchables.insert(const_cast<fb::thread_switchable* const>(&obj));
     });
 }
@@ -47,7 +47,7 @@ void context::push_alive(const fb::thread_switchable& obj)
 void context::pop_alive(const fb::thread_switchable& obj)
 {
     auto ptr = static_cast<const void*>(&obj);
-    this->_hash_switchable[ptr]->lock([&obj](auto& switchables) {
+    this->_hash_switchable[ptr]->write([&obj](auto& switchables) {
         switchables.erase(const_cast<fb::thread_switchable* const>(&obj));
     });
 }
@@ -55,7 +55,7 @@ void context::pop_alive(const fb::thread_switchable& obj)
 bool context::alive(const fb::thread_switchable& obj) const
 {
     auto ptr = static_cast<const void*>(&obj);
-    return this->_hash_switchable[ptr]->template lock<bool>([&obj](auto& switchables) {
+    return this->_hash_switchable[ptr]->template read<bool>([&obj](auto& switchables) {
         return switchables.contains(const_cast<fb::thread_switchable* const>(&obj));
     });
 }

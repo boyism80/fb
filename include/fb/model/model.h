@@ -3929,6 +3929,44 @@ DECLARE_ABILITY_ATTRIBUTE_INITIALIZER
 DECLARE_ABILITY_ATTRIBUTE_EXTENSION
 #endif
 }; // end of class 'ability_attribute'
+class achievement
+#ifdef DECLARE_ACHIEVEMENT_INHERIT
+DECLARE_ACHIEVEMENT_INHERIT
+#endif
+{
+#ifdef DECLARE_ACHIEVEMENT_FIELDS
+DECLARE_ACHIEVEMENT_FIELDS
+#else
+public:
+    const uint32_t id;
+    const uint8_t look;
+    const uint8_t color;
+    const std::string text;
+#endif
+
+#ifdef DECLARE_ACHIEVEMENT_CUSTOM_CONSTRUCTOR
+DECLARE_ACHIEVEMENT_CUSTOM_CONSTRUCTOR
+#else
+public:
+    achievement(const Json::Value& json) : 
+#ifdef DECLARE_ACHIEVEMENT_CONSTRUCTOR
+DECLARE_ACHIEVEMENT_CONSTRUCTOR
+#endif
+        id(fb::model::build<uint32_t>(json["id"])),
+        look(fb::model::build<uint8_t>(json["look"])),
+        color(fb::model::build<uint8_t>(json["color"])),
+        text(fb::model::build<std::string>(json["text"]))
+#ifdef DECLARE_ACHIEVEMENT_INITIALIZER
+DECLARE_ACHIEVEMENT_INITIALIZER
+#endif
+    { }
+    achievement(const achievement&) = delete;
+    virtual ~achievement() = default;
+#endif
+#ifdef DECLARE_ACHIEVEMENT_EXTENSION
+DECLARE_ACHIEVEMENT_EXTENSION
+#endif
+}; // end of class 'achievement'
 class announce
 #ifdef DECLARE_ANNOUNCE_INHERIT
 DECLARE_ANNOUNCE_INHERIT
@@ -4725,44 +4763,6 @@ DECLARE_SPELL_INITIALIZER
 DECLARE_SPELL_EXTENSION
 #endif
 }; // end of class 'spell'
-class trace
-#ifdef DECLARE_TRACE_INHERIT
-DECLARE_TRACE_INHERIT
-#endif
-{
-#ifdef DECLARE_TRACE_FIELDS
-DECLARE_TRACE_FIELDS
-#else
-public:
-    const uint32_t id;
-    const uint8_t look;
-    const uint8_t color;
-    const std::string text;
-#endif
-
-#ifdef DECLARE_TRACE_CUSTOM_CONSTRUCTOR
-DECLARE_TRACE_CUSTOM_CONSTRUCTOR
-#else
-public:
-    trace(const Json::Value& json) : 
-#ifdef DECLARE_TRACE_CONSTRUCTOR
-DECLARE_TRACE_CONSTRUCTOR
-#endif
-        id(fb::model::build<uint32_t>(json["id"])),
-        look(fb::model::build<uint8_t>(json["look"])),
-        color(fb::model::build<uint8_t>(json["color"])),
-        text(fb::model::build<std::string>(json["text"]))
-#ifdef DECLARE_TRACE_INITIALIZER
-DECLARE_TRACE_INITIALIZER
-#endif
-    { }
-    trace(const trace&) = delete;
-    virtual ~trace() = default;
-#endif
-#ifdef DECLARE_TRACE_EXTENSION
-DECLARE_TRACE_EXTENSION
-#endif
-}; // end of class 'trace'
 class warp
 #ifdef DECLARE_WARP_INHERIT
 DECLARE_WARP_INHERIT
@@ -5683,6 +5683,22 @@ DECLARE_ABILITY_ATTRIBUTE_CONTAINER_EXTENSION
 #endif
 };
 
+class __achievement : public fb::model::kv_container<uint32_t, fb::model::achievement>
+{
+public:
+#ifdef DECLARE_ACHIEVEMENT_CONTAINER_CUSTOM_CONSTRUCTOR
+DECLARE_ACHIEVEMENT_CONTAINER_CUSTOM_CONSTRUCTOR
+#else
+    __achievement() : fb::model::kv_container<uint32_t, fb::model::achievement>(std::string("json/achievement.json"))
+    { }
+    __achievement(const __achievement&) = delete;
+    ~__achievement() = default;
+#endif
+#ifdef DECLARE_ACHIEVEMENT_CONTAINER_EXTENSION
+DECLARE_ACHIEVEMENT_CONTAINER_EXTENSION
+#endif
+};
+
 class __announce : public fb::model::array_container<fb::model::announce>
 {
 public:
@@ -6115,22 +6131,6 @@ DECLARE_SPELL_CONTAINER_EXTENSION
 #endif
 };
 
-class __trace : public fb::model::kv_container<uint32_t, fb::model::trace>
-{
-public:
-#ifdef DECLARE_TRACE_CONTAINER_CUSTOM_CONSTRUCTOR
-DECLARE_TRACE_CONTAINER_CUSTOM_CONSTRUCTOR
-#else
-    __trace() : fb::model::kv_container<uint32_t, fb::model::trace>(std::string("json/trace.json"))
-    { }
-    __trace(const __trace&) = delete;
-    ~__trace() = default;
-#endif
-#ifdef DECLARE_TRACE_CONTAINER_EXTENSION
-DECLARE_TRACE_CONTAINER_EXTENSION
-#endif
-};
-
 class __warp : public fb::model::kv_container<uint32_t, fb::model::array_container<fb::model::warp>>
 {
 public:
@@ -6201,6 +6201,7 @@ class model
 public:
     fb::model::__ability ability;
     fb::model::__ability_attribute ability_attribute;
+    fb::model::__achievement achievement;
     fb::model::__announce announce;
     fb::model::__board board;
     fb::model::__buy buy;
@@ -6228,7 +6229,6 @@ public:
     fb::model::__soliloquy soliloquy;
     fb::model::__soliloquy_attribute soliloquy_attribute;
     fb::model::__spell spell;
-    fb::model::__trace trace;
     fb::model::__warp warp;
     fb::model::__warp_attribute warp_attribute;
     fb::model::__world world;
@@ -6239,6 +6239,7 @@ private:
     {
         &ability,
         &ability_attribute,
+        &achievement,
         &announce,
         &board,
         &buy,
@@ -6266,7 +6267,6 @@ private:
         &soliloquy,
         &soliloquy_attribute,
         &spell,
-        &trace,
         &warp,
         &warp_attribute,
         &world,
