@@ -35,7 +35,6 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
         co_return false;
     co_await this->switch_thread(*ch);
 
-    this->switch_thread(*ch);
     ch->unread_mail(response.mail);
 
     this->init_items(response.items, *ch);
