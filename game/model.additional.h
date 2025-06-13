@@ -79,7 +79,7 @@ public:                                               \
 
 #define DECLARE_SPELL_INHERIT  : public fb::lua::luable
 
-#define DECLARE_TRACE_INHERIT : public fb::lua::luable
+#define DECLARE_ACHIEVEMENT_INHERIT : public fb::lua::luable
 
 #define DECLARE_OBJECT_EXTENSION                                      \
                                                                       \
@@ -541,7 +541,7 @@ public:                                    \
 
 #define DECLARE_OBJECT_INHERIT  : public fb::lua::luable
 
-#define DECLARE_TRACE_EXTENSION             \
+#define DECLARE_ACHIEVEMENT_EXTENSION       \
                                             \
 public:                                     \
     LUA_PROTOTYPE                           \

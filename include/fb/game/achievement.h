@@ -6,7 +6,7 @@
 
 namespace fb::game {
 
-class trace : public lua::luable
+class achievement : public lua::luable
 {
 public:
     LUA_PROTOTYPE
@@ -15,18 +15,18 @@ public:
     struct builtin;
 
 public:
-    const fb::model::trace&          model;
+    const fb::model::achievement&    model;
     const std::optional<std::string> text;
 
 public:
-    trace(const fb::model::trace& model, const std::optional<std::string>& text = std::nullopt);
-    ~trace() = default;
+    achievement(const fb::model::achievement& model, const std::optional<std::string>& text = std::nullopt);
+    ~achievement() = default;
 };
 
 /**
  * @brief      { struct_description }
  */
-struct trace::builtin
+struct achievement::builtin
 {
     /**
      * @brief      { function_description }

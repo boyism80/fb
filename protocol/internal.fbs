@@ -143,7 +143,7 @@ table Group {
     members: [string];
 }
 
-table Trace {
+table Achievement {
     user: uint;
     model: uint;
     text: string?;

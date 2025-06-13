@@ -13,10 +13,10 @@ static_assert(FLATBUFFERS_VERSION_MAJOR == 25 &&
               FLATBUFFERS_VERSION_REVISION == 10,
              "Non-compatible flatbuffers version included");
 
+#include "fb.protocol.internal.achievement_generated.h"
 #include "fb.protocol.internal.character_generated.h"
 #include "fb.protocol.internal.item_generated.h"
 #include "fb.protocol.internal.spell_generated.h"
-#include "fb.protocol.internal.trace_generated.h"
 
 namespace fb {
 namespace protocol {
@@ -33,7 +33,7 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
     VT_CHARACTER = 4,
     VT_ITEMS = 6,
     VT_SPELLS = 8,
-    VT_TRACES = 10
+    VT_ACHIEVEMENTS = 10
   };
   const fb::protocol::internal::raw::Character *character() const {
     return GetPointer<const fb::protocol::internal::raw::Character *>(VT_CHARACTER);
@@ -44,8 +44,8 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
   const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells() const {
     return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *>(VT_SPELLS);
   }
-  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces() const {
-    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *>(VT_TRACES);
+  const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements() const {
+    return GetPointer<const ::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *>(VT_ACHIEVEMENTS);
   }
   bool Verify(::flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
@@ -57,9 +57,9 @@ struct Save FLATBUFFERS_FINAL_CLASS : private ::flatbuffers::Table {
            VerifyOffset(verifier, VT_SPELLS) &&
            verifier.VerifyVector(spells()) &&
            verifier.VerifyVectorOfTables(spells()) &&
-           VerifyOffset(verifier, VT_TRACES) &&
-           verifier.VerifyVector(traces()) &&
-           verifier.VerifyVectorOfTables(traces()) &&
+           VerifyOffset(verifier, VT_ACHIEVEMENTS) &&
+           verifier.VerifyVector(achievements()) &&
+           verifier.VerifyVectorOfTables(achievements()) &&
            verifier.EndTable();
   }
 };
@@ -77,8 +77,8 @@ struct SaveBuilder {
   void add_spells(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells) {
     fbb_.AddOffset(Save::VT_SPELLS, spells);
   }
-  void add_traces(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces) {
-    fbb_.AddOffset(Save::VT_TRACES, traces);
+  void add_achievements(::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements) {
+    fbb_.AddOffset(Save::VT_ACHIEVEMENTS, achievements);
   }
   explicit SaveBuilder(::flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -96,9 +96,9 @@ inline ::flatbuffers::Offset<Save> CreateSave(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>> items = 0,
     ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>> spells = 0,
-    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>> traces = 0) {
+    ::flatbuffers::Offset<::flatbuffers::Vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>> achievements = 0) {
   SaveBuilder builder_(_fbb);
-  builder_.add_traces(traces);
+  builder_.add_achievements(achievements);
   builder_.add_spells(spells);
   builder_.add_items(items);
   builder_.add_character(character);
@@ -110,16 +110,16 @@ inline ::flatbuffers::Offset<Save> CreateSaveDirect(
     ::flatbuffers::Offset<fb::protocol::internal::raw::Character> character = 0,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>> *items = nullptr,
     const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>> *spells = nullptr,
-    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>> *traces = nullptr) {
+    const std::vector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>> *achievements = nullptr) {
   auto items__ = items ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Item>>(*items) : 0;
   auto spells__ = spells ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Spell>>(*spells) : 0;
-  auto traces__ = traces ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Trace>>(*traces) : 0;
+  auto achievements__ = achievements ? _fbb.CreateVector<::flatbuffers::Offset<fb::protocol::internal::raw::Achievement>>(*achievements) : 0;
   return fb::protocol::internal::request::raw::CreateSave(
       _fbb,
       character,
       items__,
       spells__,
-      traces__);
+      achievements__);
 }
 
 inline const fb::protocol::internal::request::raw::Save *GetSave(const void *buf) {

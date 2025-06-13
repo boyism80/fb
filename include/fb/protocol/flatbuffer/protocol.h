@@ -18,7 +18,7 @@
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.mailsummary_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.mail_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.group_generated.h>
-#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.trace_generated.h>
+#include <fb/protocol/flatbuffer/raw/fb.protocol.internal.achievement_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clan_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.clanmember_generated.h>
 #include <fb/protocol/flatbuffer/raw/fb.protocol.internal.request.shutdown_generated.h>
@@ -99,7 +99,7 @@ namespace fb::protocol::internal
     class MailSummary;
     class Mail;
     class Group;
-    class Trace;
+    class Achievement;
     class Clan;
     class ClanMember;
     enum class Service : int8_t;
@@ -276,7 +276,7 @@ template <> struct FlatBufferOffset<fb::protocol::internal::Article> { typedef f
 template <> struct FlatBufferOffset<fb::protocol::internal::MailSummary> { typedef flatbuffers::Offset<fb::protocol::internal::raw::MailSummary> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Mail> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Mail> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Group> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Group> type; };
-template <> struct FlatBufferOffset<fb::protocol::internal::Trace> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Trace> type; };
+template <> struct FlatBufferOffset<fb::protocol::internal::Achievement> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Achievement> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::Clan> { typedef flatbuffers::Offset<fb::protocol::internal::raw::Clan> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::ClanMember> { typedef flatbuffers::Offset<fb::protocol::internal::raw::ClanMember> type; };
 template <> struct FlatBufferOffset<fb::protocol::internal::request::Shutdown> { typedef flatbuffers::Offset<fb::protocol::internal::request::raw::Shutdown> type; };
@@ -375,7 +375,7 @@ flatbuffers::Offset<fb::protocol::internal::raw::Mail> build<fb::protocol::inter
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::internal::Group>(FlatBufferBuilder& builder, const fb::protocol::internal::Group& value);
 template <>
-flatbuffers::Offset<fb::protocol::internal::raw::Trace> build<fb::protocol::internal::Trace>(FlatBufferBuilder& builder, const fb::protocol::internal::Trace& value);
+flatbuffers::Offset<fb::protocol::internal::raw::Achievement> build<fb::protocol::internal::Achievement>(FlatBufferBuilder& builder, const fb::protocol::internal::Achievement& value);
 template <>
 flatbuffers::Offset<fb::protocol::internal::raw::Clan> build<fb::protocol::internal::Clan>(FlatBufferBuilder& builder, const fb::protocol::internal::Clan& value);
 template <>
@@ -548,7 +548,7 @@ enum class FlatBufferProtocolType
     MailSummary,
     Mail,
     Group,
-    Trace,
+    Achievement,
     Clan,
     ClanMember,
 };
@@ -1066,10 +1066,10 @@ public:
         return Group(*raw);
     }
 };
-class Trace
+class Achievement
 {
 public:
-    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Trace;
+    static inline fb::protocol::internal::FlatBufferProtocolType FlatBufferProtocolType = fb::protocol::internal::FlatBufferProtocolType::Achievement;
 
 public:
     uint32_t user = 0;
@@ -1077,17 +1077,17 @@ public:
     std::optional<std::string> text = std::nullopt;
 
 public:
-    Trace() = default;
+    Achievement() = default;
 
-    Trace(const Trace& x)
+    Achievement(const Achievement& x)
         : user(x.user), model(x.model), text(x.text)
     { }
 
-    Trace(uint32_t user, uint32_t model, const std::optional<std::string>& text)
+    Achievement(uint32_t user, uint32_t model, const std::optional<std::string>& text)
         : user(user), model(model), text(text)
     { }
 
-    Trace(const fb::protocol::internal::raw::Trace& raw)
+    Achievement(const fb::protocol::internal::raw::Achievement& raw)
         : user(raw.user()), model(raw.model()), text(raw.text() != nullptr ? flatbuffers::option::decode(raw.text()->c_str()) : std::optional<std::string>())
     { }
 
@@ -1095,16 +1095,16 @@ public:
     std::vector<uint8_t> Serialize() const
     {
         auto builder = flatbuffers::FlatBufferBuilder();
-        builder.Finish(build<fb::protocol::internal::Trace>(builder, *this));
+        builder.Finish(build<fb::protocol::internal::Achievement>(builder, *this));
         auto buffer = std::vector<uint8_t>(builder.GetSize());
         std::memcpy(buffer.data(), builder.GetBufferPointer(), builder.GetSize());
         return buffer;
     }
 
-    static Trace Deserialize(const uint8_t* bytes)
+    static Achievement Deserialize(const uint8_t* bytes)
     {
-        auto raw = fb::protocol::internal::raw::GetTrace(bytes);
-        return Trace(*raw);
+        auto raw = fb::protocol::internal::raw::GetAchievement(bytes);
+        return Achievement(*raw);
     }
 };
 class Clan
@@ -1759,21 +1759,21 @@ public:
     fb::protocol::internal::Character character;
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
-    std::vector<fb::protocol::internal::Trace> traces = {};
+    std::vector<fb::protocol::internal::Achievement> achievements = {};
 
 public:
     Save() = default;
 
     Save(const Save& x)
-        : character(x.character), items(x.items), spells(x.spells), traces(x.traces)
+        : character(x.character), items(x.items), spells(x.spells), achievements(x.achievements)
     { }
 
-    Save(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::Trace> traces)
-        : character(character), items(items), spells(spells), traces(traces)
+    Save(const fb::protocol::internal::Character& character, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, std::vector<fb::protocol::internal::Achievement> achievements)
+        : character(character), items(items), spells(spells), achievements(achievements)
     { }
 
     Save(const fb::protocol::internal::request::raw::Save& raw)
-        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), traces(unpack<fb::protocol::internal::Trace>(raw.traces()))
+        : character(*raw.character()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements()))
     { }
 
 public:
@@ -3177,22 +3177,22 @@ public:
     std::vector<fb::protocol::internal::Item> items = {};
     std::vector<fb::protocol::internal::Spell> spells = {};
     fb::protocol::internal::Option option;
-    std::vector<fb::protocol::internal::Trace> traces = {};
+    std::vector<fb::protocol::internal::Achievement> achievements = {};
     uint32_t mail = 0;
 
 public:
     Init() = default;
 
     Init(const Init& x)
-        : character(x.character), group(x.group), clan(x.clan), items(x.items), spells(x.spells), option(x.option), traces(x.traces), mail(x.mail)
+        : character(x.character), group(x.group), clan(x.clan), items(x.items), spells(x.spells), option(x.option), achievements(x.achievements), mail(x.mail)
     { }
 
-    Init(const fb::protocol::internal::Character& character, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Trace> traces, uint32_t mail)
-        : character(character), group(group), clan(clan), items(items), spells(spells), option(option), traces(traces), mail(mail)
+    Init(const fb::protocol::internal::Character& character, const std::optional<uint32_t>& group, const std::optional<uint32_t>& clan, std::vector<fb::protocol::internal::Item> items, std::vector<fb::protocol::internal::Spell> spells, const fb::protocol::internal::Option& option, std::vector<fb::protocol::internal::Achievement> achievements, uint32_t mail)
+        : character(character), group(group), clan(clan), items(items), spells(spells), option(option), achievements(achievements), mail(mail)
     { }
 
     Init(const fb::protocol::internal::response::raw::Init& raw)
-        : character(*raw.character()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), traces(unpack<fb::protocol::internal::Trace>(raw.traces())), mail(raw.mail())
+        : character(*raw.character()), group(raw.group() != nullptr ? raw.group()->value() : std::optional<uint32_t>()), clan(raw.clan() != nullptr ? raw.clan()->value() : std::optional<uint32_t>()), items(unpack<fb::protocol::internal::Item>(raw.items())), spells(unpack<fb::protocol::internal::Spell>(raw.spells())), option(*raw.option()), achievements(unpack<fb::protocol::internal::Achievement>(raw.achievements())), mail(raw.mail())
     { }
 
 public:
@@ -4085,9 +4085,9 @@ flatbuffers::Offset<fb::protocol::internal::raw::Group> build<fb::protocol::inte
             flatbuffers::build<std::vector<std::string>>(builder, value.members));
 }
 template <>
-flatbuffers::Offset<fb::protocol::internal::raw::Trace> build<fb::protocol::internal::Trace>(FlatBufferBuilder& builder, const fb::protocol::internal::Trace& value)
+flatbuffers::Offset<fb::protocol::internal::raw::Achievement> build<fb::protocol::internal::Achievement>(FlatBufferBuilder& builder, const fb::protocol::internal::Achievement& value)
 {
-    return fb::protocol::internal::raw::CreateTrace(builder,
+    return fb::protocol::internal::raw::CreateAchievement(builder,
             flatbuffers::build<uint32_t>(builder, value.user),
             flatbuffers::build<uint32_t>(builder, value.model),
             flatbuffers::build<std::optional<std::string>>(builder, value.text));
@@ -4215,7 +4215,7 @@ flatbuffers::Offset<fb::protocol::internal::request::raw::Save> build<fb::protoc
             flatbuffers::build<fb::protocol::internal::Character>(builder, value.character),
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
-            flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces));
+            flatbuffers::build<std::vector<fb::protocol::internal::Achievement>>(builder, value.achievements));
 }
 template <>
 flatbuffers::Offset<fb::protocol::internal::request::raw::WriteArticle> build<fb::protocol::internal::request::WriteArticle>(FlatBufferBuilder& builder, const fb::protocol::internal::request::WriteArticle& value)
@@ -4473,7 +4473,7 @@ flatbuffers::Offset<fb::protocol::internal::response::raw::Init> build<fb::proto
             flatbuffers::build<std::vector<fb::protocol::internal::Item>>(builder, value.items),
             flatbuffers::build<std::vector<fb::protocol::internal::Spell>>(builder, value.spells),
             flatbuffers::build<fb::protocol::internal::Option>(builder, value.option),
-            flatbuffers::build<std::vector<fb::protocol::internal::Trace>>(builder, value.traces),
+            flatbuffers::build<std::vector<fb::protocol::internal::Achievement>>(builder, value.achievements),
             flatbuffers::build<uint32_t>(builder, value.mail));
 }
 template <>

@@ -9,16 +9,16 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct Trace : IFlatbufferObject
+public struct Achievement : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_25_2_10(); }
-  public static Trace GetRootAsTrace(ByteBuffer _bb) { return GetRootAsTrace(_bb, new Trace()); }
-  public static Trace GetRootAsTrace(ByteBuffer _bb, Trace obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
-  public static bool VerifyTrace(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, TraceVerify.Verify); }
+  public static Achievement GetRootAsAchievement(ByteBuffer _bb) { return GetRootAsAchievement(_bb, new Achievement()); }
+  public static Achievement GetRootAsAchievement(ByteBuffer _bb, Achievement obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static bool VerifyAchievement(ByteBuffer _bb) {Google.FlatBuffers.Verifier verifier = new Google.FlatBuffers.Verifier(_bb); return verifier.VerifyBuffer("", false, AchievementVerify.Verify); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public Trace __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public Achievement __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public uint User { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
   public uint Model { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
@@ -30,31 +30,31 @@ public struct Trace : IFlatbufferObject
 #endif
   public byte[] GetTextArray() { return __p.__vector_as_array<byte>(8); }
 
-  public static Offset<fb.protocol._internal.raw.Trace> CreateTrace(FlatBufferBuilder builder,
+  public static Offset<fb.protocol._internal.raw.Achievement> CreateAchievement(FlatBufferBuilder builder,
       uint user = 0,
       uint model = 0,
       StringOffset textOffset = default(StringOffset)) {
     builder.StartTable(3);
-    Trace.AddText(builder, textOffset);
-    Trace.AddModel(builder, model);
-    Trace.AddUser(builder, user);
-    return Trace.EndTrace(builder);
+    Achievement.AddText(builder, textOffset);
+    Achievement.AddModel(builder, model);
+    Achievement.AddUser(builder, user);
+    return Achievement.EndAchievement(builder);
   }
 
-  public static void StartTrace(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartAchievement(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddUser(FlatBufferBuilder builder, uint user) { builder.AddUint(0, user, 0); }
   public static void AddModel(FlatBufferBuilder builder, uint model) { builder.AddUint(1, model, 0); }
   public static void AddText(FlatBufferBuilder builder, StringOffset textOffset) { builder.AddOffset(2, textOffset.Value, 0); }
-  public static Offset<fb.protocol._internal.raw.Trace> EndTrace(FlatBufferBuilder builder) {
+  public static Offset<fb.protocol._internal.raw.Achievement> EndAchievement(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<fb.protocol._internal.raw.Trace>(o);
+    return new Offset<fb.protocol._internal.raw.Achievement>(o);
   }
-  public static void FinishTraceBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Trace> offset) { builder.Finish(offset.Value); }
-  public static void FinishSizePrefixedTraceBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Trace> offset) { builder.FinishSizePrefixed(offset.Value); }
+  public static void FinishAchievementBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Achievement> offset) { builder.Finish(offset.Value); }
+  public static void FinishSizePrefixedAchievementBuffer(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Achievement> offset) { builder.FinishSizePrefixed(offset.Value); }
 }
 
 
-static public class TraceVerify
+static public class AchievementVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

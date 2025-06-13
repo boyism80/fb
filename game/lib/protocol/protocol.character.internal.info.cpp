@@ -83,13 +83,13 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     writer.write<uint8_t>(this->ch.option(OPTION::TRADE));
     writer.write<uint8_t>(this->ch.option(OPTION::PK_PROTECT));
 
-    writer.write<uint8_t>((uint8_t)this->ch.traces.size());
-    for (auto& [_, trace] : this->ch.traces)
+    writer.write<uint8_t>((uint8_t)this->ch.achievements.size());
+    for (auto& [_, achievement] : this->ch.achievements)
     {
-        auto& model = trace->model;
+        auto& model = achievement->model;
         writer.write<uint8_t>(model.look);
         writer.write<uint8_t>(model.color);
-        writer.write<std::string>(trace->text.value_or(model.text));
+        writer.write<std::string>(achievement->text.value_or(model.text));
     }
     writer.write<uint8_t>(0x00);
 }

@@ -39,7 +39,7 @@ async::task<bool> context::handle_login(fb::socket<character>& socket, const fb_
 
     this->init_items(response.items, *ch);
     this->init_spells(response.spells, *ch);
-    this->init_traces(response.traces, *ch);
+    this->init_achievements(response.achievements, *ch);
     this->_shard[name]->names.lock([&name, ch](auto& names) {
         names.insert({name, ch});
     });

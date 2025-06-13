@@ -28,8 +28,8 @@ public struct Init : IFlatbufferObject
   public fb.protocol._internal.raw.Spell? Spells(int j) { int o = __p.__offset(12); return o != 0 ? (fb.protocol._internal.raw.Spell?)(new fb.protocol._internal.raw.Spell()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int SpellsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
   public fb.protocol._internal.raw.Option? Option { get { int o = __p.__offset(14); return o != 0 ? (fb.protocol._internal.raw.Option?)(new fb.protocol._internal.raw.Option()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
-  public fb.protocol._internal.raw.Trace? Traces(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.Trace?)(new fb.protocol._internal.raw.Trace()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
-  public int TracesLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public fb.protocol._internal.raw.Achievement? Achievements(int j) { int o = __p.__offset(16); return o != 0 ? (fb.protocol._internal.raw.Achievement?)(new fb.protocol._internal.raw.Achievement()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int AchievementsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
   public uint Mail { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetUint(o + __p.bb_pos) : (uint)0; } }
 
   public static Offset<fb.protocol._internal.response.raw.Init> CreateInit(FlatBufferBuilder builder,
@@ -39,11 +39,11 @@ public struct Init : IFlatbufferObject
       VectorOffset itemsOffset = default(VectorOffset),
       VectorOffset spellsOffset = default(VectorOffset),
       Offset<fb.protocol._internal.raw.Option> optionOffset = default(Offset<fb.protocol._internal.raw.Option>),
-      VectorOffset tracesOffset = default(VectorOffset),
+      VectorOffset achievementsOffset = default(VectorOffset),
       uint mail = 0) {
     builder.StartTable(8);
     Init.AddMail(builder, mail);
-    Init.AddTraces(builder, tracesOffset);
+    Init.AddAchievements(builder, achievementsOffset);
     Init.AddOption(builder, optionOffset);
     Init.AddSpells(builder, spellsOffset);
     Init.AddItems(builder, itemsOffset);
@@ -70,12 +70,12 @@ public struct Init : IFlatbufferObject
   public static VectorOffset CreateSpellsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Spell>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartSpellsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddOption(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Option> optionOffset) { builder.AddOffset(5, optionOffset.Value, 0); }
-  public static void AddTraces(FlatBufferBuilder builder, VectorOffset tracesOffset) { builder.AddOffset(6, tracesOffset.Value, 0); }
-  public static VectorOffset CreateTracesVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Trace>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
-  public static VectorOffset CreateTracesVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Trace>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateTracesVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Trace>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
-  public static VectorOffset CreateTracesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Trace>>(dataPtr, sizeInBytes); return builder.EndVector(); }
-  public static void StartTracesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddAchievements(FlatBufferBuilder builder, VectorOffset achievementsOffset) { builder.AddOffset(6, achievementsOffset.Value, 0); }
+  public static VectorOffset CreateAchievementsVector(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Achievement>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, Offset<fb.protocol._internal.raw.Achievement>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<fb.protocol._internal.raw.Achievement>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateAchievementsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<fb.protocol._internal.raw.Achievement>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartAchievementsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static void AddMail(FlatBufferBuilder builder, uint mail) { builder.AddUint(7, mail, 0); }
   public static Offset<fb.protocol._internal.response.raw.Init> EndInit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
@@ -97,7 +97,7 @@ static public class InitVerify
       && verifier.VerifyVectorOfTables(tablePos, 10 /*Items*/, fb.protocol._internal.raw.ItemVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 12 /*Spells*/, fb.protocol._internal.raw.SpellVerify.Verify, false)
       && verifier.VerifyTable(tablePos, 14 /*Option*/, fb.protocol._internal.raw.OptionVerify.Verify, false)
-      && verifier.VerifyVectorOfTables(tablePos, 16 /*Traces*/, fb.protocol._internal.raw.TraceVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 16 /*Achievements*/, fb.protocol._internal.raw.AchievementVerify.Verify, false)
       && verifier.VerifyField(tablePos, 18 /*Mail*/, 4 /*uint*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }

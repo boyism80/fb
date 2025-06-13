@@ -26,6 +26,25 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `fb` /*!40100 DEFAULT CHARACTER SET euc
 USE `fb`;
 
 --
+-- Table structure for table `achievement`
+--
+
+DROP TABLE IF EXISTS `achievement`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `achievement` (
+  `uid` int unsigned NOT NULL,
+  `model` int unsigned NOT NULL,
+  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `deleted` tinyint DEFAULT NULL,
+  `created_date` datetime NOT NULL,
+  `updated_date` datetime NOT NULL,
+  PRIMARY KEY (`uid`,`model`),
+  KEY `fk.legend.owner_idx` (`model`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `board`
 --
 
@@ -259,25 +278,6 @@ CREATE TABLE `spell` (
   PRIMARY KEY (`owner`,`slot`),
   KEY `spell_owner_idx` (`owner`),
   CONSTRAINT `fk.spell.owner` FOREIGN KEY (`owner`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `trace`
---
-
-DROP TABLE IF EXISTS `trace`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `trace` (
-  `uid` int unsigned NOT NULL,
-  `model` int unsigned NOT NULL,
-  `text` varchar(128) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `deleted` tinyint DEFAULT NULL,
-  `created_date` datetime NOT NULL,
-  `updated_date` datetime NOT NULL,
-  PRIMARY KEY (`uid`,`model`),
-  KEY `fk.legend.owner_idx` (`model`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -705,4 +705,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-06-09  4:59:58
+-- Dump completed on 2025-06-13 20:14:01

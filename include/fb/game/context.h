@@ -178,12 +178,12 @@ private:
     void init_spells(const std::vector<fb::protocol::internal::Spell>& response, fb::game::character& ch);
 
     /**
-     * @brief      Initializes the traces.
+     * @brief      Initializes the achievements.
      *
      * @param[in]  response  The response
      * @param      ch        { parameter_description }
      */
-    void init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch);
+    void init_achievements(const std::vector<fb::protocol::internal::Achievement>& response, fb::game::character& ch);
 
 private:
     /**

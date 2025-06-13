@@ -15,12 +15,12 @@ context::context(boost::asio::io_context& context, uint16_t port) :
     lua::build<door, lua::luable>();
     lua::build<clan, lua::luable>();
     lua::build<clan_member, lua::luable>();
-    lua::build<trace, lua::luable>();
+    lua::build<achievement, lua::luable>();
     lua::build<spell, lua::luable>();
     lua::build<buff, lua::luable>();
     lua::build<fb::model::spell, lua::luable>();
     lua::build<fb::model::map, lua::luable>();
-    lua::build<fb::model::trace, lua::luable>();
+    lua::build<fb::model::achievement, lua::luable>();
     lua::build<fb::model::object, lua::luable>();
     lua::build<map, fb::thread_switchable>();
     lua::build<group, fb::thread_switchable>();
@@ -523,14 +523,16 @@ void context::init_spells(const std::vector<internal::Spell>& response, characte
     }
 }
 
-void context::init_traces(const std::vector<fb::protocol::internal::Trace>& response, fb::game::character& ch)
+void context::init_achievements(const std::vector<fb::protocol::internal::Achievement>& response,
+                                fb::game::character&                                    ch)
 {
     for (auto& x : response)
     {
-        if (this->model.trace.contains(x.model) == false)
+        if (this->model.achievement.contains(x.model) == false)
             continue;
 
-        ch.traces.insert({x.model, std::make_unique<fb::game::trace>(this->model.trace[x.model], x.text)});
+        ch.achievements.insert(
+            {x.model, std::make_unique<fb::game::achievement>(this->model.achievement[x.model], x.text)});
     }
 }
 
@@ -659,17 +661,17 @@ async::task<void> context::save(character& ch)
         spells.push_back(internal::Spell{ch.id(), i, spell->model.id, spell->next().to_string()});
     }
 
-    auto traces = std::vector<internal::Trace>();
-    for (auto& [model, trace] : ch.traces)
+    auto achievements = std::vector<internal::Achievement>();
+    for (auto& [model, achievement] : ch.achievements)
     {
-        traces.push_back(internal::Trace{ch.id(), model, trace->text});
+        achievements.push_back(internal::Achievement{ch.id(), model, achievement->text});
     }
 
     auto fd     = ch.fd();
     std::ignore = co_await this->post<internal_reqs::Save, internal_resp::Save>(
         "internal",
         "/user/save",
-        internal_reqs::Save{ch.to_protocol(), items, spells, traces});
+        internal_reqs::Save{ch.to_protocol(), items, spells, achievements});
 
     co_await this->switch_thread(ch);
     ch.send(fb_resp::save());
