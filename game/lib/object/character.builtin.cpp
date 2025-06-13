@@ -993,7 +993,7 @@ int character::builtin::builtin_group(lua_State* L)
             }
             else
             {
-                ch->_group->lock([=](auto& group) {
+                ch->_group->read([=](const auto& group) {
                     lua->pushobject(group);
                     lua->resume(1);
                 });
@@ -1019,7 +1019,7 @@ int character::builtin::builtin_group(lua_State* L)
         }
         else
         {
-            return ch->_group->template lock<uint32_t>([=](auto& group) {
+            return ch->_group->template read<uint32_t>([=](const auto& group) {
                 lua->pushobject(group);
                 return static_func(lua);
             });
@@ -1082,7 +1082,7 @@ int character::builtin::builtin_clan(lua_State* L)
             }
             else
             {
-                ch->_clan->lock([=](auto& clan) {
+                ch->_clan->read([=](const auto& clan) {
                     lua->pushobject(clan);
                     lua->resume(1);
                 });
@@ -1108,7 +1108,7 @@ int character::builtin::builtin_clan(lua_State* L)
         }
         else
         {
-            return ch->_clan->template lock<uint32_t>([=](auto& clan) {
+            return ch->_clan->template read<uint32_t>([=](const auto& clan) {
                 lua->pushobject(clan);
                 return static_func(lua);
             });

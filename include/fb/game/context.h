@@ -134,7 +134,7 @@ private:
      * @param[in]  id    The identifier
      * @param[in]  fn    The function
      */
-    void upsert_clan_then(uint32_t id, const std::function<void(shared_clan_lock&)>& fn);
+    void upsert_clan_then(uint32_t id, std::function<void(shared_clan_lock&)> fn);
 
     /**
      * @brief      Initializes the ch.

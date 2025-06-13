@@ -17,7 +17,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& clan_lock_ptr = this->ch.clan();
     if (clan_lock_ptr != nullptr)
     {
-        clan_lock_ptr->lock([&writer](auto& clan) {
+        clan_lock_ptr->read([&writer](auto& clan) {
             writer.write<std::string>(clan.name());
             writer.write<std::string>(clan.title().value_or(""));
         });
@@ -32,7 +32,7 @@ async::task<void> internal_info::serialize(fb::stream_writer<big_endian>& writer
     auto& shared_group_lock = this->ch.group();
     if (shared_group_lock != nullptr)
     {
-        shared_group_lock->lock([&writer](auto& group) {
+        shared_group_lock->read([&writer](auto& group) {
             if (group.inited())
             {
                 auto sstream = std::stringstream();

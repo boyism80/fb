@@ -24,7 +24,7 @@ async::task<void> external_info::serialize(fb::stream_writer<big_endian>& writer
     }
     else
     {
-        clan_lock->lock([&writer](auto& clan) {
+        clan_lock->read([&writer](auto& clan) {
             writer.write<std::string>(clan.name());
             writer.write<std::string>(clan.title().value_or(""));
         });

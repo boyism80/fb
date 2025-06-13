@@ -243,12 +243,12 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         ch->trade.cancel();
 
     auto id = ch->id();
-    this->_shard[id]->ids.lock([&id](auto& ids) {
+    this->_shard[id]->ids.write([&id](auto& ids) {
         ids.erase(id);
     });
 
     auto& name = ch->name();
-    this->_shard[name]->names.lock([&name](auto& names) {
+    this->_shard[name]->names.write([&name](auto& names) {
         names.erase(name);
     });
 
@@ -272,7 +272,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto& group_lock = ch->group();
     if (group_lock != nullptr)
     {
-        group_lock->lock([this, ch](auto& group) {
+        group_lock->write([this, ch](auto& group) {
             group.leave(*ch);
         });
         group_lock.reset();
@@ -281,7 +281,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
     auto& clan_lock = ch->clan();
     if (clan_lock != nullptr)
     {
-        clan_lock->lock([ch](auto& clan) {
+        clan_lock->write([ch](auto& clan) {
             clan.detach_character(*ch);
         });
         clan_lock.reset();
@@ -348,7 +348,7 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
 
     for (auto& [mod, names] : g)
     {
-        this->_shard[mod]->names.lock([this, &names, &fn, &miss](auto& ch_names) {
+        this->_shard[mod]->names.read([this, &names, &fn, &miss](auto& ch_names) {
             for (auto& name : names)
             {
                 if (!ch_names.contains(name))
@@ -357,11 +357,13 @@ void context::foreach_ch(const std::vector<std::string>&                     nam
                     continue;
                 }
 
-                auto ch     = ch_names[name];
-                auto thread = ch->thread();
-                std::ignore = thread->dispatch([this, fn, ch, fd = ch->fd()](auto& thread) -> async::task<void> {
-                    co_await this->switch_thread(*ch);
+                auto ch = ch_names.at(name);
+                if (ch == nullptr || this->alive(*ch) == false)
+                    continue;
+
+                this->threads.enqueue(*ch, [=, this](auto& thread) -> async::task<void> {
                     fn(*ch);
+                    co_return;
                 });
             }
         });
@@ -448,7 +450,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     if (group.has_value())
     {
         this->upsert_group_then(group.value(), [&ch](auto& lock) {
-            lock->lock([&ch](auto& group) {
+            lock->write([&ch](auto& group) {
                 group.enter(ch);
             });
             ch.group(lock);
@@ -458,7 +460,7 @@ async::task<bool> context::init_ch(const internal::Character&           response
     if (clan.has_value())
     {
         this->upsert_clan_then(clan.value(), [&ch](auto& lock) {
-            lock->lock([&ch](auto& clan) {
+            lock->write([&ch](auto& clan) {
                 clan.attach_character(ch);
             });
             ch.clan(lock);
@@ -581,7 +583,7 @@ async::task<void> context::send(object&                     object,
         if (shared_group_lock == nullptr)
             co_return;
 
-        shared_group_lock->lock([&stream, encrypt](auto& group) {
+        shared_group_lock->read([&stream, encrypt](auto& group) {
             for (auto ch : group.characters())
             {
                 ch->send(stream, encrypt);

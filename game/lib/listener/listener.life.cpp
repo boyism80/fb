@@ -106,7 +106,7 @@ void listener_impl::on_dead(life& me, object* you)
             auto  exp   = mob.based<fb::model::mob>().exp;
             if (group != nullptr && map != nullptr)
             {
-                group->lock([this, &ch, map, exp](auto& group) {
+                group->read([this, &ch, map, exp](auto& group) {
                     auto nears      = group.nears(*map, ch.position());
                     auto size       = nears.size();
                     auto divide_exp = exp / size;

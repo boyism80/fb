@@ -24,12 +24,12 @@ void context::on_write_mail(const internal_resp::WriteMail& resp)
 {
     assert_mail(resp.error);
 
-    this->_shard[resp.mail.user]->ids.lock([&resp](auto& ids) {
+    this->_shard[resp.mail.user]->ids.read([this, &resp](auto& ids) {
         if (ids.contains(resp.mail.user) == false)
             return;
 
-        auto ch     = ids[resp.mail.user];
-        std::ignore = ch->thread()->dispatch([ch, unread = resp.unread](auto& thread) -> async::task<void> {
+        auto ch = ids.at(resp.mail.user);
+        this->threads.enqueue(*ch, [ch, unread = resp.unread](auto& thread) -> async::task<void> {
             ch->unread_mail(unread);
             co_return;
         });

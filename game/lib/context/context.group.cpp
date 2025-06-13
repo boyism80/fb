@@ -9,7 +9,7 @@ void context::foreach_ch(const group& group, const std::function<void(fb::game::
 
 void context::upsert_group_then(uint32_t gid, const std::function<void(shared_group_lock&)>& fn)
 {
-    this->_shard[gid]->groups.lock([this, gid, &fn](auto& groups) {
+    this->_shard[gid]->groups.write([this, gid, &fn](auto& groups) {
         if (groups.contains(gid) == false)
         {
             groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
@@ -28,12 +28,12 @@ void context::upsert_group_then(uint32_t gid, const std::function<void(shared_gr
                                                   std::format("cannot get group (error : {})", resp.error));
                                           }
 
-                                          this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
+                                          this->_shard[gid]->groups.read([this, gid, &resp](auto& groups) {
                                               if (!groups.contains(gid))
                                                   return;
 
                                               auto& group_lock_ptr = groups.at(gid);
-                                              group_lock_ptr->lock([&resp](auto& group) {
+                                              group_lock_ptr->write([&resp](auto& group) {
                                                   group.update(resp.group.master, resp.group.members);
                                               });
                                           });
@@ -54,14 +54,14 @@ void context::upsert_group_then(uint32_t                                       g
                                 const std::vector<std::string>&                members,
                                 const std::function<void(shared_group_lock&)>& fn)
 {
-    this->_shard[gid]->groups.lock([this, gid, &fn, &master, &members](auto& groups) {
+    this->_shard[gid]->groups.write([this, gid, &fn, &master, &members](auto& groups) {
         if (groups.contains(gid) == false)
         {
             groups.insert({gid, std::make_shared<fb::locker<fb::game::group>>(*this, gid)});
         }
 
         auto& group_lock_ptr = groups.at(gid);
-        group_lock_ptr->lock([&master, &members](auto& group) {
+        group_lock_ptr->write([&master, &members](auto& group) {
             group.update(master, members);
         });
         fn(group_lock_ptr);
@@ -138,7 +138,7 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
             switch (action)
             {
             case GroupAction::Create:
-                group_lock_ptr->lock([&character](auto& group) {
+                group_lock_ptr->write([&character](auto& group) {
                     group.enter(character);
                 });
                 character.group(group_lock_ptr);
@@ -156,7 +156,7 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
                 if (character.name() == member)
                 {
                     character.message("그룹에 참여했습니다.");
-                    group_lock_ptr->lock([&character](auto& group) {
+                    group_lock_ptr->write([&character](auto& group) {
                         group.enter(character);
                     });
                     character.group(group_lock_ptr);
@@ -170,7 +170,7 @@ void context::on_enter_group(internal_resp::EnterGroup resp)
             case GroupAction::Kick:
                 if (character.name() == member)
                 {
-                    group_lock_ptr->lock([&character](auto& group) {
+                    group_lock_ptr->write([&character](auto& group) {
                         group.leave(character);
                     });
                     character.group().reset();
@@ -199,7 +199,7 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
             this->foreach_ch(resp.member, [&group_lock_ptr](auto& ch) {
                 ch.group().reset();
 
-                group_lock_ptr->lock([&ch](auto& group) {
+                group_lock_ptr->write([&ch](auto& group) {
                     group.leave(ch);
                 });
             });
@@ -218,7 +218,7 @@ void context::on_leave_group(const internal_resp::LeaveGroup& resp)
 
     case GroupAction::BreakUp:
     {
-        this->_shard[gid]->groups.lock([this, gid, &resp](auto& groups) {
+        this->_shard[gid]->groups.write([this, gid, &resp](auto& groups) {
             auto members = std::vector<std::string>{resp.group.members};
             members.push_back(resp.group.master);
 
@@ -249,7 +249,7 @@ void context::on_group_broadcast(const internal_resp::BroadcastGroup& resp)
     this->assert_group(resp.error, "");
 
     this->upsert_group_then(resp.group, [this, message = resp.message, type = resp.type](auto& group_lock) {
-        group_lock->lock([this, message, type](auto& group) {
+        group_lock->read([this, message, type](auto& group) {
             this->foreach_ch(group.members(), [message, type](auto& ch) {
                 ch.message(message, static_cast<MESSAGE_TYPE>(type));
             });

@@ -101,7 +101,7 @@ std::vector<character*> clan::nears(const fb::game::map& map, const point16_t& p
         if (ch->clan() == nullptr)
             continue;
 
-        ch->clan()->lock([this, ch, &result](auto& clan) {
+        ch->clan()->read([this, ch, &result](const auto& clan) {
             if (&clan == this)
                 result.push_back(ch);
         });

@@ -18,7 +18,7 @@ async::task<void> context::handle_amqp_Broadcast(const internal_resp::Broadcast&
 
 async::task<void> context::handle_amqp_KickOut(const internal_resp::KickOut& resp)
 {
-    auto ch = this->_shard[resp.name]->names.template lock<character*>([&name = resp.name](auto& names) -> character* {
+    auto ch = this->_shard[resp.name]->names.template read<character*>([&name = resp.name](auto& names) -> character* {
         if (!names.contains(name))
             return nullptr;
 

@@ -361,7 +361,7 @@ public:
      */
     bool connected(uint32_t fd)
     {
-        return this->_sockets.template lock<bool>([fd](const auto& v) -> bool {
+        return this->_sockets.template read<bool>([fd](const auto& v) -> bool {
             return v.contains(fd);
         });
     }
@@ -483,7 +483,7 @@ private:
         this->pop_alive(socket);
 
         auto fd = socket.fd();
-        this->_sockets.lock([fd](auto& v) -> void {
+        this->_sockets.write([fd](auto& v) -> void {
             v.erase(fd);
         });
     }
@@ -554,7 +554,7 @@ private:
 
                 {
                     auto fd = socket->fd();
-                    this->_sockets.lock([fd, &socket](auto& v) -> void {
+                    this->_sockets.write([fd, &socket](auto& v) -> void {
                         if (v.contains(fd))
                         {
                             fb::logger::warn(std::format("socket already exists. fd: {}", fd));
@@ -1087,7 +1087,7 @@ private:
     async::task<void> disconnect_sockets()
     {
         auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
-        this->_sockets.lock([&pairs](const auto& v) -> void {
+        this->_sockets.read([&pairs](const auto& v) -> void {
             for (auto& [fd, socket] : v)
             {
                 auto thread = socket->thread();
@@ -1118,7 +1118,7 @@ private:
 public:
     void access_sockets(std::function<void(const socket_container&)> fn)
     {
-        this->_sockets.lock([fn](auto& v) {
+        this->_sockets.read([fn](const auto& v) {
             fn(v);
         });
     }
