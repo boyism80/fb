@@ -141,28 +141,18 @@ async::task<void> context::destroy_clan(character& me)
         internal_reqs::DestroyClan{me.id()});
 
     this->assert_clan(resp.error);
-    this->_shard[clan_id]->clans.write([clan_id](auto& clans) {
+    this->_shard[clan_id]->clans.write([this, clan_id](auto& clans) {
         if (clans.contains(clan_id))
         {
-            clans.at(clan_id)->read([](auto& clan) {
-                auto character_set = std::unordered_map<fb::thread*, std::vector<character*>>{};
+            clans.at(clan_id)->read([this](auto& clan) {
+                auto characters = std::vector<character*>{};
                 for (auto& [uid, ch] : clan.characters())
+                    characters.push_back(ch);
+
+                for (auto& ch : characters)
                 {
-                    auto thread = ch->thread();
-                    if (!character_set.contains(thread))
-                        character_set.insert({thread, {}});
-
-                    character_set.at(thread).push_back(ch);
-                }
-
-                for (auto& [thread, characters] : character_set)
-                {
-                    std::ignore = thread->dispatch([characters](auto&) -> async::task<void> {
-                        for (auto ch : characters)
-                        {
-                            ch->clan().reset();
-                        }
-
+                    std::ignore = this->threads.dispatch(*ch, [ch](auto&) -> async::task<void> {
+                        ch->clan().reset();
                         co_return;
                     });
                 }
@@ -240,8 +230,7 @@ void context::on_clan_join_member(const internal_resp::JoinClan& resp)
 
         if (ch != nullptr)
         {
-            auto thread = ch->thread();
-            std::ignore = thread->dispatch([=, this, &clan_lock](auto&) -> async::task<void> {
+            std::ignore = this->threads.dispatch(*ch, [this, resp, ch, &clan_lock](auto&) -> async::task<void> {
                 clan_lock->write([=, this, &clan_lock](auto& clan) {
                     this->foreach_ch(clan, [resp](auto& ch) {
                         ch.message(std::format("{}님이 문파에 가입했습니다.", resp.member.name), MESSAGE_TYPE::NOTIFY);
@@ -274,7 +263,7 @@ void context::on_clan_leave_member(const internal_resp::LeaveClan& resp)
 
         if (ch != nullptr)
         {
-            std::ignore = ch->thread()->dispatch([this, ch, resp, &clan_lock](auto&) -> async::task<void> {
+            std::ignore = this->threads.dispatch(*ch, [this, ch, resp, &clan_lock](auto&) -> async::task<void> {
                 clan_lock->write([this, ch, &resp](auto& clan) {
                     clan.leave(ch->name());
                     clan.detach_character(*ch);
