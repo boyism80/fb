@@ -101,11 +101,8 @@ void fb::game::script_loader::on_work(const std::function<async::task<void>()>& 
 
 void fb::game::script_loader::on_worked(const std::function<async::task<void>()>& input, double percent)
 {
-#if defined DEBUG || defined _DEBUG
     fb::console::put("* [{:0.2f}%] 스크립트 파일을 읽었습니다.", percent);
-#else
-    this->_bar.set_progress(percent);
-#endif
+    // this->_bar.set_progress(percent);
 }
 
 void fb::game::script_loader::on_error(const std::function<async::task<void>()>& input, std::exception& e)
@@ -116,7 +113,5 @@ void fb::game::script_loader::on_error(const std::function<async::task<void>()>&
 void fb::game::script_loader::on_finish()
 {
     fb::console::newline();
-#if !defined(DEBUG) && !defined(_DEBUG)
-    fb::console::up(1);
-#endif
+    // fb::console::up(1);
 }

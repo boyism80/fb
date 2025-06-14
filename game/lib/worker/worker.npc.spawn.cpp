@@ -44,11 +44,8 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
 
 void fb::game::npc_spawner::on_worked(const fb::game::npc_spawner::input_type& input, double percent)
 {
-#if defined DEBUG || defined _DEBUG
     fb::console::put("* [{:0.2f}%] NPC 스폰 읽었습니다.", percent);
-#else
-    this->_bar.set_progress(percent);
-#endif
+    // this->_bar.set_progress(percent);
 }
 
 void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& input, std::exception& e)
@@ -59,7 +56,5 @@ void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& in
 void fb::game::npc_spawner::on_finish()
 {
     fb::console::newline();
-#if !defined(DEBUG) && !defined(_DEBUG)
-    fb::console::up(1);
-#endif
+    // fb::console::up(1);
 }

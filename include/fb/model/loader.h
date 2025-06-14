@@ -76,11 +76,8 @@ protected:
      */
     void on_worked(const input_type& input, double percent)
     {
-#if defined DEBUG || defined _DEBUG
         fb::console::put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
-#else
-        this->_bar.set_progress(percent);
-#endif
+        // this->_bar.set_progress(percent);
     }
 
     /**
@@ -100,9 +97,7 @@ protected:
     void on_finish()
     {
         fb::console::newline();
-#if !defined(DEBUG) && !defined(_DEBUG)
-        fb::console::up(1);
-#endif
+        // fb::console::up(1);
     }
 };
 

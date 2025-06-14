@@ -90,20 +90,36 @@ void console::clear()
 
 void console::save_point()
 {
+    auto _ = std::lock_guard(_mutex);
+    if (!_tty)
+        return;
+
     std::cout << "\033[s";
 }
 
 void console::restore_point()
 {
+    auto _ = std::lock_guard(_mutex);
+    if (!_tty)
+        return;
+
     std::cout << "\033[u";
 }
 
 void console::up(uint8_t line)
 {
+    auto _ = std::lock_guard(_mutex);
+    if (!_tty)
+        return;
+
     std::cout << std::format("\033[{}A", line);
 }
 
 void console::down(uint8_t line)
 {
+    auto _ = std::lock_guard(_mutex);
+    if (!_tty)
+        return;
+
     std::cout << std::format("\033[{}B", line);
 }
