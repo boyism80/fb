@@ -26,6 +26,7 @@ ENDIF(WIN32)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DREDISCPP_HEADER_ONLY)
 add_compile_definitions(BOT)
+add_compile_definitions(NOMINMAX)
 
 file(GLOB_RECURSE BOT_SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
 file(GLOB_RECURSE GATEWAY_PROTOCOL_FILES "${ROOT_DIR}/gateway/lib/protocol/*.cpp")

@@ -26,6 +26,7 @@ ENDIF(WIN32)
 set(CMAKE_CXX_STANDARD 20)
 add_definitions(-DREDISCPP_HEADER_ONLY)
 add_compile_definitions(LUA)
+add_compile_definitions(NOMINMAX)
 
 file(GLOB_RECURSE SOURCE_FILES "${PROJECT_SOURCE_DIR}/lib/*.cpp")
 IF(WIN32)
