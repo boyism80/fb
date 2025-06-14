@@ -69,35 +69,14 @@ bool console::is_tty()
     return _tty;
 }
 
-void console::position(uint16_t y)
-{
-    auto _ = std::lock_guard(_mutex);
-    if (!_tty)
-        return;
-
-    y = std::max<uint16_t>(0, std::min<uint16_t>(y, _height));
-    std::cout << std::format("\x1B[{};{}H", y, 1);
-    _y = y;
-}
-
-uint16_t console::position()
-{
-    auto _ = std::lock_guard(_mutex);
-    if (!_tty)
-        return 0;
-
-    return _y;
-}
-
 void console::newline()
 {
     auto _ = std::lock_guard(_mutex);
     if (!_tty)
         return;
 
-    _y            += 1;
-    _comment_line  = 0;
-    std::cout << std::endl;
+    std::cout << std::format("\033[{}B", ++_comment_line) << '\r';
+    _comment_line = 0;
 }
 
 void console::clear()
@@ -107,4 +86,24 @@ void console::clear()
         return;
 
     std::cout << "\x1b[2K";
+}
+
+void console::save_point()
+{
+    std::cout << "\033[s";
+}
+
+void console::restore_point()
+{
+    std::cout << "\033[u";
+}
+
+void console::up(uint8_t line)
+{
+    std::cout << std::format("\033[{}A", line);
+}
+
+void console::down(uint8_t line)
+{
+    std::cout << std::format("\033[{}B", line);
 }

@@ -42,7 +42,6 @@ public:
 private:
     inline static std::recursive_mutex _mutex;
     inline static uint16_t             _comment_line = 0;
-    inline static uint16_t             _y            = 1;
     inline static uint16_t             _width, _height;
     inline static bool                 _tty;
 
@@ -67,20 +66,6 @@ public:
 public:
     /**
      * @brief      { function_description }
-     *
-     * @param[in]  y     { parameter_description }
-     */
-    static void position(uint16_t y);
-
-    /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    static uint16_t position();
-
-    /**
-     * @brief      { function_description }
      */
     static void newline();
 
@@ -90,6 +75,30 @@ public:
      * @param[in]  line  The line
      */
     static void clear();
+
+    /**
+     * @brief      Saves a point.
+     */
+    static void save_point();
+
+    /**
+     * @brief      { function_description }
+     */
+    static void restore_point();
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  line  The line
+     */
+    static void up(uint8_t line);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  line  The line
+     */
+    static void down(uint8_t line);
 
     /**
      * @brief      { function_description }
@@ -105,36 +114,34 @@ public:
     {
         auto _ = std::lock_guard(_mutex);
 
-        auto text = std::vformat(fmt, std::make_format_args(args...));
-        auto x    = 0;
+        auto text    = std::vformat(fmt, std::make_format_args(args...));
+        auto padding = 0;
         switch (align)
         {
         case align_type::right:
-            x = _width - text.size() - 1;
+            padding = _width - text.size() - 1;
             break;
 
         case align_type::center:
-            x = (_width - text.size() - 1) / 2;
+            padding = (_width - text.size() - 1) / 2;
             break;
 
         default:
-            x = 0;
+            padding = 0;
             break;
         }
 
-        text = std::string(x, ' ') + text;
+        text = std::string(padding, ' ') + text;
         if (!_tty)
         {
             std::cout << text << std::endl;
             return;
         }
 
-        auto current_line = position();
-        position(current_line - _comment_line);
+        save_point();
         clear();
-
-        std::cout << text;
-        position(current_line);
+        std::cout << "\r" << text;
+        restore_point();
     }
 
     /**
@@ -210,9 +217,10 @@ public:
         }
         else
         {
-            std::cout << std::endl << text;
-            _comment_line++;
-            position(_y + 1);
+            save_point();
+            down(++_comment_line);
+            std::cout << "\r" << text;
+            restore_point();
         }
     }
 } __console;
