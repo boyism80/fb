@@ -26,7 +26,7 @@ void fb::game::npc::soliloquy()
         return;
 
     auto& soliloquy = this->context.model.soliloquy[model.id];
-    auto  i         = random<uint16_t>(0, soliloquy.size());
+    auto  i         = random<uint16_t>(0, soliloquy.size() - 1);
     this->chat(soliloquy[i].message);
     this->_soliloquy_time = random<uint16_t>(60, 120);
 }
