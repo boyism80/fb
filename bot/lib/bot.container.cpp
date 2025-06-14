@@ -79,11 +79,8 @@ void bot_container::display_spawned_bots()
     auto _2 = std::shared_lock<std::shared_mutex>(login_bot::_mutex);
     auto _3 = std::shared_lock<std::shared_mutex>(game_bot::_mutex);
 
-    static auto y = fb::console::position();
-    fb::console::position(y);
     fb::console::put("gateway\t\t{}", gateway_bot::_count);
-    fb::console::position(y + 1);
     fb::console::put("login\t\t{}", login_bot::_count);
-    fb::console::position(y + 2);
     fb::console::put("game\t\t{}", game_bot::_count);
+    fb::console::up(2);
 }

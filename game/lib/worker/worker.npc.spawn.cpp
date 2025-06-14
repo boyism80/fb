@@ -2,7 +2,8 @@
 #include <fb/game/worker.h>
 
 fb::game::npc_spawner::npc_spawner(fb::game::context& context) :
-    _context(context)
+    _context(context),
+    _bar("", "Load NPC spawns")
 { }
 
 fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready()
@@ -44,6 +45,7 @@ void fb::game::npc_spawner::on_work(const fb::game::npc_spawner::input_type& val
 void fb::game::npc_spawner::on_worked(const fb::game::npc_spawner::input_type& input, double percent)
 {
     fb::console::put("* [{:0.2f}%] NPC 스폰 읽었습니다.", percent);
+    // this->_bar.set_progress(percent);
 }
 
 void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& input, std::exception& e)
@@ -54,4 +56,5 @@ void fb::game::npc_spawner::on_error(const fb::game::npc_spawner::input_type& in
 void fb::game::npc_spawner::on_finish()
 {
     fb::console::newline();
+    // fb::console::up(1);
 }

@@ -93,6 +93,15 @@ RUN cmake -DCMAKE_BUILD_TYPE=Release ..
 RUN cmake --build . --parallel
 RUN make install
 
+WORKDIR /app
+RUN git clone https://github.com/p-ranav/indicators
+WORKDIR /app/indicators
+RUN git checkout v2.3
+WORKDIR /app/indicators/build
+RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
+RUN cmake --build . --parallel
+RUN make install
+
 # fb.lib
 WORKDIR /app
 COPY include ./include

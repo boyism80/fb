@@ -2,7 +2,8 @@
 #include <fb/game/worker.h>
 
 fb::game::script_loader::script_loader(fb::game::context& context) :
-    _context(context)
+    _context(context),
+    _bar("", "Load scripts")
 { }
 
 fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_ready()
@@ -101,6 +102,7 @@ void fb::game::script_loader::on_work(const std::function<async::task<void>()>& 
 void fb::game::script_loader::on_worked(const std::function<async::task<void>()>& input, double percent)
 {
     fb::console::put("* [{:0.2f}%] 스크립트 파일을 읽었습니다.", percent);
+    // this->_bar.set_progress(percent);
 }
 
 void fb::game::script_loader::on_error(const std::function<async::task<void>()>& input, std::exception& e)
@@ -111,4 +113,5 @@ void fb::game::script_loader::on_error(const std::function<async::task<void>()>&
 void fb::game::script_loader::on_finish()
 {
     fb::console::newline();
+    // fb::console::up(1);
 }

@@ -126,6 +126,11 @@ ROBOCOPY boost\boost\ %DEST%\include\boost\ /E
 ROBOCOPY boost\build\stage\lib\Debug\ %DEST%\lib\boost\ /E *.lib
 ROBOCOPY boost\build\stage\lib\Release\ %DEST%\lib\boost\ /E *.lib
 
+git clone https://github.com/p-ranav/indicators
+PUSHD indicators
+git checkout v2.3
+POPD
+ROBOCOPY indicators\include\indicators\ %DEST%\include\indicators\ /E
 
 POPD
 exit /b 0
