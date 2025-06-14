@@ -2,8 +2,7 @@
 #include <fb/game/worker.h>
 
 fb::game::map_loader::map_loader(fb::game::context& context) :
-    _context(context),
-    _bar("", "Load maps")
+    _context(context)
 { }
 
 fb::generator<fb::game::map_loader::input_type> fb::game::map_loader::on_ready()

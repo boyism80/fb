@@ -1,7 +1,6 @@
 #ifndef __WORKER_H__
 #define __WORKER_H__
 
-#include <fb/indicator.h>
 #include <fb/model/loader.h>
 #include <filesystem>
 
@@ -21,8 +20,7 @@ public:
     using input_type = std::reference_wrapper<fb::model::map>;
 
 private:
-    fb::game::context&  _context;
-    fb::LoadProgressBar _bar;
+    fb::game::context& _context;
 
 public:
     /**
@@ -78,8 +76,7 @@ public:
     using input_type = std::reference_wrapper<fb::model::npc_spawn>;
 
 private:
-    fb::game::context&  _context;
-    fb::LoadProgressBar _bar;
+    fb::game::context& _context;
 
 public:
     /**
@@ -129,8 +126,7 @@ protected:
 class script_loader : public fb::parallel_worker<std::function<async::task<void>()>>
 {
 private:
-    fb::game::context&  _context;
-    fb::LoadProgressBar _bar;
+    fb::game::context& _context;
 
 public:
     /**

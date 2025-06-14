@@ -2,8 +2,7 @@
 #include <fb/game/worker.h>
 
 fb::game::script_loader::script_loader(fb::game::context& context) :
-    _context(context),
-    _bar("", "Load scripts")
+    _context(context)
 { }
 
 fb::generator<std::function<async::task<void>()>> fb::game::script_loader::on_ready()

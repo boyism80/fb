@@ -2,8 +2,7 @@
 #include <fb/game/worker.h>
 
 fb::game::npc_spawner::npc_spawner(fb::game::context& context) :
-    _context(context),
-    _bar("", "Load NPC spawns")
+    _context(context)
 { }
 
 fb::generator<fb::game::npc_spawner::input_type> fb::game::npc_spawner::on_ready()
