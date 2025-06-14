@@ -15,6 +15,8 @@
 #include <cstring>
 #include <mutex>
 #include <format>
+#include <cmath>
+#include <vector>
 
 #ifdef _WIN32
 #define CONSOLE_TITLE "Private kingdom of the wind - http://cshyeon.com"
@@ -99,6 +101,14 @@ public:
      * @param[in]  line  The line
      */
     static void down(uint8_t line);
+
+    /**
+     * @brief      { function_description }
+     *
+     * @param[in]  text      The text
+     * @param[in]  progress  The progress
+     */
+    static void progress(const std::string& text, float progress);
 
     /**
      * @brief      { function_description }

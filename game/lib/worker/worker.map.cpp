@@ -21,8 +21,7 @@ void fb::game::map_loader::on_work(const fb::game::map_loader::input_type& value
 
 void fb::game::map_loader::on_worked(const fb::game::map_loader::input_type& input, double percent)
 {
-    fb::console::put("* [{:0.2f}%] 맵 데이터를 읽었습니다.", percent);
-    // this->_bar.set_progress(percent);
+    fb::console::progress("Loading map files", percent);
 }
 
 void fb::game::map_loader::on_error(const fb::game::map_loader::input_type& input, std::exception& e)
@@ -33,5 +32,4 @@ void fb::game::map_loader::on_error(const fb::game::map_loader::input_type& inpu
 void fb::game::map_loader::on_finish()
 {
     fb::console::newline();
-    // fb::console::up(1);
 }

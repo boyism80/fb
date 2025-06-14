@@ -76,8 +76,7 @@ protected:
      */
     void on_worked(const input_type& input, double percent)
     {
-        fb::console::put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
-        // this->_bar.set_progress(percent);
+        fb::console::progress("Loading data files", percent);
     }
 
     /**
@@ -97,7 +96,6 @@ protected:
     void on_finish()
     {
         fb::console::newline();
-        // fb::console::up(1);
     }
 };
 
