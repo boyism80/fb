@@ -102,7 +102,16 @@ void fb::thread::settimer(const fb::timer::handle_callback_type& fn,
 
     auto timer = new fb::timer(
         [this, fn](const fb::model::datetime&, std::thread::id) -> async::task<void> {
-            co_await fn(fb::model::datetime(), this->_thread.get_id());
+            auto index = this->_index;
+            try
+            {
+                co_await fn(fb::model::datetime(), this->_thread.get_id());
+            }
+            catch (std::exception& e)
+            {
+                fb::logger::fatal(std::format("timer error in thread {} : {}", index, e.what()));
+            }
+            co_return;
         },
         duration,
         disposable);

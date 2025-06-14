@@ -123,3 +123,43 @@ void console::down(uint8_t line)
 
     std::cout << std::format("\033[{}B", line);
 }
+
+void console::progress(const std::string& text, float progress)
+{
+    auto _ = std::lock_guard(_mutex);
+
+    if (!_tty)
+    {
+        std::cout << std::format("{:>7.2f}% {}", progress, text) << std::endl;
+    }
+    else
+    {
+#ifdef _WIN32
+        static auto fill_text       = std::string("-");
+        static auto lead_characters = std::vector<std::string>{"-"};
+#else
+        static auto fill_text       = std::string("█");
+        static auto lead_characters = std::vector<std::string>{" ", "▏", "▎", "▍", "▌", "▋", "▊", "▉"};
+#endif
+        auto os = std::ostringstream{};
+
+        auto width           = 50;
+        auto value           = std::min(1.0f, std::max(0.0f, progress / 100.0f));
+        auto whole_width     = std::floor(value * width);
+        auto remainder_width = fmod(value * width, 1.0f);
+        auto part_width      = std::floor(remainder_width * lead_characters.size());
+        auto lead_text       = lead_characters[size_t(part_width)];
+
+        os << '\r' << '[';
+        for (size_t i = 0; i < whole_width; ++i)
+            os << fill_text;
+        os << lead_text;
+        for (size_t i = 0; i < width - whole_width; ++i)
+            os << " ";
+        os << "]";
+
+        os << std::format(" {:>7.2f}% {}", progress, text);
+        std::cout << os.str();
+        std::cout.flush();
+    }
+}

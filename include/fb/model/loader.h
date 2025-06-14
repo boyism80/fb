@@ -2,7 +2,6 @@
 #define __MODEL_LOADER_H__
 
 #include <fb/parallel_worker.h>
-#include <fb/indicator.h>
 #include <fb/model/model.h>
 
 using namespace fb;
@@ -20,8 +19,7 @@ public:
     using input_type = std::reference_wrapper<fb::model::container>;
 
 private:
-    fb::model::model&   _model;
-    fb::LoadProgressBar _bar;
+    fb::model::model& _model;
 
 public:
     /**
@@ -30,8 +28,7 @@ public:
      * @param      context  The context
      */
     loader(fb::model::model& data) :
-        _model(data),
-        _bar("", "Load data files")
+        _model(data)
     { }
 
     /**
@@ -76,8 +73,7 @@ protected:
      */
     void on_worked(const input_type& input, double percent)
     {
-        fb::console::put("* [{:0.2f}%] 데이터를 읽었습니다.", percent);
-        // this->_bar.set_progress(percent);
+        fb::console::progress("Loading data files", percent);
     }
 
     /**
@@ -97,7 +93,6 @@ protected:
     void on_finish()
     {
         fb::console::newline();
-        // fb::console::up(1);
     }
 };
 
