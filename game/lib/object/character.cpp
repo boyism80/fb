@@ -655,8 +655,8 @@ float character::experience_percent() const
         auto prev_stack_exp = uint32_t{0};
         if (this->context.model.ability[this->_class].contains(level - 1))
             prev_stack_exp = this->context.model.ability[this->_class][level - 1].stacked_exp;
-        else if (this->context.model.ability[CLASS::NONE].contains(level))
-            prev_stack_exp = this->context.model.ability[CLASS::NONE][level].stacked_exp;
+        else if (this->context.model.ability[CLASS::NONE].contains(level - 1))
+            prev_stack_exp = this->context.model.ability[CLASS::NONE][level - 1].stacked_exp;
 
         return std::min(100.0f, ((this->_experience - prev_stack_exp) / float(required)) * 100.0f);
     }
