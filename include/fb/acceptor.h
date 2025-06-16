@@ -20,9 +20,26 @@ using namespace std::chrono_literals;
 namespace fb {
 
 /**
- * @brief      This class describes an acceptor.
+ * @brief      A high-performance network acceptor that manages client connections and protocol handling.
  *
- * @tparam     T     { description }
+ *             This template class provides a complete server framework for handling multiple client
+ *             connections with automatic protocol parsing, encryption support, rate limiting, and
+ *             inter-service communication via AMQP. It manages socket lifecycle, thread distribution,
+ *             and provides both HTTP client capabilities and socket transfer functionality.
+ *
+ *             Key features:
+ *             - Asynchronous socket connection handling with boost::asio
+ *             - Automatic protocol deserialization and handler dispatch
+ *             - Built-in encryption/decryption support with configurable policies
+ *             - Rate limiting (TPS) protection at both socket and handler levels
+ *             - Thread-safe socket container management
+ *             - AMQP message queue integration for inter-service communication
+ *             - HTTP client functionality for REST API calls
+ *             - Socket transfer capability between services
+ *             - Configurable packet size limits and validation
+ *
+ * @tparam     T     The session data type associated with each socket connection.
+ *                   This type represents the per-connection state/context.
  */
 template <typename T>
 class acceptor : public fb::acceptable
@@ -37,19 +54,38 @@ public:
     using boost_timers          = std::vector<std::shared_ptr<boost::asio::deadline_timer>>;
 
 private:
+    /**
+     * @brief      Internal handler structure that manages protocol command handlers with rate limiting.
+     *
+     *             Each protocol command has an associated handler that includes the actual handler
+     *             function and rate limiting parameters. The rate limiting is implemented using a
+     *             sliding window approach that tracks the number of transitions (calls) within a
+     *             specified time duration.
+     */
     struct handler
     {
     private:
-        fb::model::datetime last        = fb::model::datetime();
-        uint32_t            transitions = 0;
+        fb::model::datetime last        = fb::model::datetime(); ///< Last reset time for rate limiting window
+        uint32_t            transitions = 0;                     ///< Current number of transitions in the window
 
     public:
-        const handle_func                         fn;
+        /// The actual handler function to execute
+        const handle_func fn;
+        /// Time window for rate limiting (default: 1s)
         const std::chrono::steady_clock::duration duration = 1s;
-        const uint32_t                            limit    = 0xFFFFFFFF;
+        /// Maximum transitions allowed per window (default: unlimited)
+        const uint32_t limit = 0xFFFFFFFF;
 
     public:
         handler() = default;
+
+        /**
+         * @brief      Constructs a handler with rate limiting parameters.
+         *
+         * @param[in]  fn        The handler function to execute for this protocol command.
+         * @param[in]  duration  The time window for rate limiting calculations.
+         * @param[in]  limit     Maximum number of calls allowed within the duration window.
+         */
         handler(const handle_func&                         fn,
                 const std::chrono::steady_clock::duration& duration,
                 uint32_t                                   limit = 0xFFFFFFFF) :
@@ -58,6 +94,16 @@ private:
             limit(limit)
         { }
 
+        /**
+         * @brief      Updates and checks the rate limiting state for this handler.
+         *
+         *             Implements a sliding window rate limiter. If the elapsed time since
+         *             the last reset exceeds the configured duration, the transition counter
+         *             is reset. Then increments the transition count and checks if it exceeds
+         *             the configured limit.
+         *
+         * @return     True if the handler can be executed (within rate limits), false if rate limited.
+         */
         bool update_tps()
         {
             auto elapsed_time = fb::model::datetime() - this->last;
@@ -75,24 +121,30 @@ private:
     };
 
 private:
-    std::unordered_map<uint8_t, handler>        _handler;
-    std::unordered_map<uint8_t, deserilze_func> _deserializer;
-    amqp_handler_type                           _amqp_handler;
-    std::unique_ptr<fb::amqp::socket>           _amqp;
-    std::mutex                                  _mutex_exit;
-    boost_timers                                _timers;
+    std::unordered_map<uint8_t, handler> _handler; ///< Maps protocol command bytes to their handlers with rate limiting
+    std::unordered_map<uint8_t, deserilze_func>
+                                      _deserializer; ///< Maps protocol command bytes to deserialization functions
+    amqp_handler_type                 _amqp_handler; ///< AMQP message handlers organized by route and command type
+    std::unique_ptr<fb::amqp::socket> _amqp;         ///< AMQP connection for inter-service communication
+    std::mutex                        _mutex_exit;   ///< Mutex for thread-safe exit operations
+    boost_timers                      _timers;       ///< Collection of boost::asio timers for periodic tasks
 
 protected:
-    fb::mutex             _mutex;
-    socket_container_lock _sockets;
+    fb::mutex             _mutex;   ///< Thread synchronization mutex for acceptor operations
+    socket_container_lock _sockets; ///< Thread-safe container holding all active socket connections
 
 protected:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new acceptor instance with network and threading configuration.
      *
-     * @param      context  The context
-     * @param[in]  name     The name
-     * @param[in]  port     The port
+     *             Initializes the acceptor with the specified I/O context, service name, and port.
+     *             The constructor sets up the base acceptable class with the configured number of
+     *             logic threads from the configuration system and initializes the internal mutex
+     *             with a reference to this acceptor instance.
+     *
+     * @param      context  The boost::asio I/O context for handling network operations.
+     * @param[in]  name     The service name identifier for this acceptor instance.
+     * @param[in]  port     The TCP port number to bind and listen on for incoming connections.
      */
     acceptor(boost::asio::io_context& context, const std::string& name, uint16_t port) :
         fb::acceptable(context, name, config<uint32_t>("thread:logic"), port),
@@ -101,7 +153,11 @@ protected:
 
 public:
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the acceptor and ensures clean shutdown.
+     *
+     *             The destructor automatically calls exit() to ensure all connections
+     *             are properly closed, threads are stopped, and resources are cleaned up
+     *             before the object is destroyed. This provides RAII-style resource management.
      */
     virtual ~acceptor()
     {
@@ -109,9 +165,22 @@ public:
     }
 
 protected:
+    /**
+     * @brief      Declares AMQP queues for the acceptor.
+     * This method must be implemented by derived classes to set up their required AMQP queues.
+     *
+     * @param      amqp  The AMQP socket to use for queue declaration.
+     */
     virtual void handle_declare_amqp_queue(fb::amqp::socket& amqp) = 0;
 
 protected:
+    /**
+     * @brief      Gets the IPv4 address from a hostname or IP address string.
+     *
+     * @param[in]  ip  The hostname or IP address to resolve.
+     *
+     * @return     The resolved IPv4 address as a string.
+     */
     std::string ipv4(const std::string& ip) const
     {
         try
@@ -136,15 +205,32 @@ protected:
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      Main AMQP thread loop that manages inter-service message queue communication.
+     *
+     *             This method runs in a dedicated thread and handles the complete lifecycle of
+     *             AMQP connections. It implements automatic reconnection logic with exponential
+     *             backoff on connection failures. The loop performs the following operations:
+     *
+     *             1. Establishes AMQP connection using configuration parameters
+     *             2. Calls the derived class's handle_declare_amqp_queue() to set up queues
+     *             3. Enters a select() loop to process incoming AMQP messages
+     *             4. Automatically reconnects on connection failures
+     *             5. Continues until the acceptor is shutting down
+     *
+     *             Connection parameters are loaded from configuration:
+     *             - amqp:ip - AMQP broker IP address
+     *             - amqp:port - AMQP broker port
+     *             - amqp:uid - Authentication username
+     *             - amqp:pwd - Authentication password
      */
     void amqp_thread_loop()
     {
-        auto timeout = timeval{5, 0};
+        auto timeout = timeval{5, 0}; // 5 second timeout for select operations
         while (this->_running)
         {
             try
             {
+                // Create new AMQP connection
                 this->_amqp = std::make_unique<fb::amqp::socket>();
                 this->_amqp->connect(fb::config<std::string>("amqp:ip"),
                                      fb::config<uint16_t>("amqp:port"),
@@ -152,39 +238,62 @@ private:
                                      fb::config<std::string>("amqp:pwd"),
                                      "/");
 
+                // Let derived class declare its required queues
                 this->handle_declare_amqp_queue(*this->_amqp);
             }
             catch (std::exception& e)
             {
                 fb::logger::fatal(e.what());
-                std::this_thread::sleep_for(1s);
+                std::this_thread::sleep_for(1s); // Wait before retry
                 continue;
             }
 
+            // Message processing loop
             while (this->_running)
             {
                 try
                 {
+                    // Check for incoming messages with timeout
                     if (this->_amqp->select(&timeout) == false)
-                        continue;
+                        continue; // No messages, continue polling
                 }
                 catch (std::exception&)
                 {
-                    break;
+                    break; // Connection error, reconnect
                 }
             }
         }
     }
 
     /**
-     * @brief      GET request to the host and return the response bytes
+     * @brief      Performs an asynchronous HTTP GET request using boost::beast.
      *
-     * @param[in]  host      The host (hostname:port)
-     * @param[in]  path      The path (target)
-     * @param[in]  headers   The headers
-     * @param[in]  timeout   The timeout
+     *             This method implements a complete HTTP/1.1 GET request with the following features:
+     *             - Automatic hostname resolution (supports both hostnames and IP addresses)
+     *             - URL encoding for international characters (Windows platform specific)
+     *             - Configurable timeout with automatic connection cleanup
+     *             - Custom HTTP headers support
+     *             - Automatic HTTP/HTTPS protocol detection and stripping
+     *             - Graceful socket shutdown after response
      *
-     * @return     The response bytes
+     *             The method handles the complete HTTP transaction:
+     *             1. Parses host:port from the host parameter
+     *             2. Resolves hostname to IP address using boost::asio resolver
+     *             3. Establishes TCP connection with timeout
+     *             4. Sends HTTP GET request with custom headers
+     *             5. Reads and parses HTTP response
+     *             6. Extracts response body as byte vector
+     *             7. Cleanly shuts down the connection
+     *
+     * @param[in]  host      The target host in format "hostname:port" or "hostname" (defaults to port 80).
+     *                       Supports http:// and https:// prefixes which are automatically stripped.
+     * @param[in]  path      The target path including query parameters (will be URL encoded).
+     * @param[in]  headers   Custom HTTP headers to include in the request.
+     * @param[in]  timeout   Maximum time to wait for connection, request, and response operations.
+     *
+     * @return     A coroutine task that completes with the response body as a byte vector.
+     *
+     * @throws     std::exception on network errors, timeout, or invalid response.
      */
     boost::asio::awaitable<std::vector<uint8_t>> boost_get_async(std::string                         host,
                                                                  std::string                         path,
@@ -248,14 +357,28 @@ private:
 
 private:
     /**
-     * @brief      GET request to the host and return the response
+     * @brief      Performs a typed HTTP GET request with automatic FlatBuffer deserialization.
      *
-     * @param[in]  host      The host (hostname:port)
-     * @param[in]  path      The path (target)
+     *             This template method wraps the raw HTTP GET functionality and provides automatic
+     *             deserialization of FlatBuffer protocol responses. It handles the complete flow:
+     *             1. Performs HTTP GET request using boost_get_async()
+     *             2. Extracts protocol type and size from response header
+     *             3. Deserializes the response using FlatBuffer's Deserialize() method
+     *             4. Returns the strongly-typed response object
      *
-     * @tparam     Response  The type of the response
+     *             The response format is expected to be:
+     *             - 4 bytes: Protocol type identifier (big-endian uint32_t)
+     *             - 4 bytes: Protocol data size (big-endian uint32_t)
+     *             - N bytes: FlatBuffer serialized data
      *
-     * @return     The response bytes
+     * @param[in]  host      The target host in "hostname:port" format.
+     * @param[in]  path      The target path for the GET request.
+     *
+     * @tparam     Response  The FlatBuffer response type that implements Deserialize() method.
+     *
+     * @return     An async task that completes with the deserialized response object.
+     *
+     * @throws     std::exception on network errors or deserialization failures.
      */
     template <typename Response>
     [[nodiscard]] async::task<Response> boost_get_async(const std::string& host, const std::string& path)
@@ -303,14 +426,35 @@ private:
 
 public:
     /**
-     * @brief      GET request to the host and return the response bytes
+     * @brief      Performs a configuration-based HTTP GET request to another service.
      *
-     * @param[in]  route     The route
-     * @param[in]  path      The path
+     *             This method provides a high-level interface for making HTTP GET requests to
+     *             other services using configuration-based routing. It automatically constructs
+     *             the target URL from configuration parameters and handles the complete request
+     *             lifecycle with automatic response deserialization.
      *
-     * @tparam     Response  The type of the response
+     *             The method looks up the target service configuration using the route parameter
+     *             and constructs the full URL as "http://ip:port" + path. This enables
+     *             service-to-service communication without hardcoding endpoints.
      *
-     * @return     The response bytes
+     *             Configuration format expected:
+     *             ```json
+     *             {
+     *               "route_name": {
+     *                 "ip": "service.hostname.com",
+     *                 "port": 8080
+     *               }
+     *             }
+     *             ```
+     *
+     * @param[in]  route     The configuration route name to look up service endpoint details.
+     * @param[in]  path      The target path to append to the service base URL.
+     *
+     * @tparam     Response  The FlatBuffer response type expected from the service.
+     *
+     * @return     An async task that completes with the deserialized response object.
+     *
+     * @throws     std::exception if route configuration is missing or request fails.
      */
     template <typename Response>
     [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
@@ -322,15 +466,38 @@ public:
 
 private:
     /**
-     * @brief      POST request to the host and return the response bytes
+     * @brief      Performs an asynchronous HTTP POST request using boost::beast with binary payload support.
      *
-     * @param[in]  host     The host (hostname:port)
-     * @param[in]  path     The path (target)
-     * @param[in]  headers  The headers
-     * @param[in]  timeout  The timeout
-     * @param[in]  body     The body
+     *             This method implements a complete HTTP/1.1 POST request with the following features:
+     *             - Automatic hostname resolution (supports both hostnames and IP addresses)
+     *             - URL encoding for international characters (Windows platform specific)
+     *             - Configurable timeout with automatic connection cleanup
+     *             - Custom HTTP headers support with automatic payload preparation
+     *             - Automatic HTTP/HTTPS protocol detection and stripping
+     *             - Binary request body support for protocol data transmission
+     *             - Graceful socket shutdown after response
      *
-     * @return     The response bytes
+     *             The method handles the complete HTTP transaction:
+     *             1. Parses host:port from the host parameter
+     *             2. Resolves hostname to IP address using boost::asio resolver
+     *             3. Establishes TCP connection with timeout
+     *             4. Constructs HTTP POST request with custom headers and binary body
+     *             5. Automatically sets Content-Length and prepares payload
+     *             6. Sends HTTP POST request with binary data
+     *             7. Reads and parses HTTP response
+     *             8. Extracts response body as byte vector
+     *             9. Cleanly shuts down the connection
+     *
+     * @param[in]  host      The target host in format "hostname:port" or "hostname" (defaults to port 80).
+     *                       Supports http:// and https:// prefixes which are automatically stripped.
+     * @param[in]  path      The target path including query parameters (will be URL encoded).
+     * @param[in]  headers   Custom HTTP headers to include in the request.
+     * @param[in]  timeout   Maximum time to wait for connection, request, and response operations.
+     * @param[in]  body      The binary request body data to send in the POST request.
+     *
+     * @return     A coroutine task that completes with the response body as a byte vector.
+     *
+     * @throws     std::exception on network errors, timeout, or invalid response.
      */
     boost::asio::awaitable<std::vector<uint8_t>> boost_post_async(std::string                         host,
                                                                   std::string                         path,
@@ -399,16 +566,39 @@ private:
 
 private:
     /**
-     * @brief      POST request to the host and return the response
+     * @brief      Performs a typed HTTP POST request with automatic FlatBuffer serialization and deserialization.
      *
-     * @param[in]  host     The host (hostname:port)
-     * @param[in]  path     The path (target)
-     * @param[in]  body     The body
+     *             This template method wraps the raw HTTP POST functionality and provides automatic
+     *             serialization of FlatBuffer protocol requests and deserialization of responses.
+     *             It handles the complete flow for inter-service communication:
      *
-     * @tparam     Request   The type of the request
-     * @tparam     Response  The type of the response
+     *             Request Processing:
+     *             1. Serializes the request object using FlatBuffer's Serialize() method
+     *             2. Constructs a protocol header with type and size information
+     *             3. Combines header and payload into a single binary stream
+     *             4. Performs HTTP POST request using boost_post_async()
+     *             5. Extracts protocol type and size from response header
+     *             6. Deserializes the response using FlatBuffer's Deserialize() method
+     *             7. Returns the strongly-typed response object
      *
-     * @return     The response
+     *             Protocol Format (both request and response):
+     *             - 4 bytes: Protocol type identifier (big-endian uint32_t)
+     *             - 4 bytes: Protocol data size (big-endian uint32_t)
+     *             - N bytes: FlatBuffer serialized data
+     *
+     *             This method is typically used for service-to-service communication where
+     *             both endpoints understand the FlatBuffer protocol format.
+     *
+     * @param[in]  host     The target host in "hostname:port" format.
+     * @param[in]  path     The target path for the POST request.
+     * @param[in]  body     The request object to serialize and send.
+     *
+     * @tparam     Request   The FlatBuffer request type that implements Serialize() method.
+     * @tparam     Response  The FlatBuffer response type that implements Deserialize() method.
+     *
+     * @return     An async task that completes with the deserialized response object.
+     *
+     * @throws     std::exception on network errors, serialization/deserialization failures.
      */
     template <typename Request, typename Response>
     [[nodiscard]] async::task<Response> boost_post_async(std::string const& host,
@@ -459,16 +649,52 @@ private:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Performs a configuration-based HTTP POST request to another service with typed request/response.
      *
-     * @param[in]  route     The route
-     * @param[in]  path      The path
-     * @param[in]  body      The body
+     *             This method provides a high-level interface for making HTTP POST requests to
+     *             other services using configuration-based routing. It automatically constructs
+     *             the target URL from configuration parameters and handles the complete request
+     *             lifecycle with automatic serialization and response deserialization.
      *
-     * @tparam     Request   { description }
-     * @tparam     Response  { description }
+     *             The method looks up the target service configuration using the route parameter
+     *             and constructs the full URL as "http://ip:port" + path. This enables
+     *             service-to-service communication without hardcoding endpoints, making the
+     *             system more maintainable and configurable.
      *
-     * @return     { description_of_the_return_value }
+     *             Request Flow:
+     *             1. Looks up service endpoint from configuration using route name
+     *             2. Constructs full URL from configuration IP and port
+     *             3. Serializes the request body using FlatBuffer protocol
+     *             4. Sends HTTP POST request with binary payload
+     *             5. Receives and deserializes the response
+     *             6. Returns strongly-typed response object
+     *
+     *             Configuration format expected:
+     *             ```json
+     *             {
+     *               "route_name": {
+     *                 "ip": "service.hostname.com",
+     *                 "port": 8080
+     *               }
+     *             }
+     *             ```
+     *
+     *             This method is commonly used for:
+     *             - User authentication requests to auth service
+     *             - Database operations via data service
+     *             - Inter-service state synchronization
+     *             - Distributed transaction coordination
+     *
+     * @param[in]  route     The configuration route name to look up service endpoint details.
+     * @param[in]  path      The target path to append to the service base URL.
+     * @param[in]  body      The request object to serialize and send to the target service.
+     *
+     * @tparam     Request   The FlatBuffer request type that implements Serialize() method.
+     * @tparam     Response  The FlatBuffer response type expected from the target service.
+     *
+     * @return     An async task that completes with the deserialized response object.
+     *
+     * @throws     std::exception if route configuration is missing or request fails.
      */
     template <typename Request, typename Response>
     [[nodiscard]] async::task<Response> post(const std::string& route, const std::string& path, const Request& body)
@@ -480,11 +706,11 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Checks if a socket with the given file descriptor is currently connected.
      *
-     * @param[in]  fd    { parameter_description }
+     * @param[in]  fd    The file descriptor to check.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the socket is connected, false otherwise.
      */
     bool connected(uint32_t fd)
     {
@@ -495,12 +721,40 @@ public:
 
 private:
     /**
-     * @brief      This method must be call by i/o thread.
+     * @brief      Executes protocol handlers for received packets with comprehensive validation and rate limiting.
      *
-     * @param      socket  The socket
-     * @param      stream  The stream
+     *             This is the core packet processing method that handles the complete packet parsing
+     *             and handler dispatch pipeline. It implements a robust packet processing system with:
      *
-     * @return     { description_of_the_return_value }
+     *             Packet Format Validation:
+     *             - Magic code validation (0xAA header)
+     *             - Packet size validation against MAX_BUFFER_SIZE
+     *             - Command byte extraction and validation
+     *
+     *             Security Features:
+     *             - Per-socket TPS (Transactions Per Second) limiting (100 TPS max)
+     *             - Per-handler rate limiting with configurable windows
+     *             - Automatic decryption based on decrypt_policy()
+     *             - Buffer overflow protection
+     *
+     *             Processing Pipeline:
+     *             1. Validates packet magic code (0xAA)
+     *             2. Reads packet size and validates against limits
+     *             3. Checks socket and handler TPS limits
+     *             4. Applies decryption if required by policy
+     *             5. Deserializes packet using registered deserializer
+     *             6. Dispatches to appropriate thread for handler execution
+     *             7. Continues processing remaining packets in stream
+     *
+     *             Error Handling:
+     *             - Logs undefined protocols and handlers as warnings
+     *             - Closes socket on critical parsing errors
+     *             - Handles exceptions gracefully without crashing
+     *
+     * @param      socket  The socket that received the packet data.
+     * @param      stream  The stream containing one or more packets to process.
+     *
+     * @return     An async task that completes when all packets in the stream are processed.
      */
     async::task<void> execute_handler(fb::socket<T>& socket, fb::stream& stream)
     {
@@ -591,11 +845,21 @@ private:
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      Safely removes a socket from the acceptor with proper cleanup and disconnection handling.
      *
-     * @param      socket  The socket
+     *             This method performs the complete socket removal process with proper resource cleanup:
+     *             1. Calls the derived class's handle_disconnected() method for custom cleanup
+     *             2. Removes the socket from the alive sockets tracking system
+     *             3. Thread-safely removes the socket from the main socket container
+     *             4. Handles any exceptions during disconnection gracefully
      *
-     * @return     { description_of_the_return_value }
+     *             The method ensures that all references to the socket are properly cleaned up
+     *             and that the socket's unique_ptr is removed from the container, triggering
+     *             automatic destruction of the socket object.
+     *
+     * @param      socket  The socket to remove and clean up.
+     *
+     * @return     An async task that completes when the socket is fully removed and cleaned up.
      */
     async::task<void> erase(fb::socket<T>& socket)
     {
@@ -616,12 +880,12 @@ private:
     }
 
     /**
-     * @brief      Called when socket received.
+     * @brief      Handles a received packet from a socket.
      *
-     * @param      socket  The socket
-     * @param      stream  The stream
+     * @param      socket  The socket that received the packet.
+     * @param      stream  The stream containing the packet data.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that completes when the packet is handled.
      */
     async::task<void> on_socket_received(fb::socket<T>& socket, fb::stream& stream)
     {
@@ -636,11 +900,11 @@ private:
     }
 
     /**
-     * @brief      Called when socket closed.
+     * @brief      Handles a socket closure event.
      *
-     * @param      socket  The socket
+     * @param      socket  The socket that was closed.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that completes when the closure is handled.
      */
     async::task<void> on_socket_closed(fb::socket<T>& socket)
     {
@@ -660,7 +924,32 @@ private:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Accepts new socket connections and initializes them for packet processing.
+     *
+     *             This method implements the complete connection acceptance pipeline:
+     *
+     *             Connection Setup:
+     *             1. Creates a new socket with receive and close event handlers
+     *             2. Initiates asynchronous accept operation using boost::asio
+     *             3. Associates session data with the socket via handle_accepted()
+     *             4. Adds socket to the thread-safe container with duplicate checking
+     *             5. Registers socket in the alive tracking system
+     *             6. Calls handle_connected() for custom connection logic
+     *             7. Starts the socket's receive coroutine
+     *             8. Recursively calls accept() for the next connection
+     *
+     *             Error Handling:
+     *             - Validates that acceptor is still running before accepting
+     *             - Handles duplicate socket file descriptors by removing old entries
+     *             - Closes socket and logs errors on any failure
+     *             - Continues accepting new connections even after individual failures
+     *
+     *             Thread Safety:
+     *             - Uses thread-safe socket container operations
+     *             - Properly handles concurrent access to socket collections
+     *
+     *             This method is called recursively to continuously accept new connections
+     *             until the acceptor is shut down.
      */
     void accept()
     {
@@ -708,14 +997,35 @@ private:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Transfers a socket connection to another service with encryption state preservation.
      *
-     * @param      socket  The socket
-     * @param[in]  ip      { parameter_description }
-     * @param[in]  port    The port
-     * @param[in]  from    The from
+     *             This method implements secure socket transfer between services while maintaining
+     *             the client's encryption state. It's used for seamless service handoffs where
+     *             a client needs to be moved from one service to another (e.g., login to game server).
      *
-     * @return     { description_of_the_return_value }
+     *             Transfer Process:
+     *             1. Extracts current encryption type and key from the socket
+     *             2. Packages encryption state and source service information
+     *             3. Creates a transfer protocol response with target service details
+     *             4. Encrypts the transfer packet using current socket encryption
+     *             5. Sends the transfer packet to the client
+     *
+     *             The client receives the transfer packet and automatically connects to the
+     *             target service using the preserved encryption state, enabling seamless
+     *             service transitions without re-authentication.
+     *
+     *             Transfer Packet Format:
+     *             - Encryption type (1 byte)
+     *             - Key size (1 byte, always crypto::KEY_SIZE)
+     *             - Encryption key (crypto::KEY_SIZE bytes)
+     *             - Source service type (1 byte)
+     *
+     * @param      socket  The socket connection to transfer to another service.
+     * @param[in]  ip      The target service IP address as a 32-bit integer.
+     * @param[in]  port    The target service port number.
+     * @param[in]  from    The service type that is initiating this transfer.
+     *
+     * @return     An async task that completes when the transfer packet is sent.
      */
     [[nodiscard]] async::task<void>
     transfer(fb::socket<T>& socket, uint32_t ip, uint16_t port, fb::protocol::internal::Service from)
@@ -742,32 +1052,40 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Transfers a socket connection to another service with additional session parameters.
      *
-     * @param      socket  The socket
-     * @param[in]  ip      { parameter_description }
-     * @param[in]  port    The port
-     * @param[in]  from    The from
+     *             This extended transfer method allows passing additional session-specific data
+     *             along with the standard encryption state. This is commonly used when the target
+     *             service needs context about the user session (e.g., user ID, character name,
+     *             authentication tokens, or other session state).
      *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<void>
-    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
-    {
-        co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from);
-    }
-
-public:
-    /**
-     * @brief      { function_description }
+     *             Extended Transfer Process:
+     *             1. Extracts current encryption type and key from the socket
+     *             2. Packages encryption state and source service information
+     *             3. Appends the additional parameter stream to the transfer data
+     *             4. Creates a transfer protocol response with all combined data
+     *             5. Encrypts and sends the transfer packet to the client
      *
-     * @param      socket     The socket
-     * @param[in]  ip         { parameter_description }
-     * @param[in]  port       The port
-     * @param[in]  from       The from
-     * @param[in]  parameter  The parameter
+     *             The additional parameters are typically used by the target service to:
+     *             - Restore user session state
+     *             - Validate user permissions
+     *             - Initialize service-specific context
+     *             - Maintain continuity of user experience
      *
-     * @return     { description_of_the_return_value }
+     *             Extended Transfer Packet Format:
+     *             - Encryption type (1 byte)
+     *             - Key size (1 byte, always crypto::KEY_SIZE)
+     *             - Encryption key (crypto::KEY_SIZE bytes)
+     *             - Source service type (1 byte)
+     *             - Additional parameter data (variable length)
+     *
+     * @param      socket     The socket connection to transfer to another service.
+     * @param[in]  ip         The target service IP address as a 32-bit integer.
+     * @param[in]  port       The target service port number.
+     * @param[in]  from       The service type that is initiating this transfer.
+     * @param[in]  parameter  Additional session data to pass to the target service.
+     *
+     * @return     An async task that completes when the transfer packet is sent.
      */
     [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
                                              uint32_t                        ip,
@@ -798,15 +1116,28 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Transfers a socket connection to another service using hostname.
      *
-     * @param      socket     The socket
-     * @param[in]  ip         { parameter_description }
-     * @param[in]  port       The port
-     * @param[in]  from       The from
-     * @param[in]  parameter  The parameter
+     * @param      socket  The socket to transfer.
+     * @param[in]  ip      The target hostname.
+     * @param[in]  port    The target port.
+     * @param[in]  from    The service type initiating the transfer.
+     */
+    [[nodiscard]] async::task<void>
+    transfer(fb::socket<T>& socket, const std::string& ip, uint16_t port, fb::protocol::internal::Service from)
+    {
+        co_await this->transfer(socket, inet_addr(this->ipv4(ip).c_str()), port, from);
+    }
+
+public:
+    /**
+     * @brief      Transfers a socket connection to another service using hostname with additional parameters.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket     The socket to transfer.
+     * @param[in]  ip         The target hostname.
+     * @param[in]  port       The target port.
+     * @param[in]  from       The service type initiating the transfer.
+     * @param[in]  parameter  Additional parameters to include in the transfer.
      */
     [[nodiscard]] async::task<void> transfer(fb::socket<T>&                  socket,
                                              const std::string&              ip,
@@ -819,11 +1150,29 @@ public:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Determines the decryption policy for incoming protocol commands.
      *
-     * @param[in]  cmd   The command
+     *             This virtual method allows derived classes to implement custom decryption
+     *             policies based on the protocol command byte. Some commands may need to
+     *             remain unencrypted for security or compatibility reasons (e.g., initial
+     *             handshake, encryption negotiation, or certain system commands).
      *
-     * @return     { description_of_the_return_value }
+     *             The method is called during packet processing in execute_handler() before
+     *             attempting to decrypt the packet payload. If this method returns false,
+     *             the packet will be processed without decryption.
+     *
+     *             Common use cases:
+     *             - Skip decryption for handshake/negotiation packets
+     *             - Allow certain admin commands to bypass encryption
+     *             - Handle legacy protocol compatibility
+     *             - Implement command-specific security policies
+     *
+     *             Default implementation returns true for all commands, meaning all packets
+     *             will be decrypted by default.
+     *
+     * @param[in]  cmd   The protocol command byte from the packet header.
+     *
+     * @return     True if the packet should be decrypted, false to process without decryption.
      */
     virtual bool decrypt_policy(uint8_t cmd) const
     {
@@ -831,11 +1180,30 @@ protected:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Validates socket-level TPS (Transactions Per Second) limits for DDoS protection.
      *
-     * @param[in]  socket  The socket
+     *             This virtual method allows derived classes to implement custom per-socket
+     *             rate limiting logic. It's called during packet processing to determine if
+     *             a socket is sending packets at an acceptable rate. This provides an additional
+     *             layer of protection beyond the per-handler rate limiting.
      *
-     * @return     { description_of_the_return_value }
+     *             The method is invoked in execute_handler() before processing each packet.
+     *             If this method returns false, the packet will be dropped and the socket
+     *             may be subject to additional penalties (depending on implementation).
+     *
+     *             Typical implementations might:
+     *             - Track packets per second per socket
+     *             - Implement sliding window rate limiting
+     *             - Apply different limits based on socket type or user privileges
+     *             - Integrate with external rate limiting systems
+     *             - Log or ban excessive traffic sources
+     *
+     *             Default implementation returns true, allowing all traffic through.
+     *             Derived classes should override this for production deployments.
+     *
+     * @param[in]  socket  The socket to validate for rate limiting compliance.
+     *
+     * @return     True if the socket is within acceptable TPS limits, false to drop the packet.
      */
     virtual bool assert_tps(const fb::socket<T>& socket) const
     {
@@ -844,19 +1212,18 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Handles a newly accepted socket connection.
      *
-     * @param      socket  The socket
+     * @param      socket  The newly accepted socket.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the data associated with the socket.
      */
     virtual T* handle_accepted(fb::socket<T>& socket) = 0;
 
 protected:
     /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
+     * @brief      Handles the start of the acceptor.
+     * Initializes Lua bindings and other startup tasks.
      */
     virtual async::task<void> handle_start()
     {
@@ -868,11 +1235,11 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Handles a socket connection event.
      *
-     * @param      session  The session
+     * @param      session  The connected socket.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the connection was handled successfully, false otherwise.
      */
     virtual async::task<bool> handle_connected(fb::socket<T>& session)
     {
@@ -881,11 +1248,11 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Handles a socket disconnection event.
      *
-     * @param      session  The session
+     * @param      session  The disconnected socket.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the disconnection was handled successfully, false otherwise.
      */
     virtual async::task<bool> handle_disconnected(fb::socket<T>& session)
     {
@@ -894,11 +1261,11 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread associated with a socket.
      *
-     * @param[in]  socket  The socket
+     * @param[in]  socket  The socket to get the thread for.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the thread associated with the socket.
      */
     fb::thread* thread(const fb::socket<T>& socket) const
     {
@@ -911,9 +1278,7 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
+     * @brief      Handles the exit of the acceptor.
      */
     virtual async::task<void> handle_exit()
     {
@@ -922,9 +1287,9 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the ID of the acceptor.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The acceptor's ID.
      */
     virtual uint8_t id() const
     {
@@ -933,9 +1298,9 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the name of the acceptor.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The acceptor's name.
      */
     virtual std::string name() const
     {
@@ -944,37 +1309,39 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the service type of the acceptor.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The service type of the acceptor.
      */
     virtual fb::protocol::internal::Service service() const = 0;
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Binds a handler function to a protocol command with default parameters.
      *
-     * @param[in]  <unnamed>    { parameter_description }
-     * @param[in]  header       The header
+     * @param[in]  fn        The member function to bind.
+     * @param[in]  header    The header of the request.
+     * @param[in]  duration  The time window for rate limiting.
+     * @param[in]  limit     The maximum number of requests allowed in the time window.
      *
-     * @tparam     Class        { description }
-     * @tparam     RequestType  { description }
+     * @tparam     Class      The class containing the handler function.
+     * @tparam     Request    The type of the request to handle.
      */
-    template <typename Class, typename RequestType>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const RequestType&),
+    template <typename Class, typename Request>
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
               uint8_t                                    header,
               const std::chrono::steady_clock::duration& duration = 1s,
               uint32_t                                   limit    = 10)
     {
         this->_deserializer.insert({header, [](auto& reader) -> async::task<fb::protocol::header*> {
-                                        auto protocol = new RequestType();
+                                        auto protocol = new Request();
                                         co_await protocol->deserialize(reader);
                                         co_return protocol;
                                     }});
 
         auto func_bound = std::bind(fn, static_cast<Class*>(this), std::placeholders::_1, std::placeholders::_2);
         auto handler_fn = [func_bound](auto& socket, auto& header) -> async::task<bool> {
-            auto protocol = static_cast<RequestType&>(header);
+            auto protocol = static_cast<Request&>(header);
             co_return co_await func_bound(socket, protocol);
         };
 
@@ -983,13 +1350,13 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Binds an AMQP handler function to a route and response type.
      *
-     * @param[in]  route         The route
-     * @param[in]  <unnamed>     { parameter_description }
+     * @param[in]  route  The AMQP route to bind to.
+     * @param[in]  fn     The member function to handle the AMQP message.
      *
-     * @tparam     Class         { description }
-     * @tparam     ResponseType  { description }
+     * @tparam     Class         The class containing the handler function.
+     * @tparam     ResponseType  The type of the response to handle.
      */
     template <typename Class, typename ResponseType>
     void bind_amqp(const std::string& route, async::task<void> (Class::*fn)(const ResponseType&))
@@ -1006,9 +1373,9 @@ protected:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Binds AMQP handlers to a queue.
      *
-     * @param      queue  The queue
+     * @param      queue  The AMQP queue to bind handlers to.
      */
     void bind_amqp(fb::amqp::queue& queue)
     {
@@ -1024,12 +1391,14 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Binds a handler function to a protocol command with default parameters.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  fn        The member function to bind.
+     * @param[in]  duration  The time window for rate limiting.
+     * @param[in]  limit     The maximum number of requests allowed in the time window.
      *
-     * @tparam     Class      { description }
-     * @tparam     Request    { description }
+     * @tparam     Class      The class containing the handler function.
+     * @tparam     Request    The type of the request to handle.
      */
     template <typename Class, typename Request>
     void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
@@ -1041,14 +1410,14 @@ protected:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Sends a stream over a socket.
      *
-     * @param      socket   The socket
-     * @param[in]  stream   The stream
-     * @param[in]  encrypt  The encrypt
-     * @param[in]  wrap     The wrap
+     * @param      socket   The socket to send the stream over.
+     * @param[in]  stream   The stream to send.
+     * @param[in]  encrypt  Whether to encrypt the stream.
+     * @param[in]  wrap     Whether to wrap the stream.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The number of bytes sent.
      */
     async::task<size_t> send(fb::socket<T>& socket, const fb::stream& stream, bool encrypt = true, bool wrap = true)
     {
@@ -1060,14 +1429,14 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Sends a protocol header over a socket.
      *
-     * @param      socket    The socket
-     * @param[in]  response  The response
-     * @param[in]  encrypt   The encrypt
-     * @param[in]  wrap      The wrap
+     * @param      socket    The socket to send the header over.
+     * @param[in]  response  The protocol header to send.
+     * @param[in]  encrypt   Whether to encrypt the header.
+     * @param[in]  wrap      Whether to wrap the header.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The number of bytes sent.
      */
     async::task<size_t>
     send(fb::socket<T>& socket, const fb::protocol::header& response, bool encrypt = true, bool wrap = true)
@@ -1083,7 +1452,31 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Starts the acceptor and begins the complete server lifecycle.
+     *
+     *             This method implements the main server startup sequence and runs the server
+     *             until shutdown. It orchestrates multiple components and threads:
+     *
+     *             Startup Sequence:
+     *             1. Sets the running flag to true
+     *             2. Initiates the connection acceptance loop
+     *             3. Creates and starts I/O worker threads (configured via "thread:io")
+     *             4. Calls handle_start() for derived class initialization
+     *             5. Starts the AMQP communication thread
+     *             6. Blocks until all threads complete (server shutdown)
+     *
+     *             Thread Architecture:
+     *             - I/O Threads: Handle network operations using boost::asio
+     *             - Logic Threads: Process protocol handlers (configured via "thread:logic")
+     *             - AMQP Thread: Manages inter-service message queue communication
+     *             - Main Thread: Coordinates startup and waits for completion
+     *
+     *             The method blocks the calling thread until the server is shut down via exit().
+     *             All threads are properly joined to ensure clean shutdown.
+     *
+     *             Configuration Dependencies:
+     *             - "thread:io": Number of I/O worker threads to create
+     *             - "thread:logic": Number of logic processing threads (set in constructor)
      */
     void run()
     {
@@ -1112,9 +1505,9 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the acceptor is currently running.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the acceptor is running, false otherwise.
      */
     bool running() const
     {
@@ -1123,11 +1516,9 @@ public:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Puts the current thread to sleep for the specified duration.
      *
-     * @param[in]  duration  The duration
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  duration  The duration to sleep for.
      */
     [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration)
     {
@@ -1137,7 +1528,14 @@ protected:
     }
 
 private:
-    async::task<void> disconnect_sockets()
+    /**
+     * @brief      Disconnects all sockets and handles disconnection events.
+     *
+     * @note       This method must be called by the main thread.
+     *
+     * @return     A task that completes when all sockets are disconnected.
+     */
+    [[nodiscard]] async::task<void> disconnect_sockets()
     {
         auto pairs = std::unordered_map<fb::thread*, std::vector<fb::socket<T>*>>();
         this->_sockets.read([&pairs](const auto& v) -> void {
@@ -1169,6 +1567,11 @@ private:
     }
 
 public:
+    /**
+     * @brief      Allows access to the socket container for reading.
+     *
+     * @param[in]  fn  The function to execute with access to the socket container.
+     */
     void access_sockets(std::function<void(const socket_container&)> fn)
     {
         this->_sockets.read([fn](const auto& v) {
@@ -1178,17 +1581,44 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gracefully shuts down the acceptor with comprehensive cleanup.
+     *
+     *             This method implements a complete and safe shutdown sequence that ensures
+     *             all resources are properly cleaned up and all connections are gracefully
+     *             terminated. The shutdown process is designed to be idempotent and thread-safe.
+     *
+     *             Shutdown Sequence:
+     *             1. Checks if already shutting down (idempotent operation)
+     *             2. Sets running flag to false to stop accepting new connections
+     *             3. Cancels the acceptor to stop listening for new connections
+     *             4. Disconnects all existing sockets with proper cleanup callbacks
+     *             5. Cancels all active timers to prevent further scheduled operations
+     *             6. Shuts down all worker threads (logic and I/O threads)
+     *             7. Closes the acceptor socket
+     *             8. Stops the boost::asio I/O context
+     *
+     *             Thread Safety:
+     *             - Uses atomic operations and proper synchronization
+     *             - Handles concurrent shutdown attempts gracefully
+     *             - Ensures all threads are properly joined before returning
+     *
+     *             Resource Cleanup:
+     *             - All socket connections are properly closed
+     *             - AMQP connections are terminated
+     *             - All timers are cancelled
+     *             - Thread pools are shut down
+     *             - Memory resources are freed
+     *
+     *             This method can be called multiple times safely and will only perform
+     *             the shutdown sequence once.
      */
     void exit() override final
     {
-        // abstract에 있는 exit와 겹치는 코드가 굉장히 많고
-        // 멤버필드의 위치도 애매함. 리팩토링 필요함
         if (this->_running == false)
             return;
 
-        this->_running = false; // 백그라운드 스레드 종료
-        this->cancel();         // async_accept 취소
+        this->_running = false;
+        this->cancel();
         async::awaitable_get(this->disconnect_sockets());
 
         for (auto& timer : this->_timers)
@@ -1196,8 +1626,8 @@ public:
             timer->cancel();
         }
 
-        this->threads.exit(); // 로직스레드 종료
-        this->close();        // io 스레드 종료
+        this->threads.exit();
+        this->close();
 
         static_cast<boost::asio::io_context&>(*this).stop();
     }

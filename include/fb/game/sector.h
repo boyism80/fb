@@ -7,20 +7,33 @@
 namespace fb::game {
 
 /**
- * @brief      This class describes a map of .
+ * @brief      Forward declaration of the map class.
  */
 class map;
 /**
- * @brief      This class describes a character.
+ * @brief      Forward declaration of the character class.
  */
 class character;
 /**
- * @brief      This class describes sectors.
+ * @brief      Forward declaration of the sectors container class.
  */
 class sectors;
 
 /**
- * @brief      This class describes a sector.
+ * @brief      Represents a spatial sector for efficient object management within a map.
+ *
+ *             This class manages a spatial subdivision of a map, containing all objects
+ *             within a specific rectangular area. Sectors are used to optimize object
+ *             queries, collision detection, and visibility calculations by reducing the
+ *             search space for spatial operations. Each sector tracks its objects and
+ *             maintains activation state based on player presence.
+ *
+ *             Key features:
+ *             - Efficient spatial object storage and retrieval
+ *             - Character count tracking for activation management
+ *             - Dynamic activation/deactivation based on player presence
+ *             - STL container interface for object iteration
+ *             - Thread-safe object management
  */
 class sector : private std::vector<fb::game::object*>
 {
@@ -47,45 +60,69 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new sector with the specified identifier.
      *
-     * @param[in]  id    The identifier
+     *             Initializes an empty sector with the given ID, ready to contain
+     *             objects within its spatial boundaries.
+     *
+     * @param[in]  id    The unique identifier for this sector.
      */
     sector(uint32_t id);
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the sector and cleans up resources.
      */
     ~sector();
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Adds an object to this sector.
      *
-     * @param      object  The object
+     *             Registers the specified object as being located within this sector's
+     *             spatial boundaries. Updates character count if the object is a character.
+     *
+     * @param      object  The object to add to this sector.
      */
     void push(fb::game::object& object);
     /**
-     * @brief      { function_description }
+     * @brief      Removes an object from this sector.
      *
-     * @param      object  The object
+     *             Unregisters the specified object from this sector. Updates character
+     *             count and activation state if necessary.
+     *
+     * @param      object  The object to remove from this sector.
      */
     void erase(fb::game::object& object);
     /**
-     * @brief      { function_description }
+     * @brief      Gets the unique identifier of this sector.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The sector's unique identifier.
      */
     uint32_t id() const;
     /**
-     * @brief      Determines if active.
+     * @brief      Checks if this sector is currently active.
      *
-     * @return     True if active, False otherwise.
+     *             A sector is considered active when it contains at least one character,
+     *             which determines whether the sector needs regular processing updates.
+     *
+     * @return     True if the sector is active (contains characters), false otherwise.
      */
     bool is_active() const;
 };
 
 /**
- * @brief      This class describes sectors.
+ * @brief      Manages a collection of sectors for spatial partitioning of a map.
+ *
+ *             This class provides a spatial partitioning system that divides a map
+ *             into a grid of sectors for efficient object management and queries.
+ *             It supports sector-based operations like finding nearby objects,
+ *             managing active sectors, and optimizing spatial calculations.
+ *
+ *             Key features:
+ *             - Grid-based spatial partitioning of maps
+ *             - Efficient neighbor sector lookup
+ *             - Object type filtering and queries
+ *             - Active sector management for performance optimization
+ *             - Position-to-sector mapping and indexing
  */
 class sectors
 {
@@ -101,119 +138,156 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a sectors grid for the specified map dimensions.
      *
-     * @param[in]  map_size  The map size
-     * @param[in]  size      The size
+     *             Creates a spatial partitioning grid that divides the given map
+     *             into sectors of the specified size, initializing all necessary
+     *             data structures for efficient spatial operations.
+     *
+     * @param[in]  map_size  The total dimensions of the map to partition.
+     * @param[in]  size      The dimensions of each individual sector.
      */
     sectors(const fb::model::size16_t& map_size, const fb::model::size16_t& size);
+
     /**
-     * @brief      Constructs a new instance.
-     *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @brief      Copy constructor is deleted to prevent accidental copying.
      */
     sectors(const sectors&) = delete;
+
     /**
-     * @brief      Constructs a new instance.
-     *
-     * @param      <unnamed>  { parameter_description }
+     * @brief      Move constructor is deleted to prevent resource transfer issues.
      */
     sectors(sectors&&) = delete;
+
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the sectors grid and cleans up resources.
      */
     ~sectors() = default;
 
 public:
     /**
-     * @brief      Assignment operator.
+     * @brief      Assignment operator (deleted).
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other sectors object to assign from.
      *
      * @return     The result of the assignment
      */
-    sectors& operator= (sectors&) = delete;
+    sectors& operator= (sectors& other) = delete;
     /**
-     * @brief      Assignment operator.
+     * @brief      Copy assignment operator (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other sectors object to copy assign from.
      *
      * @return     The result of the assignment
      */
-    sectors& operator= (const sectors&) = delete;
+    sectors& operator= (const sectors& other) = delete;
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      Calculates the sector index for a given map position.
      *
-     * @param[in]  position  The position
+     *             Converts a 2D map coordinate into a linear sector index for
+     *             efficient sector lookup and management operations.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  position  The map position to convert to sector index.
+     *
+     * @return     The calculated sector index for the given position.
      */
     uint32_t index(const fb::model::point16_t& position) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets a set of all currently active sectors.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns a collection of sectors that are currently active
+     *             (containing at least one character) for processing optimization.
+     *
+     * @return     Set of pointers to active sectors.
      */
     std::set<sector*> active_sectors() const;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the sector containing the specified map position.
      *
-     * @param[in]  position  The position
+     *             Retrieves the sector that contains the given map coordinates,
+     *             allowing for position-based sector queries and operations.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  position  The map position to find the sector for.
+     *
+     * @return     Pointer to the sector containing the position, or nullptr if invalid.
      */
     sector* at(const fb::model::point16_t& position) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets the sector at the specified index.
      *
-     * @param[in]  index  The index
+     *             Retrieves the sector at the given linear index within the
+     *             sectors grid for direct sector access operations.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  index  The sector index to retrieve.
+     *
+     * @return     Pointer to the sector at the specified index, or nullptr if invalid.
      */
     sector* at(uint32_t index) const;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets all sectors neighboring the sector at the specified index.
      *
-     * @param[in]  index  The index
+     *             Returns a collection of sectors that are adjacent to the sector
+     *             at the given index, useful for area-of-effect operations and
+     *             visibility calculations.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  index  The sector index to find neighbors for.
+     *
+     * @return     Vector of pointers to neighboring sectors.
      */
     std::vector<sector*> nears(uint32_t index) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets all sectors near the specified map position.
      *
-     * @param[in]  pivot  The pivot
+     *             Returns a collection of sectors that are adjacent to the sector
+     *             containing the given position, enabling efficient area queries.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  pivot  The map position to find nearby sectors for.
+     *
+     * @return     Vector of pointers to sectors near the specified position.
      */
     std::vector<sector*> nears(const fb::model::point16_t& pivot) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets all objects of a specific type near the given position.
      *
-     * @param[in]  pivot  The pivot
-     * @param[in]  type   The type
+     *             Searches sectors near the specified position for objects matching
+     *             the given type, enabling efficient spatial object queries.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  pivot  The map position to search around.
+     * @param[in]  type   The type of objects to search for.
+     *
+     * @return     Vector of pointers to matching objects near the position.
      */
     std::vector<object*> objects(const fb::model::point16_t& pivot, OBJECT_TYPE type) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets all objects of a specific type across all sectors.
      *
-     * @param[in]  type  The type
+     *             Searches all sectors for objects matching the given type,
+     *             providing a comprehensive object query across the entire map.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  type  The type of objects to search for.
+     *
+     * @return     Vector of pointers to all matching objects in all sectors.
      */
     std::vector<object*> objects(OBJECT_TYPE type) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Checks if any sectors are currently active.
      *
-     * @return     { description_of_the_return_value }
+     *             Determines whether there are any active sectors (containing
+     *             characters) in the entire sectors grid.
+     *
+     * @return     True if at least one sector is active, false otherwise.
      */
     bool is_active() const;
 };

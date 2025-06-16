@@ -30,6 +30,10 @@ namespace fb { namespace login {
 
 /**
  * @brief      Exception for signaling login errors.
+ *
+ *             Base exception class for all login-related errors. Contains
+ *             an error type code that corresponds to specific error messages
+ *             sent to the client.
  */
 class login_exception : public std::runtime_error
 {
@@ -38,10 +42,10 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new login exception.
      *
-     * @param[in]  type  The type
-     * @param[in]  what  The what
+     * @param[in]  type  The error type code to send to the client.
+     * @param[in]  what  The error message description.
      */
     login_exception(uint8_t type, const std::string& what) :
         std::runtime_error(what),
@@ -50,9 +54,9 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the error type code.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The error type code for client communication.
      */
     uint8_t type() const
     {
@@ -61,15 +65,19 @@ public:
 };
 
 /**
- * @brief      Exception for signaling identifier errors.
+ * @brief      Exception for signaling identifier (username) errors.
+ *
+ *             Thrown when there are issues with the username during
+ *             account creation or login, such as invalid characters,
+ *             forbidden names, or length violations.
  */
 class id_exception : public login_exception
 {
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new identifier exception.
      *
-     * @param[in]  what  The what
+     * @param[in]  what  The error message description.
      */
     id_exception(const std::string& what) :
         login_exception(0x0E, what)
@@ -78,14 +86,18 @@ public:
 
 /**
  * @brief      Exception for signaling password errors.
+ *
+ *             Thrown when there are issues with the password during
+ *             account creation or login, such as invalid length or
+ *             incorrect password.
  */
 class pw_exception : public login_exception
 {
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new password exception.
      *
-     * @param[in]  what  The what
+     * @param[in]  what  The error message description.
      */
     pw_exception(const std::string& what) :
         login_exception(0x0F, what)
@@ -93,15 +105,18 @@ public:
 };
 
 /**
- * @brief      Exception for signaling newpw errors.
+ * @brief      Exception for signaling new password errors.
+ *
+ *             Thrown when there are issues with new password validation
+ *             during password change operations.
  */
 class newpw_exception : public login_exception
 {
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new password exception.
      *
-     * @param[in]  what  The what
+     * @param[in]  what  The error message description.
      */
     newpw_exception(const std::string& what) :
         login_exception(0x05, what)
@@ -109,13 +124,16 @@ public:
 };
 
 /**
- * @brief      Exception for signaling btd errors.
+ * @brief      Exception for signaling birthday validation errors.
+ *
+ *             Thrown when birthday validation fails during account
+ *             creation or verification processes.
  */
 class btd_exception : public login_exception
 {
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new birthday exception with default message.
      */
     btd_exception() :
         login_exception(0x1F, _TEXT(MESSAGE_ACCOUNT_INVALID_BIRTHDAY))
@@ -123,7 +141,12 @@ public:
 };
 
 /**
- * @brief      This class describes a context.
+ * @brief      The main login server context that handles client connections and authentication.
+ *
+ *             This class extends the acceptor to provide login server functionality.
+ *             It manages client sessions, handles authentication requests, account creation,
+ *             password changes, and communicates with the database and other services
+ *             through Redis and AMQP messaging.
  */
 class context : public fb::acceptor<fb::login::session>
 {
@@ -142,14 +165,15 @@ public:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new login server context.
      *
-     * @param      context  The context
-     * @param[in]  port     The port
+     * @param      context  The boost::asio I/O context for network operations.
+     * @param[in]  port     The port number to listen on for client connections.
      */
     context(boost::asio::io_context& context, uint16_t port);
+
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the login server context.
      */
     ~context();
 
@@ -157,16 +181,20 @@ private:
     /**
      * @brief      Determines whether the specified string is forbidden.
      *
-     * @param[in]  str   The string
+     * @param[in]  str   The string to check against the forbidden list.
      *
      * @return     True if the specified string is forbidden, False otherwise.
      */
     bool is_forbidden(const std::string& str) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Validates account credentials and throws exceptions for invalid data.
      *
-     * @param[in]  id    The identifier
-     * @param[in]  pw    The password
+     * @param[in]  id    The username to validate.
+     * @param[in]  pw    The password to validate.
+     *
+     * @throws     id_exception if username is invalid.
+     * @throws     pw_exception if password is invalid.
      */
     void assert_account(const std::string& id, const std::string& pw) const;
 
@@ -174,66 +202,71 @@ private:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Determines the decryption policy for incoming packets.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  cmd   The command byte of the incoming packet.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the packet should be decrypted, false otherwise.
      */
-    bool decrypt_policy(uint8_t) const override final;
+    bool decrypt_policy(uint8_t cmd) const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles AMQP queue declaration for inter-service communication.
      *
-     * @param      amqp  The amqp
+     * @param      amqp  The AMQP socket for message queue operations.
      */
     void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles server startup initialization.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task that completes when startup is finished.
      */
     [[nodiscard]] async::task<void> handle_start() final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles periodic heartbeat operations.
      *
-     * @return     { description_of_the_return_value }
+     *             Sends heartbeat information to Redis to indicate server status
+     *             and availability to other services.
+     *
+     * @return     An async task that completes when heartbeat is sent.
      */
     [[nodiscard]] async::task<void> handle_heart_beat();
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles new client connections.
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      socket  The socket representing the new client connection.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the created session object.
      */
-    fb::login::session* handle_accepted(fb::socket<fb::login::session>&) final;
-    /**
-     * @brief      { function_description }
-     *
-     * @param      <unnamed>  { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::login::session>&) final;
-    /**
-     * @brief      { function_description }
-     *
-     * @param      <unnamed>  { parameter_description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::login::session>&) final;
+    fb::login::session* handle_accepted(fb::socket<fb::login::session>& socket) final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles client connection establishment.
      *
-     * @param[in]  response  The response
+     * @param      socket  The socket representing the client connection.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task that returns true if connection should be maintained.
+     */
+    [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::login::session>& socket) final;
+
+    /**
+     * @brief      Handles client disconnection.
+     *
+     * @param      socket  The socket representing the disconnected client.
+     *
+     * @return     An async task that returns false to indicate disconnection.
+     */
+    [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::login::session>& socket) final;
+
+    /**
+     * @brief      Handles AMQP shutdown messages from other services.
+     *
+     * @param[in]  response  The shutdown response message.
+     *
+     * @return     An async task that completes when shutdown handling is finished.
      */
     [[nodiscard]] async::task<void> handle_amqp_shutdown(const internal_resp::Shutdown& response);
 
@@ -241,9 +274,9 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the service type identifier for this server.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The service type (Login) for heartbeat and identification.
      */
     fb::protocol::internal::Service service() const override final
     {
@@ -252,55 +285,70 @@ protected:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Handles client agreement requests.
      *
-     * @param      <unnamed>  { parameter_description }
-     * @param[in]  <unnamed>  { parameter_description }
+     *             Processes encryption setup and sends the user agreement text.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket   The client socket.
+     * @param[in]  request  The agreement request containing encryption parameters.
+     *
+     * @return     An async task that returns true if the request was handled successfully.
      */
-    [[nodiscard]] async::task<bool> handle_agreement(fb::socket<fb::login::session>&,
-                                                     const fb::protocol::login::request::agreement&);
+    [[nodiscard]] async::task<bool> handle_agreement(fb::socket<fb::login::session>&                socket,
+                                                     const fb::protocol::login::request::agreement& request);
+
     /**
-     * @brief      { function_description }
+     * @brief      Handles account creation requests.
      *
-     * @param      <unnamed>  { parameter_description }
-     * @param[in]  <unnamed>  { parameter_description }
+     *             Validates account information, reserves the username, and creates
+     *             a new character with initial stats and position.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket   The client socket.
+     * @param[in]  request  The account creation request.
+     *
+     * @return     An async task that returns true if the request was handled successfully.
      */
-    [[nodiscard]] async::task<bool> handle_create_account(fb::socket<fb::login::session>&,
-                                                          const fb::protocol::login::request::create&);
+    [[nodiscard]] async::task<bool> handle_create_account(fb::socket<fb::login::session>&             socket,
+                                                          const fb::protocol::login::request::create& request);
+
     /**
-     * @brief      { function_description }
+     * @brief      Handles login completion requests.
      *
-     * @param      <unnamed>  { parameter_description }
-     * @param[in]  <unnamed>  { parameter_description }
+     *             Finalizes the login process and prepares for character selection.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket   The client socket.
+     * @param[in]  request  The completion request.
+     *
+     * @return     An async task that returns true if the request was handled successfully.
      */
-    [[nodiscard]] async::task<bool> handle_complete(fb::socket<fb::login::session>&,
-                                                    const fb::protocol::login::request::complete&);
+    [[nodiscard]] async::task<bool> handle_complete(fb::socket<fb::login::session>&               socket,
+                                                    const fb::protocol::login::request::complete& request);
+
     /**
-     * @brief      { function_description }
+     * @brief      Handles user login requests.
      *
-     * @param      <unnamed>  { parameter_description }
-     * @param[in]  <unnamed>  { parameter_description }
+     *             Authenticates user credentials and establishes a login session.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket   The client socket.
+     * @param[in]  request  The login request containing credentials.
+     *
+     * @return     An async task that returns true if the request was handled successfully.
      */
-    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::login::session>&,
-                                                 const fb::protocol::login::request::login&);
+    [[nodiscard]] async::task<bool> handle_login(fb::socket<fb::login::session>&            socket,
+                                                 const fb::protocol::login::request::login& request);
+
     /**
-     * @brief      { function_description }
+     * @brief      Handles password change requests.
      *
-     * @param      <unnamed>  { parameter_description }
-     * @param[in]  <unnamed>  { parameter_description }
+     *             Validates current credentials and updates the password.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket   The client socket.
+     * @param[in]  request  The password change request.
+     *
+     * @return     An async task that returns true if the request was handled successfully.
      */
-    [[nodiscard]] async::task<bool> handle_change_password(fb::socket<fb::login::session>&,
-                                                           const fb::protocol::login::request::update_pw&);
+    [[nodiscard]] async::task<bool> handle_change_password(fb::socket<fb::login::session>&                socket,
+                                                           const fb::protocol::login::request::update_pw& request);
 };
 
 }} // namespace fb::login

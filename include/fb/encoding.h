@@ -21,7 +21,10 @@
 namespace fb {
 
 /**
- * @brief      This class describes a platform.
+ * @brief      Platform enumeration for encoding conversion operations.
+ *
+ *             Specifies the target platform for character encoding conversions,
+ *             allowing platform-specific handling of text encoding differences.
  */
 enum class PLATFORM
 {

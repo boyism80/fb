@@ -9,6 +9,10 @@
 
 namespace fb {
 
+/**
+ * @brief      This class describes a context.
+ *
+ */
 class context
 {
 public:
@@ -31,12 +35,12 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Binds a thread timer with a member function callback.
      *
-     * @param      func      The function
-     * @param[in]  duration  The duration
+     * @param[in]  fn        The member function to bind as timer callback.
+     * @param[in]  duration  The duration between timer executions.
      *
-     * @tparam     Func      { description }
+     * @tparam     Class     The class containing the member function.
      */
     template <typename Class>
     void bind_thread_timer(async::task<void> (Class::*fn)(const fb::model::datetime&, std::thread::id),
@@ -47,10 +51,12 @@ protected:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Binds a timer with a member function callback.
      *
-     * @param[in]  fn        The function
-     * @param[in]  duration  The duration
+     * @param[in]  fn        The member function to bind as timer callback.
+     * @param[in]  interval  The interval between timer executions.
+     *
+     * @tparam     Class     The class containing the member function.
      */
     template <typename Class>
     void bind_timer(async::task<void> (Class::*fn)(void), std::chrono::steady_clock::duration interval)
@@ -92,15 +98,29 @@ public:
     operator boost::asio::io_context& () const;
 };
 
+/**
+ * @brief      This class describes an acceptable.
+ */
 class acceptable : public context, public boost::asio::ip::tcp::acceptor
 {
 protected:
+    /**
+     * @brief      Constructs a new instance.
+     *
+     * @param[in]  context  The context.
+     * @param[in]  name  The name.
+     * @param[in]  thread_count  The thread count.
+     * @param[in]  port  The port.
+     */
     acceptable(boost::asio::io_context& context, const std::string& name, uint32_t thread_count, uint16_t port);
 
 public:
+    /**
+     * @brief      Destroys the acceptable.
+     */
     virtual ~acceptable() = default;
 };
 
 } // namespace fb
 
-#endif
+#endif // !__ABSTRACT_H__

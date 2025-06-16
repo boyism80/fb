@@ -14,7 +14,7 @@
 namespace fb {
 
 /**
- * @brief      This class describes a stream.
+ * @brief      This class describes a stream of bytes.
  */
 class stream : public std::vector<uint8_t>
 {
@@ -27,22 +27,22 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  data  The data
-     * @param[in]  size  The size
+     * @param[in]  data  The data to copy from.
+     * @param[in]  size  The size of the data.
      */
     stream(const uint8_t* data, size_t size);
 
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new instance from a vector.
      *
-     * @param      v     { parameter_description }
+     * @param      v     The vector to move data from.
      */
     stream(std::vector<uint8_t>&& v);
 
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  right  The right
+     * @param[in]  right  The right stream to copy from.
      */
     stream(const stream& right);
 
@@ -53,23 +53,23 @@ public:
 
 #ifdef ZLIB_VERSION
     /**
-     * @brief      { function_description }
+     * @brief      Calculates the CRC32 checksum of the stream data.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The CRC32 checksum.
      */
     uint32_t crc() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Compresses the stream data using zlib.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A new stream containing the compressed data.
      */
     stream compress() const;
 
     /**
-     * @brief      Decompresses the object.
+     * @brief      Decompresses the stream data using zlib.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A new stream containing the decompressed data.
      */
     stream decompress() const;
 #endif

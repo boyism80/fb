@@ -8,16 +8,27 @@
 namespace fb::game {
 
 /**
- * @brief      This class describes an object.
+ * @brief      Forward declaration of the object class.
  */
 class object;
 /**
- * @brief      This class describes a life.
+ * @brief      Forward declaration of the life class.
  */
 class life;
 
 /**
- * @brief      This class describes a spell.
+ * @brief      Represents a spell instance owned by a life entity.
+ *
+ *             This class encapsulates a spell that can be cast by a life entity (character or mob).
+ *             It manages spell cooldowns, casting delays, and provides integration with the Lua
+ *             scripting system for dynamic spell behavior. Each spell instance is linked to a
+ *             spell model that defines its properties and effects.
+ *
+ *             Features:
+ *             - Cooldown and delay management for spell casting
+ *             - Integration with the game context and owner entity
+ *             - Lua scripting support for dynamic spell logic
+ *             - Model-based configuration system
  */
 class spell : public lua::luable
 {
@@ -37,45 +48,66 @@ public:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new spell instance with specified parameters.
      *
-     * @param[in]  context  The context
-     * @param[in]  model    The model
+     *             Creates a spell instance linked to the specified context, owner, and model.
+     *             Optionally sets an initial delay before the spell can be cast, which is
+     *             useful for implementing cooldowns or casting restrictions.
+     *
+     * @param[in]  context  The game context managing this spell.
+     * @param[in]  owner    The life entity that owns this spell.
+     * @param[in]  model    The spell model defining properties and effects.
+     * @param[in]  delay    Initial delay in seconds before the spell can be cast.
      */
     spell(const fb::game::context& context,
           const fb::game::life&    owner,
           const fb::model::spell&  model,
           uint16_t                 delay = 0);
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the spell instance.
      */
     ~spell();
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Sets the spell casting delay in seconds.
      *
-     * @param[in]  value  The value
+     *             Updates the spell's cooldown by setting a delay from the current time.
+     *             This prevents the spell from being cast until the delay period expires,
+     *             implementing cooldown mechanics for balanced gameplay.
+     *
+     * @param[in]  value  The delay in seconds before the spell can be cast again.
      */
     void delay(uint16_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the remaining delay before the spell can be cast.
      *
-     * @return     { description_of_the_return_value }
+     *             Calculates and returns the remaining cooldown time in seconds.
+     *             Returns 0 if the spell is ready to be cast immediately.
+     *
+     * @return     The remaining delay in seconds, or 0 if ready to cast.
      */
     uint16_t delay() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the next available casting time for this spell.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the absolute datetime when this spell will next be available
+     *             for casting, based on its current cooldown state.
+     *
+     * @return     The datetime when the spell will next be available.
      */
     const fb::model::datetime& next() const;
 };
 
 /**
- * @brief      This class describes spells.
+ * @brief      Container for managing a character's spell collection.
+ *
+ *             This class extends the inventory template to provide specialized
+ *             functionality for managing spells that a character has learned.
+ *             It handles spell storage, retrieval, and provides event notifications
+ *             when spells are added, removed, or modified.
  */
 class spells : public fb::game::inventory<fb::game::spell>
 {
@@ -88,7 +120,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      owner  The owner
+     * @param      owner  The life entity that owns this spell collection
      */
     spells(life& owner);
     /**
@@ -97,136 +129,143 @@ public:
     ~spells();
 
     /**
-     * @brief      Searches for the first match.
+     * @brief      Searches for a spell by name in the collection.
      *
-     * @param[in]  name  The name
+     * @param[in]  name  The name of the spell to find
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the found spell, or nullptr if not found
      */
     fb::game::spell* find(const std::string& name) const;
 
     /**
-     * @brief      Searches for the first match.
+     * @brief      Searches for a spell by model in the collection.
      *
-     * @param[in]  model  The model
+     * @param[in]  model  The spell model to search for
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the found spell, or nullptr if not found
      */
     fb::game::spell* find(const fb::model::spell& model) const;
 
 public:
     /**
-     * @brief      Adds the specified element.
+     * @brief      Adds a spell to the collection at the first available slot.
      *
-     * @param[in]  element  The element
+     * @param[in]  element  The spell to add to the collection
      *
-     * @return     { description_of_the_return_value }
+     * @return     The slot index where the spell was added, or invalid index if failed
      */
     uint8_t add(fb::game::spell& element) override;
 
     /**
-     * @brief      { function_description }
+     * @brief      Adds a spell to the collection at a specific slot index.
      *
-     * @param[in]  element  The element
-     * @param[in]  index    The index
+     * @param[in]  element  The spell to add to the collection
+     * @param[in]  index    The slot index where to place the spell
      *
-     * @return     { description_of_the_return_value }
+     * @return     The slot index where the spell was added, or invalid index if failed
      */
     uint8_t add(fb::game::spell& element, uint8_t index) override;
 
     /**
-     * @brief      Adds the specified model.
+     * @brief      Adds a spell from model data to a specific slot with delay.
      *
-     * @param[in]  model  The model
+     * @param[in]  model  The spell model to create the spell from
      *
-     * @return     { description_of_the_return_value }
+     * @return     The slot index where the spell was added, or invalid index if failed
      */
     uint8_t add(const fb::model::spell& model, uint8_t slot, uint16_t delay);
 
     /**
-     * @brief      Adds the specified model.
+     * @brief      Adds a spell from model data to the first available slot.
      *
-     * @param[in]  model  The model
+     * @param[in]  model  The spell model to create the spell from
      *
-     * @return     { description_of_the_return_value }
+     * @return     The slot index where the spell was added, or invalid index if failed
      */
     uint8_t add(const fb::model::spell& model);
 
     /**
-     * @brief      Removes the specified index.
+     * @brief      Removes a spell from the collection at the specified slot.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The slot index of the spell to remove
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the spell was successfully removed, false otherwise
      */
     bool remove(uint8_t index) override;
+
     /**
-     * @brief      { function_description }
+     * @brief      Swaps two spells between different slots in the collection.
      *
-     * @param[in]  src   The source
-     * @param[in]  dst   The destination
+     * @param[in]  src   The source slot index
+     * @param[in]  dst   The destination slot index
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the swap was successful, false otherwise
      */
     bool swap(uint8_t src, uint8_t dst) override;
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Lua binding interface for spell functionality.
  */
 struct spell::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting spell model data.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_model(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting spell delay.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_delay(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for setting spell delay with specific parameters.
      *
-     * @param      L     { parameter_description }
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_delay2(lua_State* L);
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Event listener interface for spell collection events.
  */
 struct spells::listener_t
 {
     /**
-     * @brief      Called on spell update.
+     * @brief      Called when a spell is updated.
      *
-     * @param      me     { parameter_description }
-     * @param[in]  index  The index
+     * @param      me     The life entity whose spell was updated
+     * @param[in]  index  The slot index of the updated spell
      */
     virtual void on_spell_update(life& me, uint8_t index) = 0;
+
     /**
-     * @brief      Called on spell remove.
+     * @brief      Called when a spell is removed.
      *
-     * @param      me     { parameter_description }
-     * @param[in]  index  The index
+     * @param      me     The life entity whose spell was removed
+     * @param[in]  index  The slot index of the removed spell
      */
     virtual void on_spell_remove(life& me, uint8_t index) = 0;
 };
 
 /**
- * @brief      This class describes a buffer.
+ * @brief      Represents a temporary effect applied to a game object.
+ *
+ *             This class encapsulates a buff (temporary enhancement or debuff) that
+ *             can be applied to game objects. Buffs have a duration, are associated
+ *             with a spell model, and can be cast by other objects. They provide
+ *             Lua scripting integration for complex effect behaviors.
  */
 class buff : public lua::luable
 {
@@ -248,10 +287,10 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  context  The context
-     * @param[in]  model    The model
-     * @param[in]  caster   The caster
-     * @param[in]  seconds  The seconds
+     * @param[in]  context  The game context managing this buff
+     * @param[in]  model    The spell model defining the buff's effects
+     * @param[in]  caster   The object casting the buff (optional)
+     * @param[in]  seconds  The duration of the buff in seconds
      */
     buff(const fb::game::context& context,
          const fb::model::spell&  model,
@@ -264,40 +303,48 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the remaining duration of the buff.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The remaining time as milliseconds
      */
     std::chrono::milliseconds time() const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Sets the buff duration using a chrono duration.
      *
-     * @param[in]  value    The value
+     * @param[in]  value    The new duration to set
      *
-     * @tparam     _Rep     { description }
-     * @tparam     _Period  { description }
+     * @tparam     _Rep     The arithmetic type representing the number of ticks
+     * @tparam     _Period  The std::ratio representing the tick period
      */
     template <class _Rep, class _Period>
     void time(const std::chrono::duration<_Rep, _Period>& value)
     {
         this->_time = std::chrono::duration_cast<std::chrono::milliseconds>(value);
     }
+
     /**
-     * @brief      { function_description }
+     * @brief      Increases the buff duration by the specified amount.
      *
-     * @param[in]  inc   The increment
+     * @param[in]  inc   The duration to add to the current time
      */
     void time_inc(const std::chrono::steady_clock::duration& inc);
+
     /**
-     * @brief      { function_description }
+     * @brief      Decreases the buff duration by the specified amount.
      *
-     * @param[in]  dec   The decrement
+     * @param[in]  dec   The duration to subtract from the current time
      */
     void time_dec(const std::chrono::steady_clock::duration& dec);
 };
 
 /**
- * @brief      This class describes buffs.
+ * @brief      Container for managing active buffs on a game object.
+ *
+ *             This class manages all active temporary effects (buffs and debuffs)
+ *             applied to a game object. It provides efficient lookup by spell ID,
+ *             automatic duration management, and event notifications for buff
+ *             application and removal.
  */
 class buffs : private std::unordered_map<uint32_t, buff*>
 {
@@ -321,7 +368,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      owner  The owner
+     * @param      owner  The game object that owns these buffs
      */
     buffs(fb::game::object& owner);
     /**
@@ -331,47 +378,50 @@ public:
 
 private:
     /**
-     * @brief      Pushes a back.
+     * @brief      Adds a buff to the collection (internal method).
      *
-     * @param      buff  The buffer
+     * @param      buff  The buff to add
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the buff was successfully added, false otherwise
      */
     bool push_back(buff& buff);
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Checks if a buff from the specified spell model is active.
      *
-     * @param[in]  model  The model
+     * @param[in]  model  The spell model to check for
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if a buff from this spell is active, false otherwise
      */
     bool contains(const fb::model::spell& model) const;
+
     /**
-     * @brief      Pushes a back.
+     * @brief      Creates and adds a new buff from spell model data.
      *
-     * @param[in]  spell    The spell
-     * @param[in]  seconds  The seconds
-     * @param[in]  caster   The caster
+     * @param[in]  spell    The spell model defining the buff's effects
+     * @param[in]  seconds  The duration of the buff in seconds
+     * @param[in]  caster   The object casting the buff (optional)
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the created buff, or nullptr if failed
      */
     buff* push_back(const fb::model::spell& spell, uint32_t seconds, const fb::game::object* caster = nullptr);
+
     /**
-     * @brief      Removes the specified identifier.
+     * @brief      Removes a buff by its spell ID.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The spell ID of the buff to remove
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the buff was successfully removed, false otherwise
      */
     bool remove(uint32_t id);
+
     /**
-     * @brief      Removes the specified spell.
+     * @brief      Removes a buff by its spell model.
      *
-     * @param[in]  spell  The spell
+     * @param[in]  spell  The spell model defining the buff's effects
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the buff was successfully removed, false otherwise
      */
     bool remove(const fb::model::spell& spell);
 
@@ -379,7 +429,7 @@ public:
     /**
      * @brief      Array indexer operator.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The spell ID of the buff to access
      *
      * @return     The result of the array indexer
      */
@@ -387,25 +437,25 @@ public:
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Lua binding interface for buff functionality.
  */
 struct buff::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting buff model data.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_model(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting buff duration.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_time(lua_State* L);
 };

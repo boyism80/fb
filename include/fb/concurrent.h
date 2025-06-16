@@ -48,13 +48,13 @@ protected:
     void add(fb::dead_lock_detector& node);
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks for deadlock conditions with the specified node.
      *
-     * @param[in]  node  The node
+     * @param[in]  node  The dead lock detector node to check.
      */
     void assert_dead_lock(const fb::dead_lock_detector& node);
 };
 
 } // namespace fb
 
-#endif
+#endif // !__CONCURRENT_H__

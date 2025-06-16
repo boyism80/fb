@@ -53,84 +53,79 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The index of the thread.
      */
     thread(uint8_t index);
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the thread.
      */
     ~thread();
 
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Move constructor (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
-     */
-    thread(const thread&) = delete;
-    /**
-     * @brief      Constructs a new instance.
-     *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other thread to move from.
      */
     thread(thread&&) = delete;
 
     /**
-     * @brief      Assignment operator.
+     * @brief      Assignment operator (deleted).
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other thread to copy from.
      *
-     * @return     The result of the assignment
+     * @return     Reference to this thread.
      */
     thread& operator= (thread&) = delete;
+
     /**
-     * @brief      Assignment operator.
+     * @brief      Copy assignment operator (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other thread to copy from.
      *
-     * @return     The result of the assignment
+     * @return     Reference to this thread.
      */
     thread& operator= (const thread&) = delete;
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      Handles thread execution with the specified index.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The index of the thread.
      */
     void handle_thread(uint8_t index);
     /**
-     * @brief      { function_description }
+     * @brief      Handles idle state processing.
      */
     void handle_idle();
 
     /**
-     * @brief      { function_description }
+     * @brief      Asserts that the current thread is the execution thread.
      */
     void assert_exec() const;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread ID.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The thread ID.
      */
     std::thread::id id() const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread index.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The thread index.
      */
     uint8_t index() const;
     /**
-     * @brief      { function_description }
+     * @brief      Exits the thread.
      */
     void exit();
     /**
-     * @brief      { function_description }
+     * @brief      Sets thread-local data.
      *
-     * @param      value  The value
+     * @param      value  The value to store.
      *
-     * @tparam     T      { description }
+     * @tparam     T      The type of the data.
      */
     template <typename T>
     void data(T* value)
@@ -139,11 +134,11 @@ public:
         this->_data = static_cast<void*>(value);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Gets thread-local data.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The type of the data to retrieve.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the thread-local data.
      */
     template <typename ReturnType>
     ReturnType* data() const
@@ -154,32 +149,30 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Sets a timer with the specified callback and duration.
      *
-     * @param[in]  fn          The function
-     * @param[in]  duration    The duration
-     * @param[in]  disposable  The disposable
+     * @param[in]  fn          The callback function.
+     * @param[in]  duration    The timer duration.
+     * @param[in]  disposable  Whether the timer is disposable.
      */
     void settimer(const fb::timer::handle_callback_type& fn,
                   const fb::model::timespan&             duration,
                   bool                                   disposable = false);
     /**
-     * @brief      { function_description }
+     * @brief      Sleeps for the specified duration.
      *
-     * @param[in]  duration  The duration
-     *
-     * @return     { description_of_the_return_value }
+     * @param[in]  duration  The duration to sleep.
      */
     [[nodiscard]] async::task<void> sleep(const fb::model::timespan& duration);
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a task with callback and error handling.
      *
-     * @param[in]  fn          The function
-     * @param[in]  error       The error
-     * @param[in]  callback    The callback
+     * @param[in]  fn          The function to execute.
+     * @param[in]  error       The error handler.
+     * @param[in]  callback    The success callback.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      */
     template <typename ReturnType>
     void enqueue(const handle_func_type<ReturnType>&      fn,
@@ -214,24 +207,24 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a void task with callback and error handling.
      *
-     * @param[in]  fn        The function
-     * @param[in]  error     The error
-     * @param[in]  callback  The callback
+     * @param[in]  fn        The function to execute.
+     * @param[in]  error     The error handler.
+     * @param[in]  callback  The success callback.
      */
     void enqueue(const handle_func_type<void>& fn,
                  const handle_error_type&      error,
                  const std::function<void()>&  callback);
 
     /**
-     * @brief      { function_description }
+     * @brief      Dispatches a task and returns a future result.
      *
-     * @param[in]  fn          The function
+     * @param[in]  fn          The function to execute.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that will complete with the function result.
      */
     template <typename ReturnType>
     async::task<ReturnType> dispatch(const handle_func_type<ReturnType>& fn)
@@ -249,18 +242,18 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Dispatches a void task and returns a future.
      *
-     * @param[in]  fn    The function
+     * @param[in]  fn    The function to execute.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that will complete when the function finishes.
      */
     [[nodiscard]] async::task<void> dispatch(const handle_func_type<void>& fn);
 
     /**
-     * @brief      { function_description }
+     * @brief      Switches to this thread context.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that completes when the switch is done.
      */
     [[nodiscard]] async::task<void> switching();
 };

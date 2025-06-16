@@ -11,7 +11,12 @@ namespace fb::model {
 class context;
 
 /**
- * @brief      This class describes a model loader.
+ * @brief      Parallel data loader for game model containers.
+ *
+ *             This class extends the parallel worker framework to load game data files
+ *             concurrently across multiple threads. It processes model containers in
+ *             parallel, providing progress feedback and error handling during the
+ *             loading process. Essential for fast server startup with large datasets.
  */
 class loader : public fb::parallel_worker<std::reference_wrapper<fb::model::container>>
 {
@@ -23,9 +28,9 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a model loader for the specified data model.
      *
-     * @param      context  The context
+     * @param      data  The game data model containing containers to load.
      */
     loader(fb::model::model& data) :
         _model(data)
@@ -38,9 +43,13 @@ public:
 
 protected:
     /**
-     * @brief      Called on ready.
+     * @brief      Generates the list of containers to be loaded in parallel.
      *
-     * @return     { description_of_the_return_value }
+     *             Iterates through all containers in the model and yields each one
+     *             for parallel processing. This method is called once at the start
+     *             of the loading process to prepare the work queue.
+     *
+     * @return     A generator that yields container references for processing.
      */
     fb::generator<input_type> on_ready()
     {
@@ -56,9 +65,13 @@ protected:
     }
 
     /**
-     * @brief      Called on work.
+     * @brief      Performs the actual loading work for a single container.
      *
-     * @param[in]  value  The value
+     *             This method is called by worker threads to load data from files
+     *             into the specified container. Each container handles its own
+     *             file format and loading logic through the load() method.
+     *
+     * @param[in]  value  The container reference to load data into.
      */
     void on_work(const input_type& value)
     {
@@ -66,10 +79,13 @@ protected:
     }
 
     /**
-     * @brief      Called when worked.
+     * @brief      Called after each container is successfully loaded.
      *
-     * @param[in]  input    The input
-     * @param[in]  percent  The percent
+     *             Updates the progress display to show loading completion percentage.
+     *             This provides visual feedback during the loading process.
+     *
+     * @param[in]  input    The container that was loaded.
+     * @param[in]  percent  The completion percentage (0.0 to 100.0).
      */
     void on_worked(const input_type& input, double percent)
     {
@@ -77,10 +93,14 @@ protected:
     }
 
     /**
-     * @brief      Called on error.
+     * @brief      Called when an error occurs during container loading.
      *
-     * @param[in]  input  The input
-     * @param      e      { parameter_description }
+     *             Logs the error message to the console for debugging purposes.
+     *             The loading process continues with other containers even if
+     *             some containers fail to load.
+     *
+     * @param[in]  input  The container that failed to load.
+     * @param      e      The exception that occurred during loading.
      */
     void on_error(const input_type& input, std::exception& e)
     {
@@ -88,7 +108,10 @@ protected:
     }
 
     /**
-     * @brief      Called on finish.
+     * @brief      Called when all containers have finished loading.
+     *
+     *             Adds a newline to the console output to complete the progress display.
+     *             This method is called once after all parallel loading operations complete.
      */
     void on_finish()
     {
