@@ -10,8 +10,12 @@
 namespace fb {
 
 /**
- * @brief      This class describes a context.
+ * @brief      Base context class for managing asynchronous operations and thread pools.
  *
+ *             This class provides a foundation for managing asynchronous operations using
+ *             Boost.Asio, thread pools, and timer functionality. It maintains thread-safe
+ *             collections of switchable objects and provides timer binding capabilities
+ *             for both thread-based and coroutine-based execution.
  */
 class context
 {
@@ -35,12 +39,15 @@ protected:
 
 protected:
     /**
-     * @brief      Binds a thread timer with a member function callback.
+     * @brief      Binds a member function as a thread-based timer callback.
      *
-     * @param[in]  fn        The member function to bind as timer callback.
-     * @param[in]  duration  The duration between timer executions.
+     *             Creates a timer that executes the specified member function at regular
+     *             intervals on the thread pool. The callback receives timing information
+     *             and thread ID for context-aware processing.
      *
-     * @tparam     Class     The class containing the member function.
+     * @tparam     Class     The class type containing the member function
+     * @param[in]  fn        The member function to execute as timer callback
+     * @param[in]  duration  The time interval between timer executions
      */
     template <typename Class>
     void bind_thread_timer(async::task<void> (Class::*fn)(const fb::model::datetime&, std::thread::id),
@@ -51,12 +58,15 @@ protected:
     }
 
     /**
-     * @brief      Binds a timer with a member function callback.
+     * @brief      Binds a member function as a coroutine-based timer callback.
      *
-     * @param[in]  fn        The member function to bind as timer callback.
-     * @param[in]  interval  The interval between timer executions.
+     *             Creates a coroutine-based timer that executes the specified member function
+     *             at regular intervals using Boost.Asio's coroutine support. The timer runs
+     *             asynchronously and continues until the context is stopped.
      *
-     * @tparam     Class     The class containing the member function.
+     * @tparam     Class     The class type containing the member function
+     * @param[in]  fn        The member function to execute as timer callback
+     * @param[in]  interval  The time interval between timer executions
      */
     template <typename Class>
     void bind_timer(async::task<void> (Class::*fn)(void), std::chrono::steady_clock::duration interval)
@@ -99,24 +109,35 @@ public:
 };
 
 /**
- * @brief      This class describes an acceptable.
+ * @brief      TCP acceptor context for handling incoming network connections.
+ *
+ *             This class extends the base context to provide TCP server functionality,
+ *             combining asynchronous I/O operations with thread pool management.
+ *             It inherits from both context and Boost.Asio's TCP acceptor to provide
+ *             a complete server foundation.
  */
 class acceptable : public context, public boost::asio::ip::tcp::acceptor
 {
 protected:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new TCP acceptor context.
      *
-     * @param[in]  context  The context.
-     * @param[in]  name  The name.
-     * @param[in]  thread_count  The thread count.
-     * @param[in]  port  The port.
+     *             Creates a new acceptor context that listens on the specified port
+     *             and manages a thread pool for handling connections.
+     *
+     * @param[in]  context       The Boost.Asio I/O context for asynchronous operations
+     * @param[in]  name          The name identifier for this acceptor context
+     * @param[in]  thread_count  The number of worker threads to create
+     * @param[in]  port          The TCP port number to listen on
      */
     acceptable(boost::asio::io_context& context, const std::string& name, uint32_t thread_count, uint16_t port);
 
 public:
     /**
-     * @brief      Destroys the acceptable.
+     * @brief      Destroys the acceptor context and cleans up resources.
+     *
+     *             Properly shuts down the acceptor, closes any open connections,
+     *             and releases all associated resources.
      */
     virtual ~acceptable() = default;
 };

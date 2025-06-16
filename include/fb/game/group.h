@@ -39,29 +39,40 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new player group with the specified context and identifier.
      *
-     * @param      context  The game context that manages this group
+     *             Creates a new group object managed by the given game context.
+     *             The group starts empty and must be populated with members through
+     *             the update() method or by characters entering individually.
+     *
+     * @param[in]  context  The game context that manages this group
      * @param[in]  id       The unique identifier for this group
      */
     group(context& context, uint32_t id);
 
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor (deleted).
      *
-     * @param[in]  <unnamed>  The source group object (copy constructor is deleted)
+     *             Groups cannot be copied to prevent resource management issues
+     *             and maintain unique group identity within the game context.
      */
     group(const group&) = delete;
 
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Move constructor for transferring group ownership.
      *
-     * @param      g     The source group object to move from
+     *             Allows moving a group object while preserving all member data,
+     *             master assignment, and active character associations.
+     *
+     * @param[in]  g     The source group object to move from
      */
     group(group&& g);
 
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the group and cleans up member associations.
+     *
+     *             Removes all active character associations and cleans up group
+     *             resources when the group object is destroyed.
      */
     ~group() = default;
 

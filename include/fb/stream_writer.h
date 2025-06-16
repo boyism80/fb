@@ -8,7 +8,11 @@
 namespace fb {
 
 /**
- * @brief      This class describes a stream writer.
+ * @brief      Binary stream writer with endian-aware data serialization capabilities.
+ *
+ *             This template class provides a convenient interface for writing binary data
+ *             to byte streams with automatic endian conversion. It supports writing
+ *             primitive types, strings with length prefixes, and raw binary data.
  *
  * @tparam     EndianType  The endian type for writing data (big_endian or little_endian).
  */
@@ -24,9 +28,12 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new stream writer for the specified byte stream.
      *
-     * @param      stream  The stream to write data to.
+     *             Creates a writer that will append data to the given stream.
+     *             All write operations will add data to the end of the stream.
+     *
+     * @param[in]  stream  The byte stream to write data to
      */
     stream_writer(std::vector<uint8_t>& stream) :
         _stream(stream)
@@ -36,11 +43,15 @@ public:
     /**
      * @brief      Writes a value of the specified type to the stream.
      *
-     * @param[in]  value      The value to write.
+     *             Serializes the value to the end of the stream with proper endian
+     *             conversion. For strings, uses uint8_t length prefix. For fb::stream
+     *             objects, appends all bytes directly.
      *
-     * @tparam     ValueType  The type of value to write.
+     * @param[in]  value      The value to write to the stream
      *
-     * @return     Reference to this stream writer for chaining.
+     * @tparam     ValueType  The type of value to write to the stream
+     *
+     * @return     Reference to this stream writer for method chaining
      */
     template <typename ValueType>
     stream_writer& write(const ValueType& value)
@@ -68,12 +79,15 @@ public:
     }
 
     /**
-     * @brief      Writes raw data from a buffer to the stream.
+     * @brief      Writes raw binary data from a buffer to the stream.
      *
-     * @param[in]  buffer  The buffer containing data to write.
-     * @param[in]  size    The number of bytes to write.
+     *             Copies the specified number of bytes from the source buffer
+     *             directly to the end of the stream without any conversion.
      *
-     * @return     Reference to this stream writer for chaining.
+     * @param[in]  buffer  The source buffer containing data to write
+     * @param[in]  size    The number of bytes to write from the buffer
+     *
+     * @return     Reference to this stream writer for method chaining
      */
     stream_writer& write(const void* buffer, size_t size)
     {
@@ -82,14 +96,19 @@ public:
     }
 
     /**
-     * @brief      Writes a string with length prefix to the stream.
+     * @brief      Writes a string with custom length prefix type to the stream.
      *
-     * @param[in]  value  The string value to write.
+     *             Serializes a string by first writing a length prefix of the specified
+     *             type, then writing the string bytes. Handles CP949 encoding conversion
+     *             on non-Windows platforms.
      *
-     * @tparam     T1     The string type (must be std::string).
-     * @tparam     T2     The type of the length prefix.
+     * @param[in]  value  The string value to write to the stream
      *
-     * @return     Reference to this stream writer for chaining.
+     * @tparam     T1     The string type (must be std::string)
+     * @tparam     T2     The type of the length prefix (uint8_t, uint16_t, etc.)
+     *
+     * @return     Reference to this stream writer for method chaining
+     * @throws     std::runtime_error if T1 is not std::string
      */
     template <typename T1, typename T2>
     stream_writer& write(const T1& value)
