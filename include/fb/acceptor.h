@@ -265,34 +265,37 @@ private:
             {"Content-Type", "application/octet-stream"},
         };
 
+        auto thread = this->threads.current();
         boost::asio::co_spawn(this->_boost_context,
                               this->boost_get_async(host, path, headers, 5s),
-                              [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  if (ep)
-                                  {
+                              [this, promise, thread](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                  async::awaitable_then(thread->switching(), [promise, ep, bytes](auto result) mutable {
+                                      if (ep)
+                                      {
+                                          try
+                                          {
+                                              std::rethrow_exception(ep);
+                                          }
+                                          catch (...)
+                                          {
+                                              promise->set_exception(std::current_exception());
+                                              return;
+                                          }
+                                      }
+
                                       try
                                       {
-                                          std::rethrow_exception(ep);
+                                          auto reader        = fb::stream_reader<big_endian>(bytes);
+                                          auto protocol_type = reader.read<uint32_t>();
+                                          auto protocol_size = reader.read<uint32_t>();
+                                          auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
+                                          promise->set_value(Response::Deserialize(offset));
                                       }
-                                      catch (std::exception const& e)
+                                      catch (std::exception& e)
                                       {
-                                          promise->set_exception(std::current_exception());
-                                          return;
+                                          promise->set_exception(std::make_exception_ptr(e));
                                       }
-                                  }
-
-                                  try
-                                  {
-                                      auto reader        = fb::stream_reader<big_endian>(bytes);
-                                      auto protocol_type = reader.read<uint32_t>();
-                                      auto protocol_size = reader.read<uint32_t>();
-                                      auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
-                                      promise->set_value(Response::Deserialize(offset));
-                                  }
-                                  catch (std::exception& e)
-                                  {
-                                      promise->set_exception(std::make_exception_ptr(e));
-                                  }
+                                  });
                               });
 
         return promise->task();
@@ -421,32 +424,34 @@ private:
         writer.write(serialized_payload.data(), serialized_payload.size());
 
         auto promise = std::make_shared<async::task_completion_source<Response>>();
-
         auto headers = std::map<std::string, std::string>{
             {"Content-Type", "application/octet-stream"}
         };
 
+        auto thread = this->threads.current();
         boost::asio::co_spawn(this->_boost_context,
                               this->boost_post_async(host, path, headers, std::chrono::seconds{5}, stream_req),
-                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
-                                  if (ep)
-                                  {
-                                      promise->set_exception(ep);
-                                      return;
-                                  }
-                                  try
-                                  {
-                                      fb::stream_reader<big_endian> reader(bytes);
-                                      auto                          protocol_type = reader.read<uint32_t>();
-                                      auto                          protocol_len  = reader.read<uint32_t>();
-                                      auto                          offset        = bytes.data() + sizeof(uint32_t) * 2;
+                              [promise, thread](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                  async::awaitable_then(thread->switching(), [promise, ep, bytes](auto result) mutable {
+                                      if (ep)
+                                      {
+                                          promise->set_exception(ep);
+                                          return;
+                                      }
+                                      try
+                                      {
+                                          auto reader        = fb::stream_reader<big_endian>(bytes);
+                                          auto protocol_type = reader.read<uint32_t>();
+                                          auto protocol_len  = reader.read<uint32_t>();
+                                          auto offset        = bytes.data() + sizeof(uint32_t) * 2;
 
-                                      promise->set_value(Response::Deserialize(offset));
-                                  }
-                                  catch (...)
-                                  {
-                                      promise->set_exception(std::current_exception());
-                                  }
+                                          promise->set_value(Response::Deserialize(offset));
+                                      }
+                                      catch (...)
+                                      {
+                                          promise->set_exception(std::current_exception());
+                                      }
+                                  });
                               });
 
         return promise->task();
