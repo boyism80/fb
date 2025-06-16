@@ -13,8 +13,7 @@ module.exports = function () {
                 port: conf.gateway.port,
                 thread: {
                     logic: 12,
-                    io: 12,
-                    background: 8
+                    io: 12
                 },
                 log: ["info", "warn", "fatal"],
                 entrypoints: [],

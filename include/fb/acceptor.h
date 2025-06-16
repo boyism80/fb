@@ -6,9 +6,13 @@
 #include <fb/protocol/flatbuffer/protocol.h>
 #include <fb/protocol/transfer.h>
 #include <fb/socket.h>
-#include <httplib.h>
 #include <iomanip>
 #include <fb/amqp.h>
+#include <boost/asio/awaitable.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/version.hpp>
 #include <boost/stacktrace.hpp>
 
 using namespace std::chrono_literals;
@@ -26,7 +30,6 @@ class acceptor : public fb::acceptable
 public:
     using handle_func           = std::function<async::task<bool>(fb::socket<T>&, fb::protocol::header&)>;
     using deserilze_func        = std::function<async::task<fb::protocol::header*>(fb::stream_reader<big_endian>&)>;
-    using background_func       = std::function<async::task<void>()>;
     using socket_container      = std::unordered_map<uint32_t, std::unique_ptr<fb::socket<T>>>;
     using socket_container_lock = fb::locker<socket_container>;
     using amqp_handler_func     = std::function<async::task<void>(const uint8_t*)>;
@@ -78,10 +81,6 @@ private:
     std::unique_ptr<fb::amqp::socket>           _amqp;
     std::mutex                                  _mutex_exit;
     boost_timers                                _timers;
-
-protected:
-    std::queue<background_func> _background_queue;
-    std::mutex                  _background_queue_mutex;
 
 protected:
     fb::mutex             _mutex;
@@ -178,156 +177,279 @@ private:
     }
 
     /**
-     * @brief      Gets the internal.
+     * @brief      GET request to the host and return the response bytes
      *
-     * @param[in]  host     The host
-     * @param[in]  path     The path
-     * @param[in]  headers  The headers
+     * @param[in]  host      The host (hostname:port)
+     * @param[in]  path      The path (target)
+     * @param[in]  headers   The headers
+     * @param[in]  timeout   The timeout
      *
-     * @return     The internal.
+     * @return     The response bytes
      */
-    [[nodiscard]] async::task<httplib::Result> get_internal(const std::string& host,
-                                                            const std::string& path,
-                                                            httplib::Headers   headers)
+    boost::asio::awaitable<std::vector<uint8_t>> boost_get_async(std::string                         host,
+                                                                 std::string                         path,
+                                                                 std::map<std::string, std::string>  headers,
+                                                                 std::chrono::steady_clock::duration timeout)
     {
-        headers.insert({"Content-Type", "application/octet-stream"});
+        auto raw_host = host;
+        if (raw_host.rfind("http://", 0) == 0)
+            raw_host.erase(0, 7);
+        else if (raw_host.rfind("https://", 0) == 0)
+            raw_host.erase(0, 8);
 
-        co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
-            auto client = httplib::Client(host);
-            client.set_connection_timeout(5, 0);
-            client.set_read_timeout(5, 0);
-            client.set_write_timeout(5, 0);
-            co_return client.Get(UTF8(path, PLATFORM::Windows), headers);
-        });
+        auto const colon_pos = raw_host.find(':');
+        auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
+        auto const port      = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
+
+        auto resolver = boost::asio::ip::tcp::resolver{this->_boost_context};
+        auto stream   = boost::beast::tcp_stream{this->_boost_context};
+
+        stream.expires_after(timeout);
+        auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
+        co_await stream.async_connect(results, boost::asio::use_awaitable);
+
+        auto req =
+            boost::beast::http::request<boost::beast::http::empty_body>{boost::beast::http::verb::get,
+                                                                        url_encode(UTF8(path, PLATFORM::Windows)),
+                                                                        11};
+        req.set(boost::beast::http::field::host, host_name);
+        req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+        for (auto const& h : headers)
+        {
+            req.set(h.first, h.second);
+        }
+
+        stream.expires_after(timeout);
+        co_await boost::beast::http::async_write(stream, req, boost::asio::use_awaitable);
+
+        auto buffer = boost::beast::flat_buffer{};
+        auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
+
+        stream.expires_after(timeout);
+        co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
+
+        auto body_bytes = std::vector<uint8_t>{};
+        if (res.body().size() > 0)
+        {
+            body_bytes.reserve(res.body().size());
+        }
+        for (auto const& seq : res.body().data())
+        {
+            auto buf      = seq; // boost::asio::const_buffer
+            auto data_ptr = static_cast<const uint8_t*>(buf.data());
+            body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
+        }
+
+        auto ec = boost::beast::error_code{};
+        stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+
+        co_return body_bytes;
     }
 
 private:
     /**
-     * @brief      Gets the internal.
+     * @brief      GET request to the host and return the response
      *
-     * @param[in]  host      The host
-     * @param[in]  path      The path
+     * @param[in]  host      The host (hostname:port)
+     * @param[in]  path      The path (target)
      *
-     * @tparam     Response  { description }
+     * @tparam     Response  The type of the response
      *
-     * @return     The internal.
+     * @return     The response bytes
      */
     template <typename Response>
-    [[nodiscard]] async::task<Response> get_internal(const std::string& host, const std::string& path)
+    [[nodiscard]] async::task<Response> boost_get_async(const std::string& host, const std::string& path)
     {
-        auto   headers = httplib::Headers();
-        auto&& res     = co_await this->get_internal(host, path, headers);
-        if (!res)
-            throw std::runtime_error(std::format("cannot request to http server : {}", host));
+        auto promise = std::make_shared<async::task_completion_source<Response>>();
+        auto headers = std::map<std::string, std::string>{
+            {"Content-Type", "application/octet-stream"},
+        };
 
-        if (res->status != 200)
-            throw std::runtime_error(std::format("http server response status code {}", res->status));
+        boost::asio::co_spawn(this->_boost_context,
+                              this->boost_get_async(host, path, headers, 5s),
+                              [this, promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                  if (ep)
+                                  {
+                                      try
+                                      {
+                                          std::rethrow_exception(ep);
+                                      }
+                                      catch (std::exception const& e)
+                                      {
+                                          promise->set_exception(std::current_exception());
+                                          return;
+                                      }
+                                  }
 
-        auto ptr    = (const uint8_t*)res->body.c_str();
-        auto size   = std::stoi(res->get_header_value("Content-Length"));
-        auto stream = fb::stream(ptr, size);
-        auto reader = fb::stream_reader<big_endian>(stream);
+                                  try
+                                  {
+                                      auto reader        = fb::stream_reader<big_endian>(bytes);
+                                      auto protocol_type = reader.read<uint32_t>();
+                                      auto protocol_size = reader.read<uint32_t>();
+                                      auto offset        = bytes.data() + sizeof(uint32_t) + sizeof(uint32_t);
+                                      promise->set_value(Response::Deserialize(offset));
+                                  }
+                                  catch (std::exception& e)
+                                  {
+                                      promise->set_exception(std::make_exception_ptr(e));
+                                  }
+                              });
 
-        auto protocol_type = reader.read<uint32_t>();
-        auto protocol_size = reader.read<uint32_t>();
-        auto offset        = ptr + sizeof(uint32_t) + sizeof(uint32_t);
-        co_return Response::Deserialize(offset);
+        return promise->task();
     }
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      GET request to the host and return the response bytes
      *
      * @param[in]  route     The route
      * @param[in]  path      The path
      *
-     * @tparam     Response  { description }
+     * @tparam     Response  The type of the response
      *
-     * @return     { description_of_the_return_value }
+     * @return     The response bytes
      */
     template <typename Response>
     [[nodiscard]] async::task<Response> get(const std::string& route, const std::string& path)
     {
         auto& config = fb::config<>(route);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        co_return co_await this->get_internal<Response>(host, path);
+        co_return co_await this->boost_get_async<Response>(host, path);
     }
 
 private:
     /**
-     * @brief      Posts an internal.
+     * @brief      POST request to the host and return the response bytes
      *
-     * @param[in]  host     The host
-     * @param[in]  path     The path
+     * @param[in]  host     The host (hostname:port)
+     * @param[in]  path     The path (target)
      * @param[in]  headers  The headers
-     * @param[in]  bytes    The bytes
-     * @param[in]  size     The size
+     * @param[in]  timeout  The timeout
+     * @param[in]  body     The body
      *
-     * @return     { description_of_the_return_value }
+     * @return     The response bytes
      */
-    [[nodiscard]] async::task<httplib::Result> post_internal(const std::string& host,
-                                                             const std::string& path,
-                                                             httplib::Headers   headers,
-                                                             const void*        bytes,
-                                                             size_t             size)
+    boost::asio::awaitable<std::vector<uint8_t>> boost_post_async(std::string                         host,
+                                                                  std::string                         path,
+                                                                  std::map<std::string, std::string>  headers,
+                                                                  std::chrono::steady_clock::duration timeout,
+                                                                  std::vector<uint8_t>                body)
     {
-        auto promise = std::make_shared<async::task_completion_source<httplib::Result>>();
-        auto buffer  = std::vector<uint8_t>(size);
-        std::memcpy(buffer.data(), bytes, size);
-        co_return co_await this->background<httplib::Result>([=, this]() -> async::task<httplib::Result> {
-            auto client = httplib::Client(host);
-            client.set_connection_timeout(5, 0);
-            client.set_read_timeout(5, 0);
-            client.set_write_timeout(5, 0);
-            co_return client.Post(UTF8(path, PLATFORM::Windows),
-                                  headers,
-                                  (const char*)buffer.data(),
-                                  buffer.size(),
-                                  "application/octet-stream");
-        });
+        auto raw_host = host;
+        if (raw_host.rfind("http://", 0) == 0)
+            raw_host.erase(0, 7);
+        else if (raw_host.rfind("https://", 0) == 0)
+            raw_host.erase(0, 8);
+
+        auto const colon_pos = raw_host.find(':');
+        auto const host_name = (colon_pos == std::string::npos ? raw_host : raw_host.substr(0, colon_pos));
+        auto const port      = (colon_pos == std::string::npos ? std::string("80") : raw_host.substr(colon_pos + 1));
+
+        auto resolver = boost::asio::ip::tcp::resolver{this->_boost_context};
+        auto stream   = boost::beast::tcp_stream{this->_boost_context};
+
+        stream.expires_after(timeout);
+        auto const results = co_await resolver.async_resolve(host_name, port, boost::asio::use_awaitable);
+        co_await stream.async_connect(results, boost::asio::use_awaitable);
+
+        auto req = boost::beast::http::request<boost::beast::http::vector_body<uint8_t>>{
+            boost::beast::http::verb::post,
+            url_encode(UTF8(path, PLATFORM::Windows)),
+            11};
+
+        req.set(boost::beast::http::field::host, host_name);
+        req.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+
+        for (auto const& h : headers)
+        {
+            req.set(h.first, h.second);
+        }
+
+        req.body() = body;
+        req.prepare_payload();
+
+        stream.expires_after(timeout);
+        co_await boost::beast::http::async_write(stream, req, boost::asio::use_awaitable);
+
+        auto buffer = boost::beast::flat_buffer{};
+        auto res    = boost::beast::http::response<boost::beast::http::dynamic_body>{};
+        stream.expires_after(timeout);
+        co_await boost::beast::http::async_read(stream, buffer, res, boost::asio::use_awaitable);
+
+        auto body_bytes = std::vector<uint8_t>{};
+        if (res.body().size() > 0)
+        {
+            body_bytes.reserve(res.body().size());
+        }
+        for (auto const& seq : res.body().data())
+        {
+            auto const buf      = seq;
+            auto const data_ptr = static_cast<const uint8_t*>(buf.data());
+            body_bytes.insert(body_bytes.end(), data_ptr, data_ptr + buf.size());
+        }
+
+        auto ec = boost::beast::error_code{};
+        stream.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+
+        co_return body_bytes;
     }
 
 private:
     /**
-     * @brief      Posts an internal.
+     * @brief      POST request to the host and return the response
      *
-     * @param[in]  host      The host
-     * @param[in]  path      The path
-     * @param[in]  body      The body
+     * @param[in]  host     The host (hostname:port)
+     * @param[in]  path     The path (target)
+     * @param[in]  body     The body
      *
-     * @tparam     Request   { description }
-     * @tparam     Response  { description }
+     * @tparam     Request   The type of the request
+     * @tparam     Response  The type of the response
      *
-     * @return     { description_of_the_return_value }
+     * @return     The response
      */
     template <typename Request, typename Response>
-    [[nodiscard]] async::task<Response> post_internal(const std::string& host,
-                                                      const std::string& path,
-                                                      const Request&     body)
+    [[nodiscard]] async::task<Response> boost_post_async(std::string const& host,
+                                                         std::string const& path,
+                                                         Request const&     body)
     {
-        auto headers    = httplib::Headers();
-        auto serialized = body.Serialize();
-        auto stream_req = fb::stream();
-        auto writer     = fb::stream_writer<>(stream_req);
+        auto const serialized_payload = body.Serialize();
+        auto       stream_req         = fb::stream();
+        auto       writer             = fb::stream_writer<>(stream_req);
+
         writer.write<uint32_t>(static_cast<uint32_t>(Request::FlatBufferProtocolType));
-        writer.write<uint32_t>(serialized.size());
-        writer.write((const void*)serialized.data(), serialized.size());
+        writer.write<uint32_t>(serialized_payload.size());
+        writer.write(serialized_payload.data(), serialized_payload.size());
 
-        auto&& res = co_await this->post_internal(host, path, headers, stream_req.data(), stream_req.size());
-        if (!res)
-            throw std::runtime_error(std::format("cannot request to http server : {}", host));
+        auto promise = std::make_shared<async::task_completion_source<Response>>();
 
-        if (res->status != 200)
-            throw std::runtime_error(std::format("http server response status code {}", res->status));
+        auto headers = std::map<std::string, std::string>{
+            {"Content-Type", "application/octet-stream"}
+        };
 
-        auto ptr        = (const uint8_t*)res->body.c_str();
-        auto size       = std::stoi(res->get_header_value("Content-Length"));
-        auto stream_res = fb::stream(ptr, size);
-        auto reader     = fb::stream_reader<>(stream_res);
+        boost::asio::co_spawn(this->_boost_context,
+                              this->boost_post_async(host, path, headers, std::chrono::seconds{5}, stream_req),
+                              [promise](std::exception_ptr ep, std::vector<uint8_t> bytes) {
+                                  if (ep)
+                                  {
+                                      promise->set_exception(ep);
+                                      return;
+                                  }
+                                  try
+                                  {
+                                      fb::stream_reader<big_endian> reader(bytes);
+                                      auto                          protocol_type = reader.read<uint32_t>();
+                                      auto                          protocol_len  = reader.read<uint32_t>();
+                                      auto                          offset        = bytes.data() + sizeof(uint32_t) * 2;
 
-        auto protocol_type = reader.read<uint32_t>();
-        auto protocol_size = reader.read<uint32_t>();
-        co_return Response::Deserialize(ptr + sizeof(uint32_t) + sizeof(uint32_t));
+                                      promise->set_value(Response::Deserialize(offset));
+                                  }
+                                  catch (...)
+                                  {
+                                      promise->set_exception(std::current_exception());
+                                  }
+                              });
+
+        return promise->task();
     }
 
 public:
@@ -348,7 +470,7 @@ public:
     {
         auto& config = fb::config<>(route);
         auto  host   = std::format("http://{}:{}", config["ip"].asCString(), config["port"].asUInt());
-        co_return co_await this->post_internal<Request, Response>(host, path, body);
+        co_return co_await this->boost_post_async<Request, Response>(host, path, body);
     }
 
 public:
@@ -954,73 +1076,6 @@ public:
         co_return co_await socket.send(stream, encrypt, wrap);
     }
 
-protected:
-    /**
-     * @brief      { function_description }
-     */
-    virtual void handle_background()
-    {
-        while (this->_running || !this->_background_queue.empty())
-        {
-            background_func func;
-            {
-                auto _ = std::lock_guard(this->_background_queue_mutex);
-                if (this->_background_queue.size() > 0)
-                {
-                    func = this->_background_queue.front();
-                    this->_background_queue.pop();
-                }
-            }
-
-            if (func)
-                async::awaitable_get(func());
-            else
-                std::this_thread::sleep_for(100ms);
-        }
-    }
-
-    /**
-     * @brief      { function_description }
-     *
-     * @param[in]  func  The function
-     *
-     * @tparam     R     { description }
-     *
-     * @return     { description_of_the_return_value }
-     */
-    template <typename R>
-    [[nodiscard]] async::task<R> background(const std::function<async::task<R>()>& func)
-    {
-        auto _       = std::lock_guard(this->_background_queue_mutex);
-        auto promise = std::make_shared<async::task_completion_source<R>>();
-        auto thread  = this->threads.current();
-        this->_background_queue.push([this, promise, thread, func]() -> async::task<void> {
-            try
-            {
-                if constexpr (std::is_void_v<R>)
-                {
-                    co_await func();
-                    if (thread != nullptr)
-                        co_await thread->switching();
-                    promise->set_value();
-                }
-                else
-                {
-                    R result = co_await func();
-                    if (thread != nullptr)
-                        co_await thread->switching();
-                    promise->set_value(std::move(result));
-                }
-            }
-            catch (std::exception& e)
-            {
-                promise->set_exception(std::make_exception_ptr(e));
-            }
-        });
-
-        return promise->task();
-    }
-
 public:
     /**
      * @brief      { function_description }
@@ -1031,13 +1086,6 @@ public:
         this->accept();
 
         auto threads = std::vector<std::thread>();
-        for (int i = 0; i < fb::config<uint32_t>("thread:background"); i++)
-        {
-            threads.push_back(std::thread([this]() {
-                this->handle_background();
-            }));
-        }
-
         for (int i = 0; i < fb::config<uint32_t>("thread:io"); i++)
         {
             threads.push_back(std::thread([this]() {

@@ -181,3 +181,21 @@ bool fb::assert_korean(const std::string& str)
 
     return true;
 }
+
+std::string fb::url_encode(std::string const& s)
+{
+    auto oss = std::ostringstream{};
+    for (unsigned char c : s)
+    {
+        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/')
+        {
+            oss << c;
+        }
+        else
+        {
+            oss << '%' << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << int(c) << std::dec
+                << std::nouppercase;
+        }
+    }
+    return oss.str();
+}

@@ -61,7 +61,7 @@ All game logic for objects on the same map runs on the same logic thread. The I/
 thread_id = character.map.id % (logic_thread.length+1)
 ```
 
-This ensures objects on the same map are always processed by the same thread, eliminating locks between nearby objects. However, uneven map distribution can overload a single thread, and communication between different maps becomes more complex. You can configure the counts of I/O, logic, and background threads in the config file.
+This ensures objects on the same map are always processed by the same thread, eliminating locks between nearby objects. However, uneven map distribution can overload a single thread, and communication between different maps becomes more complex. You can configure the counts of I/O and logic threads in the config file.
 
 ## Contact
 
