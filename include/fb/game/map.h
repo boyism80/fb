@@ -8,7 +8,21 @@
 namespace fb::game {
 
 /**
- * @brief      This class describes a map of .
+ * @brief      Represents a game world map with spatial management and object tracking.
+ *
+ *             This class manages a single map in the game world, providing spatial organization,
+ *             object tracking, movement validation, and sector-based optimization. It handles
+ *             all aspects of map functionality including tile management, object placement,
+ *             collision detection, and warp point management.
+ *
+ *             Key features:
+ *             - Tile-based spatial organization with collision detection
+ *             - Sector-based optimization for efficient object queries
+ *             - Object container management for all map entities
+ *             - Door and warp point management
+ *             - Thread-safe operations with context switching
+ *             - Lua scripting integration for dynamic map behavior
+ *             - Movement validation and pathfinding support
  */
 class map : public fb::thread_switchable
 {
@@ -45,18 +59,18 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  context  The context
-     * @param[in]  model    The model
-     * @param[in]  active   The active
-     * @param[in]  data     The data
-     * @param[in]  size     The size
+     * @param[in]  context  The game context that manages this map
+     * @param[in]  model    The map model data containing configuration and metadata
+     * @param[in]  active   Whether the map should be active and process game logic
+     * @param[in]  data     The raw map tile data to load
+     * @param[in]  size     The size of the map data in bytes
      */
     map(fb::game::context& context, const fb::model::map& model, bool active, const void* data, size_t size);
 
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  <unnamed>  The source map object (copy constructor is deleted)
      */
     map(const fb::game::map&) = delete;
 
@@ -67,165 +81,165 @@ public:
 
 private:
     /**
-     * @brief      Loads a door.
+     * @brief      Updates and synchronizes all door states on the map.
      */
     void update_door();
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Converts a 2D point to a linear array index for tile access.
      *
-     * @param[in]  p     { parameter_description }
+     * @param[in]  p     The 2D point coordinates to convert
      *
-     * @return     { description_of_the_return_value }
+     * @return     The linear index corresponding to the point position
      */
     uint64_t index(const fb::model::point16_t& p) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Converts a linear array index back to a 2D point coordinate.
      *
-     * @param[in]  i     { parameter_description }
+     * @param[in]  i     The linear index to convert
      *
-     * @return     { description_of_the_return_value }
+     * @return     The 2D point coordinates corresponding to the index
      */
     fb::model::point16_t point(uint64_t i) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if a tile at the specified coordinates is blocked for movement.
      *
-     * @param[in]  x     { parameter_description }
-     * @param[in]  y     { parameter_description }
+     * @param[in]  x     The X coordinate to check
+     * @param[in]  y     The Y coordinate to check
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the tile is blocked, false if passable
      */
     bool blocked(uint16_t x, uint16_t y) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets or clears the blocked state of a tile at the specified coordinates.
      *
-     * @param[in]  x       { parameter_description }
-     * @param[in]  y       { parameter_description }
-     * @param[in]  option  The option
+     * @param[in]  x       The X coordinate of the tile to modify
+     * @param[in]  y       The Y coordinate of the tile to modify
+     * @param[in]  option  True to block the tile, false to unblock it
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the operation was successful, false otherwise
      */
     bool block(uint16_t x, uint16_t y, bool option);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the width of the map in tiles.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The map width in tile units
      */
     uint16_t width() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the height of the map in tiles.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The map height in tile units
      */
     uint16_t height() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the dimensions of the map as a size structure.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The map size containing width and height
      */
     fb::model::size16_t size() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the map has been fully loaded and initialized.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the map is loaded and ready for use, false otherwise
      */
     bool loaded() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if a position is within the valid map boundaries.
      *
-     * @param[in]  position  The position
+     * @param[in]  position  The position coordinates to validate
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the position is within map bounds, false otherwise
      */
     bool in_ground(const fb::model::point16_t position) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if an object can move to a specific position on the map.
      *
-     * @param[in]  position  The position
+     * @param[in]  position  The target position to check for movement validity
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the object can move to the position, false if blocked
      */
     bool movable(const object& object, const fb::model::point16_t position) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if an object can move in a specific direction from its current position.
      *
-     * @param[in]  object     The object
-     * @param[in]  direction  The direction
+     * @param[in]  object     The object attempting to move
+     * @param[in]  direction  The direction of movement to validate
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if movement in the direction is valid, false if blocked
      */
     bool movable(const object& object, DIRECTION direction) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if an object can move forward a specified number of steps.
      *
-     * @param[in]  object  The object
-     * @param[in]  step    The step
+     * @param[in]  object  The object attempting to move forward
+     * @param[in]  step    The number of steps to move forward (default: 1)
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if forward movement is possible, false if blocked
      */
     bool movable_forward(const object& object, uint16_t step = 1) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if a position contains a warp point and returns warp information.
      *
-     * @param[in]  position  The position
+     * @param[in]  position  The position to check for warp points
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to warp data if position is warpable, nullptr otherwise
      */
     const fb::model::warp* warpable(const fb::model::point16_t& position) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the map is currently active and processing game logic.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the map is active, false if inactive or suspended
      */
     bool is_active() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the sector containing the specified position for spatial optimization.
      *
-     * @param[in]  position  The position
+     * @param[in]  position  The position to find the containing sector for
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the sector containing the position, or nullptr if invalid
      */
     sector* sector_at(const fb::model::point16_t& position);
 
     /**
-     * @brief      { function_description }
+     * @brief      Finds all objects near a pivot point within interaction range.
      *
-     * @param[in]  pivot  The pivot
-     * @param[in]  type   The type
+     * @param[in]  pivot  The center point to search around
+     * @param[in]  type   The type of objects to filter for (default: all types)
      *
-     * @return     { description_of_the_return_value }
+     * @return     Vector of object pointers within range of the pivot point
      */
     std::vector<object*> nears(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Finds all objects at or below a specific position on the map.
      *
-     * @param[in]  pivot  The pivot
-     * @param[in]  type   The type
+     * @param[in]  pivot  The position to search at and below
+     * @param[in]  type   The type of objects to filter for (default: all types)
      *
-     * @return     { description_of_the_return_value }
+     * @return     Vector of object pointers at or below the specified position
      */
     std::vector<object*> belows(const fb::model::point16_t& pivot, OBJECT_TYPE type = OBJECT_TYPE::UNKNOWN) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread that manages this map's execution context.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the thread managing this map
      */
     fb::thread* thread() const override;
 
@@ -233,8 +247,8 @@ public:
     /**
      * @brief      Function call operator.
      *
-     * @param[in]  x     { parameter_description }
-     * @param[in]  y     { parameter_description }
+     * @param[in]  x     The X coordinate of the tile to access
+     * @param[in]  y     The Y coordinate of the tile to access
      *
      * @return     The result of the function call
      */
@@ -244,125 +258,125 @@ public:
 struct map::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting the map's model data.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_model(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting the map's width.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_width(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting the map's height.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_height(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting the map's total area.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_area(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting all objects on the map.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_objects(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for finding objects near a specific position.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_nears(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for checking if movement is possible.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_movable(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting a specific door on the map.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_door(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting all doors on the map.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_doors(lua_State* L);
 
     /**
      * @brief      Determines if builtin contains.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
      * @return     True if builtin contains, False otherwise.
      */
     static int builtin_contains(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for finding objects at or below a position.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_belows(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting tile information at coordinates.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_tile(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting objects at a specific position.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_at(lua_State* L);
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Represents a single tile on the map with visual and collision data.
  */
 struct map::tile
 {

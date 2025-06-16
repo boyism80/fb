@@ -27,19 +27,27 @@
 namespace fb {
 
 /**
- * @brief      This class describes a little endian.
+ * @brief      Utility class for little-endian byte order operations.
+ *
+ *             Provides static methods to read and write values in little-endian
+ *             byte order, handling endianness conversion automatically based on
+ *             the target platform's native byte order.
  */
 class little_endian
 {
 public:
     /**
-     * @brief      Gets the specified p.
+     * @brief      Reads a value from a byte array in little-endian format.
      *
-     * @param[in]  p          { parameter_description }
+     *             Converts the byte sequence to the specified value type,
+     *             handling endianness conversion if the target platform
+     *             uses big-endian byte order.
      *
-     * @tparam     ValueType  { description }
+     * @param[in]  p          Pointer to the byte array to read from.
      *
-     * @return     The value type.
+     * @tparam     ValueType  The type of value to read (e.g., uint16_t, uint32_t, int, etc.).
+     *
+     * @return     The value read from the byte array in native byte order.
      */
     template <typename ValueType>
     static ValueType get(const uint8_t* p)
@@ -59,12 +67,16 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Writes a value to a byte array in little-endian format.
      *
-     * @param[in]  value      The value
-     * @param      p          { parameter_description }
+     *             Converts the value to little-endian byte order and stores
+     *             it in the provided byte array, handling endianness conversion
+     *             if the target platform uses big-endian byte order.
      *
-     * @tparam     ValueType  { description }
+     * @param[in]  value      The value to write to the byte array.
+     * @param      p          Pointer to the byte array to write to.
+     *
+     * @tparam     ValueType  The type of value to write (e.g., uint16_t, uint32_t, int, etc.).
      */
     template <typename ValueType>
     static void put(const ValueType& value, uint8_t* p)
@@ -82,19 +94,27 @@ public:
 };
 
 /**
- * @brief      This class describes a big endian.
+ * @brief      Utility class for big-endian byte order operations.
+ *
+ *             Provides static methods to read and write values in big-endian
+ *             byte order, handling endianness conversion automatically based on
+ *             the target platform's native byte order.
  */
 class big_endian
 {
 public:
     /**
-     * @brief      Gets the specified p.
+     * @brief      Reads a value from a byte array in big-endian format.
      *
-     * @param[in]  p          { parameter_description }
+     *             Converts the byte sequence to the specified value type,
+     *             handling endianness conversion if the target platform
+     *             uses little-endian byte order.
      *
-     * @tparam     ValueType  { description }
+     * @param[in]  p          Pointer to the byte array to read from.
      *
-     * @return     The value type.
+     * @tparam     ValueType  The type of value to read (e.g., uint16_t, uint32_t, int, etc.).
+     *
+     * @return     The value read from the byte array in native byte order.
      */
     template <typename ValueType>
     static ValueType get(const uint8_t* p)
@@ -114,12 +134,16 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Writes a value to a byte array in big-endian format.
      *
-     * @param[in]  value      The value
-     * @param      p          { parameter_description }
+     *             Converts the value to big-endian byte order and stores
+     *             it in the provided byte array, handling endianness conversion
+     *             if the target platform uses little-endian byte order.
      *
-     * @tparam     ValueType  { description }
+     * @param[in]  value      The value to write to the byte array.
+     * @param      p          Pointer to the byte array to write to.
+     *
+     * @tparam     ValueType  The type of value to write (e.g., uint16_t, uint32_t, int, etc.).
      */
     template <typename ValueType>
     static void put(const ValueType& value, uint8_t* p)

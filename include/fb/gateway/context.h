@@ -13,7 +13,13 @@ namespace fb::gateway {
 using namespace fb::protocol::gateway;
 
 /**
- * @brief      This class describes a context.
+ * @brief      Gateway server context that provides login server list to clients.
+ *
+ *             This class serves as the initial entry point for game clients, providing
+ *             a list of available login servers for client selection. It handles client
+ *             version checking and presents login server options with their status and
+ *             capacity information. Clients connect to the gateway first to get the
+ *             login server list, then connect to their chosen login server.
  */
 class context : public fb::acceptor<fb::gateway::session>
 {
@@ -29,10 +35,10 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new gateway server context.
      *
-     * @param      context  The context
-     * @param[in]  port     The port
+     * @param      context  The boost::asio I/O context for network operations.
+     * @param[in]  port     The port number to listen on for client connections.
      */
     context(boost::asio::io_context& context, uint16_t port);
     /**
@@ -42,19 +48,27 @@ public:
 
 private:
     /**
-     * @brief      Loads entries.
+     * @brief      Loads available login server endpoints from configuration.
      *
-     * @return     { description_of_the_return_value }
+     *             Reads the list of available login servers from configuration files
+     *             and prepares them for client distribution. This includes login server
+     *             addresses, ports, names, and current status information.
+     *
+     * @return     An async task that completes when login server endpoints are loaded.
      */
     [[nodiscard]] async::task<void> load_entries();
 
 private:
     /**
-     * @brief      Makes a crt stream.
+     * @brief      Creates a stream containing cryptographic information for client handshake.
      *
-     * @param[in]  crt   The crt
+     *             Generates a data stream containing encryption parameters that will be
+     *             sent to clients during the connection establishment process. This
+     *             includes encryption keys and algorithm information.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  crt   The cryptographic context to serialize.
+     *
+     * @return     A stream containing the serialized cryptographic data.
      */
     fb::stream make_crt_stream(const fb::crypto& crt);
 
@@ -62,59 +76,75 @@ private:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Determines the decryption policy for incoming packets.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     *             Specifies whether packets with the given command should be decrypted
+     *             before processing. Gateway servers typically handle unencrypted
+     *             handshake packets and encrypted game data differently.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  cmd   The command byte of the incoming packet.
+     *
+     * @return     True if the packet should be decrypted, false otherwise.
      */
-    bool decrypt_policy(uint8_t) const override final;
+    bool decrypt_policy(uint8_t cmd) const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Declares AMQP queues required for gateway server communication.
      *
-     * @param      amqp  The amqp
+     *             Sets up message queues for inter-service communication, including
+     *             queues for login server status updates, capacity monitoring,
+     *             and administrative commands.
+     *
+     * @param      amqp  The AMQP socket to use for queue declaration.
      */
     void handle_declare_amqp_queue(fb::amqp::socket& amqp) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles gateway server startup initialization.
      *
-     * @return     { description_of_the_return_value }
+     *             Performs initialization tasks when the gateway server starts,
+     *             including loading login server endpoints, setting up heartbeat timers,
+     *             and preparing the server for client connections.
+     *
+     * @return     An async task that completes when startup is finished.
      */
     [[nodiscard]] async::task<void> handle_start() final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles new client connection acceptance.
      *
-     * @param      socket  The socket
+     *             Called when a new client connects to the gateway server. Creates
+     *             and initializes a new session object for the client connection
+     *             and performs initial handshake procedures.
      *
-     * @return     { description_of_the_return_value }
+     * @param      socket  The socket representing the new client connection.
+     *
+     * @return     A pointer to the newly created session object.
      */
     fb::gateway::session* handle_accepted(fb::socket<fb::gateway::session>& socket) final;
     /**
-     * @brief      { function_description }
+     * @brief      Handles successful client connection establishment.
      *
-     * @param      session  The session
+     * @param      session  The newly connected session to handle.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task returning true if connection handling succeeded.
      */
     [[nodiscard]] async::task<bool> handle_connected(fb::socket<fb::gateway::session>& session) final;
     /**
-     * @brief      { function_description }
+     * @brief      Handles client disconnection and cleanup.
      *
-     * @param      session  The session
+     * @param      session  The disconnected session to clean up.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task returning true if disconnection handling succeeded.
      */
     [[nodiscard]] async::task<bool> handle_disconnected(fb::socket<fb::gateway::session>& session) final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Handles server shutdown command received via AMQP.
      *
-     * @param[in]  response  The response
+     * @param[in]  response  The shutdown response containing shutdown parameters.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task that completes when shutdown handling is finished.
      */
     [[nodiscard]] async::task<void> handle_amqp_shutdown(const internal_resp::Shutdown& response);
 
@@ -122,9 +152,9 @@ protected:
 
 protected:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the service type for this gateway context.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The service type identifier for gateway servers.
      */
     Service service() const override final
     {
@@ -133,25 +163,25 @@ protected:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Handles client version check request.
      *
-     * @param      session    The session
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param      session    The client session requesting version check.
+     * @param[in]  request    The version check request containing client version info.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task returning true if version check succeeded.
      */
-    [[nodiscard]] async::task<bool> handle_check_version(fb::socket<fb::gateway::session>& session,
-                                                         const fb::protocol::gateway::request::version&);
+    [[nodiscard]] async::task<bool> handle_check_version(fb::socket<fb::gateway::session>&              session,
+                                                         const fb::protocol::gateway::request::version& request);
     /**
-     * @brief      { function_description }
+     * @brief      Handles client request for login server endpoint list.
      *
-     * @param      session    The session
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param      session    The client session requesting the endpoint list.
+     * @param[in]  request    The endpoint list request.
      *
-     * @return     { description_of_the_return_value }
+     * @return     An async task returning true if endpoint list was sent successfully.
      */
-    [[nodiscard]] async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>& session,
-                                                      const fb::protocol::gateway::request::endpoint&);
+    [[nodiscard]] async::task<bool> handle_entry_list(fb::socket<fb::gateway::session>&               session,
+                                                      const fb::protocol::gateway::request::endpoint& request);
 };
 
 } // namespace fb::gateway

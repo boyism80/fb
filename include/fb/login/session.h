@@ -6,21 +6,36 @@
 namespace fb { namespace login {
 
 /**
- * @brief      This class describes a session.
+ * @brief      Represents a login session for a connected client.
+ *
+ *             This class stores session-specific information for clients
+ *             connected to the login server, including their primary key
+ *             and character name once authenticated.
  */
 class session
 {
 public:
-    uint32_t    pk = -1;
+    /**
+     * @brief      The primary key (user ID) of the authenticated user.
+     */
+    uint32_t pk = -1;
+
+    /**
+     * @brief      The character name of the authenticated user.
+     */
     std::string name;
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new login session.
+     *
+     *             Initializes a new session with default values.
+     *             The pk is set to -1 indicating an unauthenticated session.
      */
     session();
+
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the login session.
      */
     ~session();
 };

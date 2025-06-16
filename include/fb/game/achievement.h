@@ -6,6 +6,20 @@
 
 namespace fb::game {
 
+/**
+ * @brief      Represents a player achievement in the game system.
+ *
+ *             This class encapsulates a player achievement, which tracks specific accomplishments
+ *             or milestones reached by players during gameplay. Achievements can have associated
+ *             text descriptions and are integrated with the Lua scripting system for dynamic
+ *             achievement logic and rewards.
+ *
+ *             Features:
+ *             - Links to achievement model data for configuration
+ *             - Optional custom text descriptions
+ *             - Lua scripting integration for dynamic behavior
+ *             - Support for achievement tracking and validation
+ */
 class achievement : public lua::luable
 {
 public:
@@ -15,33 +29,58 @@ public:
     struct builtin;
 
 public:
-    const fb::model::achievement&    model;
-    const std::optional<std::string> text;
+    const fb::model::achievement&    model; ///< Reference to the achievement model configuration
+    const std::optional<std::string> text;  ///< Optional custom text description for the achievement
 
 public:
+    /**
+     * @brief      Constructs a new achievement instance.
+     *
+     *             Creates an achievement object linked to the specified model configuration.
+     *             Optionally accepts custom text that can override or supplement the default
+     *             achievement description from the model.
+     *
+     * @param[in]  model  The achievement model containing configuration data.
+     * @param[in]  text   Optional custom text description for this achievement instance.
+     */
     achievement(const fb::model::achievement& model, const std::optional<std::string>& text = std::nullopt);
+
+    /**
+     * @brief      Destroys the achievement instance.
+     */
     ~achievement() = default;
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Lua binding functions for the achievement class.
+ *
+ *             This structure contains static functions that provide Lua script access
+ *             to achievement properties and methods, enabling dynamic achievement
+ *             management and querying from game scripts.
  */
 struct achievement::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding function to access the achievement model.
      *
-     * @param      L     { parameter_description }
+     *             Provides Lua scripts with access to the underlying achievement model
+     *             data, including configuration parameters, requirements, and rewards.
      *
-     * @return     { description_of_the_return_value }
+     * @param      L     The Lua state for script execution.
+     *
+     * @return     The number of return values pushed to the Lua stack.
      */
     static int builtin_model(lua_State* L);
+
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding function to access the achievement text.
      *
-     * @param      L     { parameter_description }
+     *             Provides Lua scripts with access to the achievement's text description,
+     *             which may be custom text or the default description from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @param      L     The Lua state for script execution.
+     *
+     * @return     The number of return values pushed to the Lua stack.
      */
     static int builtin_text(lua_State* L);
 };

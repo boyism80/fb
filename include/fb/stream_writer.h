@@ -10,8 +10,7 @@ namespace fb {
 /**
  * @brief      This class describes a stream writer.
  *
- * @tparam     EndianType  { description }
- * @tparam     EndianType  { description }
+ * @tparam     EndianType  The endian type for writing data (big_endian or little_endian).
  */
 #ifdef LITTLE_ENDIAN
 template <typename EndianType = little_endian>
@@ -27,7 +26,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      stream  The stream
+     * @param      stream  The stream to write data to.
      */
     stream_writer(std::vector<uint8_t>& stream) :
         _stream(stream)
@@ -35,13 +34,13 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Writes a value of the specified type to the stream.
      *
-     * @param[in]  value      The value
+     * @param[in]  value      The value to write.
      *
-     * @tparam     ValueType  { description }
+     * @tparam     ValueType  The type of value to write.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this stream writer for chaining.
      */
     template <typename ValueType>
     stream_writer& write(const ValueType& value)
@@ -69,12 +68,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Writes raw data from a buffer to the stream.
      *
-     * @param[in]  buffer  The buffer
-     * @param[in]  size    The size
+     * @param[in]  buffer  The buffer containing data to write.
+     * @param[in]  size    The number of bytes to write.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this stream writer for chaining.
      */
     stream_writer& write(const void* buffer, size_t size)
     {
@@ -83,14 +82,14 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Writes a string with length prefix to the stream.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The string value to write.
      *
-     * @tparam     T1     { description }
-     * @tparam     T2     { description }
+     * @tparam     T1     The string type (must be std::string).
+     * @tparam     T2     The type of the length prefix.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this stream writer for chaining.
      */
     template <typename T1, typename T2>
     stream_writer& write(const T1& value)

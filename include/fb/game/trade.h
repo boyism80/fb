@@ -7,28 +7,46 @@
 namespace fb { namespace game {
 
 /**
- * @brief      This class describes a character.
+ * @brief      Forward declaration of the character class.
  */
 class character;
 /**
- * @brief      This class describes an item.
+ * @brief      Forward declaration of the item class.
  */
 class item;
 
 /**
- * @brief      This class describes a trade.
+ * @brief      Manages player-to-player trading functionality.
+ *
+ *             This class handles the complete trading system between two players, managing
+ *             the exchange of items and money in a secure, synchronized manner. It provides
+ *             state management for trade sessions, item/money validation, and ensures
+ *             atomic transactions to prevent duplication or loss.
+ *
+ *             Key features:
+ *             - Secure two-player trading with state management
+ *             - Item and money exchange with validation
+ *             - Trade locking mechanism for confirmation
+ *             - Atomic transaction processing
+ *             - Trade cancellation and rollback
+ *             - Event-driven architecture with listener pattern
+ *             - Anti-cheat validation and security checks
  */
 class trade
 {
 public:
     /**
-     * @brief      This class describes a state.
+     * @brief      Enumeration of possible trade states.
+     *
+     *             This enumeration defines the various states that a trade
+     *             can be in during the trading process, from initiation
+     *             to completion or cancellation.
      */
     enum class state : uint8_t;
 
 public:
     /**
-     * @brief      { struct_description }
+     * @brief      Event listener interface for trade-related events and notifications.
      */
     struct listener_t;
 
@@ -44,7 +62,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      owner  The owner
+     * @param      owner  The character that owns this trade instance
      */
     trade(character& owner);
     /**
@@ -54,135 +72,131 @@ public:
 
 private:
     /**
-     * @brief      Searches for the first match.
+     * @brief      Adds an item to the trade by inventory slot index.
      *
-     * @param      item  The item
+     * @param[in]  index  The inventory slot index of the item to add
      *
-     * @return     { description_of_the_return_value }
-     */
-    // uint8_t find(fb::game::item& item) const;
-    /**
-     * @brief      Adds the specified item.
-     *
-     * @param[in]  index  The index
-     *
-     * @return     { description_of_the_return_value }
+     * @return     The trade slot index where the item was placed, or invalid index if failed
      */
     uint8_t add(uint8_t index);
     /**
-     * @brief      { function_description }
+     * @brief      Restores all items and money back to the owner's inventory.
      */
     void restore();
 
     /**
-     * @brief      Searches for the first match.
+     * @brief      Searches for an item in the owner's inventory by model.
      *
-     * @param[in]  item  The item
+     * @param[in]  item  The item model to search for
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the found item, or nullptr if not found
      */
     fb::game::item* find(const fb::model::item& item) const;
     /**
-     * @brief      { function_description }
+     * @brief      Validates that both trades can be completed successfully.
      *
-     * @param      trade  The trade
+     * @param      trade  The other trade to validate exchange with
      */
     void assert_exchange(const fb::game::trade& trade) const;
     /**
-     * @brief      { function_description }
+     * @brief      Ends the current trade session and cleans up resources.
      */
     void end();
 
     /**
-     * @brief      { function_description }
+     * @brief      Executes the item and money exchange between two trades.
      *
-     * @param      trade1  The trade 1
-     * @param      trade2  The trade 2
+     * @param      trade1  The first trade participant
+     * @param      trade2  The second trade participant
      */
     static void exchange(trade& trade1, trade& trade2);
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the other character participating in this trade.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the other character, or nullptr if no active trade
      */
     character* you() const;
     /**
-     * @brief      { function_description }
+     * @brief      Initiates a trade session with another character.
      *
-     * @param      you   You
+     * @param      you   The character to begin trading with
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the trade was successfully initiated, false otherwise
      */
     bool begin(character& you);
     /**
-     * @brief      { function_description }
+     * @brief      Checks if this character is currently in an active trade.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if currently trading, false otherwise
      */
     bool trading() const;
     /**
-     * @brief      { function_description }
+     * @brief      Adds an item to the trade from the owner's inventory.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The inventory slot index of the item to add
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the item was successfully added to trade, false otherwise
      */
     bool up_item(uint8_t index);
     /**
-     * @brief      { function_description }
+     * @brief      Sets the amount of money to offer in the trade.
      *
-     * @param[in]  money  The money
+     * @param[in]  money  The amount of money to offer
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the money was successfully set, false otherwise
      */
     bool up_money(uint32_t money);
     /**
-     * @brief      { function_description }
+     * @brief      Gets the amount of money currently offered in this trade.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The amount of money being offered
      */
     uint32_t money() const;
     /**
-     * @brief      { function_description }
+     * @brief      Sets the quantity count for stackable items in the trade.
      *
-     * @param[in]  count  The count
+     * @param[in]  count  The quantity count to set for the selected item
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the count was successfully set, false otherwise
      */
     bool count(uint16_t count);
     /**
-     * @brief      { function_description }
+     * @brief      Cancels the current trade session.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the trade was successfully cancelled, false otherwise
      */
     bool cancel();
     /**
-     * @brief      { function_description }
+     * @brief      Locks the trade to prevent further modifications.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the trade was successfully locked, false otherwise
      */
     bool lock();
     /**
-     * @brief      { function_description }
+     * @brief      Gets all items currently offered in this trade.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Vector of pointers to items being offered in the trade
      */
     const std::vector<fb::game::item*> items() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets a specific item from the trade by slot index.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The trade slot index of the item to retrieve
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the item at the specified slot, or nullptr if empty
      */
     const fb::game::item* item(uint8_t index) const;
 };
 
 /**
- * @brief      This class describes a state.
+ * @brief      Enumeration of trade states for the trading system.
+ *
+ *             This enumeration defines all possible states that a trade
+ *             transaction can be in, controlling the flow and validation
+ *             of the trading process between two players.
  */
 enum class trade::state : uint8_t
 {
@@ -195,65 +209,65 @@ enum class trade::state : uint8_t
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Event listener interface for trade-related events and notifications.
  */
 struct trade::listener_t
 {
     /**
-     * @brief      Called on trade begin.
+     * @brief      Called when a trade session begins between two characters.
      *
-     * @param      me    { parameter_description }
-     * @param      you   You
+     * @param      me    The character whose trade is being observed
+     * @param      you   The other character participating in the trade
      */
     virtual void on_trade_begin(character& me, character& you) = 0;
     /**
-     * @brief      Called on trade bundle.
+     * @brief      Called when trade items need to be bundled and synchronized.
      *
-     * @param      me    { parameter_description }
+     * @param      me    The character whose trade bundle is being updated
      */
     virtual void on_trade_bundle(character& me) = 0;
     /**
-     * @brief      Called on trade item.
+     * @brief      Called when an item is added to or modified in the trade.
      *
-     * @param      me     { parameter_description }
-     * @param      you    The you
-     * @param[in]  index  The index
+     * @param      me     The character whose trade is being observed
+     * @param      you    The other character participating in the trade
+     * @param[in]  index  The trade slot index where the item was placed
      */
     virtual void on_trade_item(character& me, character& you, uint8_t index, const fb::game::item& item) = 0;
     /**
-     * @brief      Called on trade money.
+     * @brief      Called when money is offered or changed in the trade.
      *
-     * @param      me     { parameter_description }
-     * @param      you    The you
-     * @param[in]  money  The money
+     * @param      me     The character whose trade is being observed
+     * @param      you    The other character participating in the trade
+     * @param[in]  money  The amount of money being offered
      */
     virtual void on_trade_money(character& me, character& you, uint32_t money) = 0;
     /**
-     * @brief      Called on trade cancel.
+     * @brief      Called when a trade session is cancelled by either participant.
      *
-     * @param      me    { parameter_description }
-     * @param      you   You
+     * @param      me    The character whose trade is being observed
+     * @param      you   The other character who was participating in the trade
      */
     virtual void on_trade_cancel(character& me, character& you) = 0;
     /**
-     * @brief      Called on trade lock.
+     * @brief      Called when a trade is locked by one of the participants.
      *
-     * @param      me    { parameter_description }
-     * @param      you   You
+     * @param      me    The character whose trade is being observed
+     * @param      you   The other character participating in the trade
      */
     virtual void on_trade_lock(character& me, character& you) = 0;
     /**
-     * @brief      Called when trade failed.
+     * @brief      Called when a trade fails due to validation or other errors.
      *
-     * @param      me    { parameter_description }
-     * @param      you   You
+     * @param      me    The character whose trade is being observed
+     * @param      you   The other character who was participating in the trade
      */
     virtual void on_trade_failed(character& me, character& you) = 0;
     /**
-     * @brief      Called on trade success.
+     * @brief      Called when a trade is successfully completed.
      *
-     * @param      me    { parameter_description }
-     * @param      you   You
+     * @param      me    The character whose trade is being observed
+     * @param      you   The other character who participated in the trade
      */
     virtual void on_trade_success(character& me, character& you) = 0;
 };

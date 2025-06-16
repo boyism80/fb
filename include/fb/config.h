@@ -13,21 +13,41 @@
 
 namespace fb {
 
+/**
+ * @brief      Template struct to define the return type for configuration values.
+ *
+ * @tparam     T     The type of the configuration value.
+ */
 template <typename T> struct config_value_type
 {
     typedef T type;
 };
 
+/**
+ * @brief      Specialization for Json::Value to return a const reference.
+ */
 template <> struct config_value_type<Json::Value>
 {
     typedef const Json::Value& type;
 };
 
+/**
+ * @brief      Specialization for char* to return a const char pointer.
+ */
 template <> struct config_value_type<char*>
 {
     typedef const char* type;
 };
 
+/**
+ * @brief      Converts a JSON value to the specified type.
+ *
+ * @param[in]  value  The JSON value to convert.
+ *
+ * @tparam     T      The target type for conversion.
+ *
+ * @return     The converted value of type T.
+ */
 template <typename T>
 inline static typename config_value_type<T>::type json_value(const Json::Value& value)
 {
@@ -118,6 +138,15 @@ typename config_value_type<std::string>::type json_value<std::string>(const Json
     return value.asString();
 }
 
+/**
+ * @brief      Gets a configuration value by key path.
+ *
+ * @param[in]  k     The key path (e.g., "database:host" for nested values).
+ *
+ * @tparam     T     The type of the configuration value to retrieve.
+ *
+ * @return     The configuration value of the specified type.
+ */
 template <typename T = Json::Value>
 inline static typename config_value_type<T>::type config(const std::string& k)
 {

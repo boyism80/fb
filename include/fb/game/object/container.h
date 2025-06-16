@@ -22,153 +22,229 @@ class character;
 class context;
 
 /**
- * @brief      This class describes object_container.
+ * @brief      Container for managing game objects within a map.
+ *
+ *             This class provides a comprehensive container system for managing
+ *             all game objects within a specific map. It handles object storage,
+ *             retrieval, iteration, and lifecycle management with efficient
+ *             lookup capabilities and type-based filtering.
+ *
+ *             Key features:
+ *             - Unique sequence ID generation for objects
+ *             - Efficient object lookup by ID and reference
+ *             - Type-based object iteration and filtering
+ *             - STL-compatible iterator interface
+ *             - Safe object insertion and removal operations
+ *             - Memory management with unique pointers
  */
 class object_container
 {
 public:
-    using ptrs                  = std::unordered_map<uint32_t, std::unique_ptr<object>>;
-    using refs                  = std::unordered_map<uint32_t, object&>;
-    using iterator              = refs::iterator;
-    using const_iterator        = refs::const_iterator;
-    using handle_predicate_type = std::function<bool(object&)>;
+    using ptrs     = std::unordered_map<uint32_t, std::unique_ptr<object>>; ///< Map of object IDs to unique pointers
+    using refs     = std::unordered_map<uint32_t, object&>;                 ///< Map of object IDs to references
+    using iterator = refs::iterator;                                        ///< Iterator type for object references
+    using const_iterator        = refs::const_iterator;         ///< Const iterator type for object references
+    using handle_predicate_type = std::function<bool(object&)>; ///< Function type for object filtering predicates
 
 private:
-    ptrs     _ptrs;
-    refs     _refs;
-    uint32_t _sequence = 1;
+    ptrs     _ptrs;         ///< Storage for object unique pointers
+    refs     _refs;         ///< Fast lookup map for object references
+    uint32_t _sequence = 1; ///< Next available sequence ID for new objects
 
 public:
-    fb::game::map& owner;
+    fb::game::map& owner; ///< Reference to the map that owns this container
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new object container for the specified map.
      *
-     * @param      map   The map
+     *             Initializes an empty object container associated with the given
+     *             map, ready to manage objects within that map's boundaries.
+     *
+     * @param      map   The map that will own this object container.
      */
     object_container(fb::game::map& map);
+
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the object container and cleans up resources.
      */
     ~object_container() = default;
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      Finds the next available sequence ID for a new object.
      *
-     * @return     { description_of_the_return_value }
+     *             Searches for an unused sequence ID that can be assigned to
+     *             a new object being added to the container.
+     *
+     * @return     The next available sequence ID.
      */
     uint32_t empty_seq();
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets an iterator to the beginning of the object collection.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns a mutable iterator pointing to the first object in the
+     *             container for iteration and modification operations.
+     *
+     * @return     Iterator to the beginning of the object collection.
      */
     iterator begin();
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets an iterator to the end of the object collection.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns a mutable iterator pointing past the last object in the
+     *             container for iteration bounds checking.
+     *
+     * @return     Iterator to the end of the object collection.
      */
     iterator end();
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets a const iterator to the beginning of the object collection.
      *
-     * @return     The constant iterator.
+     *             Returns a read-only iterator pointing to the first object in the
+     *             container for safe iteration without modification.
+     *
+     * @return     Const iterator to the beginning of the object collection.
      */
     const_iterator begin() const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets a const iterator to the end of the object collection.
      *
-     * @return     The constant iterator.
+     *             Returns a read-only iterator pointing past the last object in the
+     *             container for safe iteration bounds checking.
+     *
+     * @return     Const iterator to the end of the object collection.
      */
     const_iterator end() const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Gets the number of objects currently in the container.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the total count of objects managed by this container,
+     *             useful for capacity planning and iteration bounds.
+     *
+     * @return     The number of objects in the container.
      */
     uint32_t size() const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the object with the specified ID.
      *
-     * @param[in]  i     { parameter_description }
+     *             Retrieves the object associated with the given sequence ID,
+     *             throwing an exception if the object is not found.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  i     The sequence ID of the object to retrieve.
+     *
+     * @return     Reference to the object with the specified ID.
      */
     object& at(uint32_t i);
+
     /**
-     * @brief      { function_description }
+     * @brief      Adds an object to the container.
      *
-     * @param      obj   The object
+     *             Inserts the specified object into the container, assigning it
+     *             a unique sequence ID and making it available for lookup.
+     *
+     * @param      obj   The object to add to the container.
      */
     void push(object& obj);
+
     /**
-     * @brief      Pops the given fd.
+     * @brief      Removes and returns the object with the specified ID.
      *
-     * @param[in]  fd    { parameter_description }
+     *             Removes the object from the container and returns a reference
+     *             to it, transferring ownership back to the caller.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  fd    The sequence ID of the object to remove.
+     *
+     * @return     Reference to the removed object.
      */
     object& pop(uint32_t fd);
+
     /**
-     * @brief      Pops the given object.
+     * @brief      Removes and returns the specified object.
      *
-     * @param      obj   The object
+     *             Removes the given object from the container and returns a
+     *             reference to it, transferring ownership back to the caller.
      *
-     * @return     { description_of_the_return_value }
+     * @param      obj   The object to remove from the container.
+     *
+     * @return     Reference to the removed object.
      */
     object& pop(object& obj);
     /**
-     * @brief      { function_description }
+     * @brief      Safely attempts to remove the object with the specified ID.
      *
-     * @param[in]  fd    { parameter_description }
+     *             Tries to remove the object from the container, returning a pointer
+     *             to it if successful, or nullptr if the object is not found.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  fd    The sequence ID of the object to remove.
+     *
+     * @return     Pointer to the removed object, or nullptr if not found.
      */
     object* try_pop(uint32_t fd);
+
     /**
-     * @brief      { function_description }
+     * @brief      Safely attempts to remove the specified object.
      *
-     * @param      obj   The object
+     *             Tries to remove the given object from the container, returning a
+     *             pointer to it if successful, or nullptr if the object is not found.
      *
-     * @return     { description_of_the_return_value }
+     * @param      obj   The object to remove from the container.
+     *
+     * @return     Pointer to the removed object, or nullptr if not found.
      */
     object* try_pop(object& obj);
+
     /**
-     * @brief      { function_description }
+     * @brief      Iterates over all objects of a specific type.
      *
-     * @param[in]  type  The type
-     * @param[in]  fn    The function
+     *             Applies the given predicate function to all objects in the container
+     *             that match the specified type, enabling type-filtered operations.
+     *
+     * @param[in]  type  The type of objects to iterate over.
+     * @param[in]  fn    The predicate function to apply to each matching object.
      */
     void foreach (OBJECT_TYPE type, const handle_predicate_type& fn);
+
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the container contains the specified object.
      *
-     * @param[in]  obj   The object
+     *             Determines whether the given object is currently managed by
+     *             this container.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  obj   The object to check for containment.
+     *
+     * @return     True if the object is in the container, false otherwise.
      */
     bool contains(const object& obj) const;
+
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the container contains an object with the specified ID.
      *
-     * @param[in]  fd    { parameter_description }
+     *             Determines whether an object with the given sequence ID is
+     *             currently managed by this container.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  fd    The sequence ID to check for.
+     *
+     * @return     True if an object with the ID exists, false otherwise.
      */
     bool contains(uint32_t fd) const;
 
 public:
     /**
-     * @brief      Array indexer operator.
+     * @brief      Array indexer operator for object lookup.
      *
-     * @param[in]  fd    { parameter_description }
+     *             Provides convenient array-style access to objects by their
+     *             sequence ID, returning nullptr if the object is not found.
      *
-     * @return     The result of the array indexer
+     * @param[in]  fd    The sequence ID of the object to retrieve.
+     *
+     * @return     Pointer to the object with the specified ID, or nullptr if not found.
      */
     object* operator[] (uint32_t fd);
 };

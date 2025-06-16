@@ -7,16 +7,29 @@
 namespace fb::game {
 
 /**
- * @brief      This class describes a map of .
+ * @brief      Forward declaration of the map class.
  */
 class map;
 /**
- * @brief      This class describes a character.
+ * @brief      Forward declaration of the character class.
  */
 class character;
 
 /**
- * @brief      This class describes a door.
+ * @brief      Represents an interactive door object in the game world.
+ *
+ *             This class manages door objects that can be opened, closed, locked, and unlocked
+ *             by players. Doors provide access control between different areas of the game world
+ *             and can be scripted for complex interactions. They support state management and
+ *             integration with the Lua scripting system for dynamic behavior.
+ *
+ *             Key features:
+ *             - Open/close state management
+ *             - Lock/unlock functionality for access control
+ *             - Position and dimension management on maps
+ *             - Lua scripting integration for custom door logic
+ *             - Event-driven interaction system
+ *             - Persistent state across server restarts
  */
 class door : public lua::luable
 {
@@ -49,7 +62,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  <unnamed>  The source door object (copy constructor is deleted)
      */
     door(const door&) = delete;
     /**
@@ -60,64 +73,69 @@ public:
 public:
     // const door::model&          based() const;
     //
-    // @return     { description_of_the_return_value }
+    // @return     Reference to the door's model data
     //
+    /**
+     * @brief      Toggles the door's open/closed state.
+     *
+     * @return     True if the door state was successfully toggled, false otherwise
+     */
     bool toggle();
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the door is currently open.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the door is open, false if closed
      */
     bool opened() const;
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the door is currently locked.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the door is locked, false if unlocked
      */
     bool locked() const;
     /**
-     * @brief      { function_description }
+     * @brief      Sets the lock state of the door.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  True to lock the door, false to unlock it
      */
     void lock(bool value);
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Lua binding interface for door functionality.
  */
 struct door::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for toggling door open/closed state.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_toggle(lua_State* L);
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for checking if door is locked.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_locked(lua_State* L);
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for setting door lock state.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_lock(lua_State* L);
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for checking if door is opened.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_opened(lua_State* L);
 };
