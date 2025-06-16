@@ -7,18 +7,38 @@ using System.Text;
 
 namespace Http.Formatter
 {
+    /// <summary>
+    /// Provides an abstract base class for input formatters that handle FlatBuffer protocol deserialization.
+    /// Supports both binary (application/octet-stream) and JSON (application/json) content types.
+    /// </summary>
     public abstract class FlatBufferInputFormatter : InputFormatter
     {
         const int bufferLength = 16384;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FlatBufferInputFormatter"/> class.
+        /// Configures supported media types for FlatBuffer input processing.
+        /// </summary>
         protected FlatBufferInputFormatter()
         {
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/octet-stream"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
         }
 
+        /// <summary>
+        /// When overridden in a derived class, deserializes a FlatBuffer protocol from binary data.
+        /// </summary>
+        /// <param name="reader">The binary reader containing the FlatBuffer data.</param>
+        /// <returns>The deserialized FlatBuffer protocol object.</returns>
         protected abstract IFlatBufferEx GetProtocol(BinaryReader reader);
 
+        /// <summary>
+        /// Asynchronously reads and deserializes the request body into a FlatBuffer protocol object.
+        /// Handles both JSON and binary content types with appropriate deserialization logic.
+        /// </summary>
+        /// <param name="context">The input formatter context containing request information.</param>
+        /// <returns>A task representing the asynchronous read operation with the deserialized result.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the content type is not supported.</exception>
         public async override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
             var sp = context.HttpContext.RequestServices;
@@ -55,20 +75,38 @@ namespace Http.Formatter
             }
         }
 
+        /// <summary>
+        /// When overridden in a derived class, generates a log message for the processed protocol.
+        /// </summary>
+        /// <param name="protocol">The FlatBuffer protocol object to generate a log message for.</param>
+        /// <returns>A log message string, or null if no logging is required.</returns>
         protected virtual string OnLog(IFlatBufferEx protocol)
         {
             return null;
         }
     }
 
+    /// <summary>
+    /// Provides an abstract base class for output formatters that handle FlatBuffer protocol serialization.
+    /// Supports both binary (application/octet-stream) and JSON (application/json) content types.
+    /// </summary>
     public abstract class FlatBufferOutputFormatter : OutputFormatter
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FlatBufferOutputFormatter"/> class.
+        /// Configures supported media types for FlatBuffer output processing.
+        /// </summary>
         protected FlatBufferOutputFormatter()
         {
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/octet-stream"));
             SupportedMediaTypes.Add(MediaTypeHeaderValue.Parse("application/json"));
         }
 
+        /// <summary>
+        /// Determines whether this formatter can write the specified type.
+        /// </summary>
+        /// <param name="type">The type to check for write compatibility.</param>
+        /// <returns>True if the type implements IFlatBufferEx; otherwise, false.</returns>
         protected override bool CanWriteType(Type? type)
         {
             if (type == null)
@@ -77,6 +115,13 @@ namespace Http.Formatter
             return type.IsAssignableTo(typeof(IFlatBufferEx));
         }
 
+        /// <summary>
+        /// Asynchronously writes the FlatBuffer protocol object to the response body.
+        /// Handles both JSON and binary output formats based on the request content type.
+        /// </summary>
+        /// <param name="context">The output formatter context containing response information.</param>
+        /// <returns>A task representing the asynchronous write operation.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when the context object is null or not a FlatBuffer protocol.</exception>
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
             if (context.Object == null || context.ObjectType == null)
@@ -109,6 +154,11 @@ namespace Http.Formatter
             }
         }
 
+        /// <summary>
+        /// When overridden in a derived class, generates a log message for the processed protocol.
+        /// </summary>
+        /// <param name="protocol">The FlatBuffer protocol object to generate a log message for.</param>
+        /// <returns>A log message string, or null if no logging is required.</returns>
         protected virtual string OnLog(IFlatBufferEx protocol)
         {
             return null;

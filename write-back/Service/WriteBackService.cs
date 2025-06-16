@@ -12,6 +12,10 @@ using StackExchange.Redis;
 
 namespace WriteBack.Service
 {
+    /// <summary>
+    /// Provides a background service that processes deferred database write operations.
+    /// Consumes SQL operations from Redis queues and executes them against the appropriate database shards.
+    /// </summary>
     public class WriteBackService : BackgroundService
     {
         private readonly RedisService _redisService;
@@ -20,6 +24,13 @@ namespace WriteBack.Service
         private readonly ILogger<Http.Service.WriteBackService> _logger;
         private static readonly TimeSpan _delay = TimeSpan.FromSeconds(5);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WriteBackService"/> class.
+        /// </summary>
+        /// <param name="redisService">The Redis service for accessing queue operations.</param>
+        /// <param name="configuration">The application configuration containing database connection strings.</param>
+        /// <param name="serviceProvider">The service provider for dependency injection.</param>
+        /// <param name="logger">The logger for recording write-back operations and errors.</param>
         public WriteBackService(RedisService redisService,
             IConfiguration configuration,
             IServiceProvider serviceProvider,
@@ -31,6 +42,12 @@ namespace WriteBack.Service
             _dbContext = ActivatorUtilities.CreateInstance<DbContext>(serviceProvider);
         }
 
+        /// <summary>
+        /// Executes the background service that processes write-back operations.
+        /// Creates worker threads for each database shard and monitors their execution.
+        /// </summary>
+        /// <param name="stoppingToken">The cancellation token for stopping the service.</param>
+        /// <returns>A task representing the asynchronous execution of the background service.</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var section = _configuration.GetSection("ConnectionStrings:MySql");
@@ -52,6 +69,13 @@ namespace WriteBack.Service
             }
         }
 
+        /// <summary>
+        /// Processes write-back operations for a specific database shard.
+        /// Continuously polls Redis queues for pending SQL operations and executes them in batches.
+        /// </summary>
+        /// <param name="db">The database shard identifier to process operations for.</param>
+        /// <param name="stoppingToken">The cancellation token for stopping the worker.</param>
+        /// <returns>A task representing the asynchronous processing of write-back operations.</returns>
         private async Task OnWork(int db, CancellationToken stoppingToken)
         {
             var bufferKey = $"{Const.RedisBufferKey}:{db}";

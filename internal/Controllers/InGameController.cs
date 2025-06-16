@@ -12,6 +12,10 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
+    /// <summary>
+    /// Provides in-game operations and session management for the internal API.
+    /// Handles player login/logout, server transfers, whisper messaging, and broadcasting.
+    /// </summary>
     [ApiController]
     [Route("in-game")]
     public class InGameController : ControllerBase
@@ -23,6 +27,15 @@ namespace Internal.Controllers
         private readonly SessionService _sessionService;
         private readonly DbContext _dbContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InGameController"/> class.
+        /// </summary>
+        /// <param name="logger">The logger for recording in-game operations.</param>
+        /// <param name="redisService">The Redis service for session and cache management.</param>
+        /// <param name="dataSet">The game data model containing configuration data.</param>
+        /// <param name="rabbitMqService">The RabbitMQ service for inter-server messaging.</param>
+        /// <param name="sessionService">The session service for managing user sessions.</param>
+        /// <param name="dbContext">The database context for data operations.</param>
         public InGameController(ILogger<InGameController> logger,
             RedisService redisService,
             Fb.Model.Model dataSet,
@@ -38,6 +51,12 @@ namespace Internal.Controllers
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Handles player login requests and manages session creation.
+        /// Validates server availability, manages session conflicts, and returns connection information.
+        /// </summary>
+        /// <param name="request">The login request containing player credentials and target host.</param>
+        /// <returns>A login response with connection details or error information.</returns>
         [HttpPost("login")]
         public async Task<Response.Login> Login(Request.Login request)
         {
@@ -95,6 +114,12 @@ namespace Internal.Controllers
             }
         }
 
+        /// <summary>
+        /// Handles player logout requests and cleans up session data.
+        /// Removes the player's session from Redis storage.
+        /// </summary>
+        /// <param name="request">The logout request containing the player's name.</param>
+        /// <returns>A logout response indicating success.</returns>
         [HttpPost("logout")]
         public async Task<Response.Logout> Logout(Request.Logout request)
         {
@@ -107,6 +132,12 @@ namespace Internal.Controllers
             };
         }
 
+        /// <summary>
+        /// Handles server transfer requests for moving players between game servers.
+        /// Validates target server availability and handles forced disconnections if needed.
+        /// </summary>
+        /// <param name="request">The transfer request containing target service and player information.</param>
+        /// <returns>A transfer response with target server connection details or error information.</returns>
         [HttpPost("transfer")]
         public async Task<Response.Transfer> Transfer(Request.Transfer request)
         {
@@ -157,6 +188,12 @@ namespace Internal.Controllers
             }
         }
 
+        /// <summary>
+        /// Handles whisper message requests between players.
+        /// Validates both sender and recipient sessions, checks whisper permissions, and routes the message.
+        /// </summary>
+        /// <param name="request">The whisper request containing sender, recipient, and message information.</param>
+        /// <returns>A whisper response with routing information or error details.</returns>
         [HttpPost("whisper")]
         public async Task<Response.Whisper> Whisper(Request.Whisper request)
         {
@@ -209,6 +246,12 @@ namespace Internal.Controllers
             }
         }
 
+        /// <summary>
+        /// Handles global broadcast message requests.
+        /// Publishes messages to all connected game servers via RabbitMQ.
+        /// </summary>
+        /// <param name="request">The broadcast request containing message content and type.</param>
+        /// <returns>A broadcast response confirming the message was sent.</returns>
         [HttpPost("broadcast")]
         public async Task<Response.Broadcast> Broadcast(Request.Broadcast request)
         {

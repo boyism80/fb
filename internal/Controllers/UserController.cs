@@ -15,6 +15,10 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
+    /// <summary>
+    /// Provides user management operations for the internal API.
+    /// Handles user authentication, character creation, data saving, and user preferences.
+    /// </summary>
     [ApiController]
     [Route("user")]
     public class UserController : ControllerBase
@@ -26,6 +30,15 @@ namespace Internal.Controllers
         private readonly RedisDistributedLockService _distributedLock;
         private readonly ILogger<UserController> _logger;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserController"/> class.
+        /// </summary>
+        /// <param name="configuration">The application configuration.</param>
+        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
+        /// <param name="dbContext">The database context for data operations.</param>
+        /// <param name="redisService">The Redis service for cache operations.</param>
+        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
+        /// <param name="logger">The logger for recording user operations.</param>
         public UserController(IConfiguration configuration,
             IMapper mapper,
             DbContext dbContext,
@@ -41,6 +54,11 @@ namespace Internal.Controllers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Retrieves the unique identifier for a character by name.
+        /// </summary>
+        /// <param name="name">The character name to look up.</param>
+        /// <returns>A response containing the character's UID if found.</returns>
         [HttpGet("uid/{name}")]
         public async Task<Response.GetUid> Uid(string name)
         {
@@ -64,6 +82,12 @@ namespace Internal.Controllers
             }
         }
 
+        /// <summary>
+        /// Computes a SHA256 hash of the input string.
+        /// Used for password hashing and security operations.
+        /// </summary>
+        /// <param name="value">The string value to hash.</param>
+        /// <returns>A hexadecimal string representation of the SHA256 hash.</returns>
         private static string SHA256Hash(string value)
         {
             var sha = new SHA256Managed();
@@ -76,6 +100,12 @@ namespace Internal.Controllers
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Authenticates a user with their credentials.
+        /// Verifies the user ID and password hash against stored values.
+        /// </summary>
+        /// <param name="request">The authentication request containing user credentials.</param>
+        /// <returns>An authentication response with error code and map information.</returns>
         [HttpPost("authenticate")]
         public async Task<Response.Authenticate> Authenticate(Request.Authenticate request)
         {
@@ -103,6 +133,12 @@ namespace Internal.Controllers
             };
         }
 
+        /// <summary>
+        /// Reserves a character name for a new user.
+        /// Uses a stored procedure to atomically check and reserve the name.
+        /// </summary>
+        /// <param name="request">The name reservation request.</param>
+        /// <returns>A response indicating success and the assigned UID.</returns>
         [HttpPost("reserve-name")]
         public async Task<Response.ReserveName> ReserveName(Request.ReserveName request)
         {
@@ -119,6 +155,12 @@ namespace Internal.Controllers
             };
         }
 
+        /// <summary>
+        /// Initializes a new character with basic attributes.
+        /// Creates the character record with initial stats and position.
+        /// </summary>
+        /// <param name="request">The character initialization request.</param>
+        /// <returns>A response indicating the success of character creation.</returns>
         [HttpPost("init-ch")]
         public async Task<Response.InitCharacter> InitCharacter(Request.InitCharacter request)
         {
@@ -147,6 +189,12 @@ namespace Internal.Controllers
             };
         }
 
+        /// <summary>
+        /// Completes character creation by setting appearance attributes.
+        /// Updates the character with visual characteristics like hair, sex, nation, and creature type.
+        /// </summary>
+        /// <param name="request">The character creation request with appearance data.</param>
+        /// <returns>A response indicating the success of character completion.</returns>
         [HttpPost("mk-ch")]
         public async Task<Response.MakeCharacter> MakeCharacter(Request.MakeCharacter request)
         {
@@ -176,6 +224,12 @@ namespace Internal.Controllers
             }
         }
 
+        /// <summary>
+        /// Changes a user's password after verifying current credentials and birthday.
+        /// Validates the current password and birthday before updating to the new password.
+        /// </summary>
+        /// <param name="request">The password change request with verification data.</param>
+        /// <returns>A response with error code indicating the result of the password change.</returns>
         [HttpPost("change-pw")]
         public async Task<Response.ChangePw> ChangePassword(Request.ChangePw request)
         {

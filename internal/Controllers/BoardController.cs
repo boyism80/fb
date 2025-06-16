@@ -9,6 +9,10 @@ using Response = fb.protocol._internal.response;
 
 namespace Internal.Controllers
 {
+    /// <summary>
+    /// Provides bulletin board operations for the internal API.
+    /// Handles article retrieval, writing, and deletion for the in-game bulletin board system.
+    /// </summary>
     [ApiController]
     [Route("board")]
     public class BoardController : ControllerBase
@@ -17,6 +21,12 @@ namespace Internal.Controllers
         private readonly IMapper _mapper;
         private readonly DbContext _dbContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BoardController"/> class.
+        /// </summary>
+        /// <param name="configuration">The application configuration.</param>
+        /// <param name="mapper">The AutoMapper instance for object mapping.</param>
+        /// <param name="dbContext">The database context for data operations.</param>
         public BoardController(IConfiguration configuration, IMapper mapper, DbContext dbContext)
         {
             _configuration = configuration;
@@ -24,6 +34,13 @@ namespace Internal.Controllers
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Retrieves a paginated list of articles from a specific board section.
+        /// Returns article summaries using stored procedure for efficient pagination.
+        /// </summary>
+        /// <param name="section">The board section ID to retrieve articles from.</param>
+        /// <param name="offset">The starting position for pagination.</param>
+        /// <returns>A response containing the article summary list.</returns>
         [HttpGet("{section}")]
         public async Task<Response.GetArticleList> GetArticleList(uint section, [FromQuery(Name = "offset")] ushort offset)
         {
@@ -40,6 +57,13 @@ namespace Internal.Controllers
             };
         }
 
+        /// <summary>
+        /// Retrieves a specific article by section and article ID.
+        /// Returns the full article content and navigation information.
+        /// </summary>
+        /// <param name="section">The board section ID containing the article.</param>
+        /// <param name="id">The unique identifier of the article.</param>
+        /// <returns>A response containing the article content and navigation info or error details.</returns>
         [HttpGet("{section}/{id}")]
         public async Task<Response.GetArticle> GetArticle(uint section, ushort id)
         {
@@ -70,6 +94,12 @@ namespace Internal.Controllers
             }
         }
 
+        /// <summary>
+        /// Handles article writing requests to create new board posts.
+        /// Creates a new article in the specified board section using stored procedure.
+        /// </summary>
+        /// <param name="request">The article writing request containing section, user, title, and content.</param>
+        /// <returns>A response indicating the success of article creation.</returns>
         [HttpPost("write")]
         public async Task<Response.WriteArticle> Write(Request.WriteArticle request)
         {
@@ -87,6 +117,12 @@ namespace Internal.Controllers
             };
         }
 
+        /// <summary>
+        /// Handles article deletion requests for removing board posts.
+        /// Deletes the specified article if the user has appropriate permissions.
+        /// </summary>
+        /// <param name="request">The article deletion request containing article ID and user ID.</param>
+        /// <returns>A response with the deletion result code.</returns>
         [HttpPost("delete")]
         public async Task<Response.DeleteArticle> Delete(Request.DeleteArticle request)
         {
