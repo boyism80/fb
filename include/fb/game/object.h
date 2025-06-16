@@ -96,24 +96,35 @@ public:
 
 protected:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new game object with the specified context and model.
      *
-     * @param      context  The game context managing this object
-     * @param[in]  model    The object model data containing name, appearance, and other settings
-     * @param[in]  c        Initial parameters for object construction
+     *             Creates a new game object using the provided context for management,
+     *             model data for appearance and behavior, and initial parameters for
+     *             positioning and state setup.
+     *
+     * @param[in]  context  The game context that will manage this object's lifecycle
+     * @param[in]  model    The object model containing visual and behavioral data
+     * @param[in]  c        Initial parameters including position, direction, and other setup values
      */
     object(fb::game::context& context, const fb::model::object& model, const initial_params& c);
 
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor for creating an object from another object.
      *
-     * @param[in]  right  The source object to copy from
+     *             Creates a new object by copying all properties and state from the
+     *             source object, including position, appearance, and internal data.
+     *
+     * @param[in]  right  The source object to copy all properties from
      */
     object(const object& right);
 
 public:
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the game object and cleans up all resources.
+     *
+     *             Removes the object from its current map, notifies listeners,
+     *             cleans up any associated resources, and ensures proper cleanup
+     *             of all references and connections.
      */
     virtual ~object();
 

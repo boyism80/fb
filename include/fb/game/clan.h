@@ -41,26 +41,38 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new clan with the specified context and identifier.
      *
-     * @param      context  The game context that manages this clan
+     *             Creates a new clan object managed by the given game context.
+     *             The clan starts with no members and must be populated through
+     *             the update() method or by adding members individually.
+     *
+     * @param[in]  context  The game context that manages this clan
      * @param[in]  id       The unique identifier for this clan
      */
     clan(context& context, uint32_t id);
+
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor (deleted).
      *
-     * @param[in]  <unnamed>  The source clan object (copy constructor is deleted)
+     *             Clans cannot be copied to prevent resource management issues
+     *             and maintain unique clan identity within the game context.
      */
     clan(const clan&) = delete;
+
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Move constructor for transferring clan ownership.
      *
-     * @param      <unnamed>  The source clan object to move from
+     *             Allows moving a clan object while preserving all member data,
+     *             character associations, and clan properties.
      */
     clan(clan&&);
+
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the clan and cleans up member associations.
+     *
+     *             Detaches all associated characters and cleans up clan resources
+     *             when the clan object is destroyed.
      */
     ~clan() = default;
 

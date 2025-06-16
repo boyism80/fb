@@ -52,16 +52,22 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new mutex system for the specified context.
      *
-     * @param[in]  owner  The owner.
+     *             Creates a mutex management system that will handle named locks
+     *             and deadlock detection for the given context owner.
+     *
+     * @param[in]  owner  The context that owns and manages this mutex system
      */
     mutex(fb::context& owner) :
         _owner(owner)
     { }
 
     /**
-     * @brief      Destroys the mutex.
+     * @brief      Destroys the mutex system and releases all managed locks.
+     *
+     *             Cleans up the mutex pool and ensures all named mutexes are
+     *             properly released before destruction.
      */
     ~mutex() = default;
 

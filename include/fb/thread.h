@@ -20,7 +20,12 @@ namespace fb {
 class thread_container;
 
 /**
- * @brief      This class describes a thread.
+ * @brief      Asynchronous execution thread with timer and task queue support.
+ *
+ *             This class provides a managed thread environment for executing asynchronous
+ *             tasks with built-in timer support, task queuing, and Lua integration.
+ *             Each thread maintains its own timer collection and task queue for
+ *             thread-safe asynchronous operations.
  */
 class thread : public fb::lua::luable
 {
@@ -51,13 +56,20 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new thread with the specified index.
      *
-     * @param[in]  index  The index of the thread.
+     *             Creates and starts a new managed thread for asynchronous execution.
+     *             The thread will begin processing tasks and timers immediately.
+     *
+     * @param[in]  index  The unique identifier for this thread within the thread pool
      */
     thread(uint8_t index);
+
     /**
-     * @brief      Destroys the thread.
+     * @brief      Destroys the thread and waits for completion.
+     *
+     *             Signals the thread to exit, waits for all pending tasks to complete,
+     *             and cleans up all associated resources including timers and queued tasks.
      */
     ~thread();
 
