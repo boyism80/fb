@@ -33,12 +33,12 @@ extern "C"
     }
 
 /**
- * @brief      { function_description }
+ * @brief      Creates a Lua extension implementation with the specified type and name.
  *
- * @param      type  The type
- * @param      name  The name
+ * @param      type  The type of the Lua extension.
+ * @param      name  The name of the metatable.
  *
- * @return     { description_of_the_return_value }
+ * @return     The implementation macro for the Lua extension.
  */
 #define IMPLEMENT_LUA_EXTENSION(type, name)                \
     const std::string     type::LUA_METATABLE_NAME = name; \
@@ -66,52 +66,58 @@ namespace fb::lua {
 constexpr auto DEFAULT_POOL_SIZE = 1000;
 
 /**
- * @brief      This class describes a luable.
+ * @brief      Base class for C++ objects that can be exposed to Lua scripts.
  */
 class luable;
 /**
- * @brief      This class describes a context.
+ * @brief      Lua execution context that manages script state and thread safety.
  */
 class context;
 /**
- * @brief      This class describes a root.
+ * @brief      Root Lua context that manages the global Lua state and context pool.
  */
 class root;
 /**
- * @brief      This class describes a thread.
+ * @brief      Lua thread wrapper that provides coroutine functionality.
  */
 class thread;
 
 /**
- * @brief      { function_description }
+ * @brief      Creates a new Lua context.
  *
- * @return     { description_of_the_return_value }
+ * @return     A pointer to the newly created context.
  */
 context* new_context(context* parent = nullptr);
 /**
- * @brief      Gets the specified context.
+ * @brief      Gets the context associated with the given Lua state.
  *
- * @param      ctx   The context
+ * @param      ctx   The Lua state.
  *
- * @return     { description_of_the_return_value }
+ * @return     A pointer to the associated context.
  */
 context* get(lua_State* ctx);
 /**
- * @brief      { function_description }
+ * @brief      Builds a Lua function with the specified name.
  *
- * @param[in]  name  The name
- * @param[in]  fn    The function
+ * @param[in]  name  The name of the function.
+ * @param[in]  fn    The C function to bind.
  */
 async::task<void> build(const std::string& name, lua_CFunction fn);
 /**
- * @brief      { function_description }
+ * @brief      Dumps Lua bytecode to the specified path.
  *
- * @param[in]  path  The path
+ * @param[in]  path  The path to dump the bytecode to.
  */
 async::task<void> dump(const std::string& path);
 
 /**
- * @brief      This class describes a luable.
+ * @brief      Base class for C++ objects that can be exposed to Lua scripts.
+ *
+ *             This class provides the foundation for making C++ objects accessible
+ *             from Lua scripts. It handles the metatable registration, garbage
+ *             collection, and provides utilities for pushing objects onto the Lua
+ *             stack. All game objects that need to be scriptable should inherit
+ *             from this class and implement the required Lua method bindings.
  */
 class luable
 {
@@ -120,9 +126,9 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Pushes this luable object onto the Lua stack.
      *
-     * @param      ctx   The context
+     * @param      ctx   The Lua context.
      */
     void to_lua(lua_State* ctx) const;
 
@@ -149,17 +155,23 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Built-in garbage collection function for Lua objects.
      *
-     * @param      ctx   The context
+     * @param      ctx   The Lua context.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The number of return values on the Lua stack.
      */
     static int builtin_gc(lua_State* ctx);
 };
 
 /**
- * @brief      This class describes a context.
+ * @brief      Lua execution context that manages script state and thread safety.
+ *
+ *             This class wraps a Lua state (lua_State) and provides thread-safe
+ *             access to Lua functionality. It manages coroutine execution, handles
+ *             yielding and resuming operations, and provides utilities for data
+ *             exchange between C++ and Lua. Each context can have a parent-child
+ *             relationship for nested script execution scenarios.
  */
 class context
 {
@@ -196,15 +208,15 @@ protected:
      */
     context(lua_State* ctx, context& owner, context* parent = nullptr);
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other context object to copy from.
      */
     context(const context&) = delete;
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Move constructor (deleted).
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other context object to move from.
      */
     context(context&&) = delete;
 
@@ -216,17 +228,17 @@ public:
 
 public:
     /**
-     * @brief      Assignment operator.
+     * @brief      Assignment operator (deleted).
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other context object to assign from.
      *
      * @return     The result of the assignment
      */
     context operator= (context&) = delete;
     /**
-     * @brief      Assignment operator.
+     * @brief      Move assignment operator (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other context object to move assign from.
      *
      * @return     The result of the assignment
      */
@@ -234,90 +246,90 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Loads and executes a Lua script with formatted arguments.
      *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
+     * @param[in]  fmt   The format string for the Lua script path or code.
+     * @param      args  The arguments to format into the script string.
      *
-     * @tparam     Args  { description }
+     * @tparam     Args  Variadic template arguments for formatting.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     template <class... Args>
     context& load(const std::string& fmt, Args&&... args);
     /**
-     * @brief      { function_description }
+     * @brief      Calls a Lua function with formatted arguments.
      *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
+     * @param[in]  fmt   The format string for the function name or call.
+     * @param      args  The arguments to format into the function call.
      *
-     * @tparam     Args  { description }
+     * @tparam     Args  Variadic template arguments for formatting.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     template <class... Args>
     context& func(const std::string& fmt, Args&&... args);
 
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a string value onto the Lua stack.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The string value to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushstring(const std::string& value);
     /**
-     * @brief      { function_description }
+     * @brief      Pushes an integer value onto the Lua stack.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The integer value to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushinteger(lua_Integer value);
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a number value onto the Lua stack.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The number value to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushnumber(lua_Number value);
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a nil value onto the Lua stack.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushnil();
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a boolean value onto the Lua stack.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The boolean value to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushboolean(bool value);
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a luable object pointer onto the Lua stack.
      *
-     * @param[in]  object  The object
+     * @param[in]  object  The luable object pointer to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushobject(const luable* object);
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a luable object reference onto the Lua stack.
      *
-     * @param[in]  object  The object
+     * @param[in]  object  The luable object reference to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pushobject(const luable& object);
     /**
-     * @brief      { function_description }
+     * @brief      Pushes a void pointer onto the Lua stack as light userdata.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The void pointer value to push.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& push(const void* value);
     /**
@@ -325,19 +337,19 @@ public:
      *
      * @param[in]  offset  The offset
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     context& pop(int offset);
 
     /**
-     * @brief      { function_description }
+     * @brief      Pushes an enum value as an integer onto the Lua stack.
      *
-     * @param[in]  value      The value
+     * @param[in]  value      The enum value to push as an integer.
      *
-     * @tparam     T          { description }
-     * @tparam     <unnamed>  { description }
+     * @tparam     T          The enum type to convert to integer.
+     * @tparam     <unnamed>  SFINAE enabler for enum types only.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this context for method chaining.
      */
     template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
     context& pushinteger(T value)
@@ -346,57 +358,58 @@ public:
     }
 
     /**
-     * @brief      Gets the type.
+     * @brief      Gets the type name of the value at the specified stack offset.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     The type.
+     * @return     The type name as a string.
      */
     std::string get_type(int offset);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the metatable name of the value at the specified stack offset.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The metatable name as a string.
      */
     std::string metatable(int offset);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the base table name for the specified metatable.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  metaname  The metatable name to get the base table for.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base table name as a string.
      */
     std::string basetable(const std::string& metaname);
 
     /**
-     * @brief      { function_description }
+     * @brief      Converts the value at the specified offset to a string.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset         The stack offset.
+     * @param[in]  default_value  The default value if conversion fails.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The converted string value.
      */
     std::string tostring(int offset, const std::string& default_value = "");
     /**
-     * @brief      { function_description }
+     * @brief      Gets a string argument from the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The string argument.
      */
     std::string arg_string(int offset)
     {
         return tostring(offset);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Returns a string value to the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The string return value.
      */
     std::string ret_string(int offset)
     {
@@ -404,11 +417,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Converts the value at the specified offset to an integer.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset         The stack offset.
+     * @param[in]  default_value  The default value if conversion fails.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The converted integer value.
      */
     int tointeger(int offset, int default_value = 0)
     {
@@ -420,11 +434,12 @@ public:
             return (int)lua_tointeger(*this, offset);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Converts the value at the specified offset to a number.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset         The stack offset.
+     * @param[in]  default_value  The default value if conversion fails.
      *
-     * @return     The lua integer.
+     * @return     The converted number value.
      */
     lua_Integer tonumber(int offset, lua_Integer default_value = 0)
     {
@@ -447,22 +462,22 @@ public:
             return static_cast<T>(lua_tointeger(*this, offset));
     }
     /**
-     * @brief      { function_description }
+     * @brief      Gets an integer argument from the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The integer argument.
      */
     int arg_integer(int offset)
     {
         return tointeger(offset);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Returns an integer value to the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The integer return value.
      */
     int ret_integer(int offset)
     {
@@ -470,11 +485,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Converts the value at the specified offset to a boolean.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset         The stack offset.
+     * @param[in]  default_value  The default value if conversion fails.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The converted boolean value.
      */
     bool toboolean(int offset, bool default_value = false)
     {
@@ -486,22 +502,22 @@ public:
             return lua_toboolean(*this, offset);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Gets a boolean argument from the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The boolean argument.
      */
     bool arg_boolean(int offset)
     {
         return toboolean(offset);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Returns a boolean value to the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The boolean return value.
      */
     bool ret_boolean(int offset)
     {
@@ -509,13 +525,13 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Converts a Lua userdata value to a C++ object pointer.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset of the userdata value.
      *
-     * @tparam     T       { description }
+     * @tparam     T       The C++ type to convert to.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the C++ object, or nullptr if conversion fails.
      */
     template <typename T>
     T* touserdata(int offset)
@@ -531,22 +547,22 @@ public:
     }
 
     /**
-     * @brief      Determines whether the specified offset is string.
+     * @brief      Checks if the value at the specified offset is a string.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     True if the specified offset is string, False otherwise.
+     * @return     True if the value is a string, false otherwise.
      */
     bool is_string(int offset)
     {
         return lua_isstring(*this, offset);
     }
     /**
-     * @brief      Determines whether the specified offset is object.
+     * @brief      Checks if the value at the specified offset is an object.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     True if the specified offset is object, False otherwise.
+     * @return     True if the value is an object, false otherwise.
      */
     bool is_obj(int offset)
     {
@@ -570,33 +586,33 @@ public:
         return false;
     }
     /**
-     * @brief      Determines whether the specified offset is table.
+     * @brief      Checks if the value at the specified offset is a table.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     True if the specified offset is table, False otherwise.
+     * @return     True if the value is a table, false otherwise.
      */
     bool is_table(int offset)
     {
         return lua_istable(*this, offset);
     }
     /**
-     * @brief      Determines whether the specified offset is number.
+     * @brief      Checks if the value at the specified offset is a number.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     True if the specified offset is number, False otherwise.
+     * @return     True if the value is a number, false otherwise.
      */
     bool is_number(int offset)
     {
         return lua_isnumber(*this, offset);
     }
     /**
-     * @brief      Determines whether the specified offset is nil.
+     * @brief      Checks if the value at the specified offset is nil.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      *
-     * @return     True if the specified offset is nil, False otherwise.
+     * @return     True if the value is nil, false otherwise.
      */
     bool is_nil(int offset)
     {
@@ -604,60 +620,60 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Performs a raw get operation on a table.
      *
-     * @param[in]  offset_t  The offset
-     * @param[in]  offset_e  The offset e
+     * @param[in]  offset_t  The table offset.
+     * @param[in]  offset_e  The element offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The type of the retrieved value.
      */
     int rawgeti(int offset_t, int offset_e)
     {
         return lua_rawgeti(*this, offset_t, offset_e);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Performs a raw set operation on a table.
      *
-     * @param[in]  offset_t  The offset
-     * @param[in]  offset_e  The offset e
+     * @param[in]  offset_t  The table offset.
+     * @param[in]  offset_e  The element offset.
      */
     void rawseti(int offset_t, int offset_e)
     {
         lua_rawseti(*this, offset_t, offset_e);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Gets the raw length of a table.
      *
-     * @param[in]  offset_t  The offset
+     * @param[in]  offset_t  The table offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The raw length of the table.
      */
     int rawlen(int offset_t)
     {
         return (int)lua_rawlen(*this, offset_t);
     }
     /**
-     * @brief      Removes the specified offset.
+     * @brief      Removes an element from the Lua stack.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The stack offset.
      */
     void remove(int offset)
     {
         lua_remove(*this, offset);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Creates a new table on the Lua stack.
      */
     void new_table()
     {
         lua_newtable(*this);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Iterates to the next element in a table.
      *
-     * @param[in]  offset  The offset
+     * @param[in]  offset  The table offset.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if there is a next element, false otherwise.
      */
     bool next(int offset)
     {
@@ -666,97 +682,97 @@ public:
 
 public:
     /**
-     * @brief      Counts the number of .
+     * @brief      Gets the number of arguments on the Lua stack.
      *
-     * @return     Number of .
+     * @return     The number of arguments.
      */
     int argc();
     /**
-     * @brief      { function_description }
+     * @brief      Resumes a Lua coroutine.
      *
-     * @param[in]  argc          The count of arguments
-     * @param[in]  auto_release  The automatic release
-     * @param      n             { parameter_description }
+     * @param[in]  argc          The number of arguments
+     * @param[in]  auto_release  Whether to automatically release the coroutine
+     * @param      n             The number of return values
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the coroutine resumed successfully, false otherwise.
      */
     [[nodiscard]] async::task<bool> call(int argc, bool auto_release = true, int* n = nullptr);
 
     /**
-     * @brief      { function_description }
+     * @brief      Resumes a Lua coroutine.
      *
-     * @param[in]  argc  The count of arguments
-     * @param      n     { parameter_description }
+     * @param[in]  argc  The number of arguments
+     * @param      n     The number of return values
      */
     void resume(int argc, int* n = nullptr);
     /**
-     * @brief      { function_description }
+     * @brief      Yields from a Lua coroutine.
      *
-     * @param[in]  retc  The retc
+     * @param[in]  retc  The number of return values
      *
-     * @return     { description_of_the_return_value }
+     * @return     The result of the yield operation.
      */
     int yield(int retc)
     {
         return lua_yield(*this, retc);
     }
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current state of the Lua context.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current state.
      */
     int state() const;
     /**
-     * @brief      { function_description }
+     * @brief      Releases the Lua context.
      */
     void release();
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the context is in a pending state.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if pending, false otherwise.
      */
     bool pending() const;
     /**
-     * @brief      { function_description }
+     * @brief      Sets the pending state of the context.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The value to set.
      */
     void pending(bool value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the parent context.
      *
-     * @param      parent  The parent
+     * @param      parent  The parent context.
      */
     void parent(context* parent);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the parent context.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the parent context.
      */
     context* parent() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Ensures a yield operation is performed safely.
      *
-     * @param      ctx   The context
-     * @param      obj   The object
-     * @param[in]  fn    The function
+     * @param      ctx   The context.
+     * @param      obj   The thread-switchable object.
+     * @param[in]  fn    The function to execute.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The result of the yield operation.
      */
     int ensure_yield(fb::context& ctx, fb::thread_switchable& obj, std::function<int()> fn);
 
     /**
-     * @brief      { function_description }
+     * @brief      Ensures a resume operation is performed safely.
      *
-     * @param      ctx           The context
-     * @param      obj           The object
-     * @param[in]  fn            The function
-     * @param[in]  force_resume  The force resume
+     * @param      ctx           The context.
+     * @param      obj           The thread-switchable object.
+     * @param[in]  fn            The function to execute.
+     * @param[in]  force_resume  Whether to force the resume operation.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The result of the resume operation.
      */
     int ensure_resume(fb::context& ctx, fb::thread_switchable& obj, std::function<int()> fn, bool force_resume = false);
 
@@ -765,13 +781,13 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets an environment value by key.
      *
-     * @param[in]  key   The key
+     * @param[in]  key   The key to look up.
      *
-     * @tparam     T     { description }
+     * @tparam     T     The type of the value to retrieve.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the environment value.
      */
     template <typename T>
     T* env(const char* key)
@@ -784,12 +800,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets an environment value by key.
      *
-     * @param[in]  key   The key
-     * @param      data  The data
+     * @param[in]  key   The key to set.
+     * @param      data  The data to store.
      *
-     * @tparam     T     { description }
+     * @tparam     T     The type of the data to store.
      */
     template <typename T>
     void env(const char* key, T* data)
@@ -800,7 +816,13 @@ public:
 };
 
 /**
- * @brief      This class describes a root.
+ * @brief      Root Lua context that manages the global Lua state and context pool.
+ *
+ *             This class extends the base context to provide global Lua state management.
+ *             It maintains a pool of reusable Lua contexts for performance optimization,
+ *             handles bytecode compilation and caching, and manages the lifecycle of
+ *             all Lua threads. The root context is responsible for setting up the
+ *             global Lua environment and providing context allocation/deallocation.
  */
 class root : public context
 {
@@ -826,9 +848,9 @@ public:
      */
     root(fb::thread& thread);
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other root object.
      */
     root(const root&&) = delete;
     /**
@@ -838,79 +860,75 @@ public:
 
 public:
     /**
-     * @brief      Assignment operator.
+     * @brief      Assignment operator (deleted).
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other root object.
      *
-     * @return     The result of the assignment
+     * @return     Reference to this object.
      */
     root& operator= (root&) = delete;
     /**
-     * @brief      Assignment operator.
+     * @brief      Move assignment operator (deleted).
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other root object.
      *
-     * @return     The result of the assignment
+     * @return     Reference to this object.
      */
     root& operator= (root&&) = delete;
 
 public:
     /**
-     * @brief      Loads a file.
+     * @brief      Dumps Lua bytecode to a file.
      *
-     * @param[in]  path  The path
+     * @param[in]  path  The path to dump to.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if successful, false otherwise.
      */
     bool dump(const std::string& path);
     /**
-     * @brief      Pops the object.
+     * @brief      Pops a context from the pool.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the popped context.
      */
     context* pop(context* parent);
     /**
-     * @brief      Gets the specified context.
+     * @brief      Gets the context associated with a Lua state.
      *
-     * @param      ctx   The context
+     * @param      ctx   The Lua state.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the associated context.
      */
     context* get(lua_State* ctx);
     /**
-     * @brief      { function_description }
+     * @brief      Releases a context back to the pool.
      *
-     * @param      ctx   The context
-     *
-     * @return     { description_of_the_return_value }
+     * @param      ctx   The context to release.
      */
     void release(context& ctx);
     /**
-     * @brief      { function_description }
+     * @brief      Revokes a context from the pool.
      *
-     * @param      ctx   The context
+     * @param      ctx   The context to revoke.
      */
     void revoke(context& ctx);
 
     /**
-     * @brief      { function_description }
-     *
-     * @return     { description_of_the_return_value }
+     * @brief      Switches to another thread context.
      */
     async::task<void> switching();
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the initial thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the initial thread.
      */
     fb::thread& initial_thread();
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Builds Lua bindings for a type.
      *
-     * @tparam     T     { description }
+     * @tparam     T     The type to build bindings for.
      */
     template <typename T>
     void build()
@@ -926,10 +944,10 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Builds Lua bindings for a derived type with inheritance.
      *
-     * @tparam     T     { description }
-     * @tparam     B     { description }
+     * @tparam     T     The derived type.
+     * @tparam     B     The base type.
      */
     template <typename T, typename B>
     void build()
@@ -951,10 +969,10 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Builds a Lua function binding.
      *
-     * @param[in]  name  The name
-     * @param[in]  fn    The function
+     * @param[in]  name  The name of the function.
+     * @param[in]  fn    The C function to bind.
      */
     void build(const std::string& name, lua_CFunction fn)
     {
@@ -1009,11 +1027,11 @@ public:
      */
     thread(context& owner, context* parent);
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor (deleted).
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other thread object to copy from.
      */
-    thread(const thread&) = delete;
+    thread(const thread& other) = delete;
     /**
      * @brief      Constructs a new instance.
      *
@@ -1027,9 +1045,9 @@ public:
 };
 
 /**
- * @brief      { function_description }
+ * @brief      Builds Lua bindings for a type.
  *
- * @tparam     T     { description }
+ * @tparam     T     The type to build bindings for.
  */
 template <typename T>
 async::task<void> build()
@@ -1043,10 +1061,10 @@ async::task<void> build()
 }
 
 /**
- * @brief      { function_description }
+ * @brief      Builds Lua bindings for a derived type with inheritance.
  *
- * @tparam     T     { description }
- * @tparam     B     { description }
+ * @tparam     T     The derived type.
+ * @tparam     B     The base type.
  */
 template <typename T, typename B>
 async::task<void> build()
@@ -1060,12 +1078,12 @@ async::task<void> build()
 }
 
 /**
- * @brief      { function_description }
+ * @brief      Sets an environment value by key.
  *
- * @param[in]  key   The key
- * @param      data  The data
+ * @param[in]  key   The key to set.
+ * @param      data  The data to store.
  *
- * @tparam     T     { description }
+ * @tparam     T     The type of the data to store.
  */
 template <typename T>
 async::task<void> env(const char* key, T* data)
@@ -1081,13 +1099,12 @@ async::task<void> env(const char* key, T* data)
 } // namespace fb::lua
 
 /**
- * @brief      { function_description }
+ * @brief      Pushes an integer value to the Lua stack.
  *
- * @param      L          { parameter_description }
- * @param[in]  value      The value
+ * @param      L          The Lua state.
+ * @param[in]  value      The value to push.
  *
- * @tparam     T          { description }
- * @tparam     <unnamed>  { description }
+ * @tparam     T          The type of the value.
  */
 template <typename T, typename = typename std::enable_if<std::is_enum<T>::value, T>::type>
 void lua_pushinteger(lua_State* L, T value)
@@ -1096,12 +1113,12 @@ void lua_pushinteger(lua_State* L, T value)
 }
 
 /**
- * @brief      { function_description }
+ * @brief      Converts a C++ object to a Lua userdata.
  *
- * @param      ctx   The context
- * @param[in]  self  The object
+ * @param      ctx   The Lua state.
+ * @param[in]  self  The object to convert.
  *
- * @tparam     T     { description }
+ * @tparam     T     The type of the object.
  */
 template <typename T>
 inline void to_lua(lua_State* ctx, const T* self)
@@ -1115,14 +1132,14 @@ inline void to_lua(lua_State* ctx, const T* self)
 }
 
 /**
- * @brief      { function_description }
+ * @brief      Loads a Lua script.
  *
- * @param[in]  fmt   The format
- * @param      args  The arguments
+ * @param[in]  fmt   The format of the script.
+ * @param      args  The arguments for the format.
  *
- * @tparam     Args  { description }
+ * @tparam     Args  The types of the arguments.
  *
- * @return     { description_of_the_return_value }
+ * @return     A reference to the context.
  */
 template <class... Args>
 fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
@@ -1155,14 +1172,14 @@ fb::lua::context& fb::lua::context::load(const std::string& fmt, Args&&... args)
 }
 
 /**
- * @brief      { function_description }
+ * @brief      Gets a global function by name.
  *
- * @param[in]  fmt   The format
- * @param      args  The arguments
+ * @param[in]  fmt   The format of the function name.
+ * @param      args  The arguments for the format.
  *
- * @tparam     Args  { description }
+ * @tparam     Args  The types of the arguments.
  *
- * @return     { description_of_the_return_value }
+ * @return     A reference to the function.
  */
 template <class... Args>
 fb::lua::context& fb::lua::context::func(const std::string& fmt, Args&&... args)

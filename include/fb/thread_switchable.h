@@ -28,33 +28,33 @@ protected:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The ID of the thread.
      */
     thread_switchable(uint32_t id);
 
 public:
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the thread switchable.
      */
     virtual ~thread_switchable() = default;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread associated with this thread switchable.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the associated thread.
      */
     virtual fb::thread* thread() const = 0;
 
     /**
-     * @brief      { function_description }
+     * @brief      Asserts that the current thread matches the thread switchable's thread.
      */
     virtual void assert_thread() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the current thread matches the thread switchable's thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the threads match, false otherwise.
      */
     virtual bool matched_thread() const;
 };

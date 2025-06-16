@@ -8,29 +8,50 @@
 
 namespace fb::amqp {
 
+/**
+ * @brief      AMQP message queue for inter-service communication.
+ *
+ *             This class represents a message queue within an AMQP connection.
+ *             It provides functionality for binding to exchanges, consuming messages,
+ *             and handling different message types with type-safe handlers. Used for
+ *             asynchronous communication between different server components.
+ */
 class queue
 {
 public:
     friend class socket;
 
 public:
-    using handle_func      = std::function<async::task<void>(const uint8_t*)>;
-    using handle_container = std::unordered_map<uint32_t, handle_func>;
+    using handle_func      = std::function<async::task<void>(const uint8_t*)>; ///< Message handler function type
+    using handle_container = std::unordered_map<uint32_t, handle_func>;        ///< Container for message handlers
 
 private:
-    socket&          _owner;
-    handle_container _handler;
-    amqp_bytes_t     _raw_name;
-    std::string      _name;
-    amqp_bytes_t     _raw_tag;
-    std::string      _tag;
-    std::string      _route;
+    socket&          _owner;    ///< Reference to the owning AMQP socket
+    handle_container _handler;  ///< Map of command types to handler functions
+    amqp_bytes_t     _raw_name; ///< Raw AMQP queue name bytes
+    std::string      _name;     ///< Queue name as string
+    amqp_bytes_t     _raw_tag;  ///< Raw AMQP consumer tag bytes
+    std::string      _tag;      ///< Consumer tag as string
+    std::string      _route;    ///< Routing key for this queue
 
 private:
+    /**
+     * @brief      Constructs a new AMQP queue (private, called by socket).
+     *
+     * @param      owner  The AMQP socket that owns this queue.
+     * @param[in]  name   The raw AMQP queue name bytes.
+     */
     queue(socket& owner, const amqp_bytes_t& name);
+
+    /**
+     * @brief      Copy constructor is deleted to prevent copying.
+     */
     queue(const queue&) = delete;
 
 public:
+    /**
+     * @brief      Destroys the AMQP queue and cleans up resources.
+     */
     ~queue();
 
 public:

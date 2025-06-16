@@ -723,8 +723,7 @@ namespace Runner.ViewModel
                     conf["thread"] = JObject.FromObject(new
                     {
                         logic = 12,
-                        io = 12,
-                        background = 8
+                        io = 12
                     });
                     conf["internal"] = JObject.FromObject(new
                     {
@@ -777,8 +776,7 @@ namespace Runner.ViewModel
                     conf["thread"] = JObject.FromObject(new
                     {
                         logic = 12,
-                        io = 12,
-                        background = 8
+                        io = 12
                     });
                     conf["save"] = SaveInterval;
                     conf["internal"] = JObject.FromObject(new
@@ -813,8 +811,7 @@ namespace Runner.ViewModel
                 gatewayConf["thread"] = JObject.FromObject(new
                 {
                     logic = 12,
-                    io = 12,
-                    background = 8
+                    io = 12
                 });
                 gatewayConf["log"] = new JArray("debug", "info", "warn", "fatal");
                 gatewayConf["entrypoints"] = new JArray();

@@ -61,15 +61,6 @@ RUN cmake --build . --config Release --parallel
 RUN make install
 
 WORKDIR /app
-RUN git clone https://github.com/yhirose/cpp-httplib
-WORKDIR /app/cpp-httplib
-RUN git checkout v0.18.1
-WORKDIR /app/cpp-httplib/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. 
-RUN cmake --build . --parallel
-RUN make install
-
-WORKDIR /app
 RUN git clone https://github.com/microsoft/cpp-async
 WORKDIR /app/cpp-async
 RUN git checkout v1.1.0

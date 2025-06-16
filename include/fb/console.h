@@ -26,13 +26,20 @@ bool SetConsoleIcon(int id);
 namespace fb {
 
 /**
- * @brief      This class describes a console.
+ * @brief      Cross-platform console utility class for formatted output and terminal control.
+ *
+ *             This static class provides comprehensive console functionality including
+ *             formatted text output with alignment options, progress bar display,
+ *             cursor positioning, and terminal detection. It supports both TTY and
+ *             non-TTY environments with appropriate fallbacks, and includes thread-safe
+ *             operations for multi-threaded applications. The class handles platform
+ *             differences between Windows and Unix-like systems transparently.
  */
 static class console
 {
 public:
     /**
-     * @brief      This class describes an align type.
+     * @brief      Text alignment options for console output formatting.
      */
     enum class align_type : uint8_t
     {
@@ -67,14 +74,12 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Moves the cursor to a new line.
      */
     static void newline();
 
     /**
-     * @brief      Clears the given line.
-     *
-     * @param[in]  line  The line
+     * @brief      Clears the current line.
      */
     static void clear();
 
@@ -84,40 +89,40 @@ public:
     static void save_point();
 
     /**
-     * @brief      { function_description }
+     * @brief      Restores the previously saved cursor position.
      */
     static void restore_point();
 
     /**
-     * @brief      { function_description }
+     * @brief      Moves the cursor up by the specified number of lines.
      *
-     * @param[in]  line  The line
+     * @param[in]  line  The number of lines to move up.
      */
     static void up(uint8_t line);
 
     /**
-     * @brief      { function_description }
+     * @brief      Moves the cursor down by the specified number of lines.
      *
-     * @param[in]  line  The line
+     * @param[in]  line  The number of lines to move down.
      */
     static void down(uint8_t line);
 
     /**
-     * @brief      { function_description }
+     * @brief      Displays a progress bar with text and percentage.
      *
-     * @param[in]  text      The text
-     * @param[in]  progress  The progress
+     * @param[in]  text      The text to display alongside the progress bar.
+     * @param[in]  progress  The progress percentage (0.0 to 100.0).
      */
     static void progress(const std::string& text, float progress);
 
     /**
-     * @brief      { function_description }
+     * @brief      Prints formatted text with specified alignment.
      *
-     * @param[in]  align  The align
-     * @param[in]  fmt    The format
-     * @param      args   The arguments
+     * @param[in]  align  The text alignment (left, right, center).
+     * @param[in]  fmt    The format string.
+     * @param      args   The arguments for formatting.
      *
-     * @tparam     Args   { description }
+     * @tparam     Args   The types of the formatting arguments.
      */
     template <class... Args>
     static void put(align_type align, const std::string& fmt, Args&&... args)
@@ -155,12 +160,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Prints formatted text with left alignment.
      *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
+     * @param[in]  fmt   The format string.
+     * @param      args  The arguments for formatting.
      *
-     * @tparam     Args  { description }
+     * @tparam     Args  The types of the formatting arguments.
      */
     template <class... Args>
     static void put(const std::string& fmt, Args&&... args)
@@ -170,13 +175,13 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Prints formatted text with specified alignment and moves to new line.
      *
-     * @param[in]  align  The align
-     * @param[in]  fmt    The format
-     * @param      args   The arguments
+     * @param[in]  align  The text alignment (left, right, center).
+     * @param[in]  fmt    The format string.
+     * @param      args   The arguments for formatting.
      *
-     * @tparam     Args   { description }
+     * @tparam     Args   The types of the formatting arguments.
      */
     template <class... Args>
     static void puts(align_type align, const std::string& fmt, Args&&... args)
@@ -194,12 +199,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Prints formatted text with left alignment and moves to new line.
      *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
+     * @param[in]  fmt   The format string.
+     * @param      args  The arguments for formatting.
      *
-     * @tparam     Args  { description }
+     * @tparam     Args  The types of the formatting arguments.
      */
     template <class... Args>
     static void puts(const std::string& fmt, Args&&... args)
@@ -209,12 +214,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Prints a comment below the current line without affecting cursor position.
      *
-     * @param[in]  fmt   The format
-     * @param      args  The arguments
+     * @param[in]  fmt   The format string.
+     * @param      args  The arguments for formatting.
      *
-     * @tparam     Args  { description }
+     * @tparam     Args  The types of the formatting arguments.
      */
     template <class... Args>
     static void comment(const std::string& fmt, Args&&... args)

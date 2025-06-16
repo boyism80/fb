@@ -7,7 +7,21 @@
 namespace fb::game {
 
 /**
- * @brief      This class describes a clan.
+ * @brief      Represents a player clan for guild-based gameplay.
+ *
+ *             This class manages a clan (guild) of players who have joined together for
+ *             long-term cooperative gameplay and social interaction. It handles clan
+ *             membership, hierarchy, titles, and provides clan-specific functionality
+ *             such as member management and clan-wide communication.
+ *
+ *             Key features:
+ *             - Clan membership management with hierarchical roles
+ *             - Clan title and naming system
+ *             - Member synchronization across server instances
+ *             - Real-time member tracking and status
+ *             - Proximity-based member queries for area effects
+ *             - Lua scripting integration for clan-based logic
+ *             - Persistent clan data management
  */
 class clan : public lua::luable
 {
@@ -29,20 +43,20 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The context
-     * @param[in]  id       The identifier
+     * @param      context  The game context that manages this clan
+     * @param[in]  id       The unique identifier for this clan
      */
     clan(context& context, uint32_t id);
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  <unnamed>  The source clan object (copy constructor is deleted)
      */
     clan(const clan&) = delete;
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      <unnamed>  The source clan object to move from
      */
     clan(clan&&);
     /**
@@ -52,91 +66,91 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Updates the clan's name, title, and member list from external data.
      *
-     * @param[in]  name     The name
-     * @param[in]  title    The title
-     * @param[in]  members  The members
+     * @param[in]  name     The new clan name
+     * @param[in]  title    The optional clan title/motto
+     * @param[in]  members  The updated list of clan members
      */
     void update(const std::string&                name,
                 const std::optional<std::string>& title,
                 const std::vector<clan_member>&   members);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the unique identifier of this clan.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The clan's unique ID
      */
     uint32_t id() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the name of the clan.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the clan's name string
      */
     const std::string& name() const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the clan's title/motto.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the optional clan title string
      */
     const std::optional<std::string>& title() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the clan's title/motto.
      *
-     * @param[in]  title  The title
+     * @param[in]  title  The new clan title to set
      */
     void title(const std::optional<std::string>& title);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets all clan members with their roles and information.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the map of member names to clan member data
      */
     const std::unordered_map<std::string, clan_member>& members() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Adds a new member to the clan.
      *
-     * @param[in]  member  The member
+     * @param[in]  member  The clan member data to add
      */
     void join(const clan_member& member);
 
     /**
-     * @brief      { function_description }
+     * @brief      Removes a member from the clan by name.
      *
-     * @param[in]  member  The member
+     * @param[in]  member  The name of the member to remove
      */
     void leave(const std::string& member);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets all currently online clan member characters.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the map of character IDs to character pointers
      */
     const std::unordered_map<uint32_t, fb::game::character*>& characters() const;
 
     /**
-     * @brief      Attaches the character.
+     * @brief      Attaches a character to the clan as an active member.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character to attach to the clan
      */
     void attach_character(character& ch);
     /**
-     * @brief      Detaches the character.
+     * @brief      Detaches a character from the clan's active members.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character to detach from the clan
      */
     void detach_character(character& ch);
 
     /**
-     * @brief      { function_description }
+     * @brief      Finds clan members near a specific position on a map.
      *
-     * @param[in]  map       The map
-     * @param[in]  position  The position
+     * @param[in]  map       The map to search on
+     * @param[in]  position  The center position to search around
      *
-     * @return     { description_of_the_return_value }
+     * @return     Vector of character pointers for nearby clan members
      */
     std::vector<character*> nears(const fb::game::map& map, const fb::model::point16_t& position) const;
 };
@@ -144,63 +158,63 @@ public:
 struct clan::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting the clan's name.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_name(lua_State* L);
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting all clan members.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_members(lua_State* L);
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for finding nearby clan members.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_nears(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting the clan title.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_title(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for adding a member to the clan.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_join(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for removing a member from the clan.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_leave(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for sending messages to clan members.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_message(lua_State* L);
 };

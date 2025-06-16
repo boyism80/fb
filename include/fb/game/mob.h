@@ -9,12 +9,23 @@ using namespace std::chrono_literals;
 namespace fb::game {
 
 /**
- * @brief      This class describes a character.
+ * @brief      Forward declaration of the character class.
  */
 class character;
 
 /**
- * @brief      This class describes a rezen.
+ * @brief      Manages mob respawn (regen) functionality for a specific spawn point.
+ *
+ *             This class handles the respawning of mobs at designated spawn points throughout
+ *             the game world. It manages spawn timing, mob count tracking, and coordinates
+ *             with the threading system to ensure proper mob population across all maps.
+ *
+ *             Key features:
+ *             - Automatic mob respawn timing and management
+ *             - Spawn count tracking and limits
+ *             - Thread-safe spawn operations
+ *             - Integration with mob spawn model configuration
+ *             - Respawn delay and cooldown management
  */
 class rezen
 {
@@ -26,33 +37,58 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new rezen (respawn manager) instance.
      *
-     * @param      context  The context
-     * @param[in]  model    The model
+     *             Initializes a respawn manager for a specific mob spawn point using
+     *             the provided context and spawn model configuration.
+     *
+     * @param      context  The game context managing this respawn point.
+     * @param[in]  model    The mob spawn model containing spawn configuration.
      */
     rezen(fb::game::context& context, const fb::model::mob_spawn& model);
 
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the rezen instance.
      */
     ~rezen() = default;
 
     /**
-     * @brief      { function_description }
+     * @brief      Decreases the active mob count for this spawn point.
+     *
+     *             Called when a mob from this spawn point is killed or removed,
+     *             allowing for potential respawn based on the spawn configuration.
      */
     void decrease();
 
     /**
-     * @brief      { function_description }
+     * @brief      Spawns mobs at this spawn point if conditions are met.
      *
-     * @param[in]  thread_id  The thread identifier
+     *             Checks spawn conditions (count limits, timing, etc.) and spawns
+     *             new mobs if appropriate. This method is called periodically by
+     *             the specified thread.
+     *
+     * @param[in]  thread_id  The thread identifier responsible for this spawn point.
      */
     void spawn(std::thread::id thread_id);
 };
 
 /**
- * @brief      This class describes a mob.
+ * @brief      Represents a monster or hostile NPC in the game world.
+ *
+ *             This class extends the life class to provide functionality specific to
+ *             computer-controlled hostile entities. Mobs have AI behavior, can attack
+ *             players, drop items when killed, and are managed by the respawn system.
+ *             They support various AI states, target tracking, and scripted behaviors.
+ *
+ *             Key features:
+ *             - AI-driven behavior with target acquisition and combat
+ *             - Item dropping system with configurable loot tables
+ *             - Respawn system integration with rezen management
+ *             - Owner-based mob spawning for player summons
+ *             - Lua scripting integration for custom AI behaviors
+ *             - Thread-safe operations with proper assertions
+ *             - Buff/debuff system integration
+ *             - Visibility and hiding mechanics
  */
 class mob : public life
 {
@@ -68,14 +104,18 @@ public:
 
 public:
     /**
-     * @brief      { struct_description }
+     * @brief      Initial parameters for mob construction.
+     *
+     *             This structure extends the base life initial parameters with
+     *             mob-specific configuration options including spawn state,
+     *             respawn management, and ownership information.
      */
     struct initial_params : fb::game::life::initial_params
     {
     public:
-        const bool             alive = false;
-        fb::game::rezen* const rezen = nullptr;
-        fb::game::character*   owner = nullptr;
+        const bool             alive = false;   ///< Whether the mob should spawn alive
+        fb::game::rezen* const rezen = nullptr; ///< The respawn manager for this mob
+        fb::game::character*   owner = nullptr; ///< The character that owns this mob (for summons)
     };
 
 private:
@@ -105,442 +145,519 @@ public:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new mob with the specified parameters.
      *
-     * @param      context  The context
-     * @param[in]  model    The model
-     * @param[in]  params   The parameters
-     * @param[in]  config  The configuration
+     *             Creates a mob instance using the provided context, model data,
+     *             and initialization parameters. Sets up AI behavior, stats,
+     *             and respawn management based on the configuration.
+     *
+     * @param      context  The game context managing this mob.
+     * @param[in]  model    The mob model containing base stats and behavior.
+     * @param[in]  params   The initialization parameters for this mob instance.
      */
     mob(fb::game::context& context, const fb::model::mob& model, const initial_params& params);
 
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Copy constructor for mob duplication.
      *
-     * @param[in]  right  The right
+     *             Creates a copy of an existing mob, preserving its current state
+     *             and configuration for duplication or backup purposes.
+     *
+     * @param[in]  right  The mob to copy from.
      */
     mob(const mob& right);
 
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the mob and cleans up resources.
+     *
+     *             Handles proper cleanup of AI threads, item drops, respawn
+     *             management, and other mob-specific resources.
      */
     ~mob();
 
 private:
     /**
-     * @brief      Finds a target.
+     * @brief      Finds a suitable target for AI behavior.
      *
-     * @return     { description_of_the_return_value }
+     *             Searches nearby areas for potential targets based on the mob's
+     *             AI configuration, aggression settings, and targeting preferences.
+     *
+     * @return     Pointer to the selected target, or nullptr if no target found.
      */
     fb::game::life* find_target();
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the mob is adjacent to the specified target.
      *
-     * @param[in]  target  The target
-     * @param      out     The out
+     *             Determines if the mob is close enough to the target for melee
+     *             attacks and calculates the direction to face the target.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  target  The target to check proximity to.
+     * @param      out     Output parameter for the direction to the target.
+     *
+     * @return     True if the mob is adjacent to the target, false otherwise.
      */
     bool near_target(const fb::game::life& target, DIRECTION& out) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Attempts to move the mob one step toward the specified position.
      *
-     * @param[in]  position  The position
+     *             Performs pathfinding and collision detection to move the mob
+     *             closer to the target position, handling obstacles and boundaries.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  position  The target position to move toward.
+     *
+     * @return     True if the movement was successful, false if blocked.
      */
     bool move_step(const fb::model::point16_t& position);
 
     /**
-     * @brief      { function_description }
+     * @brief      Executes the mob's Lua AI script asynchronously.
+     *
+     *             Calls the mob's custom AI script if available, allowing for
+     *             complex scripted behaviors and decision-making processes.
+     *
+     * @return     Async task that completes when script execution finishes.
      */
     [[nodiscard]] async::task<bool> call_script();
 
     /**
-     * @brief      { function_description }
+     * @brief      Executes the mob's AI behavior for the current time step.
      *
-     * @param[in]  now   The now
+     *             Processes AI logic including target acquisition, movement,
+     *             combat decisions, and state transitions based on current conditions.
+     *
+     * @param[in]  now   The current game time for AI processing.
      */
     void AI(const fb::model::datetime& now);
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base hit points from the model.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the base HP value defined in the mob's model data,
+     *             without any temporary buffs or modifications applied.
+     *
+     * @return     The base hit points value from the mob model.
      */
     uint32_t base_hp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current HP buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the temporary HP bonus or penalty currently applied
+     *             to this mob through spells, items, or other effects.
+     *
+     * @return     The current HP buff value (can be positive or negative).
      */
     uint32_t buff_hp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the HP buff modifier.
      *
-     * @param[in]  value  The value
+     *             Applies a temporary HP bonus or penalty to the mob, typically
+     *             from spells, items, or other temporary effects.
+     *
+     * @param[in]  value  The HP buff value to apply.
      */
     void buff_hp(uint32_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base mana points from the model.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the base MP value defined in the mob's model data,
+     *             without any temporary buffs or modifications applied.
+     *
+     * @return     The base mana points value from the mob model.
      */
     uint32_t base_mp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current MP buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the temporary MP bonus or penalty currently applied
+     *             to this mob through spells, items, or other effects.
+     *
+     * @return     The current MP buff value (can be positive or negative).
      */
     uint32_t buff_mp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the MP buff modifier.
      *
-     * @param[in]  value  The value
+     *             Applies a temporary MP bonus or penalty to the mob, typically
+     *             from spells, items, or other temporary effects.
+     *
+     * @param[in]  value  The MP buff value to apply.
      */
     void buff_mp(uint32_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base strength from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base strength value from the mob model
      */
     uint8_t base_str() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current strength buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current strength buff value
      */
     uint8_t buff_str() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the strength buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The strength buff value to apply
      */
     void buff_str(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base dexterity from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base dexterity value from the mob model
      */
     uint8_t base_dex() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current dexterity buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current dexterity buff value
      */
     uint8_t buff_dex() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the dexterity buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The dexterity buff value to apply
      */
     void buff_dex(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base intelligence from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base intelligence value from the mob model
      */
     uint8_t base_int() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current intelligence buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current intelligence buff value
      */
     uint8_t buff_int() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the intelligence buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The intelligence buff value to apply
      */
     void buff_int(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base physical defense from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base physical defense value from the mob model
      */
     int8_t base_phydef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current physical defense buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current physical defense buff value
      */
     int8_t buff_phydef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the physical defense buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The physical defense buff value to apply
      */
     void buff_phydef(int8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base magical defense from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base magical defense value from the mob model
      */
     int8_t base_magdef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current magical defense buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current magical defense buff value
      */
     int8_t buff_magdef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the magical defense buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The magical defense buff value to apply
      */
     void buff_magdef(int8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base damage from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base damage value from the mob model
      */
     uint8_t base_dam() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current damage buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current damage buff value
      */
     uint8_t buff_dam() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the damage buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The damage buff value to apply
      */
     void buff_dam(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's base hit rate from the model.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The base hit rate value from the mob model
      */
     uint8_t base_hit() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current hit rate buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current hit rate buff value
      */
     uint8_t buff_hit() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the hit rate buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The hit rate buff value to apply
      */
     void buff_hit(uint8_t value) override final;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Executes the mob's action for the current time step.
+     *
+     *             Processes the mob's AI behavior, movement, combat actions, and
+     *             other time-based activities for the specified game time.
+     *
+     * @param[in]  now   The current game time for action processing.
+     *
+     * @return     Async task that completes when the action is finished.
      */
     [[nodiscard]] async::task<void> action(fb::model::datetime now);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the time of the mob's last action.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the timestamp when this mob last performed an action,
+     *             used for timing calculations and AI scheduling.
+     *
+     * @return     Reference to the last action timestamp.
      */
     const fb::model::datetime& action_time() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the time of the mob's last action.
      *
-     * @param[in]  dt    { parameter_description }
+     *             Updates the timestamp when this mob last performed an action,
+     *             used for timing calculations and AI scheduling.
+     *
+     * @param[in]  dt    The new action timestamp to set.
      */
     void action_time(const fb::model::datetime& dt);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's current target.
      *
-     * @return     { description_of_the_return_value }
+     *             Returns the life entity that this mob is currently targeting
+     *             for combat or other AI behaviors.
+     *
+     * @return     Pointer to the current target, or nullptr if no target.
      */
     fb::game::life* target() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the mob's current target.
      *
-     * @param      value  The value
+     *             Assigns a new target for this mob's AI behavior, typically
+     *             for combat or pursuit actions.
+     *
+     * @param      value  The new target to assign.
      */
     void target(fb::game::life* value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's oblivion target (last attacker).
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the life entity that last attacked this mob
      */
     fb::game::life* oblivion() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the mob's oblivion target (last attacker).
      *
-     * @param      value  The value
+     * @param      value  The life entity that attacked this mob
      */
     void oblivion(fb::game::life* value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates and returns the mob's current target.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the updated target, or nullptr if no valid target
      */
     fb::game::life* update_target();
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the mob is available for actions.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the mob can perform actions, false otherwise
      */
     virtual bool available() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Calculates auto-attack damage based on target size.
      *
-     * @param[in]  size  The size
+     * @param[in]  size  The target mob size (affects damage calculation)
      *
-     * @return     { description_of_the_return_value }
+     * @return     The calculated damage value for auto-attack
      */
     uint32_t auto_attack_damage(MOB_SIZE size) const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Applies damage to the mob.
      *
-     * @param[in]  value     The value
-     * @param      from      The from
-     * @param[in]  critical  The critical
+     *             Processes incoming damage to the mob, handling defense calculations,
+     *             critical hits, and death conditions. Updates HP and triggers
+     *             appropriate responses based on the damage source.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  value     The base damage value to apply.
+     * @param      from      The object causing the damage (optional).
+     * @param[in]  critical  Whether this is a critical hit.
+     *
+     * @return     The actual damage dealt after defense calculations.
      */
     uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Kills the mob and handles death processing.
      *
-     * @param      from          The from
-     * @param[in]  destroy_type  The destroy type
+     *             Processes the mob's death, including item drops, experience
+     *             distribution, respawn management, and cleanup operations.
+     *
+     * @param      from          The object that caused the death (optional).
+     * @param[in]  destroy_type  The type of destruction (normal, admin, etc.).
      */
     void kill(fb::game::object* from = nullptr, DESTROY_TYPE destroy_type = DESTROY_TYPE::DEFAULT) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Drops items when the mob dies.
+     *
+     *             Handles the item dropping logic when the mob is killed,
+     *             including loot table processing and item placement.
      */
     void drop_items();
 
     /**
-     * @brief      { function_description }
+     * @brief      Asserts that the current thread is the correct thread for this mob.
      */
     void assert_thread() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Moves the mob in the specified direction.
      *
-     * @param[in]  direction  The direction
+     * @param[in]  direction  The direction to move
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the move was successful, false otherwise
      */
     bool move(DIRECTION direction) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the mob's item inventory.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the vector of items carried by this mob
      */
     const std::vector<item*>& items() const;
 
     /**
-     * @brief      Pushes an item.
+     * @brief      Adds an item to the mob's inventory.
      *
-     * @param      i     { parameter_description }
+     * @param      i     The item to add to the mob's inventory
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the item was successfully added, false otherwise
      */
     bool push_item(item& i);
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if this mob is hidden from the target.
      *
-     * @param[in]  target  The target
+     * @param[in]  target  The target object to check visibility against
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if this mob is hidden from the target, false otherwise
      */
     bool hidden(const object& target) const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the mob's hidden state.
      *
-     * @param[in]  enabled  Indicates if enabled
+     * @param[in]  enabled  True to hide the mob, false to make it visible
      */
     void hidden(bool enabled);
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Event listener interface for mob-specific events.
+ *
+ *             This interface extends the life listener to provide event handling
+ *             specifically for mob entities. Currently inherits all functionality
+ *             from the life listener without additional mob-specific events.
  */
 struct mob::listener_t : public virtual fb::game::life::listener_t
 { };
 
 /**
- * @brief      { struct_description }
+ * @brief      Lua bindings for mob methods.
  */
 struct mob::builtin
 {
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding to get or set the mob's current target.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_target(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding to get or set the mob's oblivion target (last attacker).
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_oblivion(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding to get the mob's owner (if it's a spawned mob).
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_owner(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding to get the mob's item inventory.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_items(lua_State* L);
 };

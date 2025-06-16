@@ -87,12 +87,6 @@ git checkout v1.1.0
 POPD
 ROBOCOPY cpp-async\include\async\ %DEST%\include\async\ *.h
 
-git clone https://github.com/yhirose/cpp-httplib
-PUSHD cpp-httplib
-git checkout v0.18.1
-POPD
-COPY cpp-httplib\httplib.h %DEST%\include\httplib.* /Y
-
 git clone https://github.com/redis/hiredis.git
 PUSHD hiredis
 git checkout v1.2.0

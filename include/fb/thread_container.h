@@ -11,7 +11,13 @@ namespace fb {
 class context;
 
 /**
- * @brief      This class describes thread_container.
+ * @brief      Container for managing multiple worker threads with task distribution.
+ *
+ *             This class provides a thread pool implementation that manages multiple
+ *             worker threads and distributes tasks among them. It supports thread
+ *             selection by index, ID, or modular arithmetic, and provides mechanisms
+ *             for task enqueueing with condition checking and callback handling.
+ *             Essential for multi-threaded server applications requiring load balancing.
  */
 class thread_container
 {
@@ -32,31 +38,32 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      context  The context
+     * @param      context  The context to use.
+     * @param      count    The number of threads to create.
      */
     thread_container(fb::context& context, uint32_t count);
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the thread container.
      */
     ~thread_container();
 
     /**
      * @brief      Constructs a new instance.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other thread container to copy from.
      */
     thread_container(const thread_container&) = delete;
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other thread container to move from.
      */
     thread_container(thread_container&&) = delete;
 
     /**
      * @brief      Assignment operator.
      *
-     * @param      <unnamed>  { parameter_description }
+     * @param      other  The other thread container to copy from.
      *
      * @return     The result of the assignment
      */
@@ -64,7 +71,7 @@ public:
     /**
      * @brief      Assignment operator.
      *
-     * @param[in]  <unnamed>  { parameter_description }
+     * @param[in]  other  The other thread container to copy from.
      *
      * @return     The result of the assignment
      */
@@ -72,95 +79,95 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread at the specified index.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The index of the thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the thread at the specified index.
      */
     fb::thread* at(uint8_t index) const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread with the specified thread ID.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The ID of the thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the thread with the specified ID.
      */
     fb::thread* at(std::thread::id id) const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets a thread using modular arithmetic on the ID.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The ID of the thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the selected thread.
      */
     fb::thread* modular(uint32_t id) const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A pointer to the current thread.
      */
     fb::thread* current();
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current thread (const version).
      *
-     * @return     { description_of_the_return_value }
+     * @return     A const pointer to the current thread.
      */
     const fb::thread* current() const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the number of threads in the container.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The number of threads.
      */
     uint8_t count() const;
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the container is empty.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the container is empty, false otherwise.
      */
     bool empty() const;
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the specified index is valid.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The index of the thread.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the index is valid, false otherwise.
      */
     bool valid(uint8_t index) const;
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the specified thread pointer is valid.
      *
-     * @param      thread  The thread
+     * @param      thread  The thread to check.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the thread pointer is valid, false otherwise.
      */
     bool valid(fb::thread* thread) const;
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the specified thread reference is valid.
      *
-     * @param      thread  The thread
+     * @param      thread  The thread reference to check.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the thread reference is valid, false otherwise.
      */
     bool valid(fb::thread& thread) const;
     /**
-     * @brief      { function_description }
+     * @brief      Gets the size of the container.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The size of the container.
      */
     size_t size() const;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a task with condition checking and callbacks.
      *
-     * @param      pivot       The pivot
-     * @param[in]  condition   The condition
-     * @param[in]  fn          The function
-     * @param[in]  error       The error
-     * @param[in]  callback    The callback
+     * @param      pivot       The pivot object for thread selection.
+     * @param[in]  condition   The condition function to check.
+     * @param[in]  fn          The function to execute.
+     * @param[in]  error       The error handler.
+     * @param[in]  callback    The success callback.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      */
     template <typename ReturnType>
     void enqueue(thread_switchable&                                         pivot,
@@ -193,13 +200,13 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a void task with condition checking and callbacks.
      *
-     * @param      pivot      The pivot
-     * @param[in]  condition  The condition
-     * @param[in]  fn         The function
-     * @param[in]  error      The error
-     * @param[in]  callback   The callback
+     * @param      pivot      The pivot object for thread selection.
+     * @param[in]  condition  The condition function to check.
+     * @param[in]  fn         The function to execute.
+     * @param[in]  error      The error handler.
+     * @param[in]  callback   The success callback.
      */
     void enqueue(thread_switchable&                                   pivot,
                  const std::function<bool(fb::thread&)>&              condition,
@@ -208,13 +215,13 @@ public:
                  const std::function<void()>&                         callback);
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a task with condition checking (no callbacks).
      *
-     * @param      pivot       The pivot
-     * @param[in]  condition   The condition
-     * @param[in]  fn          The function
+     * @param      pivot       The pivot object for thread selection.
+     * @param[in]  condition   The condition function to check.
+     * @param[in]  fn          The function to execute.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      */
     template <typename ReturnType>
     void enqueue(thread_switchable&                                         pivot,
@@ -232,23 +239,23 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a void task with condition checking (no callbacks).
      *
-     * @param      pivot      The pivot
-     * @param[in]  condition  The condition
-     * @param[in]  fn         The function
+     * @param      pivot      The pivot object for thread selection.
+     * @param[in]  condition  The condition function to check.
+     * @param[in]  fn         The function to execute.
      */
     void enqueue(thread_switchable&                                   pivot,
                  const std::function<bool(fb::thread&)>&              condition,
                  const std::function<async::task<void>(fb::thread&)>& fn);
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a task without condition checking.
      *
-     * @param      pivot       The pivot
-     * @param[in]  fn          The function
+     * @param      pivot       The pivot object for thread selection.
+     * @param[in]  fn          The function to execute.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      */
     template <typename ReturnType>
     void enqueue(thread_switchable& pivot, const std::function<async::task<ReturnType>(fb::thread&)>& fn)
@@ -266,23 +273,23 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Enqueues a void task without condition checking.
      *
-     * @param      pivot  The pivot
-     * @param[in]  fn     The function
+     * @param      pivot  The pivot object for thread selection.
+     * @param[in]  fn     The function to execute.
      */
     void enqueue(thread_switchable& pivot, const std::function<async::task<void>(fb::thread&)>& fn);
 
     /**
-     * @brief      { function_description }
+     * @brief      Dispatches a task with condition checking and returns a future.
      *
-     * @param      pivot       The pivot
-     * @param[in]  condition   The condition
-     * @param[in]  fn          The function
+     * @param      pivot       The pivot object for thread selection.
+     * @param[in]  condition   The condition function to check.
+     * @param[in]  fn          The function to execute.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that will complete when the function finishes.
      */
     template <typename ReturnType>
     [[nodiscard]] async::task<void> dispatch(thread_switchable&                                         pivot,
@@ -304,26 +311,26 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Dispatches a task with condition checking and returns a future.
      *
-     * @param      pivot      The pivot
-     * @param[in]  condition  The condition
-     * @param[in]  fn         The function
+     * @param      pivot      The pivot object for thread selection.
+     * @param[in]  condition  The condition function to check.
+     * @param[in]  fn         The function to execute.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that will complete when the function finishes.
      */
     [[nodiscard]] async::task<void> dispatch(thread_switchable&                                   pivot,
                                              const std::function<bool(fb::thread&)>&              condition,
                                              const std::function<async::task<void>(fb::thread&)>& fn);
     /**
-     * @brief      { function_description }
+     * @brief      Dispatches a task without condition checking and returns a future.
      *
-     * @param      pivot       The pivot
-     * @param[in]  fn          The function
+     * @param      pivot       The pivot object for thread selection.
+     * @param[in]  fn          The function to execute.
      *
-     * @tparam     ReturnType  { description }
+     * @tparam     ReturnType  The return type of the function.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that will complete when the function finishes.
      */
     template <typename ReturnType>
     [[nodiscard]] async::task<void> dispatch(thread_switchable&                                         pivot,
@@ -346,34 +353,33 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Dispatches a void task without condition checking and returns a future.
      *
-     * @param      pivot  The pivot
-     * @param[in]  fn     The function
+     * @param      pivot  The pivot object for thread selection.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that will complete when the function finishes.
      */
     [[nodiscard]] async::task<void> dispatch(thread_switchable&                                   pivot,
                                              const std::function<async::task<void>(fb::thread&)>& fn);
 
     /**
-     * @brief      { function_description }
+     * @brief      Switches to the specified thread.
      *
-     * @param      pivot  The pivot
+     * @param      pivot  The pivot object for thread selection.
      *
-     * @return     { description_of_the_return_value }
+     * @return     A task that completes when the switch is done.
      */
     [[nodiscard]] async::task<void> switching(thread_switchable& pivot);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets a timer with a callback.
      *
-     * @param[in]  fn        The function
-     * @param[in]  duration  The duration
+     * @param[in]  fn        The function to execute.
+     * @param[in]  duration  The duration of the timer.
      */
     void settimer(const fb::timer::handle_callback_type& fn, const fb::model::timespan& duration);
     /**
-     * @brief      { function_description }
+     * @brief      Exits the thread.
      */
     void exit();
 
@@ -381,17 +387,17 @@ public:
     /**
      * @brief      Array indexer operator.
      *
-     * @param[in]  index  The index
+     * @param[in]  index  The index of the thread.
      *
-     * @return     The result of the array indexer
+     * @return     A pointer to the thread at the specified index.
      */
     fb::thread* operator[] (uint8_t index) const;
     /**
      * @brief      Array indexer operator.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The ID of the thread.
      *
-     * @return     The result of the array indexer
+     * @return     A pointer to the thread with the specified ID.
      */
     fb::thread* operator[] (std::thread::id id) const;
 };

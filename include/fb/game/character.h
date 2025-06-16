@@ -18,15 +18,15 @@
 namespace fb::game {
 
 /**
- * @brief      This class describes a map of .
+ * @brief      Forward declaration of the map class.
  */
 class map;
 /**
- * @brief      This class describes a clan.
+ * @brief      Forward declaration of the clan class.
  */
 class clan;
 /**
- * @brief      This class describes a group.
+ * @brief      Forward declaration of the group class.
  */
 class group;
 
@@ -37,7 +37,23 @@ using clan_lock        = fb::locker<clan>;
 using shared_clan_lock = std::shared_ptr<clan_lock>;
 
 /**
- * @brief      This class describes a character.
+ * @brief      Represents a player character in the game world.
+ *
+ *             This class extends the life class to provide complete player character functionality.
+ *             It manages all aspects of a player character including stats, inventory, equipment,
+ *             spells, social features (groups, clans), and network communication. The character
+ *             serves as the primary interface between the player client and the game world.
+ *
+ *             Key features:
+ *             - Complete character progression system (level, experience, stats)
+ *             - Inventory and equipment management
+ *             - Spell and skill system integration
+ *             - Group and clan membership
+ *             - Real-time network communication with client
+ *             - Lua scripting integration for game logic
+ *             - Achievement and quest system
+ *             - Trading and economic interactions
+ *             - PvP and PvE combat mechanics
  */
 class character : public life
 {
@@ -49,7 +65,7 @@ public:
 
 public:
     /**
-     * @brief      This class describes a container.
+     * @brief      Forward declaration of the character container class.
      */
     class container;
 
@@ -61,7 +77,7 @@ public:
     struct builtin;
 
 private:
-    uint32_t                _id = 0xFFFFFFFF;
+    uint32_t                _id;
     fb::socket<character>&  _socket;
     fb::thread*             _thread = nullptr;
     std::string             _name;
@@ -113,68 +129,83 @@ private:
 
 public:
     /**
-     * @brief      Constructs a new instance.
+     * @brief      Constructs a new character instance with game context and network socket.
      *
-     * @param      context  The context
-     * @param      socket   The socket
+     *             Initializes a new character with the provided game context and network socket.
+     *             Sets up default values for all character attributes, initializes the inventory
+     *             and equipment systems, and prepares the character for game world interaction.
+     *
+     * @param      context  The game context that manages this character.
+     * @param      socket   The network socket for client communication.
      */
     character(fb::game::context& context, fb::socket<character>& socket);
 
     /**
-     * @brief      Destroys the object.
+     * @brief      Destroys the character and cleans up all associated resources.
+     *
+     *             Ensures proper cleanup of inventory items, spell effects, group/clan
+     *             memberships, and any other resources associated with the character.
      */
     ~character();
 
 private:
     /**
-     * @brief      { function_description }
+     * @brief      Calculates the experience points limited by level cap and progression rules.
      *
-     * @param[in]  exp   The exponent
+     *             Applies level-based experience limitations to prevent excessive experience
+     *             gain that would break game balance. The limitation is based on the character's
+     *             current level and configured experience progression curves.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  exp   The raw experience points to be limited.
+     *
+     * @return     The experience points after applying level-based limitations.
      */
     uint32_t limited_exp(uint32_t exp) const;
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Sends a binary stream to the character's client with optional encryption.
      *
-     * @param[in]  stream   The stream
-     * @param[in]  encrypt  The encrypt
-     * @param[in]  wrap     The wrap
+     *             Transmits raw binary data to the character's client through the network socket.
+     *             Supports optional encryption and protocol wrapping for secure communication.
+     *             This is the low-level send method used by higher-level protocol methods.
      *
-     * @return     { description_of_the_return_value }
+     * @param[in]  stream   The binary stream containing the data to send.
+     * @param[in]  encrypt  Whether to encrypt the data before transmission.
+     * @param[in]  wrap     Whether to wrap the data with protocol headers.
+     *
+     * @return     An async task that completes with the number of bytes sent.
      */
     async::task<size_t> send(const fb::stream& stream, bool encrypt = true, bool wrap = true) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sends a protocol response to the character's client.
      *
-     * @param[in]  response  The response
-     * @param[in]  encrypt   The encrypt
-     * @param[in]  wrap      The wrap
+     * @param[in]  response  The protocol response to send
+     * @param[in]  encrypt   Whether to encrypt the response
+     * @param[in]  wrap      Whether to wrap the response in protocol headers
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of bytes sent to the client
      */
     async::task<size_t> send(const fb::protocol::header& response,
                              bool                        encrypt = true,
                              bool                        wrap    = true) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the object type (always CHARACTER).
      *
      * @return     The object type.
      */
     OBJECT_TYPE what() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Moves the character to a different map at a specific position.
      *
-     * @param      map           The map
-     * @param[in]  position      The position
-     * @param[in]  destroy_type  The destroy type
+     * @param      map           The target map to move to
+     * @param[in]  position      The position on the target map
+     * @param[in]  destroy_type  How to handle the character when leaving current map
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the map change was successful, false otherwise
      */
     [[nodiscard]] async::task<bool> map(fb::game::map*              map,
                                         const fb::model::point16_t& position,
@@ -185,509 +216,509 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character has been fully initialized.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the character is initialized, false otherwise
      */
     bool inited() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's unique database ID.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's database ID
      */
     uint32_t id() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's unique database ID.
      *
-     * @param[in]  id    The identifier
+     * @param[in]  id    The new character database ID
      */
     void id(uint32_t id);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's socket file descriptor.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The socket file descriptor
      */
     uint32_t fd();
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's role (player, admin, etc.).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's current role
      */
     ROLE role() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's role.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new role to assign
      */
     void role(ROLE value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character is currently transferring between maps.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if transferring, false otherwise
      */
     bool transferring() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Performs an attack action with specified duration.
      *
-     * @param[in]  duration  The duration
+     * @param[in]  duration  The attack duration type
      */
     void attack(DURATION duration = DURATION::ATTACK) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Calculates auto-attack damage based on target size.
      *
-     * @param[in]  size  The size
+     * @param[in]  size  The target mob size (small/large affects damage)
      *
-     * @return     { description_of_the_return_value }
+     * @return     The calculated damage value
      */
     uint32_t auto_attack_damage(MOB_SIZE size) const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Applies damage to the character with equipment durability loss.
      *
-     * @param[in]  value     The value
-     * @param      from      The from
-     * @param[in]  critical  The critical
+     * @param[in]  value     The base damage amount
+     * @param      from      The source object causing damage
+     * @param[in]  critical  Whether this is a critical hit
      *
-     * @return     { description_of_the_return_value }
+     * @return     The actual damage dealt after calculations
      */
     uint32_t damage(uint32_t value, fb::game::object* from = nullptr, bool critical = false) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Performs a character action with visual and audio effects.
      *
-     * @param[in]  action    The action
-     * @param[in]  duration  The duration
-     * @param[in]  sound     The sound
+     * @param[in]  action    The action type to perform
+     * @param[in]  duration  The duration of the action
+     * @param[in]  sound     The sound effect ID to play
      */
     void action(ACTION action, DURATION duration, uint8_t sound = 0x00) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's name.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the character's name string
      */
     const std::string& name() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's name.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new character name
      */
     void name(const std::string& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's password.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new password
      */
     void pw(const std::string& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's birthday as a timestamp.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Optional birthday timestamp, or nullopt if not set
      */
     const std::optional<uint32_t>& birthday() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's birthday timestamp.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The birthday timestamp to set
      */
     void birthday(const std::optional<uint32_t>& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's last update timestamp.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the last updated date and time
      */
     const fb::model::datetime& updated_date() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's last update timestamp.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new update timestamp to set
      */
     void updated_date(const fb::model::datetime& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's visual appearance ID.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's sprite/appearance ID for rendering
      */
     uint16_t look() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's visual appearance ID.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new appearance ID to set
      */
     void look(uint16_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's hair/skin color.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's color value for rendering
      */
     uint8_t color() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's hair/skin color.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new color value to set
      */
     void color(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's armor color override.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Optional armor color, or nullopt if using default armor color
      */
     std::optional<uint8_t> armor_color() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's armor color override.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The armor color to set, or nullopt to use default
      */
     void armor_color(std::optional<uint8_t> value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current effective armor color.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The armor color currently being displayed (override or default)
      */
     uint8_t current_armor_color() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current disguise appearance.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Optional disguise appearance ID, or nullopt if not disguised
      */
     std::optional<uint16_t> disguise() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's disguise appearance.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The disguise appearance ID to apply
      */
     void disguise(uint16_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Removes the character's disguise and returns to normal appearance.
      */
     void undisguise();
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's nation affiliation.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's current nation (Koguryo, Buyo, etc.)
      */
     NATION nation() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's nation affiliation.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new nation to assign to the character
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the nation was successfully changed, false otherwise
      */
     bool nation(NATION value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's creature type.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's creature type (human, elf, etc.)
      */
     CREATURE creature() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's creature type.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new creature type to assign
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the creature type was successfully changed, false otherwise
      */
     bool creature(CREATURE value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current level.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's level (1-99)
      */
     uint8_t level() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's level.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new level to set (1-99)
      */
     void level(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Attempts to level up the character.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the character successfully leveled up, false otherwise
      */
     bool level_up();
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character is at maximum level.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the character is at max level, false otherwise
      */
     bool max_level() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's gender.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's gender (male or female)
      */
     SEX sex() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's gender.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The gender to set (male or female)
      */
     void sex(SEX value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current state.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's current state (normal, dead, sleeping, etc.)
      */
     STATE state() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's state as seen by a specific observer.
      *
-     * @param[in]  to    { parameter_description }
+     * @param[in]  to    The observer object checking this character's state
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's state as perceived by the observer
      */
     STATE state_to(const fb::game::object& to) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's state.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new state to set (normal, dead, sleeping, etc.)
      */
     void state(STATE value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's class.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's class (warrior, rogue, wizard, priest)
      */
     CLASS cls() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's class.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new class to assign
      */
     void cls(CLASS value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's promotion level.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's promotion level (0-4)
      */
     uint8_t promotion() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's promotion level.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new promotion level to set (0-4)
      */
     void promotion(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current experience points.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's current experience points
      */
     uint32_t exp() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's experience points.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new experience points to set
      */
     void exp(uint32_t value);
 
     /**
      * @brief      Adds an exponent.
      *
-     * @param[in]  value   The value
-     * @param[in]  limit   The limit
-     * @param[in]  notify  The notify
+     * @param[in]  value   The amount of experience to add
+     * @param[in]  limit   Whether to apply level cap limits
+     * @param[in]  notify  Whether to notify the client of the change
      *
-     * @return     { description_of_the_return_value }
+     * @return     The actual experience points added
      */
     uint32_t add_exp(uint32_t value, bool limit = false, bool notify = false);
 
     /**
      * @brief      Reduces the exponent.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The amount of experience to reduce
      *
-     * @return     { description_of_the_return_value }
+     * @return     The actual experience points reduced
      */
     uint32_t reduce_exp(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the experience points needed to reach the next level.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The remaining experience points needed for next level
      */
     uint32_t experience_remained() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the experience progress percentage for the current level.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The experience percentage (0.0 to 1.0) for current level
      */
     float experience_percent() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current money amount.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's current money in inventory
      */
     uint32_t money() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's money amount.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new money amount to set
      */
     void money(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Adds money to the character's inventory.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The amount of money to add
      *
-     * @return     { description_of_the_return_value }
+     * @return     The actual amount of money added
      */
     uint32_t money_add(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Reduces money from the character's inventory.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The amount of money to reduce
      */
     void money_reduce(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Drops money as a cash item on the ground.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The amount of money to drop
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the created cash item, or nullptr if failed
      */
     fb::game::cash* money_drop(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's regeneration rate.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's health/mana regeneration rate
      */
     uint32_t regenerative() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's regeneration rate.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new regeneration rate to set
      */
     void regenerative(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the value of a character option setting.
      *
-     * @param[in]  key   The key
+     * @param[in]  key   The option key to check
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the option is enabled, false otherwise
      */
     bool option(OPTION key) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets a character option setting.
      *
-     * @param[in]  key     The key
-     * @param[in]  value   The value
-     * @param[in]  notify  The notify
+     * @param[in]  key     The option key to set
+     * @param[in]  value   The new option value
+     * @param[in]  notify  Whether to notify the client of the change
      */
     void option(OPTION key, bool value, bool notify = true);
 
     /**
-     * @brief      { function_description }
+     * @brief      Toggles a character option setting.
      *
-     * @param[in]  key     The key
-     * @param[in]  notify  The notify
+     * @param[in]  key     The option key to toggle
+     * @param[in]  notify  Whether to notify the client of the change
      *
-     * @return     { description_of_the_return_value }
+     * @return     The new value after toggling
      */
     bool option_toggle(OPTION key, bool notify = true);
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates and synchronizes character options with the client.
      */
     void update_option();
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's map view with the entire map.
      *
-     * @param[in]  map   The map
+     * @param[in]  map   The map to update the character's view with
      */
     void update_map(const fb::game::map& map) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's current map view.
      */
     void update_map();
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates a specific region of the character's map view.
      *
-     * @param[in]  map    The map
-     * @param[in]  begin  The begin
-     * @param[in]  size   The size
+     * @param[in]  map    The map to update from
+     * @param[in]  begin  The starting position of the region to update
+     * @param[in]  size   The size of the region to update
      */
     void update_map(const fb::game::map& map, const fb::model::point16_t& begin, const fb::model::size8_t& size);
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's background music.
      *
-     * @param[in]  bgm     The bgm
-     * @param[in]  volume  The volume
+     * @param[in]  bgm     The background music ID to play
+     * @param[in]  volume  The volume level for the music (0-255)
      */
     void update_bgm(uint16_t bgm, uint8_t volume) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates and synchronizes the character's buff effects.
      */
     void update_buff();
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's internal state and data.
      */
     void update_internal();
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's time-based effects and states.
      *
-     * @param[in]  hours  The hours
+     * @param[in]  hours  The current game time in hours
      */
     void update_time(uint16_t hours);
 
@@ -697,156 +728,156 @@ public:
     void init();
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's position and notifies nearby objects.
      */
     void update_position() override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's title.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the character's current title string
      */
     const std::string& title() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's title.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new title to assign to the character
      */
     void title(const std::string& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's group (read-only).
      *
-     * @return     { description_of_the_return_value }
+     * @return     Const reference to the character's group lock
      */
     const shared_group_lock& group() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's group (modifiable).
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the character's group lock
      */
     shared_group_lock& group();
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's group.
      *
-     * @param      value  The value
+     * @param      value  The group lock to assign to the character
      */
     void group(shared_group_lock& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's clan (modifiable).
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to the character's clan lock
      */
     shared_clan_lock& clan();
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's clan (read-only).
      *
-     * @return     { description_of_the_return_value }
+     * @return     Const reference to the character's clan lock
      */
     const shared_clan_lock& clan() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's clan.
      *
-     * @param      value  The value
+     * @param      value  The clan lock to assign to the character
      */
     void clan(shared_clan_lock& value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Asserts that the character is in a specific state.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The required state to check
      */
     void assert_state(STATE value) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Asserts that the character is in one of the specified states.
      *
-     * @param[in]  values  The values
+     * @param[in]  values  The list of acceptable states
      */
     void assert_state(const std::vector<STATE>& values) const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Moves the character to a new position.
      *
-     * @param[in]  before  The before
+     * @param[in]  before  The previous position before the move
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the move was successful, false otherwise
      */
     bool move(const fb::model::point16_t& before);
 
     /**
-     * @brief      { function_description }
+     * @brief      Moves the character in a specific direction.
      *
-     * @param[in]  direction  The direction
-     * @param[in]  before     The before
+     * @param[in]  direction  The direction to move
+     * @param[in]  before     The previous position before the move
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the move was successful, false otherwise
      */
     bool move(DIRECTION direction, const fb::model::point16_t& before);
 
     /**
-     * @brief      { function_description }
+     * @brief      Makes the character ride a specific mount.
      *
-     * @param      horse  The horse
+     * @param      horse  The mob to ride as a mount
      */
     void ride(mob& horse);
 
     /**
-     * @brief      { function_description }
+     * @brief      Makes the character ride their current mount.
      */
     void ride();
 
     /**
-     * @brief      { function_description }
+     * @brief      Makes the character dismount from their current mount.
      */
     void unride();
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character is alive.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the character is alive, false if dead
      */
     bool alive() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character meets the specified conditions.
      *
-     * @param[in]  conditions  The conditions
+     * @param[in]  conditions  The list of conditions to evaluate
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if all conditions are met, false otherwise
      */
     bool condition(const std::vector<fb::model::dsl>& conditions) const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sends a message to the character.
      *
-     * @param[in]  message  The message
-     * @param[in]  type     The type
+     * @param[in]  message  The message text to send
+     * @param[in]  type     The type of message (default: STATE)
      */
     void message(const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the thread this character belongs to.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the thread managing this character
      */
     fb::thread* thread() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the thread for this character.
      *
-     * @param      value  The value
+     * @param      value  The thread to assign to this character
      */
     void thread(fb::thread* value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Asserts that the current thread is the correct thread for this character.
      */
     void assert_thread() const override final;
 
@@ -858,31 +889,31 @@ public:
     void update(STATE_LEVEL value = STATE_LEVEL::LEVEL_MIN) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the number of unread mail messages.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The count of unread mail messages
      */
     uint16_t unread_mail() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the number of unread mail messages.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new unread mail count
      */
     void unread_mail(uint16_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Shows another character's information to this character.
      *
-     * @param[in]  ch    { parameter_description }
+     * @param[in]  ch    The character to browse/inspect
      */
     void browse_ch(const character& ch);
 
     /**
-     * @brief      { function_description }
+     * @brief      Shows an item tooltip to the character.
      *
-     * @param[in]  iteem     The iteem
-     * @param[in]  position  The position
+     * @param[in]  iteem     The item to show tooltip for
+     * @param[in]  position  The position/slot of the item
      */
     void item_tooltip(const item& iteem, uint16_t position);
 
@@ -899,9 +930,9 @@ public:
     /**
      * @brief      Shows the board.
      *
-     * @param[in]  section   The section
-     * @param[in]  articles  The articles
-     * @param[in]  flag      The flag
+     * @param[in]  section   The board section to display
+     * @param[in]  articles  The list of articles in the section
+     * @param[in]  flag      The button enable flags for the board
      */
     void show_board(const fb::model::board&          section,
                     const std::list<board::article>& articles,
@@ -910,129 +941,130 @@ public:
     /**
      * @brief      Shows the board.
      *
-     * @param[in]  article  The article
-     * @param[in]  flag     The flag
+     * @param[in]  article  The specific article to display
+     * @param[in]  flag     The button enable flags for the article view
      */
     void show_board(const board::article& article, BOARD_BUTTON_ENABLE flag);
 
     /**
      * @brief      Shows the mail box.
      *
-     * @param[in]  mails  The mails
-     * @param[in]  flag   The flag
+     * @param[in]  mails  The list of mail summaries to display
+     * @param[in]  flag   The button enable flags for the mail box
      */
     void show_mail_box(const std::vector<fb::protocol::internal::MailSummary>& mails, MAIL_BUTTON_ENABLE flag);
 
     /**
      * @brief      Shows the mail box.
      *
-     * @param[in]  mail  The mail
-     * @param[in]  flag  The flag
+     * @param[in]  mail  The specific mail to display
+     * @param[in]  flag  The button enable flags for the mail view
      */
     void show_mail_box(const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag);
 
     /**
      * @brief      Shows the board message.
      *
-     * @param[in]  message  The message
-     * @param[in]  success  The success
-     * @param[in]  mail     The mail
+     * @param[in]  message  The message text to display
+     * @param[in]  success  Whether the operation was successful
+     * @param[in]  mail     Whether this is a mail-related message
      */
     void show_board_message(const std::string& message, bool success, bool mail);
 
     /**
      * @brief      Shows the world map.
      *
-     * @param[in]  id     The identifier
-     * @param[in]  index  The index
+     * @param[in]  id     The world map identifier
+     * @param[in]  index  The map index to highlight or focus on
      */
     void show_world_map(uint32_t id, uint16_t index);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets a timer for the character.
      *
-     * @param[in]  time  The time
-     * @param[in]  type  The type
+     * @param[in]  time  The timer duration in seconds
+     * @param[in]  type  The type of timer to set
      */
     void timer(uint32_t time, TIMER_TYPE type);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the weather effect for the character.
      *
-     * @param[in]  weather  The weather
+     * @param[in]  weather  The weather type to apply
      */
     void weather(WEATHER_TYPE weather);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the brightness level for the character's view.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The brightness level (0-255)
      */
     void bright(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Updates the character's unique identifier.
      */
     void update_id() override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's weapon damage modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The weapon damage value to set
      */
     void weapon_damage(uint16_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current weapon damage modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current weapon damage value
      */
     uint16_t weapon_damage() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's detect ability.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  True to enable detect, false to disable
      */
     void detect(bool value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character has detect ability enabled.
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if detect is enabled, false otherwise
      */
     bool detect() const;
 
     /**
-     * @brief      { function_description }
+     * @brief      Spawns a mob for this character.
      *
-     * @param[in]  model     The model
-     * @param[in]  position  The position
+     * @param[in]  model     The mob model to spawn
+     * @param[in]  position  The position where to spawn the mob
+     * @param[in]  owned     Whether the mob is owned by this character
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the spawned mob, or nullptr if failed
      */
     mob* spawn_mob(const fb::model::mob& model, const fb::model::point16_t& position, bool owned = true);
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the list of mobs spawned by this character.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Const reference to the vector of spawned mobs
      */
     const std::vector<fb::game::mob*>& spawned_mobs() const;
 
     /**
      * @brief      Detaches the spawned mob.
      *
-     * @param      mob   The mob
+     * @param      mob   The mob to detach from this character
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the mob was successfully detached, false otherwise
      */
     bool detach_spawned_mob(fb::game::mob& mob);
 
     /**
-     * @brief      { function_description }
+     * @brief      Applies death penalty to the character.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Async task that completes when penalty is applied
      */
     async::task<void> death_penalty();
 
@@ -1047,340 +1079,340 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base HP value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base health points
      */
     uint32_t base_hp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current HP buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current HP buff value
      */
     uint32_t buff_hp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's maximum HP (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's maximum health points
      */
     uint32_t maxhp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base HP value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base HP value to set
      */
     void base_hp(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's HP buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The HP buff value to apply
      */
     void buff_hp(uint32_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base MP value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base mana points
      */
     uint32_t base_mp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current MP buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current MP buff value
      */
     uint32_t buff_mp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's maximum MP (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's maximum mana points
      */
     uint32_t maxmp() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base MP value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base MP value to set
      */
     void base_mp(uint32_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's MP buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The MP buff value to apply
      */
     void buff_mp(uint32_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base strength value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base strength stat
      */
     uint8_t base_str() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current strength buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current strength buff value
      */
     uint8_t buff_str() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total strength (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective strength value
      */
     uint8_t str() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base strength value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base strength value to set
      */
     void base_str(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's strength buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The strength buff value to apply
      */
     void buff_str(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base dexterity value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base dexterity stat
      */
     uint8_t base_dex() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current dexterity buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current dexterity buff value
      */
     uint8_t buff_dex() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total dexterity (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective dexterity value
      */
     uint8_t dex() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base dexterity value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base dexterity value to set
      */
     void base_dex(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's dexterity buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The dexterity buff value to apply
      */
     void buff_dex(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base intelligence value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base intelligence stat
      */
     uint8_t base_int() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current intelligence buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current intelligence buff value
      */
     uint8_t buff_int() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total intelligence (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective intelligence value
      */
     uint8_t intelligence() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base intelligence value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base intelligence value to set
      */
     void base_int(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's intelligence buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The intelligence buff value to apply
      */
     void buff_int(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base physical defense value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base physical defense stat
      */
     int8_t base_phydef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current physical defense buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current physical defense buff value
      */
     int8_t buff_phydef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total physical defense (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective physical defense value
      */
     int8_t phydef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base physical defense value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base physical defense value to set
      */
     void base_phydef(int8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's physical defense buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The physical defense buff value to apply
      */
     void buff_phydef(int8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base magical defense value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base magical defense stat
      */
     int8_t base_magdef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current magical defense buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current magical defense buff value
      */
     int8_t buff_magdef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total magical defense (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective magical defense value
      */
     int8_t magdef() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base magical defense value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base magical defense value to set
      */
     void base_magdef(int8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's magical defense buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The magical defense buff value to apply
      */
     void buff_magdef(int8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base damage value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base damage stat
      */
     uint8_t base_dam() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current damage buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current damage buff value
      */
     uint8_t buff_dam() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total damage (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective damage value
      */
     uint8_t dam() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base damage value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base damage value to set
      */
     void base_dam(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's damage buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The damage buff value to apply
      */
     void buff_dam(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's base hit value.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's base hit stat
      */
     uint8_t base_hit() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's current hit buff modifier.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current hit buff value
      */
     uint8_t buff_hit() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the character's total hit (base + buffs).
      *
-     * @return     { description_of_the_return_value }
+     * @return     The character's effective hit value
      */
     uint8_t hit() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's base hit value.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new base hit value to set
      */
     void base_hit(uint8_t value);
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's hit buff modifier.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The hit buff value to apply
      */
     void buff_hit(uint8_t value) override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the character is in super hide mode (invisible to all).
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the character is super hidden, false otherwise
      */
     bool super_hide() const override final;
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the character's super hide mode.
      *
-     * @param[in]  enabled  Indicates if enabled
+     * @param[in]  enabled  True to enable super hide, false to disable
      */
     void super_hide(bool enabled);
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if this character is hidden from a specific target.
      *
-     * @param[in]  target  The target
+     * @param[in]  target  The target object to check visibility against
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if this character is hidden from the target, false otherwise
      */
     bool hidden(const object& target) const override final;
 #pragma endregion
@@ -1390,620 +1422,625 @@ struct character::builtin
 {
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character appearance.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_look(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character color.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_color(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character sex.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_sex(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character money.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_money(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character experience.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_exp(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting character item by slot.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_item(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting all character items.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_items(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting character equipment items.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_equipments(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for dropping character item.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_item_drop(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for creating item in character inventory.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_mkitem(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for removing item from character inventory.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_rmitem(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character state.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_state(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for setting character disguise.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_disguise(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character class.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_class(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character promotion level.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_promotion(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character level.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_level(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for asserting character state.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_assert(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting character role.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_role(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting/setting deposited money.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_deposited_money(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for getting stored item from bank.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_stored_item(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua binding for storing item in bank.
      *
-     * @param      lua   The lua
+     * @param[in]  L  The Lua state
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to Lua stack
      */
     static int builtin_store_item(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to retrieve an item from storage or inventory.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_retrieve_item(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's current group.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_group(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to create a new group with the character as leader.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_create_group(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's current clan.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_clan(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to create a new clan with the character as leader.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_create_clan(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to destroy the character's clan.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_destroy_clan(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's achievements list.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_achievements(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get a specific achievement by ID.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_achievement(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to add a new achievement to the character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_push_achievement(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to remove an achievement from the character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_erase_achievement(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to send a whisper message to another character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_whisper(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to send mail to another character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_send_mail(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to assert the character's current state.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_assert_state(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's nation affiliation.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_nation(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's equipped weapon.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_weapon(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get or set the character's title.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_title(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to add experience or stats to the character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_gain(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's weapon damage.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_weapon_damage(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to detect hidden or invisible objects/characters.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_detect(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to spawn a mob at a specific location.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_spawn_mob(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get a list of mobs spawned by the character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_spawned_mobs(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base HP value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_hp(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base MP value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_mp(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base strength value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_str(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base dexterity value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_dex(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base intelligence value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_int(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base damage value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_dam(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the character's base hit rate value.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_base_hit(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get or set the character's armor color.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_armor_color(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to add a spell to the character's spellbook.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_mkspell(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to remove a spell from the character's spellbook.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_rmspell(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get the world/map the character is in.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_world(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to execute a script or get script information.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_script(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to display an advertisement or announcement.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_ad(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to open a web page or URL for the character.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_web(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to add a delay or wait time.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_delay(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to get or set the character's birthday.
      *
-     * @param      lua   The lua
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_birthday(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to check if the character is active or online.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_active(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to enable super hide mode for the character.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_super_hide(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to transform the character into a creature.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_creature(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to teleport the character to a location.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_teleport(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to summon another character or object.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_summon(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to display a dialog to the character.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_dialog(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to display a list interface to the character.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_list(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to display an input dialog to the character.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_input(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to display a menu interface to the character.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_menu(lua_State* L);
 
     /**
-     * @brief      { function_description }
+     * @brief      Lua builtin function to access or manipulate inventory slots.
      *
-     * @param      L     { parameter_description }
+     * @param      L     The Lua state containing function arguments.
      *
-     * @return     { description_of_the_return_value }
+     * @return     Number of return values pushed to the Lua stack.
      */
     static int builtin_slot(lua_State* L);
 };
 
 /**
- * @brief      This class describes a container.
+ * @brief      Container for managing collections of character pointers.
+ *
+ *             This class provides a specialized container for managing groups
+ *             of character pointers, typically used for player lists, party
+ *             members, or other character collections with specific access
+ *             patterns and management requirements.
  */
 class character::container : private std::vector<character*>
 {
@@ -2036,20 +2073,20 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Adds a character to the container.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character to add to the container
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this container for method chaining
      */
     container& push(character& ch);
 
     /**
-     * @brief      { function_description }
+     * @brief      Removes a character from the container.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character to remove from the container
      *
-     * @return     { description_of_the_return_value }
+     * @return     Reference to this container for method chaining
      */
     container& erase(character& ch);
 
@@ -2059,16 +2096,16 @@ public:
      *
      * @param[in]  name  The name
      *
-     * @return     { description_of_the_return_value }
+     * @return     Pointer to the found character, or nullptr if not found
      */
     character* find(const std::string& name);
 
     /**
-     * @brief      { function_description }
+     * @brief      Checks if the container contains a specific character.
      *
-     * @param[in]  ch    { parameter_description }
+     * @param[in]  ch    The character to search for
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the character is in the container, false otherwise
      */
     bool contains(const character& ch) const;
 
@@ -2084,7 +2121,12 @@ public:
 };
 
 /**
- * @brief      { struct_description }
+ * @brief      Event listener interface for character-related events and notifications.
+ *
+ *             This interface defines all the callback methods that can be implemented
+ *             to receive notifications about character state changes, interactions,
+ *             and various game events. It extends multiple listener interfaces to
+ *             provide comprehensive event handling for characters.
  */
 struct character::listener_t : public virtual life::listener_t,
                                public virtual dialog::listener_t,
@@ -2093,45 +2135,45 @@ struct character::listener_t : public virtual life::listener_t,
 {
 public:
     /**
-     * @brief      Called on message.
+     * @brief      Called when a message is sent to the character.
      *
-     * @param      me       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  type     The type
+     * @param      me       The character receiving the message
+     * @param[in]  message  The message text content
+     * @param[in]  type     The message type (STATE, SYSTEM, etc.)
      */
     virtual void on_message(character& me, const std::string& message, MESSAGE_TYPE type = MESSAGE_TYPE::STATE) = 0;
 
     /**
-     * @brief      Called when option changed.
+     * @brief      Called when a character option is changed.
      *
-     * @param      me       { parameter_description }
-     * @param[in]  option   The option
-     * @param[in]  enabled  Indicates if enabled
+     * @param      me       The character whose option was changed
+     * @param[in]  option   The option that was changed
+     * @param[in]  enabled  Whether the option is now enabled or disabled
      */
     virtual void on_option_changed(character& me, OPTION option, bool enabled) = 0;
 
     /**
-     * @brief      Called on update option.
+     * @brief      Called when character options need to be synchronized with the client.
      *
-     * @param      me    { parameter_description }
+     * @param      me    The character whose options are being updated
      */
     virtual void on_update_option(character& me) = 0;
 
     /**
-     * @brief      Called on update map.
+     * @brief      Called when the character's entire map view needs to be updated.
      *
-     * @param      ch    { parameter_description }
-     * @param[in]  map   The map
+     * @param      ch    The character whose map view is being updated
+     * @param[in]  map   The map data to send to the character
      */
     virtual void on_update_map(character& ch, const fb::game::map& map) = 0;
 
     /**
-     * @brief      Called on update map.
+     * @brief      Called when a specific region of the character's map view needs to be updated.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  map    The map
-     * @param[in]  begin  The begin
-     * @param[in]  size   The size
+     * @param      ch     The character whose map view is being updated
+     * @param[in]  map    The map containing the updated region
+     * @param[in]  begin  The starting position of the region to update
+     * @param[in]  size   The size of the region to update
      */
     virtual void on_update_map(character&                  ch,
                                const fb::game::map&        map,
@@ -2139,75 +2181,75 @@ public:
                                const fb::model::size8_t&   size) = 0;
 
     /**
-     * @brief      Called on update bgm.
+     * @brief      Called when the character's background music changes.
      *
-     * @param      ch      { parameter_description }
-     * @param[in]  bgm     The bgm
-     * @param[in]  volume  The volume
+     * @param      ch      The character whose background music is changing
+     * @param[in]  bgm     The new background music ID to play
+     * @param[in]  volume  The volume level for the background music (0-255)
      */
     virtual void on_update_bgm(character& ch, uint16_t bgm, uint8_t volume) = 0;
 
     /**
-     * @brief      Called on update buffer.
+     * @brief      Called when the character's buff effects need to be synchronized.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  buffs  The buffs
+     * @param      ch     The character whose buffs are being updated
+     * @param[in]  buffs  The current buff effects applied to the character
      */
     virtual void on_update_buff(character& ch, const fb::game::buffs& buffs) = 0;
 
     /**
-     * @brief      Called on update internal.
+     * @brief      Called when the character's internal game state needs to be synchronized.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character whose internal state is being updated
      */
     virtual void on_update_internal(character& ch) = 0;
 
     /**
-     * @brief      Called on update time.
+     * @brief      Called when the game time changes and needs to be sent to the character.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  hours  The hours
+     * @param      ch     The character receiving the time update
+     * @param[in]  hours  The current game time in hours
      */
     virtual void on_update_time(character& ch, uint16_t hours) = 0;
 
     /**
-     * @brief      Called on browse character.
+     * @brief      Called when a character inspects another character's information.
      *
-     * @param      ch      { parameter_description }
-     * @param[in]  target  The target
+     * @param      ch      The character performing the browse/inspect action
+     * @param[in]  target  The character being inspected
      */
     virtual void on_browse_character(character& ch, const character& target) = 0;
 
     /**
-     * @brief      Called on item tooltip.
+     * @brief      Called when an item tooltip should be displayed to the character.
      *
-     * @param      ch        { parameter_description }
-     * @param[in]  item      The item
-     * @param[in]  position  The position
+     * @param      ch        The character who should see the item tooltip
+     * @param[in]  item      The item to display information for
+     * @param[in]  position  The slot position of the item
      */
     virtual void on_item_tooltip(character& ch, const item& item, uint16_t position) = 0;
 
     /**
-     * @brief      Called on show user list.
+     * @brief      Called when the user list interface should be shown to the character.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character who should see the user list
      */
     virtual void on_show_user_list(character& ch) = 0;
 
     /**
-     * @brief      Called on show board.
+     * @brief      Called when the main board interface should be shown to the character.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character who should see the board interface
      */
     virtual void on_show_board(character& ch) = 0;
 
     /**
-     * @brief      Called on show board.
+     * @brief      Called when a board section with articles should be displayed to the character.
      *
-     * @param      ch        { parameter_description }
-     * @param[in]  section   The section
-     * @param[in]  articles  The articles
-     * @param[in]  flag      The flag
+     * @param      ch        The character who should see the board section
+     * @param[in]  section   The board section to display
+     * @param[in]  articles  The list of articles in the section
+     * @param[in]  flag      The button enable flags for the board interface
      */
     virtual void on_show_board(character&                       ch,
                                const fb::model::board&          section,
@@ -2215,122 +2257,122 @@ public:
                                BOARD_BUTTON_ENABLE              flag) = 0;
 
     /**
-     * @brief      Called on show board.
+     * @brief      Called when a specific board article should be displayed to the character.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  value  The value
-     * @param[in]  flag   The flag
+     * @param      ch     The character who should see the article
+     * @param[in]  value  The article to display
+     * @param[in]  flag   The button enable flags for the article view
      */
     virtual void on_show_board(character& ch, const board::article& value, BOARD_BUTTON_ENABLE flag) = 0;
 
     /**
-     * @brief      Called on show mail box.
+     * @brief      Called when the mail box with mail list should be shown to the character.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  mails  The mails
-     * @param[in]  flag   The flag
+     * @param      ch     The character who should see the mail box
+     * @param[in]  mails  The list of mail summaries to display
+     * @param[in]  flag   The button enable flags for the mail box interface
      */
     virtual void on_show_mail_box(character&                                              ch,
                                   const std::vector<fb::protocol::internal::MailSummary>& mails,
                                   MAIL_BUTTON_ENABLE                                      flag) = 0;
 
     /**
-     * @brief      Called on show mail box.
+     * @brief      Called when a specific mail should be displayed to the character.
      *
-     * @param      ch    { parameter_description }
-     * @param[in]  mail  The mail
-     * @param[in]  flag  The flag
+     * @param      ch    The character who should see the mail
+     * @param[in]  mail  The mail message to display
+     * @param[in]  flag  The button enable flags for the mail view
      */
     virtual void on_show_mail_box(character& ch, const fb::protocol::internal::Mail& mail, MAIL_BUTTON_ENABLE flag) = 0;
 
     /**
-     * @brief      Called on show board message.
+     * @brief      Called when a board/mail operation result message should be shown.
      *
-     * @param      ch       { parameter_description }
-     * @param[in]  message  The message
-     * @param[in]  success  The success
-     * @param[in]  mail     The mail
+     * @param      ch       The character who should see the message
+     * @param[in]  message  The result message text to display
+     * @param[in]  success  Whether the operation was successful
+     * @param[in]  mail     Whether this is a mail-related message
      */
     virtual void on_show_board_message(character& ch, const std::string& message, bool success, bool mail) = 0;
 
     /**
-     * @brief      Called on show world map.
+     * @brief      Called when the world map interface should be shown to the character.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  id     The identifier
-     * @param[in]  index  The index
+     * @param      ch     The character who should see the world map
+     * @param[in]  id     The world map identifier
+     * @param[in]  index  The map index to highlight or focus on
      */
     virtual void on_show_world_map(character& ch, uint32_t id, uint16_t index) = 0;
 
     /**
-     * @brief      Called on timer.
+     * @brief      Called when a timer should be set for the character.
      *
-     * @param      ch    { parameter_description }
-     * @param[in]  time  The time
-     * @param[in]  type  The type
+     * @param      ch    The character who should receive the timer
+     * @param[in]  time  The timer duration in seconds
+     * @param[in]  type  The type of timer being set
      */
     virtual void on_timer(character& ch, uint32_t time, TIMER_TYPE type) = 0;
 
     /**
-     * @brief      Called on weather.
+     * @brief      Called when the weather effect should change for the character.
      *
-     * @param      ch       { parameter_description }
-     * @param[in]  weather  The weather
+     * @param      ch       The character who should experience the weather change
+     * @param[in]  weather  The new weather type to apply
      */
     virtual void on_weather(character& ch, WEATHER_TYPE weather) = 0;
 
     /**
-     * @brief      Called on bright.
+     * @brief      Called when the screen brightness should change for the character.
      *
-     * @param      ch     { parameter_description }
-     * @param[in]  value  The value
+     * @param      ch     The character whose screen brightness should change
+     * @param[in]  value  The new brightness level (0-255)
      */
     virtual void on_bright(character& ch, uint8_t value) = 0;
 
     /**
-     * @brief      Called on update identifier.
+     * @brief      Called when the character's unique identifier needs to be updated.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character whose ID is being updated
      */
     virtual void on_update_id(character& ch) = 0;
 
     /**
-     * @brief      Called on character initialize.
+     * @brief      Called when a character has been fully initialized and is ready to enter the game.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character that has been initialized
      */
     virtual void on_character_init(character& ch) = 0;
 
     /**
-     * @brief      Called on update position.
+     * @brief      Called when a character's position has changed and needs to be synchronized.
      *
-     * @param      ch    { parameter_description }
+     * @param      ch    The character whose position has been updated
      */
     virtual void on_update_position(character& ch) = 0;
 
     /**
-     * @brief      Called on level up.
+     * @brief      Called when a character gains a level.
      *
-     * @param      me    { parameter_description }
+     * @param      me    The character who leveled up
      */
     virtual void on_level_up(character& me) = 0;
 
     /**
-     * @brief      Called on update.
+     * @brief      Called when a character's state needs to be synchronized with the client.
      *
-     * @param      me     { parameter_description }
-     * @param[in]  level  The level
+     * @param      me     The character whose state is being updated
+     * @param[in]  level  The update level indicating what data to synchronize
      */
     virtual void on_update(character& me, STATE_LEVEL level = STATE_LEVEL::LEVEL_MIN) = 0;
 
     /**
-     * @brief      Called on transfer.
+     * @brief      Called when a character is being transferred to a different map.
      *
-     * @param      me        { parameter_description }
-     * @param      map       The map
-     * @param[in]  position  The position
+     * @param      me        The character being transferred
+     * @param      map       The destination map
+     * @param[in]  position  The target position on the destination map
      *
-     * @return     { description_of_the_return_value }
+     * @return     True if the transfer was successful, false otherwise
      */
     virtual async::task<bool> on_transfer(character& me, fb::game::map& map, const fb::model::point16_t& position) = 0;
 };

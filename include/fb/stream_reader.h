@@ -10,8 +10,7 @@ namespace fb {
 /**
  * @brief      This class describes a stream reader.
  *
- * @tparam     EndianType  { description }
- * @tparam     EndianType  { description }
+ * @tparam     EndianType  The endian type for reading data (big_endian or little_endian).
  */
 #ifdef LITTLE_ENDIAN
 template <typename EndianType = little_endian>
@@ -28,7 +27,7 @@ public:
     /**
      * @brief      Constructs a new instance.
      *
-     * @param      stream  The stream
+     * @param      stream  The stream to read from.
      */
     stream_reader(std::vector<uint8_t>& stream) :
         _stream(stream)
@@ -36,11 +35,11 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Reads a value of the specified type from the stream.
      *
-     * @tparam     ValueType  { description }
+     * @tparam     ValueType  The type of value to read.
      *
-     * @return     The value type.
+     * @return     The read value.
      */
     template <typename ValueType>
     ValueType read()
@@ -62,12 +61,12 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Reads a string with length prefix from the stream.
      *
-     * @tparam     T1    { description }
-     * @tparam     T2    { description }
+     * @tparam     T1    The string type (must be std::string).
+     * @tparam     T2    The type of the length prefix.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The read string.
      */
     template <typename T1, typename T2>
     T1 read()
@@ -95,10 +94,10 @@ public:
 
 public:
     /**
-     * @brief      { function_description }
+     * @brief      Reads raw data into a buffer.
      *
-     * @param      buffer  The buffer
-     * @param[in]  size    The size
+     * @param      buffer  The buffer to read data into.
+     * @param[in]  size    The number of bytes to read.
      */
     void read(void* buffer, size_t size)
     {
@@ -111,9 +110,9 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the number of bytes available for reading.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The number of readable bytes.
      */
     uint32_t readable_size() const
     {
@@ -121,9 +120,9 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Gets the current seek position.
      *
-     * @return     { description_of_the_return_value }
+     * @return     The current seek position.
      */
     uint32_t seek() const
     {
@@ -131,9 +130,9 @@ public:
     }
 
     /**
-     * @brief      { function_description }
+     * @brief      Sets the seek position.
      *
-     * @param[in]  value  The value
+     * @param[in]  value  The new seek position.
      */
     void seek(uint32_t value)
     {
@@ -141,7 +140,7 @@ public:
     }
 
     /**
-     * @brief      Flushes the object.
+     * @brief      Flushes the stream.
      */
     void flush()
     {
@@ -150,7 +149,7 @@ public:
     }
 
     /**
-     * @brief      Clears the object.
+     * @brief      Clears the stream.
      */
     void clear()
     {

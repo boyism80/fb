@@ -145,8 +145,7 @@ if exist "%GAME_CONFIG_PATH%" del /f /q "%GAME_CONFIG_PATH%"
     echo     "port": 3004,
     echo     "thread": {
     echo         "logic": 12,
-    echo         "io": 12,
-    echo         "background": 8
+    echo         "io": 12
     echo     },
     echo     "save": 600,
     echo     "internal": {
@@ -198,8 +197,7 @@ if exist "%LOGIN_CONFIG_PATH%" del /f /q "%LOGIN_CONFIG_PATH%"
     echo     "admin_mode": true,
     echo     "thread": {
     echo         "logic": 12,
-    echo         "io": 12,
-    echo         "background": 8
+    echo         "io": 12
     echo     },
     echo     "amqp": {
     echo         "ip": "!RABBIT_HOST!",
@@ -266,8 +264,7 @@ if exist "%GATEWAY_CONFIG_PATH%" del /f /q "%GATEWAY_CONFIG_PATH%"
     echo     "port": 3001,
     echo     "thread": {
     echo         "logic": 12,
-    echo         "io": 12,
-    echo         "background": 8
+    echo         "io": 12
     echo     },
     echo     "log": [
     echo         "debug",

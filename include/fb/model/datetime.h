@@ -11,15 +11,37 @@
 
 namespace fb::model {
 
+/**
+ * @brief      A time duration class that represents a span of time with high precision.
+ *
+ *             This class provides a comprehensive time span implementation that supports
+ *             parsing from string format, arithmetic operations, and conversion to/from
+ *             standard chrono durations. It internally stores time as milliseconds and
+ *             supports negative time spans. The string format supports patterns like
+ *             "1.12:34:56.789" (1 day, 12 hours, 34 minutes, 56 seconds, 789 milliseconds).
+ */
 class timespan
 {
 private:
-    std::chrono::milliseconds _ms = std::chrono::milliseconds(0);
+    std::chrono::milliseconds _ms = std::chrono::milliseconds(0); ///< Internal storage in milliseconds
 
 public:
+    /**
+     * @brief      Default constructor that creates a zero timespan.
+     */
     timespan()
     { }
 
+    /**
+     * @brief      Constructs a timespan from a string representation.
+     *
+     *             Parses time span strings in the format: [negative]?[days.]hours:minutes:seconds[.milliseconds]
+     *             Examples: "12:34:56", "1.12:34:56.789", "-0:30:00"
+     *
+     * @param[in]  f     The string representation of the timespan.
+     *
+     * @throws     std::runtime_error if the string format is invalid.
+     */
     timespan(const std::string& f)
     {
         static const auto regex = boost::xpressive::sregex::compile("(?P<ne>-)?((?P<day>\\d+).)?(?P<hour>\\d{1,2}):(?P<min>\\d{1,2}):(?P<sec>\\d{1,2})(?:.(?P<ms>\\d+))?");
@@ -56,6 +78,15 @@ public:
         }
     }
 
+    /**
+     * @brief      Constructs a timespan from individual time components.
+     *
+     * @param[in]  days          The number of days.
+     * @param[in]  hours         The number of hours.
+     * @param[in]  minutes       The number of minutes.
+     * @param[in]  seconds       The number of seconds.
+     * @param[in]  milliseconds  The number of milliseconds.
+     */
     timespan(int days, int hours, int minutes, int seconds, int milliseconds) : _ms(std::chrono::milliseconds(milliseconds)
         + std::chrono::seconds(seconds)
         + std::chrono::minutes(minutes)
@@ -63,13 +94,29 @@ public:
         + std::chrono::hours(days * 24))
     { }
 
+    /**
+     * @brief      Constructs a timespan from a standard chrono duration.
+     *
+     * @param[in]  duration  The chrono duration to convert.
+     *
+     * @tparam     _Rep      The representation type of the duration.
+     * @tparam     _Period   The period type of the duration.
+     */
     template <class _Rep, class _Period>
     timespan(const std::chrono::duration<_Rep, _Period>& duration) : _ms(std::chrono::duration_cast<std::chrono::milliseconds>(duration))
     { }
 
+    /**
+     * @brief      Copy constructor.
+     *
+     * @param[in]  ts    The timespan to copy.
+     */
     timespan(const timespan& ts) : _ms(ts._ms)
     { }
 
+    /**
+     * @brief      Destructor.
+     */
     ~timespan()
     { }
 
@@ -251,18 +298,45 @@ public:
     }
 };
 
+/**
+ * @brief      A date and time class that provides comprehensive date/time operations.
+ *
+ *             This class wraps boost::posix_time::ptime to provide a convenient interface
+ *             for date and time manipulation. It supports construction from strings,
+ *             arithmetic operations with timespans, component access (year, month, day, etc.),
+ *             and comparison operations. The class uses local time by default and provides
+ *             methods for adding various time units.
+ */
 class datetime
 {
 private:
-    boost::posix_time::ptime _ptime;
+    boost::posix_time::ptime _ptime; ///< Internal boost posix time representation
 
 public:
+    /**
+     * @brief      Default constructor that creates a datetime with the current local time.
+     */
     datetime() : _ptime(boost::posix_time::microsec_clock::local_time())
     {}
 
+    /**
+     * @brief      Constructs a datetime from a string representation.
+     *
+     *             Parses datetime strings in ISO format or other boost-supported formats.
+     *             Examples: "2023-12-25 15:30:45", "2023-12-25T15:30:45"
+     *
+     * @param[in]  f     The string representation of the datetime.
+     *
+     * @throws     boost::bad_lexical_cast if the string format is invalid.
+     */
     datetime(const std::string& f) : _ptime(boost::posix_time::time_from_string(f))
     {}
 
+    /**
+     * @brief      Copy constructor.
+     *
+     * @param[in]  dt    The datetime to copy.
+     */
     datetime(const datetime& dt) : _ptime(dt._ptime)
     {}
 

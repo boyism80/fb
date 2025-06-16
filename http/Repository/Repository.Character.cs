@@ -7,10 +7,21 @@ using System.Data;
 
 namespace Http.Reepository
 {
+    /// <summary>
+    /// Provides repository functionality for character data management.
+    /// Implements Redis value-based caching with database persistence for character operations.
+    /// </summary>
     public class CharacterRepository : RedisValueRepository<Character, CharacterKey>
     {
         private readonly DbContext _dbContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CharacterRepository"/> class.
+        /// </summary>
+        /// <param name="dbContext">The database context for connection management.</param>
+        /// <param name="redisService">The Redis service for cache operations.</param>
+        /// <param name="distributedLock">The distributed lock service for concurrency control.</param>
+        /// <param name="dbExecuteService">The write-back service for asynchronous database writes.</param>
         public CharacterRepository(DbContext dbContext,
             RedisService redisService,
             RedisDistributedLockService distributedLock,
@@ -19,11 +30,21 @@ namespace Http.Reepository
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        /// Retrieves a character by their unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the character.</param>
+        /// <returns>The character if found; otherwise, null.</returns>
         public async Task<Character> Get(uint id)
         {
             return await Get(new CharacterKey { Id = id });
         }
 
+        /// <summary>
+        /// Generates the SQL SELECT statement for retrieving a character by ID.
+        /// </summary>
+        /// <param name="key">The character key containing the character ID.</param>
+        /// <returns>A SQL SELECT statement for the character.</returns>
         protected override string OnSelect(CharacterKey key)
         {
             return $"""
@@ -33,6 +54,12 @@ namespace Http.Reepository
                 """;
         }
 
+        /// <summary>
+        /// Generates the SQL UPSERT statement for a character with all character properties.
+        /// Includes comprehensive character data such as stats, appearance, position, and equipment colors.
+        /// </summary>
+        /// <param name="value">The character to upsert.</param>
+        /// <returns>A SQL UPSERT statement for the character.</returns>
         protected override string OnUpsert(Character value)
         {
             var sql = $"""
@@ -164,6 +191,12 @@ namespace Http.Reepository
             return sql;
         }
 
+        /// <summary>
+        /// Retrieves a character ID by their name using a stored procedure.
+        /// Uses the default database connection for name lookup operations.
+        /// </summary>
+        /// <param name="name">The character name to look up.</param>
+        /// <returns>The character ID if found; otherwise, null.</returns>
         public async Task<uint?> GetCharacterId(string name)
         {
             await using var conn = _dbContext.Connection(-1);
@@ -178,6 +211,12 @@ namespace Http.Reepository
             return null;
         }
 
+        /// <summary>
+        /// Retrieves a character name by their unique identifier.
+        /// Uses the default database connection for name lookup operations.
+        /// </summary>
+        /// <param name="id">The unique identifier of the character.</param>
+        /// <returns>The character name if found; otherwise, null.</returns>
         public async Task<string> GetName(uint id)
         {
             await using var conn = _dbContext.Connection(-1);
@@ -185,6 +224,12 @@ namespace Http.Reepository
             return result?.Name;
         }
 
+        /// <summary>
+        /// Retrieves multiple character names by their unique identifiers in a single query.
+        /// Uses the default database connection for batch name lookup operations.
+        /// </summary>
+        /// <param name="ids">The collection of character IDs to look up.</param>
+        /// <returns>A read-only dictionary mapping character IDs to their names.</returns>
         public async Task<IReadOnlyDictionary<uint, string>> GetName(IEnumerable<uint> ids)
         {
             await using var conn = _dbContext.Connection(-1);

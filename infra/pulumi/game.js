@@ -18,8 +18,7 @@ module.exports = function () {
                         port: container.port,
                         thread: {
                             logic: 32,
-                            io: 12,
-                            background: 16
+                            io: 12
                         },
                         redis: {
                             ip: 'redis',
