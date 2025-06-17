@@ -151,7 +151,7 @@ async::task<void> context::handle_start()
     this->bind(&context::handle_group);            // 그룹 핸들러
     this->bind(&context::handle_user_list);        // 유저 리스트 핸들러
     this->bind(&context::handle_chat);             // 유저 채팅 핸들러
-    this->bind(&context::handle_board);            // 게시판 섹션 리스트 핸들러
+    this->bind(&context::handle_bulletin);         // 게시판 섹션 리스트 핸들러
     this->bind(&context::handle_swap);             // 스펠 순서 변경
     this->bind(&context::handle_dialog);           // 다이얼로그
     this->bind(&context::handle_dialog, 0x39);     // 다이얼로그
@@ -252,7 +252,7 @@ async::task<bool> context::handle_disconnected(fb::socket<character>& socket)
         names.erase(name);
     });
 
-    fb::logger::info("{}님이 접속을 종료했습니다.", ch->name());
+    fb::logger::info("{} has disconnected.", ch->name());
 
     try
     {

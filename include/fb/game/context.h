@@ -626,48 +626,48 @@ public:
     [[nodiscard]] async::task<internal_resp::DeleteMail> delete_mail(character& ch, uint16_t id);
 
     /**
-     * @brief      Gets a list of board articles from a specific section.
+     * @brief      Gets a list of bulletin articles from a specific section.
      *
-     * @param[in]  section  The board section identifier to retrieve articles from.
+     * @param[in]  section  The bulletin section identifier to retrieve articles from.
      * @param[in]  offset   The starting offset for pagination.
      *
-     * @return     An async task returning a list of board articles.
+     * @return     An async task returning a list of bulletin articles.
      */
-    [[nodiscard]] async::task<std::list<board::article>> board_list(uint16_t section, uint16_t offset);
+    [[nodiscard]] async::task<std::list<bulletin::article>> bulletin_list(uint16_t section, uint16_t offset);
 
     /**
-     * @brief      Reads the content of a specific board article.
+     * @brief      Reads the content of a specific bulletin article.
      *
-     * @param[in]  section  The board section identifier.
+     * @param[in]  section  The bulletin section identifier.
      * @param[in]  id       The unique identifier of the article to read.
      *
-     * @return     An async task returning the board article content.
+     * @return     An async task returning the bulletin article content.
      */
-    [[nodiscard]] async::task<board::article> read_board(uint16_t section, uint16_t id);
+    [[nodiscard]] async::task<bulletin::article> read_bulletin(uint16_t section, uint16_t id);
 
     /**
-     * @brief      Writes a new article to a board section.
+     * @brief      Writes a new article to a bulletin section.
      *
-     * @param      ch        The character writing the board article.
-     * @param[in]  section   The board section to write to.
+     * @param      ch        The character writing the bulletin article.
+     * @param[in]  section   The bulletin section to write to.
      * @param[in]  title     The title of the article.
      * @param[in]  contents  The content body of the article.
      *
      * @return     An async task that completes when the article is written.
      */
     [[nodiscard]] async::task<void>
-    write_board(character& ch, uint16_t section, const std::string& title, const std::string& contents);
+    write_bulletin(character& ch, uint16_t section, const std::string& title, const std::string& contents);
 
     /**
-     * @brief      Deletes a board article from a section.
+     * @brief      Deletes a bulletin article from a section.
      *
      * @param      ch       The character deleting the article.
-     * @param[in]  section  The board section containing the article.
+     * @param[in]  section  The bulletin section containing the article.
      * @param[in]  id       The unique identifier of the article to delete.
      *
      * @return     An async task that completes when the article is deleted.
      */
-    [[nodiscard]] async::task<void> delete_board(character& ch, uint16_t section, uint16_t id);
+    [[nodiscard]] async::task<void> delete_bulletin(character& ch, uint16_t section, uint16_t id);
 
     /**
      * @brief      Sends a private whisper message between characters.
@@ -1023,14 +1023,14 @@ public:
     [[nodiscard]] async::task<bool> handle_chat(fb::socket<fb::game::character>&, const fb_reqs::chat&);
 
     /**
-     * @brief      Handles bulletin board request packet.
+     * @brief      Handles bulletin system request packet.
      *
      * @param      socket  The client socket connection.
-     * @param[in]  packet  The board packet containing board operation details.
+     * @param[in]  packet  The bulletin packet containing bulletin operation details.
      *
-     * @return     True if board operation was processed successfully, false otherwise.
+     * @return     True if bulletin operation was processed successfully, false otherwise.
      */
-    [[nodiscard]] async::task<bool> handle_board(fb::socket<fb::game::character>&, const fb_reqs::board&);
+    [[nodiscard]] async::task<bool> handle_bulletin(fb::socket<fb::game::character>&, const fb_reqs::bulletin&);
 
     /**
      * @brief      Handles item/equipment swap request packet.

@@ -57,7 +57,16 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum BoardAction
+    public enum BroadcastType
+    {
+        [EnumMember(Value = "WORLD")]
+        World = 1, 
+        [EnumMember(Value = "GLOBAL")]
+        Global = 2
+    }
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    public enum BulletinAction
     {
         [EnumMember(Value = "NONE")]
         None = 0x00, 
@@ -78,7 +87,7 @@ namespace Fb.Model.EnumValue
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
-    public enum BoardButtonEnable
+    public enum BulletinButtonEnable
     {
         [EnumMember(Value = "NONE")]
         None = 0x00, 
@@ -88,15 +97,6 @@ namespace Fb.Model.EnumValue
         Up = 0x01, 
         [EnumMember(Value = "WRITE")]
         Write = 0x02
-    }
-
-    [JsonConverter(typeof(StringEnumConverter))]
-    public enum BroadcastType
-    {
-        [EnumMember(Value = "WORLD")]
-        World = 1, 
-        [EnumMember(Value = "GLOBAL")]
-        Global = 2
     }
 
     [JsonConverter(typeof(StringEnumConverter))]
@@ -901,7 +901,7 @@ namespace Fb.Model.ConstValue
         public const string MessageAssetNpcSpawnLoaded = "* [{:0.2f}%] NPC 스폰 정보를 읽었습니다. ({})";
         public const string MessageAssetMobSpawnLoaded = "* [{:0.2f}%] 몹 스폰 정보를 읽었습니다. ({})";
         public const string MessageAssetClassLoaded = "* [{:0.2f}%] 클래스 정보를 읽었습니다. ({})";
-        public const string MessageAssetBoardLoaded = "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})";
+        public const string MessageAssetBulletinLoaded = "* [{:0.2f}%] 게시판 정보를 읽었습니다. ({})";
         public const string MessageAssetMapAllLoaded = "* [100%] 총 %d개의 맵 정보를 읽었습니다.";
         public const string MessageAssetRegexAllLoaded = "* [100%] 총 %d개의 정규표현식 정보를 읽었습니다.";
         public const string MessageAssetWorldMapAllLoaded = "* [100%] 총 %d개의 월드맵 정보를 읽었습니다.";
@@ -918,7 +918,7 @@ namespace Fb.Model.ConstValue
         public const string MessageAssetNpcSpawnAllLoaded = "* [100%] 총 %d개의 NPC 스폰 정보를 읽었습니다.";
         public const string MessageAssetMobSpawnAllLoaded = "* [100%] 총 %d개의 몹 스폰 정보를 읽었습니다.";
         public const string MessageAssetClassAllLoaded = "* [100%] 총 %d개의 클래스 정보를 읽었습니다.";
-        public const string MessageAssetBoardAllLoaded = "* [100%] 총 %d개의 게시판 정보를 읽었습니다.";
+        public const string MessageAssetBulletinAllLoaded = "* [100%] 총 %d개의 게시판 정보를 읽었습니다.";
         public const string MessageAssetInvalidSex = "성별을 확인할 수 없습니다.";
         public const string MessageAssetInvalidDeathPenalty = "아이템 데스 패널티를 확인할 수 없습니다.";
         public const string MessageAssetInvalidMobSize = "몹 크기 형식을 확인할 수 없습니다.";
@@ -972,13 +972,13 @@ namespace Fb.Model.ConstValue
         public const string MessageMoneyDrop = "돈을 버렸습니다.";
         public const string MessageMoneyFull = "더 이상 돈을 가질 수 없습니다.";
         public const string MessageLevelUp = "레벨이 올랐습니다";
-        public const string MessageBoardWrite = "글을 작성하였습니다";
-        public const string MessageBoardArticleNotExist = "게시글이 존재하지 않습니다.";
-        public const string MessageBoardSectionNotExist = "섹션이 존재하지 않습니다.";
-        public const string MessageBoardNotAuth = "권한이 없습니다.";
-        public const string MessageBoardSuccessDelete = "글이 삭제되었습니다.";
-        public const string MessageBoardTooLongTitle = "게시글 제목이 너무 깁니다.";
-        public const string MessageBoardTooLongContents = "게시글 내용이 너무 깁니다.";
+        public const string MessageBulletinWrite = "글을 작성하였습니다";
+        public const string MessageBulletinArticleNotExist = "게시글이 존재하지 않습니다.";
+        public const string MessageBulletinSectionNotExist = "섹션이 존재하지 않습니다.";
+        public const string MessageBulletinNotAuth = "권한이 없습니다.";
+        public const string MessageBulletinSuccessDelete = "글이 삭제되었습니다.";
+        public const string MessageBulletinTooLongTitle = "게시글 제목이 너무 깁니다.";
+        public const string MessageBulletinTooLongContents = "게시글 내용이 너무 깁니다.";
         public const string MessageDoorOpen = "문을 열었습니다.";
         public const string MessageDoorClose = "문을 닫았습니다.";
         public const string MessageDoorLock = "문을 잠궜습니다.";
@@ -989,7 +989,7 @@ namespace Fb.Model.ConstValue
         public const string MessageUnknownErrorWithCode = "알 수 없는 에러가 발생했습니다. (에러코드 : {})";
         public const string MessageNotFoundItem = "아이템이 없습니다.";
         public const string MessageItemFull = "더 이상 가질 수 없습니다.";
-        public const string MessageWriteBoardFailed = "게시글 작성 실패";
+        public const string MessageWriteBulletinFailed = "게시글 작성 실패";
         public const string MessageInvalidUserName = "존재하지 않는 유저입니다.";
         public const string MessageNotFoundMail = "메일이 없습니다.";
         public const string MessageCannotGroupSelf = "자기 자신과는 그룹할 수 없습니다.";
@@ -1082,7 +1082,7 @@ namespace Fb.Model
         public string Message { get; set; }
     }
 
-    public class Board
+    public class Bulletin
     {
         [JsonProperty("id")]
         public uint Id { get; set; }
@@ -2010,10 +2010,10 @@ namespace Fb.Model
         public partial class AnnounceTable : ArrayContainer<Announce>
         { }
         public AnnounceTable Announce { get; private set; } = new AnnounceTable();
-        [Table("json/board.json")]
-        public partial class BoardTable : KeyValueContainer<uint, Board>
+        [Table("json/bulletin.json")]
+        public partial class BulletinTable : KeyValueContainer<uint, Bulletin>
         { }
-        public BoardTable Board { get; private set; } = new BoardTable();
+        public BulletinTable Bulletin { get; private set; } = new BulletinTable();
         [Table("json/buy.json")]
         public partial class BuyTable : KeyValueContainer<uint, KeyValueContainer<uint, Buy>>
         { }
@@ -2141,7 +2141,7 @@ namespace Fb.Model
                 AbilityAttribute, 
                 Achievement, 
                 Announce, 
-                Board, 
+                Bulletin, 
                 Buy, 
                 BuyAttribute, 
                 Door, 

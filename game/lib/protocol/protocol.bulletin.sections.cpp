@@ -1,31 +1,31 @@
-#include <fb/game/protocol/board/board_sections.h>
+#include <fb/game/protocol/bulletin/bulletin_sections.h>
 
 namespace fb::protocol::game::response {
 
 #ifndef BOT
-board_sections::board_sections(const fb::model::model& model) :
+bulletin_sections::bulletin_sections(const fb::model::model& model) :
     model(model)
 { }
 #endif
 
 #ifndef BOT
-async::task<void> board_sections::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> bulletin_sections::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
-    auto size = this->model.board.size();
+    auto size = this->model.bulletin.size();
 
     writer.write<uint8_t>(header);
     writer.write<uint8_t>(0x01);
     writer.write<uint16_t>(size);
 
-    for (const auto& [k, v] : this->model.board)
+    for (const auto& [k, v] : this->model.bulletin)
     {
         writer.write<uint16_t>(k);
         writer.write<std::string>(v.name);
     }
 }
 #else
-async::task<void> board_sections::deserialize(fb::stream_reader<big_endian>& reader)
+async::task<void> bulletin_sections::deserialize(fb::stream_reader<big_endian>& reader)
 {
     co_await header::deserialize(reader);
     reader.read<uint8_t>();
@@ -35,7 +35,7 @@ async::task<void> board_sections::deserialize(fb::stream_reader<big_endian>& rea
         auto id    = reader.read<uint16_t>();
         auto title = reader.read<std::string, uint8_t>();
 
-        this->boards.push_back(fb::bot::board(id, title));
+        this->bulletins.push_back(fb::bot::bulletin(id, title));
     }
 }
 #endif

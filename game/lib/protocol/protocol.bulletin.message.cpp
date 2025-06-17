@@ -1,14 +1,14 @@
-#include <fb/game/protocol/board/board_message.h>
+#include <fb/game/protocol/bulletin/bulletin_message.h>
 
 namespace fb::protocol::game::response {
 
-board_message::board_message(const std::string& text, bool success, bool mail) :
+bulletin_message::bulletin_message(const std::string& text, bool success, bool mail) :
     text(text),
     success(success),
     mail(mail)
 { }
 
-async::task<void> board_message::serialize(fb::stream_writer<big_endian>& writer) const
+async::task<void> bulletin_message::serialize(fb::stream_writer<big_endian>& writer) const
 {
     co_await header::serialize(writer);
     writer.write<uint8_t>(header);

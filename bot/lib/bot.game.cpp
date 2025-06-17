@@ -28,7 +28,7 @@ game_bot::game_bot(bot_container& owner, uint32_t id) :
     this->pattern(&game_bot::pattern_move, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_pickup, 250ms, 1000ms);
     this->pattern(&game_bot::pattern_emotion, 250ms, 1000ms);
-    // this->pattern(&game_bot::pattern_board_sections, 250ms, 1000ms);
+    // this->pattern(&game_bot::pattern_bulletin_sections, 250ms, 1000ms);
 }
 
 game_bot::game_bot(bot_container& owner, uint32_t id, const fb::stream& params) :
@@ -268,18 +268,19 @@ async::task<void> game_bot::pattern_emotion()
     co_return;
 }
 
-async::task<void> game_bot::pattern_board_sections()
+async::task<void> game_bot::pattern_bulletin_sections()
 {
     std::random_device              device;
     std::mt19937                    gen(device());
     std::uniform_int_distribution<> dist(0, 1);
 
-    this->send(fb::protocol::game::request::board(BOARD_ACTION::SECTIONS));
+    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::SECTIONS));
 
     auto section = (uint32_t)dist(gen);
-    this->send(fb::protocol::game::request::board(BOARD_ACTION::ARTICLES, section));
-    this->send(fb::protocol::game::request::board(BOARD_ACTION::ARTICLE, section, 0));
-    this->send(fb::protocol::game::request::board(BOARD_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
-    this->send(fb::protocol::game::request::board(BOARD_ACTION::DELETE, section, 0));
+    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLES, section));
+    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::ARTICLE, section, 0));
+    this->send(
+        fb::protocol::game::request::bulletin(BULLETIN_ACTION::WRITE, section, 0, 0, "게시글 타이틀", "게시글 내용"));
+    this->send(fb::protocol::game::request::bulletin(BULLETIN_ACTION::DELETE, section, 0));
     co_return;
 }

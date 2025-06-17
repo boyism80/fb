@@ -341,33 +341,35 @@ public:
     void on_show_user_list(character& ch) override final;
 
     /**
-     * @brief      Called when the main board interface should be shown.
+     * @brief      Called when the main bulletin interface should be shown.
      *
-     * @param      ch    The character who should see the board
+     * @param      ch    The character who should see the bulletin
      */
-    void on_show_board(character& ch) override final;
+    void on_show_bulletin(character& ch) override final;
 
     /**
-     * @brief      Called when a board is displayed to a character.
+     * @brief      Called when a bulletin is displayed to a character.
      *
-     * @param      ch        The character viewing the board.
-     * @param[in]  section   The board section being displayed.
-     * @param[in]  articles  The list of articles in the board section.
-     * @param[in]  flag      The board button enable flags for UI control.
+     * @param      ch        The character viewing the bulletin.
+     * @param[in]  section   The bulletin section being displayed.
+     * @param[in]  articles  The list of articles in the bulletin section.
+     * @param[in]  flag      The bulletin button enable flags for UI control.
      */
-    void on_show_board(character&                                 ch,
-                       const fb::model::board&                    section,
-                       const std::list<fb::game::board::article>& articles,
-                       BOARD_BUTTON_ENABLE                        flag) override final;
+    void on_show_bulletin(character&                                    ch,
+                          const fb::model::bulletin&                    section,
+                          const std::list<fb::game::bulletin::article>& articles,
+                          BULLETIN_BUTTON_ENABLE                        flag) override final;
 
     /**
-     * @brief      Called when displaying a specific board article to a character.
+     * @brief      Called when displaying a specific bulletin article to a character.
      *
-     * @param      ch     The character viewing the board article.
-     * @param[in]  value  The board article being displayed.
-     * @param[in]  flag   The button enable flags for board interaction.
+     * @param      ch     The character viewing the bulletin article.
+     * @param[in]  value  The bulletin article being displayed.
+     * @param[in]  flag   The button enable flags for bulletin interaction.
      */
-    void on_show_board(character& ch, const fb::game::board::article& value, BOARD_BUTTON_ENABLE flag) override final;
+    void on_show_bulletin(character&                         ch,
+                          const fb::game::bulletin::article& value,
+                          BULLETIN_BUTTON_ENABLE             flag) override final;
 
     /**
      * @brief      Called when displaying the mail box list to a character.
@@ -392,14 +394,14 @@ public:
                           MAIL_BUTTON_ENABLE                  flag) override final;
 
     /**
-     * @brief      Called when displaying a board operation result message.
+     * @brief      Called when displaying a bulletin operation result message.
      *
      * @param      ch       The character receiving the message.
      * @param[in]  message  The result message to display.
      * @param[in]  success  Whether the operation was successful.
      * @param[in]  mail     Whether this is related to mail functionality.
      */
-    void on_show_board_message(character& ch, const std::string& message, bool success, bool mail) override final;
+    void on_show_bulletin_message(character& ch, const std::string& message, bool success, bool mail) override final;
 
     /**
      * @brief      Called when displaying the world map to a character.
