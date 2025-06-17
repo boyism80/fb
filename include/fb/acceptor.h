@@ -1350,6 +1350,25 @@ protected:
 
 protected:
     /**
+     * @brief      Binds a handler function to a protocol command with default parameters.
+     *
+     * @param[in]  fn        The member function to bind.
+     * @param[in]  duration  The time window for rate limiting.
+     * @param[in]  limit     The maximum number of requests allowed in the time window.
+     *
+     * @tparam     Class      The class containing the handler function.
+     * @tparam     Request    The type of the request to handle.
+     */
+    template <typename Class, typename Request>
+    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
+              const std::chrono::steady_clock::duration& duration = 1s,
+              uint32_t                                   limit    = 10)
+    {
+        this->bind(fn, Request::header, duration, limit);
+    }
+
+protected:
+    /**
      * @brief      Binds an AMQP handler function to a route and response type.
      *
      * @param[in]  route  The AMQP route to bind to.
@@ -1387,25 +1406,6 @@ protected:
                 queue.handler(cmd, fn);
             }
         }
-    }
-
-protected:
-    /**
-     * @brief      Binds a handler function to a protocol command with default parameters.
-     *
-     * @param[in]  fn        The member function to bind.
-     * @param[in]  duration  The time window for rate limiting.
-     * @param[in]  limit     The maximum number of requests allowed in the time window.
-     *
-     * @tparam     Class      The class containing the handler function.
-     * @tparam     Request    The type of the request to handle.
-     */
-    template <typename Class, typename Request>
-    void bind(async::task<bool> (Class::*fn)(fb::socket<T>&, const Request&),
-              const std::chrono::steady_clock::duration& duration = 1s,
-              uint32_t                                   limit    = 10)
-    {
-        this->bind(fn, Request::header, duration, limit);
     }
 
 public:
